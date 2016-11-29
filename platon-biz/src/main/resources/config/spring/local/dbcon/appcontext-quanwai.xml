@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean id="dao.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="jdbcUrl" value="${db.url}" />
+        <property name="user" value="${db.name}" />
+        <property name="password" value="${db.password}" />
+        <property name="driverClass" value="com.mysql.jdbc.Driver" />
+        <!--最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->
+        <property name="maxIdleTime" value="600" />
+        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 -->
+        <property name="checkoutTimeout" value="3000"/>
+        <!--每1800秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->
+        <property name="idleConnectionTestPeriod" value="1800" />
+    </bean>
+
+    <!-- transaction domain, use JtaTransactionManager for global tx -->
+    <bean id="dao.transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dao.dataSource" />
+    </bean>
+
+    <!-- define the SqlSessionFactory -->
+    <!--<bean id="dao.sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">-->
+        <!--<property name="dataSource" ref="dao.dataSource" />-->
+        <!--<property name="typeAliasesPackage"-->
+                  <!--value="com.iquanwai.platon.biz.po" />-->
+        <!--<property name="plugins">-->
+        <!--<array>-->
+        <!--<bean class="com.github.pagehelper.PageHelper">-->
+        <!--<property name="properties">-->
+        <!--<value>-->
+        <!--dialect=mysql-->
+        <!--reasonable=true-->
+        <!--</value>-->
+        <!--</property>-->
+        <!--</bean>-->
+        <!--</array>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <!-- scan for mappers and let them be autowired -->
+    <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">-->
+        <!--<property name="basePackage"-->
+                  <!--value="com.iquanwai.platon.biz.dao" />-->
+        <!--<property name="sqlSessionFactoryBeanName" value="dao.sqlSessionFactory" />-->
+    <!--</bean>-->
+
+</beans>
