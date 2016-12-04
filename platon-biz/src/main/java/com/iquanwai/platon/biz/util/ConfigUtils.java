@@ -41,10 +41,6 @@ public class ConfigUtils {
 		return config.getBoolean("open.log");
 	}
 
-	public static boolean pressTestSwitch(){
-		return config.getBoolean("press.test");
-	}
-
 	public static String getAPIKey() {
 		return config.getString("api.key");
 	}
@@ -81,24 +77,12 @@ public class ConfigUtils {
 		return config.getInt("bill.open.minute");
 	}
 
-	public static String signupSuccessMsgKey(){
-		return config.getString("signup.success.msg");
-	}
-
 	public static String angelMsgKey(){
 		return config.getString("angel.msg");
 	}
 
-	public static String incompleteTaskMsgKey(){
-		return config.getString("incomplete.task.msg");
-	}
-
 	public static boolean messageSwitch(){
 		return config.getBoolean("message.switch");
-	}
-
-	public static String coursePassMsgKey(){
-		return config.getString("course.pass.msg");
 	}
 
 	public static String domainName(){

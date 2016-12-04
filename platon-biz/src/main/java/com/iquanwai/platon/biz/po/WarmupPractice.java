@@ -1,0 +1,19 @@
+package com.iquanwai.platon.biz.po;
+
+import lombok.Data;
+
+/**
+ * Created by justin on 16/12/4.
+ */
+@Data
+public class WarmupPractice {
+    private int id;
+    private String question; //题干
+    private Integer type; //题型（1-单选题，2-多选题）
+    private String analysis; //解析
+    private String voice; //语音解析
+    private Integer difficulty; //难易度（1-容易，2-普通，3-困难）
+    private Integer knowledgeId; //知识点id
+    private Integer sceneId; //场景id
+    
+}
