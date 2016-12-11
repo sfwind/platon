@@ -89,6 +89,14 @@ public class ConfigUtils {
 		return config.getString("app.domain");
 	}
 
+	public static String adapterDomainName(){
+		return config.getString("adapter.domain");
+	}
+
+	public static String resourceDomainName(){
+		return config.getString("resource.domain");
+	}
+
 	public static String realDomainName(){
 		return config.getString("app.domainname");
 	}

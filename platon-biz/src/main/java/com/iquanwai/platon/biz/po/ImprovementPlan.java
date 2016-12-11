@@ -1,8 +1,10 @@
 package com.iquanwai.platon.biz.po;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by justin on 16/12/4.
@@ -19,4 +21,7 @@ public class ImprovementPlan {
     private Integer complete; //完成训练个数
     private Integer total; //任务总数
     private Boolean readWizard; //是否已阅读玩法
+    private Integer key; //钥匙数量
+    private String problem; //非db字段 问题描述
+    private List<Practice> practice; //非db字段
 }

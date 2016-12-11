@@ -13,4 +13,5 @@ public class Problem {
     private Integer warmupCount; //热身训练次数
     private Integer applicationCount; //应用训练次数
     private Integer challengeCount; //挑战训练次数
+    private String description; //富文本描述
 }

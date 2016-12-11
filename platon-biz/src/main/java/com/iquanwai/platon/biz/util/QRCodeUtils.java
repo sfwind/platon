@@ -1,10 +1,11 @@
 package com.iquanwai.platon.biz.util;
 
-import com.google.zxing.*;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.BufferedImageLuminanceSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +20,6 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
 
 
 public class QRCodeUtils {
@@ -165,54 +162,7 @@ public class QRCodeUtils {
         return result;
     }
 
-    /**
-     * 针对二维码进行解析
-     *
-     * @param img
-     * @return
-     */
-    public static String decode(InputStream img) {
-        BufferedImage image = null;
-        Result result = null;
-        try {
-            image = ImageIO.read(img);
-            if (image == null) {
-                logger.error("the decode image may be not exists.");
-                return "";
-            }
-            if(image.getWidth() == image.getHeight()) {// android image
-                image = zoom(image, 256, 256);
-            }else{// ios image
-                image = zoom(image, 300, 300);
-            }
-            return decodeQRCode(image);
 
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-//            logger.error("try once again:");
-//            image = zoom(image, 256, 256);
-//            try {
-//                return decodeQRCode(image);
-//            } catch (NotFoundException e1) {
-//                logger.error(e1.getMessage());
-//            }
-        }
-        return "";
-    }
-
-    private static String decodeQRCode(BufferedImage image) throws NotFoundException {
-        LuminanceSource source = new BufferedImageLuminanceSource(image);
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-
-        Map<DecodeHintType, Object> hints = new HashMap<DecodeHintType, Object>();
-        Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
-        decodeFormats.addAll(EnumSet.of(BarcodeFormat.QR_CODE));
-        hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
-        hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
-
-        Result result = new MultiFormatReader().decode(bitmap, hints);
-        return result.getText();
-    }
 
     public static BufferedImage genQRCodeWithLogo(String content, InputStream srcLogoImage) throws WriterException,
             IOException {

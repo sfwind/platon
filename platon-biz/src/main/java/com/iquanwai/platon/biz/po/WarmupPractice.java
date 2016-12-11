@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.po;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * Created by justin on 16/12/4.
  */
@@ -15,5 +17,8 @@ public class WarmupPractice {
     private Integer difficulty; //难易度（1-容易，2-普通，3-困难）
     private Integer knowledgeId; //知识点id
     private Integer sceneId; //场景id
+
+    private List<Choice> choiceList; //所有选项
+    private List<Integer> choice; //用户选择选项
     
 }

@@ -1,5 +1,6 @@
 package com.iquanwai.platon.util;
 
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -58,6 +59,6 @@ public class WebUtils {
         if(!StringUtils.isEmpty(request.getQueryString())){
             url = url +"?"+request.getQueryString();
         }
-        response.sendRedirect("/wx/oauth/auth?callbackUrl="+url);
+        response.sendRedirect(ConfigUtils.adapterDomainName()+"/wx/oauth/auth?callbackUrl="+url);
     }
 }

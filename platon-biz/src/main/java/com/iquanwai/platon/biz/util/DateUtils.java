@@ -33,6 +33,13 @@ public class DateUtils {
         return Math.abs((int)(now - thatTime)/1000)/60/60/24;
     }
 
+    public static int interval(Date date1, Date date2) {
+        long thisTime = date1.getTime();
+        long thatTime = date2.getTime();
+
+        return Math.abs((int)(thisTime - thatTime)/1000)/60/60/24;
+    }
+
     public static long currentTimestamp(){
         return System.currentTimeMillis()/1000;
     }

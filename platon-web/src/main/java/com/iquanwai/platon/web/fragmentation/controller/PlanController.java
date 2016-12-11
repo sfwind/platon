@@ -1,0 +1,143 @@
+package com.iquanwai.platon.web.fragmentation.controller;
+
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.OperationLog;
+import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.resolver.LoginUser;
+import com.iquanwai.platon.util.WebUtils;
+import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+/**
+ * Created by justin on 16/12/8.
+ * 训练计划相关的请求处理类
+ */
+@RestController
+@RequestMapping("/plan")
+public class PlanController {
+    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    @Autowired
+    private PlanService planService;
+    @Autowired
+    private OperationLogService operationLogService;
+
+    @RequestMapping("/choose/problem/{problemId}")
+    public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
+                                                          @PathVariable Integer problemId){
+
+        try{
+            Assert.notNull(loginUser, "用户不能为空");
+            Integer planId = planService.generatePlan(loginUser.getOpenId(), problemId);
+
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("问题")
+                    .function("问题优先级判断")
+                    .action("选择最需要解决的问题")
+                    .memo(problemId.toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(planId);
+        }catch (Exception e){
+            LOGGER.error("选择最需要解决的问题失败, "+loginUser.getWeixinName(), e);
+            return WebUtils.error("选取问题失败");
+        }
+    }
+
+
+    @RequestMapping("/play/{planId}")
+    public ResponseEntity<Map<String, Object>> planPlayIntroduce(LoginUser loginUser,
+                                                          @PathVariable Integer planId){
+
+        try{
+            Assert.notNull(loginUser, "用户不能为空");
+            ImprovementPlan improvementPlan = planService.getPlan(planId);
+            if(improvementPlan==null){
+                LOGGER.error("planId {} is invalid", planId);
+                return WebUtils.error("打开训练玩法介绍失败");
+            }
+
+            PlayIntroduceDto playIntroduceDto = new PlayIntroduceDto();
+
+            int interval = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate());
+            playIntroduceDto.setLength(interval);
+
+            DateTime dateTime = new DateTime(improvementPlan.getEndDate());
+            int month = dateTime.getMonthOfYear();
+            int day = dateTime.getDayOfMonth();
+            playIntroduceDto.setEndDate(month + "月" + day + "日");
+            playIntroduceDto.setReadWizard(improvementPlan.getReadWizard());
+            //如果第一次阅读玩法,记录阅读状态
+            if(!improvementPlan.getReadWizard()){
+                planService.readWizard(planId);
+            }
+
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("玩法")
+                    .function("训练玩法介绍")
+                    .action("打开玩法页")
+                    .memo(planId.toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(playIntroduceDto);
+        }catch (Exception e){
+            LOGGER.error("打开训练玩法介绍失败, "+loginUser.getWeixinName(), e);
+            return WebUtils.error("打开训练玩法介绍失败");
+        }
+    }
+
+    @RequestMapping("/start/{planId}")
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser,
+                                                                 @PathVariable Integer planId){
+
+        try{
+            Assert.notNull(loginUser, "用户不能为空");
+            ImprovementPlan improvementPlan = planService.getPlanDetail(planId);
+            // openid置为null
+            improvementPlan.setOpenid(null);
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("训练计划")
+                    .function("开始训练")
+                    .action("点击开始训练")
+                    .memo(planId.toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(improvementPlan);
+        }catch (Exception e){
+            LOGGER.error("获取训练计划失败, "+loginUser.getWeixinName(), e);
+            return WebUtils.error("获取训练计划失败");
+        }
+
+    }
+
+
+    @RequestMapping("/knowledge/load/{knowledgeId}")
+    public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
+                                                         @PathVariable Integer knowledgeId){
+
+        try{
+            Assert.notNull(loginUser, "用户不能为空");
+            Knowledge knowledge = planService.getKnowledge(knowledgeId);
+
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("知识点")
+                    .function("知识点回顾")
+                    .action("打开回顾页")
+                    .memo(knowledgeId.toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(knowledge);
+        }catch (Exception e){
+            LOGGER.error("获取训练计划失败, "+loginUser.getWeixinName(), e);
+            return WebUtils.error("获取训练计划失败");
+        }
+    }
+}

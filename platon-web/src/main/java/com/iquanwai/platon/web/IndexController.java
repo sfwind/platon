@@ -28,48 +28,12 @@ public class IndexController {
     @Autowired
     private AccountService accountService;
 
-    private Logger logger = LoggerFactory.getLogger(IndexController.class);
-
     @RequestMapping(value = "/static/**",method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request) {
         return courseView(request);
     }
 
-    @RequestMapping(value = "/introduction/my",method = RequestMethod.GET)
-    public ModelAndView getIntroductionIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        if(!checkAccessToken(accessToken)){
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
-            WebUtils.auth(request, response);
-            return null;
-        }
-
-        return courseView(request);
-    }
-
-    @RequestMapping(value = "/pay",method = RequestMethod.GET)
-    public ModelAndView getPayIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        if(!checkAccessToken(accessToken)){
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
-            WebUtils.auth(request, response);
-            return null;
-        }
-        return courseView(request);
-    }
-
-    @RequestMapping(value = "/personal/edit",method = RequestMethod.GET)
-    public ModelAndView getPersonalEditIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        if(!checkAccessToken(accessToken)){
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
-            WebUtils.auth(request, response);
-            return null;
-        }
-        return courseView(request);
-    }
-
-    @RequestMapping(value = "/certificate/**",method = RequestMethod.GET)
+    @RequestMapping(value = "/fragmentation",method = RequestMethod.GET)
     public ModelAndView getCertificateIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         if(!checkAccessToken(accessToken)){
