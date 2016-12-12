@@ -44,7 +44,7 @@ public class ProblemListDao extends PracticeDBUtil{
     public List<ProblemList> loadProblems(String openid){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ProblemList>> h = new BeanListHandler(ProblemList.class);
-        String sql = "SELECT * FROM ProblemList where Openid=?";
+        String sql = "SELECT * FROM ProblemList where Openid=? and Status=0";
         try {
             List<ProblemList> problemLists = run.query(sql, h, openid);
             return problemLists;
@@ -53,5 +53,17 @@ public class ProblemListDao extends PracticeDBUtil{
         }
 
         return Lists.newArrayList();
+    }
+
+    public void updateStatus(String openid, Integer problemId, Integer status){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        String sql = "UPDATE ProblemList SET STATUS = ? where Openid=? and problemId=?";
+        try {
+            asyncRun.update(sql, status, openid, problemId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
     }
 }

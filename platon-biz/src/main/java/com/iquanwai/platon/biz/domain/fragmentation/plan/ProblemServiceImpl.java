@@ -25,7 +25,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<Problem> loadProblems() {
-        if(problems==null) {
+        if(problems.isEmpty()) {
             problems = problemDao.loadAll(Problem.class);
         }
         return problems;

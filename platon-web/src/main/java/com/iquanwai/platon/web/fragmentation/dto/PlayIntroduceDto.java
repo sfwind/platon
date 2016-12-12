@@ -9,5 +9,4 @@ import lombok.Data;
 public class PlayIntroduceDto {
     private Integer length;
     private String endDate;
-    private Boolean readWizard;
 }

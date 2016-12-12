@@ -13,6 +13,6 @@ public class Practice {
     private Knowledge knowledge;
     private Integer type;
     private Integer status;
-    private Boolean lock;
+    private Boolean unlock;
     private List<Integer> practiceIdList;
 }

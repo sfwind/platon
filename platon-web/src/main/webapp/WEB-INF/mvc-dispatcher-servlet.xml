@@ -40,26 +40,25 @@
                 </property>
             </bean>
         </mvc:message-converters>
-        <!--<mvc:argument-resolvers>-->
-            <!--<bean class="com.iquanwai.platon.resolver.LoginUserResolver"/>-->
-        <!--</mvc:argument-resolvers>-->
+        <mvc:argument-resolvers>
+            <bean class="com.iquanwai.platon.resolver.LoginUserResolver"/>
+        </mvc:argument-resolvers>
     </mvc:annotation-driven>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
           p:prefix="/" p:suffix=".jsp" p:order="1"/>
 
-    <!--<mvc:interceptors>-->
-        <!--<mvc:interceptor>-->
-            <!--<mvc:mapping path="/**" />-->
-            <!--<mvc:exclude-mapping path="/wx/**" />-->
-            <!--<mvc:exclude-mapping path="/b/**" />-->
-            <!--<mvc:exclude-mapping path="/image/**" />-->
-            <!--<mvc:exclude-mapping path="/js/**" />-->
-            <!--<mvc:exclude-mapping path="/homework/**" />-->
-            <!--<mvc:exclude-mapping path="/share/**" />-->
-            <!--<mvc:exclude-mapping path="/static/**" />-->
-            <!--<mvc:exclude-mapping path="/cache/**" />-->
-            <!--<bean class="com.iquanwai.platon.interceptor.CourseHandlerInterceptor"></bean>-->
-        <!--</mvc:interceptor>-->
-    <!--</mvc:interceptors>-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**" />
+            <mvc:exclude-mapping path="/wx/**" />
+            <mvc:exclude-mapping path="/b/**" />
+            <mvc:exclude-mapping path="/image/**" />
+            <mvc:exclude-mapping path="/js/**" />
+            <mvc:exclude-mapping path="/challenge/**" />
+            <mvc:exclude-mapping path="/static/**" />
+            <mvc:exclude-mapping path="/cache/**" />
+            <bean class="com.iquanwai.platon.interceptor.CourseHandlerInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
 </beans>

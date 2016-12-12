@@ -70,18 +70,13 @@ public class PlanController {
 
             PlayIntroduceDto playIntroduceDto = new PlayIntroduceDto();
 
-            int interval = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate());
+            int interval = DateUtils.interval(improvementPlan.getStartDate(),improvementPlan.getEndDate());
             playIntroduceDto.setLength(interval);
 
             DateTime dateTime = new DateTime(improvementPlan.getEndDate());
             int month = dateTime.getMonthOfYear();
             int day = dateTime.getDayOfMonth();
             playIntroduceDto.setEndDate(month + "月" + day + "日");
-            playIntroduceDto.setReadWizard(improvementPlan.getReadWizard());
-            //如果第一次阅读玩法,记录阅读状态
-            if(!improvementPlan.getReadWizard()){
-                planService.readWizard(planId);
-            }
 
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("玩法")
@@ -96,20 +91,23 @@ public class PlanController {
         }
     }
 
-    @RequestMapping("/start/{planId}")
-    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser,
-                                                                 @PathVariable Integer planId){
+    @RequestMapping("/load")
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser){
 
         try{
             Assert.notNull(loginUser, "用户不能为空");
-            ImprovementPlan improvementPlan = planService.getPlanDetail(planId);
+            ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            if(improvementPlan==null){
+                return WebUtils.result(null);
+            }
+            planService.buildPlanDetail(improvementPlan);
             // openid置为null
             improvementPlan.setOpenid(null);
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练计划")
                     .function("开始训练")
-                    .action("点击开始训练")
-                    .memo(planId.toString());
+                    .action("加载训练")
+                    .memo(improvementPlan.getId()+"");
             operationLogService.log(operationLog);
             return WebUtils.result(improvementPlan);
         }catch (Exception e){

@@ -27,6 +27,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ProblemDao problemDao;
     @Autowired
+    private ProblemListDao problemListDao;
+    @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
@@ -69,25 +71,22 @@ public class PlanServiceImpl implements PlanService {
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
+        //更新问题状态
+        problemListDao.updateStatus(openid, problemId, 1);
 
         return planId;
     }
 
     @Override
-    public ImprovementPlan getPlanDetail(Integer planId) {
-        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+    public void buildPlanDetail(ImprovementPlan improvementPlan) {
+        Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
+        improvementPlan.setProblem(problem);
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         //选择正在进行的练习
-        List<PracticePlan> runningPractice = pickRunningPractice(practicePlans);
+        List<PracticePlan> runningPractice = pickRunningPractice(practicePlans, improvementPlan);
         //创建练习对象
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
-        return improvementPlan;
-    }
-
-    @Override
-    public ImprovementPlan getRunningPlan(String openid) {
-        return improvementPlanDao.loadRunningPlan(openid);
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
@@ -116,14 +115,14 @@ public class PlanServiceImpl implements PlanService {
 
     private void buildPractice(Practice practice, PracticePlan practicePlan) {
         practice.setStatus(practicePlan.getStatus());
-        practice.setLock(practicePlan.getLock());
+        practice.setUnlock(practicePlan.getUnlocked());
         practice.getPracticeIdList().add(practicePlan.getPracticeId());
         practice.setType(practicePlan.getType());
         Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
         practice.setKnowledge(knowledge);
     }
 
-    private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans) {
+    private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
         boolean running = false;
         int sequenceCursor = 0;
         List<PracticePlan> runningPractice = Lists.newArrayList();
@@ -147,29 +146,23 @@ public class PlanServiceImpl implements PlanService {
                 running = true;
             }
         }
+
+        boolean unlock = false;
+        for(PracticePlan practicePlan:tempPractice){
+            //解锁练习
+            if(!practicePlan.getUnlocked()){
+                if(improvementPlan.getKeycnt()>0) {
+                    practicePlan.setUnlocked(true);
+                    unlock = true;
+                    practicePlanDao.unlock(practicePlan.getPlanId(), practicePlan.getPracticeId());
+                }
+            }
+        }
+        if(unlock) {
+            improvementPlanDao.updateKey(improvementPlan.getId(), improvementPlan.getKeycnt() - 1);
+        }
         runningPractice.addAll(tempPractice);
         return runningPractice;
-    }
-
-    @Override
-    public ImprovementPlan getPlan(Integer planId) {
-        return improvementPlanDao.load(ImprovementPlan.class, planId);
-    }
-
-    @Override
-    public Knowledge getKnowledge(Integer knowledgeId) {
-        if(knowledgeMap.get(knowledgeId)==null){
-            Knowledge knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
-            knowledgeMap.put(knowledgeId, knowledge);
-        }
-
-        Knowledge knowledge = knowledgeMap.get(knowledgeId);
-        return knowledge;
-    }
-
-    @Override
-    public void readWizard(Integer planId) {
-        improvementPlanDao.readWizard(planId);
     }
 
     private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
@@ -181,7 +174,7 @@ public class PlanServiceImpl implements PlanService {
         List<ChallengePractice> challengePractices = selectChallenge(practices, challengeCount);
         challengePractices.stream().forEach(practice->{
             PracticePlan practicePlan = new PracticePlan();
-            practicePlan.setLock(true);
+            practicePlan.setUnlocked(true);
             practicePlan.setPlanId(planId);
             practicePlan.setType(PracticePlan.CHALLENGE);
             practicePlan.setPracticeId(practice.getId());
@@ -217,7 +210,7 @@ public class PlanServiceImpl implements PlanService {
 
         for(int i=0;i<applicationPractices.size();i++){
             PracticePlan practicePlan = new PracticePlan();
-            practicePlan.setLock(true);
+            practicePlan.setUnlocked(false);
             practicePlan.setPlanId(planId);
             practicePlan.setType(PracticePlan.APPLICATION);
             practicePlan.setPracticeId(applicationPractices.get(i).getId());
@@ -236,6 +229,10 @@ public class PlanServiceImpl implements PlanService {
         List<ApplicationPractice> normalPractice = Lists.newArrayList();
         List<ApplicationPractice> hardPractice = Lists.newArrayList();
 
+        float cnt = count/3;
+        int easyCount = Math.round(cnt);
+        int normalCount = Math.round(cnt);
+        int hardCount = count-easyCount-normalCount;
         //按难度拆分题库
         practices.stream().forEach(practice->{
             if(practice.getDifficulty()==EASY){
@@ -248,11 +245,11 @@ public class PlanServiceImpl implements PlanService {
         });
 
         //easy题目
-        applicationPractices.addAll(randomSelect(easyPractice, Math.round(count)));
+        applicationPractices.addAll(randomSelect(easyPractice, easyCount));
         //normal题目
-        applicationPractices.addAll(randomSelect(normalPractice, Math.round(count)));
+        applicationPractices.addAll(randomSelect(normalPractice, normalCount));
         //hard题目
-        applicationPractices.addAll(randomSelect(hardPractice, Math.round(count)));
+        applicationPractices.addAll(randomSelect(hardPractice, hardCount));
 
         return applicationPractices;
     }
@@ -275,7 +272,7 @@ public class PlanServiceImpl implements PlanService {
             for(int j=0;j<WARMUP_TASK_PRACTICE_NUMBER;j++){
                 WarmupPractice practice = warmupPractices.get(WARMUP_TASK_PRACTICE_NUMBER * i + j);
                 PracticePlan practicePlan = new PracticePlan();
-                practicePlan.setLock(true);
+                practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 practicePlan.setType(practice.getType());
                 practicePlan.setPracticeId(practice.getId());
@@ -295,6 +292,10 @@ public class PlanServiceImpl implements PlanService {
         List<WarmupPractice> normalPractice = Lists.newArrayList();
         List<WarmupPractice> hardPractice = Lists.newArrayList();
 
+        float cnt = count/3;
+        int easyCount = Math.round(cnt);
+        int normalCount = Math.round(cnt);
+        int hardCount = count-easyCount-normalCount;
         //按难度拆分题库
         practices.stream().forEach(practice -> {
             if (practice.getDifficulty() == EASY) {
@@ -307,11 +308,11 @@ public class PlanServiceImpl implements PlanService {
         });
 
         //easy题目
-        warmupPractices.addAll(randomSelect(easyPractice, Math.round(count)));
+        warmupPractices.addAll(randomSelect(easyPractice, easyCount));
         //normal题目
-        warmupPractices.addAll(randomSelect(normalPractice, Math.round(count)));
+        warmupPractices.addAll(randomSelect(normalPractice, normalCount));
         //hard题目
-        warmupPractices.addAll(randomSelect(hardPractice, Math.round(count)));
+        warmupPractices.addAll(randomSelect(hardPractice, hardCount));
 
         return warmupPractices;
     }
@@ -338,11 +339,11 @@ public class PlanServiceImpl implements PlanService {
         for(int i=0;i<maps.size();i++){
             if(i!=maps.size()-1) {
                 int weight = maps.get(i).getWeight();
-                int cnt = (int)Math.round((double)(count*weight/100));
+                int cnt = Math.round((float)(count*weight/100));
                 knowledgeVolumes.add(new KnowledgeVolume().
                         knowledgeId(maps.get(i).getKnowledgeId()).count(cnt));
                 //剩余题目数
-                left -=count;
+                left -=cnt;
             }else{
                 knowledgeVolumes.add(new KnowledgeVolume().
                         knowledgeId(maps.get(i).getKnowledgeId()).count(left));
@@ -358,21 +359,22 @@ public class PlanServiceImpl implements PlanService {
         ImprovementPlan improvementPlan = new ImprovementPlan();
         improvementPlan.setOpenid(openid);
         improvementPlan.setComplete(0);
-        improvementPlan.setReadWizard(false);
         improvementPlan.setProblemId(problem.getId());
         improvementPlan.setScore(0);
-        improvementPlan.setStatus(0);
+        improvementPlan.setStatus(1);
         //初始化时有一把钥匙
-        improvementPlan.setKey(1);
+        improvementPlan.setKeycnt(1);
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
+        //结束时期后再开放7天
+        improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), length + 7));
         improvementPlan.setTotal(problem.getWarmupCount()+
                 problem.getApplicationCount()+
                 problem.getChallengeCount());
 
-        improvementPlanDao.insert(improvementPlan);
+//        return improvementPlanDao.insert(improvementPlan);
 
-        return 0;
+        return 1;
     }
 
     private Knowledge getKnowledge(Integer knowledgeId, Integer planId){
@@ -386,6 +388,43 @@ public class PlanServiceImpl implements PlanService {
         }
         knowledge.setAppear(knowledgePlan.getAppear());
         return knowledge;
+    }
+
+    @Override
+    public ImprovementPlan getRunningPlan(String openid) {
+        return improvementPlanDao.loadRunningPlan(openid);
+    }
+
+    @Override
+    public List<ImprovementPlan> loadAllRunningPlan() {
+        return improvementPlanDao.loadAllRunningPlan();
+    }
+
+    @Override
+    public ImprovementPlan getPlan(Integer planId) {
+        return improvementPlanDao.load(ImprovementPlan.class, planId);
+    }
+
+    @Override
+    public void updateKey(Integer planId, Integer key) {
+        improvementPlanDao.updateKey(planId, key);
+    }
+
+    @Override
+    public Knowledge getKnowledge(Integer knowledgeId) {
+        if(knowledgeMap.get(knowledgeId)==null){
+            Knowledge knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
+            knowledgeMap.put(knowledgeId, knowledge);
+        }
+
+        Knowledge knowledge = knowledgeMap.get(knowledgeId);
+        return knowledge;
+    }
+
+    @Override
+    public void completePlan(Integer planId) {
+        //训练计划结束
+        improvementPlanDao.updateStatus(planId, 2);
     }
 
     @Data

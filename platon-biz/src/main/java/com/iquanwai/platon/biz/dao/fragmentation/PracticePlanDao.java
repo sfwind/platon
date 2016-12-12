@@ -24,7 +24,7 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void batchInsert(List<PracticePlan> planList){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Lock, Status, KnowledgeId, Sequence) " +
+        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence) " +
                 "values(?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[planList.size()][];
@@ -34,7 +34,7 @@ public class PracticePlanDao extends PracticeDBUtil {
                 param[i][0] = practicePlan.getPracticeId();
                 param[i][1] = practicePlan.getPlanId();
                 param[i][2] = practicePlan.getType();
-                param[i][3] = practicePlan.getLock();
+                param[i][3] = practicePlan.getUnlocked();
                 param[i][4] = practicePlan.getStatus();
                 param[i][5] = practicePlan.getKnowledgeId();
                 param[i][6] = practicePlan.getSequence();
@@ -64,6 +64,17 @@ public class PracticePlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "update PracticePlan set Status=1 where PlanId=? and PracticeId=?";
+        try {
+            asyncRun.update(sql, planId, practiceId);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void unlock(Integer planId, Integer practiceId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        String sql = "update PracticePlan set Lock=0 where PlanId=? and PracticeId=?";
         try {
             asyncRun.update(sql, planId, practiceId);
         }catch (SQLException e) {

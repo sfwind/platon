@@ -84,7 +84,6 @@ public class PracticeServiceImpl implements PracticeService {
                 return;
             }
             List<Choice> choices = practice.getChoiceList();
-            //TODO:算分
             for(Choice choice:choices){
 
             }

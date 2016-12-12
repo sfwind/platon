@@ -34,7 +34,7 @@ public class ProblemController {
     private OperationLogService operationLogService;
 
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser, @PathVariable Integer courseId){
+    public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser){
         try{
             Assert.notNull(loginUser, "用户不能为空");
 
