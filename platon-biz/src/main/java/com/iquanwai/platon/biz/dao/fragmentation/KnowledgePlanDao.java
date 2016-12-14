@@ -26,8 +26,7 @@ public class KnowledgePlanDao extends PracticeDBUtil {
         String sql = "select * from KnowledgePlan where PlanId=? and KnowledgeId=?";
         try {
             ResultSetHandler<KnowledgePlan> h = new BeanHandler(KnowledgePlan.class);
-            KnowledgePlan knowledgePlan = runner.query(sql, h, planId, knowledgeId);
-            return knowledgePlan;
+            return runner.query(sql, h, planId, knowledgeId);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

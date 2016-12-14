@@ -176,8 +176,7 @@ public class PlanServiceImpl implements PlanService {
             knowledgeMap.put(knowledgeId, knowledge);
         }
 
-        Knowledge knowledge = knowledgeMap.get(knowledgeId);
-        return knowledge;
+        return knowledgeMap.get(knowledgeId);
     }
 
     @Override

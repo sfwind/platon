@@ -45,6 +45,8 @@ public class PracticeServiceImpl implements PracticeService {
     private RestfulHelper restfulHelper;
     @Autowired
     private PointRepo pointRepo;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,7 +54,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     private final static String shortUrlService = "http://tinyurl.com/api-create.php?url=";
 
-    private final static String submitUrlPrefix = "/static/c?id=";
+    private final static String submitUrlPrefix = "/fragment/c?id=";
 
     @PostConstruct
     public void initQuestions(){
@@ -92,20 +94,27 @@ public class PracticeServiceImpl implements PracticeService {
             }
             Pair<Integer,Boolean> ret = pointRepo.warmupScore(practice, userChoice);
             Integer score = ret.getLeft();
+            Boolean accurate = ret.getRight();
+            if(accurate){
+                rightNumber++;
+            }
             point +=score;
             //生成提交记录
             WarmupSubmit warmupSubmit = new WarmupSubmit();
             warmupSubmit.setContent(StringUtils.join(userChoice, ","));
             warmupSubmit.setPlanId(planId);
             warmupSubmit.setQuestionId(practice.getId());
-            warmupSubmit.setIsRight(ret.getRight());
+            warmupSubmit.setIsRight(accurate);
             warmupSubmit.setScore(score);
             warmupSubmit.setOpenid(openid);
             warmupSubmitDao.insert(warmupSubmit);
 
-            practicePlanDao.complete(practice.getId(), planId, practice.getType());
-        };
-
+            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, practice.getId(), practice.getType());
+            if(practicePlan!=null && practicePlan.getStatus() == 0) {
+                practicePlanDao.complete(practicePlan.getId());
+            }
+        }
+        improvementPlanDao.updateComplete(planId);
         pointRepo.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
@@ -117,7 +126,11 @@ public class PracticeServiceImpl implements PracticeService {
     public ApplicationPractice getApplicationPractice(Integer id, Integer planId) {
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         //打开即完成
-        practicePlanDao.complete(applicationPractice.getId(), planId, PracticePlan.APPLICATION);
+        PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, applicationPractice.getId(), PracticePlan.APPLICATION);
+        if(practicePlan!=null && practicePlan.getStatus() == 0){
+            practicePlanDao.complete(practicePlan.getId());
+            improvementPlanDao.updateComplete(planId);
+        }
         return applicationPractice;
     }
 
@@ -194,8 +207,13 @@ public class PracticeServiceImpl implements PracticeService {
         }
         boolean result = challengeSubmitDao.answer(challengeSubmit.getId(), content);
         if(result) {
-            practicePlanDao.complete(challengeSubmit.getId(), challengeSubmit.getPlanId(), PracticePlan.CHALLENGE);
-            pointRepo.risePoint(challengeSubmit.getPlanId(), PointRepo.CHALLENGE_PRACTICE_SCORE);
+            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(challengeSubmit.getPlanId(),
+                    challengeSubmit.getChallengeId(), PracticePlan.CHALLENGE);
+            if(practicePlan!=null && practicePlan.getStatus() == 0){
+                practicePlanDao.complete(practicePlan.getId());
+                improvementPlanDao.updateComplete(challengeSubmit.getPlanId());
+                pointRepo.risePoint(challengeSubmit.getPlanId(), PointRepo.CHALLENGE_PRACTICE_SCORE);
+            }
         }
         return result;
     }

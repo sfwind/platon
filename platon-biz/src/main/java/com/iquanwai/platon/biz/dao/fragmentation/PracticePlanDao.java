@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.PracticePlan;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +62,27 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public void complete(Integer planId, Integer practiceId, Integer type){
+    public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";
+        try {
+            PracticePlan practicePlan = run.query(sql, h,
+                    planId, practiceId, type);
+            return practicePlan;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
+    public void complete(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "update PracticePlan set Status=1 where PlanId=? and PracticeId=? and Type=?";
+        String sql = "update PracticePlan set Status=1 where Id=?";
         try {
-            asyncRun.update(sql, planId, practiceId, type);
+            asyncRun.update(sql, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

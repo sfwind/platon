@@ -25,8 +25,7 @@ public class ChallengePracticeDao extends PracticeDBUtil {
         ResultSetHandler<List<ChallengePractice>> h = new BeanListHandler(ChallengePractice.class);
         String sql = "SELECT * FROM ChallengePractice where ProblemId=?";
         try {
-            List<ChallengePractice> challengePractices = run.query(sql, h, problemId);
-            return challengePractices;
+            return run.query(sql, h, problemId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

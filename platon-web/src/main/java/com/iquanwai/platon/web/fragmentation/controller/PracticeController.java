@@ -73,7 +73,7 @@ public class PracticeController {
                 return WebUtils.result("您还没有制定训练计划哦");
             }
             WarmupResult warmupResult = practiceService.answerWarmupPractice(
-                    warmupPracticeDto.getPractice(), improvementPlan.getId());
+                    warmupPracticeDto.getPractice(), improvementPlan.getId(), loginUser.getOpenId());
 
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")

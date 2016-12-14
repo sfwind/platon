@@ -43,8 +43,7 @@ public class ChallengeSubmitDao extends PracticeDBUtil{
         ResultSetHandler<ChallengeSubmit> h = new BeanHandler(ChallengeSubmit.class);
         String sql = "SELECT * FROM ChallengeSubmit where Openid=? and ChallengeId=? and PlanId=?";
         try {
-            ChallengeSubmit challengeSubmit = run.query(sql, h, openid, challengeId, planId);
-            return challengeSubmit;
+            return run.query(sql, h, openid, challengeId, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -57,8 +56,7 @@ public class ChallengeSubmitDao extends PracticeDBUtil{
         ResultSetHandler<ChallengeSubmit> h = new BeanHandler(ChallengeSubmit.class);
         String sql = "SELECT * FROM ChallengeSubmit where SubmitUrl=?";
         try {
-            ChallengeSubmit challengeSubmit = run.query(sql, h, submitUrl);
-            return challengeSubmit;
+            return run.query(sql, h, submitUrl);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
