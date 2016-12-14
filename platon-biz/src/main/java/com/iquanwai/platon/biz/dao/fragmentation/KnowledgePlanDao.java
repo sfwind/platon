@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.KnowledgePlan;
-import com.iquanwai.platon.biz.po.PracticePlan;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -24,9 +23,9 @@ public class KnowledgePlanDao extends PracticeDBUtil {
 
     public KnowledgePlan getKnowledgePlan(Integer planId, Integer knowledgeId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from KnowledgePlan where Plan=? and KnowledgeId=?";
+        String sql = "select * from KnowledgePlan where PlanId=? and KnowledgeId=?";
         try {
-            ResultSetHandler<KnowledgePlan> h = new BeanHandler(PracticePlan.class);
+            ResultSetHandler<KnowledgePlan> h = new BeanHandler(KnowledgePlan.class);
             KnowledgePlan knowledgePlan = runner.query(sql, h, planId, knowledgeId);
             return knowledgePlan;
         }catch (SQLException e) {
@@ -36,26 +35,13 @@ public class KnowledgePlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public void appear(Integer planId, Integer knowledgeId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        try {
-            String sql = "update KnowledgePlan set Appear=1 where PlanId=? and KnowledgeId=?";
-
-            asyncRun.update(sql, planId, knowledgeId);
-        }catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
     public void insert(KnowledgePlan knowledgePlan){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         try {
             String sql = "insert into KnowledgePlan(planId, knowledgeId, Appear) " +
                     "values(?,?,?)";
 
-            asyncRun.insert(sql, new ScalarHandler<>(),knowledgePlan.getPlanId(),
+            runner.insert(sql, new ScalarHandler<>(),knowledgePlan.getPlanId(),
                     knowledgePlan.getKnowledgeId(), knowledgePlan.getAppear());
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

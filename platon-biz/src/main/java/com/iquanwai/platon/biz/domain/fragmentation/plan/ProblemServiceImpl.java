@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemListDao;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemList;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<Problem> loadProblems() {
-        if(problems.isEmpty()) {
+        if(CollectionUtils.isEmpty(problems)) {
             problems = problemDao.loadAll(Problem.class);
         }
         return problems;
@@ -49,15 +50,25 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public String getProblemContent(Integer problemId) {
-        if(problems==null){
+        Problem problem = getProblem(problemId);
+        if(problem!=null){
+            return problem.getProblem();
+        }
+        return null;
+    }
+
+    @Override
+    public Problem getProblem(Integer problemId) {
+        if(CollectionUtils.isEmpty(problems)){
             problems = loadProblems();
         }
 
         for(Problem problem:problems){
             if(problem.getId()==problemId){
-                return problem.getProblem();
+                return problem;
             }
         }
+
         return null;
     }
 }

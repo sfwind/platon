@@ -9,12 +9,6 @@ import java.util.List;
  * Created by justin on 16/12/4.
  */
 public interface PlanService {
-    /**
-    * 为学员生成训练计划
-    *  @param openid 学员id
-    *  @param problemId 问题id
-    * */
-    Integer generatePlan(String openid, Integer problemId);
 
     /**
      * 获取详细的训练计划
@@ -58,6 +52,4 @@ public interface PlanService {
      */
     void completePlan(Integer planId);
 
-    // 热身训练每个任务的题量
-    int WARMUP_TASK_PRACTICE_NUMBER = 3;
 }

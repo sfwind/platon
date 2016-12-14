@@ -3,10 +3,13 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,8 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private ChallengePracticeDao challengePracticeDao;
     @Autowired
+    private WarmupSubmitDao warmupSubmitDao;
+    @Autowired
     private ChallengeSubmitDao challengeSubmitDao;
     @Autowired
     private PracticePlanDao practicePlanDao;
@@ -38,6 +43,8 @@ public class PracticeServiceImpl implements PracticeService {
     private ChoiceDao choiceDao;
     @Autowired
     private RestfulHelper restfulHelper;
+    @Autowired
+    private PointRepo pointRepo;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -72,25 +79,36 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId) {
+    public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) {
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
-        Integer score = 0;
-        warmupPracticeList.stream().forEach(userAnswer->{
+        Integer point = 0;
+        for(WarmupPractice userAnswer:warmupPracticeList){
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = warmupPracticeMap.get(userAnswer.getId());
             if(practice==null){
                 logger.error("practice {} is not existed", userAnswer.getId());
-                return;
+                continue;
             }
-            List<Choice> choices = practice.getChoiceList();
-            for(Choice choice:choices){
+            Pair<Integer,Boolean> ret = pointRepo.warmupScore(practice, userChoice);
+            Integer score = ret.getLeft();
+            point +=score;
+            //生成提交记录
+            WarmupSubmit warmupSubmit = new WarmupSubmit();
+            warmupSubmit.setContent(StringUtils.join(userChoice, ","));
+            warmupSubmit.setPlanId(planId);
+            warmupSubmit.setQuestionId(practice.getId());
+            warmupSubmit.setIsRight(ret.getRight());
+            warmupSubmit.setScore(score);
+            warmupSubmit.setOpenid(openid);
+            warmupSubmitDao.insert(warmupSubmit);
 
-            }
-        });
+            practicePlanDao.complete(practice.getId(), planId, practice.getType());
+        };
 
+        pointRepo.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
-        warmupResult.setPoint(score);
+        warmupResult.setPoint(point);
 
         return warmupResult;
     }
@@ -99,7 +117,7 @@ public class PracticeServiceImpl implements PracticeService {
     public ApplicationPractice getApplicationPractice(Integer id, Integer planId) {
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         //打开即完成
-        practicePlanDao.complete(applicationPractice.getId(), planId);
+        practicePlanDao.complete(applicationPractice.getId(), planId, PracticePlan.APPLICATION);
         return applicationPractice;
     }
 
@@ -123,6 +141,7 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setOpenid(openid);
             submit.setPlanId(planId);
             submit.setSubmitUrl(url);
+            submit.setChallengeId(id);
             if(shortUrl.equals(ConfigUtils.domainName()+url)){
                 challengeSubmitDao.insert(submit);
             }else {
@@ -175,7 +194,8 @@ public class PracticeServiceImpl implements PracticeService {
         }
         boolean result = challengeSubmitDao.answer(challengeSubmit.getId(), content);
         if(result) {
-            practicePlanDao.complete(challengeSubmit.getId(), challengeSubmit.getPlanId());
+            practicePlanDao.complete(challengeSubmit.getId(), challengeSubmit.getPlanId(), PracticePlan.CHALLENGE);
+            pointRepo.risePoint(challengeSubmit.getPlanId(), PointRepo.CHALLENGE_PRACTICE_SCORE);
         }
         return result;
     }

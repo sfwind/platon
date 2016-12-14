@@ -21,7 +21,7 @@ public interface PracticeService {
      * @param warmupPracticeList 练习答案
      * @param planId 训练id
      * */
-    WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId);
+    WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid);
 
     /**
      * 获取应用训练

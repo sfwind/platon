@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -32,6 +33,8 @@ public class PlanController {
     @Autowired
     private PlanService planService;
     @Autowired
+    private GeneratePlanService generatePlanService;
+    @Autowired
     private OperationLogService operationLogService;
 
     @RequestMapping("/choose/problem/{problemId}")
@@ -40,7 +43,7 @@ public class PlanController {
 
         try{
             Assert.notNull(loginUser, "用户不能为空");
-            Integer planId = planService.generatePlan(loginUser.getOpenId(), problemId);
+            Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), problemId);
 
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("问题")

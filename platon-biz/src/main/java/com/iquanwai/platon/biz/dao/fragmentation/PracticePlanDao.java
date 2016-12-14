@@ -24,13 +24,13 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void batchInsert(List<PracticePlan> planList){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence) " +
-                "values(?,?,?,?,?,?,?)";
+        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence, Series) " +
+                "values(?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[planList.size()][];
             for (int i = 0; i < planList.size(); i++) {
                 PracticePlan practicePlan = planList.get(i);
-                param[i] = new Object[7];
+                param[i] = new Object[8];
                 param[i][0] = practicePlan.getPracticeId();
                 param[i][1] = practicePlan.getPlanId();
                 param[i][2] = practicePlan.getType();
@@ -38,6 +38,7 @@ public class PracticePlanDao extends PracticeDBUtil {
                 param[i][4] = practicePlan.getStatus();
                 param[i][5] = practicePlan.getKnowledgeId();
                 param[i][6] = practicePlan.getSequence();
+                param[i][7] = practicePlan.getSeries();
             }
             runner.batch(sql, param);
         }catch (SQLException e) {
@@ -48,7 +49,7 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadPracticePlan(Integer planId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? Order by Sequence";
+        String sql = "SELECT * FROM PracticePlan where PlanId=? Order by Series";
         try {
             List<PracticePlan> practicePlans = run.query(sql, h,
                     planId);
@@ -60,23 +61,23 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public void complete(Integer planId, Integer practiceId){
+    public void complete(Integer planId, Integer practiceId, Integer type){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "update PracticePlan set Status=1 where PlanId=? and PracticeId=?";
+        String sql = "update PracticePlan set Status=1 where PlanId=? and PracticeId=? and Type=?";
         try {
-            asyncRun.update(sql, planId, practiceId);
+            asyncRun.update(sql, planId, practiceId, type);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public void unlock(Integer planId, Integer practiceId){
+    public void unlock(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "update PracticePlan set Lock=0 where PlanId=? and PracticeId=?";
+        String sql = "update PracticePlan set UnLocked=1 where Id=?";
         try {
-            asyncRun.update(sql, planId, practiceId);
+            asyncRun.update(sql, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

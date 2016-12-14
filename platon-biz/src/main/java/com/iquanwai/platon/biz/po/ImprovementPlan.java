@@ -18,10 +18,12 @@ public class ImprovementPlan {
     private Date endDate; //结束日期
     private Date closeDate; //课程关闭时间
     private Integer status; //执行状态（1-正在进行，2-已结束）
-    private Integer score; //积分
+    private Integer point; //积分
     private Integer complete; //完成训练个数
     private Integer total; //任务总数
     private Integer keycnt; //钥匙数量
     private Problem problem; //非db字段 问题
     private List<Practice> practice; //非db字段
+    private Integer length; //非db字段 总时长
+    private Integer deadline; //非db字段 离截止日期天数
 }

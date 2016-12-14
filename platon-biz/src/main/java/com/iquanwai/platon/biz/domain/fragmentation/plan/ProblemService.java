@@ -32,4 +32,10 @@ public interface ProblemService {
      * @param problemId 问题id
      * */
     String getProblemContent(Integer problemId);
+
+    /**
+     * 根据问题id获取问题
+     * @param problemId 问题id
+     * */
+    Problem getProblem(Integer problemId);
 }

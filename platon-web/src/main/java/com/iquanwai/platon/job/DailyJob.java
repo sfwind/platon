@@ -32,6 +32,7 @@ public class DailyJob {
         List<ImprovementPlan> improvementPlanList = planService.loadAllRunningPlan();
         improvementPlanList.stream().forEach(improvementPlan -> {
             Date date = DateUtils.afterDays(improvementPlan.getCloseDate(), 1);
+            //过期自动结束训练
             if(date.before(new Date())){
                 planService.completePlan(improvementPlan.getId());
             }else{

@@ -99,4 +99,21 @@ public class ProblemController {
             return WebUtils.error("选取问题失败");
         }
     }
+
+    @RequestMapping("/get/{problemId}")
+    public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){
+        try{
+            Assert.notNull(loginUser, "用户不能为空");
+            Problem problem = problemService.getProblem(problemId);
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("问题")
+                    .function("阅读问题报告")
+                    .action("打开问题报告页");
+            operationLogService.log(operationLog);
+            return WebUtils.result(problem);
+        }catch (Exception e){
+            LOGGER.error("选取问题失败, "+loginUser.getWeixinName(), e);
+            return WebUtils.error("选取问题失败");
+        }
+    }
 }

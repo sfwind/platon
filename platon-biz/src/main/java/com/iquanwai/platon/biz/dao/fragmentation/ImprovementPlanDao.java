@@ -29,13 +29,13 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     public int insert(ImprovementPlan plan){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into ImprovementPlan(Openid, Complete, Status, EndDate, " +
-                "StartDate, CloseDate, Score, Total, ProblemId, Keycnt) " +
+                "StartDate, CloseDate, Point, Total, ProblemId, Keycnt) " +
                 "values(?,?,?,?,?,?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     plan.getOpenid(), plan.getComplete(), plan.getStatus(),
                     plan.getEndDate(), plan.getStartDate(), plan.getCloseDate(),
-                    plan.getScore(), plan.getTotal(),
+                    plan.getPoint(), plan.getTotal(),
                     plan.getProblemId(), plan.getKeycnt());
             return insertRs.intValue();
         }catch (SQLException e) {
@@ -88,6 +88,17 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "UPDATE ImprovementPlan SET Keycnt =? where Id=?";
         try {
             asyncRun.update(sql, key, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void updatePoint(Integer planId, Integer point){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        String sql = "UPDATE ImprovementPlan SET Point =? where Id=?";
+        try {
+            asyncRun.update(sql, point, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
