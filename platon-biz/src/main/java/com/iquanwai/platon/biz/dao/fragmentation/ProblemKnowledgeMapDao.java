@@ -25,9 +25,8 @@ public class ProblemKnowledgeMapDao extends PracticeDBUtil {
         ResultSetHandler<List<ProblemKnowledgeMap>> h = new BeanListHandler(ProblemKnowledgeMap.class);
         String sql = "SELECT * FROM ProblemKnowledgeMap where ProblemId=?";
         try {
-            List<ProblemKnowledgeMap> problemKnowledgeMaps = run.query(sql, h,
+            return run.query(sql, h,
                     problemId);
-            return problemKnowledgeMaps;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

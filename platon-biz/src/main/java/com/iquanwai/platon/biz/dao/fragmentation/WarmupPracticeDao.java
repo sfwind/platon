@@ -25,8 +25,7 @@ public class WarmupPracticeDao extends PracticeDBUtil {
         ResultSetHandler<List<WarmupPractice>> h = new BeanListHandler(WarmupPractice.class);
         String sql = "SELECT * FROM WarmupPractice where KnowledgeId=?";
         try {
-            List<WarmupPractice> warmupPractices = run.query(sql, h, knowledgeId);
-            return warmupPractices;
+            return run.query(sql, h, knowledgeId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

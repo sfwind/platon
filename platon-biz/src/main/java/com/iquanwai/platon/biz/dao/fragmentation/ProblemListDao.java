@@ -46,8 +46,7 @@ public class ProblemListDao extends PracticeDBUtil{
         ResultSetHandler<List<ProblemList>> h = new BeanListHandler(ProblemList.class);
         String sql = "SELECT * FROM ProblemList where Openid=? and Status=0";
         try {
-            List<ProblemList> problemLists = run.query(sql, h, openid);
-            return problemLists;
+            return run.query(sql, h, openid);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
