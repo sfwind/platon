@@ -33,47 +33,37 @@ public class PCChallengeController {
 
     @RequestMapping("/start/{code}")
     public ResponseEntity<Map<String, Object>> loadChallenge(LoginUser loginUser,
-                                                          @PathVariable String code){
+                                                             @PathVariable String code){
 
-        try{
-            Assert.notNull(loginUser, "用户不能为空");
-            ChallengePractice challengePractice = practiceService.getChallengePractice(code);
+        Assert.notNull(loginUser, "用户不能为空");
+        ChallengePractice challengePractice = practiceService.getChallengePractice(code);
 
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("训练")
-                    .function("挑战训练")
-                    .action("打开PC挑战训练页")
-                    .memo(code);
-            operationLogService.log(operationLog);
-            return WebUtils.result(challengePractice);
-        }catch (Exception e){
-            LOGGER.error("获取挑战训练失败, "+loginUser.getWeixinName(), e);
-            return WebUtils.error("获取挑战训练失败");
-        }
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("挑战训练")
+                .action("打开PC挑战训练页")
+                .memo(code);
+        operationLogService.log(operationLog);
+        return WebUtils.result(challengePractice);
     }
 
     @RequestMapping("/submit/{code}")
     public ResponseEntity<Map<String, Object>> submit(LoginUser loginUser,
-                                                          @PathVariable String code,
-                                                          @RequestBody ChallengeSubmitDto challengeSubmitDto){
+                                                      @PathVariable String code,
+                                                      @RequestBody ChallengeSubmitDto challengeSubmitDto){
 
-        try{
-            Assert.notNull(loginUser, "用户不能为空");
-            Boolean result = practiceService.submit(code, challengeSubmitDto.getAnswer());
+        Assert.notNull(loginUser, "用户不能为空");
+        Boolean result = practiceService.submit(code, challengeSubmitDto.getAnswer());
 
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("训练")
-                    .function("挑战训练")
-                    .action("提交挑战训练答案")
-                    .memo(code);
-            operationLogService.log(operationLog);
-            if(result) {
-                return WebUtils.success();
-            }else{
-                return WebUtils.error("提交失败");
-            }
-        }catch (Exception e){
-            LOGGER.error("提交挑战训练失败, "+loginUser.getWeixinName(), e);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("挑战训练")
+                .action("提交挑战训练答案")
+                .memo(code);
+        operationLogService.log(operationLog);
+        if(result) {
+            return WebUtils.success();
+        }else{
             return WebUtils.error("提交失败");
         }
     }

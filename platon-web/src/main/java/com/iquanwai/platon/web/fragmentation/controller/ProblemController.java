@@ -35,85 +35,65 @@ public class ProblemController {
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser){
-        try{
-            Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(loginUser, "用户不能为空");
 
-            List<Problem> problemList = problemService.loadProblems();
-            ProblemDto problemDto = new ProblemDto();
-            problemDto.setName(loginUser.getWeixinName());
-            problemDto.setProblemList(problemList);
+        List<Problem> problemList = problemService.loadProblems();
+        ProblemDto problemDto = new ProblemDto();
+        problemDto.setName(loginUser.getWeixinName());
+        problemDto.setProblemList(problemList);
 
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("问题")
-                    .function("加载问题")
-                    .action("打开测评页");
-            operationLogService.log(operationLog);
-            return WebUtils.result(problemDto);
-        }catch (Exception e){
-            LOGGER.error("获取所有问题失败, "+loginUser.getWeixinName(), e);
-            return WebUtils.error("获取问题失败");
-        }
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("加载问题")
+                .action("打开测评页");
+        operationLogService.log(operationLog);
+        return WebUtils.result(problemDto);
     }
 
     @RequestMapping(value = "/select", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> selectProblems(LoginUser loginUser,
                                                               @RequestBody ProblemIdListDto problemIdListDto){
-        try{
-            Assert.notNull(loginUser, "用户不能为空");
-            problemService.saveProblems(problemIdListDto.getProblemIdList(), loginUser.getOpenId());
+        Assert.notNull(loginUser, "用户不能为空");
+        problemService.saveProblems(problemIdListDto.getProblemIdList(), loginUser.getOpenId());
 
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("问题")
-                    .function("选择问题")
-                    .action("选择问题")
-                    .memo(StringUtils.join(problemIdListDto.getProblemIdList(),","));
-            operationLogService.log(operationLog);
-            return WebUtils.success();
-        }catch (Exception e){
-            LOGGER.error("选取问题失败, "+loginUser.getWeixinName(), e);
-            return WebUtils.error("选取问题失败");
-        }
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("选择问题")
+                .action("选择问题")
+                .memo(StringUtils.join(problemIdListDto.getProblemIdList(),","));
+        operationLogService.log(operationLog);
+        return WebUtils.success();
     }
 
     @RequestMapping("/load/mine")
     public ResponseEntity<Map<String, Object>> loadMyProblems(LoginUser loginUser){
-        try{
-            Assert.notNull(loginUser, "用户不能为空");
-            List<ProblemList> problemLists = problemService.loadProblems(loginUser.getOpenId());
-            problemLists.stream().forEach(problemList -> {
-                String problem = problemService.getProblemContent(problemList.getProblemId());
-                problemList.setProblem(problem);
-                //openid置为0
-                problemList.setOpenid(null);
-            });
-            ProblemListDto problemListDto = new ProblemListDto();
-            problemListDto.setProblemList(problemLists);
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("问题")
-                    .function("选择我的问题")
-                    .action("选择待解决问题页");
-            operationLogService.log(operationLog);
-            return WebUtils.result(problemListDto);
-        }catch (Exception e){
-            LOGGER.error("选取问题失败, "+loginUser.getWeixinName(), e);
-            return WebUtils.error("选取问题失败");
-        }
+        Assert.notNull(loginUser, "用户不能为空");
+        List<ProblemList> problemLists = problemService.loadProblems(loginUser.getOpenId());
+        problemLists.stream().forEach(problemList -> {
+            String problem = problemService.getProblemContent(problemList.getProblemId());
+            problemList.setProblem(problem);
+            //openid置为0
+            problemList.setOpenid(null);
+        });
+        ProblemListDto problemListDto = new ProblemListDto();
+        problemListDto.setProblemList(problemLists);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("选择我的问题")
+                .action("选择待解决问题页");
+        operationLogService.log(operationLog);
+        return WebUtils.result(problemListDto);
     }
 
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){
-        try{
-            Assert.notNull(loginUser, "用户不能为空");
-            Problem problem = problemService.getProblem(problemId);
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("问题")
-                    .function("阅读问题报告")
-                    .action("打开问题报告页");
-            operationLogService.log(operationLog);
-            return WebUtils.result(problem);
-        }catch (Exception e){
-            LOGGER.error("选取问题失败, "+loginUser.getWeixinName(), e);
-            return WebUtils.error("选取问题失败");
-        }
+        Assert.notNull(loginUser, "用户不能为空");
+        Problem problem = problemService.getProblem(problemId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("阅读问题报告")
+                .action("打开问题报告页");
+        operationLogService.log(operationLog);
+        return WebUtils.result(problem);
     }
 }
