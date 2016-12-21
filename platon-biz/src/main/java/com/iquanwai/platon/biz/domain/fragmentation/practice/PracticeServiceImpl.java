@@ -74,9 +74,12 @@ public class PracticeServiceImpl implements PracticeService {
         logger.info("warmup practice init complete");
     }
 
-    public List<WarmupPractice> getWarmupPractice(List<Integer> idList){
+    public List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
-        idList.forEach(id -> warmupPractices.add(warmupPracticeMap.get(id)));
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlans(planId, series, sequence);
+        practicePlans.forEach(practicePlan -> {
+            warmupPractices.add(warmupPracticeMap.get(practicePlan.getPracticeId()));
+        });
         return warmupPractices;
     }
 

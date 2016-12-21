@@ -12,9 +12,11 @@ import java.util.List;
 public interface PracticeService {
     /**
      * 获取热身训练列表
-     * @param idList 热身训练id列表
+     * @param planId 训练id
+     * @param series 训练组编号
+     * @param sequence 组内顺序
      * */
-    List<WarmupPractice> getWarmupPractice(List<Integer> idList);
+    List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence);
 
     /**
      * 回答热身训练问题

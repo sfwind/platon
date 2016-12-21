@@ -7,9 +7,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.resolver.LoginUser;
 import com.iquanwai.platon.util.WebUtils;
-import com.iquanwai.platon.web.fragmentation.dto.PracticeIdListDto;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +33,10 @@ public class PracticeController {
     @Autowired
     private OperationLogService operationLogService;
 
-    @RequestMapping(value = "/warmup/start/", method = RequestMethod.POST)
+    @RequestMapping("/warmup/start/{series}/{sequence}")
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
-                                                           @RequestBody PracticeIdListDto practiceIdListDto){
+                                                           @PathVariable Integer series,
+                                                           @PathVariable Integer sequence){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
         if(improvementPlan==null){
@@ -45,14 +44,13 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                practiceIdListDto.getPracticeIdList());
+                improvementPlan.getId(), series, sequence);
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("热身训练")
-                .action("打开热身训练页")
-                .memo(StringUtils.join(practiceIdListDto.getPracticeIdList(), ","));
+                .action("打开热身训练页");
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
     }

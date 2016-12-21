@@ -15,4 +15,6 @@ public class Practice {
     private Integer status;
     private Boolean unlock;
     private List<Integer> practiceIdList;
+    private Integer series;
+    private Integer sequence;
 }

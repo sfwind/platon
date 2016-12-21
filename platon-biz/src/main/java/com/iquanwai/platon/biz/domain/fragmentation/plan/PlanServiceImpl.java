@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,10 +79,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private void buildPractice(Practice practice, PracticePlan practicePlan) {
-        practice.setStatus(practicePlan.getStatus());
-        practice.setUnlock(practicePlan.getUnlocked());
-        practice.getPracticeIdList().add(practicePlan.getPracticeId());
-        practice.setType(practicePlan.getType());
+        ModelMapper mapper = new ModelMapper();
+        mapper.map(practicePlan, practice);
         Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
         practice.setKnowledge(knowledge);
     }
