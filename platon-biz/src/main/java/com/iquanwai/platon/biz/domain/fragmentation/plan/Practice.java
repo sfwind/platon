@@ -13,7 +13,7 @@ public class Practice {
     private Knowledge knowledge;
     private Integer type;
     private Integer status;
-    private Boolean unlock;
+    private Boolean unlocked;
     private List<Integer> practiceIdList;
     private Integer series;
     private Integer sequence;

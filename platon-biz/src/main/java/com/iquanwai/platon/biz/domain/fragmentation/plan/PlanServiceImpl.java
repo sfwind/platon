@@ -81,6 +81,7 @@ public class PlanServiceImpl implements PlanService {
     private void buildPractice(Practice practice, PracticePlan practicePlan) {
         ModelMapper mapper = new ModelMapper();
         mapper.map(practicePlan, practice);
+        practice.getPracticeIdList().add(practicePlan.getPracticeId());
         Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
         practice.setKnowledge(knowledge);
     }
