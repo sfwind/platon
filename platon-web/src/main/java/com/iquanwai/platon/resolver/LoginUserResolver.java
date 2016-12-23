@@ -47,8 +47,11 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         //前端调试开启时，返回mock user
         if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
-            if(request.getParameter("debug").equals())
-            return LoginUser.defaultUser();
+            if(request.getParameter("debug").equalsIgnoreCase("true")) {
+                return LoginUser.defaultUser();
+            }else{
+                return getLoginUser(request.getParameter("debug"));
+            }
         }
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         if(loginUserMap.containsKey(accessToken)){
