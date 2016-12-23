@@ -23,7 +23,7 @@ import java.util.Map;
  * 各类训练相关的请求处理类
  */
 @RestController
-@RequestMapping("/fragment/practice")
+@RequestMapping("/practice")
 public class PracticeController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Autowired

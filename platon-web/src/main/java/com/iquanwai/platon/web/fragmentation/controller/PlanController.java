@@ -27,7 +27,7 @@ import java.util.Map;
  * 训练计划相关的请求处理类
  */
 @RestController
-@RequestMapping("/fragment/plan")
+@RequestMapping("/plan")
 public class PlanController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Autowired

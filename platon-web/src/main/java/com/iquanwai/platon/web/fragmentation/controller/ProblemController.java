@@ -25,7 +25,7 @@ import java.util.Map;
  * Created by justin on 16/12/8.
  */
 @RestController
-@RequestMapping("/fragment/problem")
+@RequestMapping("/problem")
 public class ProblemController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Autowired
