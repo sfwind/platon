@@ -33,8 +33,7 @@ public class IndexController {
 
     @RequestMapping(value = "/fragment/plan/main",method = RequestMethod.GET)
     public ModelAndView getCertificateIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        if(!checkAccessToken(accessToken)){
+        if(!checkAccessToken(request)){
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
@@ -42,8 +41,14 @@ public class IndexController {
         return courseView(request);
     }
 
-    private boolean checkAccessToken(String accessToken){
+    private boolean checkAccessToken(HttpServletRequest request){
+        if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
+            return true;
+        }
+
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openId = oAuthService.openId(accessToken);
+
         if(StringUtils.isEmpty(openId)){
             return false;
         }
