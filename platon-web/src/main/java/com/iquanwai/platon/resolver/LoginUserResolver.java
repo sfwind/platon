@@ -45,11 +45,13 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return LoginUser.defaultUser();
         }
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        //前端调试开启时，返回mock user
+
         if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
+            //前端调试开启时，如果debug=true,返回mockuser
             if(request.getParameter("debug").equalsIgnoreCase("true")) {
                 return LoginUser.defaultUser();
             }else{
+                //返回模拟的openid user
                 return getLoginUser(request.getParameter("debug"));
             }
         }

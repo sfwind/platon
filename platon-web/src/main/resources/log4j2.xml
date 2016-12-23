@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 <Appenders>
-	<File name="appAppender" fileName="/data/applogs/platon-web/logs/app.log" append="false">
+	<File name="appAppender" fileName="/data/applogs/platon-web/logs/app.log" append="true">
 		<PatternLayout pattern="[platon-web]%d %-5p [%c] %m%n"/>
 	</File>
 	<Console name="STDOUT" target="SYSTEM_OUT">
@@ -9,11 +9,9 @@
 	</Console>
 </Appenders>
 <Loggers>
-	<Logger name="org.apache.log4j.xml" level="debug">
-		<AppenderRef ref="appAppender"/>
-	</Logger>
 	<Root level="debug">
 		<AppenderRef ref="STDOUT"/>
+		<AppenderRef ref="appAppender"/>
 	</Root>
 </Loggers>
 </Configuration>

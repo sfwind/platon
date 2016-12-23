@@ -112,6 +112,12 @@
                 <version>2.7</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.21</version>
+            </dependency>
+
             <!-- test -->
             <dependency>
                 <groupId>org.springframework</groupId>

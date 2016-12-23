@@ -24,7 +24,6 @@ public class ProblemListDao extends PracticeDBUtil{
 
     public void saveProblems(List<ProblemList> problemListList){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "insert into ProblemList(Openid, ProblemId, Status) " +
                 "values(?,?,0)";
         try {
@@ -35,7 +34,7 @@ public class ProblemListDao extends PracticeDBUtil{
                 param[i][0] = problemList.getOpenid();
                 param[i][1] = problemList.getProblemId();
             }
-            asyncRun.batch(sql, param);
+            runner.batch(sql, param);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
