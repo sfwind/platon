@@ -150,34 +150,34 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private List<ApplicationPractice> selectApplication(List<ApplicationPractice> practices, Integer count) {
-        List<ApplicationPractice> applicationPractices = Lists.newArrayList();
-        List<ApplicationPractice> easyPractice = Lists.newArrayList();
-        List<ApplicationPractice> normalPractice = Lists.newArrayList();
-        List<ApplicationPractice> hardPractice = Lists.newArrayList();
-
-        float cnt = count/3;
-        int easyCount = Math.round(cnt);
-        int normalCount = Math.round(cnt);
-        int hardCount = count-easyCount-normalCount;
-        //按难度拆分题库
-        practices.stream().forEach(practice->{
-            if(practice.getDifficulty()==EASY){
-                easyPractice.add(practice);
-            }else if(practice.getDifficulty()==NORMAL){
-                normalPractice.add(practice);
-            }else if(practice.getDifficulty()==HARD){
-                hardPractice.add(practice);
-            }
-        });
+//        List<ApplicationPractice> applicationPractices = Lists.newArrayList();
+//        List<ApplicationPractice> easyPractice = Lists.newArrayList();
+//        List<ApplicationPractice> normalPractice = Lists.newArrayList();
+//        List<ApplicationPractice> hardPractice = Lists.newArrayList();
+//
+//        float cnt = count/3;
+//        int easyCount = Math.round(cnt);
+//        int normalCount = Math.round(cnt);
+//        int hardCount = count-easyCount-normalCount;
+//        //按难度拆分题库
+//        practices.stream().forEach(practice->{
+//            if(practice.getDifficulty()==EASY){
+//                easyPractice.add(practice);
+//            }else if(practice.getDifficulty()==NORMAL){
+//                normalPractice.add(practice);
+//            }else if(practice.getDifficulty()==HARD){
+//                hardPractice.add(practice);
+//            }
+//        });
 
         //easy题目
-        applicationPractices.addAll(randomSelect(easyPractice, easyCount));
+//        applicationPractices.addAll(randomSelect(easyPractice, easyCount));
         //normal题目
-        applicationPractices.addAll(randomSelect(normalPractice, normalCount));
+//        applicationPractices.addAll(randomSelect(normalPractice, normalCount));
         //hard题目
-        applicationPractices.addAll(randomSelect(hardPractice, hardCount));
+//        applicationPractices.addAll(randomSelect(hardPractice, hardCount));
 
-        return applicationPractices;
+        return randomSelect(practices, count);
     }
 
     private List<PracticePlan> createWarmupPractice(Problem problem, Integer planId) {
@@ -269,7 +269,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         float cnt = count/3;
         int easyCount = Math.round(cnt);
         int normalCount = Math.round(cnt);
-        int hardCount = count-easyCount-normalCount;
         //按难度拆分题库
         practices.stream().forEach(practice -> {
             if (practice.getDifficulty() == EASY) {
@@ -282,16 +281,22 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         });
 
         //easy题目
-        warmupPractices.addAll(randomSelect(easyPractice, easyCount));
+        List easyList = randomSelect(easyPractice, easyCount);
+        warmupPractices.addAll(easyList);
         //normal题目
-        warmupPractices.addAll(randomSelect(normalPractice, normalCount));
+        List normalList = randomSelect(easyPractice, normalCount);
+        warmupPractices.addAll(normalList);
         //hard题目
-        warmupPractices.addAll(randomSelect(hardPractice, hardCount));
+        List hardList = randomSelect(easyPractice, count-normalList.size()-easyList.size());
+        warmupPractices.addAll(hardList);
 
         return warmupPractices;
     }
 
     private List randomSelect(List list, int count) {
+        if(list.size()<=count){
+            return list;
+        }
         List selected = Lists.newArrayList();
         for(int i=0;i<count;i++) {
             int id;
