@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
@@ -117,5 +119,56 @@ public class PracticeController {
         return WebUtils.result(challengePractice);
     }
 
+    @RequestMapping("/warmup/analysis/{series}/{sequence}")
+    public ResponseEntity<Map<String, Object>> analysisWarmup(LoginUser loginUser,
+                                                           @PathVariable Integer series,
+                                                           @PathVariable Integer sequence){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
+                improvementPlan.getId(), series, sequence);
+        List<Integer> questionIds = warmupPracticeList.stream().map(warmupPractice -> warmupPractice.getId()).collect(Collectors.toList());
+        // 获取用户提交
+        List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);
+        setUserChoices(warmupPracticeList, submits);
+        WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
+        warmupPracticeDto.setPractice(warmupPracticeList);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("热身训练")
+                .action("打开热身训练页");
+        operationLogService.log(operationLog);
+        return WebUtils.result(warmupPracticeDto);
+    }
+
+    //根据用户提交记录匹配题目选项
+    private void setUserChoices(List<WarmupPractice> warmupPracticeList, List<WarmupSubmit> submits) {
+        for(WarmupSubmit warmupSubmit:submits){
+            for(WarmupPractice warmupPractice:warmupPracticeList){
+                if(warmupPractice.getId()==warmupSubmit.getQuestionId()){
+                    String[] choices = warmupSubmit.getContent().split(",");
+                    List<Integer> choiceIds = Lists.newArrayList();
+                    for(String choice:choices){
+                        try {
+                            choiceIds.add(Integer.parseInt(choice));
+                        }catch (NumberFormatException e){
+                            LOGGER.error("No.{} warmup submit is invalid", warmupSubmit.getId());
+                        }
+                    }
+                    warmupPractice.getChoiceList().stream().forEach(choice -> {
+                        if(choiceIds.contains(choice.getId())){
+                            choice.setSelected(true);
+                        }else{
+                            choice.setSelected(false);
+                        }
+                    });
+                }
+            }
+        }
+    }
 
 }

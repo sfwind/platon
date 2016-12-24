@@ -298,13 +298,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             return list;
         }
         List selected = Lists.newArrayList();
+        List<Integer> selectedIds = Lists.newArrayList();
         for(int i=0;i<count;i++) {
             int id;
             do{
                 id=new Random().nextInt(list.size());
-            }while (selected.contains(list.get(id)));
+            }while (selectedIds.contains(id));
 
             selected.add(list.get(id));
+            selectedIds.add(id);
         }
         return selected;
     }

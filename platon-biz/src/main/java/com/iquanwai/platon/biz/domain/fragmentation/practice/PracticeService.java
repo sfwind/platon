@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupSubmit;
 
 import java.util.List;
 
@@ -18,6 +19,12 @@ public interface PracticeService {
      * */
     List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence);
 
+    /**
+     * 获取热身训练解析
+     * @param planId 训练id
+     * @param questionIds 练习编号
+     * */
+    List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds);
     /**
      * 回答热身训练问题
      * @param warmupPracticeList 练习答案

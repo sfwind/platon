@@ -84,6 +84,11 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
+    public List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds) {
+        return warmupSubmitDao.getWarmupSubmit(planId, questionIds);
+    }
+
+    @Override
     public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) {
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;

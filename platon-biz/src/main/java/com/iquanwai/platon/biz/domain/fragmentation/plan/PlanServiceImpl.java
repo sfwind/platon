@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.DateUtils;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,11 +78,17 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private void buildPractice(Practice practice, PracticePlan practicePlan) {
-        ModelMapper mapper = new ModelMapper();
-        mapper.map(practicePlan, practice);
+        //不能用modelmapper
+        practice.setStatus(practicePlan.getStatus());
+        practice.setUnlocked(practicePlan.getUnlocked());
+        practice.setSeries(practicePlan.getSeries());
+        practice.setSequence(practicePlan.getSequence());
         practice.getPracticeIdList().add(practicePlan.getPracticeId());
-        Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
-        practice.setKnowledge(knowledge);
+        practice.setType(practicePlan.getType());
+        if(practice.getKnowledge()==null) {
+            Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
+            practice.setKnowledge(knowledge);
+        }
     }
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
@@ -182,6 +187,11 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public void completePlan(Integer planId) {
         //训练计划结束
-        improvementPlanDao.updateStatus(planId, 2);
+        ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        if(plan.getComplete()>=plan.getTotal()) {
+            improvementPlanDao.updateStatus(planId, 2);
+        }else{
+            improvementPlanDao.updateStatus(planId, 3);
+        }
     }
 }
