@@ -9,4 +9,5 @@ import lombok.Data;
 public class WarmupResult {
     private Integer point;
     private Integer rightNumber;
+    private Integer total;
 }

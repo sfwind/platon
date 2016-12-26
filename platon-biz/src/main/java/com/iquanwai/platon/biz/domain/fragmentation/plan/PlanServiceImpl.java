@@ -77,13 +77,19 @@ public class PlanServiceImpl implements PlanService {
         return largestSequence;
     }
 
+    //映射
     private void buildPractice(Practice practice, PracticePlan practicePlan) {
         //不能用modelmapper
         practice.setStatus(practicePlan.getStatus());
         practice.setUnlocked(practicePlan.getUnlocked());
         practice.setSeries(practicePlan.getSeries());
         practice.setSequence(practicePlan.getSequence());
-        practice.getPracticeIdList().add(practicePlan.getPracticeId());
+        String[] practiceArr = practicePlan.getPracticeId().split(",");
+        List<Integer> practiceIdList = Lists.newArrayList();
+        for(String practiceId:practiceArr){
+            practiceIdList.add(Integer.parseInt(practiceId));
+        }
+        practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
         if(practice.getKnowledge()==null) {
             Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
@@ -189,8 +195,10 @@ public class PlanServiceImpl implements PlanService {
         //训练计划结束
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if(plan.getComplete()>=plan.getTotal()) {
+            logger.info("{} is complete", planId);
             improvementPlanDao.updateStatus(planId, 2);
         }else{
+            logger.info("{} is terminated", planId);
             improvementPlanDao.updateStatus(planId, 3);
         }
     }

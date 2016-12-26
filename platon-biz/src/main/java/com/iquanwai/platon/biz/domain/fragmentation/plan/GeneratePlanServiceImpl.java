@@ -81,7 +81,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setUnlocked(true);
             practicePlan.setPlanId(planId);
             practicePlan.setType(PracticePlan.CHALLENGE);
-            practicePlan.setPracticeId(practice.getId());
+            practicePlan.setPracticeId(practice.getId()+"");
             practicePlan.setStatus(0);
             practicePlan.setSequence(WARMUP_TASK_NUMBER+2);
             practicePlan.setSeries(0);
@@ -136,7 +136,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 practicePlan.setType(PracticePlan.APPLICATION);
-                practicePlan.setPracticeId(practice.getId());
+                practicePlan.setPracticeId(practice.getId()+"");
                 practicePlan.setKnowledgeId(practice.getKnowledgeId());
                 practicePlan.setStatus(0);
                 practicePlan.setSequence(WARMUP_TASK_NUMBER + 1);
@@ -201,6 +201,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         for(int i=0;i<problem.getLength();i++){
             for(int j=0;j<WARMUP_TASK_NUMBER;j++) {
                 // 保证每套题的知识点是同一个,知识点依次出现
+                PracticePlan practicePlan = new PracticePlan();
+                practicePlan.setUnlocked(false);
+                practicePlan.setPlanId(planId);
+                practicePlan.setType(1);
+                practicePlan.setSequence(j + 1);
+                practicePlan.setSeries(i + 1);
+                practicePlan.setStatus(0);
+                selectedPractice.add(practicePlan);
                 for(int k=0;k<WARMUP_TASK_PRACTICE_NUMBER;k++) {
                     WarmupPractice practice = null;
                     //防死循环控制
@@ -217,16 +225,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                         }
                     }
                     if(practice!=null){
-                        PracticePlan practicePlan = new PracticePlan();
-                        practicePlan.setUnlocked(false);
-                        practicePlan.setPlanId(planId);
-                        practicePlan.setType(practice.getType());
-                        practicePlan.setPracticeId(practice.getId());
+                        //practiceId用逗号隔开
                         practicePlan.setKnowledgeId(practice.getKnowledgeId());
-                        practicePlan.setSequence(j + 1);
-                        practicePlan.setSeries(i + 1);
-                        practicePlan.setStatus(0);
-                        selectedPractice.add(practicePlan);
+                        if(practicePlan.getPracticeId()==null) {
+                            practicePlan.setPracticeId(practice.getId()+"");
+                        }else{
+                            practicePlan.setPracticeId(practicePlan.getPracticeId()+","+practice.getId());
+                        }
                     }
                 }
                 knowledgeCursor++;
@@ -260,37 +265,38 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return null;
     }
 
+    //根据难度分题目
     private List<WarmupPractice> selectWarmup(List<WarmupPractice> practices, Integer count) {
-        List<WarmupPractice> warmupPractices = Lists.newArrayList();
-        List<WarmupPractice> easyPractice = Lists.newArrayList();
-        List<WarmupPractice> normalPractice = Lists.newArrayList();
-        List<WarmupPractice> hardPractice = Lists.newArrayList();
-
-        float cnt = count/3;
-        int easyCount = Math.round(cnt);
-        int normalCount = Math.round(cnt);
-        //按难度拆分题库
-        practices.stream().forEach(practice -> {
-            if (practice.getDifficulty() == EASY) {
-                easyPractice.add(practice);
-            } else if (practice.getDifficulty() == NORMAL) {
-                normalPractice.add(practice);
-            } else if (practice.getDifficulty() == HARD) {
-                hardPractice.add(practice);
-            }
-        });
+//        List<WarmupPractice> warmupPractices = Lists.newArrayList();
+//        List<WarmupPractice> easyPractice = Lists.newArrayList();
+//        List<WarmupPractice> normalPractice = Lists.newArrayList();
+//        List<WarmupPractice> hardPractice = Lists.newArrayList();
+//
+//        float cnt = count/3;
+//        int easyCount = Math.round(cnt);
+//        int normalCount = Math.round(cnt);
+//        //按难度拆分题库
+//        practices.stream().forEach(practice -> {
+//            if (practice.getDifficulty() == EASY) {
+//                easyPractice.add(practice);
+//            } else if (practice.getDifficulty() == NORMAL) {
+//                normalPractice.add(practice);
+//            } else if (practice.getDifficulty() == HARD) {
+//                hardPractice.add(practice);
+//            }
+//        });
 
         //easy题目
-        List easyList = randomSelect(easyPractice, easyCount);
-        warmupPractices.addAll(easyList);
+//        List easyList = randomSelect(easyPractice, easyCount);
+//        warmupPractices.addAll(easyList);
         //normal题目
-        List normalList = randomSelect(easyPractice, normalCount);
-        warmupPractices.addAll(normalList);
+//        List normalList = randomSelect(easyPractice, normalCount);
+//        warmupPractices.addAll(normalList);
         //hard题目
-        List hardList = randomSelect(easyPractice, count-normalList.size()-easyList.size());
-        warmupPractices.addAll(hardList);
-
-        return warmupPractices;
+//        List hardList = randomSelect(easyPractice, count-normalList.size()-easyList.size());
+//        warmupPractices.addAll(hardList);
+        // TODO:先不分难度
+        return randomSelect(practices, count);
     }
 
     private List randomSelect(List list, int count) {

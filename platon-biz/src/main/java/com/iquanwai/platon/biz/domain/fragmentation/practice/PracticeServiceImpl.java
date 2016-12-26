@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.CommonUtils;
@@ -93,6 +94,7 @@ public class PracticeServiceImpl implements PracticeService {
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
         Integer point = 0;
+        warmupResult.setTotal(GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER);
         for(WarmupPractice userAnswer:warmupPracticeList){
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = warmupPracticeMap.get(userAnswer.getId());
