@@ -54,6 +54,14 @@ public class WebUtils {
         return new ResponseEntity<Map<String, Object>>(json, status);
     }
 
+    public static ResponseEntity<Map<String, Object>> forbid(Object msg) {
+        Map<String, Object> json = new HashMap<String, Object>();
+        json.put("code", 403);
+        json.put("msg", msg);
+
+        return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
+    }
+
     public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception{
         String url = request.getRequestURL().toString();
         if(!StringUtils.isEmpty(request.getQueryString())){
