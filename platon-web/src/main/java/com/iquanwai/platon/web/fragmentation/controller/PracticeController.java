@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -169,6 +170,23 @@ public class PracticeController {
                 }
             }
         }
+    }
+
+    @RequestMapping("/next")
+    public ResponseEntity<Map<String, Object>> nextPractice(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        Practice practice = planService.nextPractice(improvementPlan);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("训练")
+                .action("打开下一训练");
+        operationLogService.log(operationLog);
+        return WebUtils.result(practice);
     }
 
 }

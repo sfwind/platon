@@ -52,4 +52,10 @@ public interface PlanService {
      */
     void completePlan(Integer planId);
 
+    /**
+     * 获取下一个训练项目
+     * @param improvementPlan 训练计划
+     * */
+    Practice nextPractice(ImprovementPlan improvementPlan);
+
 }

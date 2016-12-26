@@ -194,4 +194,25 @@ public class PlanServiceImpl implements PlanService {
             improvementPlanDao.updateStatus(planId, 3);
         }
     }
+
+    @Override
+    public Practice nextPractice(ImprovementPlan improvementPlan) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+        //选择正在进行的练习
+        List<PracticePlan> runningPractice = pickRunningPractice(practicePlans, improvementPlan);
+        List<Practice> practices = createPractice(runningPractice);
+        Practice challenge = null;
+        for(Practice practice:practices){
+            //保存挑战训练
+            if(practice.getType()==PracticePlan.CHALLENGE){
+                challenge = practice;
+                continue;
+            }
+            //训练未完成
+            if(practice.getStatus()==0){
+                return practice;
+            }
+        }
+        return challenge;
+    }
 }
