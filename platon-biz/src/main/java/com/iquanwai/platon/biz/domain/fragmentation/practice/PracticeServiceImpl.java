@@ -77,10 +77,13 @@ public class PracticeServiceImpl implements PracticeService {
 
     public List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlans(planId, series, sequence);
-        practicePlans.forEach(practicePlan -> {
-            warmupPractices.add(warmupPracticeMap.get(practicePlan.getPracticeId()));
-        });
+        PracticePlan practicePlan = practicePlanDao.getPracticePlan(planId, series, sequence);
+        if(practicePlan!=null) {
+            String[] practiceIds = practicePlan.getPracticeId().split(",");
+            for(String practiceId:practiceIds){
+                warmupPractices.add(warmupPracticeMap.get(Integer.parseInt(practiceId)));
+            }
+        }
         return warmupPractices;
     }
 

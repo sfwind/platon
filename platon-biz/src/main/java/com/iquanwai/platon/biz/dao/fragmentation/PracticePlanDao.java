@@ -77,19 +77,19 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public List<PracticePlan> loadPracticePlans(Integer planId, Integer series, Integer sequence){
+    public PracticePlan getPracticePlan(Integer planId, Integer series, Integer sequence){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=? and Sequence=?";
         try {
-            List<PracticePlan> practicePlan = run.query(sql, h,
+            PracticePlan practicePlan = run.query(sql, h,
                     planId, series, sequence);
             return practicePlan;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
-        return Lists.newArrayList();
+        return null;
     }
 
     public void complete(Integer id){

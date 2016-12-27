@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by justin on 16/12/13.
@@ -295,8 +292,16 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //hard题目
 //        List hardList = randomSelect(easyPractice, count-normalList.size()-easyList.size());
 //        warmupPractices.addAll(hardList);
-        // TODO:先不分难度
-        return randomSelect(practices, count);
+        // TODO:先不分难度,按难度排序
+        List practiceList =  randomSelect(practices, count);
+
+        practiceList.stream().sorted((o1, o2) -> {
+            WarmupPractice warmupPractice1 = (WarmupPractice)o1;
+            WarmupPractice warmupPractice2 = (WarmupPractice)o2;
+            return warmupPractice1.getDifficulty()-warmupPractice2.getDifficulty();
+        });
+
+        return practiceList;
     }
 
     private List randomSelect(List list, int count) {
