@@ -15,6 +15,7 @@ public class OperationLog {
     private String function; //功能
     private String action;   //操作
     private Date operateTime;  //操作时间
+    private Date operateDate;  //操作日期
     private String memo;   // 其他信息
 
     public OperationLog openid(String openid){

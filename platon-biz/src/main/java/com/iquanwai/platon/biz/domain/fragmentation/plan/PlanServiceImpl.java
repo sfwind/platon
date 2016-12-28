@@ -216,8 +216,8 @@ public class PlanServiceImpl implements PlanService {
                 challenge = practice;
                 continue;
             }
-            //训练未完成
-            if(practice.getStatus()==0){
+            //训练未完成且已解锁
+            if(practice.getStatus()==0 && practice.getUnlocked()){
                 return practice;
             }
         }

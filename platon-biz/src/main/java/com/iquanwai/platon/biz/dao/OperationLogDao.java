@@ -23,8 +23,8 @@ public class OperationLogDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
         try {
-            String insertSql = "INSERT INTO OperatingLog(Openid, Module, Function, Action, OperateTime, Memo) " +
-                    "VALUES(?, ?, ?, ?, now(), ?)";
+            String insertSql = "INSERT INTO OperatingLog(Openid, Module, Function, Action, OperateTime, OperateDate, Memo) " +
+                    "VALUES(?, ?, ?, ?, now(), curdate(), ?)";
             Future<Integer> result =  asyncRun.update(insertSql,
                     log.getOpenid(), log.getModule(), log.getFunction(),
                     log.getAction(), log.getMemo());
