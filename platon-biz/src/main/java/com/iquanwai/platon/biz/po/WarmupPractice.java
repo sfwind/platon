@@ -18,7 +18,8 @@ public class WarmupPractice {
     private Integer knowledgeId; //知识点id
     private Integer sceneId; //场景id
 
+    private Integer score; //非db字段 分值
     private List<Choice> choiceList; //所有选项
     private List<Integer> choice; //用户选择选项
-    
+
 }

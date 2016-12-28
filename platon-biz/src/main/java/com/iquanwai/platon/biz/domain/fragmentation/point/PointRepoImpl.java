@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.PracticePlan;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -45,10 +44,12 @@ public class PointRepoImpl implements PointRepo {
         }
 
         if(right.size()==userChoiceList.size()){
-            if(warmupPractice.getType()== PracticePlan.RADIO){
-                return new ImmutablePair<>(RADIO_PRACTICE_SCORE, true);
-            }else if(warmupPractice.getType()==PracticePlan.MULTIPLE_CHOICE){
-                return new ImmutablePair<>(MULTI_CHOICE_PRACTICE_SCORE, true);
+            if(warmupPractice.getDifficulty()== 1){
+                return new ImmutablePair<>(EASY_SCORE, true);
+            }else if(warmupPractice.getDifficulty()== 2){
+                return new ImmutablePair<>(NORMAL_SCORE, true);
+            }else if(warmupPractice.getDifficulty()== 3){
+                return new ImmutablePair<>(HARD_SCORE, true);
             }
         }
         return new ImmutablePair<>(0, false);

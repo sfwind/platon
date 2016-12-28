@@ -81,7 +81,16 @@ public class PracticeServiceImpl implements PracticeService {
         if(practicePlan!=null) {
             String[] practiceIds = practicePlan.getPracticeId().split(",");
             for(String practiceId:practiceIds){
-                warmupPractices.add(warmupPracticeMap.get(Integer.parseInt(practiceId)));
+                //设置分值
+                WarmupPractice warmupPractice = warmupPracticeMap.get(Integer.parseInt(practiceId));
+                if(warmupPractice.getDifficulty()==1){
+                    warmupPractice.setScore(PointRepo.EASY_SCORE);
+                }else if(warmupPractice.getDifficulty()==2){
+                    warmupPractice.setScore(PointRepo.NORMAL_SCORE);
+                }else if(warmupPractice.getDifficulty()==3){
+                    warmupPractice.setScore(PointRepo.HARD_SCORE);
+                }
+                warmupPractices.add(warmupPractice);
             }
         }
         return warmupPractices;
