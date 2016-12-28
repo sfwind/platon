@@ -48,12 +48,6 @@ public class PracticeController {
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
                 improvementPlan.getId(), series, sequence);
-        //去掉选项中的是否正确字段
-        warmupPracticeList.stream().forEach(warmupPractice -> {
-            warmupPractice.getChoiceList().stream().forEach(choice -> {
-                choice.setIsRight(null);
-            });
-        });
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
