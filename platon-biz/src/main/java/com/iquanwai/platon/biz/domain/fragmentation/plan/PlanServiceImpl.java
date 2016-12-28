@@ -218,6 +218,11 @@ public class PlanServiceImpl implements PlanService {
             }
             //训练未完成且已解锁
             if(practice.getStatus()==0 && practice.getUnlocked()){
+                //TODO:应用训练关闭
+                if(practice.getType()==PracticePlan.APPLICATION){
+                    practicePlanDao.complete(practice.getPracticeIdList().get(0));
+                    improvementPlanDao.updateComplete(improvementPlan.getId());
+                }
                 return practice;
             }
         }
