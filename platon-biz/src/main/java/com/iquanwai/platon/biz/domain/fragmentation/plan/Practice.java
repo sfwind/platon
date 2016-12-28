@@ -17,4 +17,5 @@ public class Practice {
     private List<Integer> practiceIdList;
     private Integer series;
     private Integer sequence;
+    private Integer practicePlanId;
 }

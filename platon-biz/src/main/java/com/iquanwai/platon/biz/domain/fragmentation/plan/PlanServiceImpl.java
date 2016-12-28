@@ -83,6 +83,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setStatus(practicePlan.getStatus());
         practice.setUnlocked(practicePlan.getUnlocked());
         practice.setSeries(practicePlan.getSeries());
+        practice.setPracticePlanId(practicePlan.getId());
         practice.setSequence(practicePlan.getSequence());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
         List<Integer> practiceIdList = Lists.newArrayList();
@@ -220,7 +221,7 @@ public class PlanServiceImpl implements PlanService {
             if(practice.getStatus()==0 && practice.getUnlocked()){
                 //TODO:应用训练关闭
                 if(practice.getType()==PracticePlan.APPLICATION){
-                    practicePlanDao.complete(practice.getPracticeIdList().get(0));
+                    practicePlanDao.complete(practice.getPracticePlanId());
                     improvementPlanDao.updateComplete(improvementPlan.getId());
                 }
                 return practice;
