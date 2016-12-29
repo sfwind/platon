@@ -62,7 +62,7 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type){
+    public PracticePlan loadPracticePlan(Integer planId, String practiceId, Integer type){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";

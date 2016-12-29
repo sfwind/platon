@@ -107,7 +107,9 @@ public class PracticeServiceImpl implements PracticeService {
         Integer rightNumber = 0;
         Integer point = 0;
         warmupResult.setTotal(GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER);
+        List<Integer> practiceIds = Lists.newArrayList();
         for(WarmupPractice userAnswer:warmupPracticeList){
+            practiceIds.add(userAnswer.getId());
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = warmupPracticeMap.get(userAnswer.getId());
             if(practice==null){
@@ -130,11 +132,11 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setScore(score);
             warmupSubmit.setOpenid(openid);
             warmupSubmitDao.insert(warmupSubmit);
-
-            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, practice.getId(), practice.getType());
-            if(practicePlan!=null && practicePlan.getStatus() == 0) {
-                practicePlanDao.complete(practicePlan.getId());
-            }
+        }
+        PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId,
+                StringUtils.join(practiceIds, ","), 1);
+        if(practicePlan!=null && practicePlan.getStatus() == 0) {
+            practicePlanDao.complete(practicePlan.getId());
         }
         improvementPlanDao.updateComplete(planId);
         pointRepo.risePoint(planId, point);
@@ -148,7 +150,7 @@ public class PracticeServiceImpl implements PracticeService {
     public ApplicationPractice getApplicationPractice(Integer id, Integer planId) {
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         //打开即完成
-        PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, applicationPractice.getId(), PracticePlan.APPLICATION);
+        PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, applicationPractice.getId()+"", PracticePlan.APPLICATION);
         if(practicePlan!=null && practicePlan.getStatus() == 0){
             practicePlanDao.complete(practicePlan.getId());
             improvementPlanDao.updateComplete(planId);
@@ -230,7 +232,7 @@ public class PracticeServiceImpl implements PracticeService {
         boolean result = challengeSubmitDao.answer(challengeSubmit.getId(), content);
         if(result) {
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(challengeSubmit.getPlanId(),
-                    challengeSubmit.getChallengeId(), PracticePlan.CHALLENGE);
+                    challengeSubmit.getChallengeId()+"", PracticePlan.CHALLENGE);
             if(practicePlan!=null && practicePlan.getStatus() == 0){
                 practicePlanDao.complete(practicePlan.getId());
                 improvementPlanDao.updateComplete(challengeSubmit.getPlanId());
