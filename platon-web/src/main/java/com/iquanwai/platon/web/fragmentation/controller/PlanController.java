@@ -97,7 +97,7 @@ public class PlanController {
         if(!inWhite){
             return WebUtils.forbid("此功能还未开放");
         }
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
         if(improvementPlan==null){
             return WebUtils.result(null);
         }

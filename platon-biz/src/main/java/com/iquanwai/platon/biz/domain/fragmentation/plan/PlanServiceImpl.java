@@ -167,6 +167,11 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public ImprovementPlan getLatestPlan(String openid) {
+        return improvementPlanDao.getLastPlan(openid);
+    }
+
+    @Override
     public List<ImprovementPlan> loadAllRunningPlan() {
         return improvementPlanDao.loadAllRunningPlan();
     }

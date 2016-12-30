@@ -58,6 +58,19 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return null;
     }
 
+    public ImprovementPlan getLastPlan(String openid){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? order by id desc";
+        ResultSetHandler<ImprovementPlan> h = new BeanHandler(ImprovementPlan.class);
+        try {
+            ImprovementPlan improvementPlan =runner.query(sql, h, openid);
+            return improvementPlan;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
     public List<ImprovementPlan> loadAllRunningPlan(){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE Status = 1";

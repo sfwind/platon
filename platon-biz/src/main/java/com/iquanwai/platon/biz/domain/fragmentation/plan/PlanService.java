@@ -23,6 +23,12 @@ public interface PlanService {
     ImprovementPlan getRunningPlan(String openid);
 
     /**
+     * 获取学员最近的训练
+     * @param openid 学员id
+     */
+    ImprovementPlan getLatestPlan(String openid);
+
+    /**
      * 获取所有正在进行的训练
      */
     List<ImprovementPlan> loadAllRunningPlan();
