@@ -4,7 +4,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.po.OperationLog;
 import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemList;
+import com.iquanwai.platon.biz.po.ProblemPlan;
 import com.iquanwai.platon.resolver.LoginUser;
 import com.iquanwai.platon.util.WebUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
@@ -68,15 +68,15 @@ public class ProblemController {
     @RequestMapping("/load/mine")
     public ResponseEntity<Map<String, Object>> loadMyProblems(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
-        List<ProblemList> problemLists = problemService.loadProblems(loginUser.getOpenId());
-        problemLists.stream().forEach(problemList -> {
+        List<ProblemPlan> problemPlans = problemService.loadProblems(loginUser.getOpenId());
+        problemPlans.stream().forEach(problemList -> {
             String problem = problemService.getProblemContent(problemList.getProblemId());
             problemList.setProblem(problem);
             //openid置为0
             problemList.setOpenid(null);
         });
         ProblemListDto problemListDto = new ProblemListDto();
-        problemListDto.setProblemList(problemLists);
+        problemListDto.setProblemList(problemPlans);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("选择我的问题")

@@ -1,6 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
-import com.iquanwai.platon.biz.po.ProblemList;
+import com.iquanwai.platon.biz.po.ProblemPlan;
 import lombok.Data;
 
 import java.util.List;
@@ -10,5 +10,5 @@ import java.util.List;
  */
 @Data
 public class ProblemListDto {
-    private List<ProblemList> problemList;
+    private List<ProblemPlan> problemList;
 }

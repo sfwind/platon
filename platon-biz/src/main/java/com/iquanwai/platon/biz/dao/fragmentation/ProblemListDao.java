@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
-import com.iquanwai.platon.biz.po.ProblemList;
+import com.iquanwai.platon.biz.po.ProblemPlan;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -22,17 +22,17 @@ import java.util.concurrent.Executors;
 public class ProblemListDao extends PracticeDBUtil{
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void saveProblems(List<ProblemList> problemListList){
+    public void saveProblems(List<ProblemPlan> problemListPlan){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ProblemList(Openid, ProblemId, Status) " +
+        String sql = "insert into ProblemPlan(Openid, ProblemId, Status) " +
                 "values(?,?,0)";
         try {
-            Object[][] param = new Object[problemListList.size()][];
-            for (int i = 0; i < problemListList.size(); i++) {
-                ProblemList problemList = problemListList.get(i);
+            Object[][] param = new Object[problemListPlan.size()][];
+            for (int i = 0; i < problemListPlan.size(); i++) {
+                ProblemPlan problemPlan = problemListPlan.get(i);
                 param[i] = new Object[2];
-                param[i][0] = problemList.getOpenid();
-                param[i][1] = problemList.getProblemId();
+                param[i][0] = problemPlan.getOpenid();
+                param[i][1] = problemPlan.getProblemId();
             }
             runner.batch(sql, param);
         }catch (SQLException e) {
@@ -40,10 +40,10 @@ public class ProblemListDao extends PracticeDBUtil{
         }
     }
 
-    public List<ProblemList> loadProblems(String openid){
+    public List<ProblemPlan> loadProblems(String openid){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<ProblemList>> h = new BeanListHandler(ProblemList.class);
-        String sql = "SELECT * FROM ProblemList where Openid=? and Status=0";
+        ResultSetHandler<List<ProblemPlan>> h = new BeanListHandler(ProblemPlan.class);
+        String sql = "SELECT * FROM ProblemPlan where Openid=? and Status=0";
         try {
             return run.query(sql, h, openid);
         } catch (SQLException e) {
@@ -56,7 +56,7 @@ public class ProblemListDao extends PracticeDBUtil{
     public void updateStatus(String openid, Integer problemId, Integer status){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "UPDATE ProblemList SET STATUS = ? where Openid=? and problemId=?";
+        String sql = "UPDATE ProblemPlan SET STATUS = ? where Openid=? and problemId=?";
         try {
             asyncRun.update(sql, status, openid, problemId);
         } catch (SQLException e) {

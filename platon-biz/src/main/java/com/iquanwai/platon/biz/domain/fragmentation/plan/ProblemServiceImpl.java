@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemListDao;
 import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemList;
+import com.iquanwai.platon.biz.po.ProblemPlan;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,17 +34,17 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public void saveProblems(List<Integer> problemIds, String openid) {
-        List<ProblemList> problemLists = problemIds.stream().map(problemId -> {
-            ProblemList problemList = new ProblemList();
-            problemList.setOpenid(openid);
-            problemList.setProblemId(problemId);
-            return problemList;
+        List<ProblemPlan> problemPlans = problemIds.stream().map(problemId -> {
+            ProblemPlan problemPlan = new ProblemPlan();
+            problemPlan.setOpenid(openid);
+            problemPlan.setProblemId(problemId);
+            return problemPlan;
         }).collect(Collectors.toList());
-        problemListDao.saveProblems(problemLists);
+        problemListDao.saveProblems(problemPlans);
     }
 
     @Override
-    public List<ProblemList> loadProblems(String openid) {
+    public List<ProblemPlan> loadProblems(String openid) {
         return problemListDao.loadProblems(openid);
     }
 

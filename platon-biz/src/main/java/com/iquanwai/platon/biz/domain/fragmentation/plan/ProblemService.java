@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemList;
+import com.iquanwai.platon.biz.po.ProblemPlan;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public interface ProblemService {
      * 获取学员的问题
      * @param openid 学员id
      * */
-    List<ProblemList> loadProblems(String openid);
+    List<ProblemPlan> loadProblems(String openid);
 
     /**
      * 根据问题id获取问题内容

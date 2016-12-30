@@ -6,7 +6,7 @@ import lombok.Data;
  * Created by justin on 16/12/4.
  */
 @Data
-public class ProblemList {
+public class ProblemPlan {
     private int id;
     private String openid; //openid
     private Integer problemId; //问题id
