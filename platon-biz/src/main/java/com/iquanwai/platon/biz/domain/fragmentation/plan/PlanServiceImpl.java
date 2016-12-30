@@ -154,9 +154,9 @@ public class PlanServiceImpl implements PlanService {
             knowledgePlan.setKnowledgeId(knowledgeId);
             knowledgePlan.setPlanId(planId);
             knowledgePlanDao.insert(knowledgePlan);
-            knowledge.setAppear(false);
+            knowledge.setAppear(0);
         }else {
-            knowledge.setAppear(true);
+            knowledge.setAppear(1);
         }
         return knowledge;
     }

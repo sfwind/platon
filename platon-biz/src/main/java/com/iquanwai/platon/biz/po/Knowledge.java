@@ -15,6 +15,6 @@ public class Knowledge {
     private String keynote; //要点
     private String pic; //图片链接
     private String voice; //语音链接
-    private Boolean appear; //非db字段,是否出现过
+    private Integer appear; //非db字段,是否出现过
 
 }
