@@ -327,19 +327,22 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<KnowledgeVolume> knowledgeVolumes = Lists.newArrayList();
         //按权重从高到低排序
         maps.sort((o1, o2) -> o2.getWeight()-o1.getWeight());
-        //分配n个知识点的题目数,前n-1个根据权重*总题量后四舍五入,最后一个取余数
-        for(int i=0;i<maps.size();i++){
-            if(i!=maps.size()-1) {
-                int weight = maps.get(i).getWeight();
-                int cnt = Math.round((float)(count*weight/100));
-                knowledgeVolumes.add(new KnowledgeVolume().
-                        knowledgeId(maps.get(i).getKnowledgeId()).count(cnt));
-                //剩余题目数
-                left -=cnt;
-            }else{
-                knowledgeVolumes.add(new KnowledgeVolume().
-                        knowledgeId(maps.get(i).getKnowledgeId()).count(left));
+        //分配n个知识点的题目数,根据权重*总题量后四舍五入
+        for (ProblemKnowledgeMap map : maps) {
+            int weight = map.getWeight();
+            int cnt = Math.round((float) (count * weight / 100));
+            knowledgeVolumes.add(new KnowledgeVolume().
+                    knowledgeId(map.getKnowledgeId()).count(cnt));
+            //剩余题目数
+            left -= cnt;
+        }
+        //按权重从高到低排序依次+1
+        for (KnowledgeVolume volume : knowledgeVolumes) {
+            if(left<=0){
+                break;
             }
+            volume.setCount(volume.getCount()+1);
+            left--;
         }
 
         return knowledgeVolumes;
