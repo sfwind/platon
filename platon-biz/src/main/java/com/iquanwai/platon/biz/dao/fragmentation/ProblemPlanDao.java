@@ -19,17 +19,17 @@ import java.util.concurrent.Executors;
  * Created by justin on 16/12/8.
  */
 @Repository
-public class ProblemListDao extends PracticeDBUtil{
+public class ProblemPlanDao extends PracticeDBUtil{
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void saveProblems(List<ProblemPlan> problemListPlan){
+    public void saveProblems(List<ProblemPlan> problemPlans){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into ProblemPlan(Openid, ProblemId, Status) " +
                 "values(?,?,0)";
         try {
-            Object[][] param = new Object[problemListPlan.size()][];
-            for (int i = 0; i < problemListPlan.size(); i++) {
-                ProblemPlan problemPlan = problemListPlan.get(i);
+            Object[][] param = new Object[problemPlans.size()][];
+            for (int i = 0; i < problemPlans.size(); i++) {
+                ProblemPlan problemPlan = problemPlans.get(i);
                 param[i] = new Object[2];
                 param[i][0] = problemPlan.getOpenid();
                 param[i][1] = problemPlan.getProblemId();

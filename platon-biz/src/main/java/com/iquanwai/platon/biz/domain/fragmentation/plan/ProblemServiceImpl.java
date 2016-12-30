@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemListDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemPlanDao;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemPlan;
 import org.apache.commons.collections.CollectionUtils;
@@ -20,7 +20,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ProblemDao problemDao;
     @Autowired
-    private ProblemListDao problemListDao;
+    private ProblemPlanDao problemPlanDao;
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
 
@@ -40,12 +40,12 @@ public class ProblemServiceImpl implements ProblemService {
             problemPlan.setProblemId(problemId);
             return problemPlan;
         }).collect(Collectors.toList());
-        problemListDao.saveProblems(problemPlans);
+        problemPlanDao.saveProblems(problemPlans);
     }
 
     @Override
     public List<ProblemPlan> loadProblems(String openid) {
-        return problemListDao.loadProblems(openid);
+        return problemPlanDao.loadProblems(openid);
     }
 
     @Override

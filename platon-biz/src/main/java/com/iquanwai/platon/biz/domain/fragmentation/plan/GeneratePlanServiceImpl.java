@@ -19,7 +19,7 @@ import java.util.*;
 @Service
 public class GeneratePlanServiceImpl implements GeneratePlanService {
     @Autowired
-    private ProblemListDao problemListDao;
+    private ProblemPlanDao problemPlanDao;
     @Autowired
     private ProblemDao problemDao;
     @Autowired
@@ -61,7 +61,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
         //更新问题状态
-        problemListDao.updateStatus(openid, problemId, 1);
+        problemPlanDao.updateStatus(openid, problemId, 1);
 
         return planId;
     }
@@ -325,7 +325,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private List<KnowledgeVolume> assignVolume(int count, List<ProblemKnowledgeMap> maps) {
         int left = count;
         List<KnowledgeVolume> knowledgeVolumes = Lists.newArrayList();
-
+        //按权重从高到低排序
+        maps.sort((o1, o2) -> o2.getWeight()-o1.getWeight());
         //分配n个知识点的题目数,前n-1个根据权重*总题量后四舍五入,最后一个取余数
         for(int i=0;i<maps.size();i++){
             if(i!=maps.size()-1) {
