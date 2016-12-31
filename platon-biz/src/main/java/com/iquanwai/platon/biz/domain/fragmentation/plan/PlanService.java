@@ -11,7 +11,7 @@ import java.util.List;
 public interface PlanService {
 
     /**
-     * 获取详细的训练计划
+     * 构建详细的训练计划
      * @param improvementPlan 训练计划
      */
     void buildPlanDetail(ImprovementPlan improvementPlan);

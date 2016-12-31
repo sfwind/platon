@@ -356,13 +356,18 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setComplete(0);
         improvementPlan.setProblemId(problem.getId());
         improvementPlan.setPoint(0);
+        //初始化状态进行中
         improvementPlan.setStatus(1);
         //初始化时有一把钥匙
         improvementPlan.setKeycnt(1);
+        //总题组=难度训练总天数
+        improvementPlan.setTotalSeries(length);
+        improvementPlan.setCurrentSeries(0);
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
         //结束时期后再开放7天
         improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), length + 7));
+        //总训练数=热身训练+应用训练+挑战训练
         improvementPlan.setTotal(problem.getWarmupCount()+
                 problem.getApplicationCount()+
                 problem.getChallengeCount());

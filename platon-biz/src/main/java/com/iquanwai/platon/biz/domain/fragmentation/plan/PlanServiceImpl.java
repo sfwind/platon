@@ -43,9 +43,9 @@ public class PlanServiceImpl implements PlanService {
         //创建练习对象
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
-
+        //写入非db字段
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
-        improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()));
+        improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
@@ -79,7 +79,7 @@ public class PlanServiceImpl implements PlanService {
 
     //映射
     private void buildPractice(Practice practice, PracticePlan practicePlan) {
-        //不能用modelmapper
+        //NOTE:不能用modelmapper
         practice.setStatus(practicePlan.getStatus());
         practice.setUnlocked(practicePlan.getUnlocked());
         practice.setSeries(practicePlan.getSeries());
@@ -99,45 +99,78 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
-        boolean running = false;
-        int seriesCursor = 0;
         List<PracticePlan> runningPractice = Lists.newArrayList();
         List<PracticePlan> tempPractice = Lists.newArrayList();
-        for(PracticePlan practicePlan:practicePlans){
-            //TODO:挑战只能一个!!
-            if(practicePlan.getType() == PracticePlan.CHALLENGE){
+        //找到挑战训练
+        for(PracticePlan practicePlan:practicePlans) {
+            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
                 runningPractice.add(practicePlan);
-                continue;
-            }
-            if(practicePlan.getSeries()!=seriesCursor){
-                //找到正在进行的训练组
-                if(running){
-                    break;
-                }
-                seriesCursor = practicePlan.getSeries();
-                tempPractice.clear();
-            }
-            tempPractice.add(practicePlan);
-            //找到第一个未完成的练习
-            if(practicePlan.getStatus()==0){
-                running = true;
             }
         }
 
-        boolean unlock = false;
-        for(PracticePlan practicePlan:tempPractice){
-            //解锁练习
-            if(!practicePlan.getUnlocked()){
-                if(improvementPlan.getKeycnt()>0) {
+        boolean hasKey = false;
+        if(improvementPlan.getKeycnt()>0){
+            hasKey = true;
+        }
+
+        if(hasKey){
+            //如果有解锁钥匙,找到第一组未完成的练习
+            boolean running = false;
+            int seriesCursor = 0; //当前组指针
+            for(PracticePlan practicePlan:practicePlans) {
+                if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+                    continue;
+                }
+                if(practicePlan.getSeries()!=seriesCursor){
+                    //找到正在进行的训练组
+                    if(running){
+                        break;
+                    }
+                    seriesCursor = practicePlan.getSeries();
+                    tempPractice.clear();
+                }
+                tempPractice.add(practicePlan);
+                //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
+                //找到第一个未完成的练习
+                if(practicePlan.getStatus()==0){
+                    running = true;
+                }
+            }
+
+            boolean unlock = false;
+            for(PracticePlan practicePlan:tempPractice){
+                //如果练习未解锁,则解锁练习
+                if(!practicePlan.getUnlocked()){
                     practicePlan.setUnlocked(true);
                     unlock = true;
                     practicePlanDao.unlock(practicePlan.getId());
                 }
             }
+            //如果解锁了新练习,更新进度和钥匙
+            if(unlock) {
+                PracticePlan practicePlan = tempPractice.get(0);
+                improvementPlanDao.updateProgress(improvementPlan.getId(),
+                        improvementPlan.getKeycnt() - 1, practicePlan.getSeries());
+            }
+        }else{
+            //如果没有解锁钥匙,找到最后一组已解锁的练习
+            int seriesCursor = 0; //当前组指针
+            for(PracticePlan practicePlan:practicePlans) {
+                //如果练习未解锁,跳出循环
+                if(!practicePlan.getUnlocked()){
+                    break;
+                }
+                if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+                    continue;
+                }
+                if(practicePlan.getSeries()!=seriesCursor){
+                    seriesCursor = practicePlan.getSeries();
+                    tempPractice.clear();
+                }
+                tempPractice.add(practicePlan);
+            }
         }
-        if(unlock) {
-            improvementPlanDao.updateKey(improvementPlan.getId(), improvementPlan.getKeycnt() - 1);
-        }
+
         runningPractice.addAll(tempPractice);
         return runningPractice;
     }
@@ -224,7 +257,7 @@ public class PlanServiceImpl implements PlanService {
             }
             //训练未完成且已解锁
             if(practice.getStatus()==0 && practice.getUnlocked()){
-                //TODO:应用训练关闭
+                //应用训练自动完成
                 if(practice.getType()==PracticePlan.APPLICATION){
                     practicePlanDao.complete(practice.getPracticePlanId());
                     improvementPlanDao.updateComplete(improvementPlan.getId());

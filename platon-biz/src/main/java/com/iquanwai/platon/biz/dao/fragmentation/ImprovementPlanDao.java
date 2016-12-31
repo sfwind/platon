@@ -106,6 +106,17 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
+    public void updateProgress(Integer planId, Integer key, Integer series){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        String sql = "UPDATE ImprovementPlan SET Keycnt =?, CurrentSeries=? where Id=?";
+        try {
+            asyncRun.update(sql, key, series, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public void updatePoint(Integer planId, Integer point){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);

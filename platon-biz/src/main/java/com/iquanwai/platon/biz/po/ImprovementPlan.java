@@ -22,6 +22,8 @@ public class ImprovementPlan {
     private Integer complete; //完成训练个数
     private Integer total; //任务总数
     private Integer keycnt; //钥匙数量
+    private Integer currentSeries; //当前题组
+    private Integer totalSeries; //总题组
     private Problem problem; //非db字段 问题
     private List<Practice> practice; //非db字段
     private Integer length; //非db字段 总时长
