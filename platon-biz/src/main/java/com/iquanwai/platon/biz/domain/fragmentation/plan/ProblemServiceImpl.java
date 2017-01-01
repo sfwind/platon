@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemPlanDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.Problem;
@@ -38,7 +39,24 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<ProblemPlan> loadProblems(String openid) {
-        return problemPlanDao.loadProblems(openid);
+        List<ProblemPlan> problemPlans = problemPlanDao.loadProblems(openid);
+        //去重后的数据
+        List<ProblemPlan> afterFilterPlans = Lists.newArrayList();
+
+        problemPlans.stream().forEach(problemPlan -> {
+            boolean isDup = false;
+            for(ProblemPlan afterFilter:afterFilterPlans){
+                if(afterFilter.getProblemId().equals(problemPlan.getProblemId())){
+                    isDup = true;
+                    break;
+                }
+            }
+            if(!isDup){
+                afterFilterPlans.add(problemPlan);
+            }
+        });
+
+        return afterFilterPlans;
     }
 
     @Override
