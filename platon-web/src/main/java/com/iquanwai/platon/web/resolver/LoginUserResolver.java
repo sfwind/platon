@@ -1,11 +1,11 @@
-package com.iquanwai.platon.resolver;
+package com.iquanwai.platon.web.resolver;
 
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.Account;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.util.CookieUtils;
+import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

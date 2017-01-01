@@ -2,8 +2,8 @@ package com.iquanwai.platon.web.aspect;
 
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.resolver.LoginUser;
-import com.iquanwai.platon.resolver.LoginUserResolver;
+import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.LoginUserResolver;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

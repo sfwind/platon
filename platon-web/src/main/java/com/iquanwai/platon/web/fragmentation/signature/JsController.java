@@ -2,7 +2,7 @@ package com.iquanwai.platon.web.fragmentation.signature;
 
 import com.iquanwai.platon.biz.domain.weixin.signature.JsSignature;
 import com.iquanwai.platon.biz.domain.weixin.signature.JsSignatureService;
-import com.iquanwai.platon.util.WebUtils;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.po.*;
@@ -17,19 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by justin on 16/12/11.
  */
 @Service
 public class PracticeServiceImpl implements PracticeService {
-    @Autowired
-    private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
     @Autowired
@@ -41,39 +37,19 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private ChoiceDao choiceDao;
-    @Autowired
     private RestfulHelper restfulHelper;
     @Autowired
     private PointRepo pointRepo;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private CacheService cacheService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    private Map<Integer, WarmupPractice> warmupPracticeMap = Maps.newConcurrentMap();
 
     private final static String shortUrlService = "http://tinyurl.com/api-create.php?url=";
 
     private final static String submitUrlPrefix = "/fragment/c?id=";
-
-    @PostConstruct
-    public void initQuestions(){
-        List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
-        warmupPractices.stream().forEach(warmupPractice -> {
-            warmupPractice.setChoiceList(Lists.newArrayList());
-            warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
-        });
-        List<Choice> choices = choiceDao.loadAll(Choice.class);
-        choices.stream().forEach(choice -> {
-            Integer questionId = choice.getQuestionId();
-            WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
-            if(warmupPractice!=null){
-                warmupPractice.getChoiceList().add(choice);
-            }
-        });
-        logger.info("warmup practice init complete");
-    }
 
     public List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
@@ -82,7 +58,7 @@ public class PracticeServiceImpl implements PracticeService {
             String[] practiceIds = practicePlan.getPracticeId().split(",");
             for(String practiceId:practiceIds){
                 //设置分值
-                WarmupPractice warmupPractice = warmupPracticeMap.get(Integer.parseInt(practiceId));
+                WarmupPractice warmupPractice = cacheService.getWarmupPractice(Integer.parseInt(practiceId));
                 if(warmupPractice.getDifficulty()==1){
                     warmupPractice.setScore(PointRepo.EASY_SCORE);
                 }else if(warmupPractice.getDifficulty()==2){
@@ -111,7 +87,7 @@ public class PracticeServiceImpl implements PracticeService {
         for(WarmupPractice userAnswer:warmupPracticeList){
             practiceIds.add(userAnswer.getId());
             List<Integer> userChoice = userAnswer.getChoice();
-            WarmupPractice practice = warmupPracticeMap.get(userAnswer.getId());
+            WarmupPractice practice = cacheService.getWarmupPractice(userAnswer.getId());
             if(practice==null){
                 logger.error("practice {} is not existed", userAnswer.getId());
                 continue;

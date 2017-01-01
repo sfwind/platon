@@ -1,11 +1,9 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemPlanDao;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemPlan;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,18 +16,13 @@ import java.util.stream.Collectors;
 @Service
 public class ProblemServiceImpl implements ProblemService {
     @Autowired
-    private ProblemDao problemDao;
-    @Autowired
     private ProblemPlanDao problemPlanDao;
-    //缓存问题
-    private List<Problem> problems = Lists.newArrayList();
+    @Autowired
+    private CacheService cacheService;
 
     @Override
     public List<Problem> loadProblems() {
-        if(CollectionUtils.isEmpty(problems)) {
-            problems = problemDao.loadAll(Problem.class);
-        }
-        return problems;
+        return cacheService.getProblems();
     }
 
     @Override
@@ -59,9 +52,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public Problem getProblem(Integer problemId) {
-        if(CollectionUtils.isEmpty(problems)){
-            problems = loadProblems();
-        }
+        List<Problem> problems = cacheService.getProblems();
 
         for(Problem problem:problems){
             if(problem.getId()==problemId){

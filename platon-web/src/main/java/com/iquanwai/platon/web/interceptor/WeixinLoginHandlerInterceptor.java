@@ -1,9 +1,9 @@
-package com.iquanwai.platon.interceptor;
+package com.iquanwai.platon.web.interceptor;
 
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.util.CookieUtils;
-import com.iquanwai.platon.util.WebUtils;
+import com.iquanwai.platon.web.util.CookieUtils;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Created by justin on 16/8/26.
  */
-public class CourseHandlerInterceptor extends HandlerInterceptorAdapter {
+public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

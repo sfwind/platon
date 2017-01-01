@@ -1,4 +1,4 @@
-package com.iquanwai.platon.resolver;
+package com.iquanwai.platon.web.resolver;
 
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import lombok.AllArgsConstructor;

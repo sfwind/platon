@@ -35,10 +35,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
 
-    private static final int EASY = 1;
-    private static final int NORMAL = 2;
-    private static final int HARD = 3;
-
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override

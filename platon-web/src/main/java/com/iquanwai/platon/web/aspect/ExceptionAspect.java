@@ -1,8 +1,8 @@
 package com.iquanwai.platon.web.aspect;
 
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.util.CookieUtils;
-import com.iquanwai.platon.util.WebUtils;
+import com.iquanwai.platon.web.util.CookieUtils;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

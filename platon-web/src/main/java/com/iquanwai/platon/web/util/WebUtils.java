@@ -1,4 +1,4 @@
-package com.iquanwai.platon.util;
+package com.iquanwai.platon.web.util;
 
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.springframework.http.HttpStatus;

@@ -41,7 +41,7 @@
             </bean>
         </mvc:message-converters>
         <mvc:argument-resolvers>
-            <bean class="com.iquanwai.platon.resolver.LoginUserResolver"/>
+            <bean class="com.iquanwai.platon.web.resolver.LoginUserResolver"/>
         </mvc:argument-resolvers>
     </mvc:annotation-driven>
 
@@ -58,7 +58,7 @@
             <mvc:exclude-mapping path="/challenge/**" />
             <mvc:exclude-mapping path="/fragment/**" />
             <mvc:exclude-mapping path="/cache/**" />
-            <bean class="com.iquanwai.platon.interceptor.CourseHandlerInterceptor"></bean>
+            <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"></bean>
         </mvc:interceptor>
     </mvc:interceptors>
 </beans>

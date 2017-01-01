@@ -2,7 +2,11 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.slf4j.Logger;
@@ -25,13 +29,10 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private KnowledgeDao knowledgeDao;
-    @Autowired
     private KnowledgePlanDao knowledgePlanDao;
-
+    @Autowired
+    private CacheService cacheService;
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    private Map<Integer, Knowledge> knowledgeMap = Maps.newHashMap();
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
@@ -221,12 +222,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Knowledge getKnowledge(Integer knowledgeId) {
-        if(knowledgeMap.get(knowledgeId)==null){
-            Knowledge knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
-            knowledgeMap.put(knowledgeId, knowledge);
-        }
-
-        return knowledgeMap.get(knowledgeId);
+        return cacheService.getKnowledge(knowledgeId);
     }
 
     @Override

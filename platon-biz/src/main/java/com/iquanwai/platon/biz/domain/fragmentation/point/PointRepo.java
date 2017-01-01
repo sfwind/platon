@@ -28,5 +28,5 @@ public interface PointRepo {
     int HARD_SCORE = 50;
 
     //挑战训练得分
-    int CHALLENGE_PRACTICE_SCORE = 500;
+    int CHALLENGE_PRACTICE_SCORE = 0;
 }
