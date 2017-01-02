@@ -25,7 +25,7 @@ public class ExceptionAspect {
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<Map<String, Object>> jsonErrorHandler(HttpServletRequest req, Exception e) throws Exception {
         String openid = oAuthService.openId(CookieUtils.getCookie(req, OAuthService.ACCESS_TOKEN_COOKIE_NAME));
-        logger.error(openid+" "+ req.getRequestURI()+ ""+req.getQueryString(), e);
+        logger.error(openid+" "+ req.getRequestURI()+ " "+req.getQueryString(), e);
         return WebUtils.error("服务器伐开心,我们正在想办法");
     }
 }
