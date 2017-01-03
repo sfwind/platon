@@ -78,7 +78,7 @@ public class AccountServiceImpl implements AccountService {
 
             BeanUtils.populate(accountNew, result);
             //去除昵称里的表情
-            accountNew.setNickname(CommonUtils.filterEmoji(accountNew.getNickname()));
+            accountNew.setNickname(accountNew.getNickname());
             if(account==null) {
                 followUserDao.insert(accountNew);
             }else{

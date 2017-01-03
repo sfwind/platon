@@ -5,9 +5,11 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
+import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,6 +21,7 @@ import org.springframework.util.Assert;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -78,7 +81,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) {
+    public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) throws AnswerException{
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
         Integer point = 0;
@@ -99,8 +102,13 @@ public class PracticeServiceImpl implements PracticeService {
                 rightNumber++;
             }
             point +=score;
+            WarmupSubmit warmupSubmit = warmupSubmitDao.getWarmupSubmit(planId, practice.getId());
+            if(warmupSubmit!=null){
+                logger.error("{} has answered practice {}", openid, practice.getId());
+                throw new AnswerException();
+            }
             //生成提交记录
-            WarmupSubmit warmupSubmit = new WarmupSubmit();
+            warmupSubmit = new WarmupSubmit();
             warmupSubmit.setContent(StringUtils.join(userChoice, ","));
             warmupSubmit.setPlanId(planId);
             warmupSubmit.setQuestionId(practice.getId());
@@ -167,7 +175,27 @@ public class PracticeServiceImpl implements PracticeService {
             }
             challengePractice.setContent(submit.getContent());
         }
+
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        //获取挑战训练的文案
+        String description = getChallengePracticeContent(improvementPlan);
+        challengePractice.setDescription(description);
         return challengePractice;
+    }
+
+    private String getChallengePracticeContent(ImprovementPlan improvementPlan) {
+        //第一天文案
+        if(DateUtils.parseDateToString(improvementPlan.getStartDate()).equals(
+                DateUtils.parseDateToString(new Date()))){
+            return "今天是训练第1天，给自己定个小目标，或者写下跟本次训练相关的困扰你的难题吧。小目标帮你更积极地学习，也带给你更多成就感！";
+        }
+        //TODO:最后一天
+        else if(DateUtils.parseDateToString(improvementPlan.getCloseDate()).equals(
+                DateUtils.parseDateToString(new Date()))){
+            return "";
+        }else{
+            return "如果今天的知识点，对你的目标/难题有所启发，不妨写几个字吧，慢慢接近小目标！";
+        }
     }
 
     @Override

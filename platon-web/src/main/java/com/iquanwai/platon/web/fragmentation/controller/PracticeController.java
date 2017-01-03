@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -67,8 +68,13 @@ public class PracticeController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        WarmupResult warmupResult = practiceService.answerWarmupPractice(
-                warmupPracticeDto.getPractice(), improvementPlan.getId(), loginUser.getOpenId());
+        WarmupResult warmupResult = null;
+        try {
+            warmupResult = practiceService.answerWarmupPractice(
+                    warmupPracticeDto.getPractice(), improvementPlan.getId(), loginUser.getOpenId());
+        } catch (AnswerException e) {
+            return WebUtils.error("您已做完这套练习");
+        }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")

@@ -71,7 +71,7 @@ public class PlanController {
 
         PlayIntroduceDto playIntroduceDto = new PlayIntroduceDto();
 
-        int interval = DateUtils.interval(improvementPlan.getStartDate(),improvementPlan.getEndDate());
+        int interval = DateUtils.interval(improvementPlan.getStartDate(),improvementPlan.getCloseDate());
         playIntroduceDto.setLength(interval);
 
         DateTime dateTime = new DateTime(improvementPlan.getEndDate());

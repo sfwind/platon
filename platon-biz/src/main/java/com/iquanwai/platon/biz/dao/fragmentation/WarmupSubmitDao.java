@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.WarmupSubmit;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,5 +54,20 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         }
 
         return Lists.newArrayList();
+    }
+
+    public WarmupSubmit getWarmupSubmit(int planId, Integer questionId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<WarmupSubmit> h = new BeanHandler(WarmupSubmit.class);
+        try {
+            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId=?",
+                    h, planId, questionId);
+
+            return submit;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
     }
 }

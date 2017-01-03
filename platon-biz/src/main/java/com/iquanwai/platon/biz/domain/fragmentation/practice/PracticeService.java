@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
+import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.WarmupPractice;
@@ -30,7 +31,7 @@ public interface PracticeService {
      * @param warmupPracticeList 练习答案
      * @param planId 训练id
      * */
-    WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid);
+    WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) throws AnswerException;
 
     /**
      * 获取应用训练
