@@ -240,7 +240,7 @@ public class PracticeServiceImpl implements PracticeService {
             if(practicePlan!=null && practicePlan.getStatus() == 0){
                 practicePlanDao.complete(practicePlan.getId());
                 improvementPlanDao.updateComplete(challengeSubmit.getPlanId());
-                pointRepo.risePoint(challengeSubmit.getPlanId(), PointRepo.CHALLENGE_PRACTICE_SCORE);
+//                pointRepo.risePoint(challengeSubmit.getPlanId(), PointRepo.CHALLENGE_PRACTICE_SCORE);
             }
         }
         return result;
