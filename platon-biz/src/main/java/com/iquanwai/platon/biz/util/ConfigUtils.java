@@ -93,6 +93,10 @@ public class ConfigUtils {
 		return config.getString("adapter.domain");
 	}
 
+	public static String pcDomainName(){
+		return config.getString("pc.domain");
+	}
+
 	public static String resourceDomainName(){
 		return config.getString("resource.domain");
 	}

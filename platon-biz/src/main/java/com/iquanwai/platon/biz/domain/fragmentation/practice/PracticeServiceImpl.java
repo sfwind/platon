@@ -148,7 +148,7 @@ public class PracticeServiceImpl implements PracticeService {
 
 //        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
         String url = submitUrlPrefix;
-        challengePractice.setPcurl(ConfigUtils.domainName()+url);
+        challengePractice.setPcurl(ConfigUtils.pcDomainName()+url);
 //        //生成挑战训练提交记录
 //        if(submit==null){
 //            submit = new ChallengeSubmit();
