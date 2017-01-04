@@ -7,7 +7,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
@@ -52,7 +51,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     private final static String shortUrlService = "http://tinyurl.com/api-create.php?url=";
 
-    private final static String submitUrlPrefix = "/fragment/c?id=";
+    private final static String submitUrlPrefix = "/home";
 
     public List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
@@ -147,34 +146,18 @@ public class PracticeServiceImpl implements PracticeService {
         Assert.notNull(openid, "openid不能为空");
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
 
-        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
-        if(submit==null || submit.getContent()==null) {
-            challengePractice.setSubmitted(false);
-        }else{
-            challengePractice.setSubmitted(true);
-        }
-        //生成挑战训练提交记录
-        if(submit==null){
-            String url = submitUrlPrefix+ CommonUtils.randomString(6);
-            String shortUrl = generateShortUrl(ConfigUtils.domainName()+url);
-            challengePractice.setPcurl(shortUrl);
-            submit = new ChallengeSubmit();
-            submit.setOpenid(openid);
-            submit.setPlanId(planId);
-            submit.setSubmitUrl(url);
-            submit.setChallengeId(id);
-            if(shortUrl.equals(ConfigUtils.domainName()+url)){
-                challengeSubmitDao.insert(submit);
-            }else {
-                submit.setShortUrl(shortUrl);
-                challengeSubmitDao.insert(submit);
-            }
-        }else{
-            if(submit.getSubmitUrl()!=null){
-                challengePractice.setPcurl(submit.getShortUrl());
-            }
-            challengePractice.setContent(submit.getContent());
-        }
+//        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
+        String url = submitUrlPrefix;
+        challengePractice.setPcurl(ConfigUtils.domainName()+url);
+//        //生成挑战训练提交记录
+//        if(submit==null){
+//            submit = new ChallengeSubmit();
+//            submit.setOpenid(openid);
+//            submit.setPlanId(planId);
+//            submit.setSubmitUrl(url);
+//            submit.setChallengeId(id);
+//            challengeSubmitDao.insert(submit);
+//        }
 
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         //获取挑战训练的文案
