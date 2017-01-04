@@ -28,14 +28,14 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public int insert(ImprovementPlan plan){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ImprovementPlan(Openid, Complete, Status, EndDate, " +
-                "StartDate, CloseDate, Point, Total, ProblemId, Keycnt, CurrentSeries, TotalSeries) " +
-                "values(?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "insert into ImprovementPlan(Openid, WarmupComplete, Status, EndDate, " +
+                "StartDate, CloseDate, Point, Total, ApplicationComplete, ProblemId, Keycnt, CurrentSeries, TotalSeries) " +
+                "values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    plan.getOpenid(), plan.getComplete(), plan.getStatus(),
+                    plan.getOpenid(), plan.getWarmupComplete(), plan.getStatus(),
                     plan.getEndDate(), plan.getStartDate(), plan.getCloseDate(),
-                    plan.getPoint(), plan.getTotal(),
+                    plan.getPoint(), plan.getTotal(), plan.getApplicationComplete(),
                     plan.getProblemId(), plan.getKeycnt(),
                     plan.getCurrentSeries(), plan.getTotalSeries());
             return insertRs.intValue();
@@ -129,10 +129,21 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateComplete(Integer planId){
+    public void updateApplicationComplete(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "UPDATE ImprovementPlan SET Complete = Complete+1 where Id=?";
+        String sql = "UPDATE ImprovementPlan SET ApplicationComplete = ApplicationComplete+1 where Id=?";
+        try {
+            asyncRun.update(sql, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void updateWarmupComplete(Integer planId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        String sql = "UPDATE ImprovementPlan SET WarmupComplete = WarmupComplete+1 where Id=?";
         try {
             asyncRun.update(sql, planId);
         } catch (SQLException e) {

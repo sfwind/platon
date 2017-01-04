@@ -229,7 +229,7 @@ public class PlanServiceImpl implements PlanService {
     public void completePlan(Integer planId) {
         //训练计划结束
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
-        if(plan.getComplete()>=plan.getTotal()) {
+        if(plan.getWarmupComplete()+plan.getApplicationComplete()>=plan.getTotal()) {
             logger.info("{} is complete", planId);
             improvementPlanDao.updateStatus(planId, 2);
         }else{
@@ -256,7 +256,7 @@ public class PlanServiceImpl implements PlanService {
                 //应用训练自动完成
                 if(practice.getType()==PracticePlan.APPLICATION){
                     practicePlanDao.complete(practice.getPracticePlanId());
-                    improvementPlanDao.updateComplete(improvementPlan.getId());
+                    improvementPlanDao.updateApplicationComplete(improvementPlan.getId());
                 }
                 return practice;
             }

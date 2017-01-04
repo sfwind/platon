@@ -9,7 +9,6 @@ import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -18,8 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -35,11 +33,9 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private WarmupSubmitDao warmupSubmitDao;
     @Autowired
-    private ChallengeSubmitDao challengeSubmitDao;
-    @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private RestfulHelper restfulHelper;
+    private KnowledgePlanDao knowledgePlanDao;
     @Autowired
     private PointRepo pointRepo;
     @Autowired
@@ -48,8 +44,6 @@ public class PracticeServiceImpl implements PracticeService {
     private CacheService cacheService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final static String shortUrlService = "http://tinyurl.com/api-create.php?url=";
 
     private final static String submitUrlPrefix = "/home";
 
@@ -121,7 +115,7 @@ public class PracticeServiceImpl implements PracticeService {
         if(practicePlan!=null && practicePlan.getStatus() == 0) {
             practicePlanDao.complete(practicePlan.getId());
         }
-        improvementPlanDao.updateComplete(planId);
+        improvementPlanDao.updateWarmupComplete(planId);
         pointRepo.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
@@ -136,7 +130,7 @@ public class PracticeServiceImpl implements PracticeService {
         PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, applicationPractice.getId()+"", PracticePlan.APPLICATION);
         if(practicePlan!=null && practicePlan.getStatus() == 0){
             practicePlanDao.complete(practicePlan.getId());
-            improvementPlanDao.updateComplete(planId);
+            improvementPlanDao.updateApplicationComplete(planId);
         }
         return applicationPractice;
     }
@@ -175,59 +169,14 @@ public class PracticeServiceImpl implements PracticeService {
         //TODO:最后一天
         else if(DateUtils.parseDateToString(improvementPlan.getCloseDate()).equals(
                 DateUtils.parseDateToString(new Date()))){
-            return "";
+            String message =  "经过{0}天的学习，你学了{1}个知识点，做了{2}道题，那么当初的小目标实现了吗？难题也有答案了吗？把你的感悟、心得、经历写下来，跟大家交流、共同进步吧！";
+
+            int date = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getCloseDate());
+            int knowledgeCount = knowledgePlanDao.getKnowledgePlanByPlanId(improvementPlan.getId()).size();
+            int practiceNumbers = improvementPlan.getWarmupComplete()*GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER;
+            return MessageFormat.format(message, date, knowledgeCount, practiceNumbers);
         }else{
             return "如果今天的知识点，对你的目标/难题有所启发，不妨写几个字吧，慢慢接近小目标！";
         }
     }
-
-    @Override
-    public ChallengePractice getChallengePractice(String code) {
-        String submitUrl = submitUrlPrefix+code;
-        ChallengeSubmit challengeSubmit = challengeSubmitDao.load(submitUrl);
-        if(challengeSubmit==null){
-            logger.error("code {} is not existed", submitUrl);
-            return null;
-        }
-        return getChallengePractice(challengeSubmit.getChallengeId(), challengeSubmit.getOpenid(),
-                challengeSubmit.getPlanId());
-    }
-
-    private String generateShortUrl(String url) {
-        String requestUrl = shortUrlService;
-        try {
-            requestUrl = requestUrl + URLEncoder.encode(url, "utf-8");
-        } catch (UnsupportedEncodingException ignored) {
-
-        }
-        String shortUrl = restfulHelper.getPlain(requestUrl);
-        if(shortUrl.startsWith("http")){
-            return shortUrl;
-        }else{
-            return url;
-        }
-    }
-
-    @Override
-    public Boolean submit(String code, String content){
-        String submitUrl = submitUrlPrefix+code;
-        ChallengeSubmit challengeSubmit = challengeSubmitDao.load(submitUrl);
-        if(challengeSubmit==null){
-            logger.error("code {} is not existed", submitUrl);
-            return false;
-        }
-        boolean result = challengeSubmitDao.answer(challengeSubmit.getId(), content);
-        if(result) {
-            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(challengeSubmit.getPlanId(),
-                    challengeSubmit.getChallengeId()+"", PracticePlan.CHALLENGE);
-            if(practicePlan!=null && practicePlan.getStatus() == 0){
-                practicePlanDao.complete(practicePlan.getId());
-                improvementPlanDao.updateComplete(challengeSubmit.getPlanId());
-//                pointRepo.risePoint(challengeSubmit.getPlanId(), PointRepo.CHALLENGE_PRACTICE_SCORE);
-            }
-        }
-        return result;
-    }
-
-
 }
