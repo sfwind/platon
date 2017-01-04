@@ -51,7 +51,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and CloseDate>=? and Status = 1";
         ResultSetHandler<ImprovementPlan> h = new BeanHandler(ImprovementPlan.class);
         try {
-            ImprovementPlan improvementPlan =runner.query(sql, h, openid, DateUtils.parseDateTimeToString(new Date()));
+            ImprovementPlan improvementPlan =runner.query(sql, h, openid, DateUtils.parseDateToString(new Date()));
             return improvementPlan;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
