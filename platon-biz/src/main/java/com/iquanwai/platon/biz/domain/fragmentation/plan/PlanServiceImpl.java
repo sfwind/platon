@@ -224,6 +224,7 @@ public class PlanServiceImpl implements PlanService {
     public void learnKnowledge(Integer knowledgeId, Integer planId) {
         KnowledgePlan knowledgePlan = knowledgePlanDao.getKnowledgePlan(planId, knowledgeId);
         if(knowledgePlan==null){
+            knowledgePlan = new KnowledgePlan();
             knowledgePlan.setPlanId(planId);
             knowledgePlan.setKnowledgeId(knowledgeId);
             knowledgePlan.setAppear(true);
