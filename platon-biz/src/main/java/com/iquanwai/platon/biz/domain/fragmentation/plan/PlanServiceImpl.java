@@ -183,11 +183,6 @@ public class PlanServiceImpl implements PlanService {
         Knowledge knowledge = getKnowledge(knowledgeId);
         KnowledgePlan knowledgePlan = knowledgePlanDao.getKnowledgePlan(planId, knowledgeId);
         if(knowledgePlan==null){
-            knowledgePlan = new KnowledgePlan();
-            knowledgePlan.setAppear(true);
-            knowledgePlan.setKnowledgeId(knowledgeId);
-            knowledgePlan.setPlanId(planId);
-            knowledgePlanDao.insert(knowledgePlan);
             knowledge.setAppear(0);
         }else {
             knowledge.setAppear(1);
@@ -223,6 +218,17 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public Knowledge getKnowledge(Integer knowledgeId) {
         return cacheService.getKnowledge(knowledgeId);
+    }
+
+    @Override
+    public void learnKnowledge(Integer knowledgeId, Integer planId) {
+        KnowledgePlan knowledgePlan = knowledgePlanDao.getKnowledgePlan(planId, knowledgeId);
+        if(knowledgePlan==null){
+            knowledgePlan.setPlanId(planId);
+            knowledgePlan.setKnowledgeId(knowledgeId);
+            knowledgePlan.setAppear(true);
+            knowledgePlanDao.insert(knowledgePlan);
+        }
     }
 
     @Override

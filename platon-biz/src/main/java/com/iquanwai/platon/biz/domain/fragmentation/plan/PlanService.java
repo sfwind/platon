@@ -53,6 +53,13 @@ public interface PlanService {
     Knowledge getKnowledge(Integer knowledgeId);
 
     /**
+     * 学习知识点
+     * @param knowledgeId 知识点id
+     * @param planId 训练计划id
+     */
+    void learnKnowledge(Integer knowledgeId, Integer planId);
+
+    /**
      * 训练计划结束
      * @param planId 训练计划id
      */

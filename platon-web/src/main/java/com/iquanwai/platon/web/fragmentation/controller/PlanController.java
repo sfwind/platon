@@ -129,4 +129,25 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(knowledge);
     }
+
+    @RequestMapping("/knowledge/learn/{knowledgeId}")
+    public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
+                                                             @PathVariable Integer knowledgeId){
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        planService.learnKnowledge(knowledgeId, improvementPlan.getId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("知识点")
+                .function("知识点回顾")
+                .action("学习知识点")
+                .memo(knowledgeId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
 }
