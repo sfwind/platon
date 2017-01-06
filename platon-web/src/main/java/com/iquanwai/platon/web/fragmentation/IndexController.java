@@ -2,7 +2,9 @@ package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
+import com.iquanwai.platon.biz.domain.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.po.Account;
+import com.iquanwai.platon.biz.po.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -25,31 +27,38 @@ public class IndexController {
     private OAuthService oAuthService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private WhiteListService whiteListService;
 
     @RequestMapping(value = "/fragment/**",method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        if(!checkAccessToken(request)){
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = oAuthService.openId(accessToken);
+        if(!checkAccessToken(request, openid)){
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
             WebUtils.auth(request, response);
+            return null;
+        }
+        // TODO: remove later
+        boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, openid);
+        if(!inWhite){
+            response.sendRedirect("/403.jsp");
             return null;
         }
 
         return courseView(request);
     }
 
-    private boolean checkAccessToken(HttpServletRequest request){
+    private boolean checkAccessToken(HttpServletRequest request, String openid){
         if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
             return true;
         }
 
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        String openId = oAuthService.openId(accessToken);
-
-        if(StringUtils.isEmpty(openId)){
+        if(StringUtils.isEmpty(openid)){
             return false;
         }
 
-        Account account = accountService.getAccount(openId, false);
+        Account account = accountService.getAccount(openid, false);
         
         return account!=null;
     }

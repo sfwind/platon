@@ -3,15 +3,13 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.domain.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.OperationLog;
-import com.iquanwai.platon.biz.po.WhiteList;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +36,6 @@ public class PlanController {
     private GeneratePlanService generatePlanService;
     @Autowired
     private OperationLogService operationLogService;
-    @Autowired
-    private WhiteListService whiteListService;
 
     @RequestMapping("/choose/problem/{problemId}")
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
@@ -92,11 +88,6 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser){
 
         Assert.notNull(loginUser, "用户不能为空");
-        // TODO: remove later
-        boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, loginUser.getOpenId());
-        if(!inWhite){
-            return WebUtils.forbid("此功能还未开放");
-        }
         ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
         if(improvementPlan==null){
             return WebUtils.result(null);
