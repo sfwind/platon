@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/4.
@@ -71,6 +72,7 @@ public class PlanServiceImpl implements PlanService {
                     break;
                 }
                 //反之,则数据初始化
+                seriesCursor = practicePlan.getSeries();
                 tempPractice.clear();
                 complete = true;
             }
@@ -146,11 +148,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> runningPractice = Lists.newArrayList();
         List<PracticePlan> tempPractice = Lists.newArrayList();
         //找到挑战训练
-        for(PracticePlan practicePlan:practicePlans) {
-            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
-                runningPractice.add(practicePlan);
-            }
-        }
+        runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
 
         boolean hasKey = false;
         if(improvementPlan.getKeycnt()>0){

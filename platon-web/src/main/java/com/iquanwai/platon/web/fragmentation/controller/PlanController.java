@@ -69,7 +69,8 @@ public class PlanController {
 
         int interval = DateUtils.interval(improvementPlan.getStartDate(),improvementPlan.getCloseDate());
         playIntroduceDto.setLength(interval);
-
+        interval = DateUtils.interval(improvementPlan.getStartDate(),improvementPlan.getEndDate());
+        playIntroduceDto.setTotalSeries(interval);
         DateTime dateTime = new DateTime(improvementPlan.getCloseDate());
         int month = dateTime.getMonthOfYear();
         int day = dateTime.getDayOfMonth();
