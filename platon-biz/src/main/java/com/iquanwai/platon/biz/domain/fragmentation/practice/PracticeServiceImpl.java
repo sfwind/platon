@@ -45,7 +45,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final static String submitUrlPrefix = "/home";
+    private final static String submitUrlPrefix = "/community";
 
     public List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
@@ -139,8 +139,7 @@ public class PracticeServiceImpl implements PracticeService {
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
 
 //        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
-        String url = submitUrlPrefix;
-        challengePractice.setPcurl(ConfigUtils.pcDomainName()+url);
+        challengePractice.setPcurl(ConfigUtils.pcDomainName()+submitUrlPrefix);
 //        //生成挑战训练提交记录
 //        if(submit==null){
 //            submit = new ChallengeSubmit();
@@ -164,7 +163,6 @@ public class PracticeServiceImpl implements PracticeService {
                 DateUtils.parseDateToString(new Date()))){
             return "今天是训练第1天，给自己定个小目标，或者写下跟本次训练相关的困扰你的难题吧。小目标帮你更积极地学习，也带给你更多成就感！";
         }
-        //TODO:最后一天
         else if(DateUtils.parseDateToString(improvementPlan.getCloseDate()).equals(
                 DateUtils.parseDateToString(new Date()))){
             String message =  "经过{0}天的学习，你学了{1}个知识点，做了{2}道题，那么当初的小目标实现了吗？难题也有答案了吗？把你的感悟、心得、经历写下来，跟大家交流、共同进步吧！";
