@@ -55,26 +55,38 @@ public class PlanServiceImpl implements PlanService {
         if(CollectionUtils.isEmpty(practices)){
             return false;
         }
-        boolean isComplete = true;
+
+        //找到最后一组已完成的练习
+        List<PracticePlan> tempPractice = Lists.newArrayList();
+        Integer seriesCursor = 0;
+        boolean complete = true;
         for(PracticePlan practicePlan:practices){
             //跳过挑战训练
             if(practicePlan.getType()==PracticePlan.CHALLENGE){
                 continue;
             }
-            //已总结过,不再总结
-            if(practicePlan.getSummary()){
-                return false;
+            if(!practicePlan.getSeries().equals(seriesCursor)){
+                //如果该组所有练习都已完成,就找到
+                if(seriesCursor!=0 && complete){
+                    break;
+                }
+                //反之,则数据初始化
+                tempPractice.clear();
+                complete = true;
             }
             if(practicePlan.getStatus()==0){
-                isComplete = false;
+                complete = false;
+            }else{
+                tempPractice.add(practicePlan);
             }
         }
         //已完成,但未总结
-        if(isComplete){
-            PracticePlan practicePlan = practices.get(0);
+        PracticePlan practicePlan = tempPractice.get(0);
+        if(!practicePlan.getSummary()) {
             practicePlanDao.summary(practicePlan.getPlanId(), practicePlan.getSeries());
-            return false;
+            return true;
         }
+
         return false;
     }
 
