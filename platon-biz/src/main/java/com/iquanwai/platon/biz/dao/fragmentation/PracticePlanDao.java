@@ -25,13 +25,13 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void batchInsert(List<PracticePlan> planList){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence, Series) " +
-                "values(?,?,?,?,?,?,?,?)";
+        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence, Series, Summary) " +
+                "values(?,?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[planList.size()][];
             for (int i = 0; i < planList.size(); i++) {
                 PracticePlan practicePlan = planList.get(i);
-                param[i] = new Object[8];
+                param[i] = new Object[9];
                 param[i][0] = practicePlan.getPracticeId();
                 param[i][1] = practicePlan.getPlanId();
                 param[i][2] = practicePlan.getType();
@@ -40,6 +40,7 @@ public class PracticePlanDao extends PracticeDBUtil {
                 param[i][5] = practicePlan.getKnowledgeId();
                 param[i][6] = practicePlan.getSequence();
                 param[i][7] = practicePlan.getSeries();
+                param[i][8] = practicePlan.getSummary();
             }
             runner.batch(sql, param);
         }catch (SQLException e) {
@@ -109,6 +110,17 @@ public class PracticePlanDao extends PracticeDBUtil {
         String sql = "update PracticePlan set UnLocked=1 where Id=?";
         try {
             asyncRun.update(sql, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void summary(Integer planId, Integer series){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        String sql = "update PracticePlan set Summary=1 where PlanId=? and Series=?";
+        try {
+            asyncRun.update(sql, planId, series);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

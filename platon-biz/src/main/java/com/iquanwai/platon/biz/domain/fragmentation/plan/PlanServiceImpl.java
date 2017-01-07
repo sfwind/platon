@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,36 @@ public class PlanServiceImpl implements PlanService {
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
         //写入非db字段
+        improvementPlan.setSummary(isSummary(practicePlans));
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
+    }
+
+    private Boolean isSummary(List<PracticePlan> practices) {
+        if(CollectionUtils.isEmpty(practices)){
+            return false;
+        }
+        boolean isComplete = true;
+        for(PracticePlan practicePlan:practices){
+            //跳过挑战训练
+            if(practicePlan.getType()==PracticePlan.CHALLENGE){
+                continue;
+            }
+            //已总结过,不再总结
+            if(practicePlan.getSummary()){
+                return false;
+            }
+            if(practicePlan.getStatus()==0){
+                isComplete = false;
+            }
+        }
+        //已完成,但未总结
+        if(isComplete){
+            PracticePlan practicePlan = practices.get(0);
+            practicePlanDao.summary(practicePlan.getPlanId(), practicePlan.getSeries());
+            return false;
+        }
+        return false;
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
@@ -113,11 +142,11 @@ public class PlanServiceImpl implements PlanService {
         if(improvementPlan.getKeycnt()>0){
             hasKey = true;
         }
-
+        int seriesCursor = 0; //当前组指针
         if(hasKey){
             //如果有解锁钥匙,找到第一组未完成的练习
             boolean running = false;
-            int seriesCursor = 0; //当前组指针
+
             for(PracticePlan practicePlan:practicePlans) {
                 if (practicePlan.getType() == PracticePlan.CHALLENGE) {
                     continue;
@@ -155,7 +184,6 @@ public class PlanServiceImpl implements PlanService {
             }
         }else{
             //如果没有解锁钥匙,找到最后一组已解锁的练习
-            int seriesCursor = 0; //当前组指针
             for(PracticePlan practicePlan:practicePlans) {
                 //如果练习未解锁,跳出循环
                 if(!practicePlan.getUnlocked()){

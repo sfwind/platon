@@ -78,6 +78,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setStatus(0);
             practicePlan.setSequence(WARMUP_TASK_NUMBER+2);
             practicePlan.setSeries(0);
+            practicePlan.setSummary(false);
             selected.add(practicePlan);
         });
 
@@ -134,6 +135,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setStatus(0);
                 practicePlan.setSequence(WARMUP_TASK_NUMBER + 1);
                 practicePlan.setSeries(i + 1);
+                practicePlan.setSummary(false);
                 selectedPractice.add(practicePlan);
             }
             knowledgeCursor++;
@@ -169,8 +171,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 //        applicationPractices.addAll(randomSelect(normalPractice, normalCount));
         //hard题目
 //        applicationPractices.addAll(randomSelect(hardPractice, hardCount));
+        List<ApplicationPractice> practiceList = randomSelect(practices, count);
 
-        return randomSelect(practices, count);
+        practiceList.stream().sorted((o1, o2) -> {
+            ApplicationPractice applicationPractice1 = (ApplicationPractice)o1;
+            ApplicationPractice applicationPractice2 = (ApplicationPractice)o2;
+            return applicationPractice1.getDifficulty()-applicationPractice2.getDifficulty();
+        });
+        return practiceList;
     }
 
     private List<PracticePlan> createWarmupPractice(Problem problem, Integer planId) {
@@ -197,10 +205,11 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
-                practicePlan.setType(1);
+                practicePlan.setType(PracticePlan.WARM_UP);
                 practicePlan.setSequence(j + 1);
                 practicePlan.setSeries(i + 1);
                 practicePlan.setStatus(0);
+                practicePlan.setSummary(false);
                 selectedPractice.add(practicePlan);
                 for(int k=0;k<WARMUP_TASK_PRACTICE_NUMBER;k++) {
                     WarmupPractice practice = null;
@@ -288,13 +297,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //hard题目
 //        List hardList = randomSelect(easyPractice, count-normalList.size()-easyList.size());
 //        warmupPractices.addAll(hardList);
-        // TODO:先不分难度,按难度排序
         List practiceList =  randomSelect(practices, count);
 
         practiceList.stream().sorted((o1, o2) -> {
-            WarmupPractice warmupPractice1 = (WarmupPractice)o1;
-            WarmupPractice warmupPractice2 = (WarmupPractice)o2;
-            return warmupPractice1.getDifficulty()-warmupPractice2.getDifficulty();
+            WarmupPractice warmupPractice1 = (WarmupPractice) o1;
+            WarmupPractice warmupPractice2 = (WarmupPractice) o2;
+            return warmupPractice1.getDifficulty() - warmupPractice2.getDifficulty();
         });
 
         return practiceList;

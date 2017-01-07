@@ -29,4 +29,5 @@ public class ImprovementPlan {
     private List<Practice> practice; //非db字段
     private Integer length; //非db字段 总时长
     private Integer deadline; //非db字段 离截止日期天数
+    private Boolean summary; //非db字段 是否显示任务总结
 }
