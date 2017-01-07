@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,6 +62,9 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> tempPractice = Lists.newArrayList();
         Integer seriesCursor = 0;
         boolean complete = true;
+
+        //按照series倒序排
+        practices.sort((o1, o2) -> o2.getSeries()-o1.getSeries());
         for(PracticePlan practicePlan:practices){
             //跳过挑战训练
             if(practicePlan.getType()==PracticePlan.CHALLENGE){

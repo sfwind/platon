@@ -4,11 +4,11 @@
 <img  src="/image/403.png">
 <style type="text/css">
     img {
-        width: 400px;
+        width: 800px;
         position: absolute;
-        top: 20%;
+        top: 5%;
         left: 50%;
-        margin-left: -200px;
+        margin-left: -400px;
     }
 
 
