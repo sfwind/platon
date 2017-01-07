@@ -47,9 +47,9 @@ public class PracticeServiceImpl implements PracticeService {
 
     private final static String submitUrlPrefix = "/home";
 
-    public List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence){
+    public List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
-        PracticePlan practicePlan = practicePlanDao.getPracticePlan(planId, series, sequence);
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if(practicePlan!=null) {
             String[] practiceIds = practicePlan.getPracticeId().split(",");
             for(String practiceId:practiceIds){
@@ -74,14 +74,13 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) throws AnswerException{
+    public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
+                                             Integer planId, String openid) throws AnswerException{
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
         Integer point = 0;
         warmupResult.setTotal(GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER);
-        List<Integer> practiceIds = Lists.newArrayList();
         for(WarmupPractice userAnswer:warmupPracticeList){
-            practiceIds.add(userAnswer.getId());
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = cacheService.getWarmupPractice(userAnswer.getId());
             if(practice==null){
@@ -110,8 +109,7 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setOpenid(openid);
             warmupSubmitDao.insert(warmupSubmit);
         }
-        PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId,
-                StringUtils.join(practiceIds, ","), 1);
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if(practicePlan!=null && practicePlan.getStatus() == 0) {
             practicePlanDao.complete(practicePlan.getId());
         }

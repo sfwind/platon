@@ -37,10 +37,9 @@ public class PracticeController {
     @Autowired
     private OperationLogService operationLogService;
 
-    @RequestMapping("/warmup/start/{series}/{sequence}")
+    @RequestMapping("/warmup/start/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
-                                                           @PathVariable Integer series,
-                                                           @PathVariable Integer sequence){
+                                                           @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
         if(improvementPlan==null){
@@ -48,7 +47,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                improvementPlan.getId(), series, sequence);
+                improvementPlan.getId(), practicePlanId);
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -59,8 +58,9 @@ public class PracticeController {
         return WebUtils.result(warmupPracticeDto);
     }
 
-    @RequestMapping(value = "/warmup/answer", method = RequestMethod.POST)
+    @RequestMapping(value = "/warmup/answer/{practicePlanId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
+                                                      @PathVariable Integer practicePlanId,
                                                       @RequestBody WarmupPracticeDto warmupPracticeDto){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
@@ -71,7 +71,8 @@ public class PracticeController {
         WarmupResult warmupResult = null;
         try {
             warmupResult = practiceService.answerWarmupPractice(
-                    warmupPracticeDto.getPractice(), improvementPlan.getId(), loginUser.getOpenId());
+                    warmupPracticeDto.getPractice(), practicePlanId,
+                    improvementPlan.getId(), loginUser.getOpenId());
         } catch (AnswerException e) {
             return WebUtils.error("您已做完这套练习");
         }
@@ -126,10 +127,9 @@ public class PracticeController {
         return WebUtils.result(challengePractice);
     }
 
-    @RequestMapping("/warmup/analysis/{series}/{sequence}")
+    @RequestMapping("/warmup/analysis/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> analysisWarmup(LoginUser loginUser,
-                                                           @PathVariable Integer series,
-                                                           @PathVariable Integer sequence){
+                                                              @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
         if(improvementPlan==null){
@@ -137,7 +137,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                improvementPlan.getId(), series, sequence);
+                improvementPlan.getId(), practicePlanId);
         List<Integer> questionIds = warmupPracticeList.stream().map(warmupPractice -> warmupPractice.getId()).collect(Collectors.toList());
         // 获取用户提交
         List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);

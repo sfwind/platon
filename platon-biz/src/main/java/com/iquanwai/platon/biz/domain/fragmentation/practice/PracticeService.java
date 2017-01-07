@@ -15,10 +15,9 @@ public interface PracticeService {
     /**
      * 获取热身训练列表
      * @param planId 训练id
-     * @param series 训练组编号
-     * @param sequence 组内顺序
+     * @param practicePlanId 训练组编号
      * */
-    List<WarmupPractice> getWarmupPractice(Integer planId, Integer series, Integer sequence);
+    List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId);
 
     /**
      * 获取热身训练解析
@@ -31,7 +30,8 @@ public interface PracticeService {
      * @param warmupPracticeList 练习答案
      * @param planId 训练id
      * */
-    WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer planId, String openid) throws AnswerException;
+    WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
+                                      Integer planId, String openid) throws AnswerException;
 
     /**
      * 获取应用训练

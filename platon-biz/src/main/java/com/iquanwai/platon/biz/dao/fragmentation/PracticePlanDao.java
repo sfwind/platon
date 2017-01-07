@@ -78,21 +78,6 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public PracticePlan getPracticePlan(Integer planId, Integer series, Integer sequence){
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=? and Sequence=?";
-        try {
-            PracticePlan practicePlan = run.query(sql, h,
-                    planId, series, sequence);
-            return practicePlan;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return null;
-    }
-
     public void complete(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
