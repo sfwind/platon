@@ -86,7 +86,7 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         //已完成,但未总结
-        if(CollectionUtils.isNotEmpty(tempPractice)) {
+        if(CollectionUtils.isNotEmpty(tempPractice) && complete) {
             PracticePlan practicePlan = tempPractice.get(0);
             if (!practicePlan.getSummary()) {
                 practicePlanDao.summary(practicePlan.getPlanId(), practicePlan.getSeries());
