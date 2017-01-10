@@ -42,6 +42,11 @@ public class PlanController {
                                                           @PathVariable Integer problemId){
 
         Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan!=null){
+            LOGGER.error("planId {} is existed", improvementPlan.getId());
+            return WebUtils.error("您已经有正在运行的训练,耐心学习吧~");
+        }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

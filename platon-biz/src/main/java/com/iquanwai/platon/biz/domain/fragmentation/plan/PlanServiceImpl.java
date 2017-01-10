@@ -2,10 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.KnowledgePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -28,6 +25,8 @@ public class PlanServiceImpl implements PlanService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProblemDao problemDao;
+    @Autowired
+    private ProblemPlanDao problemPlanDao;
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
@@ -286,6 +285,7 @@ public class PlanServiceImpl implements PlanService {
             logger.info("{} is terminated", planId);
             improvementPlanDao.updateStatus(planId, 3);
         }
+        problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
     }
 
     @Override
