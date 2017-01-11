@@ -23,11 +23,12 @@ public class ImprovementPlan {
     private Integer applicationComplete; //应用训练完成数量
     private Integer total; //任务总数
     private Integer keycnt; //钥匙数量
-    private Integer currentSeries; //当前题组
+    private Integer currentSeries; //已解锁的题组
     private Integer totalSeries; //总题组
     private Problem problem; //非db字段 问题
     private List<Practice> practice; //非db字段
     private Integer length; //非db字段 总时长
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean summary; //非db字段 是否显示任务总结
+    private Integer series; //非db字段 当前组号
 }
