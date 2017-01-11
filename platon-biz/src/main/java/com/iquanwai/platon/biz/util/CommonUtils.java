@@ -61,6 +61,9 @@ public class CommonUtils {
             if(errcode.equals(ErrorConstants.ACCESS_TOKEN_EXPIRED)){
                 throw new WeixinException(ErrorConstants.ACCESS_TOKEN_EXPIRED, "accessToken过期了");
             }
+            if(errcode.equals(ErrorConstants.ACCESS_TOKEN_INVALID)){
+                throw new WeixinException(ErrorConstants.ACCESS_TOKEN_INVALID, "accessToken失效了");
+            }
 
             return errcode!=0;
         }

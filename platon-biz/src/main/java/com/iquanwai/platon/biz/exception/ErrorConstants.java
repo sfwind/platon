@@ -18,6 +18,7 @@ public class ErrorConstants {
     public static final int USER_NO_EXIST = 46004;
     public static final int API_FREQ_OUT_OF_LIMIT = 45009;
     public static final int INVALID_CODE = 40029;
+    public static final int ACCESS_TOKEN_INVALID = 40001;
 
 
     // -------------- 错误消息 -----------------
