@@ -56,8 +56,9 @@ public class AccountServiceImpl implements AccountService {
         Map<String, String> map = Maps.newHashMap();
         map.put("openid", openid);
         url = CommonUtils.placeholderReplace(url, map);
-
+        logger.info("请求用户信息:{}",openid);
         String body = restfulHelper.get(url);
+        logger.info("请求用户信息结果:{}",body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         Account accountNew = new Account();
         try {
@@ -80,9 +81,18 @@ public class AccountServiceImpl implements AccountService {
             //去除昵称里的表情
             accountNew.setNickname(accountNew.getNickname());
             if(account==null) {
-                followUserDao.insert(accountNew);
+                logger.info("插入用户信息:{}",accountNew);
+                if(accountNew.getOpenid()==null){
+                    logger.error("===============NULL===============");
+                }
+                if(accountNew.getNickname()!=null){
+                    followUserDao.insert(accountNew);
+                }
             }else{
-                followUserDao.updateMeta(accountNew);
+                logger.info("更新用户信息:{}",accountNew);
+                if(accountNew.getNickname()!=null){
+                    followUserDao.updateMeta(accountNew);
+                }
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
