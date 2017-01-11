@@ -178,15 +178,15 @@ public class PracticeController {
         }
     }
 
-    @RequestMapping("/next")
-    public ResponseEntity<Map<String, Object>> nextPractice(LoginUser loginUser){
+    @RequestMapping("/next/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> nextPractice(LoginUser loginUser, @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        Practice practice = planService.nextPractice(improvementPlan);
+        Practice practice = planService.nextPractice(practicePlanId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("训练")

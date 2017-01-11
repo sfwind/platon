@@ -367,7 +367,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setKeycnt(1);
         //总题组=难度训练总天数
         improvementPlan.setTotalSeries(length);
-        improvementPlan.setCurrentSeries(0);
+        improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
         //结束时期后再开放7天

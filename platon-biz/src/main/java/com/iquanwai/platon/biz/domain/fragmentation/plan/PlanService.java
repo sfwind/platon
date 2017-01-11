@@ -17,6 +17,13 @@ public interface PlanService {
     void buildPlanDetail(ImprovementPlan improvementPlan);
 
     /**
+     * 构建详细的某组训练计划
+     * @param improvementPlan 训练计划
+     * @param series 训练组号
+     */
+    boolean buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series);
+
+    /**
      * 获取学员进行中的训练
      * @param openid 学员id
      */
@@ -67,8 +74,8 @@ public interface PlanService {
 
     /**
      * 获取下一个训练项目
-     * @param improvementPlan 训练计划
+     * @param practicePlanId 当前训练id
      * */
-    Practice nextPractice(ImprovementPlan improvementPlan);
+    Practice nextPractice(Integer practicePlanId);
 
 }

@@ -78,6 +78,21 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
+    public PracticePlan loadChallengePractice(Integer planId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=?";
+        try {
+            PracticePlan practicePlan = run.query(sql, h,
+                    planId, PracticePlan.CHALLENGE);
+            return practicePlan;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
     public void complete(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
@@ -109,5 +124,31 @@ public class PracticePlanDao extends PracticeDBUtil {
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    public List<PracticePlan> loadBySeries(Integer planId, Integer series){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=?";
+        try {
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId, series);
+            return practicePlans;
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public PracticePlan loadBySeriesAndSequence(Integer planId, Integer series, Integer sequence){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=? and Sequence=?";
+        try {
+            PracticePlan practicePlan = runner.query(sql, h, planId, series, sequence);
+            return practicePlan;
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 }

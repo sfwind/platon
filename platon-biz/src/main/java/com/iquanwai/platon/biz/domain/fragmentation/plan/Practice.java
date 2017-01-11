@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.po.Knowledge;
 import lombok.Data;
 
@@ -14,7 +15,7 @@ public class Practice {
     private Integer type;
     private Integer status;
     private Boolean unlocked;
-    private List<Integer> practiceIdList;
+    private List<Integer> practiceIdList = Lists.newArrayList();
     private Integer series;
     private Integer sequence;
     private Integer practicePlanId;

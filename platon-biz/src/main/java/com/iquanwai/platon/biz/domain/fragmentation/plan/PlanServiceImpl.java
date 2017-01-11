@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
@@ -49,6 +48,27 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setSummary(isSummary(practicePlans));
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
+    }
+
+    @Override
+    public boolean buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series) {
+        Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
+        improvementPlan.setProblem(problem);
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+        //选择当前组的练习
+        List<PracticePlan> runningPractice = pickPracticeBySeries(practicePlans, improvementPlan, series);
+        //已经到达最后一组
+        if(runningPractice==null){
+            return false;
+        }
+        //创建练习对象
+        List<Practice> practices = createPractice(runningPractice);
+        improvementPlan.setPractice(practices);
+        //写入非db字段
+//        improvementPlan.setSummary(isSummary(practicePlans));
+        improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
+        improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
+        return true;
     }
 
     private Boolean isSummary(List<PracticePlan> practices) {
@@ -99,16 +119,12 @@ public class PlanServiceImpl implements PlanService {
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
         List<Practice> practiceList = Lists.newArrayList();
         int largestSequence = getLargestSequence(runningPractice);
-        Map<Integer, Practice> maps = Maps.newHashMap();
-        for(int i=1;i<=largestSequence;i++){
-            Practice practice = new Practice();
-            practice.setPracticeIdList(Lists.newArrayList());
-            practiceList.add(practice);
-            maps.put(i, practice);
-        }
+
         //根据sequence构建对象
         for(PracticePlan practicePlan:runningPractice){
-            buildPractice(maps.get(practicePlan.getSequence()), practicePlan);
+            if(practicePlan.getSequence()<=largestSequence) {
+                practiceList.add(buildPractice(practicePlan));
+            }
         }
 
         return practiceList;
@@ -126,7 +142,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     //映射
-    private void buildPractice(Practice practice, PracticePlan practicePlan) {
+    private Practice buildPractice(PracticePlan practicePlan) {
+        Practice practice = new Practice();
         //NOTE:不能用modelmapper
         practice.setStatus(practicePlan.getStatus());
         practice.setUnlocked(practicePlan.getUnlocked());
@@ -144,6 +161,25 @@ public class PlanServiceImpl implements PlanService {
             Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
             practice.setKnowledge(knowledge);
         }
+        return practice;
+    }
+
+    private List<PracticePlan> pickPracticeBySeries(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan, Integer series) {
+        List<PracticePlan> runningPractice = Lists.newArrayList();
+        //找到挑战训练
+        runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
+        List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
+        //已经到最后一组解锁训练,返回空
+        if(CollectionUtils.isEmpty(practicePlanList)){
+            return null;
+        }
+        PracticePlan firstPractice = practicePlanList.get(0);
+        //未解锁返回空
+        if(!firstPractice.getUnlocked()){
+            return null;
+        }
+        runningPractice.addAll(practicePlanList);
+        return runningPractice;
     }
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
@@ -163,6 +199,10 @@ public class PlanServiceImpl implements PlanService {
 
             for(PracticePlan practicePlan:practicePlans) {
                 if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+                    //如果挑战训练没完成,直接获取第一天的数据
+                    if(practicePlan.getStatus()==0){
+                        return pickPracticeBySeries(practicePlans, improvementPlan, 1);
+                    }
                     continue;
                 }
                 if(practicePlan.getSeries()!=seriesCursor){
@@ -289,28 +329,15 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Practice nextPractice(ImprovementPlan improvementPlan) {
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
-        //选择正在进行的练习
-        List<PracticePlan> runningPractice = pickRunningPractice(practicePlans, improvementPlan);
-        List<Practice> practices = createPractice(runningPractice);
-        Practice challenge = null;
-        for(Practice practice:practices){
-            //保存挑战训练
-            if(practice.getType()==PracticePlan.CHALLENGE){
-                challenge = practice;
-                continue;
-            }
-            //训练未完成且已解锁
-            if(practice.getStatus()==0 && practice.getUnlocked()){
-                //应用训练自动完成
-                if(practice.getType()==PracticePlan.APPLICATION){
-                    practicePlanDao.complete(practice.getPracticePlanId());
-                    improvementPlanDao.updateApplicationComplete(improvementPlan.getId());
-                }
-                return practice;
-            }
+    public Practice nextPractice(Integer practicePlanId) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        Integer series = practicePlan.getSeries();
+        Integer sequence = practicePlan.getSequence();
+        Integer planId = practicePlan.getPlanId();
+        PracticePlan nextPractice = practicePlanDao.loadBySeriesAndSequence(planId, series, sequence+1);
+        if(nextPractice==null){
+            nextPractice = practicePlanDao.loadChallengePractice(planId);
         }
-        return challenge;
+        return buildPractice(nextPractice);
     }
 }
