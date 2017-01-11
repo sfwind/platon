@@ -56,11 +56,18 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setProblem(problem);
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         //选择当前组的练习
-        List<PracticePlan> runningPractice = pickPracticeBySeries(practicePlans, improvementPlan, series);
-        //已经到达最后一组
-        if(runningPractice==null){
+        List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, series);
+        //已经到最后一组解锁训练,返回空
+        if(CollectionUtils.isEmpty(runningPractice)){
             return false;
         }
+        PracticePlan firstPractice = runningPractice.get(0);
+        //未解锁返回空
+        if(!firstPractice.getUnlocked()){
+            return false;
+        }
+        //找到所有挑战训练
+        runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
         //创建练习对象
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
@@ -164,20 +171,9 @@ public class PlanServiceImpl implements PlanService {
         return practice;
     }
 
-    private List<PracticePlan> pickPracticeBySeries(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan, Integer series) {
+    private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        //找到挑战训练
-        runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
         List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
-        //已经到最后一组解锁训练,返回空
-        if(CollectionUtils.isEmpty(practicePlanList)){
-            return null;
-        }
-        PracticePlan firstPractice = practicePlanList.get(0);
-        //未解锁返回空
-        if(!firstPractice.getUnlocked()){
-            return null;
-        }
         runningPractice.addAll(practicePlanList);
         return runningPractice;
     }
@@ -201,7 +197,8 @@ public class PlanServiceImpl implements PlanService {
                 if (practicePlan.getType() == PracticePlan.CHALLENGE) {
                     //如果挑战训练没完成,直接获取第一天的数据
                     if(practicePlan.getStatus()==0){
-                        return pickPracticeBySeries(practicePlans, improvementPlan, 1);
+                        runningPractice.addAll(pickPracticeBySeries(improvementPlan, 1));
+                        return runningPractice;
                     }
                     continue;
                 }
