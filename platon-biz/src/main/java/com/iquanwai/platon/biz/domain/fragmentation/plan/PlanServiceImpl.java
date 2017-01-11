@@ -185,11 +185,11 @@ public class PlanServiceImpl implements PlanService {
 
             for(PracticePlan practicePlan:practicePlans) {
                 if (practicePlan.getType() == PracticePlan.CHALLENGE) {
-                    //如果挑战训练没完成,直接获取第一天的数据
-                    if(practicePlan.getStatus()==0){
-                        runningPractice.addAll(pickPracticeBySeries(improvementPlan, 1));
-                        return runningPractice;
-                    }
+//                    //如果挑战训练没完成,直接获取第一天的数据
+//                    if(practicePlan.getStatus()==0){
+//                        runningPractice.addAll(pickPracticeBySeries(improvementPlan, 1));
+//                        return runningPractice;
+//                    }
                     continue;
                 }
                 if(practicePlan.getSeries()!=seriesCursor){
