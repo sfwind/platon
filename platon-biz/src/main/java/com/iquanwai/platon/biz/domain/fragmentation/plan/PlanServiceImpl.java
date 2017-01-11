@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -125,28 +125,16 @@ public class PlanServiceImpl implements PlanService {
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
         List<Practice> practiceList = Lists.newArrayList();
-        int largestSequence = getLargestSequence(runningPractice);
+        runningPractice.sort((o1, o2) -> o1.getSequence()-o2.getSequence());
 
         //根据sequence构建对象
         for(PracticePlan practicePlan:runningPractice){
-            if(practicePlan.getSequence()<=largestSequence) {
-                practiceList.add(buildPractice(practicePlan));
-            }
+            practiceList.add(buildPractice(practicePlan));
         }
 
         return practiceList;
     }
 
-    //动态获取练习的套数
-    private int getLargestSequence(List<PracticePlan> runningPractice) {
-        int largestSequence = 0;
-        for(PracticePlan practicePlan:runningPractice) {
-            if(practicePlan.getSequence()>largestSequence){
-                largestSequence = practicePlan.getSequence();
-            }
-        }
-        return largestSequence;
-    }
 
     //映射
     private Practice buildPractice(PracticePlan practicePlan) {

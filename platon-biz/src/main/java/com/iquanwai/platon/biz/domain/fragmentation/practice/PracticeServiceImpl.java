@@ -172,7 +172,7 @@ public class PracticeServiceImpl implements PracticeService {
             int practiceNumbers = improvementPlan.getWarmupComplete()*GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER;
             return MessageFormat.format(message, date, knowledgeCount, practiceNumbers);
         }else{
-            return "如果今天的知识点，对你的目标/难题有所启发，不妨写几个字吧，慢慢接近小目标！";
+            return "今天的应用任务实践了吗？打开下面链接，在以往的内容下面，继续写下你的经历和心得吧（提交后也可以再次去完善你的分享）";
         }
     }
 }
