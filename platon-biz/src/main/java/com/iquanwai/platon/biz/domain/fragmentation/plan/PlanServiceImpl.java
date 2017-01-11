@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,18 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setSummary(isSummary(practicePlans));
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
-        improvementPlan.setSeries(improvementPlan.getCurrentSeries());
+        improvementPlan.setSeries(getSeries(runningPractice));
+    }
+
+    private Integer getSeries(List<PracticePlan> runningPractice) {
+        for(PracticePlan practicePlan:runningPractice){
+            if(practicePlan.getType()==PracticePlan.CHALLENGE){
+                continue;
+            }else{
+                return practicePlan.getSeries();
+            }
+        }
+        return null;
     }
 
     @Override
@@ -58,14 +68,19 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         //选择当前组的练习
         List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, series);
-        //已经到最后一组解锁训练,返回空
+        //已经到最后一组解锁训练,返回false
         if(CollectionUtils.isEmpty(runningPractice)){
             return false;
         }
         PracticePlan firstPractice = runningPractice.get(0);
-        //未解锁返回空
+        //未解锁返回false
         if(!firstPractice.getUnlocked()){
-            return false;
+            //有钥匙就解锁,没有钥匙返回false
+            if(improvementPlan.getKeycnt()>0){
+                unlock(runningPractice, improvementPlan);
+            }else {
+                return false;
+            }
         }
         //找到所有挑战训练
         runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
@@ -78,6 +93,15 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         improvementPlan.setSeries(firstPractice.getSeries());
         return true;
+    }
+
+    private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
+        //如果练习未解锁,则解锁练习
+        runningPractice.stream().filter(practicePlan -> !practicePlan.getUnlocked()).forEach(practicePlan -> {
+            practicePlan.setUnlocked(true);
+            practicePlanDao.unlock(practicePlan.getId());
+        });
+        improvementPlanDao.updateKey(improvementPlan.getId(), improvementPlan.getKeycnt()-1);
     }
 
     private Boolean isSummary(List<PracticePlan> practices) {
@@ -170,79 +194,75 @@ public class PlanServiceImpl implements PlanService {
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        List<PracticePlan> tempPractice = Lists.newArrayList();
+        //未完成的练习
+        List<PracticePlan> incompletePractice = Lists.newArrayList();
         //找到挑战训练
         runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
 
-        boolean hasKey = false;
-        if(improvementPlan.getKeycnt()>0){
-            hasKey = true;
-        }
         int seriesCursor = 0; //当前组指针
-        if(hasKey){
-            //如果有解锁钥匙,找到第一组未完成的练习
-            boolean running = false;
-
-            for(PracticePlan practicePlan:practicePlans) {
-                if (practicePlan.getType() == PracticePlan.CHALLENGE) {
-//                    //如果挑战训练没完成,直接获取第一天的数据
-//                    if(practicePlan.getStatus()==0){
-//                        runningPractice.addAll(pickPracticeBySeries(improvementPlan, 1));
-//                        return runningPractice;
-//                    }
-                    continue;
-                }
-                if(practicePlan.getSeries()!=seriesCursor){
-                    //找到正在进行的训练组
-                    if(running){
-                        break;
-                    }
-                    seriesCursor = practicePlan.getSeries();
-                    tempPractice.clear();
-                }
-                tempPractice.add(practicePlan);
-                //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
-                //找到第一个未完成的练习
+        boolean running = false;
+        for(PracticePlan practicePlan:practicePlans) {
+            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+                //如果挑战训练没完成,直接获取第一天的数据
                 if(practicePlan.getStatus()==0){
-                    running = true;
-                }
-            }
-
-            boolean unlock = false;
-            for(PracticePlan practicePlan:tempPractice){
-                //如果练习未解锁,则解锁练习
-                if(!practicePlan.getUnlocked()){
-                    practicePlan.setUnlocked(true);
-                    unlock = true;
-                    practicePlanDao.unlock(practicePlan.getId());
-                }
-            }
-            //如果解锁了新练习,更新进度和钥匙
-            if(unlock) {
-                PracticePlan practicePlan = tempPractice.get(0);
-                improvementPlanDao.updateProgress(improvementPlan.getId(),
-                        improvementPlan.getKeycnt() - 1, practicePlan.getSeries());
-            }
-        }else{
-            //如果没有解锁钥匙,找到最后一组已解锁的练习
-            for(PracticePlan practicePlan:practicePlans) {
-                //如果练习未解锁,跳出循环
-                if(!practicePlan.getUnlocked()){
+                    incompletePractice = pickPracticeBySeries(improvementPlan, 1);
                     break;
                 }
-                if (practicePlan.getType() == PracticePlan.CHALLENGE) {
-                    continue;
+                continue;
+            }
+            if(practicePlan.getSeries()!=seriesCursor){
+                //找到正在进行的训练组
+                if(running){
+                    break;
                 }
-                if(practicePlan.getSeries()!=seriesCursor){
-                    seriesCursor = practicePlan.getSeries();
-                    tempPractice.clear();
-                }
-                tempPractice.add(practicePlan);
+                seriesCursor = practicePlan.getSeries();
+                incompletePractice.clear();
+            }
+            incompletePractice.add(practicePlan);
+            //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
+            //找到第一个未完成的练习
+            if(practicePlan.getStatus()==0){
+                running = true;
             }
         }
 
-        runningPractice.addAll(tempPractice);
+        if(CollectionUtils.isNotEmpty(incompletePractice)){
+            PracticePlan practicePlan = incompletePractice.get(0);
+            if(!practicePlan.getUnlocked()){
+                if(improvementPlan.getKeycnt()>0) {
+                    unlock(incompletePractice, improvementPlan);
+                    runningPractice.addAll(incompletePractice);
+                }else{
+                    runningPractice.addAll(getLastUnlockPractice(practicePlans));
+                }
+            }else{
+                runningPractice.addAll(incompletePractice);
+            }
+        }else{
+            runningPractice.addAll(getLastUnlockPractice(practicePlans));
+        }
+
         return runningPractice;
+    }
+
+    private List<PracticePlan> getLastUnlockPractice(List<PracticePlan> practicePlans) {
+        int seriesCursor =0;
+        List<PracticePlan> unlockPractice = Lists.newArrayList();
+        for(PracticePlan practicePlan:practicePlans) {
+            //如果练习未解锁,跳出循环
+            if(!practicePlan.getUnlocked()){
+                break;
+            }
+            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+                continue;
+            }
+            if(practicePlan.getSeries()!=seriesCursor){
+                seriesCursor = practicePlan.getSeries();
+                unlockPractice.clear();
+            }
+            unlockPractice.add(practicePlan);
+        }
+        return unlockPractice;
     }
 
     private Knowledge getKnowledge(Integer knowledgeId, Integer planId){
