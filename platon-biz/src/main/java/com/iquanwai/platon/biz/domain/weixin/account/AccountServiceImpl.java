@@ -85,10 +85,14 @@ public class AccountServiceImpl implements AccountService {
                 if(accountNew.getOpenid()==null){
                     logger.error("===============NULL===============");
                 }
-                followUserDao.insert(accountNew);
+                if(accountNew.getNickname()!=null){
+                    followUserDao.insert(accountNew);
+                }
             }else{
                 logger.info("更新用户信息:{}",accountNew);
-                followUserDao.updateMeta(accountNew);
+                if(accountNew.getNickname()!=null){
+                    followUserDao.updateMeta(accountNew);
+                }
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
