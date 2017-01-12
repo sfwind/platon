@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 <Appenders>
-	<File name="appAppender" fileName="/data/applogs/platon-web/logs/app.log" append="true">
+	<RollingFile name="appAppender" fileName="/data/applogs/platon-web/logs/app.log"
+				 filePattern="/data/applogs/platon-web/logs/app-%d{MM-dd-yyyy}-%i.log.gz">
 		<PatternLayout pattern="[platon-web]%d %-5p [%c] %m%n"/>
-	</File>
+		<SizeBasedTriggeringPolicy size="2MB"/>
+	</RollingFile>
 	<Console name="STDOUT" target="SYSTEM_OUT">
 		<PatternLayout pattern="[platon-web]%d %-5p [%c] %m%n"/>
 	</Console>
