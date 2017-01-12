@@ -174,6 +174,6 @@ public class PracticeServiceImpl implements PracticeService {
 //        }else{
 //            return "今天的应用任务实践了吗？打开下面链接，在以往的内容下面，继续写下你的经历和心得吧（提交后也可以再次去完善你的分享）";
 //        }
-        return "输出带动输入，才是最好的学习方式！记录下你参加这个主题训练的小目标、应用任务实践的心得、以及最后的目标完成情况和收获总结吧！";
+        return null;
     }
 }
