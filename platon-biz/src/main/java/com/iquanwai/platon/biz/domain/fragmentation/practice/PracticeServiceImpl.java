@@ -158,21 +158,22 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     private String getChallengePracticeContent(ImprovementPlan improvementPlan) {
-        //第一天文案
-        if(DateUtils.parseDateToString(improvementPlan.getStartDate()).equals(
-                DateUtils.parseDateToString(new Date()))){
-            return "今天是训练第1天，给自己定个小目标，或者写下跟本次训练相关的困扰你的难题吧。小目标帮你更积极地学习，也带给你更多成就感！";
-        }
-        else if(DateUtils.parseDateToString(improvementPlan.getCloseDate()).equals(
-                DateUtils.parseDateToString(new Date()))){
-            String message =  "经过{0}天的学习，你学了{1}个知识点，做了{2}道题，那么当初的小目标实现了吗？难题也有答案了吗？把你的感悟、心得、经历写下来，跟大家交流、共同进步吧！";
-
-            int date = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getCloseDate());
-            int knowledgeCount = knowledgePlanDao.getKnowledgePlanByPlanId(improvementPlan.getId()).size();
-            int practiceNumbers = improvementPlan.getWarmupComplete()*GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER;
-            return MessageFormat.format(message, date, knowledgeCount, practiceNumbers);
-        }else{
-            return "今天的应用任务实践了吗？打开下面链接，在以往的内容下面，继续写下你的经历和心得吧（提交后也可以再次去完善你的分享）";
-        }
+//        //第一天文案
+//        if(DateUtils.parseDateToString(improvementPlan.getStartDate()).equals(
+//                DateUtils.parseDateToString(new Date()))){
+//            return "今天是训练第1天，给自己定个小目标，或者写下跟本次训练相关的困扰你的难题吧。小目标帮你更积极地学习，也带给你更多成就感！";
+//        }
+//        else if(DateUtils.parseDateToString(improvementPlan.getCloseDate()).equals(
+//                DateUtils.parseDateToString(new Date()))){
+//            String message =  "经过{0}天的学习，你学了{1}个知识点，做了{2}道题，那么当初的小目标实现了吗？难题也有答案了吗？把你的感悟、心得、经历写下来，跟大家交流、共同进步吧！";
+//
+//            int date = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getCloseDate());
+//            int knowledgeCount = knowledgePlanDao.getKnowledgePlanByPlanId(improvementPlan.getId()).size();
+//            int practiceNumbers = improvementPlan.getWarmupComplete()*GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER;
+//            return MessageFormat.format(message, date, knowledgeCount, practiceNumbers);
+//        }else{
+//            return "今天的应用任务实践了吗？打开下面链接，在以往的内容下面，继续写下你的经历和心得吧（提交后也可以再次去完善你的分享）";
+//        }
+        return "输出带动输入，才是最好的学习方式！记录下你参加这个主题训练的小目标、应用任务实践的心得、以及最后的目标完成情况和收获总结吧！";
     }
 }
