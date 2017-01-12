@@ -194,37 +194,10 @@ public class PlanServiceImpl implements PlanService {
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        //未完成的练习
-        List<PracticePlan> incompletePractice = Lists.newArrayList();
         //找到挑战训练
         runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
-
-        int seriesCursor = 0; //当前组指针
-        boolean running = false;
-        for(PracticePlan practicePlan:practicePlans) {
-            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
-                //如果挑战训练没完成,直接获取第一天的数据
-                if(practicePlan.getStatus()==0){
-                    incompletePractice = pickPracticeBySeries(improvementPlan, 1);
-                    break;
-                }
-                continue;
-            }
-            if(practicePlan.getSeries()!=seriesCursor){
-                //找到正在进行的训练组
-                if(running){
-                    break;
-                }
-                seriesCursor = practicePlan.getSeries();
-                incompletePractice.clear();
-            }
-            incompletePractice.add(practicePlan);
-            //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
-            //找到第一个未完成的练习
-            if(practicePlan.getStatus()==0){
-                running = true;
-            }
-        }
+        //未完成的练习
+        List<PracticePlan> incompletePractice = getFirstImcompletePractice(practicePlans);
 
         if(CollectionUtils.isNotEmpty(incompletePractice)){
             PracticePlan practicePlan = incompletePractice.get(0);
@@ -245,6 +218,35 @@ public class PlanServiceImpl implements PlanService {
         return runningPractice;
     }
 
+    //获取第一组未完成的练习
+    private List<PracticePlan> getFirstImcompletePractice(List<PracticePlan> practicePlans) {
+        List<PracticePlan> incompletePractice = Lists.newArrayList();
+        int seriesCursor = 0; //当前组指针
+        boolean running = false;
+        for(PracticePlan practicePlan:practicePlans) {
+            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+                continue;
+            }
+            if(practicePlan.getSeries()!=seriesCursor){
+                //找到正在进行的训练组
+                if(running){
+                    break;
+                }
+                seriesCursor = practicePlan.getSeries();
+                incompletePractice.clear();
+            }
+            incompletePractice.add(practicePlan);
+            //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
+            //找到第一个未完成的练习
+            if(practicePlan.getStatus()==0){
+                running = true;
+            }
+        }
+
+        return incompletePractice;
+    }
+
+    //获取最后一组解锁的练习
     private List<PracticePlan> getLastUnlockPractice(List<PracticePlan> practicePlans) {
         int seriesCursor =0;
         List<PracticePlan> unlockPractice = Lists.newArrayList();
