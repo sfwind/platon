@@ -70,7 +70,13 @@ public interface PlanService {
      * 训练计划结束
      * @param planId 训练计划id
      */
-    void completePlan(Integer planId);
+    void completePlan(Integer planId, Integer status);
+
+    /**
+     * 结束训练计划校验
+     * @param improvementPlan 训练计划
+     */
+    ImprovementPlan completeCheck(ImprovementPlan improvementPlan);
 
     /**
      * 获取下一个训练项目

@@ -151,4 +151,18 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
         return null;
     }
+
+    public List<PracticePlan> loadApplicationPracticeByPlanIds(List<Integer> planIds){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        String questionMark = produceQuestionMark(planIds.size());
+        String sql = "SELECT * FROM PracticePlan where PlanId in ("+questionMark+") and Type=21";
+        try {
+            List<PracticePlan> practicePlans = runner.query(sql, h, planIds.toArray());
+            return practicePlans;
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

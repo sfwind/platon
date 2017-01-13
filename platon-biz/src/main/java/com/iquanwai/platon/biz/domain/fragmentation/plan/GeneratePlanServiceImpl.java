@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/13.
@@ -51,7 +52,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //生成热身训练
         practicePlans.addAll(createWarmupPractice(problem, planId));
         //生成应用训练
-        practicePlans.addAll(createApplicationPractice(problem, planId));
+        practicePlans.addAll(createApplicationPractice(problem, planId, openid));
         //生成挑战训练
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
@@ -93,7 +94,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return challengePractices;
     }
 
-    private List<PracticePlan> createApplicationPractice(Problem problem, int planId) {
+    private List<PracticePlan> createApplicationPractice(Problem problem, int planId, String openid) {
         Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selectedPractice = Lists.newArrayList();
         int applicationCount = problem.getApplicationCount();
@@ -101,9 +102,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<ProblemKnowledgeMap> maps = problemKnowledgeMapDao.loadKnowledges(problem.getId());
         List<KnowledgeVolume> knowledgeVolumes = assignVolume(applicationCount, maps);
         List<ApplicationPractice> applicationPractices = Lists.newArrayList();
-
+        //曾经做过的应用练习id
+        List<Integer> applicationIds = getAssignedApplicationPracticeIds(openid);
         knowledgeVolumes.stream().forEach(knowledgeVolume -> {
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeVolume.getKnowledgeId());
+            //过滤已经做过的练习
+            practices.stream().filter(applicationPractice -> !applicationIds.contains(applicationPractice.getId()));
 
             List<ApplicationPractice> selected = selectApplication(practices, knowledgeVolume.getCount());
             applicationPractices.addAll(selected);
@@ -144,6 +148,16 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selectedPractice;
     }
 
+    private List<Integer> getAssignedApplicationPracticeIds(String openid) {
+        List<Integer> planIds = improvementPlanDao.loadAllPlans(openid).stream().map(ImprovementPlan::getId)
+                .collect(Collectors.toList());
+
+        return practicePlanDao.loadApplicationPracticeByPlanIds(planIds).stream().map(application -> {
+            String practiceId = application.getPracticeId();
+            return Integer.valueOf(practiceId);
+        }).collect(Collectors.toList());
+    }
+
     private List<ApplicationPractice> selectApplication(List<ApplicationPractice> practices, Integer count) {
 //        List<ApplicationPractice> applicationPractices = Lists.newArrayList();
 //        List<ApplicationPractice> easyPractice = Lists.newArrayList();
@@ -173,11 +187,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 //        applicationPractices.addAll(randomSelect(hardPractice, hardCount));
         List<ApplicationPractice> practiceList = randomSelect(practices, count);
 
-        practiceList.stream().sorted((o1, o2) -> {
-            ApplicationPractice applicationPractice1 = (ApplicationPractice)o1;
-            ApplicationPractice applicationPractice2 = (ApplicationPractice)o2;
-            return applicationPractice1.getDifficulty()-applicationPractice2.getDifficulty();
-        });
+        practiceList.stream().sorted((o1, o2) -> o1.getDifficulty()-o2.getDifficulty());
         return practiceList;
     }
 

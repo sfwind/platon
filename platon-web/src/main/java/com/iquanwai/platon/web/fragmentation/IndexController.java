@@ -2,7 +2,7 @@ package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.domain.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.po.Account;
 import com.iquanwai.platon.biz.po.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;

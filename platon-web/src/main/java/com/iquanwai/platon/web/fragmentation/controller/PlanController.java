@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -169,5 +170,26 @@ public class PlanController {
                 .memo(knowledgeId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/complete", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser,
+                                                              @PathVariable Integer knowledgeId){
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        planService.learnKnowledge(knowledgeId, improvementPlan.getId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练计划")
+                .function("完成训练")
+                .action("完成训练")
+                .memo(improvementPlan.getId()+"");
+        operationLogService.log(operationLog);
+        return WebUtils.result(improvementPlan);
     }
 }

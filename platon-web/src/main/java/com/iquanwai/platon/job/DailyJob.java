@@ -24,17 +24,17 @@ public class DailyJob {
     @Scheduled(cron="${dailyJob.cron}")
     public void work(){
         logger.info("DailyJob start");
-        dispatchKey();
+        dailyJob();
         logger.info("DailyJob end");
     }
 
-    private void dispatchKey() {
+    private void dailyJob() {
         List<ImprovementPlan> improvementPlanList = planService.loadAllRunningPlan();
         improvementPlanList.stream().forEach(improvementPlan -> {
             Date date = DateUtils.afterDays(improvementPlan.getCloseDate(), 1);
             //过期自动结束训练
             if(date.before(new Date())){
-                planService.completePlan(improvementPlan.getId());
+                planService.completePlan(improvementPlan.getId(), 3);
             }else{
                 Integer key = improvementPlan.getKeycnt();
                 planService.updateKey(improvementPlan.getId(), key+1);

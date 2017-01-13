@@ -8,7 +8,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -17,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.text.MessageFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -123,14 +120,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public ApplicationPractice getApplicationPractice(Integer id, Integer planId) {
-        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
-        //打开即完成
-        PracticePlan practicePlan = practicePlanDao.loadPracticePlan(planId, applicationPractice.getId()+"", PracticePlan.APPLICATION);
-        if(practicePlan!=null && practicePlan.getStatus() == 0){
-            practicePlanDao.complete(practicePlan.getId());
-            improvementPlanDao.updateApplicationComplete(planId);
-        }
-        return applicationPractice;
+        return applicationPracticeDao.load(ApplicationPractice.class, id);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.whitelist;
+package com.iquanwai.platon.biz.domain.common.whitelist;
 
 import com.iquanwai.platon.biz.dao.WhiteListDao;
 import org.springframework.beans.factory.annotation.Autowired;

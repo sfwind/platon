@@ -82,8 +82,10 @@ public class PlanServiceImpl implements PlanService {
                 return false;
             }
         }
-        //找到所有挑战训练
-        runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
+        //第一天增加挑战训练,其余时间不显示挑战训练
+        if(series==1) {
+            runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
+        }
         //创建练习对象
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
@@ -194,8 +196,11 @@ public class PlanServiceImpl implements PlanService {
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        //找到挑战训练
-        runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
+        //第一天增加挑战训练,其余时间不显示挑战训练
+        if(DateUtils.interval(improvementPlan.getStartDate())==0) {
+            runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
+        }
+        //如果有解锁钥匙,找到第一组未完成的热身练习,如果没有解锁钥匙,找到最后一组已解锁的练习
         //未完成的练习
         List<PracticePlan> incompletePractice = getFirstImcompletePractice(practicePlans);
 
@@ -236,9 +241,8 @@ public class PlanServiceImpl implements PlanService {
                 incompletePractice.clear();
             }
             incompletePractice.add(practicePlan);
-            //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
-            //找到第一个未完成的练习
-            if(practicePlan.getStatus()==0){
+            //找到第一个未完成的热身练习
+            if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
                 running = true;
             }
         }
@@ -324,17 +328,29 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void completePlan(Integer planId) {
+    public void completePlan(Integer planId, Integer status) {
         //训练计划结束
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
-        if(plan.getWarmupComplete()+plan.getApplicationComplete()>=plan.getTotal()) {
-            logger.info("{} is complete", planId);
-            improvementPlanDao.updateStatus(planId, 2);
-        }else{
-            logger.info("{} is terminated", planId);
-            improvementPlanDao.updateStatus(planId, 3);
-        }
+        logger.info("{} is terminated", planId);
+        improvementPlanDao.updateStatus(planId, status);
         problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
+    }
+
+    @Override
+    public ImprovementPlan completeCheck(ImprovementPlan improvementPlan) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+        for(PracticePlan practicePlan:practicePlans){
+            //应用训练可以不完成,其他训练必须完成,才算完成整个训练计划
+            if(practicePlan.getType()!=PracticePlan.APPLICATION){
+                if(practicePlan.getStatus()!=1){
+                    return null;
+                }
+            }
+        }
+        //完成训练计划
+        completePlan(improvementPlan.getId(), 2);
+        improvementPlan.setStatus(2);
+        return improvementPlan;
     }
 
     @Override

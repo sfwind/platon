@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.whitelist;
+package com.iquanwai.platon.biz.domain.common.whitelist;
 
 /**
  * Created by justin on 16/12/26.
