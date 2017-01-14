@@ -76,7 +76,7 @@ public interface PlanService {
      * 结束训练计划校验
      * @param improvementPlan 训练计划
      */
-    ImprovementPlan completeCheck(ImprovementPlan improvementPlan);
+    boolean completeCheck(ImprovementPlan improvementPlan);
 
     /**
      * 获取下一个训练项目

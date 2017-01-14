@@ -38,7 +38,7 @@ public class PlanController {
     @Autowired
     private OperationLogService operationLogService;
 
-    @RequestMapping("/choose/problem/{problemId}")
+    @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
                                                           @PathVariable Integer problemId){
 
@@ -173,8 +173,30 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser,
-                                                              @PathVariable Integer knowledgeId){
+    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser){
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        boolean result = planService.completeCheck(improvementPlan);
+        //如果训练没有完成时,将返回置为空
+        if(!result){
+            improvementPlan = null;
+        }
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练计划")
+                .function("完成训练")
+                .action("完成训练");
+        operationLogService.log(operationLog);
+        return WebUtils.result(improvementPlan);
+    }
+
+    @RequestMapping(value = "/close", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser){
 
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
@@ -182,7 +204,7 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        planService.learnKnowledge(knowledgeId, improvementPlan.getId());
+        planService.completePlan(improvementPlan.getId(), 3);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -190,6 +212,6 @@ public class PlanController {
                 .action("完成训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
-        return WebUtils.result(improvementPlan);
+        return WebUtils.success();
     }
 }

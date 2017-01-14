@@ -52,13 +52,11 @@ public class PlanServiceImpl implements PlanService {
 
     private Integer getSeries(List<PracticePlan> runningPractice) {
         for(PracticePlan practicePlan:runningPractice){
-            if(practicePlan.getType()==PracticePlan.CHALLENGE){
-                continue;
-            }else{
-                return practicePlan.getSeries();
+            if(practicePlan.getType()!=PracticePlan.CHALLENGE){
+               return practicePlan.getSeries();
             }
         }
-        return null;
+        return 0;
     }
 
     @Override
@@ -156,9 +154,7 @@ public class PlanServiceImpl implements PlanService {
         runningPractice.sort((o1, o2) -> o1.getSequence()-o2.getSequence());
 
         //根据sequence构建对象
-        for(PracticePlan practicePlan:runningPractice){
-            practiceList.add(buildPractice(practicePlan));
-        }
+        practiceList.addAll(runningPractice.stream().map(this::buildPractice).collect(Collectors.toList()));
 
         return practiceList;
     }
@@ -337,20 +333,20 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public ImprovementPlan completeCheck(ImprovementPlan improvementPlan) {
+    public boolean completeCheck(ImprovementPlan improvementPlan) {
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         for(PracticePlan practicePlan:practicePlans){
             //应用训练可以不完成,其他训练必须完成,才算完成整个训练计划
             if(practicePlan.getType()!=PracticePlan.APPLICATION){
                 if(practicePlan.getStatus()!=1){
-                    return null;
+                    return false;
                 }
             }
         }
         //完成训练计划
         completePlan(improvementPlan.getId(), 2);
         improvementPlan.setStatus(2);
-        return improvementPlan;
+        return true;
     }
 
     @Override

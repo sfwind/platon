@@ -107,7 +107,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         knowledgeVolumes.stream().forEach(knowledgeVolume -> {
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeVolume.getKnowledgeId());
             //过滤已经做过的练习
-            practices.stream().filter(applicationPractice -> !applicationIds.contains(applicationPractice.getId()));
+            practices = practices.stream().filter(applicationPractice -> !applicationIds.contains(applicationPractice.getId()))
+                .collect(Collectors.toList());
 
             List<ApplicationPractice> selected = selectApplication(practices, knowledgeVolume.getCount());
             applicationPractices.addAll(selected);

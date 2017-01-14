@@ -63,21 +63,6 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public PracticePlan loadPracticePlan(Integer planId, String practiceId, Integer type){
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";
-        try {
-            PracticePlan practicePlan = run.query(sql, h,
-                    planId, practiceId, type);
-            return practicePlan;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return null;
-    }
-
     public PracticePlan loadChallengePractice(Integer planId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
@@ -156,7 +141,7 @@ public class PracticePlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
         String questionMark = produceQuestionMark(planIds.size());
-        String sql = "SELECT * FROM PracticePlan where PlanId in ("+questionMark+") and Type=21";
+        String sql = "SELECT * FROM PracticePlan where PlanId in ("+questionMark+") and Type=11";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planIds.toArray());
             return practicePlans;
