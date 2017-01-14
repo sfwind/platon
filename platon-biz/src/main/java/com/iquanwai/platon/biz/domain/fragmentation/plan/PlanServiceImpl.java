@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private Integer getSeries(List<PracticePlan> runningPractice) {
+        Assert.notNull(runningPractice, "练习计划不能为空");
         for(PracticePlan practicePlan:runningPractice){
             if(practicePlan.getType()!=PracticePlan.CHALLENGE){
                return practicePlan.getSeries();
@@ -61,6 +63,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public boolean buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
         Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
@@ -96,6 +99,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
+        Assert.notNull(runningPractice, "练习计划不能为空");
         //如果练习未解锁,则解锁练习
         runningPractice.stream().filter(practicePlan -> !practicePlan.getUnlocked()).forEach(practicePlan -> {
             practicePlan.setUnlocked(true);
@@ -150,6 +155,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
+        Assert.notNull(runningPractice, "练习计划不能为空");
         List<Practice> practiceList = Lists.newArrayList();
         runningPractice.sort((o1, o2) -> o1.getSequence()-o2.getSequence());
 
@@ -162,6 +168,7 @@ public class PlanServiceImpl implements PlanService {
 
     //映射
     private Practice buildPractice(PracticePlan practicePlan) {
+        Assert.notNull(practicePlan, "练习计划不能为空");
         Practice practice = new Practice();
         //NOTE:不能用modelmapper
         practice.setStatus(practicePlan.getStatus());
@@ -184,6 +191,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> runningPractice = Lists.newArrayList();
         List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
         runningPractice.addAll(practicePlanList);
@@ -191,6 +199,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
+        Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> runningPractice = Lists.newArrayList();
         //第一天增加挑战训练,其余时间不显示挑战训练
         if(DateUtils.interval(improvementPlan.getStartDate())==0) {
@@ -221,6 +231,7 @@ public class PlanServiceImpl implements PlanService {
 
     //获取第一组未完成的练习
     private List<PracticePlan> getFirstImcompletePractice(List<PracticePlan> practicePlans) {
+        Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> incompletePractice = Lists.newArrayList();
         int seriesCursor = 0; //当前组指针
         boolean running = false;
@@ -248,6 +259,7 @@ public class PlanServiceImpl implements PlanService {
 
     //获取最后一组解锁的练习
     private List<PracticePlan> getLastUnlockPractice(List<PracticePlan> practicePlans) {
+        Assert.notNull(practicePlans, "练习计划不能为空");
         int seriesCursor =0;
         List<PracticePlan> unlockPractice = Lists.newArrayList();
         for(PracticePlan practicePlan:practicePlans) {
@@ -334,6 +346,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public boolean completeCheck(ImprovementPlan improvementPlan) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         for(PracticePlan practicePlan:practicePlans){
             //应用训练可以不完成,其他训练必须完成,才算完成整个训练计划
@@ -344,8 +357,8 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         //完成训练计划
-        completePlan(improvementPlan.getId(), 2);
-        improvementPlan.setStatus(2);
+        completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
+        improvementPlan.setStatus(ImprovementPlan.COMPLETE);
         return true;
     }
 

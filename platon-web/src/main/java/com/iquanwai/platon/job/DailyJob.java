@@ -34,7 +34,7 @@ public class DailyJob {
             Date date = DateUtils.afterDays(improvementPlan.getCloseDate(), 1);
             //过期自动结束训练
             if(date.before(new Date())){
-                planService.completePlan(improvementPlan.getId(), 3);
+                planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
             }else{
                 Integer key = improvementPlan.getKeycnt();
                 planService.updateKey(improvementPlan.getId(), key+1);

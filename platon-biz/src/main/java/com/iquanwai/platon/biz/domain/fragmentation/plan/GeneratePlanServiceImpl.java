@@ -87,6 +87,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private List<ChallengePractice> selectChallenge(List<ChallengePractice> practices, Integer count) {
+        Assert.notNull(practices, "挑战训练不能为空");
         List<ChallengePractice> challengePractices = Lists.newArrayList();
 
         challengePractices.addAll(randomSelect(practices, Math.round(count)));
@@ -150,6 +151,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private List<Integer> getAssignedApplicationPracticeIds(String openid) {
+        Assert.notNull(openid, "openid不能为空");
         List<Integer> planIds = improvementPlanDao.loadAllPlans(openid).stream().map(ImprovementPlan::getId)
                 .collect(Collectors.toList());
 
@@ -160,6 +162,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private List<ApplicationPractice> selectApplication(List<ApplicationPractice> practices, Integer count) {
+        Assert.notNull(practices, "应用训练不能为空");
 //        List<ApplicationPractice> applicationPractices = Lists.newArrayList();
 //        List<ApplicationPractice> easyPractice = Lists.newArrayList();
 //        List<ApplicationPractice> normalPractice = Lists.newArrayList();
@@ -255,6 +258,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private WarmupPractice getWarmupPracticeByKnowledge(List<WarmupPractice> warmupPractices, Integer knowledgeId) {
+        Assert.notNull(warmupPractices, "热身训练不能为空");
         for(Iterator<WarmupPractice> it = warmupPractices.iterator();it.hasNext();){
             WarmupPractice warmupPractice = it.next();
             if(warmupPractice.getKnowledgeId().equals(knowledgeId)){
@@ -267,6 +271,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private ApplicationPractice getApplicationPracticeByKnowledge(List<ApplicationPractice> applicationPractices, Integer knowledgeId) {
+        Assert.notNull(applicationPractices, "应用训练不能为空");
         for(Iterator<ApplicationPractice> it = applicationPractices.iterator();it.hasNext();){
             ApplicationPractice applicationPractice = it.next();
             if(applicationPractice.getKnowledgeId().equals(knowledgeId)){
@@ -280,6 +285,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     //根据难度分题目
     private List<WarmupPractice> selectWarmup(List<WarmupPractice> practices, Integer count) {
+        Assert.notNull(practices, "热身训练不能为空");
 //        List<WarmupPractice> warmupPractices = Lists.newArrayList();
 //        List<WarmupPractice> easyPractice = Lists.newArrayList();
 //        List<WarmupPractice> normalPractice = Lists.newArrayList();
@@ -373,7 +379,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setProblemId(problem.getId());
         improvementPlan.setPoint(0);
         //初始化状态进行中
-        improvementPlan.setStatus(1);
+        improvementPlan.setStatus(ImprovementPlan.RUNNING);
         //初始化时有一把钥匙
         improvementPlan.setKeycnt(1);
         //总题组=难度训练总天数
