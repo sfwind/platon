@@ -16,7 +16,8 @@ public class PracticePlan {
     private Integer sequence; //组内顺序
     private Integer knowledgeId; //知识点id
     private Integer status; //题目状态（0-未完成，1-已完成, 3-选做）
-    private Boolean summary; //是否已总结(0-否，1-是)
+    @Deprecated
+    private Boolean summary; //是否已总结(0-否，1-是) 废弃
 
     public static final int WARM_UP = 1;
     public static final int APPLICATION = 11;

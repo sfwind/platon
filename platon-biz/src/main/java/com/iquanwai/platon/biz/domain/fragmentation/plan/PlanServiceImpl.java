@@ -45,7 +45,7 @@ public class PlanServiceImpl implements PlanService {
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
         //写入非db字段
-        improvementPlan.setSummary(isSummary(practicePlans));
+        improvementPlan.setSummary(false);
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         improvementPlan.setSeries(getSeries(runningPractice));
