@@ -120,8 +120,8 @@ public class PracticeController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("挑战训练")
-                .action("打开挑战训练页")
+                .function("专题训练")
+                .action("打开专题训练页")
                 .memo(challengeId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(challengePractice);

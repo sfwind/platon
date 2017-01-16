@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface PointRepo {
     /**
-     * 提交挑战训练
+     * 训练加分
      * @param planId 训练计划id
      * @param increment 积分增幅
      * */
@@ -26,7 +26,4 @@ public interface PointRepo {
     int EASY_SCORE = 20;
     int NORMAL_SCORE = 30;
     int HARD_SCORE = 50;
-
-    //挑战训练得分
-    int CHALLENGE_PRACTICE_SCORE = 0;
 }

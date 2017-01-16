@@ -53,7 +53,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlans.addAll(createWarmupPractice(problem, planId));
         //生成应用训练
         practicePlans.addAll(createApplicationPractice(problem, planId, openid));
-        //生成挑战训练
+        //生成专题训练
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
@@ -87,7 +87,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private List<ChallengePractice> selectChallenge(List<ChallengePractice> practices, Integer count) {
-        Assert.notNull(practices, "挑战训练不能为空");
+        Assert.notNull(practices, "专题训练不能为空");
         List<ChallengePractice> challengePractices = Lists.newArrayList();
 
         challengePractices.addAll(randomSelect(practices, Math.round(count)));

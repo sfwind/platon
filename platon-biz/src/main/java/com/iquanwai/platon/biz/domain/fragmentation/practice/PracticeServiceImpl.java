@@ -128,20 +128,9 @@ public class PracticeServiceImpl implements PracticeService {
         Assert.notNull(openid, "openid不能为空");
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
 
-//        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
         challengePractice.setPcurl(ConfigUtils.pcDomainName()+submitUrlPrefix);
-//        //生成挑战训练提交记录
-//        if(submit==null){
-//            submit = new ChallengeSubmit();
-//            submit.setOpenid(openid);
-//            submit.setPlanId(planId);
-//            submit.setSubmitUrl(url);
-//            submit.setChallengeId(id);
-//            challengeSubmitDao.insert(submit);
-//        }
 
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
-        //获取挑战训练的文案
         String description = getChallengePracticeContent(improvementPlan);
         challengePractice.setDescription(description);
         return challengePractice;

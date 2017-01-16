@@ -89,7 +89,7 @@ public class PlanServiceImpl implements PlanService {
                 return -2;
             }
         }
-        //第一天增加挑战训练,其余时间不显示挑战训练
+        //第一天增加专题训练,其余时间不显示专题训练
         if(series==1) {
             runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
         }
@@ -208,7 +208,7 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        //第一天增加挑战训练,其余时间不显示挑战训练
+        //第一天增加专题训练,其余时间不显示专题训练
         if(DateUtils.interval(improvementPlan.getStartDate())==0) {
             runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
         }
@@ -286,8 +286,12 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private Knowledge getKnowledge(Integer knowledgeId, Integer planId){
+        //专题训练
         if(knowledgeId==null){
-            return null;
+            Knowledge knowledge = new Knowledge();
+            //文案写死
+            knowledge.setKnowledge("首日必修，先定一个小目标");
+            return knowledge;
         }
         Knowledge knowledge = getKnowledge(knowledgeId);
         KnowledgePlan knowledgePlan = knowledgePlanDao.getKnowledgePlan(planId, knowledgeId);

@@ -40,8 +40,8 @@ public interface PracticeService {
     ApplicationPractice getApplicationPractice(Integer id, Integer planId);
 
     /**
-     * 获取挑战训练
-     * @param id 挑战训练id
+     * 获取专题训练
+     * @param id 专题训练id
      * @param openid 学员id
      * @param planId 训练计划id
      * */
