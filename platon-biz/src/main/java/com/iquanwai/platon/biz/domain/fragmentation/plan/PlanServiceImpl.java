@@ -66,7 +66,17 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+        //上一组的练习必须先完成
+        List<PracticePlan> lastPractice = pickPracticeBySeries(improvementPlan, series-1);
+
+        if(CollectionUtils.isNotEmpty(lastPractice)) {
+            for(PracticePlan practicePlan:lastPractice){
+                //非应用训练未完成时,返回-2
+                if(practicePlan.getType()!=PracticePlan.APPLICATION && practicePlan.getStatus()==0){
+                    return -2;
+                }
+            }
+        }
         //选择当前组的练习
         List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, series);
         //已经到最后一组解锁训练,返回false
@@ -82,16 +92,6 @@ public class PlanServiceImpl implements PlanService {
             }else {
                 return -1;
             }
-        }
-        for(PracticePlan practicePlan:runningPractice){
-            //非应用训练未完成时,返回-2
-            if(practicePlan.getType()!=PracticePlan.APPLICATION && practicePlan.getStatus()==0){
-                return -2;
-            }
-        }
-        //第一天增加专题训练,其余时间不显示专题训练
-        if(series==1) {
-            runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
         }
         //创建练习对象
         List<Practice> practices = createPractice(runningPractice);
@@ -198,9 +198,17 @@ public class PlanServiceImpl implements PlanService {
 
     private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
+        //如果组数<=0,直接返回空数据
+        if(series<=0){
+            return Lists.newArrayList();
+        }
         List<PracticePlan> runningPractice = Lists.newArrayList();
         List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
         runningPractice.addAll(practicePlanList);
+        //第一天增加专题训练,其余时间不显示专题训练
+        if(series==1) {
+            runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
+        }
         return runningPractice;
     }
 

@@ -128,13 +128,10 @@ public class PlanController {
                 .action("加载训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
-//        if(result==-1){
-//            return WebUtils.error(211,null);
-//        }else if(result==-2){
-//            return WebUtils.error(212,null);
-//        }
-        if(result<0){
-            return WebUtils.result(null);
+        if(result==-1){
+            return WebUtils.error(211,null);
+        }else if(result==-2){
+            return WebUtils.error(212,null);
         }
         return WebUtils.result(improvementPlan);
     }
