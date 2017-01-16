@@ -216,10 +216,6 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        //第一天增加专题训练,其余时间不显示专题训练
-        if(DateUtils.interval(improvementPlan.getStartDate())==0) {
-            runningPractice.addAll(practicePlans.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
-        }
         //如果有解锁钥匙,找到第一组未完成的热身练习,如果没有解锁钥匙,找到最后一组已解锁的练习
         //未完成的练习
         List<PracticePlan> incompletePractice = getFirstImcompletePractice(practicePlans);
@@ -238,6 +234,14 @@ public class PlanServiceImpl implements PlanService {
             }
         }else{
             runningPractice.addAll(getLastUnlockPractice(practicePlans));
+        }
+        if(CollectionUtils.isNotEmpty(runningPractice)){
+            //第一天增加专题训练,其余时间不显示专题训练
+            PracticePlan plan = runningPractice.get(0);
+            if(plan.getSeries()==1) {
+                runningPractice.addAll(practicePlans.stream().filter(
+                        practicePlan -> practicePlan.getType() == PracticePlan.CHALLENGE).collect(Collectors.toList()));
+            }
         }
 
         return runningPractice;
