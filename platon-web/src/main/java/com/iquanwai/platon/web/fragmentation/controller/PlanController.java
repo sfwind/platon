@@ -119,7 +119,7 @@ public class PlanController {
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
-        boolean exist = planService.buildSeriesPlanDetail(improvementPlan, series);
+        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series);
         // openid置为null
         improvementPlan.setOpenid(null);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -128,7 +128,12 @@ public class PlanController {
                 .action("加载训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
-        if(!exist){
+//        if(result==-1){
+//            return WebUtils.error(211,null);
+//        }else if(result==-2){
+//            return WebUtils.error(212,null);
+//        }
+        if(result<0){
             return WebUtils.result(null);
         }
         return WebUtils.result(improvementPlan);

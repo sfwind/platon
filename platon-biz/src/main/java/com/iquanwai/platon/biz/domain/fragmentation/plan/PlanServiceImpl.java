@@ -62,7 +62,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public boolean buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series) {
+    public Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
@@ -71,7 +71,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, series);
         //已经到最后一组解锁训练,返回false
         if(CollectionUtils.isEmpty(runningPractice)){
-            return false;
+            return -1;
         }
         PracticePlan firstPractice = runningPractice.get(0);
         //未解锁返回false
@@ -80,7 +80,13 @@ public class PlanServiceImpl implements PlanService {
             if(improvementPlan.getKeycnt()>0){
                 unlock(runningPractice, improvementPlan);
             }else {
-                return false;
+                return -1;
+            }
+        }
+        for(PracticePlan practicePlan:runningPractice){
+            //非应用训练未完成时,返回-2
+            if(practicePlan.getType()!=PracticePlan.APPLICATION && practicePlan.getStatus()==0){
+                return -2;
             }
         }
         //第一天增加挑战训练,其余时间不显示挑战训练
@@ -95,7 +101,7 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         improvementPlan.setSeries(firstPractice.getSeries());
-        return true;
+        return 0;
     }
 
     private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
@@ -122,8 +128,8 @@ public class PlanServiceImpl implements PlanService {
         //按照series倒序排
         practices.sort((o1, o2) -> o2.getSeries()-o1.getSeries());
         for(PracticePlan practicePlan:practices){
-            //跳过挑战训练
-            if(practicePlan.getType()==PracticePlan.CHALLENGE){
+            //跳过应用训练
+            if(practicePlan.getType()==PracticePlan.APPLICATION){
                 continue;
             }
             if(!practicePlan.getSeries().equals(seriesCursor)){
