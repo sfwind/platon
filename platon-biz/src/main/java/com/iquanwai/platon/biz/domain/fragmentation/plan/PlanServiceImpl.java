@@ -220,7 +220,14 @@ public class PlanServiceImpl implements PlanService {
         // TODO:不支持多组专题训练
         PracticePlan challengePractice = practicePlanDao.loadChallengePractice(improvementPlan.getId());
         if(challengePractice.getStatus()==0){
-            return pickPracticeBySeries(improvementPlan, 1);
+            List<PracticePlan> practicePlan = pickPracticeBySeries(improvementPlan, 1);
+            if(CollectionUtils.isNotEmpty(practicePlan)){
+                PracticePlan practice = practicePlan.get(0);
+                if(!practice.getUnlocked()){
+                    unlock(practicePlan, improvementPlan);
+                }
+            }
+            return practicePlan;
         }
         //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
         //未完成的练习
