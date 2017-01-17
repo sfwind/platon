@@ -91,10 +91,9 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void unlock(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "update PracticePlan set UnLocked=1 where Id=?";
         try {
-            asyncRun.update(sql, id);
+            runner.update(sql, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
