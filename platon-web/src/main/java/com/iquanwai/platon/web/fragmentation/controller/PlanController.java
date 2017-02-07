@@ -45,6 +45,10 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
         if(improvementPlan!=null){
+            //如果是同一个问题的训练,直接返回训练id
+            if(improvementPlan.getProblemId().equals(problemId)){
+                return WebUtils.result(improvementPlan.getId());
+            }
             LOGGER.error("planId {} is existed", improvementPlan.getId());
             return WebUtils.error("您已经有正在运行的训练,耐心学习吧~");
         }
