@@ -46,8 +46,15 @@ public class AccountServiceImpl implements AccountService {
         if(!realTime && account != null) {
             return account;
         }
+        synchronized (this){
+            Account accountTemp = followUserDao.queryByOpenid(openid);
+            if(!realTime && accountTemp != null) {
+                return accountTemp;
+            }
 
-        return getAccountFromWeixin(openid, account);
+            return getAccountFromWeixin(openid, accountTemp);
+        }
+
     }
 
     private Account getAccountFromWeixin(String openid, Account account) {
