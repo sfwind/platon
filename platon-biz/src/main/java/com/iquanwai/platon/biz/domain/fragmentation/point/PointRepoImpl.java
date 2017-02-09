@@ -1,12 +1,16 @@
 package com.iquanwai.platon.biz.domain.fragmentation.point;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.customer.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.customer.Profile;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -19,13 +23,30 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PointRepoImpl implements PointRepo {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private ProfileDao profileDao;
+
     @Override
     public void risePoint(Integer planId, Integer increment) {
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if(improvementPlan!=null){
             improvementPlanDao.updatePoint(planId, improvementPlan.getPoint()+increment);
+        } else {
+            logger.error("计划{} 加{}积分失败，缺少Plan记录",planId,increment);
+        }
+    }
+
+    @Override
+    public void riseCustomerPoint(String openId, Integer increment){
+        Profile profile = profileDao.queryByOpenId(openId);
+        if(profile!=null){
+            profileDao.updatePoint(openId,profile.getPoint() + increment);
+        } else {
+            logger.error("用户{} 加{}积分失败,缺少Profile记录",openId,increment);
         }
     }
 

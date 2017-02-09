@@ -114,6 +114,8 @@ public class PracticeServiceImpl implements PracticeService {
         pointRepo.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
+        pointRepo.riseCustomerPoint(openid,point);
+
 
         return warmupResult;
     }
