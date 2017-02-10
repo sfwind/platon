@@ -21,7 +21,5 @@ public class Profile {
     private String realName; //真名
     private Integer point;
     private Integer isFull;
-
-
-
+    private String riseId;
 }

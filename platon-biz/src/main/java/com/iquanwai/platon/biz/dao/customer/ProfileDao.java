@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.dao.customer;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.customer.Profile;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
@@ -47,7 +48,7 @@ public class ProfileDao extends DBUtil {
         }
     }
 
-    public int insertProfile(Profile profile) {
+    public int insertProfile(Profile profile) throws SQLException {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -59,6 +60,9 @@ public class ProfileDao extends DBUtil {
                     profile.getFunction(),profile.getWorkingLife(),profile.getRealName());
             return insertRs.intValue();
         } catch (SQLException e) {
+            if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
+                throw e;
+            }
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
