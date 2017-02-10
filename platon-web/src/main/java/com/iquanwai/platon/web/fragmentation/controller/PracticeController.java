@@ -172,7 +172,12 @@ public class PracticeController {
 
     private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss) {
         warmupPracticeList.stream().forEach(warmupPractice -> {
-            warmupPractice.setDiscussList(discuss.get(warmupPractice.getId()));
+            List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
+            list.stream().forEach(warmupPracticeDiscuss -> {
+                warmupPracticeDiscuss.setRepliedOpenid(null);
+                warmupPracticeDiscuss.setOpenid(null);
+            });
+            warmupPractice.setDiscussList(list);
         });
     }
 
@@ -241,7 +246,7 @@ public class PracticeController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/load/discuss/{warmupPracticeId}/{offset}", method = RequestMethod.POST)
+    @RequestMapping("/load/discuss/{warmupPracticeId}/{offset}")
     public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
                                                                @PathVariable Integer warmupPracticeId,
                                                                @PathVariable Integer offset){
@@ -252,6 +257,11 @@ public class PracticeController {
         page.setPage(offset);
         List<WarmupPracticeDiscuss> discusses = practiceDiscussService.loadDiscuss(warmupPracticeId, page);
 
+        //清空openid
+        discusses.stream().forEach(warmupPracticeDiscuss -> {
+            warmupPracticeDiscuss.setRepliedOpenid(null);
+            warmupPracticeDiscuss.setOpenid(null);
+        });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("热身训练")

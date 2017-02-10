@@ -31,7 +31,7 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
         try {
             runner.insert(sql, new ScalarHandler<>(),
                     discuss.getWarmupPracticeId(), discuss.getOpenid(), discuss.getRepliedId(),
-                    discuss.getComment(), discuss.getPriority(),
+                    discuss.getComment(), discuss.getPriority(), discuss.getDel(),
                     discuss.getRepliedOpenid(), discuss.getRepliedComment());
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

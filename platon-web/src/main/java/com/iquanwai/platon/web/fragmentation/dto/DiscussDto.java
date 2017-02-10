@@ -9,6 +9,5 @@ import lombok.Data;
 public class DiscussDto {
     private String comment;
     private Integer repliedId;
-    private String repliedComment;
     private Integer warmupPracticeId;
 }

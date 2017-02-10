@@ -39,10 +39,10 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         warmupPracticeDiscuss.setComment(comment);
         warmupPracticeDiscuss.setDel(0);
         warmupPracticeDiscuss.setOpenid(openid);
-        warmupPracticeDiscuss.setRepliedId(repliedId);
         if(repliedId!=null) {
             WarmupPracticeDiscuss repliedDiscuss = warmupPracticeDiscussDao.load(WarmupPracticeDiscuss.class, repliedId);
             if(repliedDiscuss!=null){
+                warmupPracticeDiscuss.setRepliedId(repliedId);
                 warmupPracticeDiscuss.setRepliedComment(repliedDiscuss.getComment());
                 warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
             }
