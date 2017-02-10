@@ -1,21 +1,16 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
-import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.KnowledgePlan;
-import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
-import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Created by justin on 16/12/11.
@@ -35,19 +30,6 @@ public class KnowledgePlanDao extends PracticeDBUtil {
         }
 
         return null;
-    }
-
-    public List<KnowledgePlan> getKnowledgePlanByPlanId(Integer planId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from KnowledgePlan where PlanId=?";
-        try {
-            ResultSetHandler<List<KnowledgePlan>> h = new BeanListHandler(KnowledgePlan.class);
-            return runner.query(sql, h, planId);
-        }catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return Lists.newArrayList();
     }
 
     public void insert(KnowledgePlan knowledgePlan){

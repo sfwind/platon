@@ -1,6 +1,7 @@
-package com.iquanwai.platon.biz.dao;
+package com.iquanwai.platon.biz.dao.common;
 
-import com.iquanwai.platon.biz.po.OperationLog;
+import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.po.common.OperationLog;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.slf4j.Logger;

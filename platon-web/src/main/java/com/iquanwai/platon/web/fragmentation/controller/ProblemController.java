@@ -2,7 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.po.OperationLog;
+import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemPlan;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -92,7 +92,8 @@ public class ProblemController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("阅读问题报告")
-                .action("打开问题报告页");
+                .action("打开问题报告页")
+                .module(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(problem);
     }

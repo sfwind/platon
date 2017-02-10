@@ -7,6 +7,7 @@ import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,20 @@ public class FollowUserDao extends DBUtil {
         try {
             List<String> account = run.query("SELECT OpenId FROM FollowUsers", h);
             return account;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return Lists.newArrayList();
+    }
+
+    public List<Account> queryAccounts(List<String> openids) {
+        String questionMarks = produceQuestionMark(openids.size());
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<List<Account>> h = new BeanListHandler(Account.class);
+        String sql = "SELECT OpenId FROM FollowUsers where Openid in ("+ questionMarks +")";
+        try {
+            return run.query(sql, h, openids);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

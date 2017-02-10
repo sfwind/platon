@@ -32,8 +32,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private KnowledgePlanDao knowledgePlanDao;
-    @Autowired
     private PointRepo pointRepo;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;

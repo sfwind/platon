@@ -80,10 +80,9 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void complete(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "update PracticePlan set Status=1 where Id=?";
         try {
-            asyncRun.update(sql, id);
+            runner.update(sql, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -101,10 +100,9 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void summary(Integer planId, Integer series){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "update PracticePlan set Summary=1 where PlanId=? and Series=?";
         try {
-            asyncRun.update(sql, planId, series);
+            runner.update(sql, planId, series);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

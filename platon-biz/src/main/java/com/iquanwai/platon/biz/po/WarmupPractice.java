@@ -20,6 +20,7 @@ public class WarmupPractice {
 
     private Integer score; //非db字段 分值
     private List<Choice> choiceList; //所有选项
+    private List<WarmupPracticeDiscuss> discussList; //热身训练讨论
     private List<Integer> choice; //用户选择选项
 
 }
