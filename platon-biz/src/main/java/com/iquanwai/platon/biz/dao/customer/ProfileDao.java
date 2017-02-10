@@ -50,14 +50,14 @@ public class ProfileDao extends DBUtil {
 
     public int insertProfile(Profile profile) throws SQLException {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName, RiseId)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     profile.getOpenid(), profile.getNickname(),profile.getCity(),profile.getCountry(),profile.getProvince(),
                     profile.getHeadimgurl(),profile.getMobileNo(),profile.getEmail(),profile.getIndustry(),
-                    profile.getFunction(),profile.getWorkingLife(),profile.getRealName());
+                    profile.getFunction(),profile.getWorkingLife(),profile.getRealName(),profile.getRiseId());
             return insertRs.intValue();
         } catch (SQLException e) {
             if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
