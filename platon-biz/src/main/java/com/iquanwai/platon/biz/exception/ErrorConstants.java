@@ -12,6 +12,9 @@ public class ErrorConstants {
     /** 没有权限操作 */
     public static final int NO_AUTHORITY = -2;
 
+    // ------------- Mysql错误码 ----------------
+    public static final int DUPLICATE_CODE = 1062;
+
     // -------------- 微信错误码 -----------------
     public static final int ACCESS_TOKEN_EXPIRED = 42001;
     public static final int ACCESS_TOKEN_EXPIRED_NEW = 40014;

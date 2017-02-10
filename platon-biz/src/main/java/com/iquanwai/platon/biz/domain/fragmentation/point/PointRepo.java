@@ -17,6 +17,11 @@ public interface PointRepo {
     void risePoint(Integer planId, Integer increment);
 
     /**
+     * 给用户信息表加分
+     */
+    void riseCustomerPoint(String openId, Integer increment);
+
+    /**
      * 热身训练算分
      * @param warmupPractice 热身训练
      * @param userChoiceList 用户选项
