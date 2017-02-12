@@ -11,12 +11,13 @@ import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -31,6 +32,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     @Autowired
     //TODO:待切换成rise用户表
     private FollowUserDao followUserDao;
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public void discuss(String openid, Integer warmupPracticeId, String comment, Integer repliedId) {
@@ -93,16 +96,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                         if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
                             warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                             warmupPracticeDiscuss.setName(account.getNickname());
-                        }else if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
+                        }
+                        if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
                             warmupPracticeDiscuss.setRepliedName(account.getNickname());
                         }
                     });
                     warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateTimeToString(warmupPracticeDiscuss.getAddTime()));
                 });
-            } catch (InterruptedException e) {
-                // ignore
-            } catch (ExecutionException e) {
-                // ignore
+            } catch (Exception e){
+                logger.error(e.getLocalizedMessage(), e);
             }
         });
 

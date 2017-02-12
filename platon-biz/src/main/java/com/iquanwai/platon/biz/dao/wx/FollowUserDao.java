@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.wx;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.Account;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -74,10 +75,13 @@ public class FollowUserDao extends DBUtil {
     }
 
     public List<Account> queryAccounts(List<String> openids) {
+        if(CollectionUtils.isEmpty(openids)){
+            return Lists.newArrayList();
+        }
         String questionMarks = produceQuestionMark(openids.size());
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Account>> h = new BeanListHandler(Account.class);
-        String sql = "SELECT OpenId FROM FollowUsers where Openid in ("+ questionMarks +")";
+        String sql = "SELECT * FROM FollowUsers where Openid in ("+ questionMarks +")";
         try {
             return run.query(sql, h, openids.toArray());
         } catch (SQLException e) {
