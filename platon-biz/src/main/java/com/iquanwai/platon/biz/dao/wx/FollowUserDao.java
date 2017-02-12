@@ -79,7 +79,7 @@ public class FollowUserDao extends DBUtil {
         ResultSetHandler<List<Account>> h = new BeanListHandler(Account.class);
         String sql = "SELECT OpenId FROM FollowUsers where Openid in ("+ questionMarks +")";
         try {
-            return run.query(sql, h, openids);
+            return run.query(sql, h, openids.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
