@@ -63,7 +63,9 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
     @Override
     public List<WarmupPracticeDiscuss> loadDiscuss(Integer warmupPracticeId, Page page) {
-        return warmupPracticeDiscussDao.loadDiscuss(warmupPracticeId, page);
+        List<WarmupPracticeDiscuss> discussList = warmupPracticeDiscussDao.loadDiscuss(warmupPracticeId, page);
+        fulfilDiscuss(discussList);
+        return discussList;
     }
 
     @Override
@@ -76,38 +78,43 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             futureTask.run();
             try {
                 List<WarmupPracticeDiscuss> discuss = (List<WarmupPracticeDiscuss>)futureTask.get();
-                List<String> openids = Lists.newArrayList();
-                discuss.stream().forEach(warmupPracticeDiscuss -> {
-                    if(!openids.contains(warmupPracticeDiscuss.getOpenid())){
-                        openids.add(warmupPracticeDiscuss.getOpenid());
-                    }
-                    if(warmupPracticeDiscuss.getRepliedOpenid()!=null) {
-                        if (!openids.contains(warmupPracticeDiscuss.getRepliedOpenid())) {
-                            openids.add(warmupPracticeDiscuss.getRepliedOpenid());
-                        }
-                    }
-                });
-                //批量获取用户信息
+                fulfilDiscuss(discuss);
                 result.put(warmupPracticeId, discuss);
-                List<Account> accounts = followUserDao.queryAccounts(openids);
-                //设置名称、头像和时间
-                discuss.stream().forEach(warmupPracticeDiscuss -> {
-                    accounts.stream().forEach(account -> {
-                        if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
-                            warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
-                            warmupPracticeDiscuss.setName(account.getNickname());
-                        }
-                        if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
-                            warmupPracticeDiscuss.setRepliedName(account.getNickname());
-                        }
-                    });
-                    warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateTimeToString(warmupPracticeDiscuss.getAddTime()));
-                });
             } catch (Exception e){
                 logger.error(e.getLocalizedMessage(), e);
             }
         });
 
         return result;
+    }
+
+    //填充评论的其他字段
+    private void fulfilDiscuss(List<WarmupPracticeDiscuss> discuss) {
+        List<String> openids = Lists.newArrayList();
+        discuss.stream().forEach(warmupPracticeDiscuss -> {
+            if(!openids.contains(warmupPracticeDiscuss.getOpenid())){
+                openids.add(warmupPracticeDiscuss.getOpenid());
+            }
+            if(warmupPracticeDiscuss.getRepliedOpenid()!=null) {
+                if (!openids.contains(warmupPracticeDiscuss.getRepliedOpenid())) {
+                    openids.add(warmupPracticeDiscuss.getRepliedOpenid());
+                }
+            }
+        });
+        //批量获取用户信息
+        List<Account> accounts = followUserDao.queryAccounts(openids);
+        //设置名称、头像和时间
+        discuss.stream().forEach(warmupPracticeDiscuss -> {
+            accounts.stream().forEach(account -> {
+                if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
+                    warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
+                    warmupPracticeDiscuss.setName(account.getNickname());
+                }
+                if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
+                    warmupPracticeDiscuss.setRepliedName(account.getNickname());
+                }
+            });
+            warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateTimeToString(warmupPracticeDiscuss.getAddTime()));
+        });
     }
 }
