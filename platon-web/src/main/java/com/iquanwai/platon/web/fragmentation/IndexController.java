@@ -4,7 +4,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.po.Account;
-import com.iquanwai.platon.biz.po.WhiteList;
+import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -30,7 +30,7 @@ public class IndexController {
     @Autowired
     private WhiteListService whiteListService;
 
-    @RequestMapping(value = "/fragment/**",method = RequestMethod.GET)
+    @RequestMapping(value = "/fragment/static/**",method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = oAuthService.openId(accessToken);

@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.domain.log;
 
-import com.iquanwai.platon.biz.po.OperationLog;
+import com.iquanwai.platon.biz.po.common.OperationLog;
 
 /**
  * Created by justin on 16/9/3.

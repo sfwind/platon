@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ProblemPlan;
-import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Created by justin on 16/12/8.
@@ -55,10 +53,9 @@ public class ProblemPlanDao extends PracticeDBUtil{
 
     public void updateStatus(String openid, Integer problemId, Integer status){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "UPDATE ProblemPlan SET STATUS = ? where Openid=? and problemId=?";
         try {
-            asyncRun.update(sql, status, openid, problemId);
+            runner.update(sql, status, openid, problemId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

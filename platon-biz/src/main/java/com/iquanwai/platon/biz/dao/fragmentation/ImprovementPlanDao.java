@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.util.DateUtils;
-import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Created by justin on 16/12/4.
@@ -100,10 +98,9 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public void updateStatus(Integer planId, Integer status){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "UPDATE ImprovementPlan SET Status =? where Id=?";
         try {
-            asyncRun.update(sql, status, planId);
+            runner.update(sql, status, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -111,21 +108,9 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public void updateKey(Integer planId, Integer key){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "UPDATE ImprovementPlan SET Keycnt =? where Id=?";
         try {
-            asyncRun.update(sql, key, planId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
-    public void updateProgress(Integer planId, Integer key, Integer series){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "UPDATE ImprovementPlan SET Keycnt =?, CurrentSeries=? where Id=?";
-        try {
-            asyncRun.update(sql, key, series, planId);
+            runner.update(sql, key, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -133,21 +118,9 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public void updatePoint(Integer planId, Integer point){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "UPDATE ImprovementPlan SET Point =? where Id=?";
         try {
-            asyncRun.update(sql, point, planId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
-    public void updateApplicationComplete(Integer planId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "UPDATE ImprovementPlan SET ApplicationComplete = ApplicationComplete+1 where Id=?";
-        try {
-            asyncRun.update(sql, planId);
+            runner.update(sql, point, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -155,10 +128,9 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public void updateWarmupComplete(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "UPDATE ImprovementPlan SET WarmupComplete = WarmupComplete+1 where Id=?";
         try {
-            asyncRun.update(sql, planId);
+            runner.update(sql, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

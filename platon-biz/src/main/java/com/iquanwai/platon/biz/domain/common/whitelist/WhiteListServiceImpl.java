@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.domain.common.whitelist;
 
-import com.iquanwai.platon.biz.dao.WhiteListDao;
+import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

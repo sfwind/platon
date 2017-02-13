@@ -1,6 +1,7 @@
-package com.iquanwai.platon.biz.dao;
+package com.iquanwai.platon.biz.dao.common;
 
-import com.iquanwai.platon.biz.po.WhiteList;
+import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.po.common.WhiteList;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -14,7 +15,7 @@ import java.sql.SQLException;
  * Created by justin on 16/12/26.
  */
 @Repository
-public class WhiteListDao extends DBUtil{
+public class WhiteListDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public WhiteList loadWhiteList(String function, String openid){

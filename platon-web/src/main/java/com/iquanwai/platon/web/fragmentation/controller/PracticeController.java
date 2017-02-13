@@ -3,11 +3,15 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
@@ -27,7 +31,7 @@ import java.util.stream.Collectors;
  * 各类训练相关的请求处理类
  */
 @RestController
-@RequestMapping("/practice")
+@RequestMapping("/fragment/practice")
 public class PracticeController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Autowired
@@ -36,6 +40,10 @@ public class PracticeController {
     private PlanService planService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private PracticeDiscussService practiceDiscussService;
+
+    private final static int DISCUSS_PAGE_SIZE = 20;
 
     @RequestMapping("/warmup/start/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
@@ -53,7 +61,8 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("热身训练")
-                .action("打开热身训练页");
+                .action("打开热身训练页")
+                .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
     }
@@ -68,7 +77,7 @@ public class PracticeController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        WarmupResult warmupResult = null;
+        WarmupResult warmupResult;
         try {
             warmupResult = practiceService.answerWarmupPractice(
                     warmupPracticeDto.getPractice(), practicePlanId,
@@ -80,7 +89,8 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("热身训练")
-                .action("回答问题");
+                .action("回答问题")
+                .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupResult);
     }
@@ -142,14 +152,33 @@ public class PracticeController {
         // 获取用户提交
         List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);
         setUserChoices(warmupPracticeList, submits);
+        // 获取讨论信息
+        Page page = new Page();
+        page.setPage(1);
+        page.setPageSize(DISCUSS_PAGE_SIZE);
+        Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
+        setDiscuss(warmupPracticeList, discuss);
+
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("热身训练")
-                .action("打开热身训练页");
+                .action("打开热身训练页")
+                .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
+    }
+
+    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss) {
+        warmupPracticeList.stream().forEach(warmupPractice -> {
+            List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
+            list.stream().forEach(warmupPracticeDiscuss -> {
+                warmupPracticeDiscuss.setRepliedOpenid(null);
+                warmupPracticeDiscuss.setOpenid(null);
+            });
+            warmupPractice.setDiscussList(list);
+        });
     }
 
     //根据用户提交记录匹配题目选项
@@ -190,9 +219,55 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("训练")
-                .action("打开下一训练");
+                .action("打开下一训练")
+                .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(practice);
     }
 
+    @RequestMapping(value = "/discuss", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody DiscussDto discussDto){
+        Assert.notNull(loginUser, "用户不能为空");
+
+        if(discussDto.getComment()==null && discussDto.getComment().length()>300){
+            LOGGER.error("{} 热身训练讨论字数过长", loginUser.getOpenId());
+            return WebUtils.result("您提交的讨论字数过长");
+        }
+
+        practiceDiscussService.discuss(loginUser.getOpenId(), discussDto.getWarmupPracticeId(),
+                discussDto.getComment(), discussDto.getRepliedId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("热身训练")
+                .action("讨论")
+                .memo(discussDto.getWarmupPracticeId().toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping("/load/discuss/{warmupPracticeId}/{offset}")
+    public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
+                                                               @PathVariable Integer warmupPracticeId,
+                                                               @PathVariable Integer offset){
+        Assert.notNull(loginUser, "用户不能为空");
+
+        Page page = new Page();
+        page.setPageSize(DISCUSS_PAGE_SIZE);
+        page.setPage(offset);
+        List<WarmupPracticeDiscuss> discusses = practiceDiscussService.loadDiscuss(warmupPracticeId, page);
+
+        //清空openid
+        discusses.stream().forEach(warmupPracticeDiscuss -> {
+            warmupPracticeDiscuss.setRepliedOpenid(null);
+            warmupPracticeDiscuss.setOpenid(null);
+        });
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("热身训练")
+                .action("获取讨论")
+                .memo(warmupPracticeId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(discusses);
+    }
 }
