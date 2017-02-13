@@ -13,7 +13,7 @@ import java.util.Map;
  * Created by justin on 17/1/1.
  */
 @RestController
-@RequestMapping("/cache")
+@RequestMapping("/fragment/cache")
 public class CacheController {
     @Autowired
     private CacheService cacheService;
