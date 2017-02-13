@@ -20,7 +20,7 @@ import java.util.Map;
  * Created by justin on 16/10/8.
  */
 @RestController
-@RequestMapping("/fragment/b")
+@RequestMapping("/rise/b")
 public class BackendController {
     @Autowired
     private OperationLogService operationLogService;

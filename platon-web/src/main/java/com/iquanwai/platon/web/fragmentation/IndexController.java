@@ -30,7 +30,7 @@ public class IndexController {
     @Autowired
     private WhiteListService whiteListService;
 
-    @RequestMapping(value = "/fragment/static/**",method = RequestMethod.GET)
+    @RequestMapping(value = "/rise/static/**",method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response) throws Exception{
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = oAuthService.openId(accessToken);

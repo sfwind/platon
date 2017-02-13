@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Created by yangyuchen on 8/14/14.
  */
-@RequestMapping("/fragment/wx/js")
+@RequestMapping("/rise/wx/js")
 @Controller
 public class JsController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());

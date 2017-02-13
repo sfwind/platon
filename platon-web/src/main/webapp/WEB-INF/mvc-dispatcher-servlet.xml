@@ -51,12 +51,9 @@
     <mvc:interceptors>
         <mvc:interceptor>
             <mvc:mapping path="/**" />
-            <mvc:exclude-mapping path="/wx/**" />
-            <mvc:exclude-mapping path="/b/**" />
             <mvc:exclude-mapping path="/image/**" />
             <mvc:exclude-mapping path="/js/**" />
-            <mvc:exclude-mapping path="/challenge/**" />
-            <mvc:exclude-mapping path="/fragment/**" />
+            <mvc:exclude-mapping path="/rise/**" />
             <mvc:exclude-mapping path="/cache/**" />
             <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"></bean>
         </mvc:interceptor>
