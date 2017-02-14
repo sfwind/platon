@@ -114,7 +114,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     warmupPracticeDiscuss.setRepliedName(account.getNickname());
                 }
             });
-            warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateTimeToString(warmupPracticeDiscuss.getAddTime()));
+            warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateToString(warmupPracticeDiscuss.getAddTime()));
         });
     }
 }
