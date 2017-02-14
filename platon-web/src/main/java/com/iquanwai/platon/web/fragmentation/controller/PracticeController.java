@@ -43,7 +43,7 @@ public class PracticeController {
     @Autowired
     private PracticeDiscussService practiceDiscussService;
 
-    private final static int DISCUSS_PAGE_SIZE = 20;
+    private final static int DISCUSS_PAGE_SIZE = 100;
 
     @RequestMapping("/warmup/start/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
