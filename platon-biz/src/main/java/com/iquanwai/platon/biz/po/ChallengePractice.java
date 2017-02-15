@@ -13,5 +13,5 @@ public class ChallengePractice {
     private Integer problemId; //问题id
     private String pcurl; //pc端url 非db字段
     private String content; //提交内容 非db字段
-    private Integer submitId; // 提交id，非db字段;
+    private Integer submitId; // 提交id，非db字段
 }

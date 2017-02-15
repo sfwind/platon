@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
+import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
@@ -117,7 +118,7 @@ public class PracticeController {
     }
 
     @RequestMapping("/challenge/start/{challengeId}")
-    public ResponseEntity<Map<String, Object>> startChallengeApplication(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
                                                                          @PathVariable Integer challengeId){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
@@ -135,6 +136,42 @@ public class PracticeController {
                 .memo(challengeId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(challengePractice);
+    }
+
+    @RequestMapping(value = "/challenge/submit/{submitId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitChallenge(LoginUser loginUser,
+                                                      @PathVariable Integer submitId,
+                                                      @RequestBody SubmitDto submitDto){
+        Assert.notNull(loginUser, "用户不能为空");
+        if(submitDto.getAnswer()==null){
+            return WebUtils.error("您还未输入文字");
+        }
+        Boolean result = practiceService.submit(submitId, submitDto.getAnswer(), PracticePlan.CHALLENGE);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("专题训练")
+                .action("提交专题训练");
+        operationLogService.log(operationLog);
+        return WebUtils.result(result);
+    }
+
+    @RequestMapping(value = "/application/submit/{submitId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitApplication(LoginUser loginUser,
+                                                      @PathVariable Integer submitId,
+                                                      @RequestBody SubmitDto submitDto){
+        Assert.notNull(loginUser, "用户不能为空");
+        if(submitDto.getAnswer()==null){
+            return WebUtils.error("您还未输入文字");
+        }
+        Boolean result = practiceService.submit(submitId, submitDto.getAnswer(), PracticePlan.APPLICATION);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("应用训练")
+                .action("提交应用训练");
+        operationLogService.log(operationLog);
+        return WebUtils.result(result);
     }
 
     @RequestMapping("/warmup/analysis/{practicePlanId}")

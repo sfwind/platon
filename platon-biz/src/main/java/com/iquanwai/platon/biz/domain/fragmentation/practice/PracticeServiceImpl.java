@@ -166,6 +166,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Boolean submit(Integer id, String content, Integer type) {
+        Assert.notNull(type, "提交类型不能为空");
         boolean result = false;
         if(type.equals(PracticePlan.APPLICATION)) {
             ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
