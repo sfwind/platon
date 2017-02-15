@@ -147,4 +147,14 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public void unlockApplicationPractice(Integer planId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update PracticePlan set UnLocked=1 where PlanId=? and Type=11";
+        try {
+            runner.update(sql, planId);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 }

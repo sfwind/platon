@@ -374,7 +374,11 @@ public class PlanServiceImpl implements PlanService {
         //训练计划结束
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
+        //更新训练计划状态
         improvementPlanDao.updateStatus(planId, status);
+        //解锁所有应用训练
+        practicePlanDao.unlockApplicationPractice(planId);
+        //更新待完成的专题状态
         problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
     }
 
