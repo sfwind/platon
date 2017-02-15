@@ -189,16 +189,12 @@ public class PlanController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         boolean result = planService.completeCheck(improvementPlan);
-        //如果训练没有完成时,将返回置为空
-        if(!result){
-            improvementPlan = null;
-        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("完成训练")
                 .action("完成训练");
         operationLogService.log(operationLog);
-        return WebUtils.result(improvementPlan);
+        return WebUtils.result(result);
     }
 
     @RequestMapping(value = "/close", method = RequestMethod.POST)
