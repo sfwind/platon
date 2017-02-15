@@ -105,7 +105,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                improvementPlan.getId());
+                improvementPlan.getOpenid(), improvementPlan.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")

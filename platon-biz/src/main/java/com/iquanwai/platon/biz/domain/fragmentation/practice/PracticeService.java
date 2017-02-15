@@ -34,16 +34,26 @@ public interface PracticeService {
                                       Integer planId, String openid) throws AnswerException;
 
     /**
-     * 获取应用训练
-     * @param id 应用训练id
-     * */
-    ApplicationPractice getApplicationPractice(Integer id, Integer planId);
-
-    /**
      * 获取专题训练
      * @param id 专题训练id
      * @param openid 学员id
      * @param planId 训练计划id
      * */
     ChallengePractice getChallengePractice(Integer id, String openid, Integer planId);
+
+    /**
+     * 获取应用训练
+     * @param id 应用训练id
+     * @param openId openid
+     * @param planId 训练计划id
+     * */
+    ApplicationPractice getApplicationPractice(Integer id, String openId, Integer planId);
+
+    /**
+     * 获取专题训练
+     * @param id 提交id
+     * @param content 提交内容
+     * @param type 11-应用训练,21-专题训练
+     * */
+    Boolean submit(Integer id, String content, Integer type);
 }

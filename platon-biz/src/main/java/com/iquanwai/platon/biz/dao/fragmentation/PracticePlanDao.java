@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.PracticePlan;
-import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Created by justin on 16/12/4.
@@ -61,6 +59,21 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
 
         return Lists.newArrayList();
+    }
+
+    public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";
+        try {
+            PracticePlan practicePlan = run.query(sql, h,
+                    planId, practiceId, type);
+            return practicePlan;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
     }
 
     public PracticePlan loadChallengePractice(Integer planId){

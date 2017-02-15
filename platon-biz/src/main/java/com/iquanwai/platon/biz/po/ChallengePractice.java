@@ -12,6 +12,6 @@ public class ChallengePractice {
     private String pic; // 图片链接
     private Integer problemId; //问题id
     private String pcurl; //pc端url 非db字段
-    private Boolean submitted; //是否提交过 非db字段
     private String content; //提交内容 非db字段
+    private Integer submitId; // 提交id，非db字段;
 }

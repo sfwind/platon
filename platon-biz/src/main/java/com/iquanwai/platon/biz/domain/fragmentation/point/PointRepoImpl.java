@@ -1,12 +1,14 @@
 package com.iquanwai.platon.biz.domain.fragmentation.point;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.customer.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.customer.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -15,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +33,19 @@ public class PointRepoImpl implements PointRepo {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProfileDao profileDao;
+
+    public static Map<Integer, Integer> score = Maps.newHashMap();
+
+
+    @PostConstruct
+    public void initPoint() {
+        List<Integer> scores = ConfigUtils.getWorkScoreList();
+        logger.info("score init");
+        for (int i = 0; i < scores.size(); i++) {
+            score.put(i + 1, scores.get(i));
+        }
+        logger.info("score map:{}", score);
+    }
 
     @Override
     public void risePoint(Integer planId, Integer increment) {

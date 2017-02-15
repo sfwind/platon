@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -27,6 +28,10 @@ public class PracticeServiceImpl implements PracticeService {
     private ApplicationPracticeDao applicationPracticeDao;
     @Autowired
     private ChallengePracticeDao challengePracticeDao;
+    @Autowired
+    private ApplicationSubmitDao applicationSubmitDao;
+    @Autowired
+    private ChallengeSubmitDao challengeSubmitDao;
     @Autowired
     private WarmupSubmitDao warmupSubmitDao;
     @Autowired
@@ -119,40 +124,102 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, Integer planId) {
-        return applicationPracticeDao.load(ApplicationPractice.class, id);
-    }
-
-    @Override
     public ChallengePractice getChallengePractice(Integer id, String openid, Integer planId) {
         Assert.notNull(openid, "openid不能为空");
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
-
-        challengePractice.setPcurl(ConfigUtils.pcDomainName()+submitUrlPrefix);
-
-        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
-        String description = getChallengePracticeContent(improvementPlan);
-        challengePractice.setDescription(description);
+        // 查询该用户是否提交
+        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
+        if(submit==null){
+            // 没有提交，生成
+            submit = new ChallengeSubmit();
+            submit.setOpenid(openid);
+            submit.setPlanId(planId);
+            submit.setChallengeId(id);
+            int submitId = challengeSubmitDao.insert(submit);
+            submit.setId(submitId);
+        }
+        challengePractice.setContent(submit.getContent());
+        challengePractice.setSubmitId(submit.getId());
         return challengePractice;
     }
 
-    private String getChallengePracticeContent(ImprovementPlan improvementPlan) {
-//        //第一天文案
-//        if(DateUtils.parseDateToString(improvementPlan.getStartDate()).equals(
-//                DateUtils.parseDateToString(new Date()))){
-//            return "今天是训练第1天，给自己定个小目标，或者写下跟本次训练相关的困扰你的难题吧。小目标帮你更积极地学习，也带给你更多成就感！";
-//        }
-//        else if(DateUtils.parseDateToString(improvementPlan.getCloseDate()).equals(
-//                DateUtils.parseDateToString(new Date()))){
-//            String message =  "经过{0}天的学习，你学了{1}个知识点，做了{2}道题，那么当初的小目标实现了吗？难题也有答案了吗？把你的感悟、心得、经历写下来，跟大家交流、共同进步吧！";
-//
-//            int date = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getCloseDate());
-//            int knowledgeCount = knowledgePlanDao.getKnowledgePlanByPlanId(improvementPlan.getId()).size();
-//            int practiceNumbers = improvementPlan.getWarmupComplete()*GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER;
-//            return MessageFormat.format(message, date, knowledgeCount, practiceNumbers);
-//        }else{
-//            return "今天的应用任务实践了吗？打开下面链接，在以往的内容下面，继续写下你的经历和心得吧（提交后也可以再次去完善你的分享）";
-//        }
-        return null;
+    @Override
+    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId) {
+        Assert.notNull(openid, "openid不能为空");
+        // 查询该应用训练
+        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
+        // 查询该用户是否提交
+        ApplicationSubmit submit = applicationSubmitDao.load(id, planId, openid);
+        if (submit == null) {
+            // 没有提交，生成
+            submit = new ApplicationSubmit();
+            submit.setOpenid(openid);
+            submit.setPlanId(planId);
+            submit.setApplicationId(id);
+            int submitId = applicationSubmitDao.insert(submit);
+            submit.setId(submitId);
+        }
+        applicationPractice.setContent(submit.getContent());
+        applicationPractice.setSubmitId(submit.getId());
+        return applicationPractice;
+    }
+
+    @Override
+    public Boolean submit(Integer id, String content, Integer type) {
+        boolean result = false;
+        if(type.equals(PracticePlan.APPLICATION)) {
+            ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
+            if (submit == null) {
+                logger.error("submitId {} is not existed", id);
+                return false;
+            }
+            result = applicationSubmitDao.answer(id, content);
+            if (result && submit.getPointStatus() == 0) {
+                // 修改应用任务记录
+                ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
+                if (plan != null) {
+                    improvementPlanDao.updateApplicationComplete(plan.getId());
+                } else {
+                    logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
+                }
+                logger.info("应用训练加分:{}", id);
+                PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
+                        submit.getApplicationId(), PracticePlan.APPLICATION);
+                if (practicePlan != null) {
+                    practicePlanDao.complete(practicePlan.getId());
+                    Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
+                    // 查看难度，加分
+                    pointRepo.risePoint(submit.getPlanId(), point);
+                    // 修改status
+                    applicationSubmitDao.updatePointStatus(id);
+                    // 加总分
+                    pointRepo.riseCustomerPoint(submit.getOpenid(), point);
+                }
+            }
+        }else if(type.equals(PracticePlan.CHALLENGE)){
+            ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class, id);
+            if (submit == null) {
+                logger.error("submitId {} is not existed", id);
+                return false;
+            }
+            result = challengeSubmitDao.answer(id, content);
+            if (result && submit.getPointStatus() == 0) {
+                // 修改专题任务记录
+                logger.info("专题训练加分:{}", id);
+                PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
+                        submit.getChallengeId(), PracticePlan.CHALLENGE);
+                if (practicePlan != null) {
+                    practicePlanDao.complete(practicePlan.getId());
+                    // 加分
+                    pointRepo.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
+                    // 修改status
+                    challengeSubmitDao.updatePointStatus(id);
+                    // 加总分
+                    pointRepo.riseCustomerPoint(submit.getOpenid(),ConfigUtils.getChallengeScore());
+                }
+
+            }
+        }
+        return result;
     }
 }

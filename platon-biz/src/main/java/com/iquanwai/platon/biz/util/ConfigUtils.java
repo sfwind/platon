@@ -4,6 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import java.io.File;
+import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -113,6 +114,14 @@ public class ConfigUtils {
 		}
 
 		return url;
+	}
+
+	public static List<Integer> getWorkScoreList(){
+		return config.getIntList("work.difficulty.score");
+	}
+
+	public static Integer getChallengeScore(){
+		return config.getInt("challenge.score");
 	}
 
 	public static String gaId(){
