@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -137,9 +139,11 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setChallengeId(id);
             int submitId = challengeSubmitDao.insert(submit);
             submit.setId(submitId);
+            submit.setUpdateTime(new Date());
         }
         challengePractice.setContent(submit.getContent());
         challengePractice.setSubmitId(submit.getId());
+        challengePractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getUpdateTime()));
         return challengePractice;
     }
 
@@ -158,9 +162,11 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setApplicationId(id);
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
+            submit.setUpdateTime(new Date());
         }
         applicationPractice.setContent(submit.getContent());
         applicationPractice.setSubmitId(submit.getId());
+        applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getUpdateTime()));
         return applicationPractice;
     }
 

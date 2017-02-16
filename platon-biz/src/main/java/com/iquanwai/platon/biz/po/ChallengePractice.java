@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.po;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * Created by justin on 16/12/4.
  */
@@ -14,4 +16,5 @@ public class ChallengePractice {
     private String pcurl; //pc端url 非db字段
     private String content; //提交内容 非db字段
     private Integer submitId; // 提交id，非db字段
+    private String submitUpdateTime;// 非db字段
 }

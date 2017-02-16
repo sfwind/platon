@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.po;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * Created by justin on 17/2/15.
  */
@@ -13,4 +15,5 @@ public class ChallengeSubmit {
     private Integer planId; //提升计划id
     private String content; //提交内容
     private Integer pointStatus; //是否已加分（0-否，1-是）
+    private Date updateTime; //最后更新时间
 }
