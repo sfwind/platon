@@ -11,6 +11,8 @@
 <script>
     window.ENV = {
         reactMountPoint: "react-app",
+        userName: "${userName}",
+        headImage:"${headImage}",
     }
 </script>
 
