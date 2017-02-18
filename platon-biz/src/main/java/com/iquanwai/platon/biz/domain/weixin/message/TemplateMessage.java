@@ -23,6 +23,6 @@ public class TemplateMessage {
         }
 
         private String value;
-        private String color = "#44B549";
+        private String color = "#04136d";
     }
 }
