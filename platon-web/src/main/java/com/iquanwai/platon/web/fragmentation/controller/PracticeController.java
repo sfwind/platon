@@ -151,7 +151,8 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("专题训练")
-                .action("提交专题训练");
+                .action("提交专题训练")
+                .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(result);
     }
@@ -169,7 +170,8 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("应用训练")
-                .action("提交应用训练");
+                .action("提交应用训练")
+                .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(result);
     }
