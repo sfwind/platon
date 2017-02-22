@@ -63,6 +63,23 @@ public class AccountServiceImpl implements AccountService {
 
     }
 
+    @Override
+    public Profile getProfile(String openid, boolean realTime){
+        Profile profile = profileDao.queryByOpenId(openid);
+        if(!realTime && profile != null){
+            return profile;
+        }
+        synchronized (this){
+            Profile profileTemp = profileDao.queryByOpenId(openid);
+            if(!realTime && profileTemp != null){
+                return profileTemp;
+            }
+            Account account = followUserDao.queryByOpenid(openid);
+            getAccountFromWeixin(openid,account);
+            return profileDao.queryByOpenId(openid);
+        }
+    }
+
     private Account getAccountFromWeixin(String openid, Account account) {
         //调用api查询account对象
         String url = USER_INFO_URL;
@@ -124,6 +141,7 @@ public class AccountServiceImpl implements AccountService {
                 logger.info("更新用户信息:{}",accountNew);
                 if(accountNew.getNickname()!=null){
                     followUserDao.updateMeta(accountNew);
+                    profileDao.updateMeta(accountNew.getNickname(),accountNew.getHeadimgurl(),accountNew.getOpenid());
                 }
             }
         } catch (Exception e) {
@@ -181,5 +199,10 @@ public class AccountServiceImpl implements AccountService {
             cityList = regionDao.loadAllCities();
         }
         return cityList;
+    }
+
+    @Override
+    public int updateOpenRise(String openId) {
+       return profileDao.updateOpenRise(openId);
     }
 }

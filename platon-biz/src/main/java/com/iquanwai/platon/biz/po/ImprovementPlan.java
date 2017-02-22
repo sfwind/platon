@@ -31,6 +31,7 @@ public class ImprovementPlan {
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean summary; //非db字段 是否显示任务总结
     private Integer series; //非db字段 当前组号
+    private Boolean openRise; //非db字段 是否打开过rise
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;
