@@ -42,7 +42,7 @@ public class RestfulHelper {
                     }
                 }catch (WeixinException e){
                     //refresh token and try again
-                    accessToken = accessTokenService.refreshAccessToken();
+                    accessToken = accessTokenService.refreshAccessToken(false);
                     url = requestUrl.replace("{access_token}", accessToken);
                     request = new Request.Builder()
                             .url(url)
@@ -104,7 +104,7 @@ public class RestfulHelper {
                     }
                 }catch (WeixinException e){
                     //refresh token and try again
-                    accessToken = accessTokenService.refreshAccessToken();
+                    accessToken = accessTokenService.refreshAccessToken(false);
                     url = requestUrl.replace("{access_token}", accessToken);
                     request = new Request.Builder()
                             .url(url)

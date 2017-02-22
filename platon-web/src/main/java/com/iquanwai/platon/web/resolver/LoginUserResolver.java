@@ -3,7 +3,7 @@ package com.iquanwai.platon.web.resolver;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.po.customer.Profile;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.dao.customer;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
-import com.iquanwai.platon.biz.po.customer.Profile;
+import com.iquanwai.platon.biz.po.common.Profile;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;

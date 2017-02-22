@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.po.customer;
+package com.iquanwai.platon.biz.po.common;
 
 import lombok.Data;
 
