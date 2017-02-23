@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.iquanwai.platon.biz.po.Account;
 import com.iquanwai.platon.biz.po.Region;
+import com.iquanwai.platon.biz.po.common.Profile;
 
 import java.util.List;
 
@@ -14,6 +15,11 @@ public interface AccountService {
      * 根据openid获取用户的详细信息
      * */
     Account getAccount(String openid, boolean realTime);
+
+    /**
+     * 根据openid获取用户详情
+     */
+    Profile getProfile(String openid, boolean realTime);
 
     /**
      * 更新个人信息
@@ -39,8 +45,14 @@ public interface AccountService {
      * 获取某省份的城市信息
      * */
     List<Region> loadCities();
+    /**
+     * 更新是否打开rise
+     */
+    int updateOpenRise(String openId);
 
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     String GET_USERS_URL = "https://api.weixin.qq.com/cgi-bin/user/get?access_token={access_token}";
+
+
 }

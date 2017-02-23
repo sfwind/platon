@@ -7,7 +7,7 @@ import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.po.Account;
 import com.iquanwai.platon.biz.po.Region;
-import com.iquanwai.platon.biz.po.customer.Profile;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
@@ -61,6 +61,23 @@ public class AccountServiceImpl implements AccountService {
             return getAccountFromWeixin(openid, accountTemp);
         }
 
+    }
+
+    @Override
+    public Profile getProfile(String openid, boolean realTime){
+        Profile profile = profileDao.queryByOpenId(openid);
+        if(!realTime && profile != null){
+            return profile;
+        }
+        synchronized (this){
+            Profile profileTemp = profileDao.queryByOpenId(openid);
+            if(!realTime && profileTemp != null){
+                return profileTemp;
+            }
+            Account account = followUserDao.queryByOpenid(openid);
+            getAccountFromWeixin(openid,account);
+            return profileDao.queryByOpenId(openid);
+        }
     }
 
     private Account getAccountFromWeixin(String openid, Account account) {
@@ -124,6 +141,7 @@ public class AccountServiceImpl implements AccountService {
                 logger.info("更新用户信息:{}",accountNew);
                 if(accountNew.getNickname()!=null){
                     followUserDao.updateMeta(accountNew);
+                    profileDao.updateMeta(accountNew.getNickname(),accountNew.getHeadimgurl(),accountNew.getOpenid());
                 }
             }
         } catch (Exception e) {
@@ -181,5 +199,10 @@ public class AccountServiceImpl implements AccountService {
             cityList = regionDao.loadAllCities();
         }
         return cityList;
+    }
+
+    @Override
+    public int updateOpenRise(String openId) {
+       return profileDao.updateOpenRise(openId);
     }
 }

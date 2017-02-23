@@ -36,10 +36,12 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/**",method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception{
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        String openid = oAuthService.openId(accessToken);
-
-
-        Account account = accountService.getAccount(openid, false);
+        String openid=null;
+        Account account=null;
+        if(accessToken!=null){
+            openid = oAuthService.openId(accessToken);
+            account = accountService.getAccount(openid, false);
+        }
         if(!checkAccessToken(request, openid) || account==null){
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
             WebUtils.auth(request, response);

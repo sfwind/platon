@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.po.customer;
+package com.iquanwai.platon.biz.po.common;
 
 import lombok.Data;
 
@@ -22,4 +22,5 @@ public class Profile {
     private Integer point;
     private Integer isFull;
     private String riseId;
+    private Boolean openRise;
 }

@@ -3,7 +3,7 @@ package com.iquanwai.platon.web.resolver;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.po.Account;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +74,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     }
 
     private LoginUser getLoginUser(String openId) {
-        Account account = accountService.getAccount(openId, false);
+        Profile account = accountService.getProfile(openId, false);
 
         if(account==null){
             logger.error("openId {} is not found in db", openId);
@@ -86,6 +86,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUser.setWeixinName(account.getNickname());
         loginUser.setHeadimgUrl(account.getHeadimgurl());
         loginUser.setRealName(account.getRealName());
+        loginUser.setOpenRise(account.getOpenRise());
         return loginUser;
     }
 

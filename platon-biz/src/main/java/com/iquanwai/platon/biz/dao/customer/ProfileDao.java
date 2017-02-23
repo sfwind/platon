@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.dao.customer;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
-import com.iquanwai.platon.biz.po.customer.Profile;
+import com.iquanwai.platon.biz.po.common.Profile;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -13,7 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by nethunder on 2017/2/8.
@@ -65,6 +67,42 @@ public class ProfileDao extends DBUtil {
             }
             logger.error(e.getLocalizedMessage(), e);
         }
+        return -1;
+    }
+    public int updateMeta(String nickname, String headimgurl,String openId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        String updateSql = "Update Profile Set Nickname=?, Headimgurl=? where Openid=?";
+        try {
+            Future<Integer> result = asyncRun.update(updateSql,
+                    nickname, headimgurl, openId);
+            return result.get();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        } catch (InterruptedException e) {
+            // ignore
+        } catch (ExecutionException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return -1;
+    }
+
+    public int updateOpenRise(String openId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        String updateSql = "Update Profile Set OpenRise=1 where Openid=?";
+        try {
+            Future<Integer> result = asyncRun.update(updateSql, openId);
+            return result.get();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        } catch (InterruptedException e) {
+            // ignore
+        } catch (ExecutionException e) {
+            logger.error(e.getMessage(), e);
+        }
+
         return -1;
     }
 }

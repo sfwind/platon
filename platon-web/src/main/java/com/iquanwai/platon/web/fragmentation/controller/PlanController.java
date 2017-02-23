@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -37,6 +38,8 @@ public class PlanController {
     private GeneratePlanService generatePlanService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private AccountService accountService;
 
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
@@ -106,6 +109,7 @@ public class PlanController {
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
+        improvementPlan.setOpenRise(loginUser.getOpenRise());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("开始训练")
@@ -214,6 +218,16 @@ public class PlanController {
                 .action("完成训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/openrise", method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Object>> openRise(LoginUser loginUser){
+        Assert.notNull(loginUser,"用户不能为空");
+        int count = accountService.updateOpenRise(loginUser.getOpenId());
+        if (count > 0) {
+            loginUser.setOpenRise(true);
+        }
         return WebUtils.success();
     }
 }
