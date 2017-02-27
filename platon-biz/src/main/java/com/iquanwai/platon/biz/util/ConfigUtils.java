@@ -66,22 +66,6 @@ public class ConfigUtils {
 		return config.getBoolean("log.debug");
 	}
 
-	public static String getMch_id(){
-		return config.getString("mch_id");
-	}
-
-	public static String getExternalIP(){
-		return config.getString("external.ip");
-	}
-
-	public static Integer getBillOpenMinute(){
-		return config.getInt("bill.open.minute");
-	}
-
-	public static String angelMsgKey(){
-		return config.getString("angel.msg");
-	}
-
 	public static boolean messageSwitch(){
 		return config.getBoolean("message.switch");
 	}

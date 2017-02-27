@@ -133,7 +133,7 @@ public class PlanController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("开始训练")
-                .action("加载训练")
+                .action("加载历史训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
         if(result==-1){
