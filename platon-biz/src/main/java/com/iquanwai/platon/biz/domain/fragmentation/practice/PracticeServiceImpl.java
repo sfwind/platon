@@ -1,16 +1,34 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChallengePracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
+import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.ChallengeSubmit;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +64,8 @@ public class PracticeServiceImpl implements PracticeService {
     private CacheService cacheService;
     @Autowired
     private HomeworkVoteDao homeworkVoteDao;
+    @Autowired
+    private CommentDao commentDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -240,5 +260,53 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public List<HomeworkVote> loadVoteYesterday(){
         return homeworkVoteDao.loadVoteByDate(DateUtils.beforeDays(new Date(), 1));
+    }
+
+    @Override
+    public Integer votedCount(Integer type, Integer referencedId) {
+        return homeworkVoteDao.votedCount(type, referencedId);
+    }
+
+    @Override
+    public Integer commentCount(Integer moduleId, Integer referId) {
+        return commentDao.commentCount(moduleId, referId);
+    }
+
+    @Override
+    public HomeworkVote loadVoteRecord(Integer type, Integer referId, String openId) {
+        return homeworkVoteDao.loadVoteRecord(type, referId, openId);
+    }
+
+    @Override
+    public boolean vote(Integer type, Integer referencedId, String openId) {
+        HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, openId);
+        Pair<Integer, String> pair = new MutablePair<>();
+        if (vote == null) {
+            Integer planId = null;
+            String submitOpenId = null;
+            if(type == Constants.VoteType.CHALLENGE){
+                // 挑战任务点赞
+                ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class,referencedId);
+                if(submit==null){
+                    return false;
+                }
+                planId = submit.getPlanId();
+                submitOpenId = submit.getOpenid();
+            } else {
+                // 应用任务点赞
+                ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class,referencedId);
+                if(submit==null){
+                    return false;
+                }
+                planId = submit.getPlanId();
+                submitOpenId = submit.getOpenid();
+            }
+            homeworkVoteDao.vote(type, referencedId, openId);
+            pointRepo.risePoint(planId,ConfigUtils.getVoteScore());
+            pointRepo.riseCustomerPoint(submitOpenId,ConfigUtils.getVoteScore());
+        } else {
+            homeworkVoteDao.reVote(vote.getId());
+        }
+        return true;
     }
 }

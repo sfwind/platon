@@ -8,20 +8,34 @@ import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
+import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
+import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
 import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
+import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -126,6 +140,18 @@ public class PracticeController {
         }
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
                 improvementPlan.getOpenid(), improvementPlan.getId());
+        // 查询点赞数
+        applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
+        // 查询评论数
+        applicationPractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, applicationPractice.getSubmitId()));
+        // 查询我对它的点赞状态
+        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, applicationPractice.getSubmitId(), loginUser.getOpenId());
+        if (myVote != null && myVote.getDel() == 0) {
+            // 点赞中
+            applicationPractice.setVoteStatus(1);
+        } else {
+            applicationPractice.setVoteStatus(0);
+        }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -329,13 +355,12 @@ public class PracticeController {
         return WebUtils.result(discusses);
     }
 
-
     @RequestMapping("/warmup/new/analysis/{practiceId}")
     public ResponseEntity<Map<String, Object>> newAnalysisWarmup(LoginUser loginUser,
-                                                              @PathVariable Integer practiceId){
+                                                              @PathVariable Integer practiceId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
+        if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
@@ -360,5 +385,38 @@ public class PracticeController {
                 .memo(practiceId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeList.get(0));
+    }
+
+    /**
+     * 点赞或者取消点赞
+     *
+     * @param vote 1：点赞，2：取消点赞
+     */
+    @RequestMapping(value = "/vote", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> vote(LoginUser loginUser, @RequestBody HomeworkVoteDto vote) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.isTrue(vote.getStatus() == 1 || vote.getStatus() == 2, "点赞状态异常");
+        Integer refer = vote.getReferencedId();
+        Integer status = vote.getStatus();
+        String openId = loginUser.getOpenId();
+        Pair<Integer, String> voteResult;
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("碎片化")
+                .function("挑战任务")
+                .action("移动端点赞");
+        operationLogService.log(operationLog);
+
+        if (status == 1) {
+            boolean result= practiceService.vote(vote.getType(), refer, openId);
+            if(result){
+                return WebUtils.success();
+            } else {
+                return WebUtils.error("点赞失败");
+            }
+        } else {
+            // 取消点赞
+            LOGGER.error("异常，禁止用户:{},取消点赞:{}",loginUser.getOpenId(),vote);
+            return WebUtils.error("禁止取消点赞");
+        }
     }
 }
