@@ -2,8 +2,6 @@ package com.iquanwai.platon.biz.po;
 
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * Created by justin on 16/12/4.
  */
@@ -18,4 +16,8 @@ public class ApplicationPractice {
     private String content; //提交内容，非db字段
     private Integer submitId; // 提交id，非db字段
     private String submitUpdateTime;// 非db字段
+
+    private Integer voteCount; // 点赞数,非db字段
+    private Integer commentCount; // 评论数,非db字段
+    private Integer voteStatus; // 点赞状态，是否可以点赞，非db字段
 }

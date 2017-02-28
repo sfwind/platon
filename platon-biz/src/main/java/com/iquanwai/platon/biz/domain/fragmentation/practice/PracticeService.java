@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 
@@ -56,4 +57,37 @@ public interface PracticeService {
      * @param type 11-应用训练,21-专题训练
      * */
     Boolean submit(Integer id, String content, Integer type);
+
+    /**
+     * 获取点赞数量
+     * @param type 点赞的类型
+     * @param referencedId 被赞的id
+     * @return 点赞数
+     */
+    Integer votedCount(Integer type, Integer referencedId);
+
+    /**
+     * 获取评论数
+     * @param moduleId 评论模块
+     * @param referId 被评论的id
+     * @return 评论数
+     */
+    Integer commentCount(Integer moduleId,Integer referId);
+
+    /**
+     * 获取点赞记录
+     * @param type 点赞类型
+     * @param referId 被点赞的id
+     * @param openId 点赞的openId
+     * @return 点赞记录
+     */
+    HomeworkVote loadVoteRecord(Integer type, Integer referId, String openId);
+
+    /**
+     * 点赞
+     * @param type 点赞类型
+     * @param referencedId 被点赞的id
+     * @param openId 点赞的人
+     */
+    boolean vote(Integer type, Integer referencedId, String openId);
 }
