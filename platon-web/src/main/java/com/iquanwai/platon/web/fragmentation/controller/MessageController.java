@@ -50,13 +50,17 @@ public class MessageController {
         return WebUtils.result(warmupPracticeDiscuss);
     }
 
-    @RequestMapping("/load/{offset}")
-    public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @PathVariable Integer offset){
+    @RequestMapping("/load/{page}")
+    public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @PathVariable Integer page){
         Assert.notNull(loginUser, "用户不能为空");
-        Page page = new Page();
-        page.setPageSize(MESSAGE_PER_PAGE);
-        page.setPage(offset);
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getOpenId(), page);
+        Page p = new Page();
+        p.setPageSize(MESSAGE_PER_PAGE);
+        p.setPage(page);
+        //首次加载时把消息置为非最新
+        if(page==1){
+            messageService.mark(loginUser.getOpenId());
+        }
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getOpenId(), p);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
@@ -76,19 +80,6 @@ public class MessageController {
                 .function("打开消息中心")
                 .action("读消息")
                 .memo(id.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/mark", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        messageService.mark(loginUser.getOpenId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("消息中心")
-                .function("打开消息中心")
-                .action("标记消息非最新");
         operationLogService.log(operationLog);
         return WebUtils.success();
     }

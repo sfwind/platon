@@ -25,8 +25,8 @@ public class NotifyMessageDao extends PracticeDBUtil {
 
     public List<NotifyMessage> getMyMessages(String openid, Page page){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from NotifyMessage where ToUser=? order by Id desc limit " +
-                "" + page.getOffset() + "," + page.getLimit();
+        String sql = "select * from NotifyMessage where ToUser=? and Old=1 order by Id desc limit " +
+                + page.getOffset() + "," + page.getLimit();
         try {
             ResultSetHandler<List<NotifyMessage>> h = new BeanListHandler(NotifyMessage.class);
             return runner.query(sql, h, openid);
