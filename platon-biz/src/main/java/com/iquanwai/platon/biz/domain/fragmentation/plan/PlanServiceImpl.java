@@ -31,6 +31,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private KnowledgePlanDao knowledgePlanDao;
     @Autowired
+    private NotifyMessageDao notifyMessageDao;
+    @Autowired
     private CacheService cacheService;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -49,6 +51,8 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         improvementPlan.setSeries(getSeries(runningPractice));
+        int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
+        improvementPlan.setNewMessage(messageNumber>0);
     }
 
     private Integer getSeries(List<PracticePlan> runningPractice) {

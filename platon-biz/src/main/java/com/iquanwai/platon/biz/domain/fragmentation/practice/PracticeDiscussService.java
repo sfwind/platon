@@ -32,4 +32,10 @@ public interface PracticeDiscussService {
      * @param page 分页信息
      * */
     Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page);
+
+    /**
+     * 获取讨论内容
+     * @param discussId 讨论内容id
+     * */
+    WarmupPracticeDiscuss loadDiscuss(Integer discussId);
 }

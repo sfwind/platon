@@ -19,6 +19,6 @@ public class LoginUser {
     private Boolean openRise;
 
     public static LoginUser defaultUser(){
-        return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤", null, null,false);
+        return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤", null, null, false);
     }
 }

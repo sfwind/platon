@@ -1,10 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.ChallengePractice;
-import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.WarmupSubmit;
+import com.iquanwai.platon.biz.po.*;
 
 import java.util.List;
 
@@ -56,4 +53,16 @@ public interface PracticeService {
      * @param type 11-应用训练,21-专题训练
      * */
     Boolean submit(Integer id, String content, Integer type);
+
+    /**
+     * 获取热身训练
+     * @param warmupId 训练id
+     * */
+    WarmupPractice getWarmupPractice(Integer warmupId);
+
+    /**
+     * 获取前一天的点赞
+     * */
+    List<HomeworkVote> loadVoteYesterday();
+
 }

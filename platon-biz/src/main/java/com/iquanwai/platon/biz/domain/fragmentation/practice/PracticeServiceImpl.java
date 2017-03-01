@@ -44,6 +44,8 @@ public class PracticeServiceImpl implements PracticeService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private HomeworkVoteDao homeworkVoteDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -228,5 +230,15 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
         return result;
+    }
+
+    @Override
+    public WarmupPractice getWarmupPractice(Integer warmupId) {
+        return cacheService.getWarmupPractice(warmupId);
+    }
+
+    @Override
+    public List<HomeworkVote> loadVoteYesterday(){
+        return homeworkVoteDao.loadVoteByDate(DateUtils.beforeDays(new Date(), 1));
     }
 }
