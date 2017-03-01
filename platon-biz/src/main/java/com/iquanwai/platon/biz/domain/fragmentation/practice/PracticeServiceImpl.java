@@ -328,18 +328,18 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content){
-        if(moduleId== Constants.CommentModule.CHALLENGE){
+    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
+        if (moduleId == Constants.CommentModule.CHALLENGE) {
             ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
             if (load == null) {
-                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}",moduleId,referId,content);
-                return new MutablePair<>(false,"没有该文章");
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
             }
         } else {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
-                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}",moduleId,referId,content);
-                return new MutablePair<>(false,"没有该文章");
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
             }
         }
         Comment comment = new Comment();
@@ -349,6 +349,6 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         commentDao.insert(comment);
-        return new MutablePair<>(true,"评论成功");
+        return new MutablePair<>(true, "评论成功");
     }
 }

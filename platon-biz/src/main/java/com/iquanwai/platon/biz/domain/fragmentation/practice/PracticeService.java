@@ -56,17 +56,6 @@ public interface PracticeService {
      * */
     Boolean submit(Integer id, String content, Integer type);
 
-    /**
-     * 获取热身训练
-     * @param warmupId 训练id
-     * */
-    WarmupPractice getWarmupPractice(Integer warmupId);
-
-    /**
-     * 获取前一天的点赞
-     * */
-    List<HomeworkVote> loadVoteYesterday();
-
     /*
      * 获取点赞数量
      * @param type 点赞的类型
@@ -111,4 +100,15 @@ public interface PracticeService {
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
     Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
+
+    /*
+     * 获取热身训练
+     * @param warmupId 训练id
+     * */
+    WarmupPractice getWarmupPractice(Integer warmupId);
+
+    /**
+     * 获取前一天的点赞
+     * */
+    List<HomeworkVote> loadVoteYesterday();
 }
