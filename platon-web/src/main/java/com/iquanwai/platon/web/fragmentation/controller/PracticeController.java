@@ -7,7 +7,9 @@ import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussServ
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
+import com.iquanwai.platon.biz.po.Account;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.HomeworkVote;
@@ -17,10 +19,14 @@ import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
 import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
 import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -31,14 +37,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +66,8 @@ public class PracticeController {
     private OperationLogService operationLogService;
     @Autowired
     private PracticeDiscussService practiceDiscussService;
+    @Autowired
+    private AccountService accountService;
 
     private final static int DISCUSS_PAGE_SIZE = 100;
 
@@ -145,7 +156,7 @@ public class PracticeController {
         // 查询评论数
         applicationPractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, applicationPractice.getSubmitId()));
         // 查询我对它的点赞状态
-        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, applicationPractice.getSubmitId(), loginUser.getOpenId());
+        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId(), loginUser.getOpenId());
         if (myVote != null && myVote.getDel() == 0) {
             // 点赞中
             applicationPractice.setVoteStatus(1);
@@ -173,6 +184,20 @@ public class PracticeController {
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
                 improvementPlan.getOpenid(), improvementPlan.getId());
+
+        // 查询点赞数
+        challengePractice.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId()));
+        // 查询评论数
+        challengePractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.CHALLENGE, challengePractice.getSubmitId()));
+        // 查询我对它的点赞状态
+        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId(), loginUser.getOpenId());
+        if (myVote != null && myVote.getDel() == 0) {
+            // 点赞中
+            challengePractice.setVoteStatus(1);
+        } else {
+            challengePractice.setVoteStatus(0);
+        }
+
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -419,4 +444,165 @@ public class PracticeController {
             return WebUtils.error("禁止取消点赞");
         }
     }
+
+
+    /**
+     * 应用任务列表页加载他人的任务信息
+     *
+     * @param loginUser     登陆人
+     * @param applicationId 应用任务Id
+     */
+    @RequestMapping("/application/list/other/{applicationId}")
+    public ResponseEntity<Map<String, Object>> loadOtherApplicationList(LoginUser loginUser, @PathVariable Integer applicationId, @ModelAttribute Page page) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        Assert.notNull(applicationId, "应用训练不能为空");
+        // 该计划的应用训练是否提交
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("应用任务")
+                .action("移动端应用任务列表加载他人的应用任务")
+                .memo(applicationId + "");
+        operationLogService.log(operationLog);
+        List<RiseWorkInfoDto> submits = practiceService.loadApplicationSubmits(applicationId).stream()
+                .filter(item -> !item.getOpenid().equals(loginUser.getOpenId())).map(item -> {
+                    RiseWorkInfoDto dto = new RiseWorkInfoDto();
+                    dto.setContent(item.getContent());
+                    dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
+                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
+                    dto.setType(Constants.PracticeType.APPLICATION);
+                    dto.setSubmitId(item.getId());
+                    Profile account = accountService.getProfile(item.getOpenid(), false);
+                    dto.setUserName(account.getNickname());
+                    dto.setHeadImage(account.getHeadimgurl());
+                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION,item.getId()));
+                    // 查询我对它的点赞状态
+                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, item.getId(), loginUser.getOpenId());
+                    if (myVote != null && myVote.getDel() == 0) {
+                        // 点赞中
+                        dto.setVoteStatus(1);
+                    } else {
+                        dto.setVoteStatus(0);
+                    }
+
+                    return dto;
+                }).sorted((left,right)->{
+                    try {
+                        int leftWeight = left.getCommentCount() + left.getVoteCount();
+                        int rightWeight = right.getCommentCount() + right.getVoteCount();
+                        return rightWeight - leftWeight;
+                    } catch (Exception e){
+                        LOGGER.error("应用任务文章排序异常",e);
+                        return 0;
+                    }
+                }).skip(page.getOffset())
+                .limit(page.getPageSize())
+                .collect(Collectors.toList());
+        return WebUtils.result(submits);
+    }
+
+    @RequestMapping("/challenge/list/other/{challengeId}")
+    public ResponseEntity<Map<String, Object>> showOtherChallengeList(LoginUser loginUser, @PathVariable("challengeId") Integer challengeId,@ModelAttribute Page page) {
+        Assert.notNull(challengeId, "challengeId不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("挑战训练")
+                .action("挑战训练列表加载他人的")
+                .memo(challengeId + "");
+        operationLogService.log(operationLog);
+        List<RiseWorkInfoDto> submits = practiceService.getChallengeSubmitList(challengeId)
+                .stream()
+                .filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
+                .map(item -> {
+                    RiseWorkInfoDto dto = new RiseWorkInfoDto();
+                    dto.setSubmitId(item.getId());
+                    dto.setType(Constants.PracticeType.CHALLENGE);
+                    dto.setContent(item.getContent());
+                    dto.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, item.getId()));
+                    Account account = accountService.getAccount(item.getOpenid(), false);
+                    dto.setUserName(account.getNickname());
+                    dto.setHeadImage(account.getHeadimgurl());
+                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
+                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.CHALLENGE,item.getId()));
+                    return dto;
+                }).sorted((left,right)->{
+                    try {
+                        int leftWeight = left.getCommentCount() + left.getVoteCount();
+                        int rightWeight = right.getCommentCount() + right.getVoteCount();
+                        return rightWeight - leftWeight;
+                    } catch (Exception e){
+                        LOGGER.error("挑战任务文章排序异常",e);
+                        return 0;
+                    }
+                }).skip(page.getOffset())
+                .limit(page.getPageSize())
+                .collect(Collectors.toList());
+        return WebUtils.result(submits);
+    }
+
+    @RequestMapping(value = "/comment/{moduleId}/{submitId}",method = RequestMethod.GET)
+    public ResponseEntity<Map<String,Object>> loadComments(LoginUser loginUser,
+                                                           @PathVariable("moduleId") Integer moduleId, @PathVariable("submitId") Integer submitId,
+                                                           @ModelAttribute Page page){
+        Assert.notNull(moduleId, "评论类型不能为空");
+        Assert.notNull(submitId, "文章不能为空");
+        Assert.notNull(page, "页码不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("应用训练")
+                .action("移动端加载评论")
+                .memo(moduleId+":"+submitId);
+        operationLogService.log(operationLog);
+        List<RiseWorkCommentDto> comments = practiceService.loadComments(moduleId, submitId,page).stream().map(item->{
+            Profile account = accountService.getProfile(item.getCommentOpenId(), false);
+            if(account!=null){
+                RiseWorkCommentDto dto = new RiseWorkCommentDto();
+                dto.setId(item.getId());
+                dto.setContent(item.getContent());
+                dto.setUpTime(DateUtils.parseDateToString(item.getAddTime()));
+                dto.setUpName(account.getNickname());
+                dto.setHeadPic(account.getHeadimgurl());
+                return dto;
+            } else {
+                LOGGER.error("未找到该评论用户:{}",item);
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());;
+        return WebUtils.result(comments);
+    }
+
+    /**
+     * 评论
+     * @param loginUser 登陆人
+     * @param moduleId 评论模块
+     * @param submitId 文章id
+     * @param dto 评论内容
+     */
+    @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Object>> comment(LoginUser loginUser,
+                                                      @PathVariable("moduleId") Integer moduleId, @PathVariable("submitId") Integer submitId,
+                                                      @RequestBody RiseWorkCommentDto dto) {
+        Assert.notNull(loginUser,"登陆用户不能为空");
+        Assert.notNull(moduleId, "评论模块不能为空");
+        Assert.notNull(submitId, "文章不能为空");
+        Assert.notNull(dto, "内容不能为空");
+        Pair<Boolean, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getContent());
+        if(result.getLeft()){
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("训练")
+                    .function("碎片化")
+                    .action("移动端评论")
+                    .memo(moduleId+":"+submitId);
+            operationLogService.log(operationLog);
+            RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
+            resultDto.setContent(dto.getContent());
+            resultDto.setUpName(loginUser.getWeixinName());
+            resultDto.setHeadPic(loginUser.getHeadimgUrl());
+            resultDto.setUpTime(DateUtils.parseDateToString(new Date()));
+            return WebUtils.result(resultDto);
+        } else {
+            return WebUtils.error("评论失败");
+        }
+
+    }
+
 }

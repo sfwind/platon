@@ -19,6 +19,7 @@ import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
 import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.ChallengeSubmit;
+import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PracticePlan;
@@ -27,6 +28,7 @@ import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -308,5 +310,45 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVoteDao.reVote(vote.getId());
         }
         return true;
+    }
+
+    @Override
+    public List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId) {
+        return applicationSubmitDao.load(applicationId);
+    }
+
+    @Override
+    public List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId) {
+        return challengeSubmitDao.load(challengeId);
+    }
+
+    @Override
+    public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page){
+        return commentDao.loadComments(moduleId,submitId,page);
+    }
+
+    @Override
+    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content){
+        if(moduleId== Constants.CommentModule.CHALLENGE){
+            ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}",moduleId,referId,content);
+                return new MutablePair<>(false,"没有该文章");
+            }
+        } else {
+            ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}",moduleId,referId,content);
+                return new MutablePair<>(false,"没有该文章");
+            }
+        }
+        Comment comment = new Comment();
+        comment.setModuleId(moduleId);
+        comment.setReferencedId(referId);
+        comment.setType(Constants.CommentType.STUDENT);
+        comment.setContent(content);
+        comment.setCommentOpenId(openId);
+        commentDao.insert(comment);
+        return new MutablePair<>(true,"评论成功");
     }
 }
