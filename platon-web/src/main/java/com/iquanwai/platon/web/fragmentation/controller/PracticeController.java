@@ -472,6 +472,15 @@ public class PracticeController {
                     dto.setHeadImage(account.getHeadimgurl());
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.CHALLENGE,item.getId()));
+                    // 查询我对它的点赞状态
+                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, item.getId(), loginUser.getOpenId());
+                    if (myVote != null && myVote.getDel() == 0) {
+                        // 点赞中
+                        dto.setVoteStatus(1);
+                    } else {
+                        dto.setVoteStatus(0);
+                    }
+
                     return dto;
                 }).sorted((left,right)->{
                     try {
