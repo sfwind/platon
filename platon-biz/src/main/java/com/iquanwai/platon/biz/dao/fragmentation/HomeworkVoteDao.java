@@ -121,8 +121,8 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<HomeworkVote> h = new BeanHandler(HomeworkVote.class);
         try {
-            HomeworkVote vote = run.query("SELECT * FROM HomeworkVote where Type=? and ReferencedId=? and VoteOpenId=?",
-                    h, type, referencedId, voteOpenId);
+            HomeworkVote vote = run.query("SELECT * FROM HomeworkVote where ReferencedId=? and VoteOpenId=? and Type=? ",
+                    h, referencedId, voteOpenId, type);
             return vote;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
