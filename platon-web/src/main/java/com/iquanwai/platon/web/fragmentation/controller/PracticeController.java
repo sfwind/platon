@@ -476,7 +476,7 @@ public class PracticeController {
                     dto.setHeadImage(account.getHeadimgurl());
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION,item.getId()));
                     // 查询我对它的点赞状态
-                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, item.getId(), loginUser.getOpenId());
+                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(), loginUser.getOpenId());
                     if (myVote != null && myVote.getDel() == 0) {
                         // 点赞中
                         dto.setVoteStatus(1);
