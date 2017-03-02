@@ -15,4 +15,6 @@ public class Problem {
     private Integer applicationCount; //应用训练次数
     private Integer challengeCount; //专题训练次数
     private String description; //富文本描述
+    private String audio; //语音
+    private Boolean del; //是否删除(0-否,1-是)
 }
