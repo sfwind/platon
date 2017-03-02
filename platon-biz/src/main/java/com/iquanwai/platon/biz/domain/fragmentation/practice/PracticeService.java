@@ -2,10 +2,15 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
 import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.ChallengeSubmit;
+import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
+import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -90,4 +95,16 @@ public interface PracticeService {
      * @param openId 点赞的人
      */
     boolean vote(Integer type, Integer referencedId, String openId);
+
+    /**
+     * 查询应用训练提交记录
+     * @param applicationId 应用训练id
+     */
+    List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
+
+    List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId);
+
+    List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
+
+    Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
 }
