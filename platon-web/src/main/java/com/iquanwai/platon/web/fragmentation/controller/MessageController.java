@@ -9,13 +9,11 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -50,24 +48,26 @@ public class MessageController {
         return WebUtils.result(warmupPracticeDiscuss);
     }
 
-    @RequestMapping("/load/{page}")
-    public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @PathVariable Integer page){
+    @RequestMapping("/load")
+    public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @ModelAttribute Page page){
         Assert.notNull(loginUser, "用户不能为空");
-        Page p = new Page();
-        p.setPageSize(MESSAGE_PER_PAGE);
-        p.setPage(page);
+        page.setPageSize(MESSAGE_PER_PAGE);
         //首次加载时把消息置为非最新
-        if(page==1){
+        if(page.getPage()==1){
             messageService.mark(loginUser.getOpenId());
         }
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getOpenId(), p);
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getOpenId(), page);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
                 .function("打开消息中心")
                 .action("加载消息");
         operationLogService.log(operationLog);
-        return WebUtils.result(notifyMessage);
+        if(CollectionUtils.isEmpty(notifyMessage)){
+            return WebUtils.error("没有更多消息了");
+        }else {
+            return WebUtils.result(notifyMessage);
+        }
     }
 
     @RequestMapping(value = "/read/{id}", method = RequestMethod.POST)
