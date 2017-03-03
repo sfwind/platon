@@ -95,10 +95,27 @@ public interface PracticeService {
      */
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
 
+    /**
+     * 查询训练提交列表
+     * @param challengeId 挑战训练id
+     */
     List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId);
 
+    /**
+     * 查询评论
+     * @param moduleId 模块id
+     * @param submitId 提交id
+     * @param page 分页对象
+     */
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
+    /**
+     * 提交评论
+     * @param moduleId 模块id
+     * @param referId 关联id
+     * @param openId 评论人
+     * @param content 评论内容
+     */
     Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
 
     /*

@@ -3,9 +3,9 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -30,9 +30,9 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
-    private ProfileDao profileDao;
-    @Autowired
     private MessageService messageService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -121,7 +121,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             }
         });
         //批量获取用户信息
-        List<Profile> accounts = profileDao.queryAccounts(openids);
+        List<Profile> accounts = accountService.getProfiles(openids);
         //设置名称、头像和时间
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             accounts.stream().forEach(account -> {
@@ -138,8 +138,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     private void fulfilDiscuss(WarmupPracticeDiscuss warmupPracticeDiscuss) {
-        //批量获取用户信息
-        Profile account = profileDao.queryByOpenId(warmupPracticeDiscuss.getOpenid());
+        Profile account = accountService.getProfile(warmupPracticeDiscuss.getOpenid(), false);
         //设置名称、头像和时间
         if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
             warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());

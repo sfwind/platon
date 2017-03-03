@@ -1,8 +1,8 @@
 package com.iquanwai.platon.biz.domain.fragmentation.message;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.NotifyMessageDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.NotifyMessage;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -27,7 +27,7 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private NotifyMessageDao notifyMessageDao;
     @Autowired
-    private ProfileDao profileDao;
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -54,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
         List<NotifyMessage> notifyMessages = notifyMessageDao.getMyMessages(openid, page);
 
         List<String> openids = notifyMessages.stream().map(NotifyMessage::getFromUser).collect(Collectors.toList());
-        List<Profile> profiles = profileDao.queryAccounts(openids);
+        List<Profile> profiles = accountService.getProfiles(openids);
         //更新头像和昵称
         notifyMessages.stream().forEach(notifyMessage -> {
             if(notifyMessage.getFromUser().equals(SYSTEM_MESSAGE)){
@@ -105,16 +105,16 @@ public class MessageServiceImpl implements MessageService {
                 });
             }else{
                 //如果已经没有记录,添加记录
-                voteMessage.setFirstVote(homeworkVote);
                 voteMessageList.add(voteMessage);
             }
+            voteMessage.setLastVote(homeworkVote);
         });
 
         //发送消息
         voteMessageList.stream().forEach(voteMessage -> {
-            HomeworkVote homeworkVote = voteMessage.getFirstVote();
+            HomeworkVote homeworkVote = voteMessage.getLastVote();
             String openid = homeworkVote.getVoteOpenId();
-            Profile profile = profileDao.queryByOpenId(openid);
+            Profile profile = accountService.getProfile(openid, false);
             //没查到点赞人,不发消息
             if(profile==null){
                 logger.error("{} is not existed", openid);
@@ -140,9 +140,9 @@ public class MessageServiceImpl implements MessageService {
             }
         }else{
             if(voteMessage.getType()==1){
-                message = profile.getNickname()+"等人赞了我的专题";
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的专题";
             }else if(voteMessage.getType()==2){
-                message = profile.getNickname()+"等人赞了我的应用训练";
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的应用训练";
             }
         }
         return message;
@@ -153,7 +153,7 @@ public class MessageServiceImpl implements MessageService {
     class VoteMessage{
         private int referenceId;
         private int type;
-        private HomeworkVote firstVote;
+        private HomeworkVote lastVote;
         private int count = 1;
 
         public VoteMessage(int referenceId, int type) {
@@ -168,8 +168,7 @@ public class MessageServiceImpl implements MessageService {
 
             VoteMessage that = (VoteMessage) o;
 
-            if (referenceId != that.referenceId) return false;
-            return type == that.type;
+            return referenceId == that.referenceId && type == that.type;
 
         }
 
