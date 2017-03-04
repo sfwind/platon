@@ -212,9 +212,9 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
         runningPractice.addAll(practicePlanList);
         //第一天增加专题训练,其余时间不显示专题训练
-//        if(series==1) {
-//            runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
-//        }
+        if(series==1) {
+            runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
+        }
         return runningPractice;
     }
 
