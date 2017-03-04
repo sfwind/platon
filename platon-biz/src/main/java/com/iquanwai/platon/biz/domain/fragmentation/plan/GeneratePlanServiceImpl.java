@@ -89,7 +89,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setPracticeId(practice.getId()+"");
             practicePlan.setStatus(0);
             practicePlan.setSequence(WARMUP_TASK_NUMBER+APPLICATION_TASK_NUMBER+1);
-            practicePlan.setSeries(1);
+            practicePlan.setSeries(0);
             practicePlan.setSummary(false);
             selected.add(practicePlan);
         });
