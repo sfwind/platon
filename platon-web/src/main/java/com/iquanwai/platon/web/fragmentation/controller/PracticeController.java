@@ -300,26 +300,24 @@ public class PracticeController {
     //根据用户提交记录匹配题目选项
     private void setUserChoices(List<WarmupPractice> warmupPracticeList, List<WarmupSubmit> submits) {
         for(WarmupSubmit warmupSubmit:submits){
-            for(WarmupPractice warmupPractice:warmupPracticeList){
-                if(warmupPractice.getId()==warmupSubmit.getQuestionId()){
-                    String[] choices = warmupSubmit.getContent().split(",");
-                    List<Integer> choiceIds = Lists.newArrayList();
-                    for(String choice:choices){
-                        try {
-                            choiceIds.add(Integer.parseInt(choice));
-                        }catch (NumberFormatException e){
-                            LOGGER.error("No.{} warmup submit is invalid", warmupSubmit.getId());
-                        }
+            warmupPracticeList.stream().filter(warmupPractice -> warmupPractice.getId() == warmupSubmit.getQuestionId()).forEach(warmupPractice -> {
+                String[] choices = warmupSubmit.getContent().split(",");
+                List<Integer> choiceIds = Lists.newArrayList();
+                for (String choice : choices) {
+                    try {
+                        choiceIds.add(Integer.parseInt(choice));
+                    } catch (NumberFormatException e) {
+                        LOGGER.error("No.{} warmup submit is invalid", warmupSubmit.getId());
                     }
-                    warmupPractice.getChoiceList().stream().forEach(choice -> {
-                        if(choiceIds.contains(choice.getId())){
-                            choice.setSelected(true);
-                        }else{
-                            choice.setSelected(false);
-                        }
-                    });
                 }
-            }
+                warmupPractice.getChoiceList().stream().forEach(choice -> {
+                    if (choiceIds.contains(choice.getId())) {
+                        choice.setSelected(true);
+                    } else {
+                        choice.setSelected(false);
+                    }
+                });
+            });
         }
     }
 

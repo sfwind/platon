@@ -78,10 +78,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
         Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selected = Lists.newArrayList();
-        int challengeCount = problem.getChallengeCount();
         List<ChallengePractice> practices = challengePracticeDao.loadPractice(problem.getId());
 
-        List<ChallengePractice> challengePractices = selectChallenge(practices, challengeCount);
+        List<ChallengePractice> challengePractices = selectChallenge(practices);
         challengePractices.stream().forEach(practice->{
             PracticePlan practicePlan = new PracticePlan();
             practicePlan.setUnlocked(true);
@@ -98,7 +97,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selected;
     }
 
-    private List<ChallengePractice> selectChallenge(List<ChallengePractice> practices, Integer count) {
+    private List<ChallengePractice> selectChallenge(List<ChallengePractice> practices) {
         Assert.notNull(practices, "专题训练不能为空");
         List<ChallengePractice> challengePractices = Lists.newArrayList();
 
@@ -125,7 +124,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
-                practicePlan.setType(PracticePlan.WARM_UP);
+                practicePlan.setType(PracticePlan.APPLICATION);
                 practicePlan.setSequence(problemSchedule.getSequence()+WARMUP_TASK_NUMBER);
                 practicePlan.setSeries(problemSchedule.getDay());
                 practicePlan.setStatus(3);
