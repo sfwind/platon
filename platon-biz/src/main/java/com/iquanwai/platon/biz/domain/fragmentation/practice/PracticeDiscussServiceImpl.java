@@ -125,11 +125,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         //设置名称、头像和时间
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             accounts.stream().forEach(account -> {
-                if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
+                if (account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())) {
                     warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                     warmupPracticeDiscuss.setName(account.getNickname());
                 }
-                if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
+                if (account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())) {
                     warmupPracticeDiscuss.setRepliedName(account.getNickname());
                 }
             });

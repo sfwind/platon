@@ -1,18 +1,20 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.DateUtils;
-import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by justin on 16/12/13.
@@ -32,9 +34,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     @Autowired
     private ChallengePracticeDao challengePracticeDao;
     @Autowired
-    private ProblemKnowledgeMapDao problemKnowledgeMapDao;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private ProblemScheduleDao problemScheduleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -49,10 +51,20 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         int planId = createPlan(problem, openid);
 
         List<PracticePlan> practicePlans = Lists.newArrayList();
+        List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
+        //按照知识点排序
+        Map<Integer, List<ProblemSchedule>> problemList = Maps.newHashMap();
+        problemSchedules.stream().forEach(problemSchedule -> {
+            if(problemList.get(problemSchedule.getKnowledgeId())==null){
+                problemList.put(problemSchedule.getKnowledgeId(), Lists.newArrayList());
+            }
+            List<ProblemSchedule> problemScheduleList = problemList.get(problemSchedule.getKnowledgeId());
+            problemScheduleList.add(problemSchedule);
+        });
         //生成热身训练
-        practicePlans.addAll(createWarmupPractice(problem, planId));
+        practicePlans.addAll(createWarmupPractice(problem, planId, problemList));
         //生成应用训练
-        practicePlans.addAll(createApplicationPractice(problem, planId, openid));
+        practicePlans.addAll(createApplicationPractice(problem, planId, problemList));
         //生成专题训练
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
@@ -77,8 +89,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setType(PracticePlan.CHALLENGE);
             practicePlan.setPracticeId(practice.getId()+"");
             practicePlan.setStatus(0);
-            practicePlan.setSequence(WARMUP_TASK_NUMBER+2);
-            practicePlan.setSeries(0);
+            practicePlan.setSequence(WARMUP_TASK_NUMBER+APPLICATION_TASK_NUMBER+1);
+            practicePlan.setSeries(1);
             practicePlan.setSummary(false);
             selected.add(practicePlan);
         });
@@ -90,284 +102,87 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Assert.notNull(practices, "专题训练不能为空");
         List<ChallengePractice> challengePractices = Lists.newArrayList();
 
-        challengePractices.addAll(randomSelect(practices, Math.round(count)));
+        challengePractices.add(practices.get(0));
 
         return challengePractices;
     }
 
-    private List<PracticePlan> createApplicationPractice(Problem problem, int planId, String openid) {
+    private List<PracticePlan> createApplicationPractice(Problem problem, int planId,
+                                                         Map<Integer, List<ProblemSchedule>> problemScheduleMap) {
         Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selectedPractice = Lists.newArrayList();
-        int applicationCount = problem.getApplicationCount();
         // 问题涉及的知识点
-        List<ProblemKnowledgeMap> maps = problemKnowledgeMapDao.loadKnowledges(problem.getId());
-        List<KnowledgeVolume> knowledgeVolumes = assignVolume(applicationCount, maps);
-        List<ApplicationPractice> applicationPractices = Lists.newArrayList();
-        //曾经做过的应用练习id
-        List<Integer> applicationIds = getAssignedApplicationPracticeIds(openid);
-        knowledgeVolumes.stream().forEach(knowledgeVolume -> {
-            List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeVolume.getKnowledgeId());
-            //过滤已经做过的练习
-            practices = practices.stream().filter(applicationPractice -> !applicationIds.contains(applicationPractice.getId()))
-                .collect(Collectors.toList());
-
-            List<ApplicationPractice> selected = selectApplication(practices, knowledgeVolume.getCount());
-            applicationPractices.addAll(selected);
-        });
-
-        int knowledgeCursor = 0;
-        for(int i=0;i<problem.getLength();i++){
-            ApplicationPractice practice = null;
-            //防死循环控制
-            int retry = 1000;
-            //当某一知识点的题目用完后,继续挑选下一知识点的题
-            while(practice==null && retry-->0) {
-                if(knowledgeCursor>=maps.size()){
-                    knowledgeCursor = 0;
-                }
-                Integer knowledgeId = maps.get(knowledgeCursor).getKnowledgeId();
-                practice = getApplicationPracticeByKnowledge(applicationPractices, knowledgeId);
-                if(practice==null){
-                    knowledgeCursor++;
-                }
-            }
-            if(practice!=null) {
-                PracticePlan practicePlan = new PracticePlan();
-                practicePlan.setUnlocked(false);
-                practicePlan.setPlanId(planId);
-                practicePlan.setType(PracticePlan.APPLICATION);
-                practicePlan.setPracticeId(practice.getId()+"");
-                practicePlan.setKnowledgeId(practice.getKnowledgeId());
-                practicePlan.setStatus(3);
-                practicePlan.setSequence(WARMUP_TASK_NUMBER + 1);
-                practicePlan.setSeries(i + 1);
-                practicePlan.setSummary(false);
-                selectedPractice.add(practicePlan);
-            }
-            knowledgeCursor++;
-        }
-
-        return selectedPractice;
-    }
-
-    private List<Integer> getAssignedApplicationPracticeIds(String openid) {
-        Assert.notNull(openid, "openid不能为空");
-        List<Integer> planIds = improvementPlanDao.loadAllPlans(openid).stream().map(ImprovementPlan::getId)
-                .collect(Collectors.toList());
-
-        return practicePlanDao.loadApplicationPracticeByPlanIds(planIds).stream().map(application -> {
-            String practiceId = application.getPracticeId();
-            return Integer.valueOf(practiceId);
-        }).collect(Collectors.toList());
-    }
-
-    private List<ApplicationPractice> selectApplication(List<ApplicationPractice> practices, Integer count) {
-        Assert.notNull(practices, "应用训练不能为空");
-//        List<ApplicationPractice> applicationPractices = Lists.newArrayList();
-//        List<ApplicationPractice> easyPractice = Lists.newArrayList();
-//        List<ApplicationPractice> normalPractice = Lists.newArrayList();
-//        List<ApplicationPractice> hardPractice = Lists.newArrayList();
-//
-//        float cnt = count/3;
-//        int easyCount = Math.round(cnt);
-//        int normalCount = Math.round(cnt);
-//        int hardCount = count-easyCount-normalCount;
-//        //按难度拆分题库
-//        practices.stream().forEach(practice->{
-//            if(practice.getDifficulty()==EASY){
-//                easyPractice.add(practice);
-//            }else if(practice.getDifficulty()==NORMAL){
-//                normalPractice.add(practice);
-//            }else if(practice.getDifficulty()==HARD){
-//                hardPractice.add(practice);
-//            }
-//        });
-
-        //easy题目
-//        applicationPractices.addAll(randomSelect(easyPractice, easyCount));
-        //normal题目
-//        applicationPractices.addAll(randomSelect(normalPractice, normalCount));
-        //hard题目
-//        applicationPractices.addAll(randomSelect(hardPractice, hardCount));
-        List<ApplicationPractice> practiceList = randomSelect(practices, count);
-
-        practiceList.stream().sorted((o1, o2) -> o1.getDifficulty()-o2.getDifficulty());
-        return practiceList;
-    }
-
-    private List<PracticePlan> createWarmupPractice(Problem problem, Integer planId) {
-        Assert.notNull(problem, "problem不能为空");
-        List<PracticePlan> selectedPractice = Lists.newArrayList();
-        int warmupCount = problem.getWarmupCount();
-        List<ProblemKnowledgeMap> maps = problemKnowledgeMapDao.loadKnowledges(problem.getId());
-        List<KnowledgeVolume> knowledgeVolumes = assignVolume(warmupCount, maps);
-        List<WarmupPractice> warmupPractices = Lists.newArrayList();
-
-        knowledgeVolumes.stream().forEach(knowledgeVolume -> {
-            List<WarmupPractice> practices = warmupPracticeDao.loadPractice(knowledgeVolume.getKnowledgeId());
-
-            List<WarmupPractice> selected = selectWarmup(practices, knowledgeVolume.getCount() *
-                    WARMUP_TASK_PRACTICE_NUMBER);
-            warmupPractices.addAll(selected);
-        });
-
-        int knowledgeCursor=0;
-        // i——第i组练习, j——组中第j套练习, k——套中第k题
-        for(int i=0;i<problem.getLength();i++){
-            for(int j=0;j<WARMUP_TASK_NUMBER;j++) {
-                // 保证每套题的知识点是同一个,知识点依次出现
+        problemScheduleMap.keySet().stream().forEach(knowledgeId ->{
+            List<ProblemSchedule> problemSchedules = problemScheduleMap.get(knowledgeId);
+            List<ApplicationPractice> applicationPractices = applicationPracticeDao.loadPractice(knowledgeId, problem.getId());
+            //去掉删除的题目,按照sequence排序
+            applicationPractices.stream().filter(o1 -> !o1.getDel())
+                    .sorted((o1, o2) -> o1.getSequence() - o2.getSequence());
+            //知识点第几次出现
+            int index = 0;
+            //构建选择题
+            for(ProblemSchedule problemSchedule:problemSchedules){
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 practicePlan.setType(PracticePlan.WARM_UP);
-                practicePlan.setSequence(j + 1);
-                practicePlan.setSeries(i + 1);
-                practicePlan.setStatus(0);
+                practicePlan.setSequence(problemSchedule.getSequence()+WARMUP_TASK_NUMBER);
+                practicePlan.setSeries(problemSchedule.getDay());
+                practicePlan.setStatus(3);
+                practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
                 practicePlan.setSummary(false);
+                practicePlan.setPracticeId(applicationPractices.get(index).getId()+"");
+                index++;
                 selectedPractice.add(practicePlan);
-                for(int k=0;k<WARMUP_TASK_PRACTICE_NUMBER;k++) {
-                    WarmupPractice practice = null;
-                    //防死循环控制
-                    int retry = 1000;
-                    //当某一知识点的题目用完后,继续挑选下一知识点的题
-                    while(practice==null && retry-->0) {
-                        if(knowledgeCursor>=maps.size()){
-                            knowledgeCursor = 0;
-                        }
-                        Integer knowledgeId = maps.get(knowledgeCursor).getKnowledgeId();
-                        practice = getWarmupPracticeByKnowledge(warmupPractices, knowledgeId);
-                        if(practice==null){
-                            knowledgeCursor++;
-                        }
-                    }
-                    if(practice!=null){
-                        //practiceId用逗号隔开
-                        practicePlan.setKnowledgeId(practice.getKnowledgeId());
-                        if(practicePlan.getPracticeId()==null) {
-                            practicePlan.setPracticeId(practice.getId()+"");
-                        }else{
-                            practicePlan.setPracticeId(practicePlan.getPracticeId()+","+practice.getId());
-                        }
-                    }
-                }
-                knowledgeCursor++;
             }
-        }
+        });
 
         return selectedPractice;
     }
 
-    private WarmupPractice getWarmupPracticeByKnowledge(List<WarmupPractice> warmupPractices, Integer knowledgeId) {
-        Assert.notNull(warmupPractices, "热身训练不能为空");
-        for(Iterator<WarmupPractice> it = warmupPractices.iterator();it.hasNext();){
-            WarmupPractice warmupPractice = it.next();
-            if(warmupPractice.getKnowledgeId().equals(knowledgeId)){
-                it.remove();
-                return warmupPractice;
+
+    private List<PracticePlan> createWarmupPractice(Problem problem, Integer planId,
+                                                    Map<Integer, List<ProblemSchedule>> problemScheduleMap) {
+        Assert.notNull(problem, "problem不能为空");
+        List<PracticePlan> selectedPractice = Lists.newArrayList();
+
+        problemScheduleMap.keySet().stream().forEach(knowledgeId ->{
+            List<ProblemSchedule> problemSchedules = problemScheduleMap.get(knowledgeId);
+            List<WarmupPractice> warmupPractices = warmupPracticeDao.loadPractice(knowledgeId, problem.getId());
+            //去掉删除的题目,按照sequence排序
+            warmupPractices.stream().filter(o1 -> !o1.getDel() && !o1.getExample())
+                    .sorted((o1, o2) -> o1.getSequence() - o2.getSequence());
+            //知识点第几次出现
+            int index = 0;
+            //构建选择题
+            for(ProblemSchedule problemSchedule:problemSchedules){
+                PracticePlan practicePlan = new PracticePlan();
+                practicePlan.setUnlocked(false);
+                practicePlan.setPlanId(planId);
+                practicePlan.setType(PracticePlan.WARM_UP);
+                practicePlan.setSequence(problemSchedule.getSequence());
+                practicePlan.setSeries(problemSchedule.getDay());
+                practicePlan.setStatus(0);
+                practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
+                practicePlan.setSummary(false);
+                practicePlan.setPracticeId(getPracticeId(index, warmupPractices));
+                index = index + WARMUP_TASK_PRACTICE_NUMBER;
+                selectedPractice.add(practicePlan);
             }
-        }
-
-        return null;
-    }
-
-    private ApplicationPractice getApplicationPracticeByKnowledge(List<ApplicationPractice> applicationPractices, Integer knowledgeId) {
-        Assert.notNull(applicationPractices, "应用训练不能为空");
-        for(Iterator<ApplicationPractice> it = applicationPractices.iterator();it.hasNext();){
-            ApplicationPractice applicationPractice = it.next();
-            if(applicationPractice.getKnowledgeId().equals(knowledgeId)){
-                it.remove();
-                return applicationPractice;
-            }
-        }
-
-        return null;
-    }
-
-    //根据难度分题目
-    private List<WarmupPractice> selectWarmup(List<WarmupPractice> practices, Integer count) {
-        Assert.notNull(practices, "热身训练不能为空");
-//        List<WarmupPractice> warmupPractices = Lists.newArrayList();
-//        List<WarmupPractice> easyPractice = Lists.newArrayList();
-//        List<WarmupPractice> normalPractice = Lists.newArrayList();
-//        List<WarmupPractice> hardPractice = Lists.newArrayList();
-//
-//        float cnt = count/3;
-//        int easyCount = Math.round(cnt);
-//        int normalCount = Math.round(cnt);
-//        //按难度拆分题库
-//        practices.stream().forEach(practice -> {
-//            if (practice.getDifficulty() == EASY) {
-//                easyPractice.add(practice);
-//            } else if (practice.getDifficulty() == NORMAL) {
-//                normalPractice.add(practice);
-//            } else if (practice.getDifficulty() == HARD) {
-//                hardPractice.add(practice);
-//            }
-//        });
-
-        //easy题目
-//        List easyList = randomSelect(easyPractice, easyCount);
-//        warmupPractices.addAll(easyList);
-        //normal题目
-//        List normalList = randomSelect(easyPractice, normalCount);
-//        warmupPractices.addAll(normalList);
-        //hard题目
-//        List hardList = randomSelect(easyPractice, count-normalList.size()-easyList.size());
-//        warmupPractices.addAll(hardList);
-        List practiceList =  randomSelect(practices, count);
-
-        practiceList.stream().sorted((o1, o2) -> {
-            WarmupPractice warmupPractice1 = (WarmupPractice) o1;
-            WarmupPractice warmupPractice2 = (WarmupPractice) o2;
-            return warmupPractice1.getDifficulty() - warmupPractice2.getDifficulty();
         });
 
-        return practiceList;
+        return selectedPractice;
     }
 
-    private List randomSelect(List list, int count) {
-        if(list.size()<=count){
-            return list;
+    private String getPracticeId(int index, List<WarmupPractice> warmupPractices) {
+        List<Integer> practiceIdList = Lists.newArrayList();
+        for(int i=0;i<WARMUP_TASK_PRACTICE_NUMBER; i++){
+            practiceIdList.add(warmupPractices.get(index+i).getId());
         }
-        List selected = Lists.newArrayList();
-        List<Integer> selectedIds = Lists.newArrayList();
-        for(int i=0;i<count;i++) {
-            int id;
-            do{
-                id=new Random().nextInt(list.size());
-            }while (selectedIds.contains(id));
 
-            selected.add(list.get(id));
-            selectedIds.add(id);
-        }
-        return selected;
+        return StringUtils.join(practiceIdList, ",");
     }
 
-    private List<KnowledgeVolume> assignVolume(int count, List<ProblemKnowledgeMap> maps) {
-        int left = count;
-        List<KnowledgeVolume> knowledgeVolumes = Lists.newArrayList();
-        //按权重从高到低排序
-        maps.sort((o1, o2) -> o2.getWeight()-o1.getWeight());
-        //分配n个知识点的题目数,根据权重*总题量后四舍五入
-        for (ProblemKnowledgeMap map : maps) {
-            int weight = map.getWeight();
-            int cnt = Math.round((float) (count * weight / 100));
-            knowledgeVolumes.add(new KnowledgeVolume().
-                    knowledgeId(map.getKnowledgeId()).count(cnt));
-            //剩余题目数
-            left -= cnt;
-        }
-        //按权重从高到低排序依次+1
-        for (KnowledgeVolume volume : knowledgeVolumes) {
-            if(left<=0){
-                break;
-            }
-            volume.setCount(volume.getCount()+1);
-            left--;
-        }
-
-        return knowledgeVolumes;
-    }
 
     private int createPlan(Problem problem, String openid) {
         Assert.notNull(problem, "problem不能为空");
@@ -395,21 +210,5 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         return improvementPlanDao.insert(improvementPlan);
 
-    }
-
-    @Data
-    class KnowledgeVolume{
-        private Integer knowledgeId;
-        private Integer count;
-
-        public KnowledgeVolume knowledgeId(Integer knowledgeId){
-            this.knowledgeId = knowledgeId;
-            return this;
-        }
-
-        public KnowledgeVolume count(Integer count){
-            this.count = count;
-            return this;
-        }
     }
 }

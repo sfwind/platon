@@ -1,7 +1,5 @@
 package com.iquanwai.platon.biz.domain.weixin.oauth;
 
-import com.iquanwai.platon.biz.po.Callback;
-
 /**
  * Created by justin on 14-7-28.
  */

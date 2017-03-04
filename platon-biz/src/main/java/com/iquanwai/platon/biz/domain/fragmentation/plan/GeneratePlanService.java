@@ -16,4 +16,6 @@ public interface GeneratePlanService {
 
     // 每组的热身训练数量
     int WARMUP_TASK_NUMBER = 2;
+    // 每组的应用训练数量
+    int APPLICATION_TASK_NUMBER = 2;
 }
