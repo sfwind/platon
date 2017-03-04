@@ -22,7 +22,7 @@ public class WarmupPractice {
     private Integer problemId; //专题id
     private Integer sequence; //出现顺序
     private Boolean example; //是否例题(0-否,1-是)
-
+    private String practiceUid; //任务唯一编号
     private Integer score; //非db字段 分值
     private List<Choice> choiceList; //所有选项
     private List<WarmupPracticeDiscuss> discussList; //热身训练讨论

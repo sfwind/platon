@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.dao.wx;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
-import com.iquanwai.platon.biz.po.Region;
+import com.iquanwai.platon.biz.po.common.Region;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
