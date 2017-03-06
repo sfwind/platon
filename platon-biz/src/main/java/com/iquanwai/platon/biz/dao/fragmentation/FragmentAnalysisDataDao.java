@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
-import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.util.Constants;
 import org.apache.commons.dbutils.QueryRunner;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import java.sql.SQLException;
  * Created by nethunder on 2017/2/27.
  */
 @Component
-public class FragmentAnalysisDataDao extends DBUtil {
+public class FragmentAnalysisDataDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
