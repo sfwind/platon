@@ -49,6 +49,7 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         improvementPlan.setSeries(getSeries(runningPractice));
+        improvementPlan.setDoneAllPractice(isDone(runningPractice));
     }
 
     private Integer getSeries(List<PracticePlan> runningPractice) {
@@ -61,22 +62,25 @@ public class PlanServiceImpl implements PlanService {
         return 0;
     }
 
+    private boolean isDone(List<PracticePlan> runningPractices){
+        if(CollectionUtils.isNotEmpty(runningPractices)) {
+            for(PracticePlan practicePlan:runningPractices){
+                //非应用训练未完成时,返回-2
+                if(practicePlan.getType()!=PracticePlan.APPLICATION && practicePlan.getStatus()==0){
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
-        //上一组的练习必须先完成
-        List<PracticePlan> lastPractice = pickPracticeBySeries(improvementPlan, series-1);
 
-        if(CollectionUtils.isNotEmpty(lastPractice)) {
-            for(PracticePlan practicePlan:lastPractice){
-                //非应用训练未完成时,返回-2
-                if(practicePlan.getType()!=PracticePlan.APPLICATION && practicePlan.getStatus()==0){
-                    return -2;
-                }
-            }
-        }
         //选择当前组的练习
         List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, series);
         //已经到最后一组解锁训练,返回false
@@ -89,8 +93,6 @@ public class PlanServiceImpl implements PlanService {
             //有钥匙就解锁,没有钥匙返回false
             if(improvementPlan.getKeycnt()>0){
                 unlock(runningPractice, improvementPlan);
-            }else {
-                return -1;
             }
         }
         //创建练习对象
