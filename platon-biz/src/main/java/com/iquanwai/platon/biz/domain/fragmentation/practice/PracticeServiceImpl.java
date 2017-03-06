@@ -344,10 +344,13 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
                 return new MutablePair<>(false, "没有该文章");
             }
-            Profile profile = accountService.getProfile(openId, false);
-            if(profile!=null){
-                String url = "/rise/static/practice/challenge?id="+load.getChallengeId();
-                messageService.sendMessage(profile.getNickname()+"评论了我的专题", load.getOpenid(), openId, url);
+            //自己给自己评论不提醒
+            if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
+                Profile profile = accountService.getProfile(openId, false);
+                if (profile != null) {
+                    String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
+                    messageService.sendMessage(profile.getNickname() + "评论了我的专题", load.getOpenid(), openId, url);
+                }
             }
         } else {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
@@ -355,10 +358,13 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
                 return new MutablePair<>(false, "没有该文章");
             }
-            Profile profile = accountService.getProfile(openId, false);
-            if(profile!=null){
-                String url = "/rise/static/practice/application?id="+load.getApplicationId();
-                messageService.sendMessage(profile.getNickname()+"评论了我的应用训练", load.getOpenid(), openId, url);
+            //自己给自己评论不提醒
+            if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
+                Profile profile = accountService.getProfile(openId, false);
+                if (profile != null) {
+                    String url = "/rise/static/practice/application?id=" + load.getApplicationId();
+                    messageService.sendMessage(profile.getNickname() + "评论了我的应用训练", load.getOpenid(), openId, url);
+                }
             }
         }
         Comment comment = new Comment();

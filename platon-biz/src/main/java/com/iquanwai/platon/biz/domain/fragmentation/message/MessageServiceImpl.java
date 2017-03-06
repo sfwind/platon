@@ -92,7 +92,8 @@ public class MessageServiceImpl implements MessageService {
     public void sendLikeMessage(List<HomeworkVote> homeworkVotes) {
         List<VoteMessage> voteMessageList = Lists.newArrayList();
 
-        homeworkVotes.stream().forEach(homeworkVote -> {
+        //自己给自己点赞不提醒
+        homeworkVotes.stream().filter(h1->!h1.getVoteOpenId().equals(h1.getVotedOpenid())).forEach(homeworkVote -> {
             VoteMessage voteMessage = new VoteMessage(homeworkVote.getReferencedId(),
                     homeworkVote.getType());
 
