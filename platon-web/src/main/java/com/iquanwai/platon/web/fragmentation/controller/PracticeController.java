@@ -198,7 +198,10 @@ public class PracticeController {
             return WebUtils.error("您还未输入文字");
         }
         Boolean result = practiceService.submit(submitId, submitDto.getAnswer(), PracticePlan.CHALLENGE);
-
+        if(result){
+            // 提升提交数
+            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("专题训练")
@@ -217,7 +220,10 @@ public class PracticeController {
             return WebUtils.error("您还未输入文字");
         }
         Boolean result = practiceService.submit(submitId, submitDto.getAnswer(), PracticePlan.APPLICATION);
-
+        if (result) {
+            // 提升提交数
+            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("应用训练")
@@ -446,6 +452,9 @@ public class PracticeController {
                 }).skip(page.getOffset())
                 .limit(page.getPageSize())
                 .collect(Collectors.toList());
+        submits.forEach(item->{
+            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
+        });
         return WebUtils.result(submits);
     }
 
@@ -494,6 +503,9 @@ public class PracticeController {
                 }).skip(page.getOffset())
                 .limit(page.getPageSize())
                 .collect(Collectors.toList());
+        submits.forEach(item->{
+            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
+        });
         return WebUtils.result(submits);
     }
 
