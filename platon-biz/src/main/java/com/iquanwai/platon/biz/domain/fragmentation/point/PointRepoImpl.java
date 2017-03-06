@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.point;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.customer.ProfileDao;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;

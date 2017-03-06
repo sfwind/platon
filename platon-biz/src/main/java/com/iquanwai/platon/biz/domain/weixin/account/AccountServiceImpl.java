@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import com.iquanwai.platon.biz.dao.customer.ProfileDao;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.po.Account;
@@ -80,6 +80,11 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    public List<Profile> getProfiles(List<String> openid) {
+        return profileDao.queryAccounts(openid);
+    }
+
     private Account getAccountFromWeixin(String openid, Account account) {
         //调用api查询account对象
         String url = USER_INFO_URL;
@@ -92,19 +97,17 @@ public class AccountServiceImpl implements AccountService {
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         Account accountNew = new Account();
         try {
-            ConvertUtils.register(new Converter() {
-                public Object convert(Class aClass, Object value) {
-                    if (value == null)
-                        return null;
+            ConvertUtils.register((aClass, value) -> {
+                if (value == null)
+                    return null;
 
-                    if (!(value instanceof Double)) {
-                        logger.error("不是日期类型");
-                        throw new ConversionException("不是日期类型");
-                    }
-                    Double time = (Double) value * 1000;
-
-                    return new DateTime(time.longValue()).toDate();
+                if (!(value instanceof Double)) {
+                    logger.error("不是日期类型");
+                    throw new ConversionException("不是日期类型");
                 }
+                Double time = (Double) value * 1000;
+
+                return new DateTime(time.longValue()).toDate();
             }, Date.class);
 
             BeanUtils.populate(accountNew, result);

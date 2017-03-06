@@ -22,6 +22,11 @@ public interface AccountService {
     Profile getProfile(String openid, boolean realTime);
 
     /**
+     * 根据openid批量获取用户详情
+     */
+    List<Profile> getProfiles(List<String> openid);
+
+    /**
      * 更新个人信息
      * */
     void submitPersonalInfo(Account account);

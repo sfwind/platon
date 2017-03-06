@@ -71,6 +71,25 @@ public class PracticeController {
 
     private final static int DISCUSS_PAGE_SIZE = 100;
 
+    @RequestMapping("/warmup/{id}")
+    public ResponseEntity<Map<String, Object>> loadWarmup(LoginUser loginUser,
+                                                           @PathVariable Integer id){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        WarmupPractice warmupPractice = practiceService.getWarmupPractice(id);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("热身训练")
+                .action("打开热身训练")
+                .memo(id+"");
+        operationLogService.log(operationLog);
+        return WebUtils.result(warmupPractice);
+    }
+
     @RequestMapping("/warmup/start/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
                                                            @PathVariable Integer practicePlanId){
@@ -244,7 +263,7 @@ public class PracticeController {
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
                 improvementPlan.getId(), practicePlanId);
-        List<Integer> questionIds = warmupPracticeList.stream().map(warmupPractice -> warmupPractice.getId()).collect(Collectors.toList());
+        List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         // 获取用户提交
         List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);
         setUserChoices(warmupPracticeList, submits);
@@ -366,6 +385,40 @@ public class PracticeController {
         operationLogService.log(operationLog);
         return WebUtils.result(discusses);
     }
+
+    @RequestMapping("/warmup/new/analysis/{practiceId}")
+    public ResponseEntity<Map<String, Object>> newAnalysisWarmup(LoginUser loginUser,
+                                                              @PathVariable Integer practiceId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if (improvementPlan == null) {
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        WarmupPractice warmupPractice = practiceService.getWarmupPractice(practiceId);
+        List<WarmupPractice> warmupPracticeList = Lists.newArrayList();
+        warmupPracticeList.add(warmupPractice);
+        List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
+        // 获取用户提交
+        List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);
+        setUserChoices(warmupPracticeList, submits);
+        // 获取讨论信息
+        Page page = new Page();
+        page.setPage(1);
+        page.setPageSize(DISCUSS_PAGE_SIZE);
+        Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
+        setDiscuss(warmupPracticeList, discuss);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("热身训练")
+                .action("打开热身训练页")
+                .memo(practiceId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(warmupPracticeList.get(0));
+    }
+
+
 
     /**
      * 点赞或者取消点赞

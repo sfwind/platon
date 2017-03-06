@@ -32,6 +32,7 @@ public class ImprovementPlan {
     private Boolean summary; //非db字段 是否显示任务总结
     private Integer series; //非db字段 当前组号
     private Boolean openRise; //非db字段 是否打开过rise
+    private Boolean newMessage; //非db字段 是否有新消息
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

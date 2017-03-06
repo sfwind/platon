@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,6 +23,18 @@ import java.util.List;
 public class HomeworkVoteDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    public List<HomeworkVote> loadVoteByDate(Date date){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler(HomeworkVote.class);
+        String sql = "select * from HomeworkVote where AddTime>? and Del=0";
+        try{
+           return runner.query(sql, h, date);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return Lists.newArrayList();
+    }
     /**
      * 根据类型和依赖id查询被点赞的次数
      *

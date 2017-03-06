@@ -1,18 +1,22 @@
-package com.iquanwai.platon.biz.dao.customer;
+package com.iquanwai.platon.biz.dao.common;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.common.Profile;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -104,5 +108,23 @@ public class ProfileDao extends DBUtil {
         }
 
         return -1;
+    }
+
+
+    public List<Profile> queryAccounts(List<String> openids) {
+        if(CollectionUtils.isEmpty(openids)){
+            return Lists.newArrayList();
+        }
+        String questionMarks = produceQuestionMark(openids.size());
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<List<Profile>> h = new BeanListHandler(Profile.class);
+        String sql = "SELECT * FROM Profile where Openid in ("+ questionMarks +")";
+        try {
+            return run.query(sql, h, openids.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return Lists.newArrayList();
     }
 }

@@ -12,4 +12,5 @@ public class HomeworkVote {
     private Integer type; //1:挑战任务,2:大作业',
     private String voteOpenId;//'谁点的赞',
     private Integer del;//'是否删除，1代表取消点赞',
+    private String votedOpenid; //被点赞人
 }
