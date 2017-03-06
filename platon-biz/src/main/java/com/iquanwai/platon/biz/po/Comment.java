@@ -16,5 +16,6 @@ public class Comment {
     private String commentOpenId;
     private String content;
     private Integer del;
+    private Integer device;
     private Date AddTime;
 }

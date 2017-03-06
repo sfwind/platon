@@ -102,9 +102,23 @@ public interface PracticeService {
      */
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
 
+    /**
+     * 获取挑战训练的提交列表
+     */
     List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId);
 
+    /**
+     * 获取评论
+     */
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
+    /**
+     * 评论文章
+     */
     Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
+
+    /**
+     * 增加浏览量
+     */
+    Integer riseArticleViewCount(Integer module,Integer id,Integer type);
 }

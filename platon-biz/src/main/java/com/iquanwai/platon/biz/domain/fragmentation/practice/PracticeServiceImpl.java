@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ChallengePracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
+import com.iquanwai.platon.biz.dao.fragmentation.FragmentAnalysisDataDao;
 import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
@@ -68,6 +69,8 @@ public class PracticeServiceImpl implements PracticeService {
     private HomeworkVoteDao homeworkVoteDao;
     @Autowired
     private CommentDao commentDao;
+    @Autowired
+    private FragmentAnalysisDataDao fragmentAnalysisDataDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -164,6 +167,7 @@ public class PracticeServiceImpl implements PracticeService {
             int submitId = challengeSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.CHALLENGE, submitId);
         }
         challengePractice.setContent(submit.getContent());
         challengePractice.setSubmitId(submit.getId());
@@ -187,6 +191,7 @@ public class PracticeServiceImpl implements PracticeService {
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
         applicationPractice.setContent(submit.getContent());
         applicationPractice.setSubmitId(submit.getId());
@@ -293,7 +298,7 @@ public class PracticeServiceImpl implements PracticeService {
                 planId = submit.getPlanId();
                 submitOpenId = submit.getOpenid();
             }
-            homeworkVoteDao.vote(type, referencedId, openId);
+            homeworkVoteDao.vote(type, referencedId, openId, Constants.Device.MOBILE);
             pointRepo.risePoint(planId,ConfigUtils.getVoteScore());
             pointRepo.riseCustomerPoint(submitOpenId,ConfigUtils.getVoteScore());
         } else {
@@ -338,7 +343,13 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setType(Constants.CommentType.STUDENT);
         comment.setContent(content);
         comment.setCommentOpenId(openId);
+        comment.setDevice(Constants.Device.MOBILE);
         commentDao.insert(comment);
         return new MutablePair<>(true,"评论成功");
+    }
+
+    @Override
+    public Integer riseArticleViewCount(Integer module, Integer id,Integer type) {
+        return fragmentAnalysisDataDao.riseArticleViewCount(module, id, type);
     }
 }

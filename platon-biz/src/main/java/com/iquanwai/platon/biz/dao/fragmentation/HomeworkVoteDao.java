@@ -85,12 +85,12 @@ public class HomeworkVoteDao extends PracticeDBUtil {
      * @param openid       点赞的人
      * @return 插入结果
      */
-    public void vote(Integer type, Integer referencedId, String openid) {
+    public void vote(Integer type, Integer referencedId, String openid,Integer device) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "INSERT INTO HomeworkVote(Type,ReferencedId,VoteOpenId) " +
-                "VALUES(?, ?, ?)";
+        String insertSql = "INSERT INTO HomeworkVote(Type,ReferencedId,VoteOpenId,Device) " +
+                "VALUES(?, ?, ?, ?)";
         try {
-            run.insert(insertSql, new ScalarHandler<>(), type, referencedId, openid);
+            run.insert(insertSql, new ScalarHandler<>(), type, referencedId, openid, device);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

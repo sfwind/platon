@@ -34,4 +34,21 @@ public interface Constants {
     interface CommentType{
         int STUDENT  = 1;
     }
+
+    interface ViewInfo {
+        interface Module {
+            int CHALLENGE = 1;
+            int APPLICATION = 2;
+        }
+        interface EventType {
+            int PC_SUBMIT = 1;
+            int MOBILE_SUBMIT = 2;
+            int PC_SHOW = 3;
+            int MOBILE_SHOW = 4;
+        }
+    }
+    interface Device{
+        int PC = 1;
+        int MOBILE = 2;
+    }
 }

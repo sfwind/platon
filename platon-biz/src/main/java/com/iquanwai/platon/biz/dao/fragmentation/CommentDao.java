@@ -24,11 +24,11 @@ public class CommentDao extends PracticeDBUtil {
 
     public void insert(Comment comment) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content) " +
-                "VALUES (?,?,?,?,?)";
+        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, Device) " +
+                "VALUES (?,?,?,?,?,?)";
         try {
             run.insert(insertSql, new ScalarHandler<>(),
-                    comment.getModuleId(),comment.getType(), comment.getReferencedId(), comment.getCommentOpenId(), comment.getContent());
+                    comment.getModuleId(),comment.getType(), comment.getReferencedId(), comment.getCommentOpenId(), comment.getContent(),comment.getDevice());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
