@@ -338,7 +338,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody DiscussDto discussDto){
         Assert.notNull(loginUser, "用户不能为空");
 
-        if(discussDto.getComment()==null && discussDto.getComment().length()>300){
+        if(discussDto.getComment()!=null && discussDto.getComment().length()>300){
             LOGGER.error("{} 热身训练讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }
@@ -424,7 +424,6 @@ public class PracticeController {
         Integer refer = vote.getReferencedId();
         Integer status = vote.getStatus();
         String openId = loginUser.getOpenId();
-        Pair<Integer, String> voteResult;
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("碎片化")
                 .function("挑战任务")
@@ -575,7 +574,7 @@ public class PracticeController {
                 LOGGER.error("未找到该评论用户:{}",item);
                 return null;
             }
-        }).filter(Objects::nonNull).collect(Collectors.toList());;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         return WebUtils.result(comments);
     }
 
