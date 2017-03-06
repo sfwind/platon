@@ -34,6 +34,8 @@ public class PlanServiceImpl implements PlanService {
     private NotifyMessageDao notifyMessageDao;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private WarmupPracticeDao warmupPracticeDao;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
@@ -420,5 +422,17 @@ public class PlanServiceImpl implements PlanService {
             nextPractice = practicePlanDao.loadChallengePractice(planId);
         }
         return buildPractice(nextPractice);
+    }
+
+    @Override
+    public WarmupPractice getExample(Integer knowledgeId, Integer problemId) {
+        List<WarmupPractice> warmupPracticeList = warmupPracticeDao.loadExample(knowledgeId, problemId);
+        if(CollectionUtils.isEmpty(warmupPracticeList)){
+            return null;
+        }else{
+            Integer practiceId = warmupPracticeList.get(0).getId();
+
+            return cacheService.getWarmupPractice(practiceId);
+        }
     }
 }
