@@ -28,6 +28,7 @@ import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PracticePlan;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -291,10 +292,9 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public boolean vote(Integer type, Integer referencedId, String openId) {
         HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, openId);
-        Pair<Integer, String> pair = new MutablePair<>();
         if (vote == null) {
-            Integer planId = null;
-            String submitOpenId = null;
+            Integer planId;
+            String submitOpenId;
             if(type == Constants.VoteType.CHALLENGE){
                 // 挑战任务点赞
                 ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class,referencedId);
@@ -337,18 +337,28 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content){
-        if(moduleId== Constants.CommentModule.CHALLENGE){
+    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
+        if (moduleId == Constants.CommentModule.CHALLENGE) {
             ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
             if (load == null) {
-                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}",moduleId,referId,content);
-                return new MutablePair<>(false,"没有该文章");
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
+            }
+            Profile profile = accountService.getProfile(openId, false);
+            if(profile!=null){
+                String url = "/rise/static/practice/challenge?id="+load.getChallengeId();
+                messageService.sendMessage(profile.getNickname()+"评论了我的专题", load.getOpenid(), openId, url);
             }
         } else {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
-                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}",moduleId,referId,content);
-                return new MutablePair<>(false,"没有该文章");
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
+            }
+            Profile profile = accountService.getProfile(openId, false);
+            if(profile!=null){
+                String url = "/rise/static/practice/application?id="+load.getApplicationId();
+                messageService.sendMessage(profile.getNickname()+"评论了我的应用训练", load.getOpenid(), openId, url);
             }
         }
         Comment comment = new Comment();

@@ -418,8 +418,6 @@ public class PracticeController {
         return WebUtils.result(warmupPracticeList.get(0));
     }
 
-
-
     /**
      * 点赞或者取消点赞
      *
