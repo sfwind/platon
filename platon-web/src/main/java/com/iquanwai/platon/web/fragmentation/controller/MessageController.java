@@ -63,7 +63,7 @@ public class MessageController {
                 .function("打开消息中心")
                 .action("加载消息");
         operationLogService.log(operationLog);
-        if(CollectionUtils.isEmpty(notifyMessage)){
+        if(CollectionUtils.isEmpty(notifyMessage) && page.getPage()!=1){
             return WebUtils.error("没有更多消息了");
         }else {
             return WebUtils.result(notifyMessage);
