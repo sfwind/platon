@@ -11,8 +11,6 @@ import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.tuple.Pair;
-import com.iquanwai.platon.biz.util.page.Page;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -66,7 +64,7 @@ public interface PracticeService {
     Boolean submit(Integer id, String content, Integer type);
 
     /**
-     * 增加浏览量
+     * 增加文章视图的记录数
      */
     Integer riseArticleViewCount(Integer module,Integer id,Integer type);
 

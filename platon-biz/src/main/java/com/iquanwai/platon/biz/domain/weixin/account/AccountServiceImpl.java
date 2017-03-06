@@ -13,7 +13,6 @@ import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.Converter;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

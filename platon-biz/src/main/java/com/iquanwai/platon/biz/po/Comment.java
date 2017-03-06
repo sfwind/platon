@@ -16,6 +16,6 @@ public class Comment {
     private String commentOpenId;  //评论人
     private String content; //评论内容
     private Integer del; //是否删除
-    private Date AddTime; //添加时间
     private Integer device; // 提交设备
+    private Date AddTime; //添加时间
 }
