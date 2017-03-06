@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.po.NotifyMessage;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.NotifyMessageDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -63,11 +64,11 @@ public class MessageController {
                 .function("打开消息中心")
                 .action("加载消息");
         operationLogService.log(operationLog);
-        if(CollectionUtils.isEmpty(notifyMessage) && page.getPage()!=1){
-            return WebUtils.error("没有更多消息了");
-        }else {
-            return WebUtils.result(notifyMessage);
-        }
+        NotifyMessageDto notifyMessageDto = new NotifyMessageDto();
+        notifyMessageDto.setNotifyMessageList(notifyMessage);
+        notifyMessageDto.setEnd(page.isLastPage());
+
+        return WebUtils.result(notifyMessageDto);
     }
 
     @RequestMapping(value = "/read/{id}", method = RequestMethod.POST)

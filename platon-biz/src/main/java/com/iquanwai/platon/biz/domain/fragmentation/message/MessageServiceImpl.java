@@ -52,6 +52,8 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<NotifyMessage> getNotifyMessage(String openid, Page page) {
         List<NotifyMessage> notifyMessages = notifyMessageDao.getMyMessages(openid, page);
+        int total = notifyMessageDao.getMyMessagesCount(openid);
+        page.setTotal(total);
 
         List<String> openids = notifyMessages.stream().map(NotifyMessage::getFromUser).collect(Collectors.toList());
         List<Profile> profiles = accountService.getProfiles(openids);
