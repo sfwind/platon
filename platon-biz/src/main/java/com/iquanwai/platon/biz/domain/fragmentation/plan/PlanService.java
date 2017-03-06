@@ -20,7 +20,7 @@ public interface PlanService {
      * 构建详细的某组训练计划
      * @param improvementPlan 训练计划
      * @param series 训练组号
-     * @return 0-已组装,-1-未解锁,-2-必做题未完成
+     * @return 0-已组装,-1-已到最后一组
      */
     Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series);
 
