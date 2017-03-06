@@ -62,8 +62,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         int id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
 
         //发送回复通知
-        if(repliedId!=null) {
-            String url = "/rise/static/message/warmup/reply?commentId={1}&warmupPracticeId={2}";
+        if(repliedId!=null && !openid.equals(warmupPracticeDiscuss.getRepliedOpenid())) {
+            String url = "/rise/static/message/warmup/reply?commentId={0}&warmupPracticeId={1}";
             url = MessageFormat.format(url, id, warmupPracticeId);
             String message = "回复了我的热身训练问题";
             messageService.sendMessage(message, warmupPracticeDiscuss.getRepliedOpenid(),
