@@ -2,8 +2,6 @@ package com.iquanwai.platon.biz.po;
 
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * Created by justin on 16/12/4.
  */

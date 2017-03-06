@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 
 import java.util.List;
 
@@ -84,5 +85,12 @@ public interface PlanService {
      * @param practicePlanId 当前训练id
      * */
     Practice nextPractice(Integer practicePlanId);
+
+    /**
+     * 获取例题
+     * @param knowledgeId 知识点id
+     * @param problemId 专题id
+     * */
+    WarmupPractice getExample(Integer knowledgeId, Integer problemId);
 
 }
