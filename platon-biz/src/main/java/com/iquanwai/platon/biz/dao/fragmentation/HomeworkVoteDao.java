@@ -26,7 +26,7 @@ public class HomeworkVoteDao extends PracticeDBUtil {
     public List<HomeworkVote> loadVoteByDate(Date date){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler(HomeworkVote.class);
-        String sql = "select * from HomeworkVote where AddTime>? and Del=0";
+        String sql = "select * from HomeworkVote where AddTime>=? and Del=0";
         try{
            return runner.query(sql, h, date);
         } catch (SQLException e) {
