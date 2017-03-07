@@ -151,6 +151,11 @@ public class PlanController {
                                                              @PathVariable Integer knowledgeId){
 
         Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
         Knowledge knowledge = planService.getKnowledge(knowledgeId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -232,13 +237,18 @@ public class PlanController {
         return WebUtils.success();
     }
 
-    @RequestMapping("/knowledge/example/{knowledgeId}/{problemId}")
+    @RequestMapping("/knowledge/example/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledgeExample(LoginUser loginUser,
-                                                              @PathVariable Integer knowledgeId,
-                                                              @PathVariable Integer problemId){
+                                                              @PathVariable Integer knowledgeId){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
 
         Assert.notNull(loginUser, "用户不能为空");
-        WarmupPractice warmupPractice = planService.getExample(knowledgeId, problemId);
+        WarmupPractice warmupPractice = planService.getExample(knowledgeId, improvementPlan.getProblemId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("知识点")

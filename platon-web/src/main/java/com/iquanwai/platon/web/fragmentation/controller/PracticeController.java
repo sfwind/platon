@@ -9,7 +9,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.Account;
+import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.HomeworkVote;
@@ -343,7 +343,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody DiscussDto discussDto){
         Assert.notNull(loginUser, "用户不能为空");
 
-        if(discussDto.getComment()!=null && discussDto.getComment().length()>300){
+        if(discussDto.getComment()==null || discussDto.getComment().length()>300){
             LOGGER.error("{} 热身训练讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }
