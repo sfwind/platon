@@ -25,6 +25,7 @@ import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
 import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
+import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
 import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
@@ -499,13 +500,16 @@ public class PracticeController {
                         LOGGER.error("应用任务文章排序异常",e);
                         return 0;
                     }
-                }).skip(page.getOffset())
-                .limit(page.getPageSize())
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
+        page.setTotal(submits.size());
+        submits = submits.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
         submits.forEach(item->{
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
         });
-        return WebUtils.result(submits);
+        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<RiseWorkInfoDto>();
+        dto.setList(submits);
+        dto.setEnd(page.isLastPage());
+        return WebUtils.result(dto);
     }
 
     @RequestMapping("/challenge/list/other/{challengeId}")
@@ -550,13 +554,16 @@ public class PracticeController {
                         LOGGER.error("挑战任务文章排序异常",e);
                         return 0;
                     }
-                }).skip(page.getOffset())
-                .limit(page.getPageSize())
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
+        page.setTotal(submits.size());
+        submits = submits.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
         submits.forEach(item->{
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
         });
-        return WebUtils.result(submits);
+        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<RiseWorkInfoDto>();
+        dto.setList(submits);
+        dto.setEnd(page.isLastPage());
+        return WebUtils.result(dto);
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}",method = RequestMethod.GET)
@@ -587,7 +594,10 @@ public class PracticeController {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
-        return WebUtils.result(comments);
+        RefreshListDto<RiseWorkCommentDto> dto = new RefreshListDto<RiseWorkCommentDto>();
+        dto.setList(comments);
+        dto.setEnd(page.isLastPage());
+        return WebUtils.result(dto);
     }
 
     /**

@@ -333,6 +333,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page){
+        page.setTotal(commentDao.commentCount(moduleId, submitId));
         return commentDao.loadComments(moduleId,submitId,page);
     }
 
