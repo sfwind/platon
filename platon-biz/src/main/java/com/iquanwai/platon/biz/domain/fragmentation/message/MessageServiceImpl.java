@@ -1,8 +1,12 @@
 package com.iquanwai.platon.biz.domain.fragmentation.message;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.NotifyMessageDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ChallengeSubmit;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.NotifyMessage;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -28,6 +32,10 @@ public class MessageServiceImpl implements MessageService {
     private NotifyMessageDao notifyMessageDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ApplicationSubmitDao applicationSubmitDao;
+    @Autowired
+    private ChallengeSubmitDao challengeSubmitDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -130,9 +138,17 @@ public class MessageServiceImpl implements MessageService {
             }
             String url = "";
             if(voteMessage.getType()==1){
-                url = "/rise/static/practice/challenge?id=" + homeworkVote.getReferencedId();
+                ChallengeSubmit challengeSubmit = challengeSubmitDao.load(ChallengeSubmit.class, homeworkVote.getReferencedId());
+                if(challengeSubmit==null){
+                    return;
+                }
+                url = "/rise/static/practice/challenge?id=" + challengeSubmit.getChallengeId();
             }else if(voteMessage.getType()==2){
-                url = "/rise/static/practice/application?id=" + homeworkVote.getReferencedId();
+                ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, homeworkVote.getReferencedId());
+                if(applicationSubmit==null){
+                    return;
+                }
+                url = "/rise/static/practice/application?id=" + applicationSubmit.getApplicationId();
             }
             sendMessage(message, toUser, SYSTEM_MESSAGE, url);
         });
