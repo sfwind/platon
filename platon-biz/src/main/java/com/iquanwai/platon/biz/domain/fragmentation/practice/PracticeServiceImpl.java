@@ -1,16 +1,40 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChallengePracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
+import com.iquanwai.platon.biz.dao.fragmentation.FragmentAnalysisDataDao;
+import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.ChallengeSubmit;
+import com.iquanwai.platon.biz.po.Comment;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupSubmit;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +68,18 @@ public class PracticeServiceImpl implements PracticeService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private HomeworkVoteDao homeworkVoteDao;
+    @Autowired
+    private FragmentAnalysisDataDao fragmentAnalysisDataDao;
+    @Autowired
+    private CommentDao commentDao;
+    @Autowired
+    private MessageService messageService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final static String submitUrlPrefix = "/community";
 
     public List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
@@ -140,6 +172,7 @@ public class PracticeServiceImpl implements PracticeService {
             int submitId = challengeSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.CHALLENGE, submitId);
         }
         challengePractice.setContent(submit.getContent());
         challengePractice.setSubmitId(submit.getId());
@@ -163,6 +196,7 @@ public class PracticeServiceImpl implements PracticeService {
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
         applicationPractice.setContent(submit.getContent());
         applicationPractice.setSubmitId(submit.getId());
@@ -228,5 +262,131 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
         return result;
+    }
+
+    @Override
+    public WarmupPractice getWarmupPractice(Integer warmupId) {
+        return cacheService.getWarmupPractice(warmupId);
+    }
+
+    @Override
+    public List<HomeworkVote> loadVoteYesterday(){
+        return homeworkVoteDao.loadVoteByDate(DateUtils.beforeDays(new Date(), 1));
+    }
+
+    @Override
+    public Integer votedCount(Integer type, Integer referencedId) {
+        return homeworkVoteDao.votedCount(type, referencedId);
+    }
+
+    @Override
+    public Integer commentCount(Integer moduleId, Integer referId) {
+        return commentDao.commentCount(moduleId, referId);
+    }
+
+    @Override
+    public HomeworkVote loadVoteRecord(Integer type, Integer referId, String openId) {
+        return homeworkVoteDao.loadVoteRecord(type, referId, openId);
+    }
+
+    @Override
+    public boolean vote(Integer type, Integer referencedId, String openId) {
+        HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, openId);
+        if (vote == null) {
+            Integer planId;
+            String submitOpenId;
+            if(type == Constants.VoteType.CHALLENGE){
+                // 挑战任务点赞
+                ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class,referencedId);
+                if(submit==null){
+                    return false;
+                }
+                planId = submit.getPlanId();
+                submitOpenId = submit.getOpenid();
+            } else {
+                // 应用任务点赞
+                ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class,referencedId);
+                if(submit==null){
+                    return false;
+                }
+                planId = submit.getPlanId();
+                submitOpenId = submit.getOpenid();
+            }
+            HomeworkVote homeworkVote = new HomeworkVote();
+            homeworkVote.setReferencedId(referencedId);
+            homeworkVote.setVoteOpenId(openId);
+            homeworkVote.setType(type);
+            homeworkVote.setVotedOpenid(submitOpenId);
+            homeworkVote.setDevice(Constants.Device.MOBILE);
+            homeworkVoteDao.vote(homeworkVote);
+            pointRepo.risePoint(planId,ConfigUtils.getVoteScore());
+            pointRepo.riseCustomerPoint(submitOpenId,ConfigUtils.getVoteScore());
+        } else {
+            homeworkVoteDao.reVote(vote.getId());
+        }
+        return true;
+    }
+
+    @Override
+    public List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId) {
+        return applicationSubmitDao.load(applicationId);
+    }
+
+    @Override
+    public List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId) {
+        return challengeSubmitDao.load(challengeId);
+    }
+
+    @Override
+    public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page){
+        page.setTotal(commentDao.commentCount(moduleId, submitId));
+        return commentDao.loadComments(moduleId,submitId,page);
+    }
+
+    @Override
+    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
+        if (moduleId == Constants.CommentModule.CHALLENGE) {
+            ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
+            }
+            //自己给自己评论不提醒
+            if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
+                Profile profile = accountService.getProfile(openId, false);
+                if (profile != null) {
+                    String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
+                    messageService.sendMessage(profile.getNickname() + "评论了我的专题训练", load.getOpenid(), openId, url);
+                }
+            }
+        } else {
+            ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
+            }
+            //自己给自己评论不提醒
+            if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
+                Profile profile = accountService.getProfile(openId, false);
+                if (profile != null) {
+                    String url = "/rise/static/practice/application?id=" + load.getApplicationId();
+                    messageService.sendMessage(profile.getNickname() + "评论了我的应用训练", load.getOpenid(), openId, url);
+                }
+            }
+        }
+        Comment comment = new Comment();
+        comment.setModuleId(moduleId);
+        comment.setReferencedId(referId);
+        comment.setType(Constants.CommentType.STUDENT);
+        comment.setContent(content);
+        comment.setCommentOpenId(openId);
+        comment.setDevice(Constants.Device.MOBILE);
+        commentDao.insert(comment);
+        return new MutablePair<>(true,"评论成功");
+    }
+
+    @Override
+    public Integer riseArticleViewCount(Integer module, Integer id,Integer type) {
+        return fragmentAnalysisDataDao.riseArticleViewCount(module, id, type);
     }
 }

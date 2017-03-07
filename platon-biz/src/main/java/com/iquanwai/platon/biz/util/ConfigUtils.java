@@ -119,4 +119,8 @@ public class ConfigUtils {
 	public static String getValue(String key){
 		return config.getString(key);
 	}
+
+	public static Integer getVoteScore(){
+		return config.getInt("vote.score");
+	}
 }

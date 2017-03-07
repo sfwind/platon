@@ -23,20 +23,23 @@ import java.util.List;
 public class WarmupPracticeDiscussDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void insert(WarmupPracticeDiscuss discuss){
+    public int insert(WarmupPracticeDiscuss discuss){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Openid, RepliedId, Comment, " +
                 "Priority, Del, RepliedOpenid, RepliedComment) " +
                 "values(?,?,?,?,?,?,?,?)";
         try {
-            runner.insert(sql, new ScalarHandler<>(),
+            Long result = runner.insert(sql, new ScalarHandler<>(),
                     discuss.getWarmupPracticeId(), discuss.getOpenid(), discuss.getRepliedId(),
                     discuss.getComment(), discuss.getPriority(), discuss.getDel(),
                     discuss.getRepliedOpenid(), discuss.getRepliedComment());
+
+            return result.intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
+        return -1;
     }
 
     public List<WarmupPracticeDiscuss> loadDiscuss(Integer practiceId, Page page) {

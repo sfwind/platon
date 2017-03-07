@@ -4,18 +4,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
-import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
-import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
-import com.iquanwai.platon.biz.po.common.UserRole;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
@@ -30,8 +30,9 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
-    //TODO:待切换成rise用户表
-    private FollowUserDao followUserDao;
+    private MessageService messageService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,15 +51,24 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
             }
         }
-        List<UserRole> userRoles = userRoleDao.getRoles(openid);
-        //普通用户不会在角色表中存记录
-        if(CollectionUtils.isEmpty(userRoles)){
-            //普通用户的讨论优先级较低
-            warmupPracticeDiscuss.setPriority(0);
-        }else{
-            warmupPracticeDiscuss.setPriority(1);
+//        List<UserRole> userRoles = userRoleDao.getRoles(openid);
+//        //普通用户不会在角色表中存记录
+//        if(CollectionUtils.isEmpty(userRoles)){
+//            //普通用户的讨论优先级较低
+//            warmupPracticeDiscuss.setPriority(0);
+//        }else{
+//            warmupPracticeDiscuss.setPriority(1);
+//        }
+        int id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
+
+        //发送回复通知
+        if(repliedId!=null && !openid.equals(warmupPracticeDiscuss.getRepliedOpenid())) {
+            String url = "/rise/static/message/warmup/reply?commentId={0}&warmupPracticeId={1}";
+            url = MessageFormat.format(url, id, warmupPracticeId);
+            String message = "回复了我的热身训练问题";
+            messageService.sendMessage(message, warmupPracticeDiscuss.getRepliedOpenid(),
+                    openid, url);
         }
-        warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
     }
 
     @Override
@@ -88,6 +98,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         return result;
     }
 
+    @Override
+    public WarmupPracticeDiscuss loadDiscuss(Integer discussId) {
+        WarmupPracticeDiscuss discuss = warmupPracticeDiscussDao.load(WarmupPracticeDiscuss.class, discussId);
+        if(discuss!=null){
+            fulfilDiscuss(discuss);
+        }
+        return discuss;
+    }
+
     //填充评论的其他字段
     private void fulfilDiscuss(List<WarmupPracticeDiscuss> discuss) {
         List<String> openids = Lists.newArrayList();
@@ -102,7 +121,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             }
         });
         //批量获取用户信息
-        List<Account> accounts = followUserDao.queryAccounts(openids);
+        List<Profile> accounts = accountService.getProfiles(openids);
         //设置名称、头像和时间
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             accounts.stream().forEach(account -> {
@@ -116,5 +135,19 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             });
             warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateToString(warmupPracticeDiscuss.getAddTime()));
         });
+    }
+
+    private void fulfilDiscuss(WarmupPracticeDiscuss warmupPracticeDiscuss) {
+        Profile account = accountService.getProfile(warmupPracticeDiscuss.getOpenid(), false);
+        //设置名称、头像和时间
+        if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
+            warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
+            warmupPracticeDiscuss.setName(account.getNickname());
+        }
+        if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
+            warmupPracticeDiscuss.setRepliedName(account.getNickname());
+        }
+
+        warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateToString(warmupPracticeDiscuss.getAddTime()));
     }
 }
