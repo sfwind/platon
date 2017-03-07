@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.resolver;
 
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class LoginUser {
     private Boolean openRise;
 
     public static LoginUser defaultUser(){
-        return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤", null, null,false);
+        return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤",
+                Profile.DEFAULT_AVATAR, null, true);
     }
 }

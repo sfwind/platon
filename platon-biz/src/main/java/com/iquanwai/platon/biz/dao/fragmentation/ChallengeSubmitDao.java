@@ -92,4 +92,16 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
         }
         return true;
     }
+
+    public List<ChallengeSubmit> load(Integer challengeId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<List<ChallengeSubmit>> h = new BeanListHandler<ChallengeSubmit>(ChallengeSubmit.class);
+        String sql = "SELECT * FROM ChallengeSubmit where ChallengeId=? and Content is not null order by UpdateTime desc";
+        try{
+            return run.query(sql,h,challengeId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }
