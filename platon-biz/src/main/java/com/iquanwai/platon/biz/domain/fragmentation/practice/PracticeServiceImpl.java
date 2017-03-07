@@ -312,7 +312,13 @@ public class PracticeServiceImpl implements PracticeService {
                 planId = submit.getPlanId();
                 submitOpenId = submit.getOpenid();
             }
-            homeworkVoteDao.vote(type, referencedId, openId, Constants.Device.MOBILE);
+            HomeworkVote homeworkVote = new HomeworkVote();
+            homeworkVote.setReferencedId(referencedId);
+            homeworkVote.setVoteOpenId(openId);
+            homeworkVote.setType(type);
+            homeworkVote.setVotedOpenid(submitOpenId);
+            homeworkVote.setDevice(Constants.Device.MOBILE);
+            homeworkVoteDao.vote(homeworkVote);
             pointRepo.risePoint(planId,ConfigUtils.getVoteScore());
             pointRepo.riseCustomerPoint(submitOpenId,ConfigUtils.getVoteScore());
         } else {
@@ -350,7 +356,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
-                    messageService.sendMessage(profile.getNickname() + "评论了我的专题", load.getOpenid(), openId, url);
+                    messageService.sendMessage(profile.getNickname() + "评论了我的专题训练", load.getOpenid(), openId, url);
                 }
             }
         } else {

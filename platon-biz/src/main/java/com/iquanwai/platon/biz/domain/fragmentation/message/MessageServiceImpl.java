@@ -129,6 +129,11 @@ public class MessageServiceImpl implements MessageService {
                 return;
             }
             String url = "";
+            if(voteMessage.getType()==1){
+                url = "/rise/static/practice/challenge?id=" + homeworkVote.getReferencedId();
+            }else if(voteMessage.getType()==2){
+                url = "/rise/static/practice/application?id=" + homeworkVote.getReferencedId();
+            }
             sendMessage(message, toUser, SYSTEM_MESSAGE, url);
         });
     }
@@ -137,7 +142,7 @@ public class MessageServiceImpl implements MessageService {
         String message = "";
         if(voteMessage.getCount()==1){
             if(voteMessage.getType()==1){
-                message = profile.getNickname()+"赞了我的专题";
+                message = profile.getNickname()+"赞了我的专题训练";
             }else if(voteMessage.getType()==2){
                 message = profile.getNickname()+"赞了我的应用训练";
             }

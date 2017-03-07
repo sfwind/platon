@@ -13,4 +13,5 @@ public class HomeworkVote {
     private String voteOpenId;//点赞人
     private Integer del;//是否删除，1代表取消点赞
     private String votedOpenid; //被点赞人
+    private Integer device; //设备
 }

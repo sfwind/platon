@@ -105,6 +105,8 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         improvementPlan.setSeries(firstPractice.getSeries());
+        int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
+        improvementPlan.setNewMessage(messageNumber>0);
         return 0;
     }
 
@@ -167,7 +169,7 @@ public class PlanServiceImpl implements PlanService {
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
         Assert.notNull(runningPractice, "练习计划不能为空");
         List<Practice> practiceList = Lists.newArrayList();
-        runningPractice.sort((o1, o2) -> o1.getSequence()-o2.getSequence());
+        runningPractice.sort((o1, o2) -> o1.getSequence() - o2.getSequence());
 
         //根据sequence构建对象
         practiceList.addAll(runningPractice.stream().map(this::buildPractice).collect(Collectors.toList()));
@@ -193,7 +195,7 @@ public class PlanServiceImpl implements PlanService {
         }
         practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
-        if(practice.getKnowledge()==null) {
+        if(practice.getKnowledge()== null) {
             Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
             practice.setKnowledge(knowledge);
         }
