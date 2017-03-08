@@ -71,8 +71,8 @@ public class PlanServiceImpl implements PlanService {
     private boolean isDone(List<PracticePlan> runningPractices){
         if(CollectionUtils.isNotEmpty(runningPractices)) {
             for(PracticePlan practicePlan:runningPractices){
-                //非应用训练未完成时,返回-2
-                if(practicePlan.getType()!=PracticePlan.APPLICATION && practicePlan.getStatus()==0){
+                //理解训练未完成时,返回-2
+                if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
                     return false;
                 }
             }
@@ -123,51 +123,6 @@ public class PlanServiceImpl implements PlanService {
             practicePlanDao.unlock(practicePlan.getId());
         });
         improvementPlanDao.updateKey(improvementPlan.getId(), improvementPlan.getKeycnt()-1);
-    }
-
-    private Boolean isSummary(List<PracticePlan> practices) {
-        if(CollectionUtils.isEmpty(practices)){
-            return false;
-        }
-
-        //找到最后一组已完成的练习
-        List<PracticePlan> tempPractice = Lists.newArrayList();
-        Integer seriesCursor = 0;
-        boolean complete = true;
-
-        //按照series倒序排
-        practices.sort((o1, o2) -> o2.getSeries()-o1.getSeries());
-        for(PracticePlan practicePlan:practices){
-            //跳过应用训练
-            if(practicePlan.getType()==PracticePlan.APPLICATION){
-                continue;
-            }
-            if(!practicePlan.getSeries().equals(seriesCursor)){
-                //如果该组所有练习都已完成,就找到
-                if(seriesCursor!=0 && complete){
-                    break;
-                }
-                //反之,则数据初始化
-                seriesCursor = practicePlan.getSeries();
-                tempPractice.clear();
-                complete = true;
-            }
-            if(practicePlan.getStatus()==0){
-                complete = false;
-            }else{
-                tempPractice.add(practicePlan);
-            }
-        }
-        //已完成,但未总结
-        if(CollectionUtils.isNotEmpty(tempPractice) && complete) {
-            PracticePlan practicePlan = tempPractice.get(0);
-            if (!practicePlan.getSummary()) {
-                practicePlanDao.summary(practicePlan.getPlanId(), practicePlan.getSeries());
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
@@ -397,11 +352,9 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         for(PracticePlan practicePlan:practicePlans){
-            //应用训练可以不完成,其他训练必须完成,才算完成整个训练计划
-            if(practicePlan.getType()!=PracticePlan.APPLICATION){
-                if(practicePlan.getStatus()!=1){
-                    return false;
-                }
+            //理解训练必须完成,才算完成整个训练计划
+            if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
+                return false;
             }
         }
         //完成训练计划
@@ -433,5 +386,28 @@ public class PlanServiceImpl implements PlanService {
 
             return cacheService.getWarmupPractice(practiceId);
         }
+    }
+
+    @Override
+    public Integer checkPractice(Integer series, ImprovementPlan improvementPlan) {
+        List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);
+        //未解锁返回-1
+        for(PracticePlan practicePlan:practicePlans){
+            if(!practicePlan.getUnlocked()){
+                return -1;
+            }
+        }
+
+        //当前第一组返回0
+        if(series==1){
+            return 0;
+        }
+        //获取前一组训练
+        List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series-1);
+        if(isDone(prePracticePlans)){
+            return 0;
+        }
+        //未完成返回-2
+        return -2;
     }
 }

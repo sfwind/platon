@@ -21,6 +21,7 @@ import java.util.Map;
 
 /**
  * Created by justin on 17/2/27.
+ * 消息中心相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/message")
