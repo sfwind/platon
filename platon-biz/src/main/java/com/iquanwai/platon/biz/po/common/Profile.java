@@ -25,5 +25,5 @@ public class Profile {
     private Boolean openRise;
 
     //默认头像
-    public static final String DEFAULT_AVATAR = "http://www.iquanwai.com/images/default_avatar.png";
+    public static final String DEFAULT_AVATAR = "http://www.iqycamp.com/images/default_avatar.png";
 }

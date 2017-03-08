@@ -71,6 +71,7 @@ public interface PlanService {
     /**
      * 训练计划结束
      * @param planId 训练计划id
+     * @param status 训练状态
      */
     void completePlan(Integer planId, Integer status);
 
@@ -92,5 +93,14 @@ public interface PlanService {
      * @param problemId 专题id
      * */
     WarmupPractice getExample(Integer knowledgeId, Integer problemId);
+
+    /**
+     * 当前组练习是否可以做
+     * @param series 组序号
+     * @param improvementPlan 训练计划
+     * @return -1 未解锁
+     * @return -2 之前系列未完成
+     * */
+    Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
 
 }
