@@ -356,7 +356,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
-                    messageService.sendMessage(profile.getNickname() + "评论了我的专题训练", load.getOpenid(), openId, url);
+                    messageService.sendMessage("评论了我的专题训练", load.getOpenid(), openId, url);
                 }
             }
         } else {
@@ -370,7 +370,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/practice/application?id=" + load.getApplicationId();
-                    messageService.sendMessage(profile.getNickname() + "评论了我的应用训练", load.getOpenid(), openId, url);
+                    messageService.sendMessage("评论了我的应用训练", load.getOpenid(), openId, url);
                 }
             }
         }
