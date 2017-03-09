@@ -86,7 +86,7 @@ public class PracticeController {
                 .module("训练")
                 .function("热身训练")
                 .action("打开热身训练")
-                .memo(id+"");
+                .memo(id.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPractice);
     }
@@ -145,13 +145,13 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
                                                                 @PathVariable Integer applicationId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
+//        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+//        if(improvementPlan==null){
+//            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+//            return WebUtils.result("您还没有制定训练计划哦");
+//        }
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                improvementPlan.getOpenid(), improvementPlan.getId());
+                loginUser.getOpenId());
         // 查询点赞数
         applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
         // 查询评论数
@@ -178,13 +178,13 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
                                                                          @PathVariable Integer challengeId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
+//        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+//        if(improvementPlan==null){
+//            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+//            return WebUtils.result("您还没有制定训练计划哦");
+//        }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                improvementPlan.getOpenid(), improvementPlan.getId());
+                loginUser.getOpenId());
 
         // 查询点赞数
         challengePractice.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId()));
@@ -467,7 +467,7 @@ public class PracticeController {
                 .module("训练")
                 .function("应用任务")
                 .action("移动端应用任务列表加载他人的应用任务")
-                .memo(applicationId + "");
+                .memo(applicationId.toString());
         operationLogService.log(operationLog);
         List<RiseWorkInfoDto> submits = practiceService.loadApplicationSubmits(applicationId).stream()
                 .filter(item -> !item.getOpenid().equals(loginUser.getOpenId())).map(item -> {
@@ -480,7 +480,7 @@ public class PracticeController {
                     Profile account = accountService.getProfile(item.getOpenid(), false);
                     dto.setUserName(account.getNickname());
                     dto.setHeadImage(account.getHeadimgurl());
-                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION,item.getId()));
+                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
                     // 查询我对它的点赞状态
                     HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(), loginUser.getOpenId());
                     if (myVote != null && myVote.getDel() == 0) {
@@ -506,7 +506,7 @@ public class PracticeController {
         submits.forEach(item->{
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
         });
-        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<RiseWorkInfoDto>();
+        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<>();
         dto.setList(submits);
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);
@@ -519,7 +519,7 @@ public class PracticeController {
                 .module("训练")
                 .function("挑战训练")
                 .action("挑战训练列表加载他人的")
-                .memo(challengeId + "");
+                .memo(challengeId.toString());
         operationLogService.log(operationLog);
         List<RiseWorkInfoDto> submits = practiceService.getChallengeSubmitList(challengeId)
                 .stream()
@@ -557,10 +557,8 @@ public class PracticeController {
                 }).collect(Collectors.toList());
         page.setTotal(submits.size());
         submits = submits.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
-        submits.forEach(item->{
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
-        });
-        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<RiseWorkInfoDto>();
+        submits.forEach(item-> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
+        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<>();
         dto.setList(submits);
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);
@@ -594,7 +592,7 @@ public class PracticeController {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
-        RefreshListDto<RiseWorkCommentDto> dto = new RefreshListDto<RiseWorkCommentDto>();
+        RefreshListDto<RiseWorkCommentDto> dto = new RefreshListDto<>();
         dto.setList(comments);
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);

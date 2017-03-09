@@ -43,17 +43,15 @@ public interface PracticeService {
      * 获取专题训练
      * @param id 专题训练id
      * @param openid 学员id
-     * @param planId 训练计划id
      * */
-    ChallengePractice getChallengePractice(Integer id, String openid, Integer planId);
+    ChallengePractice getChallengePractice(Integer id, String openid);
 
     /**
      * 获取应用训练
      * @param id 应用训练id
      * @param openId openid
-     * @param planId 训练计划id
      * */
-    ApplicationPractice getApplicationPractice(Integer id, String openId, Integer planId);
+    ApplicationPractice getApplicationPractice(Integer id, String openId);
 
     /**
      * 获取专题训练
