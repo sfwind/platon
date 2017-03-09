@@ -170,6 +170,8 @@ public class PracticeServiceImpl implements PracticeService {
             submit = new ChallengeSubmit();
             submit.setOpenid(openid);
             submit.setChallengeId(id);
+            ImprovementPlan improvementPlan = improvementPlanDao.loadRunningPlan(openid);
+            submit.setPlanId(improvementPlan.getId());
             int submitId = challengeSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
@@ -197,6 +199,8 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setOpenid(openid);
             submit.setApplicationId(id);
             int submitId = applicationSubmitDao.insert(submit);
+            ImprovementPlan improvementPlan = improvementPlanDao.loadRunningPlan(openid);
+            submit.setPlanId(improvementPlan.getId());
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
