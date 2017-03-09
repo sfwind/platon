@@ -246,7 +246,7 @@ public class PracticeServiceImpl implements PracticeService {
             result = challengeSubmitDao.answer(id, content);
             if (result && submit.getPointStatus() == 0) {
                 // 修改专题任务记录
-                logger.info("专题训练加分:{}", id);
+                logger.info("小目标加分:{}", id);
                 PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                         submit.getChallengeId(), PracticePlan.CHALLENGE);
                 if (practicePlan != null) {
@@ -356,7 +356,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
-                    messageService.sendMessage("评论了我的专题训练", load.getOpenid(), openId, url);
+                    messageService.sendMessage("评论了我的小目标", load.getOpenid(), openId, url);
                 }
             }
         } else {

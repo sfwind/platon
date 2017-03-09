@@ -59,8 +59,8 @@ public class WarmupController {
         WarmupPractice warmupPractice = practiceService.getWarmupPractice(id);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("热身训练")
-                .action("打开热身训练")
+                .function("理解训练")
+                .action("打开理解训练")
                 .memo(id.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPractice);
@@ -81,8 +81,8 @@ public class WarmupController {
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("热身训练")
-                .action("打开热身训练页")
+                .function("理解训练")
+                .action("打开理解训练页")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
@@ -109,7 +109,7 @@ public class WarmupController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("热身训练")
+                .function("理解训练")
                 .action("回答问题")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
@@ -142,8 +142,8 @@ public class WarmupController {
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("热身训练")
-                .action("打开热身训练页")
+                .function("理解训练")
+                .action("打开理解训练页")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
@@ -209,8 +209,8 @@ public class WarmupController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("热身训练")
-                .action("打开热身训练页")
+                .function("理解训练")
+                .action("打开理解训练页")
                 .memo(practiceId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeList.get(0));
@@ -234,7 +234,7 @@ public class WarmupController {
         });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("热身训练")
+                .function("理解训练")
                 .action("获取讨论")
                 .memo(warmupPracticeId.toString());
         operationLogService.log(operationLog);
