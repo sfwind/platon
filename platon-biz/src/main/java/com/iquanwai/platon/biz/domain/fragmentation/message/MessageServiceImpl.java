@@ -158,13 +158,13 @@ public class MessageServiceImpl implements MessageService {
         String message = "";
         if(voteMessage.getCount()==1){
             if(voteMessage.getType()==1){
-                message = profile.getNickname()+"赞了我的专题训练";
+                message = profile.getNickname()+"赞了我的小目标";
             }else if(voteMessage.getType()==2){
                 message = profile.getNickname()+"赞了我的应用训练";
             }
         }else{
             if(voteMessage.getType()==1){
-                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的专题";
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的小目标";
             }else if(voteMessage.getType()==2){
                 message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的应用训练";
             }

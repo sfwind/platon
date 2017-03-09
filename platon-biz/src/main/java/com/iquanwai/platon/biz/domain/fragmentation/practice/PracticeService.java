@@ -19,20 +19,20 @@ import java.util.List;
  */
 public interface PracticeService {
     /**
-     * 获取热身训练列表
+     * 获取理解训练列表
      * @param planId 训练id
      * @param practicePlanId 训练组编号
      * */
     List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId);
 
     /**
-     * 获取热身训练解析
+     * 获取理解训练解析
      * @param planId 训练id
      * @param questionIds 练习编号
      * */
     List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds);
     /**
-     * 回答热身训练问题
+     * 回答理解训练问题
      * @param warmupPracticeList 练习答案
      * @param planId 训练id
      * */
@@ -40,8 +40,8 @@ public interface PracticeService {
                                       Integer planId, String openid) throws AnswerException;
 
     /**
-     * 获取专题训练
-     * @param id 专题训练id
+     * 获取小目标
+     * @param id 小目标id
      * @param openid 学员id
      * */
     ChallengePractice getChallengePractice(Integer id, String openid);
@@ -54,10 +54,10 @@ public interface PracticeService {
     ApplicationPractice getApplicationPractice(Integer id, String openId);
 
     /**
-     * 获取专题训练
+     * 提交训练
      * @param id 提交id
      * @param content 提交内容
-     * @param type 11-应用训练,21-专题训练
+     * @param type 11-应用训练,21-小目标
      * */
     Boolean submit(Integer id, String content, Integer type);
 
@@ -107,7 +107,7 @@ public interface PracticeService {
 
     /**
      * 查询训练提交列表
-     * @param challengeId 挑战训练id
+     * @param challengeId 小目标id
      */
     List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId);
 
@@ -129,7 +129,7 @@ public interface PracticeService {
     Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
 
     /*
-     * 获取热身训练
+     * 获取理解训练
      * @param warmupId 训练id
      * */
     WarmupPractice getWarmupPractice(Integer warmupId);

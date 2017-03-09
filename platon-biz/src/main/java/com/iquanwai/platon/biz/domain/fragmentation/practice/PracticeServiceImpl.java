@@ -331,8 +331,16 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
+<<<<<<< HEAD
                 String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
                 messageService.sendMessage("评论了我的小目标", load.getOpenid(), openId, url);
+=======
+                Profile profile = accountService.getProfile(openId, false);
+                if (profile != null) {
+                    String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
+                    messageService.sendMessage("评论了我的小目标", load.getOpenid(), openId, url);
+                }
+>>>>>>> challenge refact
             }
         } else {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);

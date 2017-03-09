@@ -61,11 +61,11 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ProblemSchedule> problemScheduleList = problemList.get(problemSchedule.getKnowledgeId());
             problemScheduleList.add(problemSchedule);
         });
-        //生成热身训练
+        //生成理解训练
         practicePlans.addAll(createWarmupPractice(problem, planId, problemList));
         //生成应用训练
         practicePlans.addAll(createApplicationPractice(problem, planId, problemList));
-        //生成专题训练
+        //生成小目标
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
@@ -98,7 +98,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     private List<ChallengePractice> selectChallenge(List<ChallengePractice> practices) {
-        Assert.notNull(practices, "专题训练不能为空");
+        Assert.notNull(practices, "小目标不能为空");
         List<ChallengePractice> challengePractices = Lists.newArrayList();
 
         challengePractices.add(practices.get(0));
@@ -203,7 +203,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
         //结束时期后再开放7天
         improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), length + 7));
-        //总训练数=热身训练+应用训练
+        //总训练数=理解训练+应用训练
         improvementPlan.setTotal(problem.getWarmupCount()+
                 problem.getApplicationCount());
 

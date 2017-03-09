@@ -171,7 +171,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> runningPractice = Lists.newArrayList();
         List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
         runningPractice.addAll(practicePlanList);
-        //第一天增加专题训练,其余时间不显示专题训练
+        //第一天增加小目标,其余时间不显示小目标
         if(series==1) {
             runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
         }
@@ -182,19 +182,7 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> runningPractice = Lists.newArrayList();
-        //如果专题训练未完成,直接返回第一组练习
-        // TODO:不支持多组专题训练
         PracticePlan challengePractice = practicePlanDao.loadChallengePractice(improvementPlan.getId());
-        if(challengePractice.getStatus()==0){
-            List<PracticePlan> practicePlan = pickPracticeBySeries(improvementPlan, 1);
-            if(CollectionUtils.isNotEmpty(practicePlan)){
-                PracticePlan practice = practicePlan.get(0);
-                if(!practice.getUnlocked()){
-                    unlock(practicePlan, improvementPlan);
-                }
-            }
-            return practicePlan;
-        }
         //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
         //未完成的练习
         List<PracticePlan> incompletePractice = getFirstImcompletePractice(practicePlans);
@@ -215,7 +203,7 @@ public class PlanServiceImpl implements PlanService {
             runningPractice.addAll(getLastUnlockPractice(practicePlans));
         }
         if(CollectionUtils.isNotEmpty(runningPractice)){
-            //第一天增加专题训练,其余时间不显示专题训练
+            //第一天增加小目标,其余时间不显示小目标
             PracticePlan plan = runningPractice.get(0);
             if(plan.getSeries()==1) {
                 runningPractice.add(challengePractice);
@@ -276,7 +264,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private Knowledge getKnowledge(Integer knowledgeId, Integer planId){
-        //专题训练
+        //小目标的knowledgeId=null
         if(knowledgeId==null){
             Knowledge knowledge = new Knowledge();
             //文案写死
