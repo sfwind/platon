@@ -1,39 +1,18 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ChallengePracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
-import com.iquanwai.platon.biz.dao.fragmentation.FragmentAnalysisDataDao;
-import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.ApplicationSubmit;
-import com.iquanwai.platon.biz.po.ChallengePractice;
-import com.iquanwai.platon.biz.po.ChallengeSubmit;
-import com.iquanwai.platon.biz.po.Comment;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.WarmupSubmit;
-import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -77,8 +56,6 @@ public class PracticeServiceImpl implements PracticeService {
     private CommentDao commentDao;
     @Autowired
     private MessageService messageService;
-    @Autowired
-    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -159,25 +136,21 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ChallengePractice getChallengePractice(Integer id, String openid) {
+    public ChallengePractice getChallengePractice(Integer id, String openid, Integer planId) {
         Assert.notNull(openid, "openid不能为空");
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
         // 查询该用户是否提交
-        List<ChallengeSubmit> submitList = challengeSubmitDao.load(id, openid);
-        ChallengeSubmit submit;
-        if(CollectionUtils.isEmpty(submitList)){
+        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
+        if(submit==null){
             // 没有提交，生成
             submit = new ChallengeSubmit();
             submit.setOpenid(openid);
+            submit.setPlanId(planId);
             submit.setChallengeId(id);
-            ImprovementPlan improvementPlan = improvementPlanDao.loadRunningPlan(openid);
-            submit.setPlanId(improvementPlan.getId());
             int submitId = challengeSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.CHALLENGE, submitId);
-        }else{
-            submit = submitList.get(0);
         }
         challengePractice.setContent(submit.getContent());
         challengePractice.setSubmitId(submit.getId());
@@ -186,26 +159,22 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, String openid) {
+    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId) {
         Assert.notNull(openid, "openid不能为空");
         // 查询该应用训练
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
-        List<ApplicationSubmit> submitList = applicationSubmitDao.load(id, openid);
-        ApplicationSubmit submit;
-        if (CollectionUtils.isEmpty(submitList)) {
+        ApplicationSubmit submit = applicationSubmitDao.load(id, planId, openid);
+        if (submit == null) {
             // 没有提交，生成
             submit = new ApplicationSubmit();
             submit.setOpenid(openid);
+            submit.setPlanId(planId);
             submit.setApplicationId(id);
-            ImprovementPlan improvementPlan = improvementPlanDao.loadRunningPlan(openid);
-            submit.setPlanId(improvementPlan.getId());
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
-        }else{
-            submit = submitList.get(0);
         }
         applicationPractice.setContent(submit.getContent());
         applicationPractice.setSubmitId(submit.getId());
@@ -255,7 +224,7 @@ public class PracticeServiceImpl implements PracticeService {
             result = challengeSubmitDao.answer(id, content);
             if (result && submit.getPointStatus() == 0) {
                 // 修改专题任务记录
-                logger.info("专题训练加分:{}", id);
+                logger.info("小目标加分:{}", id);
                 PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                         submit.getChallengeId(), PracticePlan.CHALLENGE);
                 if (practicePlan != null) {
@@ -362,11 +331,8 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
-                Profile profile = accountService.getProfile(openId, false);
-                if (profile != null) {
-                    String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
-                    messageService.sendMessage("评论了我的专题训练", load.getOpenid(), openId, url);
-                }
+                String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
+                messageService.sendMessage("评论了我的小目标", load.getOpenid(), openId, url);
             }
         } else {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
@@ -376,11 +342,8 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
-                Profile profile = accountService.getProfile(openId, false);
-                if (profile != null) {
-                    String url = "/rise/static/practice/application?id=" + load.getApplicationId();
-                    messageService.sendMessage("评论了我的应用训练", load.getOpenid(), openId, url);
-                }
+                String url = "/rise/static/practice/application?id=" + load.getApplicationId();
+                messageService.sendMessage("评论了我的应用训练", load.getOpenid(), openId, url);
             }
         }
         Comment comment = new Comment();
