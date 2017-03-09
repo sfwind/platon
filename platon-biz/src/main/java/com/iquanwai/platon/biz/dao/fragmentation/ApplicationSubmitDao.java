@@ -80,6 +80,18 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return true;
     }
 
+    public boolean firstAnswer(Integer id, String content){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ApplicationSubmit set Content=?,PublishTime = CURRENT_TIMESTAMP where Id=?";
+        try {
+            runner.update(sql, content, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
     public boolean updatePointStatus(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set PointStatus=1 where Id=?";
