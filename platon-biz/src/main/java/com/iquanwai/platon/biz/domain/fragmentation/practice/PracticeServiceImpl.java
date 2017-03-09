@@ -192,7 +192,11 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("submitId {} is not existed", id);
                 return false;
             }
-            result = applicationSubmitDao.answer(id, content);
+            if(submit.getContent()==null){
+                result = applicationSubmitDao.firstAnswer(id, content);
+            } else {
+                result = applicationSubmitDao.answer(id, content);
+            }
             if (result && submit.getPointStatus() == 0) {
                 // 修改应用任务记录
                 ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
@@ -221,7 +225,11 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("submitId {} is not existed", id);
                 return false;
             }
-            result = challengeSubmitDao.answer(id, content);
+            if(submit.getContent()==null){
+                result = challengeSubmitDao.firstAnswer(id, content);
+            } else {
+                result = challengeSubmitDao.answer(id, content);
+            }
             if (result && submit.getPointStatus() == 0) {
                 // 修改专题任务记录
                 logger.info("小目标加分:{}", id);
