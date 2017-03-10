@@ -357,6 +357,8 @@ public class PlanServiceImpl implements PlanService {
         }
         //完成训练计划
         completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
+        //更新完成时间
+        improvementPlanDao.updateCompleteTime(improvementPlan.getId());
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
         return true;
     }
