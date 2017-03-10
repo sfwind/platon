@@ -14,10 +14,12 @@ public interface Constants {
     interface PracticeType{
         int CHALLENGE = 21;
         int APPLICATION = 11;
+        int SUBJECT = 1; // 专题输出区
     }
     interface VoteType{
         int CHALLENGE = 1;
         int APPLICATION = 2;
+        int SUBJECT = 3;
     }
 
     interface PictureType {
@@ -29,6 +31,7 @@ public interface Constants {
     interface CommentModule {
         int CHALLENGE = 1;
         int APPLICATION = 2;
+        int SUBJECT = 3;
     }
 
     interface CommentType{
@@ -39,6 +42,7 @@ public interface Constants {
         interface Module {
             int CHALLENGE = 1;
             int APPLICATION = 2;
+            int SUBJECT = 3;
         }
         interface EventType {
             int PC_SUBMIT = 1;

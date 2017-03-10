@@ -1,9 +1,11 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemPlanDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemPlan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class ProblemServiceImpl implements ProblemService {
     private ProblemPlanDao problemPlanDao;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private ProblemCatalogDao problemCatalogDao;
 
     @Override
     public List<Problem> loadProblems() {
@@ -79,5 +83,10 @@ public class ProblemServiceImpl implements ProblemService {
         }
 
         return null;
+    }
+
+    @Override
+    public List<ProblemCatalog> getProblemCatalogs(){
+        return problemCatalogDao.loadAll(ProblemCatalog.class);
     }
 }

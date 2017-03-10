@@ -196,7 +196,8 @@ public class PlanController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("完成训练")
-                .action("完成训练");
+                .action("完成训练")
+                .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
         return WebUtils.result(result);
     }

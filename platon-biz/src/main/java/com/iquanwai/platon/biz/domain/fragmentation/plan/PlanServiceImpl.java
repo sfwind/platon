@@ -344,6 +344,11 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public List<ImprovementPlan> getPlans(String openid){
+        return improvementPlanDao.loadAllPlans(openid);
+    }
+
+    @Override
     public List<ImprovementPlan> loadAllRunningPlan() {
         return improvementPlanDao.loadAllRunningPlan();
     }
@@ -381,7 +386,11 @@ public class PlanServiceImpl implements PlanService {
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
         //更新训练计划状态
-        improvementPlanDao.updateStatus(planId, status);
+        if (status == ImprovementPlan.COMPLETE) {
+            improvementPlanDao.updatePlanComplete(planId, status);
+        } else {
+            improvementPlanDao.updateStatus(planId, status);
+        }
         //解锁所有应用训练
         practicePlanDao.unlockApplicationPractice(planId);
         //更新待完成的专题状态
@@ -417,5 +426,18 @@ public class PlanServiceImpl implements PlanService {
             nextPractice = practicePlanDao.loadChallengePractice(planId);
         }
         return buildPractice(nextPractice);
+    }
+
+    @Override
+    public boolean hasProblemPlan(String openId, Integer problemId) {
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(openId);
+        long count = improvementPlans.stream().filter(item -> item.getProblemId().equals(problemId)).count();
+        return count > 0;
+    }
+
+    @Override
+    public String loadSubjectDesc(Integer problemId) {
+        Problem load = problemDao.load(Problem.class, problemId);
+        return load.getSubjectDesc();
     }
 }

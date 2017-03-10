@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.FragmentAnalysisDataDao;
 import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
@@ -26,6 +27,7 @@ import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -79,6 +81,8 @@ public class PracticeServiceImpl implements PracticeService {
     private MessageService messageService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private SubjectArticleDao subjectArticleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -302,8 +306,8 @@ public class PracticeServiceImpl implements PracticeService {
     public boolean vote(Integer type, Integer referencedId, String openId) {
         HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, openId);
         if (vote == null) {
-            Integer planId;
-            String submitOpenId;
+            Integer planId = null;
+            String submitOpenId = null;
             if(type == Constants.VoteType.CHALLENGE){
                 // 挑战任务点赞
                 ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class,referencedId);
@@ -312,7 +316,7 @@ public class PracticeServiceImpl implements PracticeService {
                 }
                 planId = submit.getPlanId();
                 submitOpenId = submit.getOpenid();
-            } else {
+            } else if(type == Constants.VoteType.APPLICATION) {
                 // 应用任务点赞
                 ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class,referencedId);
                 if(submit==null){
@@ -320,6 +324,19 @@ public class PracticeServiceImpl implements PracticeService {
                 }
                 planId = submit.getPlanId();
                 submitOpenId = submit.getOpenid();
+            } else if (type == Constants.VoteType.SUBJECT){
+                // 专题区点赞
+                SubjectArticle submit = subjectArticleDao.load(SubjectArticle.class,referencedId);
+                if(submit==null){
+                    return false;
+                }
+                submitOpenId = submit.getOpenid();
+                List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(submitOpenId);
+                for(ImprovementPlan plan:improvementPlans){
+                    if (plan.getProblemId().equals(submit.getProblemId())) {
+                        planId = plan.getId();
+                    }
+                }
             }
             HomeworkVote homeworkVote = new HomeworkVote();
             homeworkVote.setReferencedId(referencedId);
@@ -368,18 +385,32 @@ public class PracticeServiceImpl implements PracticeService {
                     messageService.sendMessage("评论了我的专题训练", load.getOpenid(), openId, url);
                 }
             }
-        } else {
+        } else if (moduleId == Constants.CommentModule.APPLICATION) {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
                 return new MutablePair<>(false, "没有该文章");
             }
             //自己给自己评论不提醒
-            if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
+            if (load.getOpenid() != null && !load.getOpenid().equals(openId)) {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/practice/application?id=" + load.getApplicationId();
                     messageService.sendMessage("评论了我的应用训练", load.getOpenid(), openId, url);
+                }
+            }
+        } else if(moduleId == Constants.CommentModule.SUBJECT){
+            SubjectArticle load = subjectArticleDao.load(SubjectArticle.class,referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(false, "没有该文章");
+            }
+            //自己给自己评论不提醒
+            if (load.getOpenid() != null && !load.getOpenid().equals(openId)) {
+                Profile profile = accountService.getProfile(openId, false);
+                if (profile != null) {
+                    String url = "/rise/static/message/subject/reply?submitId=" + referId;
+                    messageService.sendMessage("评论了我的精华分享", load.getOpenid(), openId, url);
                 }
             }
         }
@@ -397,5 +428,31 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Integer riseArticleViewCount(Integer module, Integer id,Integer type) {
         return fragmentAnalysisDataDao.riseArticleViewCount(module, id, type);
+    }
+
+    @Override
+    public Integer submitSubjectArticle(SubjectArticle subjectArticle){
+        Integer submitId = subjectArticle.getId();
+        if (subjectArticle.getId()==null){
+            // 第一次提交
+            submitId = subjectArticleDao.insert(subjectArticle);
+            // 生成记录表
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.SUBJECT, submitId);
+        } else {
+            // 更新之前的
+            subjectArticleDao.update(subjectArticle);
+        }
+        return submitId;
+    }
+
+    @Override
+    public List<SubjectArticle> loadSubjectArticles(Integer problemId,Page page) {
+        page.setTotal(subjectArticleDao.count(problemId));
+        return subjectArticleDao.loadArticles(problemId, page);
+    }
+
+    @Override
+    public SubjectArticle loadSubjectArticle(Integer submitId){
+        return subjectArticleDao.load(SubjectArticle.class, submitId);
     }
 }

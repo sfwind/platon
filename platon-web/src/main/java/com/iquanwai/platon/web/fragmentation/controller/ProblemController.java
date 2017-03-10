@@ -1,10 +1,17 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemPlan;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
@@ -20,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
@@ -32,6 +40,8 @@ public class ProblemController {
     private ProblemService problemService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private PlanService planService;
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser){
@@ -48,6 +58,45 @@ public class ProblemController {
                 .action("打开测评页");
         operationLogService.log(operationLog);
         return WebUtils.result(problemDto);
+    }
+
+
+    @RequestMapping("/list/unchoose")
+    public ResponseEntity<Map<String,Object>> loadUnChooseProblems(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        // 所有问题
+        List<Problem> problems = problemService.loadProblems();
+        // 用户的所有计划
+        List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getOpenId());
+        // 用户选过的专题
+        List<Integer> problemIds = userProblems.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        // 获取所有分类
+        List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
+        // 可以展示的专题
+        Map<Integer,List<Problem>> showProblems = Maps.newHashMap();
+        problems.forEach(item->{
+            List<Problem> temp = showProblems.computeIfAbsent(item.getCatalogId(), k -> Lists.newArrayList());
+            if(!problemIds.contains(item.getId())){
+                // 用户没做过这个专题
+                item.setDone(false);
+            } else {
+                item.setDone(true);
+            }
+            temp.add(item);
+        });
+
+        ProblemCatalogDto result = new ProblemCatalogDto();
+        List<ProblemCatalogListDto> catalogListDtos = problemCatalogs.stream()
+                .map(item->{
+                    ProblemCatalogListDto dto = new ProblemCatalogListDto();
+                    dto.setName(item.getName());
+                    dto.setPic(item.getPic());
+                    dto.setProblemList(showProblems.get(item.getId()));
+                    return dto;
+                }).collect(Collectors.toList());
+        result.setName(loginUser.getWeixinName());
+        result.setCatalogList(catalogListDtos);
+        return WebUtils.result(result);
     }
 
     @RequestMapping(value = "/select", method = RequestMethod.POST)
@@ -84,6 +133,7 @@ public class ProblemController {
         operationLogService.log(operationLog);
         return WebUtils.result(problemListDto);
     }
+
 
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){

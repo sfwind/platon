@@ -17,4 +17,10 @@ public class RiseWorkInfoDto {
     private Integer submitId;
     private Integer type;
     private Integer voteStatus;
+
+    private Boolean perfect;
+    private Integer problemId;
+    private Integer authorType;
+    private Boolean isMine;
+
 }
