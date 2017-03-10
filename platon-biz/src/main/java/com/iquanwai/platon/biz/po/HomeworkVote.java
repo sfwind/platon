@@ -9,7 +9,7 @@ import lombok.Data;
 public class HomeworkVote {
     private Integer id;
     private Integer referencedId;// 依赖的id
-    private Integer type; //1:专题训练,2:应用训练
+    private Integer type; //1:小目标,2:应用训练
     private String voteOpenId;//点赞人
     private Integer del;//是否删除，1代表取消点赞
     private String votedOpenid; //被点赞人

@@ -65,7 +65,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         if(repliedId!=null && !openid.equals(warmupPracticeDiscuss.getRepliedOpenid())) {
             String url = "/rise/static/message/warmup/reply?commentId={0}&warmupPracticeId={1}";
             url = MessageFormat.format(url, id, warmupPracticeId);
-            String message = "回复了我的热身训练问题";
+            String message = "回复了我的理解训练问题";
             messageService.sendMessage(message, warmupPracticeDiscuss.getRepliedOpenid(),
                     openid, url);
         }
@@ -125,11 +125,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         //设置名称、头像和时间
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             accounts.stream().forEach(account -> {
-                if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
+                if (account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())) {
                     warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                     warmupPracticeDiscuss.setName(account.getNickname());
                 }
-                if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
+                if (account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())) {
                     warmupPracticeDiscuss.setRepliedName(account.getNickname());
                 }
             });

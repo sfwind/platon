@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.wx;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
-import com.iquanwai.platon.biz.po.Callback;
+import com.iquanwai.platon.biz.po.common.Callback;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;

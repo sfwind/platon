@@ -11,9 +11,11 @@ public interface GeneratePlanService {
      * */
     Integer generatePlan(String openid, Integer problemId);
 
-    // 热身训练每个任务的题量
+    // 理解训练每个任务的题量
     int WARMUP_TASK_PRACTICE_NUMBER = 3;
 
-    // 每组的热身训练数量
+    // 每组的理解训练数量
     int WARMUP_TASK_NUMBER = 2;
+    // 每组的应用训练数量
+    int APPLICATION_TASK_NUMBER = 2;
 }

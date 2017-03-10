@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.domain.weixin.oauth;
 
 import com.iquanwai.platon.biz.dao.wx.CallbackDao;
-import com.iquanwai.platon.biz.po.Callback;
+import com.iquanwai.platon.biz.po.common.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

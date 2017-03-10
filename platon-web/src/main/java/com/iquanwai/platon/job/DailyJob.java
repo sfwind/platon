@@ -31,13 +31,14 @@ public class DailyJob {
     private void dailyJob() {
         List<ImprovementPlan> improvementPlanList = planService.loadAllRunningPlan();
         improvementPlanList.stream().forEach(improvementPlan -> {
-            Date date = DateUtils.afterDays(improvementPlan.getCloseDate(), 1);
             //过期自动结束训练
-            if(date.before(new Date())){
+            if(improvementPlan.getCloseDate().before(new Date())){
                 planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
             }else{
                 Integer key = improvementPlan.getKeycnt();
-                planService.updateKey(improvementPlan.getId(), key+1);
+                if (new Date().before(improvementPlan.getCloseDate())) {
+                    planService.updateKey(improvementPlan.getId(), key + 1);
+                }
             }
         });
 

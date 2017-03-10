@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
@@ -150,6 +151,11 @@ public class PlanController {
                                                              @PathVariable Integer knowledgeId){
 
         Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
         Knowledge knowledge = planService.getKnowledge(knowledgeId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -230,5 +236,27 @@ public class PlanController {
             loginUser.setOpenRise(true);
         }
         return WebUtils.success();
+    }
+
+    @RequestMapping("/knowledge/example/{knowledgeId}")
+    public ResponseEntity<Map<String, Object>> loadKnowledgeExample(LoginUser loginUser,
+                                                              @PathVariable Integer knowledgeId){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+
+        Assert.notNull(loginUser, "用户不能为空");
+        WarmupPractice warmupPractice = planService.getExample(knowledgeId, improvementPlan.getProblemId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("知识点")
+                .function("知识点例题")
+                .action("学习例题")
+                .memo(knowledgeId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(warmupPractice);
     }
 }

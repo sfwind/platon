@@ -15,11 +15,11 @@ public class ImprovementPlan {
     private String openid; //openid
     private Integer problemId; //问题id
     private Date startDate; //开始日期
-    private Date endDate; //结束日期
-    private Date closeDate; //课程关闭时间
+    private Date endDate; //结束日期(当日开始复习)
+    private Date closeDate; //课程关闭时间（课程关闭日期）
     private Integer status; //执行状态（1-正在进行, 2-已结束, 3-已过期）
     private Integer point; //积分
-    private Integer warmupComplete; //热身训练完成数量
+    private Integer warmupComplete; //理解训练完成数量
     private Integer applicationComplete; //应用训练完成数量
     private Integer total; //任务总数
     private Integer keycnt; //钥匙数量
@@ -32,6 +32,7 @@ public class ImprovementPlan {
     private Boolean summary; //非db字段 是否显示任务总结
     private Integer series; //非db字段 当前组号
     private Boolean openRise; //非db字段 是否打开过rise
+    private Boolean doneAllPractice; //非db字段 是否完成当日练习
     private Boolean newMessage; //非db字段 是否有新消息
 
     public final static int RUNNING = 1;

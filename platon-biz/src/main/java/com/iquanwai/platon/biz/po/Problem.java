@@ -11,12 +11,14 @@ public class Problem {
     private String problem; // 工作生活中遇到的问题
     private String pic; //头图
     private Integer length; //问题训练天数
-    private Integer warmupCount; //热身训练次数
+    private Integer warmupCount; //理解训练次数
     private Integer applicationCount; //应用训练次数
-    private Integer challengeCount; //专题训练次数
+    private Integer challengeCount; //小目标次数
     private String description; //富文本描述
     private Integer catalogId; // 分类
-
-    private Boolean done; // 用户是否做过
     private String subjectDesc; //专题输出介绍
+    private String audio; //语音
+    private Boolean del; //是否删除(0-否,1-是)
+
+    private Boolean done; // 非db字段 用户是否做过
 }

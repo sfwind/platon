@@ -27,7 +27,9 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<Problem> loadProblems() {
-        return cacheService.getProblems();
+        //去除已删除的专题
+        return cacheService.getProblems().stream().
+                filter(problem -> !problem.getDel()).collect(Collectors.toList());
     }
 
     @Override
