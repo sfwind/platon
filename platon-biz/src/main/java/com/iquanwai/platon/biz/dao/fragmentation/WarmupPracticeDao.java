@@ -20,12 +20,25 @@ import java.util.List;
 public class WarmupPracticeDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<WarmupPractice> loadPractice(int knowledgeId){
+    public List<WarmupPractice> loadPractice(int knowledgeId, int problemId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<WarmupPractice>> h = new BeanListHandler(WarmupPractice.class);
-        String sql = "SELECT * FROM WarmupPractice where KnowledgeId=?";
+        String sql = "SELECT * FROM WarmupPractice where KnowledgeId=? and ProblemId=?";
         try {
-            return run.query(sql, h, knowledgeId);
+            return run.query(sql, h, knowledgeId, problemId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return Lists.newArrayList();
+    }
+
+    public List<WarmupPractice> loadExample(int knowledgeId, int problemId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<List<WarmupPractice>> h = new BeanListHandler(WarmupPractice.class);
+        String sql = "SELECT * FROM WarmupPractice where KnowledgeId=? and ProblemId=? and Example=1";
+        try {
+            return run.query(sql, h, knowledgeId, problemId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

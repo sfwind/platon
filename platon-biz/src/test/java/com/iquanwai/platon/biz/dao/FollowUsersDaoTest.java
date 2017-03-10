@@ -3,7 +3,7 @@ package com.iquanwai.platon.biz.dao;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.TestBase;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
-import com.iquanwai.platon.biz.po.Account;
+import com.iquanwai.platon.biz.po.common.Account;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

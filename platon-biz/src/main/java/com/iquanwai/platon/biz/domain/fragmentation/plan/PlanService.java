@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface PlanService {
      * 构建详细的某组训练计划
      * @param improvementPlan 训练计划
      * @param series 训练组号
-     * @return 0-已组装,-1-未解锁,-2-必做题未完成
+     * @return 0-已组装,-1-已到最后一组
      */
     Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series);
 
@@ -72,6 +73,7 @@ public interface PlanService {
     /**
      * 训练计划结束
      * @param planId 训练计划id
+     * @param status 训练状态
      */
     void completePlan(Integer planId, Integer status);
 
@@ -88,6 +90,7 @@ public interface PlanService {
     Practice nextPractice(Integer practicePlanId);
 
     /**
+<<<<<<< HEAD
      * 查询是否有该专题
      */
     boolean hasProblemPlan(String openId,Integer problemId);
@@ -96,4 +99,21 @@ public interface PlanService {
      * 获取专题介绍
      */
     String loadSubjectDesc(Integer problemId);
+
+    /**
+     * 获取例题
+     * @param knowledgeId 知识点id
+     * @param problemId 专题id
+     * */
+    WarmupPractice getExample(Integer knowledgeId, Integer problemId);
+
+    /**
+     * 当前组练习是否可以做
+     * @param series 组序号
+     * @param improvementPlan 训练计划
+     * @return -1 未解锁
+     * @return -2 之前系列未完成
+     * */
+    Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
+
 }

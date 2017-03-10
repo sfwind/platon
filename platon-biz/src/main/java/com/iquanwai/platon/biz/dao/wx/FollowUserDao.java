@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.dao.wx;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
-import com.iquanwai.platon.biz.po.Account;
+import com.iquanwai.platon.biz.po.common.Account;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;

@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
+ * 专题相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/problem")
