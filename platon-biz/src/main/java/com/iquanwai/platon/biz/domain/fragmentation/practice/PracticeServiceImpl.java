@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/11.
@@ -62,6 +63,10 @@ public class PracticeServiceImpl implements PracticeService {
     private AccountService accountService;
     @Autowired
     private SubjectArticleDao subjectArticleDao;
+    @Autowired
+    private LabelConfigDao labelConfigDao;
+    @Autowired
+    private ArticleLabelDao articleLabelDao;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -428,5 +433,38 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public SubjectArticle loadSubjectArticle(Integer submitId){
         return subjectArticleDao.load(SubjectArticle.class, submitId);
+    }
+
+    @Override
+    public List<LabelConfig> loadProblemLabels(Integer problemId){
+        return labelConfigDao.loadLabelConfigs(problemId);
+    }
+
+    @Override
+    public List<ArticleLabel> updateLabels(Integer module, Integer articleId, List<ArticleLabel> labels){
+        List<ArticleLabel> oldLabels = articleLabelDao.loadArticleLabels(module, articleId);
+        List<ArticleLabel> shouldDels = Lists.newArrayList();
+        List<ArticleLabel> shouldReAdds = Lists.newArrayList();
+        labels = labels==null?Lists.newArrayList():labels;
+        List<Integer> userChoose = labels.stream().map(ArticleLabel::getLabelId).collect(Collectors.toList());
+        oldLabels.forEach(item->{
+            if(userChoose.contains(item.getLabelId())){
+                if(item.getDel()){
+                    shouldReAdds.add(item);
+                }
+            } else {
+                shouldDels.add(item);
+            }
+            userChoose.remove(item.getLabelId());
+        });
+        userChoose.forEach(item -> articleLabelDao.insertArticleLabel(module, articleId, item));
+        shouldDels.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 1));
+        shouldReAdds.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 0));
+        return articleLabelDao.loadArticleActiveLabels(module,articleId);
+    }
+
+    @Override
+    public List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId){
+        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
     }
 }

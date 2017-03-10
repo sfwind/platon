@@ -36,6 +36,10 @@ public class PlanServiceImpl implements PlanService {
     private CacheService cacheService;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
+    @Autowired
+    private ArticleLabelDao articleLabelDao;
+
+
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
