@@ -92,6 +92,7 @@ public class ProblemController {
                     ProblemCatalogListDto dto = new ProblemCatalogListDto();
                     dto.setName(item.getName());
                     dto.setPic(item.getPic());
+                    dto.setColor(item.getColor());
                     dto.setProblemList(showProblems.get(item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
