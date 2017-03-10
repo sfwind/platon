@@ -12,5 +12,6 @@ import java.util.List;
 public class ProblemCatalogListDto {
     private String name;
     private String pic;
+    private String color;
     private List<Problem> problemList;
 }

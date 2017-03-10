@@ -10,4 +10,5 @@ public class ProblemCatalog {
     private Integer id;
     private String name;
     private String pic;
+    private String color;
 }
