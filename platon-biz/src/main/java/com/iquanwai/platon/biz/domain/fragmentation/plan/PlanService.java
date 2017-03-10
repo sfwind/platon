@@ -37,6 +37,8 @@ public interface PlanService {
      */
     ImprovementPlan getLatestPlan(String openid);
 
+    List<ImprovementPlan> getPlans(String openid);
+
     /**
      * 获取所有正在进行的训练
      */
@@ -88,6 +90,7 @@ public interface PlanService {
     Practice nextPractice(Integer practicePlanId);
 
     /**
+<<<<<<< HEAD
      * 获取例题
      * @param knowledgeId 知识点id
      * @param problemId 专题id
@@ -102,5 +105,15 @@ public interface PlanService {
      * @return -2 之前系列未完成
      * */
     Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
+
+    /**
+     * 查询是否有该专题
+     */
+    boolean hasProblemPlan(String openId,Integer problemId);
+
+    /**
+     * 获取专题介绍
+     */
+    String loadSubjectDesc(Integer problemId);
 
 }

@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemPlan;
 
 import java.util.List;
@@ -38,4 +39,6 @@ public interface ProblemService {
      * @param problemId 问题id
      * */
     Problem getProblem(Integer problemId);
+
+    List<ProblemCatalog> getProblemCatalogs();
 }

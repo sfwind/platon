@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.ChallengeSubmit;
 import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -44,14 +45,14 @@ public interface PracticeService {
      * @param id 小目标id
      * @param openid 学员id
      * */
-    ChallengePractice getChallengePractice(Integer id, String openid);
+    ChallengePractice getChallengePractice(Integer id, String openid, Integer planId);
 
     /**
      * 获取应用训练
      * @param id 应用训练id
      * @param openId openid
      * */
-    ApplicationPractice getApplicationPractice(Integer id, String openId);
+    ApplicationPractice getApplicationPractice(Integer id, String openId, Integer planId);
 
     /**
      * 提交训练
@@ -138,4 +139,19 @@ public interface PracticeService {
      * 获取前一天的点赞
      * */
     List<HomeworkVote> loadVoteYesterday();
+
+    /**
+     * 提交精华文章
+     */
+    Integer submitSubjectArticle(SubjectArticle subjectArticle);
+
+    /**
+     * 加载专题输出区文章
+     */
+    List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
+
+    /**
+     * 加载精华文章
+     */
+    SubjectArticle loadSubjectArticle(Integer submitId);
 }

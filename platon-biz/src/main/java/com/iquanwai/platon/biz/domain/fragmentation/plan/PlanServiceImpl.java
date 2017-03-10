@@ -292,6 +292,11 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public List<ImprovementPlan> getPlans(String openid){
+        return improvementPlanDao.loadAllPlans(openid);
+    }
+
+    @Override
     public List<ImprovementPlan> loadAllRunningPlan() {
         return improvementPlanDao.loadAllRunningPlan();
     }
@@ -329,7 +334,11 @@ public class PlanServiceImpl implements PlanService {
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
         //更新训练计划状态
-        improvementPlanDao.updateStatus(planId, status);
+        if (status == ImprovementPlan.COMPLETE) {
+            improvementPlanDao.updatePlanComplete(planId, status);
+        } else {
+            improvementPlanDao.updateStatus(planId, status);
+        }
         //解锁所有应用训练
         practicePlanDao.unlockApplicationPractice(planId);
         //更新待完成的专题状态
@@ -358,7 +367,7 @@ public class PlanServiceImpl implements PlanService {
         Integer series = practicePlan.getSeries();
         Integer sequence = practicePlan.getSequence();
         Integer planId = practicePlan.getPlanId();
-        PracticePlan nextPractice = practicePlanDao.loadBySeriesAndSequence(planId, series, sequence+1);
+        PracticePlan nextPractice = practicePlanDao.loadBySeriesAndSequence(planId, series, sequence + 1);
         if(nextPractice==null){
             nextPractice = practicePlanDao.loadChallengePractice(planId);
         }
@@ -381,22 +390,34 @@ public class PlanServiceImpl implements PlanService {
     public Integer checkPractice(Integer series, ImprovementPlan improvementPlan) {
         List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);
         //未解锁返回-1
-        for(PracticePlan practicePlan:practicePlans){
-            if(!practicePlan.getUnlocked()){
+        for (PracticePlan practicePlan : practicePlans) {
+            if (!practicePlan.getUnlocked()) {
                 return -1;
             }
         }
 
         //当前第一组返回0
-        if(series==1){
+        if (series == 1) {
             return 0;
         }
         //获取前一组训练
-        List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series-1);
-        if(isDone(prePracticePlans)){
+        List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
+        if (isDone(prePracticePlans)) {
             return 0;
         }
         //未完成返回-2
         return -2;
+    }
+
+    public boolean hasProblemPlan(String openId, Integer problemId) {
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(openId);
+        long count = improvementPlans.stream().filter(item -> item.getProblemId().equals(problemId)).count();
+        return count > 0;
+    }
+
+    @Override
+    public String loadSubjectDesc(Integer problemId) {
+        Problem load = problemDao.load(Problem.class, problemId);
+        return load.getSubjectDesc();
     }
 }

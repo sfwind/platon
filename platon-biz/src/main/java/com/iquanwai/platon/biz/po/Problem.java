@@ -17,4 +17,8 @@ public class Problem {
     private String description; //富文本描述
     private String audio; //语音
     private Boolean del; //是否删除(0-否,1-是)
+    private Integer catalogId; // 分类
+
+    private Boolean done; // 用户是否做过
+    private String subjectDesc; //专题输出介绍
 }
