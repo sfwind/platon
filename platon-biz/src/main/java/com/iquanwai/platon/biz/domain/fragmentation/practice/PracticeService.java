@@ -3,10 +3,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ArticleLabel;
 import com.iquanwai.platon.biz.po.ChallengePractice;
 import com.iquanwai.platon.biz.po.ChallengeSubmit;
 import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.LabelConfig;
 import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
@@ -154,4 +156,10 @@ public interface PracticeService {
      * 加载精华文章
      */
     SubjectArticle loadSubjectArticle(Integer submitId);
+
+    List<LabelConfig> loadProblemLabels(Integer problemId);
+
+    List<ArticleLabel> updateLabels(Integer module, Integer articleId, List<ArticleLabel> labels);
+
+    List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
 }

@@ -6,14 +6,23 @@ import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussServ
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.*;
+import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
+import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
+import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
+import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,7 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -459,6 +473,8 @@ public class PracticeController {
         workInfoDto.setVoteCount(0);
         workInfoDto.setVoteStatus(0);
         workInfoDto.setCommentCount(0);
+        workInfoDto.setIsMine(true);
+        workInfoDto.setLabelList(practiceService.updateLabels(Constants.LabelArticleModule.SUBJECT, submitId, workInfoDto.getLabelList()));
         return WebUtils.result(workInfoDto);
     }
 
@@ -491,6 +507,7 @@ public class PracticeController {
                     dto.setAuthorType(item.getAuthorType());
                     dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
                     dto.setTitle(item.getTitle());
+                    dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
         list.forEach(item -> {
@@ -569,6 +586,19 @@ public class PracticeController {
             return WebUtils.error("完成之前的理解训练，才能解锁该训练");
         }
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/label/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadLabels(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemId, "专题不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("标签")
+                .action("加载专题标签")
+                .memo(problemId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(practiceService.loadProblemLabels(problemId));
     }
 
 }
