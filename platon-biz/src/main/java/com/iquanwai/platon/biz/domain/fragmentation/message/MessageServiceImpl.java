@@ -4,12 +4,15 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.NotifyMessageDao;
+import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
 import com.iquanwai.platon.biz.po.ChallengeSubmit;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.NotifyMessage;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Getter;
@@ -36,6 +39,8 @@ public class MessageServiceImpl implements MessageService {
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
     private ChallengeSubmitDao challengeSubmitDao;
+    @Autowired
+    private SubjectArticleDao subjectArticleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -137,18 +142,24 @@ public class MessageServiceImpl implements MessageService {
                 return;
             }
             String url = "";
-            if(voteMessage.getType()==1){
+            if(voteMessage.getType()==Constants.VoteType.CHALLENGE){
                 ChallengeSubmit challengeSubmit = challengeSubmitDao.load(ChallengeSubmit.class, homeworkVote.getReferencedId());
                 if(challengeSubmit==null){
                     return;
                 }
                 url = "/rise/static/practice/challenge?id=" + challengeSubmit.getChallengeId();
-            }else if(voteMessage.getType()==2){
+            }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
                 ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, homeworkVote.getReferencedId());
                 if(applicationSubmit==null){
                     return;
                 }
                 url = "/rise/static/practice/application?id=" + applicationSubmit.getApplicationId();
+            }else if(voteMessage.getType()== Constants.VoteType.SUBJECT){
+                SubjectArticle subjectArticle = subjectArticleDao.load(SubjectArticle.class, homeworkVote.getReferencedId());
+                if (subjectArticle == null) {
+                    return;
+                }
+                url = "/rise/static/message/subject/reply?submitId=" + subjectArticle.getId();
             }
             sendMessage(message, toUser, SYSTEM_MESSAGE, url);
         });
@@ -157,16 +168,20 @@ public class MessageServiceImpl implements MessageService {
     private String getLikeMessage(VoteMessage voteMessage, Profile profile) {
         String message = "";
         if(voteMessage.getCount()==1){
-            if(voteMessage.getType()==1){
+            if(voteMessage.getType()==Constants.VoteType.CHALLENGE){
                 message = profile.getNickname()+"赞了我的小目标";
-            }else if(voteMessage.getType()==2){
+            }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
                 message = profile.getNickname()+"赞了我的应用训练";
+            } else if(voteMessage.getType()==Constants.VoteType.SUBJECT){
+                message = profile.getNickname()+"赞了我的精华分享";
             }
         }else{
-            if(voteMessage.getType()==1){
+            if(voteMessage.getType()==Constants.VoteType.CHALLENGE){
                 message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的小目标";
-            }else if(voteMessage.getType()==2){
+            }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
                 message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的应用训练";
+            }else if(voteMessage.getType()==Constants.VoteType.SUBJECT){
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的精华分享";
             }
         }
         return message;
