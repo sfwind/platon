@@ -237,7 +237,7 @@ public class PracticeServiceImpl implements PracticeService {
                 return false;
             }
             if(submit.getContent() == null){
-                applicationSubmitDao.firstAnswer(id, content);
+                result = applicationSubmitDao.firstAnswer(id, content);
             } else {
                 result = applicationSubmitDao.answer(id, content);
             }
@@ -270,7 +270,7 @@ public class PracticeServiceImpl implements PracticeService {
                 return false;
             }
             if(submit.getContent() == null){
-                challengeSubmitDao.firstAnswer(id, content);
+                result = challengeSubmitDao.firstAnswer(id, content);
             } else {
                 result = challengeSubmitDao.answer(id, content);
             }
