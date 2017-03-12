@@ -204,7 +204,7 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("submitId {} is not existed", id);
                 return false;
             }
-            if(submit.getContent()==null){
+            if(submit.getContent() == null){
                 result = applicationSubmitDao.firstAnswer(id, content);
             } else {
                 result = applicationSubmitDao.answer(id, content);
@@ -237,7 +237,7 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("submitId {} is not existed", id);
                 return false;
             }
-            if(submit.getContent()==null){
+            if(submit.getContent() == null){
                 result = challengeSubmitDao.firstAnswer(id, content);
             } else {
                 result = challengeSubmitDao.answer(id, content);
