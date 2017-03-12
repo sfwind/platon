@@ -69,6 +69,19 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+
+    public boolean firstAnswer(Integer id, String content){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ChallengeSubmit set Content=?,PublishTime=CURRENT_TIMESTAMP where Id=?";
+        try {
+            runner.update(sql, content, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
     public boolean answer(Integer id, String content){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ChallengeSubmit set Content=? where Id=?";

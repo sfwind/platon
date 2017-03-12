@@ -55,4 +55,9 @@ public interface Constants {
         int PC = 1;
         int MOBILE = 2;
     }
+    interface LabelArticleModule{
+        int CHALLENGE = 1;
+        int APPLICATION = 2;
+        int SUBJECT = 3;
+    }
 }

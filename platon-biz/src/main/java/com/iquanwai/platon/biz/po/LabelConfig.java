@@ -3,12 +3,12 @@ package com.iquanwai.platon.biz.po;
 import lombok.Data;
 
 /**
- * Created by nethunder on 2017/2/24.
+ * Created by nethunder on 2017/3/10.
  */
 @Data
-public class ProblemCatalog {
+public class LabelConfig {
     private Integer id;
+    private Integer problemId;
     private String name;
-    private String pic;
-    private String color;
+    private Boolean Del;
 }

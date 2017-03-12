@@ -1,6 +1,9 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
+import com.iquanwai.platon.biz.po.ArticleLabel;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * Created by nethunder on 2017/1/14.
@@ -22,5 +25,5 @@ public class RiseWorkInfoDto {
     private Integer problemId;
     private Integer authorType;
     private Boolean isMine;
-
+    private List<ArticleLabel> labelList;
 }
