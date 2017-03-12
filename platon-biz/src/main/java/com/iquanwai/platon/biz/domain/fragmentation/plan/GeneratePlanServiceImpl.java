@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/13.
@@ -115,8 +116,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ProblemSchedule> problemSchedules = problemScheduleMap.get(knowledgeId);
             List<ApplicationPractice> applicationPractices = applicationPracticeDao.loadPractice(knowledgeId, problem.getId());
             //去掉删除的题目,按照sequence排序
-            applicationPractices.stream().filter(o1 -> !o1.getDel())
-                    .sorted((o1, o2) -> o1.getSequence() - o2.getSequence());
+            applicationPractices = applicationPractices.stream().filter(o1 -> !o1.getDel())
+                    .sorted((o1, o2) -> o1.getSequence() - o2.getSequence()).collect(Collectors.toList());
             //知识点第几次出现
             int index = 0;
             //构建选择题
@@ -149,8 +150,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ProblemSchedule> problemSchedules = problemScheduleMap.get(knowledgeId);
             List<WarmupPractice> warmupPractices = warmupPracticeDao.loadPractice(knowledgeId, problem.getId());
             //去掉删除的题目,按照sequence排序
-            warmupPractices.stream().filter(o1 -> !o1.getDel()).filter(o1 -> !o1.getExample())
-                    .sorted((o1, o2) -> o1.getSequence() - o2.getSequence());
+            warmupPractices = warmupPractices.stream().filter(o1 -> !o1.getDel()).filter(o1 -> !o1.getExample())
+                    .sorted((o1, o2) -> o1.getSequence() - o2.getSequence()).collect(Collectors.toList());
             //知识点第几次出现
             int index = 0;
             //构建选择题
