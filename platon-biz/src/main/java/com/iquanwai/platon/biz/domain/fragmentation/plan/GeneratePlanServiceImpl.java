@@ -149,7 +149,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ProblemSchedule> problemSchedules = problemScheduleMap.get(knowledgeId);
             List<WarmupPractice> warmupPractices = warmupPracticeDao.loadPractice(knowledgeId, problem.getId());
             //去掉删除的题目,按照sequence排序
-            warmupPractices.stream().filter(o1 -> !o1.getDel() && !o1.getExample())
+            warmupPractices.stream().filter(o1 -> !o1.getDel()).filter(o1 -> !o1.getExample())
                     .sorted((o1, o2) -> o1.getSequence() - o2.getSequence());
             //知识点第几次出现
             int index = 0;
