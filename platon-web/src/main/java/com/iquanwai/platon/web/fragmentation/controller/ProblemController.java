@@ -79,10 +79,10 @@ public class ProblemController {
         Map<Integer,List<Problem>> showProblems = Maps.newHashMap();
         problems.forEach(item -> {
             List<Problem> temp = showProblems.computeIfAbsent(item.getCatalogId(), k -> Lists.newArrayList());
-            if (!doneProblemIds.contains(item.getId())) {
+            if (doneProblemIds.contains(item.getId())) {
                 // 用户没做过这个专题
                 item.setStatus(2);
-            } else if(!doingProblemIds.contains(item.getId())){
+            } else if(doingProblemIds.contains(item.getId())){
                 item.setStatus(1);
             } else{
                 item.setStatus(0);
