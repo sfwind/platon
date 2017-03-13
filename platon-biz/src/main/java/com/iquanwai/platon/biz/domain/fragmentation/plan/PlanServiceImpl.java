@@ -101,8 +101,8 @@ public class PlanServiceImpl implements PlanService {
         PracticePlan firstPractice = runningPractice.get(0);
         //未解锁返回false
         if(!firstPractice.getUnlocked()){
-            //有钥匙就解锁,没有钥匙返回false
-            if(improvementPlan.getKeycnt()>0){
+            //有钥匙就且必须完成之前的所有作业才解锁
+            if(improvementPlan.getKeycnt()>0 && checkPractice(series, improvementPlan) == 0){
                 unlock(runningPractice, improvementPlan);
             }
         }
@@ -127,7 +127,8 @@ public class PlanServiceImpl implements PlanService {
             practicePlan.setUnlocked(true);
             practicePlanDao.unlock(practicePlan.getId());
         });
-        improvementPlanDao.updateKey(improvementPlan.getId(), improvementPlan.getKeycnt()-1);
+        Integer progress = runningPractice.get(0).getSeries();
+        improvementPlanDao.updateProgress(improvementPlan.getId(), improvementPlan.getKeycnt() - 1, progress);
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {
