@@ -70,25 +70,29 @@ public class ProblemController {
         // 用户的所有计划
         List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getOpenId());
         // 用户选过的专题
-        List<Integer> problemIds = userProblems.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        List<Integer> doneProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()==3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        // 用户进行中的专题
+        List<Integer> doingProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()!=3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 获取所有分类
         List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
         // 可以展示的专题
         Map<Integer,List<Problem>> showProblems = Maps.newHashMap();
-        problems.forEach(item->{
+        problems.forEach(item -> {
             List<Problem> temp = showProblems.computeIfAbsent(item.getCatalogId(), k -> Lists.newArrayList());
-            if(!problemIds.contains(item.getId())){
+            if (!doneProblemIds.contains(item.getId())) {
                 // 用户没做过这个专题
-                item.setDone(false);
-            } else {
-                item.setDone(true);
+                item.setStatus(2);
+            } else if(!doingProblemIds.contains(item.getId())){
+                item.setStatus(1);
+            } else{
+                item.setStatus(0);
             }
             temp.add(item);
         });
 
         ProblemCatalogDto result = new ProblemCatalogDto();
         List<ProblemCatalogListDto> catalogListDtos = problemCatalogs.stream()
-                .map(item->{
+                .map(item -> {
                     ProblemCatalogListDto dto = new ProblemCatalogListDto();
                     dto.setName(item.getName());
                     dto.setPic(item.getPic());

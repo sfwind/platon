@@ -21,6 +21,6 @@ public class Problem {
     private String audio; //语音
     private Boolean del; //是否删除(0-否,1-是)
 
-    private Boolean done; // 用户是否做过
-
+    private Boolean done; // 非db字段 用户是否做过
+    private Integer status; // 非db字段 用户选过专题（0-未选过,1-正在进行,2-已完成）
 }
