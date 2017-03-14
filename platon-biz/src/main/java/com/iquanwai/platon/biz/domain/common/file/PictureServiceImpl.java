@@ -40,7 +40,7 @@ public class PictureServiceImpl implements PictureService {
         if(moduleList!=null){
             moduleList.forEach(item -> {
                 moduleMap.put(item.getId(), item);
-                prefixMap.put(item.getId(), ConfigUtils.getQRCodeImgDomain()+"/images/"+item.getModuleName()+"/");
+                prefixMap.put(item.getId(), ConfigUtils.getUploadDomain()+"/images/"+item.getModuleName()+"/");
             });
 
         }
