@@ -482,7 +482,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> getSubjectList(LoginUser loginUser, @PathVariable("problemId") Integer problemId, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "专题id不能为空");
-        page.setPageSize(2);
+        page.setPageSize(20);
         List<RiseWorkInfoDto> list = practiceService.loadSubjectArticles(problemId, page)
                 .stream().map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
