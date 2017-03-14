@@ -91,7 +91,7 @@ public class PracticeController {
         } else {
             applicationPractice.setVoteStatus(0);
         }
-        applicationPractice.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, applicationPractice.getId())
+        applicationPractice.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, applicationPractice.getSubmitId())
                 .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
                 .collect(Collectors.toList()));
 
