@@ -124,7 +124,7 @@ public class ConfigUtils {
 		return config.getInt("vote.score");
 	}
 
-	public static String getQRCodeImgDomain(){
-		return config.getString("qr.code.image.domain");
+	public static String getUploadDomain(){
+		return config.getString("upload.image.domain");
 	}
 }
