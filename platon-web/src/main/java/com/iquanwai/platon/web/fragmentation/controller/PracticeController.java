@@ -571,6 +571,10 @@ public class PracticeController {
         dto.setProblemId(subjectArticle.getProblemId());
         dto.setPerfect(subjectArticle.getSequence() > 0);
         dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
+        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
+                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
+                .collect(Collectors.toList()));
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
