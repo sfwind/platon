@@ -89,6 +89,10 @@ public class PracticeController {
         } else {
             applicationPractice.setVoteStatus(0);
         }
+        applicationPractice.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, applicationPractice.getId())
+                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
+                .collect(Collectors.toList()));
+
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -123,7 +127,9 @@ public class PracticeController {
         } else {
             challengePractice.setVoteStatus(0);
         }
-
+        challengePractice.setPicList(pictureService.loadPicture(Constants.PictureType.CHALLENGE, challengePractice.getSubmitId())
+                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.CHALLENGE) + pic.getRealName())
+                .collect(Collectors.toList()));
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -287,6 +293,10 @@ public class PracticeController {
                     } else {
                         dto.setVoteStatus(0);
                     }
+                    dto.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, item.getId())
+                            .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
+                            .collect(Collectors.toList()));
+
 
                     return dto;
                 }).sorted((left, right) -> {
