@@ -273,7 +273,7 @@ public class PlanServiceImpl implements PlanService {
         if(knowledgeId==null){
             Knowledge knowledge = new Knowledge();
             //文案写死
-            knowledge.setKnowledge("首日必修，先定一个小目标");
+            knowledge.setKnowledge("让你的训练更有效");
             return knowledge;
         }
         Knowledge knowledge = getKnowledge(knowledgeId);
