@@ -123,4 +123,8 @@ public class ConfigUtils {
 	public static Integer getVoteScore(){
 		return config.getInt("vote.score");
 	}
+
+	public static String getQRCodeImgDomain(){
+		return config.getString("qr.code.image.domain");
+	}
 }

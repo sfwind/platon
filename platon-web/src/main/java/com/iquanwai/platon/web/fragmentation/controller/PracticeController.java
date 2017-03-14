@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
@@ -62,6 +63,8 @@ public class PracticeController {
     private PracticeDiscussService practiceDiscussService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private PictureService pictureService;
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
@@ -505,6 +508,9 @@ public class PracticeController {
                     dto.setAuthorType(item.getAuthorType());
                     dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
                     dto.setTitle(item.getTitle());
+                    dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, item.getId())
+                            .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
+                            .collect(Collectors.toList()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
                     return dto;
                 }).collect(Collectors.toList());

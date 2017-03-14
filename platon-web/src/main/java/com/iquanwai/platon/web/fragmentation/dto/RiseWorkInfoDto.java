@@ -26,4 +26,5 @@ public class RiseWorkInfoDto {
     private Integer authorType;
     private Boolean isMine;
     private List<ArticleLabel> labelList;
+    private List<String> picList;
 }

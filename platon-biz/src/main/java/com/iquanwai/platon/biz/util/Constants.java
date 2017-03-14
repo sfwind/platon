@@ -26,6 +26,7 @@ public interface Constants {
         int HOMEWORK = 1;
         int CHALLENGE = 2;
         int APPLICATION = 3;
+        int SUBJECT = 4;
     }
 
     interface CommentModule {
