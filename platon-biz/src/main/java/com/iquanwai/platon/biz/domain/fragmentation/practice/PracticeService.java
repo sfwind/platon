@@ -52,9 +52,10 @@ public interface PracticeService {
     /**
      * 获取应用训练
      * @param id 应用训练id
-     * @param openId openid
+     * @param openid openid
+     * @param planId 训练id
      * */
-    ApplicationPractice getApplicationPractice(Integer id, String openId, Integer planId);
+    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId);
 
     /**
      * 提交训练
