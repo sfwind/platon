@@ -31,7 +31,10 @@ public class DBUtil {
         return ds;
     }
 
-    public <T> T load(Class<T> type, int id){
+    public <T> T load(Class<T> type, Integer id){
+        if(id==null){
+            return null;
+        }
 
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<T> h = new BeanHandler<T>(type);
