@@ -94,8 +94,12 @@ public class PlanServiceImpl implements PlanService {
         //未解锁返回false
         if(!firstPractice.getUnlocked()){
             //有钥匙就且必须完成之前的所有作业才解锁
-            if(improvementPlan.getKeycnt()>0 && checkPractice(series, improvementPlan) == 0){
-                unlock(runningPractice, improvementPlan);
+            if(improvementPlan.getKeycnt()>0){
+                //获取前一组训练
+                List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
+                if (isDone(prePracticePlans)) {
+                    unlock(runningPractice, improvementPlan);
+                }
             }
         }
         //创建练习对象
@@ -398,14 +402,6 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Integer checkPractice(Integer series, ImprovementPlan improvementPlan) {
-        List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);
-        //未解锁返回-1
-        for (PracticePlan practicePlan : practicePlans) {
-            if (!practicePlan.getUnlocked()) {
-                return -1;
-            }
-        }
-
         //当前第一组返回0
         if (series == 1) {
             return 0;
@@ -413,6 +409,13 @@ public class PlanServiceImpl implements PlanService {
         //获取前一组训练
         List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
         if (isDone(prePracticePlans)) {
+            List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);
+            //未解锁返回-1
+            for (PracticePlan practicePlan : practicePlans) {
+                if (!practicePlan.getUnlocked()) {
+                    return -1;
+                }
+            }
             return 0;
         }
         //未完成返回-2
