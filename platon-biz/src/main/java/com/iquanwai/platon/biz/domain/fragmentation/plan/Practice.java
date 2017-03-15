@@ -19,4 +19,5 @@ public class Practice {
     private Integer series;
     private Integer sequence;
     private Integer practicePlanId;
+    private Boolean optional;
 }

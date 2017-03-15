@@ -36,8 +36,6 @@ public class PlanServiceImpl implements PlanService {
     private CacheService cacheService;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
-    @Autowired
-    private ArticleLabelDao articleLabelDao;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -53,13 +51,7 @@ public class PlanServiceImpl implements PlanService {
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
         //写入非db字段
-        improvementPlan.setSummary(false);
-        improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
-        improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
-        improvementPlan.setSeries(getSeries(runningPractice));
-        improvementPlan.setDoneAllPractice(isDone(runningPractice));
-        int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
-        improvementPlan.setNewMessage(messageNumber>0);
+        setLogicParam(improvementPlan, runningPractice);
     }
 
     private Integer getSeries(List<PracticePlan> runningPractice) {
@@ -109,13 +101,18 @@ public class PlanServiceImpl implements PlanService {
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
         //写入非db字段
+        setLogicParam(improvementPlan, runningPractice);
+        return 0;
+    }
+
+    private void setLogicParam(ImprovementPlan improvementPlan, List<PracticePlan> runningPractice) {
         improvementPlan.setSummary(false);
         improvementPlan.setLength(DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate()));
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
-        improvementPlan.setSeries(firstPractice.getSeries());
+        improvementPlan.setSeries(getSeries(runningPractice));
+        improvementPlan.setDoneAllPractice(isDone(runningPractice));
         int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
         improvementPlan.setNewMessage(messageNumber>0);
-        return 0;
     }
 
     private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
@@ -153,6 +150,12 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticePlanId(practicePlan.getId());
         practice.setSequence(practicePlan.getSequence());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
+        //设置选做标签,理解训练是必做,其他为选做
+        if(practicePlan.getType()==PracticePlan.WARM_UP){
+            practice.setOptional(false);
+        }else{
+            practice.setOptional(true);
+        }
         List<Integer> practiceIdList = Lists.newArrayList();
         for(String practiceId:practiceArr){
             practiceIdList.add(Integer.parseInt(practiceId));

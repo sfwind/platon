@@ -88,7 +88,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setPlanId(planId);
             practicePlan.setType(PracticePlan.CHALLENGE);
             practicePlan.setPracticeId(practice.getId()+"");
-            practicePlan.setStatus(3);
+            practicePlan.setStatus(0);
             practicePlan.setSequence(WARMUP_TASK_NUMBER+APPLICATION_TASK_NUMBER+1);
             practicePlan.setSeries(0);
             practicePlan.setSummary(false);
@@ -128,7 +128,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setType(PracticePlan.APPLICATION);
                 practicePlan.setSequence(problemSchedule.getSequence()+WARMUP_TASK_NUMBER);
                 practicePlan.setSeries(problemSchedule.getDay());
-                practicePlan.setStatus(3);
+                practicePlan.setStatus(0);
                 practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
                 practicePlan.setSummary(false);
                 practicePlan.setPracticeId(applicationPractices.get(index).getId()+"");
