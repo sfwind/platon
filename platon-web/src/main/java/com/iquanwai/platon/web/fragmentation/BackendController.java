@@ -39,9 +39,9 @@ public class BackendController {
 
         String openid = oAuthService.openId(getAccessTokenFromCookie(cookieStr));
         OperationLog operationLog = OperationLog.create().openid(openid)
-                .module("bug")
+                .module("记录前端bug")
                 .function("bug")
-                .action("记录前端bug")
+                .action(errorLogDto.getUrl())
                 .memo(data);
         operationLogService.log(operationLog);
         return WebUtils.success();
