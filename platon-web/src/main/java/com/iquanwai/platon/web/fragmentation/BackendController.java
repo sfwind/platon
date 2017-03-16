@@ -32,8 +32,8 @@ public class BackendController {
     @RequestMapping(value = "/log", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> log(@RequestBody ErrorLogDto errorLogDto){
         String data = errorLogDto.getResult();
-        if(data.length()>1024){
-            data = data.substring(0, 1024);
+        if(data.length()>900){
+            data = data.substring(0, 900);
         }
         String cookieStr= errorLogDto.getCookie();
 
@@ -41,8 +41,8 @@ public class BackendController {
         OperationLog operationLog = OperationLog.create().openid(openid)
                 .module("记录前端bug")
                 .function("bug")
-                .action(errorLogDto.getUrl())
-                .memo(data);
+                .action("bug")
+                .memo("url:"+errorLogDto.getUrl()+";data:"+data);
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
