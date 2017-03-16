@@ -259,4 +259,16 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPractice);
     }
+
+    @RequestMapping("/welcome")
+    public ResponseEntity<Map<String, Object>> welcome(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("专题")
+                .function("打开专题")
+                .action("打开欢迎页");
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
 }
