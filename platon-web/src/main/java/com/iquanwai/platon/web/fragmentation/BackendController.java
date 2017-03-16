@@ -41,7 +41,7 @@ public class BackendController {
         OperationLog operationLog = OperationLog.create().openid(openid)
                 .module("记录前端bug")
                 .function("bug")
-                .action("bug")
+                .action("记录RISE bug")
                 .memo("url:"+errorLogDto.getUrl()+";data:"+data);
         operationLogService.log(operationLog);
         return WebUtils.success();
