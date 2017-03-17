@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
@@ -25,7 +26,18 @@ public class ExceptionAspect {
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<Map<String, Object>> jsonErrorHandler(HttpServletRequest req, Exception e) throws Exception {
         String openid = oAuthService.openId(CookieUtils.getCookie(req, OAuthService.ACCESS_TOKEN_COOKIE_NAME));
-        logger.error("openid:"+openid+",uri:"+ req.getRequestURI()+ ",queryString:"+req.getQueryString(), e);
+        Cookie[] cookies = req.getCookies();
+        String cookie = "";
+        if(cookies!=null && cookies.length > 0){
+            for(Cookie item : cookies){
+                cookie += item.getName()+":"+item.getValue()+"; ";
+            }
+        }
+        logger.error("openid:"+openid+",uri:"+ req.getRequestURI()+
+                ",queryString:"+req.getQueryString()+
+                ",userAgent:" + req.getHeader("user-agent") +
+                ",ip:" + req.getHeader("X-Forwarded-For") +
+                ",cookie:"+cookie, e);
         return WebUtils.error("服务器伐开心,我们正在想办法");
     }
 }
