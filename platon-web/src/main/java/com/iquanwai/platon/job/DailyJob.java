@@ -24,7 +24,7 @@ public class DailyJob {
     @Scheduled(cron="${dailyJob.cron}")
     public void work(){
         logger.info("DailyJob start");
-        dailyJob();
+//        dailyJob();
         logger.info("DailyJob end");
     }
 

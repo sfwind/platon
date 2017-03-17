@@ -26,7 +26,7 @@ public class MessageJob {
     public void work(){
         logger.info("MessageJob start");
         //发送点赞数统计
-        likeMessage();
+//        likeMessage();
         logger.info("MessageJob end");
     }
 
