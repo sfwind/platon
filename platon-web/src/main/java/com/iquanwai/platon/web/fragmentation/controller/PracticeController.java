@@ -3,27 +3,16 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.ChallengePractice;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.SubjectArticle;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
-import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
-import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
-import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
-import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
-import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
+import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,12 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -59,8 +43,6 @@ public class PracticeController {
     private PlanService planService;
     @Autowired
     private OperationLogService operationLogService;
-    @Autowired
-    private PracticeDiscussService practiceDiscussService;
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -200,27 +182,6 @@ public class PracticeController {
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(practice);
-    }
-
-    @RequestMapping(value = "/discuss", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody DiscussDto discussDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-
-        if(discussDto.getComment()==null || discussDto.getComment().length()>300){
-            LOGGER.error("{} 理解训练讨论字数过长", loginUser.getOpenId());
-            return WebUtils.result("您提交的讨论字数过长");
-        }
-
-        practiceDiscussService.discuss(loginUser.getOpenId(), discussDto.getWarmupPracticeId(),
-                discussDto.getComment(), discussDto.getRepliedId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("理解训练")
-                .action("讨论")
-                .memo(discussDto.getWarmupPracticeId().toString());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
     }
 
     /**

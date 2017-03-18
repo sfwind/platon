@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -239,5 +240,26 @@ public class WarmupController {
                 .memo(warmupPracticeId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(discusses);
+    }
+
+    @RequestMapping(value = "/discuss", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody DiscussDto discussDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+
+        if(discussDto.getComment()==null || discussDto.getComment().length()>300){
+            LOGGER.error("{} 理解训练讨论字数过长", loginUser.getOpenId());
+            return WebUtils.result("您提交的讨论字数过长");
+        }
+
+        practiceDiscussService.discuss(loginUser.getOpenId(), discussDto.getWarmupPracticeId(),
+                discussDto.getComment(), discussDto.getRepliedId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("理解训练")
+                .action("讨论")
+                .memo(discussDto.getWarmupPracticeId().toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
     }
 }
