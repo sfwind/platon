@@ -59,12 +59,13 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 //        }else{
 //            warmupPracticeDiscuss.setPriority(1);
 //        }
-        int id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
+        warmupPracticeDiscuss.setPriority(0);
+        Integer id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
 
         //发送回复通知
         if(repliedId!=null && !openid.equals(warmupPracticeDiscuss.getRepliedOpenid())) {
             String url = "/rise/static/message/warmup/reply?commentId={0}&warmupPracticeId={1}";
-            url = MessageFormat.format(url, id, warmupPracticeId);
+            url = MessageFormat.format(url, id.toString(), warmupPracticeId.toString());
             String message = "回复了我的理解训练问题";
             messageService.sendMessage(message, warmupPracticeDiscuss.getRepliedOpenid(),
                     openid, url);
