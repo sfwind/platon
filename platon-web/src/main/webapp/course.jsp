@@ -59,6 +59,6 @@
     };
 </script>
 <%--性能数据js资源--%>
-<script src="http://www.iqycamp.com/script/mta.min.js"></script>
+<script src="//www.iqycamp.com/script/mta.min.js"></script>
 </body>
 </html>
