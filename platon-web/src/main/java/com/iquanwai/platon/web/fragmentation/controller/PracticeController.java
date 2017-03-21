@@ -533,7 +533,7 @@ public class PracticeController {
         dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
                 .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
                 .collect(Collectors.toList()));
-
+        dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
