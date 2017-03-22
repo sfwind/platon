@@ -1,17 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.ApplicationSubmit;
-import com.iquanwai.platon.biz.po.ArticleLabel;
-import com.iquanwai.platon.biz.po.ChallengePractice;
-import com.iquanwai.platon.biz.po.ChallengeSubmit;
-import com.iquanwai.platon.biz.po.Comment;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.LabelConfig;
-import com.iquanwai.platon.biz.po.SubjectArticle;
-import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.WarmupSubmit;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.tuple.Pair;
 

@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Created by justin on 16/8/7.

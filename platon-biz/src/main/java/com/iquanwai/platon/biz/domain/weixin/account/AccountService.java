@@ -2,8 +2,8 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 
 import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Region;
 
 import java.util.List;
 
