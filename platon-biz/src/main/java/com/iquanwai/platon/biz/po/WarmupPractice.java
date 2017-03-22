@@ -1,14 +1,17 @@
 package com.iquanwai.platon.biz.po;
 
+import com.google.common.collect.Lists;
 import lombok.Data;
+import org.apache.commons.beanutils.BeanUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
  * Created by justin on 16/12/4.
  */
 @Data
-public class WarmupPractice {
+public class WarmupPractice implements Cloneable{
     private int id;
     private String question; //题干
     private Integer type; //题型（1-单选题，2-多选题）
@@ -28,4 +31,28 @@ public class WarmupPractice {
     private List<WarmupPracticeDiscuss> discussList; //理解训练讨论
     private List<Integer> choice; //用户选择选项
 
+
+    @Override
+    public WarmupPractice clone() throws CloneNotSupportedException {
+        WarmupPractice dest = new WarmupPractice();
+        try {
+            BeanUtils.copyProperties(dest, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<Choice> choices = Lists.newArrayList();
+        this.choiceList.forEach(choice ->{
+            Choice newOne = new Choice();
+            try {
+                BeanUtils.copyProperties(newOne, choice);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            choices.add(newOne);
+        });
+        dest.setChoiceList(choices);
+        dest.setChoice(null);
+        dest.setDiscussList(null);
+        return dest;
+    }
 }

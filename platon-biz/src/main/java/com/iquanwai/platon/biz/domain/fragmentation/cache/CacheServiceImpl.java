@@ -95,11 +95,11 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public WarmupPractice getWarmupPractice(Integer practiceId) {
-        WarmupPractice warmupPractice = new WarmupPractice();
+        WarmupPractice warmupPractice = null;
         try {
-            BeanUtils.copyProperties(warmupPractice, warmupPracticeMap.get(practiceId));
-        } catch (Exception e) {
-            logger.error(e.getLocalizedMessage());
+            warmupPractice = warmupPracticeMap.get(practiceId).clone();
+        } catch (CloneNotSupportedException e) {
+            // ignore
         }
         return warmupPractice;
     }
