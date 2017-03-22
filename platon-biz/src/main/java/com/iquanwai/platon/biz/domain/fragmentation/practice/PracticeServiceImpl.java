@@ -389,7 +389,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/message/subject/reply?submitId=" + referId;
-                    messageService.sendMessage("评论了我的精华分享", load.getOpenid(), openId, url);
+                    messageService.sendMessage("评论了我的专题输出", load.getOpenid(), openId, url);
                 }
             }
         }
