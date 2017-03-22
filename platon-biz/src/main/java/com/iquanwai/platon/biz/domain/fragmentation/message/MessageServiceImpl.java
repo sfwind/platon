@@ -169,7 +169,7 @@ public class MessageServiceImpl implements MessageService {
             }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
                 message = profile.getNickname()+"赞了我的应用训练";
             } else if(voteMessage.getType()==Constants.VoteType.SUBJECT){
-                message = profile.getNickname()+"赞了我的专题输出";
+                message = profile.getNickname()+"赞了我的专题分享";
             }
         }else{
             if(voteMessage.getType()==Constants.VoteType.CHALLENGE){
@@ -177,7 +177,7 @@ public class MessageServiceImpl implements MessageService {
             }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
                 message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的应用训练";
             }else if(voteMessage.getType()==Constants.VoteType.SUBJECT){
-                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的专题输出";
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的专题分享";
             }
         }
         return message;
