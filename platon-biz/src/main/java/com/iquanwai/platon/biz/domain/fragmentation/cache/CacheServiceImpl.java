@@ -10,12 +10,14 @@ import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.WarmupPractice;
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -67,17 +69,39 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public List<Problem> getProblems() {
-        return problems;
+        List<Problem> dest = Lists.newArrayList();
+        problems.forEach(problem -> {
+            Problem newOne = new Problem();
+            try {
+                BeanUtils.copyProperties(newOne, problem);
+                dest.add(newOne);
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage());
+            }
+        });
+        return dest;
     }
 
     @Override
     public Knowledge getKnowledge(Integer knowledgeId) {
-        return knowledgeMap.get(knowledgeId);
+        Knowledge knowledge = new Knowledge();
+        try {
+            BeanUtils.copyProperties(knowledge, knowledgeMap.get(knowledgeId));
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return knowledge;
     }
 
     @Override
     public WarmupPractice getWarmupPractice(Integer practiceId) {
-        return warmupPracticeMap.get(practiceId);
+        WarmupPractice warmupPractice = new WarmupPractice();
+        try {
+            BeanUtils.copyProperties(warmupPractice, warmupPracticeMap.get(practiceId));
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return warmupPractice;
     }
 
     @Override
