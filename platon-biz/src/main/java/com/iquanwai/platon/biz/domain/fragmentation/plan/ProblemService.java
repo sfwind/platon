@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemPlan;
+import com.iquanwai.platon.biz.po.ProblemScore;
 
 import java.util.List;
 
@@ -40,5 +41,18 @@ public interface ProblemService {
      * */
     Problem getProblem(Integer problemId);
 
+    /**
+     * 获得问题的目录分类
+     */
     List<ProblemCatalog> getProblemCatalogs();
+
+    /**
+     * 给问题打分
+     */
+    void gradeProblem(Integer problem, String openId, List<ProblemScore> problemScores);
+
+    /**
+     * 用户是否已对问题评分
+     */
+    boolean hasProblemScore(String openId,Integer problemId);
 }
