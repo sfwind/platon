@@ -367,7 +367,7 @@ public class PlanServiceImpl implements PlanService {
         sendCloseMsg(plan);
     }
 
-    public void sendCloseMsg(ImprovementPlan plan) {
+    private void sendCloseMsg(ImprovementPlan plan) {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
         templateMessage.setTouser(plan.getOpenid());
@@ -376,10 +376,10 @@ public class PlanServiceImpl implements PlanService {
         Problem problem = problemDao.load(Problem.class, plan.getProblemId());
         templateMessage.setData(data);
 
-        data.put("first",new TemplateMessage.Keyword("太棒了！你已完成以下专题，并获得了"+plan.getPoint()+"积分"));
+        data.put("first",new TemplateMessage.Keyword("太棒了！你已完成以下专题，并获得了"+plan.getPoint()+"积分\n"));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
-        data.put("remark",new TemplateMessage.Keyword("P. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
+        data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
                 "是不是想到一起了→→→ （跳转调查链接）"));
 
         templateMessageService.sendMessage(templateMessage);

@@ -87,7 +87,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return planId;
     }
 
-    public void sendWelcomeMsg(String openid, Problem problem) {
+    private void sendWelcomeMsg(String openid, Problem problem) {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(openid);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
@@ -96,16 +96,16 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(openid, false);
         String first;
         if(profile!=null){
-            first = "Hi，"+profile.getNickname()+"，你刚才选择了RISE的专题：";
+            first = "Hi，"+profile.getNickname()+"，你刚才选择了RISE的专题：\n";
         }else{
-            first = "Hi，你刚才选择了RISE的专题：";
+            first = "Hi，你刚才选择了RISE的专题：\n";
         }
         int length = problem.getLength();
         String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), length + 6));
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
-        data.put("remark",new TemplateMessage.Keyword("这个专题一共"+length+"组训练，记得每天完成1组吧\n" +
+        data.put("remark",new TemplateMessage.Keyword("\n这个专题一共"+length+"组训练，记得每天完成1组吧\n" +
                 "\n如有疑问请在下方留言，小Q会尽快给你回复的"));
         templateMessageService.sendMessage(templateMessage);
     }
