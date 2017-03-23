@@ -3,10 +3,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemPlan;
+import com.iquanwai.platon.biz.po.ProblemScore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,8 @@ public class ProblemServiceImpl implements ProblemService {
     private CacheService cacheService;
     @Autowired
     private ProblemCatalogDao problemCatalogDao;
+    @Autowired
+    private ProblemScoreDao problemScoreDao;
 
     @Override
     public List<Problem> loadProblems() {
@@ -83,12 +87,25 @@ public class ProblemServiceImpl implements ProblemService {
                 return problem;
             }
         }
-
         return null;
     }
 
     @Override
     public List<ProblemCatalog> getProblemCatalogs(){
         return problemCatalogDao.loadAll(ProblemCatalog.class);
+    }
+
+    @Override
+    public void gradeProblem(Integer problem, String openId, List<ProblemScore> problemScores) {
+        problemScores.forEach(item->{
+            item.setOpenid(openId);
+            item.setProblemId(problem);
+        });
+        problemScoreDao.gradeProblem(problemScores);
+    }
+
+    @Override
+    public boolean hasProblemScore(String openId, Integer problemId) {
+        return problemScoreDao.userPorblemScoreCount(openId, problemId) > 0;
     }
 }

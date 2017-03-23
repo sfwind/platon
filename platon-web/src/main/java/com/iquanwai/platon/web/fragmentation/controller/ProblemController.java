@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
+import com.iquanwai.platon.biz.po.ProblemScore;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemPlan;
@@ -145,6 +146,8 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblem(problemId);
+        // 查看该用户是否对该问题评分
+        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getOpenId(), problemId));
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("阅读问题报告")
@@ -152,5 +155,17 @@ public class ProblemController {
                 .module(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(problem);
+    }
+
+    @RequestMapping("/grade/{problemId}")
+    public ResponseEntity<Map<String,Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores){
+        Assert.notNull(loginUser, "用户不能为空");
+        problemService.gradeProblem(problemId, loginUser.getOpenId(), problemScores);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("评分")
+                .action("移动端打分")
+                .module(problemId.toString());
+        return WebUtils.success();
     }
 }
