@@ -364,7 +364,9 @@ public class PlanServiceImpl implements PlanService {
         //更新待完成的专题状态
         problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
         //发送完成通知
-        sendCloseMsg(plan);
+        if(status == ImprovementPlan.CLOSE) {
+            sendCloseMsg(plan);
+        }
     }
 
     private void sendCloseMsg(ImprovementPlan plan) {
