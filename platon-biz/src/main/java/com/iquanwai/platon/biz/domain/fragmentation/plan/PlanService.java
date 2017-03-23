@@ -90,7 +90,6 @@ public interface PlanService {
     Practice nextPractice(Integer practicePlanId);
 
     /**
-<<<<<<< HEAD
      * 获取例题
      * @param knowledgeId 知识点id
      * @param problemId 专题id
@@ -108,11 +107,14 @@ public interface PlanService {
 
     /**
      * 查询是否有该专题
+     * @param openId 用户id
+     * @param problemId 专题id
      */
     boolean hasProblemPlan(String openId,Integer problemId);
 
     /**
      * 获取专题介绍
+     * @param problemId 专题id
      */
     String loadSubjectDesc(Integer problemId);
 

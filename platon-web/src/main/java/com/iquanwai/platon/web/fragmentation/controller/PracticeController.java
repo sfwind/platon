@@ -538,7 +538,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
-                .action("移动端加载精华文章")
+                .action("移动端加载专题分享文章")
                 .memo(submitId + "");
         operationLogService.log(operationLog);
         return WebUtils.result(dto);

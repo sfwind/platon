@@ -441,8 +441,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public List<ArticleLabel> updateLabels(Integer module, Integer articleId, List<ArticleLabel> labels){
-        List<ArticleLabel> oldLabels = articleLabelDao.loadArticleLabels(module, articleId);
+    public List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels){
+        List<ArticleLabel> oldLabels = articleLabelDao.loadArticleLabels(moduleId, articleId);
         List<ArticleLabel> shouldDels = Lists.newArrayList();
         List<ArticleLabel> shouldReAdds = Lists.newArrayList();
         labels = labels==null?Lists.newArrayList():labels;
@@ -457,10 +457,10 @@ public class PracticeServiceImpl implements PracticeService {
             }
             userChoose.remove(item.getLabelId());
         });
-        userChoose.forEach(item -> articleLabelDao.insertArticleLabel(module, articleId, item));
+        userChoose.forEach(item -> articleLabelDao.insertArticleLabel(moduleId, articleId, item));
         shouldDels.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 1));
         shouldReAdds.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 0));
-        return articleLabelDao.loadArticleActiveLabels(module,articleId);
+        return articleLabelDao.loadArticleActiveLabels(moduleId,articleId);
     }
 
     @Override

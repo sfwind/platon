@@ -381,8 +381,10 @@ public class PlanServiceImpl implements PlanService {
         data.put("first",new TemplateMessage.Keyword("太棒了！你已完成以下专题，并获得了"+plan.getPoint()+"积分\n"));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
-        data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
-                "是不是想到一起了→→→ （跳转调查链接）"));
+//        data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
+//                "是不是想到一起了→→→ （跳转调查链接）"));
+        data.put("remark",new TemplateMessage.Keyword("\n应用训练/专题分享PC端永久开放，完成仍然加积分：www.iquanwai.com/community"));
+
 
         templateMessageService.sendMessage(templateMessage);
     }

@@ -134,23 +134,41 @@ public interface PracticeService {
     List<HomeworkVote> loadVoteYesterday();
 
     /**
-     * 提交精华文章
+     * 提交专题分享文章
      */
     Integer submitSubjectArticle(SubjectArticle subjectArticle);
 
     /**
-     * 加载专题输出区文章
+     * 加载专题分享区文章
+     * @param problemId 专题id
+     * @param page 分页对象
      */
     List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
 
     /**
-     * 加载精华文章
+     * 加载分享区文章
+     * @param submitId 提交id
      */
     SubjectArticle loadSubjectArticle(Integer submitId);
 
+    /**
+     * 获取专题所有标签
+     * @param problemId 专题id
+     * */
     List<LabelConfig> loadProblemLabels(Integer problemId);
 
-    List<ArticleLabel> updateLabels(Integer module, Integer articleId, List<ArticleLabel> labels);
+    /**
+     * 更新专题分享的标签
+     * @param moduleId 模块
+     * @param articleId 文章id
+     * @param labels 标签
+     * */
+    List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
 
+    /**
+     * 获取专题分享的标签
+     * @param moduleId 模块
+     * @param articleId 文章id
+     * */
     List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
 }
