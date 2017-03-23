@@ -3,7 +3,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,6 +43,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
+    @Autowired
+    private TemplateMessageService templateMessageService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -72,8 +81,33 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlanDao.batchInsert(practicePlans);
         //更新问题状态
         problemPlanDao.updateStatus(openid, problemId, 1);
+        //发送欢迎通知
+        sendWelcomeMsg(openid, problem);
 
         return planId;
+    }
+
+    public void sendWelcomeMsg(String openid, Problem problem) {
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(openid);
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
+        Profile profile = accountService.getProfile(openid, false);
+        String first;
+        if(profile!=null){
+            first = "Hi，"+profile.getNickname()+"，你刚才选择了RISE的专题：";
+        }else{
+            first = "Hi，你刚才选择了RISE的专题：";
+        }
+        int length = problem.getLength();
+        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), length + 6));
+        data.put("first",new TemplateMessage.Keyword(first));
+        data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
+        data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
+        data.put("remark",new TemplateMessage.Keyword("这个专题一共"+length+"组训练，记得每天完成1组吧\n" +
+                "\n如有疑问请在下方留言，小Q会尽快给你回复的"));
+        templateMessageService.sendMessage(templateMessage);
     }
 
     private List<PracticePlan> createChallengePractice(Problem problem, int planId) {

@@ -55,9 +55,9 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return null;
     }
 
-    public List<ApplicationSubmit> load(Integer applicationId, String openid){
+    public ApplicationSubmit load(Integer applicationId, String openid){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler(ApplicationSubmit.class);
+        ResultSetHandler<ApplicationSubmit> h = new BeanHandler(ApplicationSubmit.class);
         String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=?";
         try {
             return run.query(sql, h, openid, applicationId);
@@ -65,7 +65,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
 
-        return Lists.newArrayList();
+        return null;
     }
 
     public boolean firstAnswer(Integer id, String content){
