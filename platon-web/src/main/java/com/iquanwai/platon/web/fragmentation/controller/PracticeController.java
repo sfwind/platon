@@ -53,12 +53,13 @@ public class PracticeController {
                                                                 @PathVariable Integer applicationId){
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
+        Integer planId = null;
+        if(improvementPlan!=null){
+            planId = improvementPlan.getId();
         }
+        //TODO:改为富文本编辑器后,去掉planid校验
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), improvementPlan.getId());
+                loginUser.getOpenId(), planId);
         // 查询点赞数
         applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
         // 查询评论数

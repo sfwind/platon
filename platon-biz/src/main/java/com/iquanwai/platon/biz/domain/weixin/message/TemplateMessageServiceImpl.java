@@ -20,14 +20,14 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private RestfulHelper restfulHelper;
 
     public boolean sendMessage(TemplateMessage templateMessage) {
-        if(ConfigUtils.messageSwitch()) {
+//        if(ConfigUtils.messageSwitch()) {
             String url = SEND_MESSAGE_URL;
             String json = new Gson().toJson(templateMessage);
             String body = restfulHelper.post(url, json);
             return StringUtils.isNotEmpty(body);
-        }
+//        }
 
-        return false;
+//        return false;
     }
 
     public String getTemplateId(String templateShortId) {

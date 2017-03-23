@@ -1,9 +1,13 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -12,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +42,8 @@ public class PlanServiceImpl implements PlanService {
     private CacheService cacheService;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
+    @Autowired
+    private TemplateMessageService templateMessageService;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -355,6 +363,26 @@ public class PlanServiceImpl implements PlanService {
         practicePlanDao.unlockApplicationPractice(planId);
         //更新待完成的专题状态
         problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
+        //发送完成通知
+        sendCloseMsg(plan);
+    }
+
+    private void sendCloseMsg(ImprovementPlan plan) {
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
+        templateMessage.setTouser(plan.getOpenid());
+//        templateMessage.setUrl("");
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        Problem problem = problemDao.load(Problem.class, plan.getProblemId());
+        templateMessage.setData(data);
+
+        data.put("first",new TemplateMessage.Keyword("太棒了！你已完成以下专题，并获得了"+plan.getPoint()+"积分\n"));
+        data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
+        data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
+        data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
+                "是不是想到一起了→→→ （跳转调查链接）"));
+
+        templateMessageService.sendMessage(templateMessage);
     }
 
     @Override

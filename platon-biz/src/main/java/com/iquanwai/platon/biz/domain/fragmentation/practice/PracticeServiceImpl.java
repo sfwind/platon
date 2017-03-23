@@ -176,7 +176,7 @@ public class PracticeServiceImpl implements PracticeService {
         // 查询该应用训练
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
-        ApplicationSubmit submit = applicationSubmitDao.load(id, planId, openid);
+        ApplicationSubmit submit = applicationSubmitDao.load(id, openid);
         if (submit == null) {
             // 没有提交，生成
             submit = new ApplicationSubmit();

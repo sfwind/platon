@@ -127,4 +127,12 @@ public class ConfigUtils {
 	public static String getUploadDomain(){
 		return config.getString("upload.image.domain");
 	}
+
+	public static String courseStartMsg(){
+		return config.getString("course.start.msg");
+	}
+
+	public static String courseCloseMsg(){
+		return config.getString("course.pass.msg");
+	}
 }
