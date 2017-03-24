@@ -275,13 +275,13 @@ public class PracticeController {
                         return 0;
                     }
                 }).collect(Collectors.toList());
-        page.setTotal(submits.size());
         //区分精华和普通文章
         List<RiseWorkInfoDto> superbSubmit = submits.stream().filter(submit -> submit.getPriority() == 1)
                 .collect(Collectors.toList());
         //普通文章分页
-        List<RiseWorkInfoDto> normalSubmit = submits.stream().filter(submit -> submit.getPriority() == 0)
-                .skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
+        List<RiseWorkInfoDto> normalSubmit = submits.stream().filter(submit -> submit.getPriority() == 0).collect(Collectors.toList());
+        page.setTotal(normalSubmit.size());
+        normalSubmit = normalSubmit.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
         //浏览量加1
         normalSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
                 item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
