@@ -21,6 +21,7 @@ public class RiseWorkInfoDto {
     private Integer type;
     private Integer voteStatus;
 
+    private Integer priority;
     private Boolean perfect;
     private Integer problemId;
     private Integer authorType;

@@ -47,6 +47,8 @@ public class PracticeController {
     private AccountService accountService;
     @Autowired
     private PictureService pictureService;
+    //分页文章数量
+    private static final int PAGE_SIZE = 20;
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
@@ -225,9 +227,10 @@ public class PracticeController {
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}")
-    public ResponseEntity<Map<String, Object>> loadOtherApplicationList(LoginUser loginUser, @PathVariable Integer applicationId, @ModelAttribute Page page) {
+    public ResponseEntity<Map<String, Object>> loadOtherApplicationList(LoginUser loginUser,
+                                                                        @PathVariable Integer applicationId, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户信息不能为空");
-        Assert.notNull(applicationId, "应用训练不能为空");
+        page.setPageSize(PAGE_SIZE);
         // 该计划的应用训练是否提交
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -244,9 +247,12 @@ public class PracticeController {
                     dto.setType(Constants.PracticeType.APPLICATION);
                     dto.setSubmitId(item.getId());
                     Profile account = accountService.getProfile(item.getOpenid(), false);
-                    dto.setUserName(account.getNickname());
-                    dto.setHeadImage(account.getHeadimgurl());
+                    if(account!=null) {
+                        dto.setUserName(account.getNickname());
+                        dto.setHeadImage(account.getHeadimgurl());
+                    }
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
+                    dto.setPriority(item.getPriority());
                     // 查询我对它的点赞状态
                     HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(), loginUser.getOpenId());
                     if (myVote != null && myVote.getDel() == 0) {
@@ -258,10 +264,9 @@ public class PracticeController {
                     dto.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, item.getId())
                             .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
                             .collect(Collectors.toList()));
-
-
                     return dto;
                 }).sorted((left, right) -> {
+                    //按点赞+评论数排序
                     try {
                         int leftWeight = left.getCommentCount() + left.getVoteCount();
                         int rightWeight = right.getCommentCount() + right.getVoteCount();
@@ -272,12 +277,21 @@ public class PracticeController {
                     }
                 }).collect(Collectors.toList());
         page.setTotal(submits.size());
-        submits = submits.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
-        submits.forEach(item -> {
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
-        });
+        //区分精华和普通文章
+        List<RiseWorkInfoDto> superbSubmit = submits.stream().filter(submit -> submit.getPriority() == 1)
+                .collect(Collectors.toList());
+        //普通文章分页
+        List<RiseWorkInfoDto> normalSubmit = submits.stream().filter(submit -> submit.getPriority() == 0)
+                .skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
+        //浏览量加1
+        normalSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
+                item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
+        superbSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
+                item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
+
         RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<>();
-        dto.setList(submits);
+        dto.setList(normalSubmit);
+        dto.setHighlightList(superbSubmit);
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);
     }
@@ -455,7 +469,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> getSubjectList(LoginUser loginUser, @PathVariable("problemId") Integer problemId, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "专题id不能为空");
-        page.setPageSize(20);
+        page.setPageSize(PAGE_SIZE);
         List<RiseWorkInfoDto> list = practiceService.loadSubjectArticles(problemId, page)
                 .stream().map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();

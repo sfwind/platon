@@ -9,6 +9,7 @@ import java.util.List;
  */
 @Data
 public class RefreshListDto<T> {
-    List<T> list;
-    boolean end;
+    private List<T> list;
+    private List<T> highlightList;
+    private boolean end;
 }
