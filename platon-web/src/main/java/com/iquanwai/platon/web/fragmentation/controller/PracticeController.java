@@ -243,7 +243,7 @@ public class PracticeController {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
-                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
+                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
                     dto.setPublishTime(item.getPublishTime());
                     dto.setType(Constants.PracticeType.APPLICATION);
                     dto.setSubmitId(item.getId());

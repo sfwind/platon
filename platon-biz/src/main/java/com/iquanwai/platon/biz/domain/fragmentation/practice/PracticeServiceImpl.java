@@ -185,7 +185,6 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setApplicationId(id);
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
-            submit.setUpdateTime(new Date());
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
         applicationPractice.setContent(submit.getContent());
