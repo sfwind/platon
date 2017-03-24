@@ -269,7 +269,7 @@ public class PracticeController {
                 }).sorted((left, right) -> {
                     //按发布时间排序
                     try {
-                        return DateUtils.interval(right.getPublishTime(), left.getPublishTime());
+                        return (int)((right.getPublishTime().getTime() - left.getPublishTime().getTime()) / 1000);
                     } catch (Exception e) {
                         LOGGER.error("应用任务文章排序异常", e);
                         return 0;
