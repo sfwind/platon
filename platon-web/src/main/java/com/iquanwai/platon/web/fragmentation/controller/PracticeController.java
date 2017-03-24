@@ -244,6 +244,7 @@ public class PracticeController {
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
+                    dto.setPublishTime(item.getPublishTime());
                     dto.setType(Constants.PracticeType.APPLICATION);
                     dto.setSubmitId(item.getId());
                     Profile account = accountService.getProfile(item.getOpenid(), false);
@@ -266,11 +267,9 @@ public class PracticeController {
                             .collect(Collectors.toList()));
                     return dto;
                 }).sorted((left, right) -> {
-                    //按点赞+评论数排序
+                    //按发布时间排序
                     try {
-                        int leftWeight = left.getCommentCount() + left.getVoteCount();
-                        int rightWeight = right.getCommentCount() + right.getVoteCount();
-                        return rightWeight - leftWeight;
+                        return DateUtils.interval(right.getPublishTime(), left.getPublishTime());
                     } catch (Exception e) {
                         LOGGER.error("应用任务文章排序异常", e);
                         return 0;

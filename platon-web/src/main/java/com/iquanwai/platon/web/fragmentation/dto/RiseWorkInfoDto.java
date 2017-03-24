@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.dto;
 import com.iquanwai.platon.biz.po.ArticleLabel;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -20,6 +21,7 @@ public class RiseWorkInfoDto {
     private Integer submitId;
     private Integer type;
     private Integer voteStatus;
+    private Date publishTime;
 
     private Integer priority;
     private Boolean perfect;
