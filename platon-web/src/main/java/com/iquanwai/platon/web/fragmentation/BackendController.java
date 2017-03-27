@@ -3,6 +3,8 @@ package com.iquanwai.platon.web.fragmentation;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ public class BackendController {
     private OAuthService oAuthService;
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
+
+    private ZKConfigUtils zkConfigUtils = new ZKConfigUtils();
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> log(@RequestBody ErrorLogDto errorLogDto){
@@ -60,5 +64,17 @@ public class BackendController {
         return accessToken;
     }
 
+    @RequestMapping(value = "/config", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> setConfig(@RequestBody ConfigDto config){
+        zkConfigUtils.createValue(config.getKey(), config.getValue());
 
+        return WebUtils.success();
+    }
+
+
+    @RequestMapping(value = "/config/load", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> getConfig(@RequestBody ConfigDto config){
+
+        return WebUtils.result(zkConfigUtils.getValue(config.getKey()));
+    }
 }
