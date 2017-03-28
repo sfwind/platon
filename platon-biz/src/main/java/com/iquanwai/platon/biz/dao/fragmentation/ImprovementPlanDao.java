@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -186,9 +187,9 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "select  my_cnt*100/all_cnt from\n" +
                 "(select count(1) as all_cnt from ImprovementPlan where ProblemId = ?) t1,\n" +
                 " (select count(1) as my_cnt from ImprovementPlan where ProblemId = ? and Point<?) t2";
-        ResultSetHandler<List<Long>> h = new ColumnListHandler<>();
+        ResultSetHandler<List<BigDecimal>> h = new ColumnListHandler<>();
         try {
-            List<Long> list =runner.query(sql, h, problemId, problemId, point);
+            List<BigDecimal> list =runner.query(sql, h, problemId, problemId, point);
             return list.get(0).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
