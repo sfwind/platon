@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.WarmupPractice;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -74,14 +75,15 @@ public interface PlanService {
      * 训练计划结束
      * @param planId 训练计划id
      * @param status 训练状态
+     * @return 打败了多少用户
      */
-    void completePlan(Integer planId, Integer status);
+    Integer completePlan(Integer planId, Integer status);
 
     /**
      * 结束训练计划校验
      * @param improvementPlan 训练计划
      */
-    boolean completeCheck(ImprovementPlan improvementPlan);
+    Pair<Boolean, Integer> completeCheck(ImprovementPlan improvementPlan);
 
     /**
      * 获取下一个训练项目

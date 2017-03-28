@@ -8,6 +8,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,5 +175,25 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+
+    /**
+     * 得分打败了多少人
+     * */
+    public Integer defeatOthers(Integer problemId, Integer point){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select  my_cnt*100/all_cnt from\n" +
+                "(select count(1) as all_cnt from ImprovementPlan where ProblemId = ?) t1,\n" +
+                " (select count(1) as my_cnt from ImprovementPlan where ProblemId = ? and Point<?) t2";
+        ResultSetHandler<List<Integer>> h = new ColumnListHandler<>();
+        try {
+            List<Integer> list =runner.query(sql, h, problemId, problemId, point);
+            return list.get(0);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return -1;
     }
 }

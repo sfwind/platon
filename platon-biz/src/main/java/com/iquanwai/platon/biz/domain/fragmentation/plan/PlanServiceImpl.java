@@ -10,6 +10,8 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -349,7 +351,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void completePlan(Integer planId, Integer status) {
+    public Integer completePlan(Integer planId, Integer status) {
         //训练计划结束
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
@@ -367,6 +369,8 @@ public class PlanServiceImpl implements PlanService {
         if(status == ImprovementPlan.CLOSE) {
             sendCloseMsg(plan);
         }
+
+        return improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
     }
 
     private void sendCloseMsg(ImprovementPlan plan) {
@@ -390,21 +394,21 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public boolean completeCheck(ImprovementPlan improvementPlan) {
+    public Pair<Boolean, Integer> completeCheck(ImprovementPlan improvementPlan) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         for(PracticePlan practicePlan:practicePlans){
             //理解训练必须完成,才算完成整个训练计划
             if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
-                return false;
+                return new ImmutablePair<>(false, -1);
             }
         }
         //完成训练计划
-        completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
+        int percent = completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
         //更新完成时间
         improvementPlanDao.updateCompleteTime(improvementPlan.getId());
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
-        return true;
+        return new ImmutablePair<>(true, percent);
     }
 
     @Override

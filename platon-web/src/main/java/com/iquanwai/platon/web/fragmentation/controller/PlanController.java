@@ -9,9 +9,11 @@ import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,14 +200,17 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        boolean result = planService.completeCheck(improvementPlan);
+        Pair<Boolean,Integer> result = planService.completeCheck(improvementPlan);
+        CompletePlanDto completePlanDto = new CompletePlanDto();
+        completePlanDto.setIscomplete(result.getLeft());
+        completePlanDto.setPercent(result.getRight());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("完成训练")
                 .action("完成训练")
                 .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
-        return WebUtils.result(result);
+        return WebUtils.result(completePlanDto);
     }
 
     @RequestMapping(value = "/close", method = RequestMethod.POST)
