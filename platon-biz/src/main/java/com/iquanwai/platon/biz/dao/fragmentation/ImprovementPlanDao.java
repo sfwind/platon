@@ -186,10 +186,10 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "select  my_cnt*100/all_cnt from\n" +
                 "(select count(1) as all_cnt from ImprovementPlan where ProblemId = ?) t1,\n" +
                 " (select count(1) as my_cnt from ImprovementPlan where ProblemId = ? and Point<?) t2";
-        ResultSetHandler<List<Integer>> h = new ColumnListHandler<>();
+        ResultSetHandler<List<Long>> h = new ColumnListHandler<>();
         try {
-            List<Integer> list =runner.query(sql, h, problemId, problemId, point);
-            return list.get(0);
+            List<Long> list =runner.query(sql, h, problemId, problemId, point);
+            return list.get(0).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
