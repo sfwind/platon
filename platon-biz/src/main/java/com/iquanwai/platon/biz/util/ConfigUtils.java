@@ -135,4 +135,8 @@ public class ConfigUtils {
 	public static String courseCloseMsg(){
 		return config.getString("course.pass.msg");
 	}
+
+	public static String getPicturePrefix(){
+		return config.getString("qiniu.picture.prefix");
+	}
 }

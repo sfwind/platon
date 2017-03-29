@@ -26,13 +26,14 @@ public class QiNiuTest {
         String secretKey = "ikKbA53JwBRMBYPvIWi-K2Zx8MBoGHFaUc5OQMH-";
         String bucket = "quanwai";
 //如果是Windows情况下，格式是 D:\\qiniu\\test.png
-        String localFilePath = "/Users/justin/Downloads/rise_k48_2.png";
+//        String localFilePath = "/Users/justin/Downloads/rise_k48_2.png";
+        String localFilePath = "/data/static/images/c3_2.png";
 //默认不指定key的情况下，以文件内容的hash值作为文件名
         Auth auth = Auth.create(accessKey, secretKey);
         InputStream bis = new FileInputStream(new File(localFilePath));
         String upToken = auth.uploadToken(bucket);
         try {
-            Response response = uploadManager.put(bis, "rise_k48_2.png", upToken, null, null);
+            Response response = uploadManager.put(bis, "c3_2.png", upToken, null, null);
             //解析上传成功的结果
             DefaultPutRet putRet = new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
             System.out.println(putRet.key);

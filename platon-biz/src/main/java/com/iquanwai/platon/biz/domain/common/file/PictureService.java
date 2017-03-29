@@ -39,15 +39,11 @@ public interface PictureService {
      * 该模块缩略图，就在该模块目录下新建一个thumb目录即可.<br/>
      * 存储位置：{Path}+"thumb/"+{Thumbnail}
      * @param pictureModule 图片模块配置信息
-     * @param referId 依赖id
-     * @param remoteIp  上传者Ip
      * @param fileName  上传的文件名
-     * @param fileSize  文件大小
-     * @param contentType   文件类型
      * @param file  文件(图片)
      * @return  图片
      * */
-    Picture uploadPicture(PictureModule pictureModule, Integer referId, String remoteIp, String fileName, Long fileSize, String contentType, MultipartFile file) throws Exception;
+    Pair<Boolean,String> uploadPicture(PictureModule pictureModule,  String fileName, MultipartFile file) throws Exception;
 
     /**
      * 获得模块的url前缀

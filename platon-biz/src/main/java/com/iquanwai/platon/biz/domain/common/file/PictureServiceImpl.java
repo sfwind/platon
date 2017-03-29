@@ -8,7 +8,9 @@ import com.iquanwai.platon.biz.po.common.PictureModule;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.QiNiuUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,35 +89,28 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public Picture uploadPicture(PictureModule pictureModule, Integer referId, String remoteIp, String fileName, Long fileSize, String contentType, MultipartFile file) throws Exception {
+    public Pair<Boolean,String> uploadPicture(PictureModule pictureModule, String fileName,  MultipartFile file) throws Exception {
         // 获取模块名对应的路径
         String path = pictureModule.getPath();
         // 文件名
         String suffix = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf("."), fileName.length()) : "";
         // 命名规则 {module}-{date}-{rand(8)}-{referId}.{filename的后缀}
         Date today = new Date();
-        String realName = pictureModule.getModuleName()+"-"+ DateUtils.parseDateToString3(today)+"-"+ CommonUtils.randomString(9)+"-"+referId+suffix;
+        String realName = pictureModule.getModuleName()+"-"+ DateUtils.parseDateToString3(today)+"-"+ CommonUtils.randomString(9)+"-"+suffix;
         //获取该文件的文件名
         File targetFile = new File(path, realName);
+        Boolean result = false;
         // 保存
         try {
-            file.transferTo(targetFile);
+            result = QiNiuUtils.uploadFile(realName, file.getInputStream());
+//            file.transferTo(targetFile);
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
             throw e;
         }
-        // 创建成功，返回Picture
-        Picture picture = new Picture();
-        picture.setLength(fileSize);
-        picture.setModuleId(pictureModule.getId());
-        picture.setReferencedId(referId);
-        picture.setRemoteIp(remoteIp);
-        picture.setType(contentType);
-        picture.setRealName(realName);
-        // 插入到数据库
-        pictureDao.upload(picture);
-        return picture;
+        return new MutablePair<>(result,realName);
     }
+
 
     @Override
     public String getModulePrefix(Integer moduleId) {
