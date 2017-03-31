@@ -61,7 +61,7 @@ public class PracticeController {
         }
         //TODO:改为富文本编辑器后,去掉planid校验
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), planId);
+                loginUser.getOpenId(), planId,false);
         // 查询点赞数
         applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
         // 查询评论数
@@ -98,7 +98,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                loginUser.getOpenId(), improvementPlan.getId());
+                loginUser.getOpenId(), improvementPlan.getId(), false);
 
         // 查询点赞数
         challengePractice.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId()));
@@ -125,10 +125,14 @@ public class PracticeController {
         return WebUtils.result(challengePractice);
     }
 
-    @RequestMapping(value = "/challenge/submit/{submitId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/challenge/submit/{planId}/{challengeId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitChallenge(LoginUser loginUser,
-                                                               @PathVariable Integer submitId,
+                                                               @PathVariable("planId") Integer planId,
+                                                               @PathVariable("challengeId") Integer challengeId,
                                                                @RequestBody SubmitDto submitDto) {
+        // 先生成，之后走之前逻辑
+        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId, loginUser.getOpenId(), planId, true);
+        Integer submitId = challengePractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
@@ -147,10 +151,14 @@ public class PracticeController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping(value = "/application/submit/{submitId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/application/submit/{planId}/{applicationId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitApplication(LoginUser loginUser,
-                                                                 @PathVariable Integer submitId,
+                                                                 @PathVariable("planId") Integer planId,
+                                                                 @PathVariable("applicationId") Integer applicationId,
                                                                  @RequestBody SubmitDto submitDto) {
+        // 如果没有则生成，之后走之前逻辑
+        ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId, loginUser.getOpenId(), planId, true);
+        Integer submitId = applicationPractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
