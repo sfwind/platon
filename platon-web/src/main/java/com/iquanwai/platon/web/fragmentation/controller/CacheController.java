@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,13 @@ import java.util.Map;
 public class CacheController {
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private PictureService pictureService;
 
     @RequestMapping("/reload")
     public ResponseEntity<Map<String, Object>> reload(){
         cacheService.reload();
+        pictureService.reloadModule();
         return WebUtils.success();
     }
 }
