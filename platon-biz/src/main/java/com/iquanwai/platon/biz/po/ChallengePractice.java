@@ -22,4 +22,5 @@ public class ChallengePractice {
     private Integer commentCount; // 评论数,非db字段
     private Integer voteStatus; // 点赞状态，是否可以点赞，非db字段
     private List<String> picList; // 图片列表，非db字段
+    private Integer planId; // 计划id，非db字段
 }

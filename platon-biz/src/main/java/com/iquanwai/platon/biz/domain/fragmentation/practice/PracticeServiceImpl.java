@@ -148,12 +148,12 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ChallengePractice getChallengePractice(Integer id, String openid, Integer planId) {
+    public ChallengePractice getChallengePractice(Integer id, String openid, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
         // 查询该用户是否提交
         ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
-        if(submit==null){
+        if(submit==null && create){
             // 没有提交，生成
             submit = new ChallengeSubmit();
             submit.setOpenid(openid);
@@ -164,20 +164,21 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setUpdateTime(new Date());
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.CHALLENGE, submitId);
         }
-        challengePractice.setContent(submit.getContent());
-        challengePractice.setSubmitId(submit.getId());
-        challengePractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getUpdateTime()));
+        challengePractice.setContent(submit==null?null:submit.getContent());
+        challengePractice.setSubmitId(submit==null?null:submit.getId());
+        challengePractice.setSubmitUpdateTime(submit==null?null:DateUtils.parseDateToString(submit.getUpdateTime()));
+        challengePractice.setPlanId(submit==null?planId:submit.getPlanId());
         return challengePractice;
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId) {
+    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId,boolean create) {
         Assert.notNull(openid, "openid不能为空");
         // 查询该应用训练
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
         ApplicationSubmit submit = applicationSubmitDao.load(id, openid);
-        if (submit == null) {
+        if (submit == null && create) {
             // 没有提交，生成
             submit = new ApplicationSubmit();
             submit.setOpenid(openid);
@@ -187,9 +188,10 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setId(submitId);
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
-        applicationPractice.setContent(submit.getContent());
-        applicationPractice.setSubmitId(submit.getId());
-        applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getUpdateTime()));
+        applicationPractice.setContent(submit==null?null:submit.getContent());
+        applicationPractice.setSubmitId(submit==null?null:submit.getId());
+        applicationPractice.setSubmitUpdateTime(submit==null?null:DateUtils.parseDateToString(submit.getUpdateTime()));
+        applicationPractice.setPlanId(submit==null?planId:submit.getPlanId());
         return applicationPractice;
     }
 

@@ -37,7 +37,7 @@ public interface PracticeService {
      * @param id 小目标id
      * @param openid 学员id
      * */
-    ChallengePractice getChallengePractice(Integer id, String openid, Integer planId);
+    ChallengePractice getChallengePractice(Integer id, String openid, Integer planId, boolean create);
 
     /**
      * 获取应用训练
@@ -45,7 +45,7 @@ public interface PracticeService {
      * @param openid openid
      * @param planId 训练id
      * */
-    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId);
+    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId, boolean create);
 
     /**
      * 提交训练
