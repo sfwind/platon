@@ -12,4 +12,5 @@ public class ProblemSchedule {
     private Integer day; //专题的第几日
     private Integer knowledgeId; //知识点id
     private Integer sequence; //知识点id出现的顺序
+    private Boolean review; //是否是复习（0-不是,1-是）
 }

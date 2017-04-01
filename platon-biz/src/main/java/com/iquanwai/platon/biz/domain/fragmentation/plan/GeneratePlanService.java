@@ -18,4 +18,7 @@ public interface GeneratePlanService {
     int WARMUP_TASK_NUMBER = 2;
     // 每组的应用训练数量
     int APPLICATION_TASK_NUMBER = 2;
+
+    int KNOWLEDGE_SEQUENCE = 1; //知识点顺序
+    int WARMUP_SEQUENCE = 2; //理解训练顺序
 }

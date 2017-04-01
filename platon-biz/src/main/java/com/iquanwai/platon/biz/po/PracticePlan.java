@@ -14,12 +14,15 @@ public class PracticePlan {
     private Boolean unlocked; // 是否解锁
     private Integer series; // 组号
     private Integer sequence; //组内顺序
+    @Deprecated
     private Integer knowledgeId; //知识点id
     private Integer status; //题目状态（0-未完成，1-已完成）
     @Deprecated
     private Boolean summary; //是否已总结(0-否，1-是) 废弃
 
     public static final int WARM_UP = 1;
+    public static final int WARM_UP_REVIEW = 2;
     public static final int APPLICATION = 11;
+    public static final int APPLICATION_REVIEW = 12;
     public static final int CHALLENGE = 21;
 }
