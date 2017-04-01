@@ -18,9 +18,10 @@ public class LoginUser {
     private String headimgUrl;
     private String realName;
     private Boolean openRise;
+    private Boolean riseMember;
 
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤",
-                Profile.DEFAULT_AVATAR, null, true);
+                Profile.DEFAULT_AVATAR, null, true,false);
     }
 }

@@ -108,15 +108,15 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updatePlanComplete(Integer planId, Integer status){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE ImprovementPlan SET Status =?,CompleteTime = CURRENT_TIMESTAMP where Id=?";
-        try {
-            runner.update(sql, status, planId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
+//    public void updatePlanComplete(Integer planId, Integer status){
+//        QueryRunner runner = new QueryRunner(getDataSource());
+//        String sql = "UPDATE ImprovementPlan SET Status =?,CompleteTime = CURRENT_TIMESTAMP where Id=?";
+//        try {
+//            runner.update(sql, status, planId);
+//        } catch (SQLException e) {
+//            logger.error(e.getLocalizedMessage(), e);
+//        }
+//    }
 
     public void updateCompleteTime(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());

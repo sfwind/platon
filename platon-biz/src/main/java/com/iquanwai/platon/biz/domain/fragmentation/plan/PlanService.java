@@ -24,7 +24,7 @@ public interface PlanService {
      * @param series 训练组号
      * @return 0-已组装,-1-已到最后一组
      */
-    Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series);
+    Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series, Boolean riseMember);
 
     /**
      * 获取学员进行中的训练

@@ -582,8 +582,11 @@ public class PracticeController {
                 .memo(series.toString());
         operationLogService.log(operationLog);
         if(result==-1){
-            return WebUtils.error("每天早上6点解锁一组训练，请耐心等待");
+            // 前一组已完成 这一组未解锁
+            // 会员都会解锁，未解锁应该都是非会员
+            return WebUtils.error("该内容为付费内容，只有会员可以查看");
         }else if(result==-2){
+            // 前一组未完成
             return WebUtils.error("完成之前的理解训练，才能解锁该训练");
         }
         return WebUtils.success();

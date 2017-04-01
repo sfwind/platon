@@ -17,6 +17,7 @@ public class ImprovementPlan {
     private Date startDate; //开始日期
     private Date endDate; //结束日期(当日开始复习)
     private Date closeDate; //课程关闭时间（课程关闭日期）
+    private Date completeTime; // 完成时间
     private Integer status; //执行状态（1-正在进行, 2-已结束, 3-已过期）
     private Integer point; //积分
     private Integer warmupComplete; //理解训练完成数量
