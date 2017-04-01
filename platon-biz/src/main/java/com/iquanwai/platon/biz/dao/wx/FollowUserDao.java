@@ -30,14 +30,14 @@ public class FollowUserDao extends DBUtil {
     public int insert(Account account) {
         QueryRunner run = new QueryRunner(getDataSource());
         String insertSql = "INSERT INTO FollowUsers(Openid, Country, Groupid, Headimgurl, " +
-                "Nickname, Remark, Sex, Subscribe_time) " +
-                "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+                "Nickname, Remark, Sex, Subscribe_time, UnionId) " +
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             return run.update(insertSql,
                     account.getOpenid(), account.getCountry(),
                     account.getGroupid(), account.getHeadimgurl(),
                     account.getNickname(), account.getRemark(),
-                    account.getSex(), account.getSubscribe_time());
+                    account.getSex(), account.getSubscribe_time(), account.getUnionid());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -94,10 +94,10 @@ public class FollowUserDao extends DBUtil {
     public int updateMeta(Account account) {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update FollowUsers Set Nickname=?, Headimgurl=? where Openid=?";
+        String updateSql = "Update FollowUsers Set Nickname=?, Headimgurl=?, Unionid=? where Openid=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql,
-                    account.getNickname(), account.getHeadimgurl(), account.getOpenid());
+                    account.getNickname(), account.getHeadimgurl(),account.getUnionid(), account.getOpenid());
             return result.get();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

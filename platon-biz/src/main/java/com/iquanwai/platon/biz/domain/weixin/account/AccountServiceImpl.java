@@ -143,7 +143,6 @@ public class AccountServiceImpl implements AccountService {
                 logger.info("更新用户信息:{}",accountNew);
                 if(accountNew.getNickname()!=null){
                     followUserDao.updateMeta(accountNew);
-                    profileDao.updateMeta(accountNew.getNickname(),accountNew.getHeadimgurl(),accountNew.getOpenid());
                 }
             }
         } catch (Exception e) {
