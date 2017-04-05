@@ -211,7 +211,7 @@ public class PlanController {
         Date minDays = DateUtils.afterDays(improvementPlan.getStartDate(), minStudyDays);
             // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
         if(new Date().before(minDays)){
-            completePlanDto.setMustStudyDays(DateUtils.interval(new Date(), minDays) + 1);
+            completePlanDto.setMustStudyDays(minStudyDays);
         } else {
             completePlanDto.setMustStudyDays(0);
         }
