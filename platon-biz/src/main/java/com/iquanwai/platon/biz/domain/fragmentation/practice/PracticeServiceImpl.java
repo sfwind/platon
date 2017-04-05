@@ -103,7 +103,7 @@ public class PracticeServiceImpl implements PracticeService {
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
         Integer point = 0;
-        warmupResult.setTotal(GeneratePlanService.WARMUP_TASK_PRACTICE_NUMBER);
+        warmupResult.setTotal(warmupPracticeList.size());
         for(WarmupPractice userAnswer:warmupPracticeList){
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = cacheService.getWarmupPractice(userAnswer.getId());

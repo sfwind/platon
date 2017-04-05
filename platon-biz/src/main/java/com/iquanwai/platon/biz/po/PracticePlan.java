@@ -25,4 +25,6 @@ public class PracticePlan {
     public static final int APPLICATION = 11;
     public static final int APPLICATION_REVIEW = 12;
     public static final int CHALLENGE = 21;
+    public static final int KNOWLEDGE = 31;
+    public static final int KNOWLEDGE_REVIEW = 32;
 }

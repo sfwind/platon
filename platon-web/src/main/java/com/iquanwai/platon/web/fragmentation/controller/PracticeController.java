@@ -61,7 +61,7 @@ public class PracticeController {
         }
         //TODO:改为富文本编辑器后,去掉planid校验
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), planId,false);
+                loginUser.getOpenId(), planId, false);
         // 查询点赞数
         applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
         // 查询评论数

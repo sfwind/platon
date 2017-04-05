@@ -64,18 +64,20 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
         //按照日期排序
-        Map<Integer, List<ProblemSchedule>> problemList = Maps.newLinkedHashMap();
+        Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         problemSchedules.stream().forEach(problemSchedule -> {
-            if(problemList.get(problemSchedule.getDay())==null){
-                problemList.put(problemSchedule.getDay(), Lists.newArrayList());
+            if(problemScheduleMap.get(problemSchedule.getDay())==null){
+                problemScheduleMap.put(problemSchedule.getDay(), Lists.newArrayList());
             }
-            List<ProblemSchedule> problemScheduleList = problemList.get(problemSchedule.getDay());
+            List<ProblemSchedule> problemScheduleList = problemScheduleMap.get(problemSchedule.getDay());
             problemScheduleList.add(problemSchedule);
         });
+        //生成知识点
+        practicePlans.addAll(createKnowledge(planId, problemScheduleMap));
         //生成理解训练
-        practicePlans.addAll(createWarmupPractice(planId, problemList));
+        practicePlans.addAll(createWarmupPractice(planId, problemScheduleMap));
         //生成应用训练
-        practicePlans.addAll(createApplicationPractice(problem, planId, problemList));
+        practicePlans.addAll(createApplicationPractice(problem, planId, problemScheduleMap));
         //生成小目标
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
@@ -86,6 +88,38 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         sendWelcomeMsg(openid, problem);
 
         return planId;
+    }
+
+    private List<PracticePlan> createKnowledge(int planId, Map<Integer, List<ProblemSchedule>> problemScheduleMap) {
+        List<PracticePlan> selected = Lists.newArrayList();
+
+        problemScheduleMap.keySet().stream().forEach(day->{
+            PracticePlan practicePlan = new PracticePlan();
+            //第一天内容自动解锁
+            if (day == 1) {
+                practicePlan.setUnlocked(true);
+            } else {
+                practicePlan.setUnlocked(false);
+            }
+            boolean review = getReview(problemScheduleMap.get(day));
+            if(!review) {
+                practicePlan.setType(PracticePlan.KNOWLEDGE);
+            }else{
+                practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
+            }
+            practicePlan.setPlanId(planId);
+            practicePlan.setType(PracticePlan.KNOWLEDGE);
+            List<Integer> knowledgeId = problemScheduleMap.get(day).stream().
+                    map(ProblemSchedule::getKnowledgeId).collect(Collectors.toList());
+            practicePlan.setPracticeId(StringUtils.join(knowledgeId, ","));
+            practicePlan.setStatus(0);
+            practicePlan.setSequence(KNOWLEDGE_SEQUENCE);
+            practicePlan.setSeries(day);
+//            practicePlan.setSummary(false);
+            selected.add(practicePlan);
+        });
+
+        return selected;
     }
 
     private void sendWelcomeMsg(String openid, Problem problem) {
@@ -126,9 +160,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setType(PracticePlan.CHALLENGE);
             practicePlan.setPracticeId(practice.getId()+"");
             practicePlan.setStatus(0);
-            practicePlan.setSequence(WARMUP_TASK_NUMBER+APPLICATION_TASK_NUMBER+1);
+            practicePlan.setSequence(WARMUP_SEQUENCE+APPLICATION_TASK_NUMBER+1);
             practicePlan.setSeries(0);
-            practicePlan.setSummary(false);
+//            practicePlan.setSummary(false);
             selected.add(practicePlan);
         });
 
@@ -160,7 +194,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             boolean review = getReview(problemScheduleMap.get(day));
             for(int i=1;i<=APPLICATION_TASK_NUMBER;i++){
                 PracticePlan practicePlan = new PracticePlan();
-                practicePlan.setUnlocked(false);
+                //第一天内容自动解锁
+                if(day==1) {
+                    practicePlan.setUnlocked(true);
+                }else{
+                    practicePlan.setUnlocked(false);
+                }
                 practicePlan.setPlanId(planId);
                 if(!review) {
                     practicePlan.setType(PracticePlan.APPLICATION);
@@ -188,16 +227,21 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
 
     private List<PracticePlan> createWarmupPractice(Integer planId,
-                                                    Map<Integer, List<ProblemSchedule>> problemList) {
+                                                    Map<Integer, List<ProblemSchedule>> problemScheduleMap) {
         List<PracticePlan> selectedPractice = Lists.newArrayList();
 
         //构建选择题
-        problemList.keySet().stream().forEach(day->{
-            List<ProblemSchedule> problemSchedules = problemList.get(day);
+        problemScheduleMap.keySet().stream().forEach(day->{
+            List<ProblemSchedule> problemSchedules = problemScheduleMap.get(day);
             //当天是否是综合训练
             boolean review = getReview(problemSchedules);
             PracticePlan practicePlan = new PracticePlan();
-            practicePlan.setUnlocked(false);
+            //第一天内容自动解锁
+            if(day==1) {
+                practicePlan.setUnlocked(true);
+            }else{
+                practicePlan.setUnlocked(false);
+            }
             practicePlan.setPlanId(planId);
             if(!review) {
                 practicePlan.setType(PracticePlan.WARM_UP);
@@ -214,7 +258,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 int knowledgeId = problemSchedule.getKnowledgeId();
                 int problemId = problemSchedule.getProblemId();
                 List<WarmupPractice> practices = warmupPracticeDao.loadPractice(knowledgeId, problemId);
-                practiceIds.addAll(practices.stream().map(WarmupPractice::getId).collect(Collectors.toList()));
+                practiceIds.addAll(practices.stream()
+                        .filter(warmupPractice -> !warmupPractice.getExample() && !warmupPractice.getDel())
+                        .map(WarmupPractice::getId)
+                        .collect(Collectors.toList()));
             }
 
             practicePlan.setPracticeId(StringUtils.join(practiceIds, ","));
@@ -228,7 +275,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         if(CollectionUtils.isEmpty(problemSchedules)){
             return false;
         }
-        return problemSchedules.get(0).getReview();
+        ProblemSchedule problemSchedule = problemSchedules.get(0);
+
+        return Knowledge.isReview(problemSchedule.getKnowledgeId());
     }
 
 

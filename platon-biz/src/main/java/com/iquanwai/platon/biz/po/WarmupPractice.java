@@ -15,7 +15,7 @@ public class WarmupPractice implements Cloneable{
     private String question; //题干
     private Integer type; //题型（1-单选题，2-多选题）
     private String analysis; //解析
-    private String voice; //语音解析
+    private String pic; //图片
     private Integer difficulty; //难易度（1-容易，2-普通，3-困难）
     private Integer knowledgeId; //知识点id
     @Deprecated
@@ -29,6 +29,7 @@ public class WarmupPractice implements Cloneable{
     private List<Choice> choiceList; //所有选项
     private List<WarmupPracticeDiscuss> discussList; //理解训练讨论
     private List<Integer> choice; //用户选择选项
+    private Knowledge knowledge; //知识点
 
 
     @Override

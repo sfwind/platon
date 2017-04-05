@@ -165,11 +165,11 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticePlanId(practicePlan.getId());
         practice.setSequence(practicePlan.getSequence());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
-        //设置选做标签,理解训练是必做,其他为选做
-        if(practicePlan.getType()==PracticePlan.WARM_UP){
-            practice.setOptional(false);
-        }else{
+        //设置选做标签,理解训练和知识点是必做,其他为选做
+        if(isOptional(practicePlan.getType())){
             practice.setOptional(true);
+        }else{
+            practice.setOptional(false);
         }
         List<Integer> practiceIdList = Lists.newArrayList();
         for(String practiceId:practiceArr){
@@ -182,6 +182,10 @@ public class PlanServiceImpl implements PlanService {
             practice.setKnowledge(knowledge);
         }
         return practice;
+    }
+
+    private boolean isOptional(Integer type) {
+        return type==PracticePlan.CHALLENGE || type==PracticePlan.APPLICATION_REVIEW || type==PracticePlan.APPLICATION;
     }
 
     private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {

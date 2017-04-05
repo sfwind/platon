@@ -53,6 +53,7 @@ public class CacheServiceImpl implements CacheService {
         List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
         warmupPractices.stream().forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
+            warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
             warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
         });
         List<Choice> choices = choiceDao.loadAll(Choice.class);
