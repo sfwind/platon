@@ -9,4 +9,6 @@ import lombok.Data;
 public class CompletePlanDto {
     private boolean iscomplete;
     private Integer percent;
+    private Integer mustStudyDays;
+
 }

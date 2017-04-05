@@ -17,6 +17,7 @@ public class ImprovementPlan {
     private Date startDate; //开始日期
     private Date endDate; //结束日期(当日开始复习)
     private Date closeDate; //课程关闭时间（课程关闭日期）
+    private Date completeTime; // 完成时间
     private Integer status; //执行状态（1-正在进行, 2-已结束, 3-已过期）
     private Integer point; //积分
     private Integer warmupComplete; //理解训练完成数量
@@ -36,6 +37,9 @@ public class ImprovementPlan {
     private Boolean openRise; //非db字段 是否打开过rise
     private Boolean newMessage; //非db字段 是否有新消息
     private Boolean doneAllPractice; //非db字段 是否完成当日练习
+    private Boolean doneAllApplication; //非db字段 是否完成所有应用训练
+    private Boolean doneCurSerialApplication; //非db字段 是否完成当日所有应用训练
+    private Integer completeSeries; // 非db字段 已完成的题组
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

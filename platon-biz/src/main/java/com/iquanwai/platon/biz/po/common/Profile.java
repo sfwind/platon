@@ -23,6 +23,9 @@ public class Profile {
     private Integer isFull;
     private String riseId;
     private Boolean openRise;
+    private String unionid;	//只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。详见：获取用户个人信息（UnionID机制）
+    private Boolean riseMember;
+
 
     //默认头像
     public static final String DEFAULT_AVATAR = "http://www.iqycamp.com/images/default_avatar.png";

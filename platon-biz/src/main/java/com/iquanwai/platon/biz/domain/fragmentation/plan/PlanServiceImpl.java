@@ -2,11 +2,23 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.google.common.collect.Sets;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.NotifyMessageDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.KnowledgePlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,6 +33,8 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -88,8 +102,39 @@ public class PlanServiceImpl implements PlanService {
         return true;
     }
 
+    private boolean isDoneApplication(List<PracticePlan> runningPractices){
+        if(CollectionUtils.isNotEmpty(runningPractices)){
+            for(PracticePlan practicePlan:runningPractices){
+                // 应用训练是否完成
+                if (practicePlan.getType() == PracticePlan.APPLICATION && practicePlan.getStatus() != null && practicePlan.getStatus() == 1) {
+                    return true;
+                }
+            }
+            // 没有已完成的应用训练
+            return false;
+        } else {
+            // 当前组没有应用训练，默认返回true
+            return true;
+        }
+    }
+
+    private Integer completeSeriesCount(List<PracticePlan> practicePlans) {
+        Set<Integer> disCompleteSeries = Sets.newHashSet();
+        if(CollectionUtils.isNotEmpty(practicePlans)){
+            for (PracticePlan practicePlan : practicePlans) {
+                // 当前第几组
+                if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus() == 0){
+                    disCompleteSeries.add(practicePlan.getSeries());
+                }
+            }
+        }
+        Optional<Integer> min = disCompleteSeries.stream().min(Integer::compareTo);
+        Optional<Integer> max = practicePlans.stream().map(PracticePlan::getSeries).max(Integer::compareTo);
+        return min.orElse(max.orElse(null));
+    }
+
     @Override
-    public Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series) {
+    public Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series, Boolean riseMember) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
@@ -102,10 +147,9 @@ public class PlanServiceImpl implements PlanService {
         }
         PracticePlan firstPractice = runningPractice.get(0);
         //未解锁返回false
-        if(!firstPractice.getUnlocked()){
-            //有钥匙就且必须完成之前的所有作业才解锁
-            if(improvementPlan.getKeycnt()>0){
-                //获取前一组训练
+        if (!firstPractice.getUnlocked()) {
+            // 判断是否是付费用户 || 获取前一组训练
+            if(riseMember || series <= ConfigUtils.preStudySerials()) {
                 List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
                 if (isDone(prePracticePlans)) {
                     unlock(runningPractice, improvementPlan);
@@ -117,6 +161,10 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setPractice(practices);
         //写入非db字段
         setLogicParam(improvementPlan, runningPractice);
+        // 不是会员并且是第四组，则提示一下
+        if(!riseMember && series == 4){
+            return -3;
+        }
         return 0;
     }
 
@@ -128,6 +176,14 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setDoneAllPractice(isDone(runningPractice));
         int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
         improvementPlan.setNewMessage(messageNumber>0);
+        // 所有的应用训练是否完成
+//        List<PracticePlan> runningPractices = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
+//        improvementPlan.setDoneAllApplication(isDoneApplication(runningPractices));
+        // 当前组的应用训练是否有完成的
+        improvementPlan.setDoneCurSerialApplication(isDoneApplication(runningPractice));
+
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+        improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
     }
 
     private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
@@ -360,11 +416,11 @@ public class PlanServiceImpl implements PlanService {
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
         //更新训练计划状态
-        if (status == ImprovementPlan.COMPLETE) {
-            improvementPlanDao.updatePlanComplete(planId, status);
-        } else {
-            improvementPlanDao.updateStatus(planId, status);
-        }
+//        if (status == ImprovementPlan.COMPLETE) {
+//            improvementPlanDao.updatePlanComplete(planId, status);
+//        } else {
+        improvementPlanDao.updateStatus(planId, status);
+//        }
         //解锁所有应用训练
         practicePlanDao.unlockApplicationPractice(planId);
         //更新待完成的专题状态
@@ -410,7 +466,9 @@ public class PlanServiceImpl implements PlanService {
         //完成训练计划
         int percent = completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
         //更新完成时间
-        improvementPlanDao.updateCompleteTime(improvementPlan.getId());
+        if (improvementPlan.getCompleteTime() == null) {
+            improvementPlanDao.updateCompleteTime(improvementPlan.getId());
+        }
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
         return new ImmutablePair<>(true, percent);
     }

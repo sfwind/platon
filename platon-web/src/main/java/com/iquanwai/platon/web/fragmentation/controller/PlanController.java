@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -130,7 +131,7 @@ public class PlanController {
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
-        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series);
+        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series, loginUser.getRiseMember());
         // openid置为null
         improvementPlan.setOpenid(null);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -143,6 +144,8 @@ public class PlanController {
             return WebUtils.error(211,null);
         }else if(result==-2){
             return WebUtils.error(212,null);
+        } else if(result==-3){
+            return WebUtils.error(213, improvementPlan);
         }
         return WebUtils.result(improvementPlan);
     }
@@ -204,6 +207,15 @@ public class PlanController {
         CompletePlanDto completePlanDto = new CompletePlanDto();
         completePlanDto.setIscomplete(result.getLeft());
         completePlanDto.setPercent(result.getRight());
+        int minStudyDays = Double.valueOf(Math.ceil(improvementPlan.getTotalSeries() / 2.0D)).intValue();
+        Date minDays = DateUtils.afterDays(improvementPlan.getStartDate(), minStudyDays);
+            // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
+        if(new Date().before(minDays)){
+            completePlanDto.setMustStudyDays(minStudyDays);
+        } else {
+            completePlanDto.setMustStudyDays(0);
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("完成训练")
@@ -212,6 +224,7 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(completePlanDto);
     }
+
 
     @RequestMapping(value = "/close", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> close(LoginUser loginUser){
