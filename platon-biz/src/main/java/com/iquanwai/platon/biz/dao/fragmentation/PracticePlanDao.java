@@ -161,6 +161,19 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type=11";
+        try {
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
+            return practicePlans;
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public void unlockApplicationPractice(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update PracticePlan set UnLocked=1 where PlanId=? and Type=11";

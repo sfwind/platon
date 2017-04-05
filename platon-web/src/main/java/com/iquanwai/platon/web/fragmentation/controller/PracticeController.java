@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -574,6 +575,9 @@ public class PracticeController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+        if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
+            return WebUtils.error("该内容为付费内容，只有会员可以查看");
+        }
         Integer result = planService.checkPractice(series, improvementPlan);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -587,7 +591,7 @@ public class PracticeController {
             return WebUtils.error("该内容为付费内容，只有会员可以查看");
         }else if(result==-2){
             // 前一组未完成
-            return WebUtils.error("完成之前的理解训练，才能解锁该训练");
+            return WebUtils.error("完成之前的任务，这一组才能解锁<br> 学习和内化，都需要循序渐进哦");
         }
         return WebUtils.success();
     }

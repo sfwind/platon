@@ -139,4 +139,8 @@ public class ConfigUtils {
 	public static String getPicturePrefix(){
 		return config.getString("qiniu.picture.prefix");
 	}
+
+	public static Integer preStudySerials(){
+		return 3;
+	}
 }

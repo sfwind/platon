@@ -35,6 +35,9 @@ public class ImprovementPlan {
     private Boolean openRise; //非db字段 是否打开过rise
     private Boolean newMessage; //非db字段 是否有新消息
     private Boolean doneAllPractice; //非db字段 是否完成当日练习
+    private Boolean doneAllApplication; //非db字段 是否完成所有应用训练
+    private Boolean doneCurSerialApplication; //非db字段 是否完成当日所有应用训练
+    private Integer completeSeries; // 非db字段 已完成的题组
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;
