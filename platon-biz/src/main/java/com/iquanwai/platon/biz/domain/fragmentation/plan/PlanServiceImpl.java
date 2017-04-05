@@ -106,12 +106,16 @@ public class PlanServiceImpl implements PlanService {
         if(CollectionUtils.isNotEmpty(runningPractices)){
             for(PracticePlan practicePlan:runningPractices){
                 // 应用训练是否完成
-                if(practicePlan.getType()==PracticePlan.APPLICATION && practicePlan.getStatus()==0){
-                    return false;
+                if (practicePlan.getType() == PracticePlan.APPLICATION && practicePlan.getStatus() != null && practicePlan.getStatus() == 1) {
+                    return true;
                 }
             }
+            // 没有已完成的应用训练
+            return false;
+        } else {
+            // 当前组没有应用训练，默认返回true
+            return true;
         }
-        return true;
     }
 
     private Integer completeSeriesCount(List<PracticePlan> practicePlans) {
@@ -173,9 +177,9 @@ public class PlanServiceImpl implements PlanService {
         int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
         improvementPlan.setNewMessage(messageNumber>0);
         // 所有的应用训练是否完成
-        List<PracticePlan> runningPractices = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
-        improvementPlan.setDoneAllApplication(isDoneApplication(runningPractices));
-        // 当前组的应用训练是否完成
+//        List<PracticePlan> runningPractices = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
+//        improvementPlan.setDoneAllApplication(isDoneApplication(runningPractices));
+        // 当前组的应用训练是否有完成的
         improvementPlan.setDoneCurSerialApplication(isDoneApplication(runningPractice));
 
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
