@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 /**
  * Created by justin on 8/3/16.
  */
@@ -56,6 +58,22 @@ public class RestfulHelper {
                 }
                 return body;
             } catch (Exception e) {
+                logger.error("execute " + requestUrl + " error", e.getCause().getMessage());
+            }
+        }
+        return "";
+    }
+
+    public String httpPost(String requestUrl,String json){
+        if(StringUtils.isNotEmpty(requestUrl) && StringUtils.isNotEmpty(json)){
+            Request request = new Request.Builder()
+                    .url(requestUrl)
+                    .post(RequestBody.create(JSON, json))
+                    .build();
+            try{
+                Response response = client.newCall(request).execute();
+                return response.body().string();
+            } catch (IOException e) {
                 logger.error("execute " + requestUrl + " error", e.getCause().getMessage());
             }
         }

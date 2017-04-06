@@ -68,6 +68,15 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         LoginUser loginUser = getLoginUser(openId);
         if (loginUser == null) return null;
+
+        // TODO 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
+        if(!loginUser.getRiseMember()){
+            Profile profile = accountService.getProfile(loginUser.getOpenId(),false);
+            if (profile != null && profile.getRiseMeber()) {
+                loginUser.setRiseMember(true);
+            }
+        }
+
         loginUserMap.put(accessToken, loginUser);
 
         return loginUser;
@@ -87,6 +96,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUser.setHeadimgUrl(account.getHeadimgurl());
         loginUser.setRealName(account.getRealName());
         loginUser.setOpenRise(account.getOpenRise());
+        loginUser.setRiseMember(account.getRiseMeber());
         return loginUser;
     }
 

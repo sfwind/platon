@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 
@@ -55,7 +56,11 @@ public interface AccountService {
      */
     int updateOpenRise(String openId);
 
-    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
+    List<MemberType> loadMemberTypes();
+
+    public MemberType loadMemberType(Integer id);
+
+        String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     String GET_USERS_URL = "https://api.weixin.qq.com/cgi-bin/user/get?access_token={access_token}";
 

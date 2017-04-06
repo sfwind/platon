@@ -103,6 +103,7 @@ public class ProblemController {
                 }).collect(Collectors.toList());
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
+        result.setRiseMember(loginUser.getRiseMember());
         return WebUtils.result(result);
     }
 
