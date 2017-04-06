@@ -357,6 +357,7 @@ public class PlanController {
             LOGGER.error("创建订单失败");
             return WebUtils.error("创建订单失败，请联系管理员");
         } else {
+            LOGGER.info("创建订单:response:{}", responseBody);
             Map<String, Object> responseMap = CommonUtils.jsonToMap(responseBody);
             Double code = Double.parseDouble(responseMap.get("code").toString());
             if (new Double(200).equals(code)) {
