@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
+import com.iquanwai.platon.web.fragmentation.dto.PlanLoadDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -107,8 +108,10 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
         if(improvementPlan==null){
+            // 没有正在进行的计划
             return WebUtils.result(null);
         }
+
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
@@ -119,7 +122,7 @@ public class PlanController {
                 .action("加载训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
-        return WebUtils.result(improvementPlan);
+        return WebUtils.result(new PlanLoadDto(improvementPlan, loginUser.getRiseMember()));
     }
 
     @RequestMapping("/history/load/{series}")
@@ -144,7 +147,7 @@ public class PlanController {
         }else if(result==-2){
             return WebUtils.error(212,null);
         }
-        return WebUtils.result(improvementPlan);
+        return WebUtils.result(new PlanLoadDto(improvementPlan, loginUser.getRiseMember()));
     }
 
 
@@ -274,6 +277,26 @@ public class PlanController {
                 .function("打开专题")
                 .action("打开欢迎页");
         operationLogService.log(operationLog);
+        return WebUtils.result(loginUser.getRiseMember());
+    }
+    @RequestMapping("/mark/trial")
+    public ResponseEntity<Map<String,Object>> markTrialClick(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("欢迎界面")
+                .function("打点")
+                .action("点击试用版")
+                .module("");
+        return WebUtils.success();
+    }
+    @RequestMapping("/mark/becomerise")
+    public ResponseEntity<Map<String,Object>> markBecomeRiseClick(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("欢迎界面")
+                .function("打点")
+                .action("点击成为RISER")
+                .module("");
         return WebUtils.success();
     }
 }
