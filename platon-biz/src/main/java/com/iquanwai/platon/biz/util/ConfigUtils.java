@@ -142,7 +142,7 @@ public class ConfigUtils {
 	}
 
 	public static List<Double> getRiseMemberPrice(){
-		if (config.hasPath("rise.member.price")) {
+		if (config.hasPath("rise.member.price") && ConfigUtils.isDevelopment()) {
 			return config.getDoubleList("rise.member.price");
 		} else {
 			return Lists.newArrayList();
