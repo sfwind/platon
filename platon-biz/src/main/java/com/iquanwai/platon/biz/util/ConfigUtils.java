@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.util;
 
+import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -138,5 +139,17 @@ public class ConfigUtils {
 
 	public static String getPicturePrefix(){
 		return config.getString("qiniu.picture.prefix");
+	}
+
+	public static List<Double> getRiseMemberPrice(){
+		if (config.hasPath("rise.member.price")) {
+			return config.getDoubleList("rise.member.price");
+		} else {
+			return Lists.newArrayList();
+		}
+	}
+
+	public static Boolean isDevelopment(){
+		return config.hasPath("development") && config.getBoolean("development");
 	}
 }
