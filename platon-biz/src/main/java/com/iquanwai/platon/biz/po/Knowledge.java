@@ -20,6 +20,7 @@ public class Knowledge {
     private String pic; //图片链接
     private String audio; //语音链接
     private Integer appear; //非db字段,是否出现过
+    private WarmupPractice example; //非db字段 例题
 
     private static List<Integer> REVIEW_KNOWLEDGE = Lists.newArrayList(61,62);
 

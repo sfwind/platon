@@ -21,4 +21,6 @@ public interface GeneratePlanService {
 
     int KNOWLEDGE_SEQUENCE = 1; //知识点顺序
     int WARMUP_SEQUENCE = 2; //理解训练顺序
+
+    int PROBLEM_MAX_LENGTH = 30; //专题最长开放时间
 }

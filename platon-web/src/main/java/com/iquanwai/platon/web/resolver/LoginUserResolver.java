@@ -87,7 +87,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUser.setHeadimgUrl(account.getHeadimgurl());
         loginUser.setRealName(account.getRealName());
         loginUser.setOpenRise(account.getOpenRise());
-        loginUser.setRiseMember(account.getRiseMember() == null?false:account.getRiseMember());
+//        loginUser.setRiseMember(account.getRiseMember() == null?false:account.getRiseMember());
+        loginUser.setRiseMember(true);
         return loginUser;
     }
 

@@ -28,6 +28,8 @@ public class ImprovementPlan {
     private Integer keycnt; //钥匙数量
     private Integer currentSeries; //已解锁的题组
     private Integer totalSeries; //总题组
+
+    // ----------------- 非db字段------------------
     private Problem problem; //非db字段 问题
     private List<Practice> practice; //非db字段
     private Integer length; //非db字段 总时长
@@ -36,10 +38,13 @@ public class ImprovementPlan {
     private Integer series; //非db字段 当前组号
     private Boolean openRise; //非db字段 是否打开过rise
     private Boolean newMessage; //非db字段 是否有新消息
-    private Boolean doneAllPractice; //非db字段 是否完成当日练习
-    private Boolean doneAllApplication; //非db字段 是否完成所有应用训练
-    private Boolean doneCurSerialApplication; //非db字段 是否完成当日所有应用训练
     private Integer completeSeries; // 非db字段 已完成的题组
+    private String introMsg; // 非db字段 首页介绍
+    // 首页弹窗信息
+    private Boolean doneAllIntegrated; //非db字段 是否完成所有综合训练
+    private Boolean doneCurSeriesApplication; //非db字段 是否完成当日所有应用训练
+    private String alertMsg; //非db字段 弹窗内容
+
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

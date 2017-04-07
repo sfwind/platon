@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -67,11 +66,12 @@ public class PracticeServiceImpl implements PracticeService {
     private LabelConfigDao labelConfigDao;
     @Autowired
     private ArticleLabelDao articleLabelDao;
-
+    @Autowired
+    private WarmupPracticeDao warmupPracticeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId){
+    public List<WarmupPractice> getWarmupPractice(Integer problemId, Integer practicePlanId){
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if(practicePlan!=null) {
@@ -86,6 +86,8 @@ public class PracticeServiceImpl implements PracticeService {
                 }else if(warmupPractice.getDifficulty()==3){
                     warmupPractice.setScore(PointRepo.HARD_SCORE);
                 }
+                Knowledge knowledge = getKnowledge(problemId, warmupPractice.getKnowledgeId());
+                warmupPractice.setKnowledge(knowledge);
                 warmupPractices.add(warmupPractice);
             }
         }
@@ -468,4 +470,33 @@ public class PracticeServiceImpl implements PracticeService {
     public List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId){
         return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
     }
+
+    @Override
+    public List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId) {
+        List<Knowledge> knowledges = Lists.newArrayList();
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+
+        String practiceId = practicePlan.getPracticeId();
+        String[] knowledgeIds = practiceId.split(",");
+        for(String knowledgeId:knowledgeIds){
+            Knowledge knowledge = getKnowledge(problemId, Integer.valueOf(knowledgeId));
+            knowledges.add(knowledge);
+        }
+        return knowledges;
+    }
+
+    private Knowledge getKnowledge(Integer problemId, Integer knowledgeId) {
+        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
+        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledge.getId(), problemId);
+        if(warmupPractice!=null) {
+            knowledge.setExample(cacheService.getWarmupPractice(warmupPractice.getId()));
+        }
+        return knowledge;
+    }
+
+    @Override
+    public void learnKnowledge(Integer practicePlanId) {
+        practicePlanDao.complete(practicePlanId);
+    }
+
 }

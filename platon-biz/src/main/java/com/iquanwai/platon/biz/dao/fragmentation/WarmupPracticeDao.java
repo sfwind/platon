@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +34,9 @@ public class WarmupPracticeDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<WarmupPractice> loadExample(int knowledgeId, int problemId){
+    public WarmupPractice loadExample(int knowledgeId, int problemId){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<WarmupPractice>> h = new BeanListHandler(WarmupPractice.class);
+        ResultSetHandler<WarmupPractice> h = new BeanHandler(WarmupPractice.class);
         String sql = "SELECT * FROM WarmupPractice where KnowledgeId=? and ProblemId=? and Example=1";
         try {
             return run.query(sql, h, knowledgeId, problemId);
@@ -43,6 +44,6 @@ public class WarmupPracticeDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
 
-        return Lists.newArrayList();
+        return null;
     }
 }

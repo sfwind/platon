@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -31,7 +32,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     @Autowired
     private ProblemPlanDao problemPlanDao;
     @Autowired
-    private ProblemDao problemDao;
+    private CacheService cacheService;
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
@@ -54,7 +55,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     @Override
     public Integer generatePlan(String openid, Integer problemId) {
         Assert.notNull(openid, "openid不能为空");
-        Problem problem = problemDao.load(Problem.class, problemId);
+        Problem problem = cacheService.getProblem(problemId);
         if(problem == null){
             logger.error("problemId {} is invalid", problemId);
         }
@@ -108,7 +109,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
             }
             practicePlan.setPlanId(planId);
-            practicePlan.setType(PracticePlan.KNOWLEDGE);
             List<Integer> knowledgeId = problemScheduleMap.get(day).stream().
                     map(ProblemSchedule::getKnowledgeId).collect(Collectors.toList());
             practicePlan.setPracticeId(StringUtils.join(knowledgeId, ","));
@@ -294,14 +294,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //初始化状态进行中
         improvementPlan.setStatus(ImprovementPlan.RUNNING);
         //初始化时有一把钥匙
-        improvementPlan.setKeycnt(1);
+        improvementPlan.setKeycnt(0);
         //总题组=难度训练总天数
         improvementPlan.setTotalSeries(length);
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
-        //结束时期后再开放7天
-        improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), length + 7));
+        //最长开放30天
+        improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         //总训练数=理解训练+应用训练
 //        improvementPlan.setTotal(problem.getWarmupCount()+
 //                problem.getApplicationCount());

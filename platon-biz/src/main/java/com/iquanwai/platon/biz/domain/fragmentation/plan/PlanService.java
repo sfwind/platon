@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -61,15 +62,9 @@ public interface PlanService {
     /**
      * 获取知识点
      * @param knowledgeId 知识点id
+     * @param problemId 专题id
      */
-    Knowledge getKnowledge(Integer knowledgeId);
-
-    /**
-     * 学习知识点
-     * @param knowledgeId 知识点id
-     * @param planId 训练计划id
-     */
-    void learnKnowledge(Integer knowledgeId, Integer planId);
+    Knowledge getKnowledge(Integer knowledgeId, Integer problemId);
 
     /**
      * 训练计划结束
@@ -120,4 +115,9 @@ public interface PlanService {
      */
     String loadSubjectDesc(Integer problemId);
 
+    /**
+     * 根据训练id获取知识点路线图
+     * @param problemId 训练id
+     */
+    List<RoadMap> loadRoadMap(Integer problemId);
 }

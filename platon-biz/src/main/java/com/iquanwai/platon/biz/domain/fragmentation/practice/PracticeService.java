@@ -13,10 +13,10 @@ import java.util.List;
 public interface PracticeService {
     /**
      * 获取理解训练列表
-     * @param planId 训练id
+     * @param problemId 专题id
      * @param practicePlanId 训练组编号
      * */
-    List<WarmupPractice> getWarmupPractice(Integer planId, Integer practicePlanId);
+    List<WarmupPractice> getWarmupPractice(Integer problemId, Integer practicePlanId);
 
     /**
      * 获取理解训练解析
@@ -171,4 +171,18 @@ public interface PracticeService {
      * @param articleId 文章id
      * */
     List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
+
+    /**
+     * 根据训练id获取知识
+     * @param practicePlanId 训练id
+     * @param problemId 专题id
+     */
+    List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId);
+
+    /**
+     * 学习知识点
+     * @param practicePlanId 练习id
+     */
+    void learnKnowledge(Integer practicePlanId);
+
 }
