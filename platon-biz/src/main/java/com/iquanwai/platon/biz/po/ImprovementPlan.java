@@ -26,8 +26,8 @@ public class ImprovementPlan {
     private Integer total; //任务总数
     @Deprecated
     private Integer keycnt; //钥匙数量
-    private Integer currentSeries; //已解锁的题组
-    private Integer totalSeries; //总题组
+    private Integer currentSeries; //已解锁的节数
+    private Integer totalSeries; //总节数
 
     // ----------------- 非db字段------------------
     private Problem problem; //非db字段 问题
@@ -35,10 +35,10 @@ public class ImprovementPlan {
     private Integer length; //非db字段 总时长
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean summary; //非db字段 是否显示任务总结
-    private Integer series; //非db字段 当前组号
+    private Integer series; //非db字段 当前节号
     private Boolean openRise; //非db字段 是否打开过rise
     private Boolean newMessage; //非db字段 是否有新消息
-    private Integer completeSeries; // 非db字段 已完成的题组
+    private Integer completeSeries; // 非db字段 已完成的节数
     private String introMsg; // 非db字段 首页介绍
     // 首页弹窗信息
     private Boolean doneAllIntegrated; //非db字段 是否完成所有综合训练

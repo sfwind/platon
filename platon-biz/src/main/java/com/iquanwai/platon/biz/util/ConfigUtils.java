@@ -143,4 +143,8 @@ public class ConfigUtils {
 	public static Integer preStudySerials(){
 		return 3;
 	}
+
+	public static String getIntegratedPracticeIndex(){
+		return config.getString("integrated.practice.index");
+	}
 }

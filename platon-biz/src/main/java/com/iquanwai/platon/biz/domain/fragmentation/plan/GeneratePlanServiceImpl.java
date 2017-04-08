@@ -67,10 +67,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //按照日期排序
         Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         problemSchedules.stream().forEach(problemSchedule -> {
-            if(problemScheduleMap.get(problemSchedule.getDay())==null){
-                problemScheduleMap.put(problemSchedule.getDay(), Lists.newArrayList());
+            if(problemScheduleMap.get(problemSchedule.getSeries())==null){
+                problemScheduleMap.put(problemSchedule.getSeries(), Lists.newArrayList());
             }
-            List<ProblemSchedule> problemScheduleList = problemScheduleMap.get(problemSchedule.getDay());
+            List<ProblemSchedule> problemScheduleList = problemScheduleMap.get(problemSchedule.getSeries());
             problemScheduleList.add(problemSchedule);
         });
         //生成知识点
@@ -94,27 +94,27 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private List<PracticePlan> createKnowledge(int planId, Map<Integer, List<ProblemSchedule>> problemScheduleMap) {
         List<PracticePlan> selected = Lists.newArrayList();
 
-        problemScheduleMap.keySet().stream().forEach(day->{
+        problemScheduleMap.keySet().stream().forEach(series->{
             PracticePlan practicePlan = new PracticePlan();
-            //第一天内容自动解锁
-            if (day == 1) {
+            //第一节内容自动解锁
+            if (series == 1) {
                 practicePlan.setUnlocked(true);
             } else {
                 practicePlan.setUnlocked(false);
             }
-            boolean review = getReview(problemScheduleMap.get(day));
+            boolean review = getReview(problemScheduleMap.get(series));
             if(!review) {
                 practicePlan.setType(PracticePlan.KNOWLEDGE);
             }else{
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
             }
             practicePlan.setPlanId(planId);
-            List<Integer> knowledgeId = problemScheduleMap.get(day).stream().
+            List<Integer> knowledgeId = problemScheduleMap.get(series).stream().
                     map(ProblemSchedule::getKnowledgeId).collect(Collectors.toList());
             practicePlan.setPracticeId(StringUtils.join(knowledgeId, ","));
             practicePlan.setStatus(0);
             practicePlan.setSequence(KNOWLEDGE_SEQUENCE);
-            practicePlan.setSeries(day);
+            practicePlan.setSeries(series);
 //            practicePlan.setSummary(false);
             selected.add(practicePlan);
         });
@@ -142,7 +142,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
-        data.put("remark",new TemplateMessage.Keyword("\n这个专题一共"+length+"组训练，记得每天完成1组吧\n" +
+        data.put("remark",new TemplateMessage.Keyword("\n这个专题一共"+length+"节训练，记得每天完成1节吧\n" +
                 "\n如有疑问请在下方留言，小Q会尽快给你回复的"));
         templateMessageService.sendMessage(templateMessage);
     }
@@ -189,13 +189,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 .sorted((o1, o2) -> o1.getSequence() - o2.getSequence()).collect(Collectors.toList());
 
         int index = 0;
-        for(Integer day:problemScheduleMap.keySet()){
-            //当天是否是综合训练
-            boolean review = getReview(problemScheduleMap.get(day));
+        for(Integer series:problemScheduleMap.keySet()){
+            //该节是否是综合训练
+            boolean review = getReview(problemScheduleMap.get(series));
             for(int i=1;i<=APPLICATION_TASK_NUMBER;i++){
                 PracticePlan practicePlan = new PracticePlan();
-                //第一天内容自动解锁
-                if(day==1) {
+                //第一节内容自动解锁
+                if(series==1) {
                     practicePlan.setUnlocked(true);
                 }else{
                     practicePlan.setUnlocked(false);
@@ -207,14 +207,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                     practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
                 }
                 practicePlan.setSequence(WARMUP_SEQUENCE + i);
-                practicePlan.setSeries(day);
+                practicePlan.setSeries(series);
                 practicePlan.setStatus(0);
 //            practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
 //            practicePlan.setSummary(false);
                 practicePlan.setPracticeId(applicationPractices.get(index).getId()+"");
                 index++;
                 selectedPractice.add(practicePlan);
-                //综合训练组只有一个应用训练
+                //综合训练只有一个应用训练
                 if(review){
                     break;
                 }
@@ -231,13 +231,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> selectedPractice = Lists.newArrayList();
 
         //构建选择题
-        problemScheduleMap.keySet().stream().forEach(day->{
-            List<ProblemSchedule> problemSchedules = problemScheduleMap.get(day);
-            //当天是否是综合训练
+        problemScheduleMap.keySet().stream().forEach(series->{
+            List<ProblemSchedule> problemSchedules = problemScheduleMap.get(series);
+            //该节是否是综合训练
             boolean review = getReview(problemSchedules);
             PracticePlan practicePlan = new PracticePlan();
-            //第一天内容自动解锁
-            if(day==1) {
+            //第一节内容自动解锁
+            if(series==1) {
                 practicePlan.setUnlocked(true);
             }else{
                 practicePlan.setUnlocked(false);
@@ -249,7 +249,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setType(PracticePlan.WARM_UP_REVIEW);
             }
             practicePlan.setSequence(WARMUP_SEQUENCE);
-            practicePlan.setSeries(day);
+            practicePlan.setSeries(series);
             practicePlan.setStatus(0);
 //            practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
 //            practicePlan.setSummary(false);
@@ -295,16 +295,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setStatus(ImprovementPlan.RUNNING);
         //初始化时有一把钥匙
         improvementPlan.setKeycnt(0);
-        //总题组=难度训练总天数
+        //总节数
         improvementPlan.setTotalSeries(length);
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
         //最长开放30天
         improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
-        //总训练数=理解训练+应用训练
-//        improvementPlan.setTotal(problem.getWarmupCount()+
-//                problem.getApplicationCount());
 
         return improvementPlanDao.insert(improvementPlan);
 

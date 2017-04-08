@@ -12,8 +12,8 @@ public class PracticePlan {
     private Integer type; //题目类型（1-理解训练，11-应用训练，21-小目标）
     private String practiceId; //练习id,多个时用逗号隔开
     private Boolean unlocked; // 是否解锁
-    private Integer series; // 组号
-    private Integer sequence; //组内顺序
+    private Integer series; // 节号
+    private Integer sequence; //节内顺序
     @Deprecated
     private Integer knowledgeId; //知识点id
     private Integer status; //题目状态（0-未完成，1-已完成）

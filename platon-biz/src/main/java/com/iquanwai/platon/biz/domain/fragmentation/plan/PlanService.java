@@ -20,10 +20,10 @@ public interface PlanService {
     void buildPlanDetail(ImprovementPlan improvementPlan);
 
     /**
-     * 构建详细的某组训练计划
+     * 构建详细的某节训练计划
      * @param improvementPlan 训练计划
-     * @param series 训练组号
-     * @return 0-已组装,-1-已到最后一组
+     * @param series 训练节号
+     * @return 0-已组装,-1-已到最后一节
      */
     Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series, Boolean riseMember);
 
@@ -94,8 +94,8 @@ public interface PlanService {
     WarmupPractice getExample(Integer knowledgeId, Integer problemId);
 
     /**
-     * 当前组练习是否可以做
-     * @param series 组序号
+     * 当前节练习是否可以做
+     * @param series 节序号
      * @param improvementPlan 训练计划
      * @return -1 未解锁
      * @return -2 之前系列未完成

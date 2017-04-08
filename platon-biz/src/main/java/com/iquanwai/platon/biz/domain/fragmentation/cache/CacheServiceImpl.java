@@ -122,28 +122,43 @@ public class CacheServiceImpl implements CacheService {
     public List<RoadMap> loadRoadMap(Integer problemId) {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
         Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
-        //按天组合成一组知识点
+        //按节组合成一组知识点
         problemSchedules.stream().forEach(problemSchedule -> {
-            if(problemScheduleMap.get(problemSchedule.getDay())==null){
-                problemScheduleMap.put(problemSchedule.getDay(), Lists.newArrayList());
+            if(problemScheduleMap.get(problemSchedule.getSeries())==null){
+                problemScheduleMap.put(problemSchedule.getSeries(), Lists.newArrayList());
             }
-            problemScheduleMap.get(problemSchedule.getDay()).add(problemSchedule);
+            problemScheduleMap.get(problemSchedule.getSeries()).add(problemSchedule);
         });
 
         List<RoadMap> roadMapList = Lists.newArrayList();
 
-        problemScheduleMap.keySet().stream().forEach(day ->{
+        problemScheduleMap.keySet().stream().forEach(series ->{
             RoadMap roadMap = new RoadMap();
-            roadMap.setSeries(day);
-            List<ProblemSchedule> dailySchedule = problemScheduleMap.get(day);
+            roadMap.setSeries(series);
+            List<ProblemSchedule> dailySchedule = problemScheduleMap.get(series);
             List<Knowledge> knowledges = dailySchedule.stream()
                     .map(problemSchedule -> getKnowledge(problemSchedule.getKnowledgeId()))
                     .collect(Collectors.toList());
             roadMap.setIntro(introMsg(knowledges));
+            roadMap.setKnowledgeList(knowledges);
+            roadMap.setStep(getStep(knowledges));
             roadMapList.add(roadMap);
         });
 
         return roadMapList;
+    }
+
+    private String getStep(List<Knowledge> knowledges) {
+        if(CollectionUtils.isEmpty(knowledges)){
+            return "";
+        }
+        //步骤
+        String step = knowledges.get(0).getStep();
+        if(StringUtils.isEmpty(step)){
+            step = knowledges.get(0).getKnowledge();
+        }
+
+        return step;
     }
 
     @Override

@@ -9,7 +9,7 @@ import lombok.Data;
 public class ProblemSchedule {
     private int id;
     private Integer problemId; //专题id
-    private Integer day; //专题的第几日
+    private Integer series; //专题的第几节
     private Integer knowledgeId; //知识点id
     private Integer sequence; //知识点id出现的顺序
 }

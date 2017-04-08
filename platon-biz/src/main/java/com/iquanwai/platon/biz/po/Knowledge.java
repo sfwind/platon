@@ -1,10 +1,7 @@
 package com.iquanwai.platon.biz.po;
 
-import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by justin on 16/12/4.
@@ -22,10 +19,20 @@ public class Knowledge {
     private Integer appear; //非db字段,是否出现过
     private WarmupPractice example; //非db字段 例题
 
-    private static List<Integer> REVIEW_KNOWLEDGE = Lists.newArrayList(61,62);
+    private static String REVIEW_KNOWLEDGE = ConfigUtils.getIntegratedPracticeIndex();
 
     public static boolean isReview(Integer knowledgeId){
-        return REVIEW_KNOWLEDGE.contains(knowledgeId);
+        if(knowledgeId==null){
+            return false;
+        }
+        String[] ids = REVIEW_KNOWLEDGE.split(",");
+        for(String id:ids){
+            if(id.equals(knowledgeId.toString())){
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

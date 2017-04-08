@@ -102,7 +102,7 @@ public class PlanServiceImpl implements PlanService {
             // 没有已完成的应用训练
             return false;
         } else {
-            // 当前组没有应用训练，默认返回true
+            // 当前节没有应用训练，默认返回true
             return true;
         }
     }
@@ -123,7 +123,7 @@ public class PlanServiceImpl implements PlanService {
         Set<Integer> disCompleteSeries = Sets.newHashSet();
         if(CollectionUtils.isNotEmpty(practicePlans)){
             for (PracticePlan practicePlan : practicePlans) {
-                // 当前第几组
+                // 当前第几节
                 if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus() == 0){
                     disCompleteSeries.add(practicePlan.getSeries());
                 }
@@ -140,16 +140,16 @@ public class PlanServiceImpl implements PlanService {
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
 
-        //选择当前组的练习
+        //选择当前节的练习
         List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, series);
-        //已经到最后一组解锁训练,返回false
+        //已经到最后一节解锁训练,返回false
         if(CollectionUtils.isEmpty(runningPractice)){
             return -1;
         }
         PracticePlan firstPractice = runningPractice.get(0);
         //未解锁返回false
         if (!firstPractice.getUnlocked()) {
-            // 判断是否是付费用户 || 获取前一组训练
+            // 判断是否是付费用户 || 获取前一节训练
             if(riseMember || series <= ConfigUtils.preStudySerials()) {
                 List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
                 if (isDone(prePracticePlans)) {
@@ -162,7 +162,7 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setPractice(practices);
         //写入非db字段
         setLogicParam(improvementPlan, runningPractice);
-        // 不是会员并且是第四组，则提示一下
+        // 不是会员并且是第四节，则提示一下
         if(!riseMember && series > ConfigUtils.preStudySerials()){
             return -3;
         }
@@ -183,7 +183,7 @@ public class PlanServiceImpl implements PlanService {
         applications = applications.stream().filter(practicePlan -> practicePlan.getType()==PracticePlan.APPLICATION_REVIEW)
                 .collect(Collectors.toList());
         improvementPlan.setDoneAllIntegrated(isDoneApplication(applications));
-        // 当前组的应用训练是否有未完成
+        // 当前节的应用训练是否有未完成
         boolean isDone = isDoneApplication(runningPractice);
         improvementPlan.setDoneCurSeriesApplication(isDone);
         if(!isDone){
@@ -283,14 +283,14 @@ public class PlanServiceImpl implements PlanService {
 
     private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
-        //如果组数<=0,直接返回空数据
+        //如果节数<=0,直接返回空数据
         if(series<=0){
             return Lists.newArrayList();
         }
         List<PracticePlan> runningPractice = Lists.newArrayList();
         List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
         runningPractice.addAll(practicePlanList);
-        //第一天增加小目标,其余时间不显示小目标
+        //第一节增加小目标,其余时间不显示小目标
         if(series==1) {
             runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
         }
@@ -302,7 +302,7 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> runningPractice = Lists.newArrayList();
         PracticePlan challengePractice = practicePlanDao.loadChallengePractice(improvementPlan.getId());
-        //如果有解锁钥匙,找到第一组未完成的练习,如果没有解锁钥匙,找到最后一组已解锁的练习
+        //如果有解锁钥匙,找到第一节未完成的练习,如果没有解锁钥匙,找到最后一节已解锁的练习
         //未完成的练习
         List<PracticePlan> incompletePractice = getFirstImcompletePractice(practicePlans);
 
@@ -322,7 +322,7 @@ public class PlanServiceImpl implements PlanService {
             runningPractice.addAll(getLastUnlockPractice(practicePlans));
         }
         if(CollectionUtils.isNotEmpty(runningPractice)){
-            //第一天增加小目标,其余时间不显示小目标
+            //第一节增加小目标,其余时间不显示小目标
             PracticePlan plan = runningPractice.get(0);
             if(plan.getSeries()==1) {
                 runningPractice.add(challengePractice);
@@ -332,18 +332,18 @@ public class PlanServiceImpl implements PlanService {
         return runningPractice;
     }
 
-    //获取第一组未完成的练习
+    //获取第一节未完成的练习
     private List<PracticePlan> getFirstImcompletePractice(List<PracticePlan> practicePlans) {
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> incompletePractice = Lists.newArrayList();
-        int seriesCursor = 0; //当前组指针
+        int seriesCursor = 0; //当前节指针
         boolean running = false;
         for(PracticePlan practicePlan:practicePlans) {
             if (practicePlan.getType() == PracticePlan.CHALLENGE) {
                 continue;
             }
             if(practicePlan.getSeries()!=seriesCursor){
-                //找到正在进行的训练组
+                //找到正在进行的训练节
                 if(running){
                     break;
                 }
@@ -360,7 +360,7 @@ public class PlanServiceImpl implements PlanService {
         return incompletePractice;
     }
 
-    //获取最后一组解锁的练习
+    //获取最后一节解锁的练习
     private List<PracticePlan> getLastUnlockPractice(List<PracticePlan> practicePlans) {
         Assert.notNull(practicePlans, "练习计划不能为空");
         int seriesCursor =0;
@@ -513,11 +513,11 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Integer checkPractice(Integer series, ImprovementPlan improvementPlan) {
-        //当前第一组返回0
+        //当前第一节返回0
         if (series == 1) {
             return 0;
         }
-        //获取前一组训练
+        //获取前一节训练
         List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
         if (isDone(prePracticePlans)) {
             List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);

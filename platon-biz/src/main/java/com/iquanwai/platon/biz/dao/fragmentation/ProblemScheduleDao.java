@@ -36,7 +36,7 @@ public class ProblemScheduleDao extends PracticeDBUtil {
     public List<ProblemSchedule> loadProblemScheduleByIdAndSeries(Integer problemId, Integer series){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ProblemSchedule>> h = new BeanListHandler(ProblemSchedule.class);
-        String sql = "SELECT * FROM ProblemSchedule where ProblemId=? and Day=?";
+        String sql = "SELECT * FROM ProblemSchedule where ProblemId=? and Series=?";
         try {
             return run.query(sql, h, problemId, series);
         } catch (SQLException e) {
