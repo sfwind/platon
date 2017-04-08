@@ -142,6 +142,9 @@ public class CacheServiceImpl implements CacheService {
             roadMap.setIntro(introMsg(knowledges));
             roadMap.setKnowledgeList(knowledges);
             roadMap.setStep(getStep(knowledges));
+            if(CollectionUtils.isNotEmpty(knowledges)) {
+                roadMap.setIntegrated(Knowledge.isReview(knowledges.get(0).getId()));
+            }
             roadMapList.add(roadMap);
         });
 

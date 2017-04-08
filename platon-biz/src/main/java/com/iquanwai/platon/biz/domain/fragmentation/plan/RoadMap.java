@@ -14,4 +14,5 @@ public class RoadMap {
     private Integer series;
     private List<Knowledge> knowledgeList;
     private String step;
+    private boolean isIntegrated;
 }
