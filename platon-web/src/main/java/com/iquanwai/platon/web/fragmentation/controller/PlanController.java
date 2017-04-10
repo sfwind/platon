@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -8,18 +7,12 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.RestfulHelper;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
-import com.iquanwai.platon.web.fragmentation.dto.PlanLoadDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -32,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,11 +43,6 @@ public class PlanController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private RestfulHelper restfulHelper;
-
-    public static String CREATE_ORDER_URL = ConfigUtils.adapterDomainName()+"/signup/rise/signup";
-
 
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
@@ -120,10 +107,8 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
         if(improvementPlan==null){
-            // 没有正在进行的计划
             return WebUtils.result(null);
         }
-
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
@@ -134,7 +119,7 @@ public class PlanController {
                 .action("加载训练")
                 .memo(improvementPlan.getId()+"");
         operationLogService.log(operationLog);
-        return WebUtils.result(new PlanLoadDto(improvementPlan, loginUser.getRiseMember()));
+        return WebUtils.result(improvementPlan);
     }
 
     @RequestMapping("/history/load/{series}")
@@ -145,7 +130,6 @@ public class PlanController {
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
-
         Integer result = planService.buildSeriesPlanDetail(improvementPlan, series);
         // openid置为null
         improvementPlan.setOpenid(null);
@@ -160,7 +144,7 @@ public class PlanController {
         }else if(result==-2){
             return WebUtils.error(212,null);
         }
-        return WebUtils.result(new PlanLoadDto(improvementPlan, loginUser.getRiseMember()));
+        return WebUtils.result(improvementPlan);
     }
 
 
@@ -315,57 +299,25 @@ public class PlanController {
         return WebUtils.success();
     }
 
-
-
-    @RequestMapping( value = "/member/types",method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadRiseMemberTypes(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
+    @RequestMapping("/risemember")
+    public ResponseEntity<Map<String,Object>> isRiseMember(LoginUser loginUser){
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
-                .function("会员")
-                .action("获取会员说明");
+                .function("打点")
+                .action("查看是否为rise会员")
+                .memo("");
         operationLogService.log(operationLog);
-        List<MemberType> memberTypes = accountService.loadMemberTypes();
-        if (loginUser.getRiseMember()) {
-            // 已经是会员了
-            return WebUtils.error(201, memberTypes);
-        } else {
-            return WebUtils.result(memberTypes);
-        }
+        return WebUtils.result(loginUser.getRiseMember());
     }
 
-    @RequestMapping(value = "/member/{memberTypeId}",method = RequestMethod.GET)
-    public ResponseEntity<Map<String,Object>> signupRiseMember(LoginUser loginUser,@PathVariable("memberTypeId") Integer memberTypeId){
-        Assert.notNull(loginUser, "用户不能为空");
-        MemberType memberType = accountService.loadMemberType(memberTypeId);
-        if (memberType == null) {
-            LOGGER.error("会员类型异常,memberTypeId:{}", memberTypeId);
-            return WebUtils.error("该会员类型异常，请联系管理员");
-        }
+    @RequestMapping("/risemember/tips")
+    public ResponseEntity<Map<String,Object>> markReadRiseMemberTips(LoginUser loginUser){
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
-                .function("会员")
-                .action("创建订单")
-                .memo(memberTypeId + "");
+                .function("打点")
+                .action("打开rise会员说明页")
+                .memo("");
         operationLogService.log(operationLog);
-        // 下单
-        Map<String,Object> params = Maps.newHashMap();
-        params.put("memberType",memberTypeId);
-        params.put("openId", loginUser.getOpenId());
-        String responseBody = restfulHelper.httpPost(CREATE_ORDER_URL, CommonUtils.mapToJson(params));
-        if (StringUtils.isEmpty(responseBody)) {
-            LOGGER.error("创建订单失败");
-            return WebUtils.error("创建订单失败，请联系管理员");
-        } else {
-            LOGGER.info("创建订单:response:{}", responseBody);
-            Map<String, Object> responseMap = CommonUtils.jsonToMap(responseBody);
-            Double code = Double.parseDouble(responseMap.get("code").toString());
-            if (new Double(200).equals(code)) {
-                LOGGER.info("创建订单成功,msg:{}", responseMap.get("msg"));
-                return WebUtils.result(responseMap.get("msg"));
-            } else {
-                return WebUtils.error(responseMap.get("msg"));
-            }
-        }
+        return WebUtils.result(loginUser.getRiseMember());
     }
 }
