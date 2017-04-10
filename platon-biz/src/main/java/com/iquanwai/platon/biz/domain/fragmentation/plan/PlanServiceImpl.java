@@ -111,12 +111,12 @@ public class PlanServiceImpl implements PlanService {
         if(CollectionUtils.isNotEmpty(runningPractices)) {
             for (PracticePlan practicePlan : runningPractices) {
                 if (practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0) {
-                    return "提升能力和解决问题，<br/>需要你的刻意练习<br/>我们推荐你至少完成所有综合案例";
+                    return "提升能力和解决问题<br/>需要你的刻意练习<br/>我们推荐你至少完成所有综合案例";
                 }
             }
         }
 
-        return "从了解知识和能够运用，<br/>还差一个内化的距离<br/>确定不做应用训练了吗？";
+        return "从了解知识和能够运用<br/>还差一个内化的距离<br/>来一个应用训练吧";
     }
 
     /**
