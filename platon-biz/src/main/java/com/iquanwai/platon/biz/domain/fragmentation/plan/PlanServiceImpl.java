@@ -119,19 +119,29 @@ public class PlanServiceImpl implements PlanService {
         return "从了解知识和能够运用，<br/>还差一个内化的距离<br/>确定不做应用训练了吗？";
     }
 
+    /**
+     * 获取最大完成组序号
+     * @param practicePlans 所有训练
+     * @return 最大完成组序号
+     */
     private Integer completeSeriesCount(List<PracticePlan> practicePlans) {
-        Set<Integer> disCompleteSeries = Sets.newHashSet();
-        if(CollectionUtils.isNotEmpty(practicePlans)){
-            for (PracticePlan practicePlan : practicePlans) {
-                // 当前第几节
-                if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus() == 0){
-                    disCompleteSeries.add(practicePlan.getSeries());
-                }
+        Set<Integer> completeSeries = Sets.newHashSet();
+        Map<Integer,List<PracticePlan>> seriesPlan = Maps.newHashMap();
+        // 分组
+        for(PracticePlan plan : practicePlans){
+            Integer series = plan.getSeries();
+            List<PracticePlan> plans = seriesPlan.computeIfAbsent(series, (k) -> Lists.newArrayList());
+            plans.add(plan);
+        }
+        // 判断是否完成
+        for (Integer key : seriesPlan.keySet()) {
+            if (isDone(seriesPlan.get(key))) {
+                completeSeries.add(key);
             }
         }
-        Optional<Integer> min = disCompleteSeries.stream().min(Integer::compareTo);
-        Optional<Integer> max = practicePlans.stream().map(PracticePlan::getSeries).max(Integer::compareTo);
-        return min.orElse(max.orElse(null));
+        // 获取最大的完成组，没有的话则是0
+        Optional<Integer> maxComplete = completeSeries.stream().max(Integer::compareTo);
+        return maxComplete.orElse(0);
     }
 
     @Override
