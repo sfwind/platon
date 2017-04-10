@@ -73,6 +73,10 @@ public class DateUtils {
         return new DateTime(date).plusYears(increment).toDate();
     }
 
+    public static Date afterMonths(Date date,int increment){
+        return new DateTime(date).plusMonths(increment).toDate();
+    }
+
     public static Date afterDays(Date date, int increment){
         return new DateTime(date).plusDays(increment).toDate();
     }
@@ -80,4 +84,6 @@ public class DateUtils {
     public static Date beforeDays(Date date, int increment){
         return new DateTime(date).minusDays(increment).toDate();
     }
+
+
 }
