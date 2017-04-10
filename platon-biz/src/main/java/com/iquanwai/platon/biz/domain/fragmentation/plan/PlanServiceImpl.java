@@ -116,7 +116,7 @@ public class PlanServiceImpl implements PlanService {
             }
         }
 
-        return "从了解知识和能够运用<br/>还差一个内化的距离<br/>来一个应用训练吧";
+        return "从了解知识到能够运用<br/>还差一个内化的距离<br/>来一个应用训练吧";
     }
 
     /**
@@ -214,7 +214,7 @@ public class PlanServiceImpl implements PlanService {
         if(StringUtils.isEmpty(step)){
             step = "";
         }else{
-            step = step+":";
+            step = step+"：";
         }
         List<String> knowledgeName = knowledges.stream().map(Knowledge::getKnowledge).collect(Collectors.toList());
 
