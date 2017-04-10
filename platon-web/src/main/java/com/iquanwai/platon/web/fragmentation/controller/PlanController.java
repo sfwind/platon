@@ -305,7 +305,7 @@ public class PlanController {
                 .module("RISE")
                 .function("打点")
                 .action("查看是否为rise会员")
-                .memo("");
+                .memo(loginUser.getRiseMember()+"");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
     }
