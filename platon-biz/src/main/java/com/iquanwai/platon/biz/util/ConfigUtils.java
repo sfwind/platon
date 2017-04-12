@@ -1,18 +1,24 @@
 package com.iquanwai.platon.biz.util;
 
+import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.io.File;
-import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@Component
 public class ConfigUtils {
 	private static Config config;
 	private static Config localconfig;
 	private static Config fileconfig;
+	private static ZKConfigUtils zkConfigUtils;
+
+	private static boolean zk_switch = false;
 
 	private static Timer timer;
 	static{
@@ -24,6 +30,7 @@ public class ConfigUtils {
 				loadConfig();
 			}
 		}, 0, 1000*60);
+		zkConfigUtils = new ZKConfigUtils();
 	}
 
 	private static void loadConfig() {
@@ -32,66 +39,89 @@ public class ConfigUtils {
 		fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
 		config = localconfig.withFallback(config);
 		config = fileconfig.withFallback(config);
+		zk_switch = config.getBoolean("zk.open");
+	}
+
+	public static String getValue(String key){
+		String value = null;
+		if(zk_switch){
+			value = zkConfigUtils.getValue(key);
+		}
+		if(value==null){
+			value = config.getString(key);
+		}
+		return value;
+	}
+
+	public static Integer getIntValue(String key){
+		Integer value = null;
+		if(zk_switch){
+			value= zkConfigUtils.getIntValue(key);
+		}
+		if(value==null){
+			value = config.getInt(key);
+		}
+		return value;
+	}
+
+	public static Boolean getBooleanValue(String key){
+		Boolean value = null;
+		if(zk_switch){
+			value= zkConfigUtils.getBooleanValue(key);
+		}
+		if(value==null){
+			value = config.getBoolean(key);
+		}
+		return value;
 	}
 
 	public static String getAppid() {
-		return config.getString("appid");
+		return getValue("appid");
 	}
 
 	public static boolean logSwitch() {
-		return config.getBoolean("open.log");
+		return getBooleanValue("open.log");
 	}
 
 	public static String getAPIKey() {
-		return config.getString("api.key");
+		return getValue("api.key");
 	}
 
 	public static String getSecret() {
-		return config.getString("secret");
+		return getValue("secret");
 	}
 
 	public static int getJsSignatureInterval() {
-		return config.getInt("js.internal");
+		return getIntValue("js.internal");
 	}
 
 	public static boolean isDebug(){
-		return config.getBoolean("debug")||config.getBoolean("press.test");
+		return getBooleanValue("debug")||getBooleanValue("press.test");
 	}
 
 	public static boolean isFrontDebug(){
-		return config.getBoolean("front.debug");
+		return getBooleanValue("front.debug");
 	}
 
 	public static boolean logDetail(){
-		return config.getBoolean("log.debug");
+		return getBooleanValue("log.debug");
 	}
 
 	public static boolean messageSwitch(){
-		return config.getBoolean("message.switch");
-	}
-
-	public static String domainName(){
-		return config.getString("app.domain");
+		return getBooleanValue("message.switch");
 	}
 
 	public static String adapterDomainName(){
-		return config.getString("adapter.domain");
+		return getValue("adapter.domain");
 	}
 
-	public static String pcDomainName(){
-		return config.getString("pc.domain");
-	}
-
-	public static String resourceDomainName(){
-		return config.getString("resource.domain");
-	}
 
 	public static String realDomainName(){
-		return config.getString("app.domainname");
+		return getValue("app.domainname");
 	}
 
 	public static String staticResourceUrl(){
-		String url = config.getString("static.resource.url");
+		String url = getValue("static.resource.url");
 		//测试环境防浏览器缓存，添加随机参数
 		if(url.endsWith("?")){
 			url = url.concat("_t=").concat(new Random().nextInt()+"");
@@ -100,32 +130,29 @@ public class ConfigUtils {
 		return url;
 	}
 
-	public static List<Integer> getWorkScoreList(){
-		return config.getIntList("work.difficulty.score");
-	}
-
 	public static Integer getChallengeScore(){
-		return config.getInt("challenge.score");
+		return getIntValue("challenge.score");
 	}
 
 	public static String gaId(){
-		return config.getString("ga.id");
+		return getValue("ga.id");
 	}
 
 	public static String getDefaultOpenid(){
-		return config.getString("default.openid");
-	}
-
-	public static String getValue(String key){
-		return config.getString(key);
+		return getValue("default.openid");
 	}
 
 	public static Integer getVoteScore(){
-		return config.getInt("vote.score");
+		return getIntValue("vote.score");
 	}
 
 	public static String getUploadDomain(){
-		return config.getString("upload.image.domain");
+		return getValue("upload.image.domain");
+	}
+
+	@PreDestroy
+	public void destroy(){
+		zkConfigUtils.destroy();
 	}
 
 	public static String courseStartMsg(){
@@ -142,5 +169,13 @@ public class ConfigUtils {
 
 	public static Boolean isDevelopment(){
 		return config.hasPath("development") && config.getBoolean("development");
+	}
+
+	public static Integer preStudySerials(){
+		return 3;
+	}
+
+	public static String getIntegratedPracticeIndex(){
+		return config.getString("integrated.practice.index");
 	}
 }

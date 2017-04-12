@@ -39,7 +39,7 @@ public class PointRepoImpl implements PointRepo {
 
     @PostConstruct
     public void initPoint() {
-        List<Integer> scores = ConfigUtils.getWorkScoreList();
+        List<Integer> scores = Lists.newArrayList(40,60,100);
         logger.info("score init");
         for (int i = 0; i < scores.size(); i++) {
             score.put(i + 1, scores.get(i));

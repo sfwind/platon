@@ -22,6 +22,6 @@ public class LoginUser {
 
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤",
-                Profile.DEFAULT_AVATAR, null, true,false);
+                Profile.DEFAULT_AVATAR, null, true, false);
     }
 }

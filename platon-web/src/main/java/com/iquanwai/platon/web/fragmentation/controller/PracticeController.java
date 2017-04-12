@@ -2,13 +2,13 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -61,7 +61,7 @@ public class PracticeController {
         }
         //TODO:改为富文本编辑器后,去掉planid校验
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), planId,false);
+                loginUser.getOpenId(), planId, false);
         // 查询点赞数
         applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
         // 查询评论数
@@ -177,24 +177,6 @@ public class PracticeController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping("/next/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> nextPractice(LoginUser loginUser, @PathVariable Integer practicePlanId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        Practice practice = planService.nextPractice(practicePlanId);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("训练")
-                .action("打开下一训练")
-                .memo(practicePlanId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(practice);
-    }
-
     /**
      * 点赞或者取消点赞
      *
@@ -302,60 +284,6 @@ public class PracticeController {
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);
     }
-
-//    @RequestMapping("/challenge/list/other/{challengeId}")
-//    public ResponseEntity<Map<String, Object>> showOtherChallengeList(LoginUser loginUser, @PathVariable("challengeId") Integer challengeId,@ModelAttribute Page page) {
-//        Assert.notNull(challengeId, "challengeId不能为空");
-//        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-//                .module("训练")
-//                .function("小目标")
-//                .action("小目标列表加载他人的")
-//                .memo(challengeId + "");
-//        operationLogService.log(operationLog);
-//        List<RiseWorkInfoDto> submits = practiceService.getChallengeSubmitList(challengeId)
-//                .stream()
-//                .filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
-//                .map(item -> {
-//                    RiseWorkInfoDto dto = new RiseWorkInfoDto();
-//                    dto.setSubmitId(item.getId());
-//                    dto.setType(Constants.PracticeType.CHALLENGE);
-//                    dto.setContent(item.getContent());
-//                    dto.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, item.getId()));
-//                    Account account = accountService.getAccount(item.getOpenid(), false);
-//                    dto.setUserName(account.getNickname());
-//                    dto.setHeadImage(account.getHeadimgurl());
-//                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
-//                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.CHALLENGE,item.getId()));
-//                    // 查询我对它的点赞状态
-//                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, item.getId(), loginUser.getOpenId());
-//                    if (myVote != null && myVote.getDel() == 0) {
-//                        // 点赞中
-//                        dto.setVoteStatus(1);
-//                    } else {
-//                        dto.setVoteStatus(0);
-//                    }
-//
-//                    return dto;
-//                }).sorted((left,right)->{
-//                    try {
-//                        int leftWeight = left.getCommentCount() + left.getVoteCount();
-//                        int rightWeight = right.getCommentCount() + right.getVoteCount();
-//                        return rightWeight - leftWeight;
-//                    } catch (Exception e){
-//                        LOGGER.error("挑战任务文章排序异常",e);
-//                        return 0;
-//                    }
-//                }).collect(Collectors.toList());
-//        page.setTotal(submits.size());
-//        submits = submits.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
-//        submits.forEach(item->{
-//            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
-//        });
-//        RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<RiseWorkInfoDto>();
-//        dto.setList(submits);
-//        dto.setEnd(page.isLastPage());
-//        return WebUtils.result(dto);
-//    }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadComments(LoginUser loginUser,
@@ -574,6 +502,9 @@ public class PracticeController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+        if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
+            return WebUtils.error("该内容为付费内容，只有会员可以查看");
+        }
         Integer result = planService.checkPractice(series, improvementPlan);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -582,9 +513,12 @@ public class PracticeController {
                 .memo(series.toString());
         operationLogService.log(operationLog);
         if(result==-1){
-            return WebUtils.error("每天早上6点解锁一组训练，请耐心等待");
+            // 前一组已完成 这一组未解锁
+            // 会员都会解锁，未解锁应该都是非会员
+            return WebUtils.error("该内容为付费内容，只有会员可以查看");
         }else if(result==-2){
-            return WebUtils.error("完成之前的理解训练，才能解锁该训练");
+            // 前一组未完成
+            return WebUtils.error("完成之前的任务，这一组才能解锁<br> 学习和内化，都需要循序渐进哦");
         }
         return WebUtils.success();
     }
@@ -602,4 +536,44 @@ public class PracticeController {
         return WebUtils.result(practiceService.loadProblemLabels(problemId));
     }
 
+    @RequestMapping("/knowledge/start/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> startKnowledge(LoginUser loginUser,
+                                                                @PathVariable Integer practicePlanId){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId, improvementPlan.getProblemId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("知识点")
+                .action("打开知识点页")
+                .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(knowledges);
+    }
+
+    @RequestMapping("/knowledge/learn/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
+                                                              @PathVariable Integer practicePlanId){
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        practiceService.learnKnowledge(practicePlanId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("知识点")
+                .function("知识点")
+                .action("学习知识点")
+                .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
 }

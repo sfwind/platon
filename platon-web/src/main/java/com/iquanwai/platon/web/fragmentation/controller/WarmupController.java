@@ -77,7 +77,7 @@ public class WarmupController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                improvementPlan.getId(), practicePlanId);
+                improvementPlan.getProblemId(), practicePlanId);
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -127,7 +127,7 @@ public class WarmupController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                improvementPlan.getId(), practicePlanId);
+                improvementPlan.getProblemId(), practicePlanId);
         List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         // 获取用户提交
         List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);

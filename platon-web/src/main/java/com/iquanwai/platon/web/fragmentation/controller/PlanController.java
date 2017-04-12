@@ -2,11 +2,11 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.RoadMap;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -130,7 +132,7 @@ public class PlanController {
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
-        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series);
+        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series, loginUser.getRiseMember());
         // openid置为null
         improvementPlan.setOpenid(null);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -143,6 +145,8 @@ public class PlanController {
             return WebUtils.error(211,null);
         }else if(result==-2){
             return WebUtils.error(212,null);
+        } else if(result==-3){
+            return WebUtils.error(213, improvementPlan);
         }
         return WebUtils.result(improvementPlan);
     }
@@ -158,7 +162,7 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        Knowledge knowledge = planService.getKnowledge(knowledgeId);
+        Knowledge knowledge = planService.getKnowledge(knowledgeId, improvementPlan.getProblemId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("知识点")
@@ -167,27 +171,6 @@ public class PlanController {
                 .memo(knowledgeId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(knowledge);
-    }
-
-    @RequestMapping("/knowledge/learn/{knowledgeId}")
-    public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
-                                                             @PathVariable Integer knowledgeId){
-
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        planService.learnKnowledge(knowledgeId, improvementPlan.getId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("知识点")
-                .function("知识点回顾")
-                .action("学习知识点")
-                .memo(knowledgeId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
     }
 
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
@@ -204,6 +187,15 @@ public class PlanController {
         CompletePlanDto completePlanDto = new CompletePlanDto();
         completePlanDto.setIscomplete(result.getLeft());
         completePlanDto.setPercent(result.getRight());
+        int minStudyDays = Double.valueOf(Math.ceil(improvementPlan.getTotalSeries() / 2.0D)).intValue();
+        Date minDays = DateUtils.afterDays(improvementPlan.getStartDate(), minStudyDays);
+            // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
+        if(new Date().before(minDays)){
+            completePlanDto.setMustStudyDays(minStudyDays);
+        } else {
+            completePlanDto.setMustStudyDays(0);
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("完成训练")
@@ -212,6 +204,7 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(completePlanDto);
     }
+
 
     @RequestMapping(value = "/close", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> close(LoginUser loginUser){
@@ -241,28 +234,6 @@ public class PlanController {
             loginUser.setOpenRise(true);
         }
         return WebUtils.success();
-    }
-
-    @RequestMapping("/knowledge/example/{knowledgeId}")
-    public ResponseEntity<Map<String, Object>> loadKnowledgeExample(LoginUser loginUser,
-                                                              @PathVariable Integer knowledgeId){
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-
-        Assert.notNull(loginUser, "用户不能为空");
-        WarmupPractice warmupPractice = planService.getExample(knowledgeId, improvementPlan.getProblemId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("知识点")
-                .function("知识点例题")
-                .action("学习例题")
-                .memo(knowledgeId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(warmupPractice);
     }
 
     @RequestMapping("/welcome")
@@ -319,5 +290,23 @@ public class PlanController {
                 .memo("");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
+    }
+
+    @RequestMapping("/roadmap")
+    public ResponseEntity<Map<String, Object>> getRoadMap(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        List<RoadMap> roadMap = planService.loadRoadMap(improvementPlan.getProblemId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("学习知识点")
+                .action("打开知识点路线页");
+        operationLogService.log(operationLog);
+        return WebUtils.result(roadMap);
     }
 }

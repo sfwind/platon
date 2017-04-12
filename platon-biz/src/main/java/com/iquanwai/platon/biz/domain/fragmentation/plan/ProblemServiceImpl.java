@@ -80,14 +80,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public Problem getProblem(Integer problemId) {
-        List<Problem> problems = cacheService.getProblems();
-
-        for(Problem problem:problems){
-            if(problem.getId()==problemId){
-                return problem;
-            }
-        }
-        return null;
+        return cacheService.getProblem(problemId);
     }
 
     @Override

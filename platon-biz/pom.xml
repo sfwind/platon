@@ -153,6 +153,11 @@
             <groupId>com.qiniu</groupId>
             <artifactId>qiniu-java-sdk</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

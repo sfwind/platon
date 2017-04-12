@@ -13,6 +13,7 @@ public class  ApplicationPractice {
     private String topic; //任务标题
     private String description; // 题干
     private Integer knowledgeId; //知识点id
+    @Deprecated
     private Integer sceneId; //子场景id
     private Integer difficulty; //难易度（1-容易，2-普通，3-困难）
     private Integer problemId; //专题id

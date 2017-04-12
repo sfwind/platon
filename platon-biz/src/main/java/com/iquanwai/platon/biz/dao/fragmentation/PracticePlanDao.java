@@ -111,16 +111,6 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
     }
 
-    public void summary(Integer planId, Integer series){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PracticePlan set Summary=1 where PlanId=? and Series=?";
-        try {
-            runner.update(sql, planId, series);
-        }catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
     public List<PracticePlan> loadBySeries(Integer planId, Integer series){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
@@ -147,13 +137,12 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public List<PracticePlan> loadApplicationPracticeByPlanIds(List<Integer> planIds){
+    public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
-        String questionMark = produceQuestionMark(planIds.size());
-        String sql = "SELECT * FROM PracticePlan where PlanId in ("+questionMark+") and Type=11";
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12)";
         try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planIds.toArray());
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
             return practicePlans;
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -163,7 +152,7 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void unlockApplicationPractice(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PracticePlan set UnLocked=1 where PlanId=? and Type=11";
+        String sql = "update PracticePlan set UnLocked=1 where PlanId=? and (Type=11 or Type=12)";
         try {
             runner.update(sql, planId);
         }catch (SQLException e) {

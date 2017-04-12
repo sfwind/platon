@@ -20,12 +20,12 @@ import java.util.List;
 public class ApplicationPracticeDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<ApplicationPractice> loadPractice(int knowledgeId, int problemId){
+    public List<ApplicationPractice> loadPractice(int problemId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationPractice>> h = new BeanListHandler(ApplicationPractice.class);
-        String sql = "SELECT * FROM ApplicationPractice where KnowledgeId=? and ProblemId=?";
+        String sql = "SELECT * FROM ApplicationPractice where ProblemId=?";
         try {
-            return run.query(sql, h, knowledgeId, problemId);
+            return run.query(sql, h, problemId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
