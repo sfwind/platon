@@ -27,7 +27,7 @@ public class WarmupPractice implements Cloneable{
     private String practiceUid; //任务唯一编号
     private Integer score; //非db字段 分值
     private List<Choice> choiceList; //所有选项
-    private List<WarmupPracticeDiscuss> discussList; //理解训练讨论
+    private List<WarmupPracticeDiscuss> discussList; //巩固训练讨论
     private List<Integer> choice; //用户选择选项
     private Knowledge knowledge; //知识点
 

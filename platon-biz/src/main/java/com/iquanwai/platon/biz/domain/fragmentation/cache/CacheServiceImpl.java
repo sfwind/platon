@@ -3,11 +3,11 @@ package com.iquanwai.platon.biz.domain.fragmentation.cache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.RoadMap;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
 import com.iquanwai.platon.biz.po.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class CacheServiceImpl implements CacheService {
     private List<Problem> problems = Lists.newArrayList();
     //缓存知识点
     private Map<Integer, Knowledge> knowledgeMap = Maps.newHashMap();
-    //缓存理解训练
+    //缓存巩固训练
     private Map<Integer, WarmupPractice> warmupPracticeMap = Maps.newHashMap();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -50,8 +50,8 @@ public class CacheServiceImpl implements CacheService {
 
         problems = problemDao.loadAll(Problem.class);
         problems.stream().forEach(problem -> {
-            List<RoadMap> roadMapList = loadRoadMap(problem.getId());
-            problem.setRoadMapList(roadMapList);
+            List<Chapter> chapterList = loadRoadMap(problem.getId());
+            problem.setChapterList(chapterList);
         });
         logger.info("problem init complete");
 
@@ -119,49 +119,45 @@ public class CacheServiceImpl implements CacheService {
         return warmupPractice;
     }
 
-    public List<RoadMap> loadRoadMap(Integer problemId) {
+    public List<Chapter> loadRoadMap(Integer problemId) {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
         Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         //按节组合成一组知识点
         problemSchedules.stream().forEach(problemSchedule -> {
-            if(problemScheduleMap.get(problemSchedule.getSeries())==null){
-                problemScheduleMap.put(problemSchedule.getSeries(), Lists.newArrayList());
+            if(problemScheduleMap.get(problemSchedule.getChapter())==null){
+                problemScheduleMap.put(problemSchedule.getChapter(), Lists.newArrayList());
             }
-            problemScheduleMap.get(problemSchedule.getSeries()).add(problemSchedule);
+            problemScheduleMap.get(problemSchedule.getChapter()).add(problemSchedule);
         });
 
-        List<RoadMap> roadMapList = Lists.newArrayList();
+        List<Chapter> chapterList = Lists.newArrayList();
 
-        problemScheduleMap.keySet().stream().forEach(series ->{
-            RoadMap roadMap = new RoadMap();
-            roadMap.setSeries(series);
-            List<ProblemSchedule> dailySchedule = problemScheduleMap.get(series);
-            List<Knowledge> knowledges = dailySchedule.stream()
-                    .map(problemSchedule -> getKnowledge(problemSchedule.getKnowledgeId()))
+        //构建章节
+        problemScheduleMap.keySet().stream().forEach(chapterSequence ->{
+            Chapter chapter = new Chapter();
+            List<ProblemSchedule> scheduleList = problemScheduleMap.get(chapterSequence);
+            List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection()-o2.getSection())
+                    .map(problemSchedule -> {
+                        Section section = new Section();
+                        Knowledge knowledge = getKnowledge(problemSchedule.getKnowledgeId());
+                        section.setKnowledge(knowledge);
+                        section.setName(knowledge.getKnowledge());
+                        section.setSection(problemSchedule.getSection());
+                        section.setSeries(problemSchedule.getSeries());
+                        section.setIntegrated(Knowledge.isReview(problemSchedule.getKnowledgeId()));
+                        return section;
+                    })
                     .collect(Collectors.toList());
-            roadMap.setIntro(introMsg(knowledges));
-            roadMap.setKnowledgeList(knowledges);
-            roadMap.setStep(getStep(knowledges));
-            if(CollectionUtils.isNotEmpty(knowledges)) {
-                roadMap.setIntegrated(Knowledge.isReview(knowledges.get(0).getId()));
+            chapter.setName(chapterName(sectionList));
+            chapter.setSections(sectionList);
+            chapter.setChapter(chapterSequence);
+            if(CollectionUtils.isNotEmpty(sectionList)) {
+                chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledge().getId()));
             }
-            roadMapList.add(roadMap);
+            chapterList.add(chapter);
         });
 
-        return roadMapList;
-    }
-
-    private String getStep(List<Knowledge> knowledges) {
-        if(CollectionUtils.isEmpty(knowledges)){
-            return "";
-        }
-        //步骤
-        String step = knowledges.get(0).getStep();
-        if(StringUtils.isEmpty(step)){
-            step = knowledges.get(0).getKnowledge();
-        }
-
-        return step;
+        return chapterList;
     }
 
     @Override
@@ -169,21 +165,12 @@ public class CacheServiceImpl implements CacheService {
         init();
     }
 
-    //创建首页介绍句
-    private String introMsg(List<Knowledge> knowledges) {
-        if(CollectionUtils.isEmpty(knowledges)){
+
+    private String chapterName(List<Section> sectionList) {
+        if(CollectionUtils.isEmpty(sectionList)){
             return "";
         }
         //步骤
-        String step = knowledges.get(0).getStep();
-        if(StringUtils.isEmpty(step)){
-            step = "";
-        }else{
-            step = step+":";
-        }
-        List<String> knowledgeName = knowledges.stream().map(Knowledge::getKnowledge).collect(Collectors.toList());
-
-        String knowledge = StringUtils.join(knowledgeName, " & ");
-        return step+knowledge;
+        return sectionList.get(0).getKnowledge().getStep();
     }
 }

@@ -16,7 +16,7 @@ public interface CacheService {
     Problem getProblem(Integer problemId);
     /** 获取某个知识点*/
     Knowledge getKnowledge(Integer knowledgeId);
-    /** 获取某个理解训练*/
+    /** 获取某个巩固训练*/
     WarmupPractice getWarmupPractice(Integer practiceId);
     /** 更新缓存*/
     void reload();

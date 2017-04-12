@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -119,5 +118,5 @@ public interface PlanService {
      * 根据训练id获取知识点路线图
      * @param problemId 训练id
      */
-    List<RoadMap> loadRoadMap(Integer problemId);
+    List<Chapter> loadRoadMap(Integer problemId);
 }
