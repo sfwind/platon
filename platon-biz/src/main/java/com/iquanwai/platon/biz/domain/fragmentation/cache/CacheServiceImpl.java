@@ -72,7 +72,7 @@ public class CacheServiceImpl implements CacheService {
 
         //选项按sequence排序
         warmupPractices.stream().forEach(warmupPractice ->
-                warmupPractice.getChoiceList().stream().sorted((o1, o2) -> o1.getSequence()-o2.getSequence()));
+                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence()-o2.getSequence()));
         logger.info("warmup practice init complete");
     }
 

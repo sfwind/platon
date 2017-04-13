@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.util.zk;
 
+import com.google.gson.Gson;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,9 +68,11 @@ public class ZKConfigUtils {
 
     public String getValue(String key){
         try {
-            return new String(zk.getData(CONFIG_PATH.concat(key), false, null), "utf-8");
+            String json = new String(zk.getData(CONFIG_PATH.concat(key), false, null), "utf-8");
+            ConfigNode configNode = new Gson().fromJson(json, ConfigNode.class);
+            return configNode.getValue();
         } catch (Exception e) {
-            logger.error("zk" + zkAddress + " get value", e);
+            logger.error("zk " + zkAddress + " get value", e);
         }
 
         return null;
