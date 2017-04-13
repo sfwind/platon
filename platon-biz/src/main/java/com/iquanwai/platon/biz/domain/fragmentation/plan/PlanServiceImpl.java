@@ -159,7 +159,7 @@ public class PlanServiceImpl implements PlanService {
         //未解锁返回false
         if (!firstPractice.getUnlocked()) {
             // 判断是否是付费用户 || 获取前一节训练
-            if(riseMember || series <= ConfigUtils.preStudySerials()) {
+            if(riseMember || improvementPlan.getRiseMember() || series <= ConfigUtils.preStudySerials()) {
                 List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
                 if (isDone(prePracticePlans)) {
                     unlock(runningPractice, improvementPlan);
@@ -172,7 +172,7 @@ public class PlanServiceImpl implements PlanService {
         //写入非db字段
         setLogicParam(improvementPlan, runningPractice);
         // 不是会员并且是第四节，则提示一下
-        if(!riseMember && series > ConfigUtils.preStudySerials()){
+        if (!riseMember && series > ConfigUtils.preStudySerials() && !improvementPlan.getRiseMember()) {
             return -3;
         }
         return 0;
