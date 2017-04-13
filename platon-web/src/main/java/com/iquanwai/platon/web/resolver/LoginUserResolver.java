@@ -1,8 +1,10 @@
 package com.iquanwai.platon.web.resolver;
 
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
@@ -27,6 +29,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     private OAuthService oAuthService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     private static Map<String, LoginUser> loginUserMap = Maps.newHashMap();
 
@@ -106,5 +110,23 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return loginUserMap.get(accessToken);
         }
         return null;
+    }
+
+    public void refreshRiseMember(){
+        for (LoginUser user : loginUserMap.values()) {
+            try {
+                if (user.getRiseMember()) {
+                    // 是会员，查询现在还是不是
+                    RiseMember riseMember = riseMemberDao.validRiseMember(user.getOpenId());
+                    if(riseMember == null){
+                        // 不是会员了
+                        user.setRiseMember(false);
+                        logger.info("openId:{},expired member", user.getOpenId());
+                    }
+                }
+            } catch (Exception e){
+                logger.error("会员过期检查失败", e);
+            }
+        }
     }
 }
