@@ -47,4 +47,5 @@ public class RiseMemberTypeRepoImpl implements RiseMemberTypeRepo {
         });
         return collect;
     }
+
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
@@ -19,6 +18,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -112,21 +112,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         return null;
     }
 
-    public void refreshRiseMember(){
-        for (LoginUser user : loginUserMap.values()) {
-            try {
-                if (user.getRiseMember()) {
-                    // 是会员，查询现在还是不是
-                    RiseMember riseMember = riseMemberDao.validRiseMember(user.getOpenId());
-                    if(riseMember == null){
-                        // 不是会员了
-                        user.setRiseMember(false);
-                        logger.info("openId:{},expired member", user.getOpenId());
-                    }
-                }
-            } catch (Exception e){
-                logger.error("会员过期检查失败", e);
-            }
-        }
+    public static Collection<LoginUser> getAllUsers(){
+        return loginUserMap.values();
     }
 }
