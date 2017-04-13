@@ -35,6 +35,7 @@ public class ZKConfigUtils {
 
     public void init(){
         try {
+            config();
             zooKeeper = new RobustZooKeeper(zkAddress);
             zk = zooKeeper.getClient();
         } catch (IOException e) {
