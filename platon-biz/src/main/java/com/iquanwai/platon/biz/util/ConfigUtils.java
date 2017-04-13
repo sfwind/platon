@@ -3,6 +3,8 @@ package com.iquanwai.platon.biz.util;
 import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -19,6 +21,8 @@ public class ConfigUtils {
 	private static ZKConfigUtils zkConfigUtils;
 
 	private static boolean zk_switch = false;
+
+	private static Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
 
 	private static Timer timer;
 	static{
@@ -46,6 +50,7 @@ public class ConfigUtils {
 		String value = null;
 		if(zk_switch){
 			value = zkConfigUtils.getValue(key);
+			logger.info("get {} from zk", key);
 		}
 		if(value==null){
 			value = config.getString(key);
@@ -57,6 +62,7 @@ public class ConfigUtils {
 		Integer value = null;
 		if(zk_switch){
 			value= zkConfigUtils.getIntValue(key);
+			logger.info("get {} from zk", key);
 		}
 		if(value==null){
 			value = config.getInt(key);
@@ -68,6 +74,7 @@ public class ConfigUtils {
 		Boolean value = null;
 		if(zk_switch){
 			value= zkConfigUtils.getBooleanValue(key);
+			logger.info("get {} from zk", key);
 		}
 		if(value==null){
 			value = config.getBoolean(key);
