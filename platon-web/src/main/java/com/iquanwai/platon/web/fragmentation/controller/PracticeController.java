@@ -503,7 +503,9 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
-            return WebUtils.error("该内容为付费内容，只有会员可以查看");
+            if(!improvementPlan.getRiseMember()){
+                return WebUtils.error("该内容为付费内容，只有会员可以查看");
+            }
         }
         Integer result = planService.checkPractice(series, improvementPlan);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
