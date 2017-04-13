@@ -66,7 +66,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         if(repliedId!=null && !openid.equals(warmupPracticeDiscuss.getRepliedOpenid())) {
             String url = "/rise/static/message/warmup/reply?commentId={0}&warmupPracticeId={1}";
             url = MessageFormat.format(url, id.toString(), warmupPracticeId.toString());
-            String message = "回复了我的理解训练问题";
+            String message = "回复了我的巩固训练问题";
             messageService.sendMessage(message, warmupPracticeDiscuss.getRepliedOpenid(),
                     openid, url);
         }

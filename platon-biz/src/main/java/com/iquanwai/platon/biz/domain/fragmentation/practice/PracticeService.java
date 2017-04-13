@@ -12,20 +12,20 @@ import java.util.List;
  */
 public interface PracticeService {
     /**
-     * 获取理解训练列表
+     * 获取巩固训练列表
      * @param problemId 专题id
      * @param practicePlanId 训练组编号
      * */
     List<WarmupPractice> getWarmupPractice(Integer problemId, Integer practicePlanId);
 
     /**
-     * 获取理解训练解析
+     * 获取巩固训练解析
      * @param planId 训练id
      * @param questionIds 练习编号
      * */
     List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds);
     /**
-     * 回答理解训练问题
+     * 回答巩固训练问题
      * @param warmupPracticeList 练习答案
      * @param planId 训练id
      * */
@@ -123,7 +123,7 @@ public interface PracticeService {
     Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
 
     /*
-     * 获取理解训练
+     * 获取巩固训练
      * @param warmupId 训练id
      * */
     WarmupPractice getWarmupPractice(Integer warmupId);

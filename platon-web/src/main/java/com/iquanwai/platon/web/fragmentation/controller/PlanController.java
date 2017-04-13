@@ -2,7 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.RoadMap;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -300,13 +300,13 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        List<RoadMap> roadMap = planService.loadRoadMap(improvementPlan.getProblemId());
+        List<Chapter> chapter = planService.loadRoadMap(improvementPlan.getProblemId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("学习知识点")
                 .action("打开知识点路线页");
         operationLogService.log(operationLog);
-        return WebUtils.result(roadMap);
+        return WebUtils.result(chapter);
     }
 }

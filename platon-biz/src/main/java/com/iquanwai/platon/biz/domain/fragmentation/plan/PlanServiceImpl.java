@@ -11,7 +11,6 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -75,7 +74,7 @@ public class PlanServiceImpl implements PlanService {
     private boolean isDone(List<PracticePlan> runningPractices){
         if(CollectionUtils.isNotEmpty(runningPractices)) {
             for(PracticePlan practicePlan:runningPractices){
-                //理解训练未完成时,返回-2
+                //巩固训练或理解训练未完成时,返回false
                 if((practicePlan.getType()==PracticePlan.WARM_UP ||
                         practicePlan.getType()==PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType()==PracticePlan.KNOWLEDGE ||
@@ -185,7 +184,7 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         int series = getSeries(runningPractice);
         improvementPlan.setSeries(series);
-        improvementPlan.setIntroMsg(introMsg(getKnowledges(series, improvementPlan.getProblemId())));
+        setTitleInfo(improvementPlan, series, improvementPlan.getProblemId());
         int messageNumber = notifyMessageDao.newMessageCount(improvementPlan.getOpenid());
         improvementPlan.setNewMessage(messageNumber>0);
         // 所有的综合训练是否完成
@@ -204,33 +203,28 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
     }
 
-    //创建首页介绍句
-    private String introMsg(List<Knowledge> knowledges) {
-        if(CollectionUtils.isEmpty(knowledges)){
-            return "";
-        }
-        //步骤
-        String step = knowledges.get(0).getStep();
-        if(StringUtils.isEmpty(step)){
-            step = "";
-        }else{
-            step = step+"：";
-        }
-        List<String> knowledgeName = knowledges.stream().map(Knowledge::getKnowledge).collect(Collectors.toList());
-
-        String knowledge = StringUtils.join(knowledgeName, " & ");
-        return step+knowledge;
-    }
-
-    private List<Knowledge> getKnowledges(int series, Integer problemId) {
-        List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemScheduleByIdAndSeries(problemId, series);
-        List<Knowledge> knowledges = Lists.newArrayList();
-        problemSchedules.forEach(problemSchedule -> {
-            Knowledge knowledge = cacheService.getKnowledge(problemSchedule.getKnowledgeId());
-            knowledges.add(knowledge);
+    private void setTitleInfo(ImprovementPlan improvementPlan, int series, Integer problemId) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
+        List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
+        problemSchedules.sort((o1, o2) -> {
+            if(!o1.getChapter().equals(o2.getChapter())){
+                return o1.getChapter()-o2.getChapter();
+            }
+            return o1.getSection()-o2.getSection();
         });
+        //获取课程表
+        ProblemSchedule problemSchedule = problemSchedules.get(series - 1);
+        Integer knowledgeId = problemSchedule.getKnowledgeId();
+        //章序号
+        Integer chapter = problemSchedule.getChapter();
+        //节序号
+        Integer section = problemSchedule.getSection();
 
-        return knowledges;
+        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
+        if(knowledge!=null){
+            improvementPlan.setChapter("第"+chapter+"章 "+knowledge.getStep());
+            improvementPlan.setSection(chapter + "." + section + " " + knowledge.getKnowledge());
+        }
     }
 
     private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
@@ -268,7 +262,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticePlanId(practicePlan.getId());
         practice.setSequence(practicePlan.getSequence());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
-        //设置选做标签,理解训练和知识点是必做,其他为选做
+        //设置选做标签,巩固训练和知识点是必做,其他为选做
         if(isOptional(practicePlan.getType())){
             practice.setOptional(true);
         }else{
@@ -473,8 +467,8 @@ public class PlanServiceImpl implements PlanService {
         templateMessage.setData(data);
 
         data.put("first",new TemplateMessage.Keyword("太棒了！你已完成以下专题，并获得了"+plan.getPoint()+"积分\n"));
-        data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
-        data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
+        data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
 //        data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
 //                "是不是想到一起了→→→ （跳转调查链接）"));
         data.put("remark",new TemplateMessage.Keyword("\n应用训练/专题分享PC端永久开放，完成仍然加积分：www.iquanwai.com/community"));
@@ -488,7 +482,7 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         for(PracticePlan practicePlan:practicePlans){
-            //理解训练必须完成,才算完成整个训练计划
+            //巩固训练必须完成,才算完成整个训练计划
             if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
                 return new ImmutablePair<>(false, -1);
             }
@@ -556,9 +550,9 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<RoadMap> loadRoadMap(Integer problemId) {
+    public List<Chapter> loadRoadMap(Integer problemId) {
         Problem problem = cacheService.getProblem(problemId);
 
-        return problem!=null?problem.getRoadMapList():Lists.newArrayList();
+        return problem!=null?problem.getChapterList():Lists.newArrayList();
     }
 }

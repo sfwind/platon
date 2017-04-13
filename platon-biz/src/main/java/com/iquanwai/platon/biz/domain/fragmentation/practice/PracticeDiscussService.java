@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public interface PracticeDiscussService {
     /**
-     * 讨论某个理解训练
+     * 讨论某个巩固训练
      * @param openid 发表讨论的用户openid
-     * @param warmupPracticeId 理解训练id
+     * @param warmupPracticeId 巩固训练id
      * @param comment 讨论内容
      * @param repliedId 回复的讨论id
      * */
@@ -21,14 +21,14 @@ public interface PracticeDiscussService {
 
     /**
      * 获取讨论内容
-     * @param warmupPracticeId 理解训练id
+     * @param warmupPracticeId 巩固训练id
      * @param page 分页信息
      * */
     List<WarmupPracticeDiscuss> loadDiscuss(Integer warmupPracticeId, Page page);
 
     /**
      * 获取多个问题的讨论内容
-     * @param warmupPracticeIds 理解训练id列表
+     * @param warmupPracticeIds 巩固训练id列表
      * @param page 分页信息
      * */
     Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page);
