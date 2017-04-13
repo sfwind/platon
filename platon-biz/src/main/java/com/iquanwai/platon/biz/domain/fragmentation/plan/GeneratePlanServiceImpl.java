@@ -64,7 +64,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
 
-        problemSchedules.stream().sorted((o1, o2) -> {
+        problemSchedules.sort((o1, o2) -> {
             if(!o1.getChapter().equals(o2.getChapter())){
                 return o1.getChapter()-o2.getChapter();
             }
