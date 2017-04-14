@@ -25,6 +25,12 @@ public class RiseMemberJob {
     @Scheduled(cron="${riseMemberJob.cron}")
     public void work(){
         logger.info("FragmentDailyDataJob start");
+        refreshStatus();
+        logger.info("FragmentDailyDataJob end");
+    }
+
+    // 刷新缓存，返回当前登录人数
+    public Integer refreshStatus(){
         Collection<LoginUser> allUsers = LoginUserResolver.getAllUsers();
         for (LoginUser user : allUsers) {
             try {
@@ -41,6 +47,6 @@ public class RiseMemberJob {
                 logger.error("会员过期检查失败", e);
             }
         }
-        logger.info("FragmentDailyDataJob end");
+        return allUsers.size();
     }
 }
