@@ -504,7 +504,7 @@ public class PracticeController {
         }
         if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
             if(!improvementPlan.getRiseMember()){
-                return WebUtils.error("该内容为付费内容，只有会员可以查看");
+                return WebUtils.error("试用版只能解锁前3组哦 <br/> 快去升级专业版吧");
             }
         }
         Integer result = planService.checkPractice(series, improvementPlan);
