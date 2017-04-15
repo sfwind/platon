@@ -79,13 +79,13 @@ public class ZKConfigUtils {
         return null;
     }
 
-    public boolean getBooleanValue(String key){
+    public Boolean getBooleanValue(String key){
         String value = getValue(key);
 
         return Boolean.valueOf(value);
     }
 
-    public int getIntValue(String key){
+    public Integer getIntValue(String key){
         String value = getValue(key);
         try{
             Assert.notNull(value);
@@ -94,6 +94,6 @@ public class ZKConfigUtils {
             logger.error("zk" + zkAddress + " get int {}", value);
         }
 
-        return Integer.MIN_VALUE;
+        return null;
     }
 }

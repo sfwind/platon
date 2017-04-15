@@ -20,7 +20,7 @@ public class ConfigUtils {
 	private static Config fileconfig;
 	private static ZKConfigUtils zkConfigUtils;
 
-	private static boolean zk_switch = false;
+//	private static boolean zk_switch = false;
 
 	private static Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
 
@@ -43,15 +43,12 @@ public class ConfigUtils {
 		fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
 		config = localconfig.withFallback(config);
 		config = fileconfig.withFallback(config);
-		zk_switch = config.getBoolean("zk.open");
+//		zk_switch = config.getBoolean("zk.open");
 	}
 
 	public static String getValue(String key){
-		String value = null;
-		if(zk_switch){
-			value = zkConfigUtils.getValue(key);
-			logger.info("get {} from zk", key);
-		}
+		String value = zkConfigUtils.getValue(key);
+
 		if(value==null){
 			value = config.getString(key);
 		}
@@ -59,11 +56,7 @@ public class ConfigUtils {
 	}
 
 	public static Integer getIntValue(String key){
-		Integer value = null;
-		if(zk_switch){
-			value= zkConfigUtils.getIntValue(key);
-			logger.info("get {} from zk", key);
-		}
+		Integer value = zkConfigUtils.getIntValue(key);
 		if(value==null){
 			value = config.getInt(key);
 		}
@@ -71,11 +64,7 @@ public class ConfigUtils {
 	}
 
 	public static Boolean getBooleanValue(String key){
-		Boolean value = null;
-		if(zk_switch){
-			value= zkConfigUtils.getBooleanValue(key);
-			logger.info("get {} from zk", key);
-		}
+		Boolean value = zkConfigUtils.getBooleanValue(key);
 		if(value==null){
 			value = config.getBoolean(key);
 		}
@@ -112,10 +101,6 @@ public class ConfigUtils {
 
 	public static boolean logDetail(){
 		return getBooleanValue("log.debug");
-	}
-
-	public static boolean messageSwitch(){
-		return getBooleanValue("message.switch");
 	}
 
 	public static String adapterDomainName(){
@@ -172,10 +157,6 @@ public class ConfigUtils {
 
 	public static String getPicturePrefix(){
 		return config.getString("qiniu.picture.prefix");
-	}
-
-	public static Boolean isDevelopment(){
-		return config.hasPath("development") && config.getBoolean("development");
 	}
 
 	public static Integer preStudySerials(){
