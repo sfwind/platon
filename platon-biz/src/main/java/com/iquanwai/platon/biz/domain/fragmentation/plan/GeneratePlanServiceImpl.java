@@ -68,11 +68,11 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
 
         problemSchedules.sort((o1, o2) -> {
-            if(!o1.getChapter().equals(o2.getChapter())){
-                return o1.getChapter()-o2.getChapter();
+            if (!o1.getChapter().equals(o2.getChapter())) {
+                return o1.getChapter() - o2.getChapter();
             }
 
-            return o1.getSection()-o2.getSection();
+            return o1.getSection() - o2.getSection();
         });
         //生成知识点
         practicePlans.addAll(createKnowledge(planId, problemSchedules));
@@ -193,6 +193,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 //            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
+            practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用训练
             for(int i=0; i<practices.size();i++){
                 PracticePlan practicePlan = new PracticePlan();
