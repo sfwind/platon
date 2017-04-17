@@ -56,6 +56,10 @@ public interface AccountService {
      */
     int updateOpenRise(String openId);
 
+    int updateOpenComprehension(String openId);
+
+    int updateOpenConsolidation(String openId);
+
     List<MemberType> loadMemberTypes();
 
     public MemberType loadMemberType(Integer id);

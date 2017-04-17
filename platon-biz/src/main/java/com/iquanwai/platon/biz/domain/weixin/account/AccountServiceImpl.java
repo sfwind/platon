@@ -212,6 +212,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public int updateOpenComprehension(String openId){
+        return profileDao.updateOpenComprehension(openId);
+    }
+
+    @Override
+    public int updateOpenConsolidation(String openId){
+        return profileDao.updateOpenConsolidation(openId);
+    }
+
+
+    @Override
     public List<MemberType> loadMemberTypes(){
         return riseMemberTypeRepo.loadAll();
     }

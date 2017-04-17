@@ -28,6 +28,8 @@ public class Profile {
     private String unionid;	//只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。详见：获取用户个人信息（UnionID机制）
     private Date expireDate; // 过期时间
     private Boolean riseMember;
+    private Boolean openComprehension; // 是否打开过应用训练
+    private Boolean openConsolidation; //  是否打开过巩固训练
 
 
     //默认头像

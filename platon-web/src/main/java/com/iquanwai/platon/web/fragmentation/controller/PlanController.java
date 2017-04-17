@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
+import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -236,6 +237,26 @@ public class PlanController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/open/comprehension", method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Object>> openComprehension(LoginUser loginUser){
+        Assert.notNull(loginUser,"用户不能为空");
+        int count = accountService.updateOpenComprehension(loginUser.getOpenId());
+        if (count > 0) {
+            loginUser.setOpenComprehension(true);
+        }
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/open/consolidation", method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Object>> openConsolidation(LoginUser loginUser){
+        Assert.notNull(loginUser,"用户不能为空");
+        int count = accountService.updateOpenConsolidation(loginUser.getOpenId());
+        if (count > 0) {
+            loginUser.setOpenConsolidation(true);
+        }
+        return WebUtils.success();
+    }
+
     @RequestMapping("/welcome")
     public ResponseEntity<Map<String, Object>> welcome(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
@@ -308,5 +329,22 @@ public class PlanController {
                 .action("打开知识点路线页");
         operationLogService.log(operationLog);
         return WebUtils.result(chapter);
+    }
+
+
+    @RequestMapping("/open/status")
+    public ResponseEntity<Map<String, Object>> getOpenStatus(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("数据")
+                .action("查看打开状态")
+                .memo("");
+        operationLogService.log(operationLog);
+        OpenStatusDto dto = new OpenStatusDto();
+        dto.setOpenRise(loginUser.getOpenRise());
+        dto.setOpenConsolidation(loginUser.getOpenConsolidation());
+        dto.setOpenComprehension(loginUser.getOpenComprehension());
+        return WebUtils.result(dto);
     }
 }

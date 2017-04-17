@@ -110,6 +110,31 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
+    public int updateOpenComprehension(String openId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        String updateSql = "Update Profile Set OpenComprehension=1 where Openid=?";
+        try {
+            Future<Integer> result = asyncRun.update(updateSql, openId);
+            return result.get();
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public int updateOpenConsolidation(String openId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        String updateSql = "Update Profile Set OpenConsolidation=1 where Openid=?";
+        try {
+            Future<Integer> result = asyncRun.update(updateSql, openId);
+            return result.get();
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 
     public List<Profile> queryAccounts(List<String> openids) {
         if(CollectionUtils.isEmpty(openids)){
