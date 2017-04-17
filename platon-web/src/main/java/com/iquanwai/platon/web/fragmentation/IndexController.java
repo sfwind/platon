@@ -1,11 +1,10 @@
 package com.iquanwai.platon.web.fragmentation;
 
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
@@ -47,12 +46,11 @@ public class IndexController {
             WebUtils.auth(request, response);
             return null;
         }
-        // TODO: remove later
-        boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, openid);
-        if(!inWhite){
-            response.sendRedirect("/403.jsp");
-            return null;
-        }
+//        boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, openid);
+//        if(!inWhite){
+//            response.sendRedirect("/403.jsp");
+//            return null;
+//        }
 
         return courseView(request, account);
     }
