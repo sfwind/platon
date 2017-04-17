@@ -189,7 +189,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合训练
             boolean review = Knowledge.isReview(knowledgeId);
-//            practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
 //            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
@@ -210,6 +209,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                     practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
                 }
                 practicePlan.setSequence(WARMUP_SEQUENCE+1+i);
+                practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
                 //设置节序号
                 practicePlan.setSeries(sequence);
                 practicePlan.setStatus(0);
@@ -248,7 +248,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setSequence(WARMUP_SEQUENCE);
             practicePlan.setSeries(sequence);
             practicePlan.setStatus(0);
-//            practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
+            practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
 //            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<WarmupPractice> practices = warmupPracticeDao.loadPractice(knowledgeId, problemId);

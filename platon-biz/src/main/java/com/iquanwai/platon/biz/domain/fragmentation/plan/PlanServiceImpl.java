@@ -308,7 +308,7 @@ public class PlanServiceImpl implements PlanService {
         PracticePlan challengePractice = practicePlanDao.loadChallengePractice(improvementPlan.getId());
         //如果有解锁钥匙,找到第一节未完成的练习,如果没有解锁钥匙,找到最后一节已解锁的练习
         //未完成的练习
-        List<PracticePlan> incompletePractice = getFirstImcompletePractice(practicePlans);
+        List<PracticePlan> incompletePractice = getFirstIncompletePractice(practicePlans);
 
         if(CollectionUtils.isNotEmpty(incompletePractice)){
             PracticePlan practicePlan = incompletePractice.get(0);
@@ -337,7 +337,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     //获取第一节未完成的练习
-    private List<PracticePlan> getFirstImcompletePractice(List<PracticePlan> practicePlans) {
+    private List<PracticePlan> getFirstIncompletePractice(List<PracticePlan> practicePlans) {
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> incompletePractice = Lists.newArrayList();
         int seriesCursor = 0; //当前节指针
