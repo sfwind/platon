@@ -39,7 +39,7 @@ public class ConfigUtils {
 
 	private static void loadConfig() {
 		localconfig = ConfigFactory.load("localconfig");
-		config = ConfigFactory.load("platon");
+//		config = ConfigFactory.load("platon");
 		fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
 		config = localconfig.withFallback(config);
 		config = fileconfig.withFallback(config);
@@ -47,28 +47,33 @@ public class ConfigUtils {
 	}
 
 	public static String getValue(String key){
-		String value = zkConfigUtils.getValue(key);
-
+		String value = config.getString(key);
 		if(value==null){
-			value = config.getString(key);
+			value = zkConfigUtils.getValue(key);
 		}
 		return value;
 	}
 
 	public static Integer getIntValue(String key){
-		Integer value = zkConfigUtils.getIntValue(key);
+		String value = config.getString(key);
+		Integer result;
 		if(value==null){
-			value = config.getInt(key);
+			result = zkConfigUtils.getIntValue(key);
+		}else{
+			result = Integer.valueOf(value);
 		}
-		return value;
+		return result;
 	}
 
 	public static Boolean getBooleanValue(String key){
-		Boolean value = zkConfigUtils.getBooleanValue(key);
+		String value = config.getString(key);
+		Boolean result;
 		if(value==null){
-			value = config.getBoolean(key);
+			result = zkConfigUtils.getBooleanValue(key);
+		}else{
+			result = Boolean.valueOf(value);
 		}
-		return value;
+		return result;
 	}
 
 	public static String getAppid() {
