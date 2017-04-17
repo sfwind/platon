@@ -341,7 +341,7 @@ public class PlanController {
         OpenStatusDto dto = new OpenStatusDto();
         dto.setOpenRise(loginUser.getOpenRise());
         dto.setOpenConsolidation(loginUser.getOpenConsolidation());
-        dto.setOpenComprehension(loginUser.getOpenApplication());
+        dto.setOpenApplication(loginUser.getOpenApplication());
         return WebUtils.result(dto);
     }
 }
