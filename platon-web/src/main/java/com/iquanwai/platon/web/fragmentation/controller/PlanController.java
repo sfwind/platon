@@ -237,12 +237,12 @@ public class PlanController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/open/comprehension", method = RequestMethod.POST)
+    @RequestMapping(value = "/open/application", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openComprehension(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenComprehension(loginUser.getOpenId());
+        int count = accountService.updateOpenApplication(loginUser.getOpenId());
         if (count > 0) {
-            loginUser.setOpenComprehension(true);
+            loginUser.setOpenApplication(true);
         }
         return WebUtils.success();
     }
@@ -344,7 +344,7 @@ public class PlanController {
         OpenStatusDto dto = new OpenStatusDto();
         dto.setOpenRise(loginUser.getOpenRise());
         dto.setOpenConsolidation(loginUser.getOpenConsolidation());
-        dto.setOpenComprehension(loginUser.getOpenComprehension());
+        dto.setOpenComprehension(loginUser.getOpenApplication());
         return WebUtils.result(dto);
     }
 }

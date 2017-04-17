@@ -19,7 +19,7 @@ public class LoginUser {
     private String realName;
     private Boolean openRise;
     private Boolean riseMember;
-    private Boolean openComprehension; // 非db字段 是否打开过应用训练
+    private Boolean openApplication; // 非db字段 是否打开过应用训练
     private Boolean openConsolidation; // 非db字段 是否打开过巩固训练
 
     public static LoginUser defaultUser(){

@@ -56,7 +56,7 @@ public interface AccountService {
      */
     int updateOpenRise(String openId);
 
-    int updateOpenComprehension(String openId);
+    int updateOpenApplication(String openId);
 
     int updateOpenConsolidation(String openId);
 

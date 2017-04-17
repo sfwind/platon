@@ -101,7 +101,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUser.setRealName(account.getRealName());
         loginUser.setOpenRise(account.getOpenRise());
         loginUser.setOpenConsolidation(account.getOpenConsolidation());
-        loginUser.setOpenComprehension(account.getOpenComprehension());
+        loginUser.setOpenApplication(account.getOpenApplication());
         loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
     }

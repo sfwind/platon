@@ -110,10 +110,10 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
-    public int updateOpenComprehension(String openId){
+    public int updateOpenApplication(String openId){
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update Profile Set OpenComprehension=1 where Openid=?";
+        String updateSql = "Update Profile Set OpenApplication=1 where Openid=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, openId);
             return result.get();

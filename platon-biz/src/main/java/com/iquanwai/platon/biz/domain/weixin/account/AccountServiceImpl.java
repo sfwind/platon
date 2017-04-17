@@ -212,8 +212,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public int updateOpenComprehension(String openId){
-        return profileDao.updateOpenComprehension(openId);
+    public int updateOpenApplication(String openId){
+        return profileDao.updateOpenApplication(openId);
     }
 
     @Override
