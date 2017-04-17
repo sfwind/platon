@@ -14,7 +14,6 @@ public class PracticePlan {
     private Boolean unlocked; // 是否解锁
     private Integer series; // 节号
     private Integer sequence; //节内顺序
-    @Deprecated
     private Integer knowledgeId; //知识点id
     private Integer status; //题目状态（0-未完成，1-已完成）
     @Deprecated

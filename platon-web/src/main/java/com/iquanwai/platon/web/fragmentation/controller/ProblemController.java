@@ -167,6 +167,19 @@ public class ProblemController {
                 .function("评分")
                 .action("移动端打分")
                 .module(problemId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping("/member/description")
+    public ResponseEntity<Map<String, Object>> description(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("专题")
+                .function("打点")
+                .action("打开会员说明页");
+        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 }

@@ -1,8 +1,8 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -297,7 +297,7 @@ public class PlanController {
                 .module("RISE")
                 .function("打点")
                 .action("查看是否为rise会员")
-                .memo(loginUser.getRiseMember()+"");
+                .memo(loginUser.getRiseMember() + "");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
     }
@@ -307,8 +307,7 @@ public class PlanController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("打点")
-                .action("打开rise会员说明页")
-                .memo("");
+                .action("打开rise会员说明页");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
     }
@@ -331,15 +330,13 @@ public class PlanController {
         return WebUtils.result(chapter);
     }
 
-
     @RequestMapping("/open/status")
-    public ResponseEntity<Map<String, Object>> getOpenStatus(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> getOpenStatus(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("数据")
-                .action("查看打开状态")
-                .memo("");
+                .action("查看打开状态");
         operationLogService.log(operationLog);
         OpenStatusDto dto = new OpenStatusDto();
         dto.setOpenRise(loginUser.getOpenRise());
