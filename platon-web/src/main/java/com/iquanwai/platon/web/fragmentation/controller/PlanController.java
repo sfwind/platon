@@ -307,8 +307,7 @@ public class PlanController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("打点")
-                .action("打开rise会员说明页")
-                .memo("");
+                .action("打开rise会员说明页");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
     }
