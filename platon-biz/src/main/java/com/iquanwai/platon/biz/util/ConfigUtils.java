@@ -38,42 +38,37 @@ public class ConfigUtils {
 	}
 
 	private static void loadConfig() {
-		localconfig = ConfigFactory.load("localconfig");
+		config = ConfigFactory.load("localconfig");
+//		localconfig = ConfigFactory.load("localconfig");
 //		config = ConfigFactory.load("platon");
 		fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
-		config = localconfig.withFallback(config);
+//		config = localconfig.withFallback(config);
 		config = fileconfig.withFallback(config);
 //		zk_switch = config.getBoolean("zk.open");
 	}
 
 	public static String getValue(String key){
-		String value = config.getString(key);
-		if(value==null){
-			value = zkConfigUtils.getValue(key);
+		if (config.hasPath(key)) {
+			return config.getString(key);
+		} else {
+			return zkConfigUtils.getValue(key);
 		}
-		return value;
 	}
 
 	public static Integer getIntValue(String key){
-		String value = config.getString(key);
-		Integer result;
-		if(value==null){
-			result = zkConfigUtils.getIntValue(key);
-		}else{
-			result = Integer.valueOf(value);
+		if (config.hasPath(key)) {
+			return config.getInt(key);
+		} else {
+			return zkConfigUtils.getIntValue(key);
 		}
-		return result;
 	}
 
 	public static Boolean getBooleanValue(String key){
-		String value = config.getString(key);
-		Boolean result;
-		if(value==null){
-			result = zkConfigUtils.getBooleanValue(key);
-		}else{
-			result = Boolean.valueOf(value);
+		if (config.hasPath(key)) {
+			return config.getBoolean(key);
+		} else {
+			return zkConfigUtils.getBooleanValue(key);
 		}
-		return result;
 	}
 
 	public static String getAppid() {
@@ -153,15 +148,15 @@ public class ConfigUtils {
 	}
 
 	public static String courseStartMsg(){
-		return config.getString("course.start.msg");
+		return getValue("course.start.msg");
 	}
 
 	public static String courseCloseMsg(){
-		return config.getString("course.pass.msg");
+		return getValue("course.pass.msg");
 	}
 
 	public static String getPicturePrefix(){
-		return config.getString("qiniu.picture.prefix");
+		return getValue("qiniu.picture.prefix");
 	}
 
 	public static Integer preStudySerials(){
@@ -169,6 +164,6 @@ public class ConfigUtils {
 	}
 
 	public static String getIntegratedPracticeIndex(){
-		return config.getString("integrated.practice.index");
+		return getValue("integrated.practice.index");
 	}
 }

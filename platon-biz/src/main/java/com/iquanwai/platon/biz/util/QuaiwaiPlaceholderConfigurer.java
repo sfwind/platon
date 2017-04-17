@@ -11,6 +11,7 @@ public class QuaiwaiPlaceholderConfigurer extends PropertyPlaceholderConfigurer 
 
     @Override
     protected String resolvePlaceholder(String placeholder, Properties props) {
-        return ConfigUtils.getValue(placeholder);
+        String config = ConfigUtils.getValue(placeholder);
+        return config;
     }
 }

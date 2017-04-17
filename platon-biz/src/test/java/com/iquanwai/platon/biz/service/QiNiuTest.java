@@ -9,7 +9,10 @@ import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * Created by justin on 17/3/27.
