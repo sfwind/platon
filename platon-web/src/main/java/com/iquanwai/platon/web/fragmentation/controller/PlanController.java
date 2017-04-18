@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
@@ -115,6 +116,12 @@ public class PlanController {
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
+        if (!loginUser.getOpenRise()) {
+            // 没有点开rise
+            Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            loginUser.setOpenRise(profile.getOpenRise());
+            improvementPlan.setOpenRise(profile.getOpenRise());
+        }
         improvementPlan.setOpenRise(loginUser.getOpenRise());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -339,6 +346,14 @@ public class PlanController {
                 .action("查看打开状态");
         operationLogService.log(operationLog);
         OpenStatusDto dto = new OpenStatusDto();
+        if (!loginUser.getOpenApplication() || !loginUser.getOpenConsolidation() || !loginUser.getOpenRise()) {
+            // 没有点开其中一个
+            Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            loginUser.setOpenRise(profile.getOpenRise());
+            loginUser.setOpenConsolidation(profile.getOpenConsolidation());
+            loginUser.setOpenApplication(profile.getOpenApplication());
+        }
+
         dto.setOpenRise(loginUser.getOpenRise());
         dto.setOpenConsolidation(loginUser.getOpenConsolidation());
         dto.setOpenApplication(loginUser.getOpenApplication());
