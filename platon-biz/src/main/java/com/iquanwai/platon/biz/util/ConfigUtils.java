@@ -151,6 +151,10 @@ public class ConfigUtils {
 		return getValue("course.start.msg");
 	}
 
+	public static String productTrailMsg(){
+		return getValue("product.trial.msg");
+	}
+
 	public static String courseCloseMsg(){
 		return getValue("course.pass.msg");
 	}

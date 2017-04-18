@@ -1,13 +1,21 @@
 package com.iquanwai.platon.biz.domain.fragmentation.message;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.NotifyMessageDao;
 import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ChallengeSubmit;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.NotifyMessage;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -17,9 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +47,8 @@ public class MessageServiceImpl implements MessageService {
     private ChallengeSubmitDao challengeSubmitDao;
     @Autowired
     private SubjectArticleDao subjectArticleDao;
+    @Autowired
+    private TemplateMessageService templateMessageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -160,6 +172,30 @@ public class MessageServiceImpl implements MessageService {
             sendMessage(message, toUser, SYSTEM_MESSAGE, url);
         });
     }
+
+    @Override
+    public void sendRiseTrialMessage(String openId) {
+        Profile profile = accountService.getProfile(openId, false);
+        Assert.notNull(openId, "openid不能为空");
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(openId);
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        templateMessage.setTemplate_id(ConfigUtils.productTrailMsg());
+        String first;
+        if(profile!=null){
+            first = "Hi，"+profile.getNickname()+"，欢迎试用RISE小课！\n";
+        }else{
+            first = "Hi，欢迎试用RISE小课！\n";
+        }
+        first += "试用版可体验一门小课的前3节内容。在小课页面点击“升级正式版”，学习更多内容和小课哦";
+        data.put("first",new TemplateMessage.Keyword(first));
+        data.put("keyword1",new TemplateMessage.Keyword("RISE小课"));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+        data.put("remark", new TemplateMessage.Keyword("有疑问请在下方留言给小Q哦"));
+        templateMessageService.sendMessage(templateMessage);
+    }
+
 
     private String getLikeMessage(VoteMessage voteMessage, Profile profile) {
         String message = "";

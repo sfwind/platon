@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -47,6 +48,8 @@ public class PlanController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private MessageService messageService;
 
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
@@ -284,6 +287,7 @@ public class PlanController {
                 .action("点击试用版")
                 .memo("");
         operationLogService.log(operationLog);
+        messageService.sendRiseTrialMessage(loginUser.getOpenId());
         return WebUtils.success();
     }
     @RequestMapping("/mark/becomerise")
