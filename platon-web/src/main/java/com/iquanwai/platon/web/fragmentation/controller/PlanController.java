@@ -63,7 +63,7 @@ public class PlanController {
                 return WebUtils.result(improvementPlan.getId());
             }
             LOGGER.error("planId {} is existed", improvementPlan.getId());
-            return WebUtils.error("您已经有正在运行的训练,耐心学习吧~");
+            return WebUtils.error("先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
         }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), problemId);
 
