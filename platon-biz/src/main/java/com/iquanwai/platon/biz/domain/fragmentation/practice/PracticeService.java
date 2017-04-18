@@ -12,20 +12,20 @@ import java.util.List;
  */
 public interface PracticeService {
     /**
-     * 获取巩固训练列表
-     * @param problemId 专题id
+     * 获取巩固练习列表
+     * @param problemId 小课id
      * @param practicePlanId 训练组编号
      * */
     List<WarmupPractice> getWarmupPractice(Integer problemId, Integer practicePlanId);
 
     /**
-     * 获取巩固训练解析
+     * 获取巩固练习解析
      * @param planId 训练id
      * @param questionIds 练习编号
      * */
     List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds);
     /**
-     * 回答巩固训练问题
+     * 回答巩固练习问题
      * @param warmupPracticeList 练习答案
      * @param planId 训练id
      * */
@@ -40,8 +40,8 @@ public interface PracticeService {
     ChallengePractice getChallengePractice(Integer id, String openid, Integer planId, boolean create);
 
     /**
-     * 获取应用训练
-     * @param id 应用训练id
+     * 获取应用练习
+     * @param id 应用练习id
      * @param openid openid
      * @param planId 训练id
      * */
@@ -51,7 +51,7 @@ public interface PracticeService {
      * 提交训练
      * @param id 提交id
      * @param content 提交内容
-     * @param type 11-应用训练,21-小目标
+     * @param type 11-应用练习,21-小目标
      * */
     Boolean submit(Integer id, String content, Integer type);
 
@@ -94,8 +94,8 @@ public interface PracticeService {
     boolean vote(Integer type, Integer referencedId, String openId);
 
     /**
-     * 查询应用训练提交记录
-     * @param applicationId 应用训练id
+     * 查询应用练习提交记录
+     * @param applicationId 应用练习id
      */
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
 
@@ -123,7 +123,7 @@ public interface PracticeService {
     Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
 
     /*
-     * 获取巩固训练
+     * 获取巩固练习
      * @param warmupId 训练id
      * */
     WarmupPractice getWarmupPractice(Integer warmupId);
@@ -134,13 +134,13 @@ public interface PracticeService {
     List<HomeworkVote> loadVoteYesterday();
 
     /**
-     * 提交专题分享文章
+     * 提交小课分享文章
      */
     Integer submitSubjectArticle(SubjectArticle subjectArticle);
 
     /**
-     * 加载专题分享区文章
-     * @param problemId 专题id
+     * 加载小课分享区文章
+     * @param problemId 小课id
      * @param page 分页对象
      */
     List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
@@ -152,13 +152,13 @@ public interface PracticeService {
     SubjectArticle loadSubjectArticle(Integer submitId);
 
     /**
-     * 获取专题所有标签
-     * @param problemId 专题id
+     * 获取小课所有标签
+     * @param problemId 小课id
      * */
     List<LabelConfig> loadProblemLabels(Integer problemId);
 
     /**
-     * 更新专题分享的标签
+     * 更新小课分享的标签
      * @param moduleId 模块
      * @param articleId 文章id
      * @param labels 标签
@@ -166,7 +166,7 @@ public interface PracticeService {
     List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
 
     /**
-     * 获取专题分享的标签
+     * 获取小课分享的标签
      * @param moduleId 模块
      * @param articleId 文章id
      * */
@@ -175,7 +175,7 @@ public interface PracticeService {
     /**
      * 根据训练id获取知识
      * @param practicePlanId 训练id
-     * @param problemId 专题id
+     * @param problemId 小课id
      */
     List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId);
 

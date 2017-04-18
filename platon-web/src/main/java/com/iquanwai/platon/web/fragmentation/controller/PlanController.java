@@ -55,7 +55,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
         if(improvementPlan!=null){
-            //如果是同一个问题的训练,直接返回训练id
+            //如果是同一个小课的训练,直接返回训练id
             if(improvementPlan.getProblemId().equals(problemId)){
                 return WebUtils.result(improvementPlan.getId());
             }
@@ -269,8 +269,8 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("专题")
-                .function("打开专题")
+                .module("小课")
+                .function("打开小课")
                 .action("打开欢迎页");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());

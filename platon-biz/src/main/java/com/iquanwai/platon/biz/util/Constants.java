@@ -14,7 +14,7 @@ public interface Constants {
     interface PracticeType{
         int CHALLENGE = 21;
         int APPLICATION = 11;
-        int SUBJECT = 1; // 专题输出区
+        int SUBJECT = 1; // 小课论坛
     }
     interface VoteType{
         int CHALLENGE = 1;

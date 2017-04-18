@@ -167,17 +167,17 @@ public class MessageServiceImpl implements MessageService {
             if(voteMessage.getType()==Constants.VoteType.CHALLENGE){
                 message = profile.getNickname()+"赞了我的小目标";
             }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
-                message = profile.getNickname()+"赞了我的应用训练";
+                message = profile.getNickname()+"赞了我的应用练习";
             } else if(voteMessage.getType()==Constants.VoteType.SUBJECT){
-                message = profile.getNickname()+"赞了我的专题分享";
+                message = profile.getNickname()+"赞了我的小课分享";
             }
         }else{
             if(voteMessage.getType()==Constants.VoteType.CHALLENGE){
                 message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的小目标";
             }else if(voteMessage.getType()==Constants.VoteType.APPLICATION){
-                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的应用训练";
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的应用练习";
             }else if(voteMessage.getType()==Constants.VoteType.SUBJECT){
-                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的专题分享";
+                message = profile.getNickname()+"等"+voteMessage.getCount()+"人赞了我的小课分享";
             }
         }
         return message;

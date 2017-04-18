@@ -22,8 +22,8 @@ public interface PointRepo {
     void riseCustomerPoint(String openId, Integer increment);
 
     /**
-     * 巩固训练算分
-     * @param warmupPractice 巩固训练
+     * 巩固练习算分
+     * @param warmupPractice 巩固练习
      * @param userChoiceList 用户选项
      * */
     Pair<Integer, Boolean> warmupScore(WarmupPractice warmupPractice, List<Integer> userChoiceList);

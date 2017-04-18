@@ -76,9 +76,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         });
         //生成知识点
         practicePlans.addAll(createKnowledge(planId, problemSchedules));
-        //生成巩固训练
+        //生成巩固练习
         practicePlans.addAll(createWarmupPractice(planId, problemSchedules));
-        //生成应用训练
+        //生成应用练习
         practicePlans.addAll(createApplicationPractice(problem, planId, problemSchedules));
         //生成小目标
         practicePlans.addAll(createChallengePractice(problem, planId));
@@ -134,16 +134,16 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(openid, false);
         String first;
         if(profile!=null){
-            first = "Hi，"+profile.getNickname()+"，你刚才选择了RISE的专题：\n";
+            first = "Hi，"+profile.getNickname()+"，你刚才选择了RISE小课：\n";
         }else{
-            first = "Hi，你刚才选择了RISE的专题：\n";
+            first = "Hi，你刚才选择了RISE小课：\n";
         }
         int length = problem.getLength();
         String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), length + 6));
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
-        data.put("remark",new TemplateMessage.Keyword("\n这个专题一共"+length+"节训练，记得每天完成1节吧\n" +
+        data.put("remark",new TemplateMessage.Keyword("\n这个小课一共"+length+"节练习，记得每天完成1节吧\n" +
                 "\n如有疑问请在下方留言，小Q会尽快给你回复的"));
         templateMessageService.sendMessage(templateMessage);
     }
@@ -187,13 +187,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         for(int sequence=1;sequence<=problemScheduleList.size();sequence++) {
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
-            //该节是否是综合训练
+            //该节是否是综合练习
             boolean review = Knowledge.isReview(knowledgeId);
 //            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
-            //设置应用训练
+            //设置应用练习
             for(int i=0; i<practices.size();i++){
                 PracticePlan practicePlan = new PracticePlan();
                 //第一节内容自动解锁
@@ -231,7 +231,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             PracticePlan practicePlan = new PracticePlan();
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
-            //该节是否是综合训练
+            //该节是否是综合练习
             boolean review = Knowledge.isReview(knowledgeId);
             //第一节内容自动解锁
             if (sequence == 1) {
@@ -252,7 +252,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 //            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<WarmupPractice> practices = warmupPracticeDao.loadPractice(knowledgeId, problemId);
-            //设置巩固训练的id
+            //设置巩固练习的id
             List<Integer> practiceIds = Lists.newArrayList();
             practiceIds.addAll(practices.stream()
                     .filter(warmupPractice -> !warmupPractice.getExample() && !warmupPractice.getDel())

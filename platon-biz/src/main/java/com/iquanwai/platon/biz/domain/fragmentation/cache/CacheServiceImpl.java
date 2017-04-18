@@ -37,7 +37,7 @@ public class CacheServiceImpl implements CacheService {
     private List<Problem> problems = Lists.newArrayList();
     //缓存知识点
     private Map<Integer, Knowledge> knowledgeMap = Maps.newHashMap();
-    //缓存巩固训练
+    //缓存巩固练习
     private Map<Integer, WarmupPractice> warmupPracticeMap = Maps.newHashMap();
 
     private Logger logger = LoggerFactory.getLogger(getClass());

@@ -39,7 +39,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     /**
      * 查询用户提交记录
-     * @param applicationId 应用训练id
+     * @param applicationId 应用练习id
      * @param planId 计划id
      * @param openid  openid
      */

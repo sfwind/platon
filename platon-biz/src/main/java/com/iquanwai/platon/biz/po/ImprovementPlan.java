@@ -20,8 +20,8 @@ public class ImprovementPlan {
     private Date completeTime; // 完成时间
     private Integer status; //执行状态（1-正在进行, 2-已结束, 3-已过期）
     private Integer point; //积分
-    private Integer warmupComplete; //巩固训练完成数量
-    private Integer applicationComplete; //应用训练完成数量
+    private Integer warmupComplete; //巩固练习完成数量
+    private Integer applicationComplete; //应用练习完成数量
     @Deprecated
     private Integer total; //任务总数
     @Deprecated
@@ -43,8 +43,8 @@ public class ImprovementPlan {
     private String chapter; // 非db字段 章名称
     private String section; // 非db字段 节名称
     // 首页弹窗信息
-    private Boolean doneAllIntegrated; //非db字段 是否完成所有综合训练
-    private Boolean doneCurSeriesApplication; //非db字段 是否完成当日所有应用训练
+    private Boolean doneAllIntegrated; //非db字段 是否完成所有综合练习
+    private Boolean doneCurSeriesApplication; //非db字段 是否完成当日所有应用练习
     private String alertMsg; //非db字段 弹窗内容
 
 

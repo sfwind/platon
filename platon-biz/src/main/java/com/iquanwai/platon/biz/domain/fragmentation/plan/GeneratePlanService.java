@@ -11,11 +11,11 @@ public interface GeneratePlanService {
      * */
     Integer generatePlan(String openid, Integer problemId);
 
-    // 每节的应用训练数量
+    // 每节的应用练习数量
     int APPLICATION_TASK_NUMBER = 2;
 
     int KNOWLEDGE_SEQUENCE = 1; //知识点顺序
-    int WARMUP_SEQUENCE = 2; //巩固训练顺序
+    int WARMUP_SEQUENCE = 2; //巩固练习顺序
 
-    int PROBLEM_MAX_LENGTH = 30; //专题最长开放时间
+    int PROBLEM_MAX_LENGTH = 30; //小课最长开放时间
 }

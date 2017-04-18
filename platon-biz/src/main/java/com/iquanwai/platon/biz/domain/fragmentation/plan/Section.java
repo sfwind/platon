@@ -12,5 +12,5 @@ public class Section {
     private Knowledge knowledge; //知识点
     private String name; //小节名称
     private Integer series; //序号
-    private Boolean integrated; //是否是综合训练
+    private Boolean integrated; //是否是综合练习
 }

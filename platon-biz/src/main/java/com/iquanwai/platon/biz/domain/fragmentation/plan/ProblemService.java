@@ -49,15 +49,15 @@ public interface ProblemService {
     /**
      * 给问题打分
      * @param openId 用户id
-     * @param problemId 专题id
-     * @param problemScores 专题打分
+     * @param problemId 小课id
+     * @param problemScores 小课打分
      */
     void gradeProblem(Integer problemId, String openId, List<ProblemScore> problemScores);
 
     /**
      * 用户是否已对问题评分
      * @param openId 用户id
-     * @param problemId 专题id
+     * @param problemId 小课id
      */
     boolean hasProblemScore(String openId,Integer problemId);
 }

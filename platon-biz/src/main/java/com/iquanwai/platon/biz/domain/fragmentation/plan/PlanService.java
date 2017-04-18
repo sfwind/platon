@@ -61,7 +61,7 @@ public interface PlanService {
     /**
      * 获取知识点
      * @param knowledgeId 知识点id
-     * @param problemId 专题id
+     * @param problemId 小课id
      */
     Knowledge getKnowledge(Integer knowledgeId, Integer problemId);
 
@@ -88,7 +88,7 @@ public interface PlanService {
     /**
      * 获取例题
      * @param knowledgeId 知识点id
-     * @param problemId 专题id
+     * @param problemId 小课id
      * */
     WarmupPractice getExample(Integer knowledgeId, Integer problemId);
 
@@ -102,15 +102,15 @@ public interface PlanService {
     Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
 
     /**
-     * 查询是否有该专题
+     * 查询是否有该小课
      * @param openId 用户id
-     * @param problemId 专题id
+     * @param problemId 小课id
      */
     boolean hasProblemPlan(String openId,Integer problemId);
 
     /**
-     * 获取专题介绍
-     * @param problemId 专题id
+     * 获取小课介绍
+     * @param problemId 小课id
      */
     String loadSubjectDesc(Integer problemId);
 
