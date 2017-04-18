@@ -184,15 +184,15 @@ public class MessageServiceImpl implements MessageService {
         templateMessage.setTemplate_id(ConfigUtils.productTrailMsg());
         String first;
         if(profile!=null){
-            first = "Hi，"+profile.getNickname()+"，欢迎试用RISE小课！\n";
+            first = "Hi，"+profile.getNickname()+"，欢迎试用RISE小课！\n\n";
         }else{
-            first = "Hi，欢迎试用RISE小课！\n";
+            first = "Hi，欢迎试用RISE小课！\n\n";
         }
-        first += "试用版可体验一门小课的前3节内容。在小课页面点击“升级正式版”，学习更多内容和小课哦";
+        first += "试用版可体验一门小课的前3节内容。在小课页面点击“升级正式版”，学习更多内容和小课哦\n";
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword("RISE小课"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("remark", new TemplateMessage.Keyword("有疑问请在下方留言给小Q哦"));
+        data.put("remark", new TemplateMessage.Keyword("\n有疑问请在下方留言给小Q哦"));
         templateMessageService.sendMessage(templateMessage);
     }
 
