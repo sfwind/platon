@@ -1,5 +1,8 @@
 package com.iquanwai.platon.biz.util.zk;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.gson.Gson;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by justin on 17/3/25.
@@ -21,6 +25,8 @@ public class ZKConfigUtils {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private static String zkAddress = "106.14.26.18:2181";
+
+    private static Cache<String, String> CONFIG_CACHE;
 
     /* 每个项目的path不同 */
     private static final String CONFIG_PATH = "/quanwai/config/rise/";
@@ -35,6 +41,7 @@ public class ZKConfigUtils {
 
     public void init(){
         try {
+            config();
             zooKeeper = new RobustZooKeeper(zkAddress);
             zk = zooKeeper.getClient();
         } catch (IOException e) {
@@ -43,6 +50,9 @@ public class ZKConfigUtils {
     }
 
     private void config() {
+        CONFIG_CACHE = CacheBuilder.newBuilder()
+                .expireAfterWrite(1L, TimeUnit.MINUTES)
+                .build();
         File file = new File(ZK_CONFIG_PATH);
         if(file.exists()){
             Properties p = new Properties();
@@ -67,21 +77,30 @@ public class ZKConfigUtils {
 
     public String getValue(String key){
         try {
-            return new String(zk.getData(CONFIG_PATH.concat(key), false, null), "utf-8");
+            String value = CONFIG_CACHE.getIfPresent(key);
+            if(value!=null){
+                return value;
+            }
+            logger.info("get {} from zk", key);
+            String json = new String(zk.getData(CONFIG_PATH.concat(key), false, null), "utf-8");
+            ConfigNode configNode = new Gson().fromJson(json, ConfigNode.class);
+            value = configNode.getValue();
+            CONFIG_CACHE.put(key, value);
+            return value;
         } catch (Exception e) {
-            logger.error("zk" + zkAddress + " get value", e);
+            logger.error("zk " + zkAddress + " get value", e);
         }
 
         return null;
     }
 
-    public boolean getBooleanValue(String key){
+    public Boolean getBooleanValue(String key){
         String value = getValue(key);
 
         return Boolean.valueOf(value);
     }
 
-    public int getIntValue(String key){
+    public Integer getIntValue(String key){
         String value = getValue(key);
         try{
             Assert.notNull(value);
@@ -90,6 +109,6 @@ public class ZKConfigUtils {
             logger.error("zk" + zkAddress + " get int {}", value);
         }
 
-        return Integer.MIN_VALUE;
+        return null;
     }
 }

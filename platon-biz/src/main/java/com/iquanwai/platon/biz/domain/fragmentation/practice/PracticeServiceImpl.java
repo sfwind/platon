@@ -176,7 +176,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId,boolean create) {
         Assert.notNull(openid, "openid不能为空");
-        // 查询该应用训练
+        // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
         ApplicationSubmit submit = applicationSubmitDao.load(id, openid);
@@ -220,7 +220,7 @@ public class PracticeServiceImpl implements PracticeService {
                 } else {
                     logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
                 }
-                logger.info("应用训练加分:{}", id);
+                logger.info("应用练习加分:{}", id);
                 PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                         submit.getApplicationId(), PracticePlan.APPLICATION);
                 if (practicePlan != null) {
@@ -246,7 +246,7 @@ public class PracticeServiceImpl implements PracticeService {
                 result = challengeSubmitDao.answer(id, content);
             }
             if (result && submit.getPointStatus() == 0) {
-                // 修改专题任务记录
+                // 修改小课任务记录
                 logger.info("小目标加分:{}", id);
                 PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                         submit.getChallengeId(), PracticePlan.CHALLENGE);
@@ -313,7 +313,7 @@ public class PracticeServiceImpl implements PracticeService {
                 planId = submit.getPlanId();
                 submitOpenId = submit.getOpenid();
             } else if (type == Constants.VoteType.SUBJECT){
-                // 专题区点赞
+                // 小课论坛点赞
                 SubjectArticle submit = subjectArticleDao.load(SubjectArticle.class,referencedId);
                 if(submit==null){
                     return false;
@@ -379,7 +379,7 @@ public class PracticeServiceImpl implements PracticeService {
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
                 String url = "/rise/static/practice/application?id=" + load.getApplicationId();
-                messageService.sendMessage("评论了我的应用训练", load.getOpenid(), openId, url);
+                messageService.sendMessage("评论了我的应用练习", load.getOpenid(), openId, url);
             }
         } else if(moduleId == Constants.CommentModule.SUBJECT){
             SubjectArticle load = subjectArticleDao.load(SubjectArticle.class,referId);
@@ -392,7 +392,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile profile = accountService.getProfile(openId, false);
                 if (profile != null) {
                     String url = "/rise/static/message/subject/reply?submitId=" + referId;
-                    messageService.sendMessage("评论了我的专题分享", load.getOpenid(), openId, url);
+                    messageService.sendMessage("评论了我的小课分享", load.getOpenid(), openId, url);
                 }
             }
         }

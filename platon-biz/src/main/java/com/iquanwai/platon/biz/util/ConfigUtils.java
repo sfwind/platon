@@ -3,6 +3,8 @@ package com.iquanwai.platon.biz.util;
 import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -18,7 +20,9 @@ public class ConfigUtils {
 	private static Config fileconfig;
 	private static ZKConfigUtils zkConfigUtils;
 
-	private static boolean zk_switch = false;
+//	private static boolean zk_switch = false;
+
+	private static Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
 
 	private static Timer timer;
 	static{
@@ -34,45 +38,37 @@ public class ConfigUtils {
 	}
 
 	private static void loadConfig() {
-		localconfig = ConfigFactory.load("localconfig");
-		config = ConfigFactory.load("platon");
+		config = ConfigFactory.load("localconfig");
+//		localconfig = ConfigFactory.load("localconfig");
+//		config = ConfigFactory.load("platon");
 		fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
-		config = localconfig.withFallback(config);
+//		config = localconfig.withFallback(config);
 		config = fileconfig.withFallback(config);
-		zk_switch = config.getBoolean("zk.open");
+//		zk_switch = config.getBoolean("zk.open");
 	}
 
 	public static String getValue(String key){
-		String value = null;
-		if(zk_switch){
-			value = zkConfigUtils.getValue(key);
+		if (config.hasPath(key)) {
+			return config.getString(key);
+		} else {
+			return zkConfigUtils.getValue(key);
 		}
-		if(value==null){
-			value = config.getString(key);
-		}
-		return value;
 	}
 
 	public static Integer getIntValue(String key){
-		Integer value = null;
-		if(zk_switch){
-			value= zkConfigUtils.getIntValue(key);
+		if (config.hasPath(key)) {
+			return config.getInt(key);
+		} else {
+			return zkConfigUtils.getIntValue(key);
 		}
-		if(value==null){
-			value = config.getInt(key);
-		}
-		return value;
 	}
 
 	public static Boolean getBooleanValue(String key){
-		Boolean value = null;
-		if(zk_switch){
-			value= zkConfigUtils.getBooleanValue(key);
+		if (config.hasPath(key)) {
+			return config.getBoolean(key);
+		} else {
+			return zkConfigUtils.getBooleanValue(key);
 		}
-		if(value==null){
-			value = config.getBoolean(key);
-		}
-		return value;
 	}
 
 	public static String getAppid() {
@@ -105,10 +101,6 @@ public class ConfigUtils {
 
 	public static boolean logDetail(){
 		return getBooleanValue("log.debug");
-	}
-
-	public static boolean messageSwitch(){
-		return getBooleanValue("message.switch");
 	}
 
 	public static String adapterDomainName(){
@@ -156,15 +148,19 @@ public class ConfigUtils {
 	}
 
 	public static String courseStartMsg(){
-		return config.getString("course.start.msg");
+		return getValue("course.start.msg");
+	}
+
+	public static String productTrailMsg(){
+		return getValue("product.trial.msg");
 	}
 
 	public static String courseCloseMsg(){
-		return config.getString("course.pass.msg");
+		return getValue("course.pass.msg");
 	}
 
 	public static String getPicturePrefix(){
-		return config.getString("qiniu.picture.prefix");
+		return getValue("qiniu.picture.prefix");
 	}
 
 	public static Integer preStudySerials(){
@@ -172,6 +168,10 @@ public class ConfigUtils {
 	}
 
 	public static String getIntegratedPracticeIndex(){
-		return config.getString("integrated.practice.index");
+		return getValue("integrated.practice.index");
+	}
+
+	public static Boolean prePublish(){
+		return getBooleanValue("rise.pre.publish");
 	}
 }

@@ -10,7 +10,7 @@ import java.util.Date;
 @Data
 public class WarmupPracticeDiscuss {
     private int id;
-    private Integer warmupPracticeId; //理解训练id
+    private Integer warmupPracticeId; //巩固练习id
     private Integer repliedId;    //被回复的讨论id
     private String comment;    //讨论内容
     private String openid;    //回复人

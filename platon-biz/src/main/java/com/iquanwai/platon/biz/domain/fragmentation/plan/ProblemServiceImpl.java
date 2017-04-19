@@ -31,7 +31,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<Problem> loadProblems() {
-        //去除已删除的专题
+        //去除已删除的小课
         return cacheService.getProblems().stream().
                 filter(problem -> !problem.getDel()).collect(Collectors.toList());
     }

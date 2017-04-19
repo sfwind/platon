@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/3/8.
- * 理解训练相关的请求处理类
+ * 巩固练习相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/practice/warmup")
@@ -60,8 +60,8 @@ public class WarmupController {
         WarmupPractice warmupPractice = practiceService.getWarmupPractice(id);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
-                .action("打开理解训练")
+                .function("巩固练习")
+                .action("打开巩固练习")
                 .memo(id.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPractice);
@@ -82,8 +82,8 @@ public class WarmupController {
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
-                .action("打开理解训练页")
+                .function("巩固练习")
+                .action("打开巩固练习页")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
@@ -110,7 +110,7 @@ public class WarmupController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
+                .function("巩固练习")
                 .action("回答问题")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
@@ -143,8 +143,8 @@ public class WarmupController {
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
-                .action("打开理解训练页")
+                .function("巩固练习")
+                .action("加载巩固练习解析页")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
@@ -210,8 +210,8 @@ public class WarmupController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
-                .action("打开理解训练页")
+                .function("巩固练习")
+                .action("打开巩固练习解析页")
                 .memo(practiceId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeList.get(0));
@@ -235,7 +235,7 @@ public class WarmupController {
         });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
+                .function("巩固练习")
                 .action("获取讨论")
                 .memo(warmupPracticeId.toString());
         operationLogService.log(operationLog);
@@ -247,7 +247,7 @@ public class WarmupController {
         Assert.notNull(loginUser, "用户不能为空");
 
         if(discussDto.getComment()==null || discussDto.getComment().length()>300){
-            LOGGER.error("{} 理解训练讨论字数过长", loginUser.getOpenId());
+            LOGGER.error("{} 巩固练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }
 
@@ -256,7 +256,7 @@ public class WarmupController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
+                .function("巩固练习")
                 .action("讨论")
                 .memo(discussDto.getWarmupPracticeId().toString());
         operationLogService.log(operationLog);

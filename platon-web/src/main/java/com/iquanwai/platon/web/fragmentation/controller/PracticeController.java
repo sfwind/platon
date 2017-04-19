@@ -5,14 +5,25 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.*;
+import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
+import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
+import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,7 +32,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -31,7 +47,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
- * 非理解训练的其他训练相关的请求处理类
+ * 非巩固练习的其他练习相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/practice")
@@ -81,8 +97,8 @@ public class PracticeController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("应用训练")
-                .action("打开应用训练页")
+                .function("应用练习")
+                .action("打开应用练习页")
                 .memo(applicationId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(applicationPractice);
@@ -170,8 +186,8 @@ public class PracticeController {
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("应用训练")
-                .action("提交应用训练")
+                .function("应用练习")
+                .action("提交应用练习")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(result);
@@ -221,7 +237,7 @@ public class PracticeController {
                                                                         @PathVariable Integer applicationId, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户信息不能为空");
         page.setPageSize(PAGE_SIZE);
-        // 该计划的应用训练是否提交
+        // 该计划的应用练习是否提交
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("应用任务")
@@ -294,7 +310,7 @@ public class PracticeController {
         Assert.notNull(page, "页码不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("应用训练")
+                .function("应用练习")
                 .action("移动端加载评论")
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
@@ -364,7 +380,7 @@ public class PracticeController {
         Assert.notNull(problemId, "难题不能为空");
         boolean b = planService.hasProblemPlan(loginUser.getOpenId(), problemId);
         if(!b){
-            return WebUtils.error("您并没有该专题，无法提交");
+            return WebUtils.error("您并没有该小课，无法提交");
         }
         Integer submitId = practiceService.submitSubjectArticle(new SubjectArticle(
                 workInfoDto.getSubmitId(),
@@ -378,7 +394,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create()
                 .module("训练")
                 .function("碎片化")
-                .action("移动专题输出区提交")
+                .action("移动小课输出区提交")
                 .memo(submitId + "");
         operationLogService.log(operationLog);
         if(submitId==-1){
@@ -403,14 +419,14 @@ public class PracticeController {
     @RequestMapping(value = "/subject/list/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getSubjectList(LoginUser loginUser, @PathVariable("problemId") Integer problemId, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "专题id不能为空");
+        Assert.notNull(problemId, "小课id不能为空");
         page.setPageSize(PAGE_SIZE);
         List<RiseWorkInfoDto> list = practiceService.loadSubjectArticles(problemId, page)
                 .stream().map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setSubmitId(item.getId());
                     dto.setType(Constants.PracticeType.SUBJECT);
-                    dto.setContent(item.getContent());
+                    dto.setContent(CommonUtils.removeStyle(item.getContent()));
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
                     Profile account = accountService.getProfile(item.getOpenid(), false);
                     dto.setUserName(account.getNickname());
@@ -444,7 +460,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
-                .action("移动端加载专题输出区")
+                .action("移动端加载小课论坛")
                 .memo(problemId + "");
         operationLogService.log(operationLog);
         return WebUtils.result(result);
@@ -455,7 +471,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
-                .action("移动端查询专题输出区描述")
+                .action("移动端查询小课论坛描述")
                 .memo(problemId + "");
         operationLogService.log(operationLog);
         return WebUtils.result(planService.loadSubjectDesc(problemId));
@@ -487,7 +503,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
-                .action("移动端加载专题分享文章")
+                .action("移动端加载小课分享文章")
                 .memo(submitId + "");
         operationLogService.log(operationLog);
         return WebUtils.result(dto);
@@ -503,13 +519,15 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
-            return WebUtils.error("该内容为付费内容，只有会员可以查看");
+            if(!improvementPlan.getRiseMember()){
+                return WebUtils.error("试用版只能解锁前3组哦 <br/> 快去升级专业版吧");
+            }
         }
         Integer result = planService.checkPractice(series, improvementPlan);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
-                .function("理解训练")
-                .action("理解训练开始校验")
+                .function("训练校验")
+                .action("训练开始校验")
                 .memo(series.toString());
         operationLogService.log(operationLog);
         if(result==-1){
@@ -526,11 +544,11 @@ public class PracticeController {
     @RequestMapping(value = "/label/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadLabels(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "专题不能为空");
+        Assert.notNull(problemId, "小课不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("标签")
-                .action("加载专题标签")
+                .action("加载小课标签")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(practiceService.loadProblemLabels(problemId));

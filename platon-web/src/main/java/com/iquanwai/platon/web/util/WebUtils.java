@@ -63,7 +63,7 @@ public class WebUtils {
     }
 
     public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String url = request.getRequestURL().toString();
+        String url = ConfigUtils.adapterDomainName()+request.getRequestURI();
         if(!StringUtils.isEmpty(request.getQueryString())){
             url = url +"?"+request.getQueryString();
         }

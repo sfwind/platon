@@ -43,4 +43,12 @@ public interface MessageService {
      * @param homeworkVotes 每日点赞
      * */
     void sendLikeMessage(List<HomeworkVote> homeworkVotes);
+
+    /**
+     * 发送试用版消息
+     * @param openId openId
+     */
+    void sendRiseTrialMessage(String openId);
+
+
 }

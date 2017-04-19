@@ -11,4 +11,5 @@ import java.util.List;
 public class ProblemCatalogDto {
     private String name;
     private List<ProblemCatalogListDto> catalogList;
+    private Boolean riseMember;
 }

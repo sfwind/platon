@@ -5,7 +5,9 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
+import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.util.CommonUtils;
@@ -38,6 +40,8 @@ public class AccountServiceImpl implements AccountService {
     private RegionDao regionDao;
     @Autowired
     private ProfileDao profileDao;
+    @Autowired
+    private RiseMemberTypeRepo riseMemberTypeRepo;
 
     private List<Region> provinceList;
 
@@ -205,5 +209,26 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public int updateOpenRise(String openId) {
        return profileDao.updateOpenRise(openId);
+    }
+
+    @Override
+    public int updateOpenApplication(String openId){
+        return profileDao.updateOpenApplication(openId);
+    }
+
+    @Override
+    public int updateOpenConsolidation(String openId){
+        return profileDao.updateOpenConsolidation(openId);
+    }
+
+
+    @Override
+    public List<MemberType> loadMemberTypes(){
+        return riseMemberTypeRepo.loadAll();
+    }
+
+    @Override
+    public MemberType loadMemberType(Integer id){
+        return riseMemberTypeRepo.memberType(id);
     }
 }

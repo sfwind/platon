@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
- * 专题相关的请求处理类
+ * 小课相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/problem")
@@ -70,18 +70,18 @@ public class ProblemController {
         List<Problem> problems = problemService.loadProblems();
         // 用户的所有计划
         List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getOpenId());
-        // 用户选过的专题
+        // 用户选过的小课
         List<Integer> doneProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()==3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
-        // 用户进行中的专题
+        // 用户进行中的小课
         List<Integer> doingProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()!=3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 获取所有分类
         List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
-        // 可以展示的专题
+        // 可以展示的小课
         Map<Integer,List<Problem>> showProblems = Maps.newHashMap();
         problems.forEach(item -> {
             List<Problem> temp = showProblems.computeIfAbsent(item.getCatalogId(), k -> Lists.newArrayList());
             if (doneProblemIds.contains(item.getId())) {
-                // 用户没做过这个专题
+                // 用户没做过这个小课
                 item.setStatus(2);
             } else if(doingProblemIds.contains(item.getId())){
                 item.setStatus(1);
@@ -103,6 +103,7 @@ public class ProblemController {
                 }).collect(Collectors.toList());
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
+        result.setRiseMember(loginUser.getRiseMember());
         return WebUtils.result(result);
     }
 
@@ -166,6 +167,19 @@ public class ProblemController {
                 .function("评分")
                 .action("移动端打分")
                 .module(problemId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping("/member/description")
+    public ResponseEntity<Map<String, Object>> description(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课")
+                .function("打点")
+                .action("打开会员说明页");
+        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 }

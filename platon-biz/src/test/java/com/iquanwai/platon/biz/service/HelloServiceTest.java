@@ -8,7 +8,6 @@ import org.junit.Test;
  */
 public class HelloServiceTest extends TestBase {
 
-
     @Test
     public void sendTest(){
 

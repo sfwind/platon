@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.po.common;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * Created by nethunder on 2017/2/8.
  */
@@ -22,9 +24,12 @@ public class Profile {
     private Integer point;
     private Integer isFull;
     private String riseId;
-    private Boolean openRise;
+    private Boolean openRise; // 是否打开过rise
     private String unionid;	//只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。详见：获取用户个人信息（UnionID机制）
+    private Date expireDate; // 过期时间
     private Boolean riseMember;
+    private Boolean openApplication; // 是否打开过应用练习
+    private Boolean openConsolidation; //  是否打开过巩固练习
 
 
     //默认头像

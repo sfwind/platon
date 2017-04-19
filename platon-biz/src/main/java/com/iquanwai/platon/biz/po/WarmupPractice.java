@@ -21,13 +21,13 @@ public class WarmupPractice implements Cloneable{
     @Deprecated
     private Integer sceneId; //场景id
     private Boolean del; //是否删除(0-否,1-是)
-    private Integer problemId; //专题id
+    private Integer problemId; //小课id
     private Integer sequence; //出现顺序
     private Boolean example; //是否例题(0-否,1-是)
     private String practiceUid; //任务唯一编号
     private Integer score; //非db字段 分值
     private List<Choice> choiceList; //所有选项
-    private List<WarmupPracticeDiscuss> discussList; //理解训练讨论
+    private List<WarmupPracticeDiscuss> discussList; //巩固练习讨论
     private List<Integer> choice; //用户选择选项
     private Knowledge knowledge; //知识点
 

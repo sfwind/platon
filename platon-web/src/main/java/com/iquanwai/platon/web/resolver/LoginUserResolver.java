@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.resolver;
 
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -17,6 +18,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -27,6 +29,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     private OAuthService oAuthService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     private static Map<String, LoginUser> loginUserMap = Maps.newHashMap();
 
@@ -57,7 +61,15 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         }
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         if(loginUserMap.containsKey(accessToken)){
-            return loginUserMap.get(accessToken);
+            LoginUser loginUser = loginUserMap.get(accessToken);
+            // 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
+            if(!loginUser.getRiseMember()){
+                Profile profile = accountService.getProfile(loginUser.getOpenId(),false);
+                if (profile != null && profile.getRiseMember()) {
+                    loginUser.setRiseMember(true);
+                }
+            }
+            return loginUser;
         }
 
         String openId = oAuthService.openId(accessToken);
@@ -68,6 +80,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         LoginUser loginUser = getLoginUser(openId);
         if (loginUser == null) return null;
+
         loginUserMap.put(accessToken, loginUser);
 
         return loginUser;
@@ -87,8 +100,9 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUser.setHeadimgUrl(account.getHeadimgurl());
         loginUser.setRealName(account.getRealName());
         loginUser.setOpenRise(account.getOpenRise());
-//        loginUser.setRiseMember(account.getRiseMember() == null?false:account.getRiseMember());
-        loginUser.setRiseMember(true);
+        loginUser.setOpenConsolidation(account.getOpenConsolidation());
+        loginUser.setOpenApplication(account.getOpenApplication());
+        loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
     }
 
@@ -98,5 +112,9 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return loginUserMap.get(accessToken);
         }
         return null;
+    }
+
+    public static Collection<LoginUser> getAllUsers(){
+        return loginUserMap.values();
     }
 }
