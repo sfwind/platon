@@ -153,7 +153,7 @@ public class ProblemController {
                 .module("问题")
                 .function("阅读问题报告")
                 .action("打开问题报告页")
-                .module(problemId.toString());
+                .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(problem);
     }
@@ -166,7 +166,7 @@ public class ProblemController {
                 .module("问题")
                 .function("评分")
                 .action("移动端打分")
-                .module(problemId.toString());
+                .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
