@@ -170,4 +170,8 @@ public class ConfigUtils {
 	public static String getIntegratedPracticeIndex(){
 		return getValue("integrated.practice.index");
 	}
+
+	public static Boolean prePublish(){
+		return getBooleanValue("rise.pre.publish");
+	}
 }
