@@ -123,6 +123,9 @@ public class CommonUtils {
     }
 
     public static String removeStyle(String content){
+        if (content == null) {
+            return null;
+        }
         // 正则表达式
         String regEx = " style=\"(.*?)\"";
         String regEx2 = " style='(.*?)'";
