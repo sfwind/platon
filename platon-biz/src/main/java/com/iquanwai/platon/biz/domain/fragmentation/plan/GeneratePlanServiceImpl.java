@@ -143,7 +143,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
-        data.put("remark",new TemplateMessage.Keyword("\n这个小课一共"+length+"节练习，记得每天完成1节吧\n" +
+        data.put("remark",new TemplateMessage.Keyword("\n这个小课一共"+length+"节练习，推荐每天完成1节哦\n" +
                 "\n如有疑问请在下方留言，小Q会尽快给你回复的"));
         templateMessageService.sendMessage(templateMessage);
     }
