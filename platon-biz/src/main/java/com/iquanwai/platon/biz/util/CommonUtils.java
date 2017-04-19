@@ -10,7 +10,13 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by justin on 16/8/7.
@@ -114,5 +120,28 @@ public class CommonUtils {
 
         return new BigDecimal(a).subtract(new BigDecimal(b)).
                 setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+    }
+
+    public static String removeStyle(String content){
+        // 正则表达式
+        String regEx = " style=\"(.*?)\"";
+        String regEx2 = " style='(.*?)'";
+        Pattern p = Pattern.compile(regEx);
+        Pattern p2 = Pattern.compile(regEx2);
+        Matcher m = p.matcher(content);
+        String okContent = null;
+        if (m.find()) {
+            okContent = m.replaceAll("");
+        } else {
+            okContent = content;
+        }
+        Matcher m2 = p2.matcher(okContent);
+        String result = null;
+        if(m2.find()){
+            result = m2.replaceAll("");
+        } else {
+            result = okContent;
+        }
+        return result;
     }
 }
