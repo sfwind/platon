@@ -363,4 +363,21 @@ public class PlanController {
         dto.setOpenApplication(loginUser.getOpenApplication());
         return WebUtils.result(dto);
     }
+
+    @RequestMapping("/promote")
+    public ResponseEntity<Map<String, Object>> promote(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("打点")
+                .function("升级专业版")
+                .action("点击升级专业版按钮");
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
 }
