@@ -14,7 +14,6 @@ import com.iquanwai.platon.biz.po.PracticePlan;
 import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -426,7 +425,7 @@ public class PracticeController {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setSubmitId(item.getId());
                     dto.setType(Constants.PracticeType.SUBJECT);
-                    dto.setContent(CommonUtils.removeStyle(item.getContent()));
+                    dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
                     Profile account = accountService.getProfile(item.getOpenid(), false);
                     dto.setUserName(account.getNickname());
