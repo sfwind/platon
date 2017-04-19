@@ -519,7 +519,7 @@ public class PracticeController {
         }
         if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
             if(!improvementPlan.getRiseMember()){
-                return WebUtils.error("试用版只能解锁前3组哦 <br/> 快去升级专业版吧");
+                return WebUtils.error("试用版仅能体验前三节内容 <br/> 点击右上角按钮，升级正式版吧");
             }
         }
         Integer result = planService.checkPractice(series, improvementPlan);
