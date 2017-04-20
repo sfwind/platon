@@ -304,6 +304,7 @@ public class PlanController {
 
     @RequestMapping("/risemember")
     public ResponseEntity<Map<String,Object>> isRiseMember(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("打点")
@@ -315,6 +316,7 @@ public class PlanController {
 
     @RequestMapping("/risemember/tips")
     public ResponseEntity<Map<String,Object>> markReadRiseMemberTips(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("打点")
