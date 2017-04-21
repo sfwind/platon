@@ -201,7 +201,7 @@ public class PracticeServiceImpl implements PracticeService {
     public Boolean submit(Integer id, String content, Integer type) {
         Assert.notNull(type, "提交类型不能为空");
         boolean result = false;
-        if(type.equals(PracticePlan.APPLICATION)) {
+        if(type.equals(PracticePlan.APPLICATION) || type.equals(PracticePlan.APPLICATION_REVIEW)) {
             ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
             if (submit == null) {
                 logger.error("submitId {} is not existed", id);
@@ -222,7 +222,7 @@ public class PracticeServiceImpl implements PracticeService {
                 }
                 logger.info("应用练习加分:{}", id);
                 PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
-                        submit.getApplicationId(), PracticePlan.APPLICATION);
+                        submit.getApplicationId(), type);
                 if (practicePlan != null) {
                     practicePlanDao.complete(practicePlan.getId());
                     Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
