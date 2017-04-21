@@ -48,12 +48,18 @@ public interface PracticeService {
     ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId, boolean create);
 
     /**
-     * 提交训练
+     * 提交应用训练
      * @param id 提交id
      * @param content 提交内容
-     * @param type 11-应用练习,21-小目标
      * */
-    Boolean submit(Integer id, String content, Integer type);
+    Boolean applicationSubmit(Integer id, String content);
+
+    /**
+     * 提交小目标
+     * @param id 提交id
+     * @param content 提交内容
+     * */
+    Boolean challengeSubmit(Integer id, String content);
 
     /**
      * 增加文章视图的记录数
@@ -127,11 +133,6 @@ public interface PracticeService {
      * @param warmupId 训练id
      * */
     WarmupPractice getWarmupPractice(Integer warmupId);
-
-    /**
-     * 获取前一天的点赞
-     * */
-    List<HomeworkVote> loadVoteYesterday();
 
     /**
      * 提交小课分享文章

@@ -152,7 +152,7 @@ public class PracticeController {
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
         }
-        Boolean result = practiceService.submit(submitId, submitDto.getAnswer(), PracticePlan.CHALLENGE);
+        Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
@@ -178,7 +178,7 @@ public class PracticeController {
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
         }
-        Boolean result = practiceService.submit(submitId, submitDto.getAnswer(), PracticePlan.APPLICATION);
+        Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);

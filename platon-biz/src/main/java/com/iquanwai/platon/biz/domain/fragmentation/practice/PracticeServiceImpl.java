@@ -198,81 +198,87 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Boolean submit(Integer id, String content, Integer type) {
-        Assert.notNull(type, "提交类型不能为空");
+    public Boolean applicationSubmit(Integer id, String content) {
         boolean result = false;
-        if(type.equals(PracticePlan.APPLICATION) || type.equals(PracticePlan.APPLICATION_REVIEW)) {
-            ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
-            if (submit == null) {
-                logger.error("submitId {} is not existed", id);
-                return false;
-            }
-            if(submit.getContent() == null){
-                result = applicationSubmitDao.firstAnswer(id, content);
+        Integer type;
+        ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
+        if (submit == null) {
+            logger.error("submitId {} is not existed", id);
+            return false;
+        }
+        int applicationId = submit.getApplicationId();
+        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
+        if(Knowledge.isReview(applicationPractice.getKnowledgeId())){
+            type = PracticePlan.APPLICATION_REVIEW;
+        }else{
+            type = PracticePlan.APPLICATION;
+        }
+        if(submit.getContent() == null){
+            result = applicationSubmitDao.firstAnswer(id, content);
+        } else {
+            result = applicationSubmitDao.answer(id, content);
+        }
+        if (result && submit.getPointStatus() == 0) {
+            // 修改应用任务记录
+            ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
+            if (plan != null) {
+                improvementPlanDao.updateApplicationComplete(plan.getId());
             } else {
-                result = applicationSubmitDao.answer(id, content);
+                logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
             }
-            if (result && submit.getPointStatus() == 0) {
-                // 修改应用任务记录
-                ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
-                if (plan != null) {
-                    improvementPlanDao.updateApplicationComplete(plan.getId());
-                } else {
-                    logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
-                }
-                logger.info("应用练习加分:{}", id);
-                PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
-                        submit.getApplicationId(), type);
-                if (practicePlan != null) {
-                    practicePlanDao.complete(practicePlan.getId());
-                    Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
-                    // 查看难度，加分
-                    pointRepo.risePoint(submit.getPlanId(), point);
-                    // 修改status
-                    applicationSubmitDao.updatePointStatus(id);
-                    // 加总分
-                    pointRepo.riseCustomerPoint(submit.getOpenid(), point);
-                }
-            }
-        }else if(type.equals(PracticePlan.CHALLENGE)){
-            ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class, id);
-            if (submit == null) {
-                logger.error("submitId {} is not existed", id);
-                return false;
-            }
-            if(submit.getContent() == null){
-                result = challengeSubmitDao.firstAnswer(id, content);
-            } else {
-                result = challengeSubmitDao.answer(id, content);
-            }
-            if (result && submit.getPointStatus() == 0) {
-                // 修改小课任务记录
-                logger.info("小目标加分:{}", id);
-                PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
-                        submit.getChallengeId(), PracticePlan.CHALLENGE);
-                if (practicePlan != null) {
-                    practicePlanDao.complete(practicePlan.getId());
-                    // 加分
-                    pointRepo.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
-                    // 修改status
-                    challengeSubmitDao.updatePointStatus(id);
-                    // 加总分
-                    pointRepo.riseCustomerPoint(submit.getOpenid(),ConfigUtils.getChallengeScore());
-                }
-
+            logger.info("应用练习加分:{}", id);
+            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
+                    submit.getApplicationId(), type);
+            if (practicePlan != null) {
+                practicePlanDao.complete(practicePlan.getId());
+                Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
+                // 查看难度，加分
+                pointRepo.risePoint(submit.getPlanId(), point);
+                // 修改status
+                applicationSubmitDao.updatePointStatus(id);
+                // 加总分
+                pointRepo.riseCustomerPoint(submit.getOpenid(), point);
             }
         }
         return result;
     }
 
     @Override
-    public WarmupPractice getWarmupPractice(Integer warmupId) {
-        return cacheService.getWarmupPractice(warmupId);
+    public Boolean challengeSubmit(Integer id, String content) {
+        boolean result;
+        ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class, id);
+        if (submit == null) {
+            logger.error("submitId {} is not existed", id);
+            return false;
+        }
+        if(submit.getContent() == null){
+            result = challengeSubmitDao.firstAnswer(id, content);
+        } else {
+            result = challengeSubmitDao.answer(id, content);
+        }
+        if (result && submit.getPointStatus() == 0) {
+            // 修改小课任务记录
+            logger.info("小目标加分:{}", id);
+            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
+                    submit.getChallengeId(), PracticePlan.CHALLENGE);
+            if (practicePlan != null) {
+                practicePlanDao.complete(practicePlan.getId());
+                // 加分
+                pointRepo.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
+                // 修改status
+                challengeSubmitDao.updatePointStatus(id);
+                // 加总分
+                pointRepo.riseCustomerPoint(submit.getOpenid(),ConfigUtils.getChallengeScore());
+            }
+
+        }
+
+        return result;
     }
 
     @Override
-    public List<HomeworkVote> loadVoteYesterday(){
-        return homeworkVoteDao.loadVoteByDate(DateUtils.beforeDays(new Date(), 1));
+    public WarmupPractice getWarmupPractice(Integer warmupId) {
+        return cacheService.getWarmupPractice(warmupId);
     }
 
     @Override
