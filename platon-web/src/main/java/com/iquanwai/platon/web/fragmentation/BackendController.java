@@ -4,6 +4,8 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
+import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
+import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,17 @@ public class BackendController {
                 .function("bug")
                 .action("记录RISE bug")
                 .memo("url:"+errorLogDto.getUrl()+";data:"+data);
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/mark", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser,@RequestBody MarkDto markDto) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser == null ? null : loginUser.getOpenId())
+                .module(markDto.getModule())
+                .function(markDto.getFunction())
+                .action(markDto.getAction())
+                .memo(markDto.getMemo());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
