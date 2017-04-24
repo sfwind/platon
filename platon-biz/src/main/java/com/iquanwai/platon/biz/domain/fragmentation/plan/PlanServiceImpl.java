@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,36 +88,46 @@ public class PlanServiceImpl implements PlanService {
         return true;
     }
 
-    private boolean isDoneApplication(List<PracticePlan> runningPractices){
+    /**
+     * 当前组的应用训练，综合训练是否满足完成逻辑
+     * @param runningPractices 当前组
+     * @return left:是否完成，right:提示语
+     */
+    private Pair<Boolean,String> isDoneApplication(List<PracticePlan> runningPractices){
+
+        boolean left = true;
+        String right = null;
+
         if(CollectionUtils.isNotEmpty(runningPractices)){
-            for(PracticePlan practicePlan:runningPractices){
-                if (practicePlan.getType()==PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus()==0){
-                    return false;
-                }
-                // 应用练习是否完成
-                if (practicePlan.getType() == PracticePlan.APPLICATION && practicePlan.getStatus() == 1) {
-                    return true;
+            List<PracticePlan> applications = runningPractices.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION).collect(Collectors.toList());
+            List<PracticePlan> applicationReviews = runningPractices.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW).collect(Collectors.toList());
+            if (applications.size() > 0) {
+                // 有应用训练，查看是否完成
+                long count = applications.stream().filter(practicePlan -> practicePlan.getStatus() == 1).count();
+                if (count == 0) {
+                    // 一个应用训练也没完成
+                    left = false;
+                    right = PracticePlan.APPLICATION_NOTICE;
                 }
             }
-            // 没有已完成的应用练习
-            return false;
+
+            if (applicationReviews.size() > 0) {
+                // 有综合训练，查看是否有没完成的
+                long count = applicationReviews.stream().filter(practicePlan -> practicePlan.getStatus() == 0).count();
+                if (count > 0) {
+                    // 有没完成的
+                    left = false;
+                    right = PracticePlan.APPLICATION_REVIEW_NOTICE;
+                }
+            }
+
+            return new MutablePair<>(left, right);
         } else {
-            // 当前节没有应用练习，默认返回true
-            return true;
+            // 当前节没有应用练习,综合练习，默认返回true
+            return new MutablePair<>(true, null);
         }
     }
 
-    private String alertMsg(List<PracticePlan> runningPractices){
-        if(CollectionUtils.isNotEmpty(runningPractices)) {
-            for (PracticePlan practicePlan : runningPractices) {
-                if (practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0) {
-                    return "提升能力和解决问题<br/>需要你的刻意练习<br/>我们推荐你至少完成所有综合练习";
-                }
-            }
-        }
-
-        return "从了解知识到能够运用<br/>还差一个内化的距离<br/>来一个应用练习吧";
-    }
 
     /**
      * 获取最大完成组序号
@@ -189,19 +200,30 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setNewMessage(messageNumber>0);
         // 所有的综合练习是否完成
         List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
-        applications = applications.stream().filter(practicePlan -> practicePlan.getType()==PracticePlan.APPLICATION_REVIEW)
+        // 拿到未完成的综合训练
+        List<PracticePlan> disDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType()==PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0)
                 .collect(Collectors.toList());
-        improvementPlan.setDoneAllIntegrated(isDoneApplication(applications));
-        // 当前节的应用练习是否有未完成
-        boolean isDone = isDoneApplication(runningPractice);
-        improvementPlan.setDoneCurSeriesApplication(isDone);
-        if(!isDone){
-            improvementPlan.setAlertMsg(alertMsg(runningPractice));
+        // 未完成未空则代表全部完成
+        improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(disDoneApplications));
+
+        Pair<Boolean, String> doneApps = isDoneApplication(runningPractice);
+        // 当前组的综合训练是否全部完成
+        improvementPlan.setDoneCurSeriesApplication(doneApps.getLeft());
+
+        if (!improvementPlan.getDoneAllIntegrated()) {
+            // tips:存在所有综合训练中，有未完成的情况，提示语设置，会被之后覆盖
+            improvementPlan.setAlertMsg(PracticePlan.APPLICATION_REVIEW_NOTICE);
+        }
+
+        if (!doneApps.getLeft()) {
+            // 未完成当前组的应用训练，综合训练,提示语优先级较高
+            improvementPlan.setAlertMsg(doneApps.getRight());
         }
 
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
     }
+
 
     private void setTitleInfo(ImprovementPlan improvementPlan, int series, Integer problemId) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
@@ -481,12 +503,10 @@ public class PlanServiceImpl implements PlanService {
     public Pair<Boolean, Integer> completeCheck(ImprovementPlan improvementPlan) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
-        for(PracticePlan practicePlan:practicePlans){
-            //巩固练习必须完成,才算完成整个训练计划
-            if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
-                return new ImmutablePair<>(false, -1);
-            }
+        if (!isDone(practicePlans)) {
+            return new ImmutablePair<>(false, -1);
         }
+
         //完成训练计划
         int percent = completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
         //更新完成时间

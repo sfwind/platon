@@ -139,7 +139,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             first = "Hi，你刚才选择了RISE小课：\n";
         }
         int length = problem.getLength();
-        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), length + 6));
+        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
