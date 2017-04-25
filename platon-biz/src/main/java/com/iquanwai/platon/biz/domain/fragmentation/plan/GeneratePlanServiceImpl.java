@@ -49,8 +49,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private ProfileDao profileDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -287,7 +285,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
         // 查询是否是riseMember
-        Profile profile = profileDao.queryByOpenId(openid);
+        Profile profile = accountService.getProfile(openid, false);
         if(profile.getRiseMember()){
             //最长开放30天
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));

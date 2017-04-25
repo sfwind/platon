@@ -30,6 +30,7 @@ public class Profile {
     private Boolean riseMember;
     private Boolean openApplication; // 是否打开过应用练习
     private Boolean openConsolidation; //  是否打开过巩固练习
+    private Integer role; //非db字段
 
 
     //默认头像

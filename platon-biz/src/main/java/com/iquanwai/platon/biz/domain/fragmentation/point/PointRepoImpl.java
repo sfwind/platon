@@ -8,7 +8,6 @@ import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
