@@ -92,7 +92,12 @@ public class ZKConfigUtils {
                 return value;
             }
             logger.info("get {} from zk", key);
-            String json = new String(zk.getData(prePath.concat(key), false, null), "utf-8");
+            String fullPath = prePath.concat(key);
+            if (zk.exists(fullPath, false) == null) {
+                logger.error("the full path node is none : {}", fullPath);
+                return null;
+            }
+            String json = new String(zk.getData(fullPath, false, null), "utf-8");
             ConfigNode configNode = new Gson().fromJson(json, ConfigNode.class);
             value = configNode.getValue();
             CONFIG_CACHE.put(key, value);
