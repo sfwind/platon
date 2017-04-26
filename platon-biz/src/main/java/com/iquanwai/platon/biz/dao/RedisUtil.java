@@ -3,9 +3,12 @@ package com.iquanwai.platon.biz.dao;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -14,6 +17,7 @@ import java.util.function.Consumer;
 @Repository
 public class RedisUtil {
     private RedissonClient redissonClient;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public void setRedissonClient(RedissonClient redissonClient){
@@ -40,8 +44,12 @@ public class RedisUtil {
 
     public void lock(String key, Consumer<RLock> consumer) {
         RLock lock = redissonClient.getLock(key);
-        lock.lock();
+        logger.info("Thread {} want the lock", Thread.currentThread().getId());
+        lock.lock(100, TimeUnit.SECONDS);
+        logger.info("Thread {} has lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
         consumer.accept(lock);
+        logger.info("Thread {} will release the lock",Thread.currentThread().getId());
         lock.unlock();
+        logger.info("Thread {} don't have the lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
     }
 }
