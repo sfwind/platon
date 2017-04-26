@@ -51,7 +51,11 @@ public class ConfigUtils {
 		if (config.hasPath(key)) {
 			return config.getString(key);
 		} else {
-			return zkConfigUtils.getValue(key);
+			String value = zkConfigUtils.getValue(key);
+			if (value == null) {
+				value = zkConfigUtils.getArchValue(key);
+			}
+			return value;
 		}
 	}
 
