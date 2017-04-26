@@ -45,10 +45,10 @@ public class ProfileDao extends DBUtil {
 
     public void updatePoint(String openId, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+//        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         String sql = "UPDATE Profile SET Point = ? where Openid = ?";
         try {
-            asyncRun.update(sql, point, openId);
+            runner.update(sql, point, openId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
