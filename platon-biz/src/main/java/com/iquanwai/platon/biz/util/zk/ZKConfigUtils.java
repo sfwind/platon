@@ -31,7 +31,7 @@ public class ZKConfigUtils {
     /* 每个项目的path不同 */
     private static final String CONFIG_PATH = "/quanwai/config/rise/";
     /* 架构类型的path */
-    private static final String ARCH_PATH = "/quanwai/config/arch";
+    private static final String ARCH_PATH = "/quanwai/config/arch/";
     /* zk本地配置文件路径 */
     private static final String ZK_CONFIG_PATH = "/data/config/zk";
     /* zk服务器地址配置key */
