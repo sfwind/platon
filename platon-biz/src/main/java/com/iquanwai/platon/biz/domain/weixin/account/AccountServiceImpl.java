@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
@@ -42,6 +43,8 @@ public class AccountServiceImpl implements AccountService {
     private ProfileDao profileDao;
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
+    @Autowired
+    private RedisUtil redisUtil;
 
     private List<Region> provinceList;
 
