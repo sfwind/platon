@@ -37,6 +37,10 @@ public class RedisTest extends TestBase {
 
 //        log(redisUtil.get(String.class, "a"));
 
+        redisUtil.lock("flag", lock -> {
+            System.out.println(Thread.currentThread().getId() + " is lock:" + lock.isHeldByCurrentThread());
+        });
+
 
 
     }

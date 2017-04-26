@@ -1,9 +1,12 @@
 package com.iquanwai.platon.biz.dao;
 
 import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.function.Consumer;
 
 /**
  * Created by nethunder on 2017/4/26.
@@ -33,5 +36,12 @@ public class RedisUtil {
     public <T> void set(String key, T value) {
         RBucket<T> bucket = redissonClient.getBucket(key);
         bucket.set(value);
+    }
+
+    public void lock(String key, Consumer<RLock> consumer) {
+        RLock lock = redissonClient.getLock(key);
+        lock.lock();
+        consumer.accept(lock);
+        lock.unlock();
     }
 }
