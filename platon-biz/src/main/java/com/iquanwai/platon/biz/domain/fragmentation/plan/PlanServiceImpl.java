@@ -470,7 +470,7 @@ public class PlanServiceImpl implements PlanService {
         improvementPlanDao.updateStatus(planId, status);
 //        }
         //解锁所有应用练习
-        practicePlanDao.unlockApplicationPractice(planId);
+//        practicePlanDao.unlockApplicationPractice(planId);
         //更新待完成的小课状态
         problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
         //发送完成通知

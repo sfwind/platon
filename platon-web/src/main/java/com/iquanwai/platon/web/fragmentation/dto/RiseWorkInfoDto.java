@@ -30,4 +30,6 @@ public class RiseWorkInfoDto {
     private Boolean isMine;
     private List<ArticleLabel> labelList;
     private List<String> picList;
+    private Integer role;
+    private String signature;
 }

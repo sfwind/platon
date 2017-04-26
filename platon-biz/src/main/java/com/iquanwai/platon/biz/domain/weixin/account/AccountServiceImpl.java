@@ -3,13 +3,11 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
-import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.MemberType;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
@@ -21,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Date;
@@ -46,8 +45,23 @@ public class AccountServiceImpl implements AccountService {
     private List<Region> provinceList;
 
     private List<Region> cityList;
+    @Autowired
+    private UserRoleDao userRoleDao;
+
+    private Map<String, Integer> userRoleMap = Maps.newHashMap();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    @PostConstruct
+    public void init(){
+        List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
+
+        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> {
+            userRoleMap.put(userRole.getOpenid(), userRole.getRoleId());
+        });
+
+        logger.info("role init complete");
+    }
 
     public Account getAccount(String openid, boolean realTime) {
         //从数据库查询account对象
@@ -68,24 +82,49 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Profile getProfile(String openid, boolean realTime){
-        Profile profile = profileDao.queryByOpenId(openid);
+        Profile profile = getProfileFromDB(openid);
         if(!realTime && profile != null){
             return profile;
         }
         synchronized (this){
-            Profile profileTemp = profileDao.queryByOpenId(openid);
+            Profile profileTemp = getProfileFromDB(openid);
             if(!realTime && profileTemp != null){
                 return profileTemp;
             }
             Account account = followUserDao.queryByOpenid(openid);
             getAccountFromWeixin(openid,account);
-            return profileDao.queryByOpenId(openid);
+            return getProfileFromDB(openid);
         }
+    }
+
+    private Profile getProfileFromDB(String openid) {
+        Profile profile = profileDao.queryByOpenId(openid);
+
+        if(profile!=null) {
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if (role == null) {
+                profile.setRole(0);
+            } else {
+                profile.setRole(role);
+            }
+        }
+
+        return profile;
     }
 
     @Override
     public List<Profile> getProfiles(List<String> openid) {
-        return profileDao.queryAccounts(openid);
+        List<Profile> profiles = profileDao.queryAccounts(openid);
+        profiles.stream().forEach(profile -> {
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if(role==null){
+                profile.setRole(0);
+            }else{
+                profile.setRole(role);
+            }
+        });
+
+        return profiles;
     }
 
     private Account getAccountFromWeixin(String openid, Account account) {
@@ -123,7 +162,7 @@ public class AccountServiceImpl implements AccountService {
                 }
                 if(accountNew.getNickname()!=null){
                     followUserDao.insert(accountNew);
-                    Profile profile = profileDao.queryByOpenId(accountNew.getOpenid());
+                    Profile profile = getProfileFromDB(accountNew.getOpenid());
                     if(profile==null){
                         profile = new Profile();
                         try{

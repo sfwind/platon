@@ -5,24 +5,14 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.ChallengePractice;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.SubjectArticle;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
-import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
-import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
-import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
-import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
+import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,12 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -256,6 +241,8 @@ public class PracticeController {
                     if(account!=null) {
                         dto.setUserName(account.getNickname());
                         dto.setHeadImage(account.getHeadimgurl());
+                        dto.setRole(account.getRole());
+                        dto.setSignature(account.getSignature());
                     }
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
                     dto.setPriority(item.getPriority());
@@ -322,6 +309,8 @@ public class PracticeController {
                 dto.setUpTime(DateUtils.parseDateToString(item.getAddTime()));
                 dto.setUpName(account.getNickname());
                 dto.setHeadPic(account.getHeadimgurl());
+                dto.setRole(account.getRole());
+                dto.setSignature(account.getSignature());
                 return dto;
             } else {
                 LOGGER.error("未找到该评论用户:{}", item);
@@ -428,8 +417,12 @@ public class PracticeController {
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
                     Profile account = accountService.getProfile(item.getOpenid(), false);
-                    dto.setUserName(account.getNickname());
-                    dto.setHeadImage(account.getHeadimgurl());
+                    if(account!=null) {
+                        dto.setUserName(account.getNickname());
+                        dto.setHeadImage(account.getHeadimgurl());
+                        dto.setRole(account.getRole());
+                        dto.setSignature(account.getSignature());
+                    }
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, item.getId()));
                     // 查询我对它的点赞状态
@@ -489,8 +482,12 @@ public class PracticeController {
         dto.setContent(subjectArticle.getContent());
         dto.setTitle(subjectArticle.getTitle());
         Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
-        dto.setHeadImage(profile.getHeadimgurl());
-        dto.setUserName(profile.getNickname());
+        if(profile!=null) {
+            dto.setHeadImage(profile.getHeadimgurl());
+            dto.setUserName(profile.getNickname());
+            dto.setRole(profile.getRole());
+            dto.setSignature(profile.getSignature());
+        }
         dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
         dto.setProblemId(subjectArticle.getProblemId());
         dto.setPerfect(subjectArticle.getSequence() > 0);

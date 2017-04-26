@@ -9,4 +9,5 @@ import lombok.Data;
 public class UserRole {
     private Integer roleId;
     private String openid;
+    private Boolean del;
 }
