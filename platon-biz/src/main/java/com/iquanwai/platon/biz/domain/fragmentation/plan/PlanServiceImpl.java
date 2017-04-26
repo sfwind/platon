@@ -335,10 +335,12 @@ public class PlanServiceImpl implements PlanService {
         if(CollectionUtils.isNotEmpty(incompletePractice)){
             PracticePlan practicePlan = incompletePractice.get(0);
             if(!practicePlan.getUnlocked()){
-                if(improvementPlan.getKeycnt()>0) {
+                // 查看这个未完成的练习是否是会员练习
+//                if(improvementPlan.getKeycnt()>0) {
+                if (improvementPlan.getRiseMember() || practicePlan.getSeries() <= 3) {
                     unlock(incompletePractice, improvementPlan);
                     runningPractice.addAll(incompletePractice);
-                }else{
+                } else {
                     runningPractice.addAll(getLastUnlockPractice(practicePlans));
                 }
             }else{
@@ -357,29 +359,29 @@ public class PlanServiceImpl implements PlanService {
 
         return runningPractice;
     }
-
     //获取第一节未完成的练习
     private List<PracticePlan> getFirstIncompletePractice(List<PracticePlan> practicePlans) {
         Assert.notNull(practicePlans, "练习计划不能为空");
         List<PracticePlan> incompletePractice = Lists.newArrayList();
-        int seriesCursor = 0; //当前节指针
-        boolean running = false;
-        for(PracticePlan practicePlan:practicePlans) {
-            if (practicePlan.getType() == PracticePlan.CHALLENGE) {
+        Map<Integer,List<PracticePlan>> practiceMap = Maps.newHashMap();
+
+        practicePlans.forEach(item->{
+            List<PracticePlan> plans = practiceMap.get(item.getSeries());
+            if (plans == null) {
+                plans = Lists.newArrayList();
+            }
+            plans.add(item);
+            practiceMap.put(item.getSeries(), plans);
+        });
+
+        for (Integer key : practiceMap.keySet()) {
+            if (key == 0) {
                 continue;
             }
-            if(practicePlan.getSeries()!=seriesCursor){
-                //找到正在进行的训练节
-                if(running){
-                    break;
-                }
-                seriesCursor = practicePlan.getSeries();
-                incompletePractice.clear();
-            }
-            incompletePractice.add(practicePlan);
-            //找到第一个未完成的热身练习
-            if(practicePlan.getType()==PracticePlan.WARM_UP && practicePlan.getStatus()==0){
-                running = true;
+            if (!isDone(practiceMap.get(key))) {
+                // 没有完成
+                incompletePractice.addAll(practiceMap.get(key));
+                break;
             }
         }
 
