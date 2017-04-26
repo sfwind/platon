@@ -258,7 +258,7 @@ public class PlanServiceImpl implements PlanService {
             practicePlanDao.unlock(practicePlan.getId());
         });
         Integer progress = runningPractice.get(0).getSeries();
-        improvementPlanDao.updateProgress(improvementPlan.getId(), improvementPlan.getKeycnt() - 1, progress);
+        improvementPlanDao.updateProgress(improvementPlan.getId(), progress);
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {

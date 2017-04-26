@@ -138,11 +138,11 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateProgress(Integer planId, Integer key, Integer series){
+    public void updateProgress(Integer planId, Integer series){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE ImprovementPlan SET Keycnt =?, CurrentSeries=? where Id=?";
+        String sql = "UPDATE ImprovementPlan SET CurrentSeries=? where Id=?";
         try {
-            runner.update(sql, key, series, planId);
+            runner.update(sql, series, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
