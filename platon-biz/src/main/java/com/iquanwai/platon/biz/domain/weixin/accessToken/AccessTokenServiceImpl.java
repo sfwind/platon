@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.weixin.accessToken;
 
 
 import com.iquanwai.platon.biz.dao.RedisUtil;
-import com.iquanwai.platon.biz.po.common.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +25,13 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         }
 
 //        AccessToken token = accessTokenDao.load(AccessToken.class, 1);
-        AccessToken token = redisUtil.get(AccessToken.class, "accessToken");
+        String token = redisUtil.get("accessToken");
         if(token==null){
             logger.info("insert access token");
 //            accessTokenDao.insertOrUpdate(_getAccessToken());
             redisUtil.set("accessToken", _getAccessToken());
         }else {
-            accessToken = token.getAccessToken();
+            accessToken = token;
         }
 
         return accessToken;
@@ -52,19 +51,19 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             forceUpdateAccessToken();
         }else{
 //            AccessToken token = accessTokenDao.load(AccessToken.class, 1);
-            AccessToken token = redisUtil.get(AccessToken.class, "accessToken");
+            String token = redisUtil.get("accessToken");
             if(token==null){
                 logger.info("insert access token");
 //                accessTokenDao.insertOrUpdate(_getAccessToken());
                 redisUtil.set("accessToken", _getAccessToken());
             }else{
                 //如果数据库的accessToken未刷新,则强制刷新
-                if(token.getAccessToken().equals(accessToken)){
+                if(token.equals(accessToken)){
                     forceUpdateAccessToken();
                 }else{
                     //如果数据库的accessToken已刷新,返回数据库的token
                     logger.info("reload access token");
-                    accessToken = token.getAccessToken();
+                    accessToken = token;
                 }
             }
         }

@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.dao;
 
 import com.iquanwai.platon.biz.TestBase;
-import com.iquanwai.platon.biz.po.common.AccessToken;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,7 +17,7 @@ public class RedisTest extends TestBase {
 //        AccessToken token = new AccessToken();
 //        token.setAccessToken("fwefewfew");
 //        redisUtil.set("accessToken", token);
-        log(redisUtil.get(AccessToken.class, "accessToken").getAccessToken());
+        log(redisUtil.get("accessToken"));
     }
 
     @Test
