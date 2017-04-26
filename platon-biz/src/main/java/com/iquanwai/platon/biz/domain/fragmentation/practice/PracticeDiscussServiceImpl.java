@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -28,8 +27,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     @Autowired
     private WarmupPracticeDiscussDao warmupPracticeDiscussDao;
     @Autowired
-    private UserRoleDao userRoleDao;
-    @Autowired
     private MessageService messageService;
     @Autowired
     private AccountService accountService;
@@ -51,14 +48,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
             }
         }
-//        List<UserRole> userRoles = userRoleDao.getRoles(openid);
-//        //普通用户不会在角色表中存记录
-//        if(CollectionUtils.isEmpty(userRoles)){
-//            //普通用户的讨论优先级较低
-//            warmupPracticeDiscuss.setPriority(0);
-//        }else{
-//            warmupPracticeDiscuss.setPriority(1);
-//        }
         warmupPracticeDiscuss.setPriority(0);
         Integer id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
 
@@ -129,6 +118,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 if (account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())) {
                     warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                     warmupPracticeDiscuss.setName(account.getNickname());
+                    warmupPracticeDiscuss.setRole(account.getRole());
+                    warmupPracticeDiscuss.setSignature(account.getSignature());
                 }
                 if (account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())) {
                     warmupPracticeDiscuss.setRepliedName(account.getNickname());
@@ -144,6 +135,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
             warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
             warmupPracticeDiscuss.setName(account.getNickname());
+            warmupPracticeDiscuss.setRole(account.getRole());
+            warmupPracticeDiscuss.setSignature(account.getSignature());
         }
         if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
             warmupPracticeDiscuss.setRepliedName(account.getNickname());

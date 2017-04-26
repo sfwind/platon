@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.resolver;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -29,8 +28,6 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     private OAuthService oAuthService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
 
     private static Map<String, LoginUser> loginUserMap = Maps.newHashMap();
 

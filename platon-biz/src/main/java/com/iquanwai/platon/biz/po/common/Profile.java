@@ -21,6 +21,7 @@ public class Profile {
     private String function; //职业
     private String workingLife; //工作年限
     private String realName; //真名
+    private String signature; //签名
     private Integer point;
     private Integer isFull;
     private String riseId;
@@ -30,6 +31,7 @@ public class Profile {
     private Boolean riseMember;
     private Boolean openApplication; // 是否打开过应用练习
     private Boolean openConsolidation; //  是否打开过巩固练习
+    private Integer role; //非db字段
 
 
     //默认头像

@@ -24,4 +24,6 @@ public class WarmupPracticeDiscuss {
     private String name;  //回复人名字 非db字段
     private String avatar;//回复人头像 非db字段
     private String discussTime;//回复时间标准化格式 非db字段
+    private Integer role; //回复人角色 非db字段
+    private String signature; //回复人签名 非db字段
 }

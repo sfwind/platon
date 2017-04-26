@@ -73,24 +73,6 @@ public class ProfileDao extends DBUtil {
         }
         return -1;
     }
-    public int updateMeta(String nickname, String headimgurl,String openId) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update Profile Set Nickname=?, Headimgurl=? where Openid=?";
-        try {
-            Future<Integer> result = asyncRun.update(updateSql,
-                    nickname, headimgurl, openId);
-            return result.get();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        } catch (InterruptedException e) {
-            // ignore
-        } catch (ExecutionException e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        return -1;
-    }
 
     public int updateOpenRise(String openId) {
         QueryRunner run = new QueryRunner(getDataSource());
