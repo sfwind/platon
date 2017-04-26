@@ -119,6 +119,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                     warmupPracticeDiscuss.setName(account.getNickname());
                     warmupPracticeDiscuss.setRole(account.getRole());
+                    warmupPracticeDiscuss.setSignature(account.getSignature());
                 }
                 if (account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())) {
                     warmupPracticeDiscuss.setRepliedName(account.getNickname());
@@ -135,6 +136,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
             warmupPracticeDiscuss.setName(account.getNickname());
             warmupPracticeDiscuss.setRole(account.getRole());
+            warmupPracticeDiscuss.setSignature(account.getSignature());
         }
         if(account.getOpenid().equals(warmupPracticeDiscuss.getRepliedOpenid())){
             warmupPracticeDiscuss.setRepliedName(account.getNickname());

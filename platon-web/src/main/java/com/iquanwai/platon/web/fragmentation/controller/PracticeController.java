@@ -242,6 +242,7 @@ public class PracticeController {
                         dto.setUserName(account.getNickname());
                         dto.setHeadImage(account.getHeadimgurl());
                         dto.setRole(account.getRole());
+                        dto.setSignature(account.getSignature());
                     }
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
                     dto.setPriority(item.getPriority());
@@ -418,6 +419,7 @@ public class PracticeController {
                         dto.setUserName(account.getNickname());
                         dto.setHeadImage(account.getHeadimgurl());
                         dto.setRole(account.getRole());
+                        dto.setSignature(account.getSignature());
                     }
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, item.getId()));
@@ -482,6 +484,7 @@ public class PracticeController {
             dto.setHeadImage(profile.getHeadimgurl());
             dto.setUserName(profile.getNickname());
             dto.setRole(profile.getRole());
+            dto.setSignature(profile.getSignature());
         }
         dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
         dto.setProblemId(subjectArticle.getProblemId());
