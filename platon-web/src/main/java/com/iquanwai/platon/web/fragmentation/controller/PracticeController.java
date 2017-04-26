@@ -309,6 +309,8 @@ public class PracticeController {
                 dto.setUpTime(DateUtils.parseDateToString(item.getAddTime()));
                 dto.setUpName(account.getNickname());
                 dto.setHeadPic(account.getHeadimgurl());
+                dto.setRole(account.getRole());
+                dto.setSignature(account.getSignature());
                 return dto;
             } else {
                 LOGGER.error("未找到该评论用户:{}", item);
