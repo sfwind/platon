@@ -17,4 +17,5 @@ public class ChallengeSubmit {
     private Integer pointStatus; //是否已加分（0-否，1-是）
     private Date updateTime; //最后更新时间
     public Date publishTime; // 第一次提交时间
+    private Integer length; //字数
 }

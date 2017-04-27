@@ -69,11 +69,11 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public boolean answer(Integer id, String content){
+    public boolean firstAnswer(Integer id, String content, int length){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ChallengeSubmit set Content=? where Id=?";
+        String sql = "update ChallengeSubmit set Content=?,Length=?,PublishTime=CURRENT_TIMESTAMP where Id=?";
         try {
-            runner.update(sql, content, id);
+            runner.update(sql, content, length, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
@@ -81,17 +81,20 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
         return true;
     }
 
-    public boolean firstAnswer(Integer id, String content){
+
+    public boolean answer(Integer id, String content, int length){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ChallengeSubmit set Content=?,PublishTime=CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ChallengeSubmit set Content=?, Length=? where Id=?";
         try {
-            runner.update(sql, content, id);
+
+            runner.update(sql, content, length, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
         }
         return true;
     }
+
 
     public boolean updatePointStatus(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());

@@ -147,4 +147,11 @@ public class CommonUtils {
         }
         return result;
     }
+
+    public static String removeHTMLTag(String html){
+        if(html==null){
+            return "";
+        }
+        return StringUtils.removePattern(html, "<[^>]*>");
+    }
 }

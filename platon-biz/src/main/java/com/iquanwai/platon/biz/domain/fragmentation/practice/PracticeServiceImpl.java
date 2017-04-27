@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -199,7 +200,6 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Boolean applicationSubmit(Integer id, String content) {
-        boolean result = false;
         Integer type;
         ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
         if (submit == null) {
@@ -213,10 +213,12 @@ public class PracticeServiceImpl implements PracticeService {
         }else{
             type = PracticePlan.APPLICATION;
         }
+        boolean result;
+        int length = CommonUtils.removeHTMLTag(content).length();
         if(submit.getContent() == null){
-            result = applicationSubmitDao.firstAnswer(id, content);
+            result = applicationSubmitDao.firstAnswer(id, content, length);
         } else {
-            result = applicationSubmitDao.answer(id, content);
+            result = applicationSubmitDao.answer(id, content, length);
         }
         if (result && submit.getPointStatus() == 0) {
             // 修改应用任务记录
@@ -245,16 +247,17 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Boolean challengeSubmit(Integer id, String content) {
-        boolean result;
         ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class, id);
         if (submit == null) {
             logger.error("submitId {} is not existed", id);
             return false;
         }
-        if(submit.getContent() == null){
-            result = challengeSubmitDao.firstAnswer(id, content);
+        boolean result;
+        int length = CommonUtils.removeHTMLTag(content).length();
+        if (submit.getContent() == null) {
+            result = challengeSubmitDao.firstAnswer(id, content, length);
         } else {
-            result = challengeSubmitDao.answer(id, content);
+            result = challengeSubmitDao.answer(id, content, length);
         }
         if (result && submit.getPointStatus() == 0) {
             // 修改小课任务记录
@@ -420,6 +423,8 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Integer submitSubjectArticle(SubjectArticle subjectArticle){
+        String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
+        subjectArticle.setLength(content.length());
         Integer submitId = subjectArticle.getId();
         if (subjectArticle.getId()==null){
             // 第一次提交

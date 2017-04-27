@@ -24,13 +24,13 @@ public class SubjectArticleDao extends PracticeDBUtil {
 
     public int insert(SubjectArticle subjectArticle){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into SubjectArticle(Openid, ProblemId, AuthorType, Sequence,Title, Content) " +
-                "values(?,?,?,?,?,?)";
+        String sql = "insert into SubjectArticle(Openid, ProblemId, AuthorType, Sequence,Title, Content, Length) " +
+                "values(?,?,?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     subjectArticle.getOpenid(), subjectArticle.getProblemId(),
                     subjectArticle.getAuthorType(), subjectArticle.getSequence(), subjectArticle.getTitle(),
-                    subjectArticle.getContent());
+                    subjectArticle.getContent(), subjectArticle.getLength());
             return insertRs.intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -40,9 +40,10 @@ public class SubjectArticleDao extends PracticeDBUtil {
 
     public boolean update(SubjectArticle subjectArticle) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update SubjectArticle set Title = ?,Content = ? where Id = ?";
+        String sql = "update SubjectArticle set Title = ?,Content = ?, Length = ? where Id = ?";
         try{
-            runner.update(sql, subjectArticle.getTitle(), subjectArticle.getContent(), subjectArticle.getId());
+            runner.update(sql, subjectArticle.getTitle(), subjectArticle.getContent(),
+                    subjectArticle.getLength(), subjectArticle.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
