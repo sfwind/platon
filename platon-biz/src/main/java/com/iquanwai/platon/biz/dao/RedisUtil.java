@@ -48,7 +48,7 @@ public class RedisUtil {
         try {
             lock.tryLock(60, 10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getLocalizedMessage(), e);
         }
         logger.info("Thread {} has lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
         consumer.accept(lock);
