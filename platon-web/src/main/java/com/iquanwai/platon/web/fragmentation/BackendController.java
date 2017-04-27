@@ -66,19 +66,6 @@ public class BackendController {
         return WebUtils.success();
     }
 
-//    @RequestMapping(value = "/test/{ops}")
-//    public ResponseEntity<Map<String, Object>> ops(@PathVariable Integer ops) {
-//        Map<String, Integer> result = Maps.newHashMap();
-//
-//        redisUtil.lock("flag", (lock) -> {
-//            Profile profile = profileDao.queryByOpenId("o5h6ywsiXYMcLlex2xt7DRAgQX-A");
-//            Integer point = profile.getPoint();
-//            LOGGER.info("current point is {}, will be : {}", point, point + ops);
-//            profileDao.updatePoint("o5h6ywsiXYMcLlex2xt7DRAgQX-A", point + ops);
-//        });
-//
-//        return WebUtils.success();
-//    }
 
 
     private static String getAccessTokenFromCookie(String cookieStr){
