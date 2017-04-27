@@ -1,7 +1,5 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.iquanwai.platon.biz.dao.RedisUtil;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -30,10 +28,6 @@ public class BackendController {
     private OperationLogService operationLogService;
     @Autowired
     private OAuthService oAuthService;
-    @Autowired
-    private RedisUtil redisUtil;
-    @Autowired
-    private ProfileDao profileDao;
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -65,7 +59,6 @@ public class BackendController {
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
-
 
 
     private static String getAccessTokenFromCookie(String cookieStr){

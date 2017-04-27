@@ -14,8 +14,6 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     protected static Logger logger = LoggerFactory.getLogger(AccessTokenService.class);
     @Autowired
     private WeiXinAccessTokenRepo weiXinAccessTokenRepo;
-//    @Autowired
-//    private AccessTokenDao accessTokenDao;
     @Autowired
     private RedisUtil redisUtil;
 
@@ -24,11 +22,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             return accessToken;
         }
 
-//        AccessToken token = accessTokenDao.load(AccessToken.class, 1);
         String token = redisUtil.get("accessToken");
         if(token==null){
             logger.info("insert access token");
-//            accessTokenDao.insertOrUpdate(_getAccessToken());
             redisUtil.set("accessToken", _getAccessToken());
         }else {
             accessToken = token;
@@ -50,11 +46,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         if(force) {
             forceUpdateAccessToken();
         }else{
-//            AccessToken token = accessTokenDao.load(AccessToken.class, 1);
             String token = redisUtil.get("accessToken");
             if(token==null){
                 logger.info("insert access token");
-//                accessTokenDao.insertOrUpdate(_getAccessToken());
                 redisUtil.set("accessToken", _getAccessToken());
             }else{
                 //如果数据库的accessToken未刷新,则强制刷新
@@ -73,7 +67,6 @@ public class AccessTokenServiceImpl implements AccessTokenService {
 
     private void forceUpdateAccessToken(){
         String accessToken = _getAccessToken();
-//        accessTokenDao.insertOrUpdate(accessToken);
         redisUtil.set("accessToken", accessToken);
     }
 }
