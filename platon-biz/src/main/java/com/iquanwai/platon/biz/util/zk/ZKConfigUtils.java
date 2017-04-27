@@ -30,6 +30,8 @@ public class ZKConfigUtils {
 
     /* 每个项目的path不同 */
     private static final String CONFIG_PATH = "/quanwai/config/rise/";
+    /* 架构类型的path */
+    private static final String ARCH_PATH = "/quanwai/config/arch/";
     /* zk本地配置文件路径 */
     private static final String ZK_CONFIG_PATH = "/data/config/zk";
     /* zk服务器地址配置key */
@@ -75,14 +77,27 @@ public class ZKConfigUtils {
         }
     }
 
+    public String getArchValue(String key){
+        return getValue(key,ARCH_PATH);
+    }
+
     public String getValue(String key){
+        return getValue(key, CONFIG_PATH);
+    }
+
+    public String getValue(String key,String prePath){
         try {
             String value = CONFIG_CACHE.getIfPresent(key);
             if(value!=null){
                 return value;
             }
             logger.info("get {} from zk", key);
-            String json = new String(zk.getData(CONFIG_PATH.concat(key), false, null), "utf-8");
+            String fullPath = prePath.concat(key);
+            if (zk.exists(fullPath, false) == null) {
+                logger.error("the full path node is none : {}", fullPath);
+                return null;
+            }
+            String json = new String(zk.getData(fullPath, false, null), "utf-8");
             ConfigNode configNode = new Gson().fromJson(json, ConfigNode.class);
             value = configNode.getValue();
             CONFIG_CACHE.put(key, value);

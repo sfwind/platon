@@ -2,12 +2,17 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
-import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.MemberType;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
@@ -41,6 +46,8 @@ public class AccountServiceImpl implements AccountService {
     private ProfileDao profileDao;
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
+    @Autowired
+    private RedisUtil redisUtil;
 
     private List<Region> provinceList;
 
@@ -161,26 +168,36 @@ public class AccountServiceImpl implements AccountService {
                     logger.error("===============NULL===============");
                 }
                 if(accountNew.getNickname()!=null){
-                    followUserDao.insert(accountNew);
-                    Profile profile = getProfileFromDB(accountNew.getOpenid());
-                    if(profile==null){
-                        profile = new Profile();
-                        try{
-                            BeanUtils.copyProperties(profile,accountNew);
-                            profile.setRiseId(CommonUtils.randomString(7));
-                            logger.info("插入Profile表信息:{}",profile);
-                            profileDao.insertProfile(profile);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            logger.error("beanUtils copy props error ######",e);
-                        } catch (SQLException err){
-                            profile.setRiseId(CommonUtils.randomString(7));
+
+                    // 开始插入，加锁
+                    redisUtil.lock("lock:wx:user:insert",(lock)->{
+                        Account finalQuery = followUserDao.queryByOpenid(openid);
+                        if (finalQuery != null) {
+                            // 如果已经有了就不插入了
+                            return;
+                        }
+                        followUserDao.insert(accountNew);
+                        Profile profile = getProfileFromDB(accountNew.getOpenid());
+                        if(profile==null){
+                            profile = new Profile();
                             try{
+                                BeanUtils.copyProperties(profile,accountNew);
+                                profile.setRiseId(CommonUtils.randomString(7));
+                                logger.info("插入Profile表信息:{}",profile);
                                 profileDao.insertProfile(profile);
-                            } catch (SQLException subErr){
-                                logger.error("插入Profile失败，openId:{},riseId:{}",profile.getOpenid(),profile.getRiseId());
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                logger.error("beanUtils copy props error ######",e);
+                            } catch (SQLException err){
+                                profile.setRiseId(CommonUtils.randomString(7));
+                                try{
+                                    profileDao.insertProfile(profile);
+                                } catch (SQLException subErr){
+                                    logger.error("插入Profile失败，openId:{},riseId:{}",profile.getOpenid(),profile.getRiseId());
+                                }
                             }
                         }
-                    }
+                    });
+                    // lock end
                 }
             }else{
                 logger.info("更新用户信息:{}",accountNew);

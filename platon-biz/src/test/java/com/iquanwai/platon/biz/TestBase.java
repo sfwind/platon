@@ -11,5 +11,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 })
 
 public class TestBase {
+    protected void log(Object obj){
+        System.out.println(obj);
+    }
 }
 
