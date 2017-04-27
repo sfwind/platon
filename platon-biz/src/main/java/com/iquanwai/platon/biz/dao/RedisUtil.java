@@ -45,7 +45,11 @@ public class RedisUtil {
     public void lock(String key, Consumer<RLock> consumer) {
         RLock lock = redissonClient.getLock(key);
         logger.info("Thread {} want the lock", Thread.currentThread().getId());
-        lock.lock(100, TimeUnit.SECONDS);
+        try {
+            lock.tryLock(60, 10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         logger.info("Thread {} has lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
         consumer.accept(lock);
         logger.info("Thread {} will release the lock",Thread.currentThread().getId());

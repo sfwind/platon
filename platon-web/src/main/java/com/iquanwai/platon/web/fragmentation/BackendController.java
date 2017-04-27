@@ -1,12 +1,10 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -69,19 +66,19 @@ public class BackendController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/test/{ops}")
-    public ResponseEntity<Map<String, Object>> ops(@PathVariable Integer ops) {
-        Map<String, Integer> result = Maps.newHashMap();
-
-        redisUtil.lock("flag", (lock) -> {
-            Profile profile = profileDao.queryByOpenId("o5h6ywsiXYMcLlex2xt7DRAgQX-A");
-            Integer point = profile.getPoint();
-            LOGGER.info("current point is {}, will be : {}", point, point + ops);
-            profileDao.updatePoint("o5h6ywsiXYMcLlex2xt7DRAgQX-A", point + ops);
-        });
-
-        return WebUtils.success();
-    }
+//    @RequestMapping(value = "/test/{ops}")
+//    public ResponseEntity<Map<String, Object>> ops(@PathVariable Integer ops) {
+//        Map<String, Integer> result = Maps.newHashMap();
+//
+//        redisUtil.lock("flag", (lock) -> {
+//            Profile profile = profileDao.queryByOpenId("o5h6ywsiXYMcLlex2xt7DRAgQX-A");
+//            Integer point = profile.getPoint();
+//            LOGGER.info("current point is {}, will be : {}", point, point + ops);
+//            profileDao.updatePoint("o5h6ywsiXYMcLlex2xt7DRAgQX-A", point + ops);
+//        });
+//
+//        return WebUtils.success();
+//    }
 
 
     private static String getAccessTokenFromCookie(String cookieStr){

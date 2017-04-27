@@ -1,8 +1,11 @@
 package com.iquanwai.platon.biz.dao;
 
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.TestBase;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * Created by nethunder on 2017/4/26.
@@ -21,7 +24,7 @@ public class RedisTest extends TestBase {
     }
 
     @Test
-    public void setTest(){
+    public void setTest() throws InterruptedException {
 //        redisUtil.set("a", "gsegsdfsdf");
 //        log(redisUtil.get(String.class, "a"));
 //        Profile profile = new Profile();
@@ -37,11 +40,27 @@ public class RedisTest extends TestBase {
 
 //        log(redisUtil.get(String.class, "a"));
 
-        redisUtil.lock("flag", lock -> {
-            System.out.println(Thread.currentThread().getId() + " is lock:" + lock.isHeldByCurrentThread());
-        });
+        new Thread(()->{
+            redisUtil.lock("flag", lock -> {
+                Map<String, Object> map = Maps.newHashMap();
+                log("a 加锁");
+                map.get("test").getClass();
+            });
+        }).start();
+
+        new Thread(()->{
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            redisUtil.lock("flag",lock -> {
+                log("b 加锁");
+            });
+        }).start();
 
 
+        Thread.sleep(10000);
 
     }
 }
