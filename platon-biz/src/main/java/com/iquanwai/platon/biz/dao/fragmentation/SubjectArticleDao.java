@@ -38,6 +38,16 @@ public class SubjectArticleDao extends PracticeDBUtil {
         return -1;
     }
 
+    public void asstFeedback(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update SubjectArticle set Feedback=1 where Id=?";
+        try {
+            runner.update(sql, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public boolean update(SubjectArticle subjectArticle) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update SubjectArticle set Title = ?,Content = ?, Length = ? where Id = ?";

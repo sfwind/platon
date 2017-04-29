@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -368,6 +369,13 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
+        boolean isAsst = false;
+        Profile profile = accountService.getProfile(openId, false);
+        //是否是助教评论
+        if(profile!=null){
+            isAsst = Role.isAsst(profile.getRole());
+        }
+
         if (moduleId == Constants.CommentModule.CHALLENGE) {
             ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
             if (load == null) {
@@ -385,6 +393,10 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
                 return new MutablePair<>(false, "没有该文章");
             }
+            //更新助教评论状态
+            if(isAsst){
+                applicationSubmitDao.asstFeedback(load.getId());
+            }
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
                 String url = "/rise/static/practice/application?id=" + load.getApplicationId();
@@ -396,13 +408,14 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
                 return new MutablePair<>(false, "没有该文章");
             }
+            //更新助教评论状态
+            if(isAsst){
+                subjectArticleDao.asstFeedback(load.getId());
+            }
             //自己给自己评论不提醒
             if (load.getOpenid() != null && !load.getOpenid().equals(openId)) {
-                Profile profile = accountService.getProfile(openId, false);
-                if (profile != null) {
-                    String url = "/rise/static/message/subject/reply?submitId=" + referId;
-                    messageService.sendMessage("评论了我的小课分享", load.getOpenid(), openId, url);
-                }
+                String url = "/rise/static/message/subject/reply?submitId=" + referId;
+                messageService.sendMessage("评论了我的小课分享", load.getOpenid(), openId, url);
             }
         }
         Comment comment = new Comment();

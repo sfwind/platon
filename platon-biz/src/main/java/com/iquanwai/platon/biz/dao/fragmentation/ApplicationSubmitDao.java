@@ -104,6 +104,16 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return true;
     }
 
+    public void asstFeedback(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ApplicationSubmit set Feedback=1 where Id=?";
+        try {
+            runner.update(sql, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public List<ApplicationSubmit> load(Integer applicationId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
