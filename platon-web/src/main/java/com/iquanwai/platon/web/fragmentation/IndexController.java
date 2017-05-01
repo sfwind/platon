@@ -48,7 +48,11 @@ public class IndexController {
         }
 
         logger.info("account:{}", account);
-
+        if (account != null && account.getSubscribe() != null && account.getSubscribe() == 0) {
+            // 未关注
+            response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+            return null;
+        }
         if(!checkAccessToken(request, openid) || account==null){
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
             WebUtils.auth(request, response);
