@@ -2,13 +2,19 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import com.iquanwai.platon.job.RiseMemberJob;
+import com.iquanwai.platon.mq.CacheReloadReceiver;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 
 /**
@@ -17,12 +23,22 @@ import java.util.Map;
 @RestController
 @RequestMapping("/rise/cache")
 public class CacheController {
+    private RabbitMQPublisher rabbitMQPublisher;
     @Autowired
     private CacheService cacheService;
     @Autowired
     private PictureService pictureService;
     @Autowired
     private RiseMemberJob riseMemberJob;
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @PostConstruct
+    public void init(){
+        rabbitMQPublisher = new RabbitMQPublisher();
+        rabbitMQPublisher.init(CacheReloadReceiver.TOPIC, ConfigUtils.getRabbitMQIp(),
+                ConfigUtils.getRabbitMQPort());
+    }
 
     @RequestMapping("/reload")
     public ResponseEntity<Map<String, Object>> reload(){
@@ -33,7 +49,14 @@ public class CacheController {
 
     @RequestMapping("/reload/member")
     public ResponseEntity<Map<String, Object>> reloadMember(){
-        Integer count = riseMemberJob.refreshStatus();
-        return WebUtils.result(count);
+//        Integer count = riseMemberJob.refreshStatus();
+//        return WebUtils.result(count);
+        try {
+            rabbitMQPublisher.publish("member");
+            return WebUtils.success();
+        }catch (Exception e){
+            logger.error("reload member", e);
+        }
+        return WebUtils.error("reload member");
     }
 }
