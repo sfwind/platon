@@ -18,4 +18,5 @@ public class ApplicationSubmit {
     private Integer priority; // 排序优先级
     private Date updateTime; //最后更新时间
     private Date publishTime; // 第一次提交时间
+    private Integer length; //字数
 }

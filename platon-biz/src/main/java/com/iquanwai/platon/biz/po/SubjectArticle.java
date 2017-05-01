@@ -19,6 +19,7 @@ public class SubjectArticle {
     private String title; // 标题
     private String content; //提交内容
     private Integer pointStatus; //是否已加分（0-否，1-是）
+    private Integer length; //字数
     private Date updateTime; //最后更新时间
 
     public SubjectArticle(Integer id,String openid,Integer problemId,Integer authorType,Integer sequence,String title,String content){
