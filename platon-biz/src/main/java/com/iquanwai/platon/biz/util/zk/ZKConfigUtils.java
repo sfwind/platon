@@ -84,7 +84,7 @@ public class ZKConfigUtils {
     public String getValue(String key){
         String fullPath = CONFIG_PATH.concat(key);
         try {
-            if (zk.exists(fullPath, false) == null) {
+            if (zk.exists(fullPath, false) != null) {
                 return getValue(key, CONFIG_PATH);
             } else {
                 return getArchValue(key);
