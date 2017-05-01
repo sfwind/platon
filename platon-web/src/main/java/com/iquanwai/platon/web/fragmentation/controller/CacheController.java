@@ -42,15 +42,30 @@ public class CacheController {
 
     @RequestMapping("/reload")
     public ResponseEntity<Map<String, Object>> reload(){
-        cacheService.reload();
-        pictureService.reloadModule();
-        return WebUtils.success();
+        try {
+            rabbitMQPublisher.publish("reload");
+            return WebUtils.success();
+        }catch (Exception e){
+            logger.error("reload cache", e);
+        }
+        return WebUtils.error("reload cache");
     }
+
+    @RequestMapping("/reload/region")
+    public ResponseEntity<Map<String, Object>> reloadRegion(){
+        try {
+            rabbitMQPublisher.publish("region");
+            return WebUtils.success();
+        }catch (Exception e){
+            logger.error("reload region", e);
+        }
+        return WebUtils.error("reload region");
+    }
+
+
 
     @RequestMapping("/reload/member")
     public ResponseEntity<Map<String, Object>> reloadMember(){
-//        Integer count = riseMemberJob.refreshStatus();
-//        return WebUtils.result(count);
         try {
             rabbitMQPublisher.publish("member");
             return WebUtils.success();
