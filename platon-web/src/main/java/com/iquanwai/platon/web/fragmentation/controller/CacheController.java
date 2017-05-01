@@ -1,15 +1,11 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
-import com.iquanwai.platon.biz.domain.common.file.PictureService;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
-import com.iquanwai.platon.job.RiseMemberJob;
 import com.iquanwai.platon.mq.CacheReloadReceiver;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,12 +20,6 @@ import java.util.Map;
 @RequestMapping("/rise/cache")
 public class CacheController {
     private RabbitMQPublisher rabbitMQPublisher;
-    @Autowired
-    private CacheService cacheService;
-    @Autowired
-    private PictureService pictureService;
-    @Autowired
-    private RiseMemberJob riseMemberJob;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
