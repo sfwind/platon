@@ -60,8 +60,7 @@ public class CacheReloadReceiver {
                 logger.info("receive message {}", message);
                 switch (message){
                     case "region":
-                        accountService.loadAllProvinces();
-                        accountService.loadCities();
+                        accountService.reloadRegion();
                         break;
                     case "reload":
                         cacheService.reload();

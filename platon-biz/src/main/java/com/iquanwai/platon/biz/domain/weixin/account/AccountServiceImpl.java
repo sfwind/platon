@@ -287,4 +287,10 @@ public class AccountServiceImpl implements AccountService {
     public MemberType loadMemberType(Integer id){
         return riseMemberTypeRepo.memberType(id);
     }
+
+    @Override
+    public void reloadRegion(){
+        provinceList = regionDao.loadAllProvinces();
+        cityList = regionDao.loadAllCities();
+    }
 }

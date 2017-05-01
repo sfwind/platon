@@ -69,4 +69,5 @@ public interface AccountService {
     String GET_USERS_URL = "https://api.weixin.qq.com/cgi-bin/user/get?access_token={access_token}";
 
 
+    void reloadRegion();
 }
