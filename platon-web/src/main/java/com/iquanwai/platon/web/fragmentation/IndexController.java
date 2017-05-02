@@ -11,6 +11,8 @@ import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,8 @@ public class IndexController {
     @Autowired
     private WhiteListService whiteListService;
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @RequestMapping(value = "/rise/static/**",method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception{
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
@@ -41,6 +45,13 @@ public class IndexController {
         if(accessToken!=null){
             openid = oAuthService.openId(accessToken);
             account = accountService.getAccount(openid, false);
+        }
+
+        logger.info("account:{}", account);
+        if (account != null && account.getSubscribe() != null && account.getSubscribe() == 0) {
+            // 未关注
+            response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+            return null;
         }
         if(!checkAccessToken(request, openid) || account==null){
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
