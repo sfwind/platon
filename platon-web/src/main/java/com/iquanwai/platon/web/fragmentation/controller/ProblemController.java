@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
@@ -44,12 +45,21 @@ public class ProblemController {
     private OperationLogService operationLogService;
     @Autowired
     private PlanService planService;
+    @Autowired
+    private WhiteListService whiteListService;
+
+    private static final String TRIAL = "RISE_PROBLEM_TRIAL";
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
 
+
         List<Problem> problemList = problemService.loadProblems();
+        //非天使用户去除试用版小课
+        if(!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())){
+            problemList = problemList.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
+        }
         ProblemDto problemDto = new ProblemDto();
         problemDto.setName(loginUser.getWeixinName());
         problemDto.setProblemList(problemList);
@@ -68,6 +78,10 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
+        //非天使用户去除试用版小课
+        if(!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())){
+            problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
+        }
         // 用户的所有计划
         List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getOpenId());
         // 用户选过的小课
