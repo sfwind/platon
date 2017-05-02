@@ -178,4 +178,12 @@ public class ConfigUtils {
 	public static Boolean prePublish(){
 		return getBooleanValue("rise.pre.publish");
 	}
+
+	public static String getRabbitMQIp(){
+		return getValue("rabbitmq.ip");
+	}
+
+	public static int getRabbitMQPort(){
+		return getIntValue("rabbitmq.port");
+	}
 }
