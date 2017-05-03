@@ -119,6 +119,9 @@ public interface PracticeService {
      */
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
+
+    Pair<Boolean, String> comment(Integer moduleId, Integer referId, String openId, String content, Integer repliedId);
+
     /**
      * 提交评论
      * @param moduleId 模块id
