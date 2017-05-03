@@ -45,7 +45,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
      */
     public ApplicationSubmit load(Integer applicationId, Integer planId, String openid){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<ApplicationSubmit> h = new BeanHandler(ApplicationSubmit.class);
+        ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
         String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=? and PlanId=?";
         try {
             return run.query(sql, h, openid, applicationId, planId);
@@ -57,7 +57,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public ApplicationSubmit load(Integer applicationId, String openid){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<ApplicationSubmit> h = new BeanHandler(ApplicationSubmit.class);
+        ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
         String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=?";
         try {
             return run.query(sql, h, openid, applicationId);
@@ -117,7 +117,8 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
     public List<ApplicationSubmit> load(Integer applicationId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Content is not null order by UpdateTime desc";
+        // TODO: 写死了大小
+        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 order by UpdateTime desc limit 50";
         try {
             return run.query(sql, h, applicationId);
         } catch (SQLException e) {

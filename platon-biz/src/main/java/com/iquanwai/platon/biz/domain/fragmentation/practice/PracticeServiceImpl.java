@@ -70,6 +70,8 @@ public class PracticeServiceImpl implements PracticeService {
     private ArticleLabelDao articleLabelDao;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
+    @Autowired
+    private AsstCoachCommentDao asstCoachCommentDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -181,7 +183,7 @@ public class PracticeServiceImpl implements PracticeService {
         // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
-        ApplicationSubmit submit = applicationSubmitDao.load(id, openid);
+        ApplicationSubmit submit = applicationSubmitDao.load(id, planId, openid);
         if (submit == null && create) {
             // 没有提交，生成
             submit = new ApplicationSubmit();
@@ -403,6 +405,11 @@ public class PracticeServiceImpl implements PracticeService {
             //更新助教评论状态
             if(isAsst){
                 applicationSubmitDao.asstFeedback(load.getId());
+                Integer planId = load.getPlanId();
+                ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
+                if(plan!=null){
+                    asstCoachComment(load.getOpenid(), plan.getProblemId());
+                }
             }
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
@@ -418,6 +425,7 @@ public class PracticeServiceImpl implements PracticeService {
             //更新助教评论状态
             if(isAsst){
                 subjectArticleDao.asstFeedback(load.getId());
+                asstCoachComment(load.getOpenid(), load.getProblemId());
             }
             //自己给自己评论不提醒
             if (load.getOpenid() != null && !load.getOpenid().equals(openId)) {
@@ -446,6 +454,20 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setDevice(Constants.Device.MOBILE);
         commentDao.insert(comment);
         return new MutablePair<>(true,"评论成功");
+    }
+
+    private void asstCoachComment(String openId, Integer problemId) {
+        AsstCoachComment asstCoachComment =asstCoachCommentDao.loadAsstCoachComment(problemId, openId);
+        if(asstCoachComment==null){
+            asstCoachComment = new AsstCoachComment();
+            asstCoachComment.setCount(1);
+            asstCoachComment.setOpenid(openId);
+            asstCoachComment.setProblemId(problemId);
+            asstCoachCommentDao.insert(asstCoachComment);
+        }else{
+            asstCoachComment.setCount(asstCoachComment.getCount()+1);
+            asstCoachCommentDao.updateCount(asstCoachComment);
+        }
     }
 
     @Override
