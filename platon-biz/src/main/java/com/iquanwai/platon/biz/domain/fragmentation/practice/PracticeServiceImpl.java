@@ -565,6 +565,10 @@ public class PracticeServiceImpl implements PracticeService {
     public boolean requestComment(Integer submitId, Integer moduleId) {
         if(moduleId.equals(Constants.Module.APPLICATION)){
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
+            if(applicationSubmit.getRequestFeedback()){
+                logger.warn("{} 已经是求点评状态", submitId);
+                return true;
+            }
             Integer planId = applicationSubmit.getPlanId();
             ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
             if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
@@ -575,6 +579,11 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }else if(moduleId.equals(Constants.Module.SUBJECT)){
             SubjectArticle subjectArticle = subjectArticleDao.load(SubjectArticle.class, submitId);
+            if(subjectArticle.getRequestFeedback()){
+                logger.warn("{} 已经是求点评状态", submitId);
+                return true;
+            }
+
             Integer problemId = subjectArticle.getProblemId();
             String openid = subjectArticle.getOpenid();
             ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
