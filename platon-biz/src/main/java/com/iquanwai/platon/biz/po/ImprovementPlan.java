@@ -29,6 +29,7 @@ public class ImprovementPlan {
     private Integer currentSeries; //已解锁的节数
     private Integer totalSeries; //总节数
     private Boolean riseMember; // 是否是会员
+    private Integer requestCommentCount; //求点赞次数
 
     // ----------------- 非db字段------------------
     private Problem problem; //非db字段 问题

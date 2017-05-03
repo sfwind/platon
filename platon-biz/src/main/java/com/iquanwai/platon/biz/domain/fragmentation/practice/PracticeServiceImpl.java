@@ -178,7 +178,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId,boolean create) {
+    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
         // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
@@ -198,6 +198,26 @@ public class PracticeServiceImpl implements PracticeService {
         applicationPractice.setSubmitId(submit==null?null:submit.getId());
         applicationPractice.setSubmitUpdateTime(submit==null?null:DateUtils.parseDateToString(submit.getUpdateTime()));
         applicationPractice.setPlanId(submit==null?planId:submit.getPlanId());
+
+        // 查询点赞数
+        applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
+        // 查询评论数
+        applicationPractice.setCommentCount(commentCount(Constants.CommentModule.APPLICATION, applicationPractice.getSubmitId()));
+        // 查询我对它的点赞状态
+        HomeworkVote myVote = loadVoteRecord(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId(), openid);
+        if (myVote != null && myVote.getDel() == 0) {
+            // 点赞中
+            applicationPractice.setVoteStatus(1);
+        } else {
+            applicationPractice.setVoteStatus(0);
+        }
+        //查询求点赞数
+        ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        if(plan!=null && plan.getRequestCommentCount()>0){
+            applicationPractice.setRequestComment(true);
+        }else{
+            applicationPractice.setRequestComment(false);
+        }
         return applicationPractice;
     }
 
@@ -358,10 +378,6 @@ public class PracticeServiceImpl implements PracticeService {
         return applicationSubmitDao.load(applicationId);
     }
 
-    @Override
-    public List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId) {
-        return challengeSubmitDao.load(challengeId);
-    }
 
     @Override
     public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page){
@@ -543,6 +559,42 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public void learnKnowledge(Integer practicePlanId) {
         practicePlanDao.complete(practicePlanId);
+    }
+
+    @Override
+    public boolean requestComment(Integer submitId, Integer moduleId) {
+        if(moduleId.equals(Constants.Module.APPLICATION)){
+            ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
+            Integer planId = applicationSubmit.getPlanId();
+            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+            if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
+                //更新求点评次数
+                improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount()-1);
+                //求点评
+                applicationSubmitDao.requestComment(applicationSubmit.getId());
+            }
+        }else if(moduleId.equals(Constants.Module.SUBJECT)){
+            SubjectArticle subjectArticle = subjectArticleDao.load(SubjectArticle.class, submitId);
+            Integer problemId = subjectArticle.getProblemId();
+            String openid = subjectArticle.getOpenid();
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
+            if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
+                //更新求点评次数
+                improvementPlanDao.updateRequestComment(improvementPlan.getId(), improvementPlan.getRequestCommentCount()-1);
+                //求点评
+                subjectArticleDao.requestComment(subjectArticle.getId());
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasRequestComment(Integer problemId, String openid) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
+        if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
+            return true;
+        }
+        return false;
     }
 
 }

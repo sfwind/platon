@@ -126,4 +126,14 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public void requestComment(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ApplicationSubmit set RequestFeedback=1 where Id=?";
+        try {
+            runner.update(sql, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 }

@@ -62,22 +62,6 @@ public class PracticeController {
         //TODO:改为富文本编辑器后,去掉planid校验
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
                 loginUser.getOpenId(), planId, false);
-        // 查询点赞数
-        applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
-        // 查询评论数
-        applicationPractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, applicationPractice.getSubmitId()));
-        // 查询我对它的点赞状态
-        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId(), loginUser.getOpenId());
-        if (myVote != null && myVote.getDel() == 0) {
-            // 点赞中
-            applicationPractice.setVoteStatus(1);
-        } else {
-            applicationPractice.setVoteStatus(0);
-        }
-        applicationPractice.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, applicationPractice.getSubmitId())
-                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
-                .collect(Collectors.toList()));
-
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -99,22 +83,6 @@ public class PracticeController {
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
                 loginUser.getOpenId(), improvementPlan.getId(), false);
-
-        // 查询点赞数
-        challengePractice.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId()));
-        // 查询评论数
-        challengePractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.CHALLENGE, challengePractice.getSubmitId()));
-        // 查询我对它的点赞状态
-        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId(), loginUser.getOpenId());
-        if (myVote != null && myVote.getDel() == 0) {
-            // 点赞中
-            challengePractice.setVoteStatus(1);
-        } else {
-            challengePractice.setVoteStatus(0);
-        }
-        challengePractice.setPicList(pictureService.loadPicture(Constants.PictureType.CHALLENGE, challengePractice.getSubmitId())
-                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.CHALLENGE) + pic.getRealName())
-                .collect(Collectors.toList()));
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -437,12 +405,11 @@ public class PracticeController {
                     dto.setAuthorType(item.getAuthorType());
                     dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
                     dto.setTitle(item.getTitle());
-                    dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, item.getId())
-                            .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
-                            .collect(Collectors.toList()));
+                    dto.setRequestComment(practiceService.hasRequestComment(problemId, loginUser.getOpenId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
+
         list.forEach(item -> {
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
         });
@@ -492,9 +459,9 @@ public class PracticeController {
         dto.setProblemId(subjectArticle.getProblemId());
         dto.setPerfect(subjectArticle.getSequence() > 0);
         dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
-        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
-                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
-                .collect(Collectors.toList()));
+//        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
+//                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
+//                .collect(Collectors.toList()));
         dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -589,5 +556,32 @@ public class PracticeController {
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/request/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> requestComment(LoginUser loginUser,
+                                                              @PathVariable Integer moduleId,
+                                                              @PathVariable Integer submitId){
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+
+        boolean result = practiceService.requestComment(submitId, moduleId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("写文章")
+                .action("求点评")
+                .memo(submitId.toString());
+        operationLogService.log(operationLog);
+        if(result){
+            return WebUtils.success();
+        }else{
+            return WebUtils.error("本小课求点评次数已用完");
+        }
+
     }
 }

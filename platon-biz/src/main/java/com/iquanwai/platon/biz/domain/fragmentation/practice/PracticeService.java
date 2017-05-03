@@ -106,12 +106,6 @@ public interface PracticeService {
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
 
     /**
-     * 查询训练提交列表
-     * @param challengeId 小目标id
-     */
-    List<ChallengeSubmit> getChallengeSubmitList(Integer challengeId);
-
-    /**
      * 查询评论
      * @param moduleId 模块id
      * @param submitId 提交id
@@ -186,4 +180,18 @@ public interface PracticeService {
      */
     void learnKnowledge(Integer practicePlanId);
 
+    /**
+     * 求点评
+     * @param submitId 文章提交id
+     * @param moduleId 模块id（2-应用练习,3-小课分享）
+     */
+    boolean requestComment(Integer submitId, Integer moduleId);
+
+
+    /**
+     * 求点评次数
+     * @param problemId 小课id
+     * @param openid 学员id
+     */
+    boolean hasRequestComment(Integer problemId, String openid);
 }
