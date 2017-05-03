@@ -29,15 +29,17 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     public int insert(ImprovementPlan plan){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into ImprovementPlan(Openid, WarmupComplete, Status, EndDate, " +
-                "StartDate, CloseDate, Point, Total, ApplicationComplete, ProblemId, Keycnt, CurrentSeries, TotalSeries, RiseMember) " +
-                "values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "StartDate, CloseDate, Point, Total, ApplicationComplete, ProblemId, Keycnt, " +
+                "CurrentSeries, TotalSeries, RiseMember, RequestComment) " +
+                "values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     plan.getOpenid(), plan.getWarmupComplete(), plan.getStatus(),
                     plan.getEndDate(), plan.getStartDate(), plan.getCloseDate(),
                     plan.getPoint(), plan.getTotal(), plan.getApplicationComplete(),
                     plan.getProblemId(), plan.getKeycnt(),
-                    plan.getCurrentSeries(), plan.getTotalSeries(), plan.getRiseMember());
+                    plan.getCurrentSeries(), plan.getTotalSeries(), plan.getRiseMember(),
+                    plan.getRequestCommentCount());
             return insertRs.intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
