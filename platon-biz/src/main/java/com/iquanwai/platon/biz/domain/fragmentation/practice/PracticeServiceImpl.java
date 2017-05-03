@@ -442,7 +442,12 @@ public class PracticeServiceImpl implements PracticeService {
                 if (repliedComment == null) {
                     return new MutablePair<>(false, "回复的评论异常");
                 }
-
+                // 自己回复自己,则不提示
+                if (!repliedComment.getCommentOpenId().equals(openId)) {
+                    //
+                    String url = "/";
+                    messageService.sendMessage("回复了我的理解讨论", repliedComment.getCommentOpenId(), openId, url);
+                }
             }
         }
         Comment comment = new Comment();
@@ -452,6 +457,11 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setDevice(Constants.Device.MOBILE);
+        if (repliedId != null) {
+            comment.setRepliedId(repliedId);
+            comment.setRepliedComment(repliedComment.getContent());
+            comment.setRepliedOpenid(repliedComment.getCommentOpenId());
+        }
         commentDao.insert(comment);
         return new MutablePair<>(true,"评论成功");
     }
@@ -553,6 +563,11 @@ public class PracticeServiceImpl implements PracticeService {
             knowledges.add(knowledge);
         }
         return knowledges;
+    }
+
+    @Override
+    public Knowledge loadKnowledge(Integer knowledgeId) {
+        return cacheService.getKnowledge(knowledgeId);
     }
 
     private Knowledge getKnowledge(Integer problemId, Integer knowledgeId) {

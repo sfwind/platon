@@ -12,8 +12,8 @@ import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.DiscussDto;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -22,7 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -135,7 +139,7 @@ public class WarmupController {
         // 获取讨论信息
         Page page = new Page();
         page.setPage(1);
-        page.setPageSize(DISCUSS_PAGE_SIZE);
+        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
         Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
         setDiscuss(warmupPracticeList, discuss);
 
@@ -156,6 +160,7 @@ public class WarmupController {
             list.stream().forEach(warmupPracticeDiscuss -> {
                 warmupPracticeDiscuss.setRepliedOpenid(null);
                 warmupPracticeDiscuss.setOpenid(null);
+                warmupPracticeDiscuss.setReferenceId(warmupPracticeDiscuss.getWarmupPracticeId());
             });
             warmupPractice.setDiscussList(list);
         });
@@ -204,7 +209,7 @@ public class WarmupController {
         // 获取讨论信息
         Page page = new Page();
         page.setPage(1);
-        page.setPageSize(DISCUSS_PAGE_SIZE);
+        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
         Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
         setDiscuss(warmupPracticeList, discuss);
 
@@ -224,7 +229,7 @@ public class WarmupController {
         Assert.notNull(loginUser, "用户不能为空");
 
         Page page = new Page();
-        page.setPageSize(DISCUSS_PAGE_SIZE);
+        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
         page.setPage(offset);
         List<WarmupPracticeDiscuss> discusses = practiceDiscussService.loadDiscuss(warmupPracticeId, page);
 
@@ -232,6 +237,7 @@ public class WarmupController {
         discusses.stream().forEach(warmupPracticeDiscuss -> {
             warmupPracticeDiscuss.setRepliedOpenid(null);
             warmupPracticeDiscuss.setOpenid(null);
+            warmupPracticeDiscuss.setReferenceId(warmupPracticeDiscuss.getWarmupPracticeId());
         });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -243,7 +249,7 @@ public class WarmupController {
     }
 
     @RequestMapping(value = "/discuss", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody DiscussDto discussDto) {
+    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody WarmupPracticeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
 
         if(discussDto.getComment()==null || discussDto.getComment().length()>300){
@@ -251,14 +257,14 @@ public class WarmupController {
             return WebUtils.result("您提交的讨论字数过长");
         }
 
-        practiceDiscussService.discuss(loginUser.getOpenId(), discussDto.getWarmupPracticeId(),
+        practiceDiscussService.discuss(loginUser.getOpenId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("巩固练习")
                 .action("讨论")
-                .memo(discussDto.getWarmupPracticeId().toString());
+                .memo(discussDto.getReferenceId().toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }

@@ -62,4 +62,6 @@ public interface Constants {
         int APPLICATION = 2;
         int SUBJECT = 3;
     }
+
+    int DISCUSS_PAGE_SIZE = 100;
 }

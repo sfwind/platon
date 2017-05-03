@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
 import com.iquanwai.platon.biz.po.NotifyMessage;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -10,11 +11,14 @@ import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.NotifyMessageDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -49,6 +53,22 @@ public class MessageController {
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDiscuss);
     }
+
+    @RequestMapping("/knowledge/discuss/reply/{discussId}")
+    public ResponseEntity<Map<String, Object>> loadKnowledgeDiscuss(LoginUser loginUser,
+                                                             @PathVariable Integer discussId){
+        Assert.notNull(loginUser, "用户不能为空");
+        KnowledgeDiscuss warmupPracticeDiscuss = practiceDiscussService.loadKnowledgeDiscuss(discussId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("消息中心")
+                .function("理解练习讨论区回复")
+                .action("打开理解练习讨论区回复页")
+                .memo(discussId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(warmupPracticeDiscuss);
+    }
+
+
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @ModelAttribute Page page){

@@ -2,9 +2,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.AbstractComment;
+import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -30,6 +33,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private MessageService messageService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private KnowledgeDiscussDao knowledgeDiscussDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -61,11 +66,46 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         }
     }
 
+
+    @Override
+    public void discussKnowledge(String openid, Integer knowledgeId, String comment, Integer repliedId){
+        KnowledgeDiscuss knowledgeDiscuss = new KnowledgeDiscuss();
+        knowledgeDiscuss.setKnowledgeId(knowledgeId);
+        knowledgeDiscuss.setComment(comment);
+        knowledgeDiscuss.setDel(0);
+        knowledgeDiscuss.setOpenid(openid);
+        if(repliedId!=null) {
+            KnowledgeDiscuss repliedDiscuss = knowledgeDiscussDao.load(KnowledgeDiscuss.class, repliedId);
+            if(repliedDiscuss!=null){
+                knowledgeDiscuss.setRepliedId(repliedId);
+                knowledgeDiscuss.setRepliedComment(repliedDiscuss.getComment());
+                knowledgeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
+            }
+        }
+        knowledgeDiscuss.setPriority(0);
+        Integer id = knowledgeDiscussDao.insert(knowledgeDiscuss);
+
+        //发送回复通知
+        if(repliedId!=null && !openid.equals(knowledgeDiscuss.getRepliedOpenid())) {
+            String url = "/rise/static/message/knowledge/reply?commentId={0}&knowledgeId={1}";
+            url = MessageFormat.format(url, id.toString(), knowledgeId.toString());
+            String message = "回复了我的理解练习问题";
+            messageService.sendMessage(message, knowledgeDiscuss.getRepliedOpenid(),
+                    openid, url);
+        }
+    }
     @Override
     public List<WarmupPracticeDiscuss> loadDiscuss(Integer warmupPracticeId, Page page) {
         List<WarmupPracticeDiscuss> discussList = warmupPracticeDiscussDao.loadDiscuss(warmupPracticeId, page);
         fulfilDiscuss(discussList);
         return discussList;
+    }
+
+    @Override
+    public List<KnowledgeDiscuss> loadKnowledgeDiscusses(Integer knowledgeId, Page page){
+        List<KnowledgeDiscuss> discussesList = knowledgeDiscussDao.loadDiscuss(knowledgeId, page);
+        fulfilDiscuss(discussesList);
+        return discussesList;
     }
 
     @Override
@@ -93,12 +133,25 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         WarmupPracticeDiscuss discuss = warmupPracticeDiscussDao.load(WarmupPracticeDiscuss.class, discussId);
         if(discuss!=null){
             fulfilDiscuss(discuss);
+            discuss.setReferenceId(discuss.getWarmupPracticeId());
         }
         return discuss;
     }
 
+    @Override
+    public KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId) {
+        KnowledgeDiscuss discuss = knowledgeDiscussDao.load(KnowledgeDiscuss.class, discussId);
+        if(discuss!=null){
+            fulfilDiscuss(discuss);
+            discuss.setReferenceId(discuss.getKnowledgeId());
+        }
+        return discuss;
+    }
+
+
+
     //填充评论的其他字段
-    private void fulfilDiscuss(List<WarmupPracticeDiscuss> discuss) {
+    private void fulfilDiscuss(List<? extends AbstractComment> discuss) {
         List<String> openids = Lists.newArrayList();
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             if(!openids.contains(warmupPracticeDiscuss.getOpenid())){
@@ -129,7 +182,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         });
     }
 
-    private void fulfilDiscuss(WarmupPracticeDiscuss warmupPracticeDiscuss) {
+    private void fulfilDiscuss(AbstractComment warmupPracticeDiscuss) {
         Profile account = accountService.getProfile(warmupPracticeDiscuss.getOpenid(), false);
         //设置名称、头像和时间
         if(account.getOpenid().equals(warmupPracticeDiscuss.getOpenid())){
@@ -144,4 +197,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
         warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateToString(warmupPracticeDiscuss.getAddTime()));
     }
+
+
 }

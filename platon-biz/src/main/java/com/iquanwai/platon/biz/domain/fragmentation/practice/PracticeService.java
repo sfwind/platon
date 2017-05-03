@@ -183,6 +183,8 @@ public interface PracticeService {
      */
     List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId);
 
+    Knowledge loadKnowledge(Integer knowledgeId);
+
     /**
      * 学习知识点
      * @param practicePlanId 练习id
