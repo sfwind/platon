@@ -576,6 +576,7 @@ public class PracticeServiceImpl implements PracticeService {
                 improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount()-1);
                 //求点评
                 applicationSubmitDao.requestComment(applicationSubmit.getId());
+                return true;
             }
         }else if(moduleId.equals(Constants.Module.SUBJECT)){
             SubjectArticle subjectArticle = subjectArticleDao.load(SubjectArticle.class, submitId);
@@ -592,6 +593,7 @@ public class PracticeServiceImpl implements PracticeService {
                 improvementPlanDao.updateRequestComment(improvementPlan.getId(), improvementPlan.getRequestCommentCount()-1);
                 //求点评
                 subjectArticleDao.requestComment(subjectArticle.getId());
+                return true;
             }
         }
         return false;
