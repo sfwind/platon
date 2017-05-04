@@ -25,7 +25,7 @@ public class CommentDao extends PracticeDBUtil {
     public void insert(Comment comment) {
         QueryRunner run = new QueryRunner(getDataSource());
         String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, Device, RepliedId, RepliedOpenid, RepliedComment) " +
-                "VALUES (?,?,?,?,?,?)";
+                "VALUES (?,?,?,?,?,?,?,?,?)";
         try {
             run.insert(insertSql, new ScalarHandler<>(),
                     comment.getModuleId(), comment.getType(), comment.getReferencedId(),
