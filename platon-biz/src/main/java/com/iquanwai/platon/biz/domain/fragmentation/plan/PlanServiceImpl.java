@@ -287,6 +287,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setSeries(practicePlan.getSeries());
         practice.setPracticePlanId(practicePlan.getId());
         practice.setSequence(practicePlan.getSequence());
+        practice.setPlanId(practicePlan.getPlanId());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
         //设置选做标签,巩固练习和知识理解是必做,其他为选做
         if(isOptional(practicePlan.getType())){
@@ -448,18 +449,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> loadAllRunningPlan() {
-        return improvementPlanDao.loadAllRunningPlan();
-    }
-
-    @Override
     public ImprovementPlan getPlan(Integer planId) {
         return improvementPlanDao.load(ImprovementPlan.class, planId);
-    }
-
-    @Override
-    public void updateKey(Integer planId, Integer key) {
-        improvementPlanDao.updateKey(planId, key);
     }
 
     @Override
@@ -524,24 +515,6 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Practice nextPractice(Integer practicePlanId) {
-        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
-        Integer series = practicePlan.getSeries();
-        Integer sequence = practicePlan.getSequence();
-        Integer planId = practicePlan.getPlanId();
-        PracticePlan nextPractice = practicePlanDao.loadBySeriesAndSequence(planId, series, sequence + 1);
-        if(nextPractice==null){
-            nextPractice = practicePlanDao.loadChallengePractice(planId);
-        }
-        return buildPractice(nextPractice);
-    }
-
-    @Override
-    public WarmupPractice getExample(Integer knowledgeId, Integer problemId) {
-        return warmupPracticeDao.loadExample(knowledgeId, problemId);
-    }
-
-    @Override
     public Integer checkPractice(Integer series, ImprovementPlan improvementPlan) {
         //当前第一节返回0
         if (series == 1) {
@@ -580,5 +553,25 @@ public class PlanServiceImpl implements PlanService {
         Problem problem = cacheService.getProblem(problemId);
 
         return problem!=null?problem.getChapterList():Lists.newArrayList();
+    }
+
+    @Override
+    public void checkPlanComplete(Integer planId) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        boolean complete = true;
+        for(PracticePlan practicePlan:practicePlans){
+            if(practicePlan.getType()==PracticePlan.KNOWLEDGE ||
+                    practicePlan.getType()==PracticePlan.KNOWLEDGE_REVIEW ||
+                    practicePlan.getType()==PracticePlan.WARM_UP ||
+                    practicePlan.getType()==PracticePlan.WARM_UP_REVIEW){
+                //理解练习和巩固练习必须要完成
+                if(practicePlan.getStatus()!=1){
+                    complete = false;
+                }
+            }
+        }
+        if(complete){
+            improvementPlanDao.updateCompleteTime(planId);
+        }
     }
 }

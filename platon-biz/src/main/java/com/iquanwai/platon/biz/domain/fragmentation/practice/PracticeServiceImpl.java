@@ -584,4 +584,9 @@ public class PracticeServiceImpl implements PracticeService {
         practicePlanDao.complete(practicePlanId);
     }
 
+    @Override
+    public ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId,String openId){
+        return applicationSubmitDao.load(applicationId, openId);
+    }
+
 }

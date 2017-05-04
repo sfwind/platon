@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.WarmupPractice;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -38,25 +37,17 @@ public interface PlanService {
      */
     ImprovementPlan getLatestPlan(String openid);
 
-    List<ImprovementPlan> getPlans(String openid);
-
     /**
-     * 获取所有正在进行的训练
+     * 获取学员所有的训练
+     * @param openid 学员id
      */
-    List<ImprovementPlan> loadAllRunningPlan();
+    List<ImprovementPlan> getPlans(String openid);
 
     /**
      * 获取简略的训练计划(不含练习)
      * @param planId 训练计划id
      */
     ImprovementPlan getPlan(Integer planId);
-
-    /**
-     * 更新钥匙数量
-     * @param planId 训练计划id
-     * @param key 钥匙数量
-     */
-    void updateKey(Integer planId, Integer key);
 
     /**
      * 获取知识点
@@ -78,19 +69,6 @@ public interface PlanService {
      * @param improvementPlan 训练计划
      */
     Pair<Boolean, Integer> completeCheck(ImprovementPlan improvementPlan);
-
-    /**
-     * 获取下一个训练项目
-     * @param practicePlanId 当前训练id
-     * */
-    Practice nextPractice(Integer practicePlanId);
-
-    /**
-     * 获取例题
-     * @param knowledgeId 知识点id
-     * @param problemId 小课id
-     * */
-    WarmupPractice getExample(Integer knowledgeId, Integer problemId);
 
     /**
      * 当前节练习是否可以做
@@ -116,7 +94,13 @@ public interface PlanService {
 
     /**
      * 根据训练id获取知识点路线图
-     * @param problemId 训练id
+     * @param problemId 小课id
      */
     List<Chapter> loadRoadMap(Integer problemId);
+
+    /**
+     * 判断小课是否完成,当理解练习和巩固练习都完成时,小课判定为完成
+     * @param planId 训练id
+     */
+    void checkPlanComplete(Integer planId);
 }
