@@ -107,6 +107,7 @@ public class WarmupController {
         } catch (AnswerException e) {
             return WebUtils.error("您已做完这套练习");
         }
+        planService.checkPlanComplete(improvementPlan.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
