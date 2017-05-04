@@ -52,9 +52,10 @@ public class PracticeController {
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId",required = false) Integer planId) {
+                                                                @PathVariable Integer applicationId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
+        Integer planId = null;
         if (planId != null) {
             // 传了planId
             // 检查这个planId是不是他的
