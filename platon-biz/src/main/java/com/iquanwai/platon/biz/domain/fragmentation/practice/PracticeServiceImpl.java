@@ -369,22 +369,15 @@ public class PracticeServiceImpl implements PracticeService {
         return commentDao.loadComments(moduleId,submitId,page);
     }
 
-
-
     @Override
-    public Pair<Boolean, String> comment(Integer moduleId, Integer referId, String openId, String content, Integer repliedId) {
+    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
         boolean isAsst = false;
         Profile profile = accountService.getProfile(openId, false);
         //是否是助教评论
         if(profile!=null){
             isAsst = Role.isAsst(profile.getRole());
         }
-        Comment repliedComment = null;
-        if (repliedId != null) {
-            repliedComment = commentDao.load(Comment.class, repliedId);
-        }
 
-        // 消息中心
         if (moduleId == Constants.CommentModule.CHALLENGE) {
             ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
             if (load == null) {
@@ -432,23 +425,6 @@ public class PracticeServiceImpl implements PracticeService {
                 String url = "/rise/static/message/subject/reply?submitId=" + referId;
                 messageService.sendMessage("评论了我的小课分享", load.getOpenid(), openId, url);
             }
-        } else if (moduleId == Constants.CommentModule.KNOWLEDGE) {
-//            Knowledge load = cacheService.getKnowledge(referId);
-//            if (load == null) {
-//                logger.error("评论模块:{} 失败，没有知识点id:{}，评论内容:{}", moduleId, referId, content);
-//                return new MutablePair<>(false, "没有该知识点");
-//            }
-            if (repliedId != null) {
-                if (repliedComment == null) {
-                    return new MutablePair<>(false, "回复的评论异常");
-                }
-                // 自己回复自己,则不提示
-                if (!repliedComment.getCommentOpenId().equals(openId)) {
-                    //
-                    String url = "/";
-                    messageService.sendMessage("回复了我的理解讨论", repliedComment.getCommentOpenId(), openId, url);
-                }
-            }
         }
         Comment comment = new Comment();
         comment.setModuleId(moduleId);
@@ -457,11 +433,6 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setDevice(Constants.Device.MOBILE);
-        if (repliedId != null) {
-            comment.setRepliedId(repliedId);
-            comment.setRepliedComment(repliedComment.getContent());
-            comment.setRepliedOpenid(repliedComment.getCommentOpenId());
-        }
         commentDao.insert(comment);
         return new MutablePair<>(true,"评论成功");
     }
@@ -478,11 +449,6 @@ public class PracticeServiceImpl implements PracticeService {
             asstCoachComment.setCount(asstCoachComment.getCount()+1);
             asstCoachCommentDao.updateCount(asstCoachComment);
         }
-    }
-
-    @Override
-    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
-        return comment(moduleId, referId, openId, content, null);
     }
 
     @Override

@@ -19,8 +19,4 @@ public class Comment {
     private Integer device; // 提交设备
     private Date AddTime; //添加时间
 
-    private Integer priority; // 排序优先级 官方-1，普通-0 或者其他优先级，例如是否精彩评论
-    private Integer repliedId; // 被回复的评论id,为null是则不是回复
-    private String repliedOpenid;// 被回复人的openid,repliedId不为null时有值
-    private String repliedComment; // 被回复的评论内容
 }

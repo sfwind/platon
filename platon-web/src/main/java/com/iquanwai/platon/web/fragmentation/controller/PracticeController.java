@@ -344,17 +344,6 @@ public class PracticeController {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
 
-            if (item.getRepliedId() != null) {
-                // 是回复
-                Profile repliedProfile = accountService.getProfile(item.getRepliedOpenid(), false);
-                if (repliedProfile == null) {
-                    LOGGER.error("未找到被回复的用户:{}", item);
-                    return null;
-                } else {
-                    dto.setRepliedName(repliedProfile.getNickname());
-                }
-                dto.setRepliedComment(item.getRepliedComment());
-            }
             if (account != null) {
                 dto.setId(item.getId());
                 dto.setContent(item.getContent());
