@@ -52,10 +52,9 @@ public class PracticeController {
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId) {
+                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId",required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
-        Integer planId = null;
         if (planId != null) {
             // 传了planId
             // 检查这个planId是不是他的
@@ -67,11 +66,12 @@ public class PracticeController {
             // 没有planId，消息中心中查询
             // 通过applicationId反查,查看是哪个PlanId,
             ApplicationSubmit applicationSubmit = practiceService.loadUserPlanIdByApplication(applicationId, loginUser.getOpenId());
-            if(applicationSubmit == null){
+            if (applicationSubmit == null) {
+                // 没有提交过，查询当前的planId
                 ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-            if (improvementPlan != null) {
-                planId = improvementPlan.getId();
-            }
+                if (improvementPlan != null) {
+                    planId = improvementPlan.getId();
+                }
             } else {
                 planId = applicationSubmit.getPlanId();
             }
