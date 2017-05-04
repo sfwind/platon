@@ -186,4 +186,5 @@ public interface PracticeService {
      */
     void learnKnowledge(Integer practicePlanId);
 
+    ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId, String openId);
 }

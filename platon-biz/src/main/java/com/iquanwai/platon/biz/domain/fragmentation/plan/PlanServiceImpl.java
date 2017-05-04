@@ -283,6 +283,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setSeries(practicePlan.getSeries());
         practice.setPracticePlanId(practicePlan.getId());
         practice.setSequence(practicePlan.getSequence());
+        practice.setPlanId(practicePlan.getPlanId());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
         //设置选做标签,巩固练习和知识理解是必做,其他为选做
         if(isOptional(practicePlan.getType())){

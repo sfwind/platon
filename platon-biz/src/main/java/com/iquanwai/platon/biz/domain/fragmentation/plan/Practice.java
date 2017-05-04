@@ -20,4 +20,6 @@ public class Practice {
     private Integer sequence;
     private Integer practicePlanId;
     private Boolean optional;
+
+    private Integer planId;
 }
