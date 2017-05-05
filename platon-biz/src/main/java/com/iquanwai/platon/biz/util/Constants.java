@@ -33,6 +33,7 @@ public interface Constants {
         int CHALLENGE = 1;
         int APPLICATION = 2;
         int SUBJECT = 3;
+        int KNOWLEDGE = 4;
     }
 
     interface CommentType{
@@ -61,4 +62,6 @@ public interface Constants {
         int APPLICATION = 2;
         int SUBJECT = 3;
     }
+
+    int DISCUSS_PAGE_SIZE = 100;
 }

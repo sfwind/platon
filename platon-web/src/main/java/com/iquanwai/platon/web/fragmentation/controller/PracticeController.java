@@ -2,17 +2,29 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
+import com.iquanwai.platon.biz.po.SubjectArticle;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.*;
+import com.iquanwai.platon.web.fragmentation.dto.HomeworkVoteDto;
+import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
+import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,7 +33,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -47,6 +65,10 @@ public class PracticeController {
     private AccountService accountService;
     @Autowired
     private PictureService pictureService;
+    @Autowired
+    private PracticeDiscussService practiceDiscussService;
+
+
     //分页文章数量
     private static final int PAGE_SIZE = 20;
 
@@ -320,8 +342,9 @@ public class PracticeController {
         operationLogService.log(operationLog);
         List<RiseWorkCommentDto> comments = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
+            RiseWorkCommentDto dto = new RiseWorkCommentDto();
+
             if (account != null) {
-                RiseWorkCommentDto dto = new RiseWorkCommentDto();
                 dto.setId(item.getId());
                 dto.setContent(item.getContent());
                 dto.setUpTime(DateUtils.parseDateToString(item.getAddTime()));
@@ -588,6 +611,19 @@ public class PracticeController {
         return WebUtils.result(knowledges);
     }
 
+    @RequestMapping("/knowledge/{id}")
+    public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser, @PathVariable Integer id) {
+        Assert.notNull(id, "知识点id不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("知识点")
+                .action("加载知识点信息")
+                .memo(id.toString());
+        operationLogService.log(operationLog);
+        Knowledge knowledge = practiceService.loadKnowledge(id);
+        return WebUtils.result(knowledge);
+    }
+
     @RequestMapping("/knowledge/learn/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
                                                               @PathVariable Integer practicePlanId){
@@ -606,6 +642,53 @@ public class PracticeController {
                 .function("知识点")
                 .action("学习知识点")
                 .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping("/knowledge/discuss/{knowledgeId}/{offset}")
+    public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
+                                                               @PathVariable Integer knowledgeId,
+                                                               @PathVariable Integer offset){
+        Assert.notNull(loginUser, "用户不能为空");
+
+        Page page = new Page();
+        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
+        page.setPage(offset);
+        List<KnowledgeDiscuss> discusses = practiceDiscussService.loadKnowledgeDiscusses(knowledgeId, page);
+
+        //清空openid
+        discusses.forEach(knowledgeDiscuss -> {
+            knowledgeDiscuss.setRepliedOpenid(null);
+            knowledgeDiscuss.setOpenid(null);
+            knowledgeDiscuss.setReferenceId(knowledgeDiscuss.getKnowledgeId());
+        });
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("练习")
+                .function("理解练习")
+                .action("获取讨论")
+                .memo(knowledgeId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(discusses);
+    }
+
+    @RequestMapping(value = "/knowledge/discuss", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+
+            if(discussDto.getComment()==null || discussDto.getComment().length()>300){
+            LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
+            return WebUtils.result("您提交的讨论字数过长");
+        }
+
+        practiceDiscussService.discussKnowledge(loginUser.getOpenId(), discussDto.getReferenceId(),
+                discussDto.getComment(), discussDto.getRepliedId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("练习")
+                .function("理解练习")
+                .action("讨论")
+                .memo(discussDto.getReferenceId().toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }

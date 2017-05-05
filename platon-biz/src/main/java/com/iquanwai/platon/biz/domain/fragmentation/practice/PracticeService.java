@@ -119,6 +119,8 @@ public interface PracticeService {
      */
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
+
+
     /**
      * 提交评论
      * @param moduleId 模块id
@@ -179,6 +181,8 @@ public interface PracticeService {
      * @param problemId 小课id
      */
     List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId);
+
+    Knowledge loadKnowledge(Integer knowledgeId);
 
     /**
      * 学习知识点

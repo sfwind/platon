@@ -51,9 +51,10 @@ public class PlanServiceImpl implements PlanService {
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+//        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         //选择正在进行的练习
-        List<PracticePlan> runningPractice = pickRunningPractice(practicePlans, improvementPlan);
+//        List<PracticePlan> runningPractice = pickRunningPractice(practicePlans, improvementPlan);
+        List<PracticePlan> runningPractice = pickPracticeBySeries(improvementPlan, improvementPlan.getCurrentSeries());
         //创建练习对象
         List<Practice> practices = createPractice(runningPractice);
         improvementPlan.setPractice(practices);
@@ -186,6 +187,8 @@ public class PlanServiceImpl implements PlanService {
         if (!riseMember && series > ConfigUtils.preStudySerials() && !improvementPlan.getRiseMember()) {
             return -3;
         }
+        // 更新当前组的状态
+        improvementPlanDao.updateCurrentSeries(improvementPlan.getId(), series);
         return 0;
     }
 
@@ -221,7 +224,7 @@ public class PlanServiceImpl implements PlanService {
         }
 
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
-        improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
+//        improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
     }
 
 
@@ -258,7 +261,8 @@ public class PlanServiceImpl implements PlanService {
             practicePlanDao.unlock(practicePlan.getId());
         });
         Integer progress = runningPractice.get(0).getSeries();
-        improvementPlanDao.updateProgress(improvementPlan.getId(), progress);
+        improvementPlanDao.updateProgress(improvementPlan.getId(), progress - 1);
+        improvementPlan.setCompleteSeries(progress - 1);
     }
 
     private List<Practice> createPractice(List<PracticePlan> runningPractice) {

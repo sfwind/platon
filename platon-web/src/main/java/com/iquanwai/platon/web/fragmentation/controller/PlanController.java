@@ -130,7 +130,6 @@ public class PlanController {
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser){
-
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
         if(improvementPlan==null){

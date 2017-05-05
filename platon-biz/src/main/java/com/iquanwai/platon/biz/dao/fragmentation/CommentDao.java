@@ -28,7 +28,8 @@ public class CommentDao extends PracticeDBUtil {
                 "VALUES (?,?,?,?,?,?)";
         try {
             run.insert(insertSql, new ScalarHandler<>(),
-                    comment.getModuleId(),comment.getType(), comment.getReferencedId(), comment.getCommentOpenId(), comment.getContent(),comment.getDevice());
+                    comment.getModuleId(), comment.getType(), comment.getReferencedId(),
+                    comment.getCommentOpenId(), comment.getContent(), comment.getDevice());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -59,4 +60,9 @@ public class CommentDao extends PracticeDBUtil {
         }
         return 0;
     }
+
+
+
+
+
 }

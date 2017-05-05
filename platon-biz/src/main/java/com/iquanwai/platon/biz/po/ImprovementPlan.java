@@ -26,7 +26,8 @@ public class ImprovementPlan {
     private Integer total; //任务总数
     @Deprecated
     private Integer keycnt; //钥匙数量
-    private Integer currentSeries; //已解锁的节数
+    private Integer currentSeries; //当前访问的节数
+    private Integer completeSeries; //已完成的节数
     private Integer totalSeries; //总节数
     private Boolean riseMember; // 是否是会员
 
@@ -39,7 +40,6 @@ public class ImprovementPlan {
     private Integer series; //非db字段 当前节号
     private Boolean openRise; //非db字段 是否打开过rise
     private Boolean newMessage; //非db字段 是否有新消息
-    private Integer completeSeries; // 非db字段 已完成的节数
     private String chapter; // 非db字段 章名称
     private String section; // 非db字段 节名称
     // 首页弹窗信息
