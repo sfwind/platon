@@ -51,7 +51,7 @@ public class PlanController {
     @Autowired
     private MessageService messageService;
 
-    @RequestMapping(value = "/chose/problem/check/{problemId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
