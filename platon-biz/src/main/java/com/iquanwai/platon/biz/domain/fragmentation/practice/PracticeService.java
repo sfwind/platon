@@ -126,7 +126,7 @@ public interface PracticeService {
      * @param openId 评论人
      * @param content 评论内容
      */
-    Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
+    Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content);
 
     /*
      * 获取巩固练习

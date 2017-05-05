@@ -22,16 +22,21 @@ import java.util.List;
 public class CommentDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public void insert(Comment comment) {
+    public int insert(Comment comment) {
         QueryRunner run = new QueryRunner(getDataSource());
         String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, Device) " +
                 "VALUES (?,?,?,?,?,?)";
         try {
-            run.insert(insertSql, new ScalarHandler<>(),
-                    comment.getModuleId(),comment.getType(), comment.getReferencedId(), comment.getCommentOpenId(), comment.getContent(),comment.getDevice());
+            Long id = run.insert(insertSql, new ScalarHandler<>(),
+                    comment.getModuleId(),comment.getType(), comment.getReferencedId(),
+                    comment.getCommentOpenId(), comment.getContent(),comment.getDevice());
+
+            return id.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+
+        return -1;
     }
 
     public List<Comment> loadComments(Integer moduleId, Integer referId, Page page) {
