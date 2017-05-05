@@ -120,7 +120,7 @@ public interface PracticeService {
      * @param openId 评论人
      * @param content 评论内容
      */
-    Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content);
+    Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content);
 
     /*
      * 获取巩固练习
@@ -181,6 +181,7 @@ public interface PracticeService {
     void learnKnowledge(Integer practicePlanId);
 
     /**
+<<<<<<< HEAD
      * 求点评
      * @param submitId 文章提交id
      * @param moduleId 模块id（2-应用练习,3-小课分享）
@@ -194,4 +195,11 @@ public interface PracticeService {
      * @param openid 学员id
      */
     boolean hasRequestComment(Integer problemId, String openid);
+
+    /**
+     * 删除评论
+     * @param commentId 评论id
+     */
+    void deleteComment(Integer commentId);
+
 }

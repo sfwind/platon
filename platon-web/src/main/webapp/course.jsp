@@ -19,7 +19,7 @@
 <div id="react-app"></div>
 <!-- 业务代码-->
 <script src="${resource}"></script>
-<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+<script src="//res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

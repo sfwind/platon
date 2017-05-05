@@ -382,11 +382,11 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page){
         page.setTotal(commentDao.commentCount(moduleId, submitId));
-        return commentDao.loadComments(moduleId,submitId,page);
+        return commentDao.loadComments(moduleId, submitId, page);
     }
 
     @Override
-    public Pair<Boolean,String> comment(Integer moduleId, Integer referId, String openId, String content) {
+    public Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content) {
         boolean isAsst = false;
         Profile profile = accountService.getProfile(openId, false);
         //是否是助教评论
@@ -398,7 +398,7 @@ public class PracticeServiceImpl implements PracticeService {
             ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
-                return new MutablePair<>(false, "没有该文章");
+                return new MutablePair<>(-1, "没有该文章");
             }
             //自己给自己评论不提醒
             if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
@@ -409,7 +409,7 @@ public class PracticeServiceImpl implements PracticeService {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
-                return new MutablePair<>(false, "没有该文章");
+                return new MutablePair<>(-1, "没有该文章");
             }
             //更新助教评论状态
             if(isAsst){
@@ -429,7 +429,7 @@ public class PracticeServiceImpl implements PracticeService {
             SubjectArticle load = subjectArticleDao.load(SubjectArticle.class,referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
-                return new MutablePair<>(false, "没有该文章");
+                return new MutablePair<>(-1, "没有该文章");
             }
             //更新助教评论状态
             if(isAsst){
@@ -449,8 +449,8 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setDevice(Constants.Device.MOBILE);
-        commentDao.insert(comment);
-        return new MutablePair<>(true,"评论成功");
+        int id = commentDao.insert(comment);
+        return new MutablePair<>(id,"评论成功");
     }
 
     private void asstCoachComment(String openId, Integer problemId) {
@@ -525,7 +525,7 @@ public class PracticeServiceImpl implements PracticeService {
         userChoose.forEach(item -> articleLabelDao.insertArticleLabel(moduleId, articleId, item));
         shouldDels.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 1));
         shouldReAdds.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 0));
-        return articleLabelDao.loadArticleActiveLabels(moduleId,articleId);
+        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
     }
 
     @Override
@@ -602,10 +602,14 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public boolean hasRequestComment(Integer problemId, String openid) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
-        if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
+        if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
             return true;
         }
         return false;
+    }
+
+    public void deleteComment(Integer commentId) {
+        commentDao.deleteComment(commentId);
     }
 
 }

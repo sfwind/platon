@@ -279,6 +279,7 @@ public class PracticeController {
                 dto.setHeadPic(account.getHeadimgurl());
                 dto.setRole(account.getRole());
                 dto.setSignature(account.getSignature());
+                dto.setIsMine(item.getCommentOpenId().equals(loginUser.getOpenId()));
                 return dto;
             } else {
                 LOGGER.error("未找到该评论用户:{}", item);
@@ -307,8 +308,8 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
-        Pair<Boolean, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getContent());
-        if (result.getLeft()) {
+        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getContent());
+        if (result.getLeft()>0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
                     .function("碎片化")
@@ -316,10 +317,14 @@ public class PracticeController {
                     .memo(moduleId + ":" + submitId);
             operationLogService.log(operationLog);
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
+            resultDto.setId(result.getLeft());
             resultDto.setContent(dto.getContent());
             resultDto.setUpName(loginUser.getWeixinName());
             resultDto.setHeadPic(loginUser.getHeadimgUrl());
             resultDto.setUpTime(DateUtils.parseDateToString(new Date()));
+            resultDto.setRole(loginUser.getRole());
+            resultDto.setSignature(loginUser.getSignature());
+            resultDto.setIsMine(true);
             return WebUtils.result(resultDto);
         } else {
             return WebUtils.error("评论失败");
@@ -548,6 +553,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         practiceService.learnKnowledge(practicePlanId);
+        planService.checkPlanComplete(improvementPlan.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("知识点")
@@ -562,14 +568,6 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> requestComment(LoginUser loginUser,
                                                               @PathVariable Integer moduleId,
                                                               @PathVariable Integer submitId){
-
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-
         boolean result = practiceService.requestComment(submitId, moduleId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -582,6 +580,25 @@ public class PracticeController {
         }else{
             return WebUtils.error("本小课求点评次数已用完");
         }
+    }
 
+    @RequestMapping("/delete/comment/{commentId}")
+    public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser,
+                                                              @PathVariable Integer commentId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if (improvementPlan == null) {
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        practiceService.deleteComment(commentId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("评论")
+                .action("删除评论")
+                .memo(commentId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
     }
 }
