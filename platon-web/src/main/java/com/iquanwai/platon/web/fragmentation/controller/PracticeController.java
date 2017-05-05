@@ -353,6 +353,9 @@ public class PracticeController {
             resultDto.setUpName(loginUser.getWeixinName());
             resultDto.setHeadPic(loginUser.getHeadimgUrl());
             resultDto.setUpTime(DateUtils.parseDateToString(new Date()));
+            resultDto.setRole(loginUser.getRole());
+            resultDto.setSignature(loginUser.getSignature());
+            resultDto.setIsMine(true);
             return WebUtils.result(resultDto);
         } else {
             return WebUtils.error("评论失败");
