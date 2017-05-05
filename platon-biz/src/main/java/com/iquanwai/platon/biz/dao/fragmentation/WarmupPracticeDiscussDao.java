@@ -25,13 +25,13 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
     public int insert(WarmupPracticeDiscuss discuss){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Openid, RepliedId, Comment, " +
-                "Priority, Del, RepliedOpenid, RepliedComment) " +
-                "values(?,?,?,?,?,?,?,?)";
+                "Priority, Del, RepliedDel, RepliedOpenid, RepliedComment) " +
+                "values(?,?,?,?,?,?,?,?,?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
                     discuss.getWarmupPracticeId(), discuss.getOpenid(), discuss.getRepliedId(),
                     discuss.getComment(), discuss.getPriority(), discuss.getDel(),
-                    discuss.getRepliedOpenid(), discuss.getRepliedComment());
+                    discuss.getRepliedDel(),discuss.getRepliedOpenid(), discuss.getRepliedComment());
 
             return result.intValue();
         }catch (SQLException e) {
@@ -52,6 +52,26 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public void deleteComment(Integer id) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update WarmupPracticeDiscuss set Del = 1 where Id = ?";
+        try{
+            runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void markRepliedCommentDelete(Integer repliedId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update WarmupPracticeDiscuss set RepliedDel = 1 where RepliedId = ?";
+        try{
+            runner.update(sql, repliedId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 
 }

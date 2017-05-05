@@ -545,4 +545,9 @@ public class PracticeServiceImpl implements PracticeService {
         practicePlanDao.complete(practicePlanId);
     }
 
+    @Override
+    public void deleteComment(Integer commentId) {
+        commentDao.deleteComment(commentId);
+    }
+
 }

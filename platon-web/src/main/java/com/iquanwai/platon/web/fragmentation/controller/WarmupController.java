@@ -138,7 +138,7 @@ public class WarmupController {
         page.setPage(1);
         page.setPageSize(DISCUSS_PAGE_SIZE);
         Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
-        setDiscuss(warmupPracticeList, discuss);
+        setDiscuss(warmupPracticeList, discuss, loginUser.getOpenId());
 
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
@@ -151,10 +151,14 @@ public class WarmupController {
         return WebUtils.result(warmupPracticeDto);
     }
 
-    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss) {
+    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss, String openid) {
         warmupPracticeList.stream().forEach(warmupPractice -> {
             List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
             list.stream().forEach(warmupPracticeDiscuss -> {
+                //是否是学员本人的评论
+                if(warmupPracticeDiscuss.getOpenid().equals(openid)){
+                    warmupPracticeDiscuss.setIsMine(true);
+                }
                 warmupPracticeDiscuss.setRepliedOpenid(null);
                 warmupPracticeDiscuss.setOpenid(null);
             });
@@ -207,7 +211,7 @@ public class WarmupController {
         page.setPage(1);
         page.setPageSize(DISCUSS_PAGE_SIZE);
         Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
-        setDiscuss(warmupPracticeList, discuss);
+        setDiscuss(warmupPracticeList, discuss, loginUser.getOpenId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -231,6 +235,9 @@ public class WarmupController {
 
         //清空openid
         discusses.stream().forEach(warmupPracticeDiscuss -> {
+            if(warmupPracticeDiscuss.getOpenid().equals(loginUser.getOpenId())){
+                warmupPracticeDiscuss.setIsMine(true);
+            }
             warmupPracticeDiscuss.setRepliedOpenid(null);
             warmupPracticeDiscuss.setOpenid(null);
         });
@@ -260,6 +267,21 @@ public class WarmupController {
                 .function("巩固练习")
                 .action("讨论")
                 .memo(discussDto.getWarmupPracticeId().toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/delete/comment/{commentId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser, @PathVariable Integer commentId) {
+        Assert.notNull(loginUser, "用户不能为空");
+
+        practiceDiscussService.deleteComment(commentId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("巩固练习")
+                .action("删除讨论")
+                .memo(commentId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }

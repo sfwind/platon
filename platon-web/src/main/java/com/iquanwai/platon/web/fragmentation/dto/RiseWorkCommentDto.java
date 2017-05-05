@@ -14,4 +14,5 @@ public class RiseWorkCommentDto {
     private String headPic;
     private String signature;
     private Integer role;
+    private Boolean isMine;
 }

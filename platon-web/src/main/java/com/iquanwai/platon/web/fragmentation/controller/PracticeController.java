@@ -311,6 +311,7 @@ public class PracticeController {
                 dto.setHeadPic(account.getHeadimgurl());
                 dto.setRole(account.getRole());
                 dto.setSignature(account.getSignature());
+                dto.setIsMine(item.getCommentOpenId().equals(loginUser.getOpenId()));
                 return dto;
             } else {
                 LOGGER.error("未找到该评论用户:{}", item);
@@ -588,6 +589,27 @@ public class PracticeController {
                 .function("知识点")
                 .action("学习知识点")
                 .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping("/delete/comment/{commentId}")
+    public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser,
+                                                              @PathVariable Integer commentId){
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        practiceService.deleteComment(commentId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("评论")
+                .action("删除评论")
+                .memo(commentId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }

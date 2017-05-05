@@ -46,6 +46,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setRepliedId(repliedId);
                 warmupPracticeDiscuss.setRepliedComment(repliedDiscuss.getComment());
                 warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
+                warmupPracticeDiscuss.setRepliedDel(0);
             }
         }
         warmupPracticeDiscuss.setPriority(0);
@@ -95,6 +96,14 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             fulfilDiscuss(discuss);
         }
         return discuss;
+    }
+
+    @Override
+    public void deleteComment(Integer discussId) {
+        //删除评论
+        warmupPracticeDiscussDao.deleteComment(discussId);
+        //标记回复该评论的评论
+        warmupPracticeDiscussDao.markRepliedCommentDelete(discussId);
     }
 
     //填充评论的其他字段

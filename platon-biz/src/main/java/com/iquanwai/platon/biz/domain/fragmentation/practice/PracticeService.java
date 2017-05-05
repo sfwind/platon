@@ -186,4 +186,10 @@ public interface PracticeService {
      */
     void learnKnowledge(Integer practicePlanId);
 
+    /**
+     * 删除评论
+     * @param commentId 评论id
+     */
+    void deleteComment(Integer commentId);
+
 }
