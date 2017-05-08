@@ -222,7 +222,7 @@ public class PracticeServiceImpl implements PracticeService {
             RiseMember riseMember = riseMemberDao.validRiseMember(openid);
             if(riseMember!=null){
                 if(riseMember.getMemberTypeId().equals(RiseMember.ELITE)){
-                    applicationPractice.setCommentCount(0);
+                    applicationPractice.setRequestCommentCount(0);
                 }
             }
         }
