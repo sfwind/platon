@@ -24,12 +24,12 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public int insert(ApplicationSubmit applicationSubmit){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ApplicationSubmit(Openid, ApplicationId, PlanId) " +
-                "values(?,?,?)";
+        String sql = "insert into ApplicationSubmit(Openid, ApplicationId, PlanId, ProblemId) " +
+                "values(?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     applicationSubmit.getOpenid(), applicationSubmit.getApplicationId(),
-                    applicationSubmit.getPlanId());
+                    applicationSubmit.getPlanId(), applicationSubmit.getProblemId());
             return insertRs.intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

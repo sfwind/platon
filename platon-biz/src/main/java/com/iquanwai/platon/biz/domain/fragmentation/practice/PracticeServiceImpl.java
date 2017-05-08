@@ -190,6 +190,7 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setOpenid(openid);
             submit.setPlanId(planId);
             submit.setApplicationId(id);
+            submit.setProblemId(applicationPractice.getProblemId());
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
