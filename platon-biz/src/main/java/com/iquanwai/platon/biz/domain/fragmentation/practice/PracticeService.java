@@ -181,7 +181,6 @@ public interface PracticeService {
     void learnKnowledge(Integer practicePlanId);
 
     /**
-<<<<<<< HEAD
      * 求点评
      * @param submitId 文章提交id
      * @param moduleId 模块id（2-应用练习,3-小课分享）

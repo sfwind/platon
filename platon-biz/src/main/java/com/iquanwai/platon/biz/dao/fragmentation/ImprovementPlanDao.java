@@ -30,7 +30,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into ImprovementPlan(Openid, WarmupComplete, Status, EndDate, " +
                 "StartDate, CloseDate, Point, Total, ApplicationComplete, ProblemId, Keycnt, " +
-                "CurrentSeries, TotalSeries, RiseMember, RequestComment) " +
+                "CurrentSeries, TotalSeries, RiseMember, RequestCommentCount) " +
                 "values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
