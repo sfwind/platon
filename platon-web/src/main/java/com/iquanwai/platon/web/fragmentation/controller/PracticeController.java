@@ -410,7 +410,8 @@ public class PracticeController {
                     dto.setAuthorType(item.getAuthorType());
                     dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
                     dto.setTitle(item.getTitle());
-                    dto.setRequestComment(practiceService.hasRequestComment(problemId, loginUser.getOpenId()));
+                    //设置剩余请求次数
+                    dto.setRequestCommentCount(practiceService.hasRequestComment(problemId, loginUser.getOpenId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
@@ -445,36 +446,42 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> loadSubject(LoginUser loginUser, @PathVariable("submitId") Integer submitId) {
 
         SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
-        RiseWorkInfoDto dto = new RiseWorkInfoDto();
-        dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
-        dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
-        dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getOpenId()) != null ? 1 : 0);
-        dto.setSubmitId(submitId);
-        dto.setAuthorType(subjectArticle.getAuthorType());
-        dto.setContent(subjectArticle.getContent());
-        dto.setTitle(subjectArticle.getTitle());
-        Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
-        if(profile!=null) {
-            dto.setHeadImage(profile.getHeadimgurl());
-            dto.setUserName(profile.getNickname());
-            dto.setRole(profile.getRole());
-            dto.setSignature(profile.getSignature());
-        }
-        dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
-        dto.setProblemId(subjectArticle.getProblemId());
-        dto.setPerfect(subjectArticle.getSequence() > 0);
-        dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
+        if(subjectArticle!=null){
+            RiseWorkInfoDto dto = new RiseWorkInfoDto();
+            dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
+            dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
+            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getOpenId()) != null ? 1 : 0);
+            dto.setSubmitId(submitId);
+            dto.setAuthorType(subjectArticle.getAuthorType());
+            dto.setContent(subjectArticle.getContent());
+            dto.setTitle(subjectArticle.getTitle());
+            Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
+            if(profile!=null) {
+                dto.setHeadImage(profile.getHeadimgurl());
+                dto.setUserName(profile.getNickname());
+                dto.setRole(profile.getRole());
+                dto.setSignature(profile.getSignature());
+            }
+            dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
+            dto.setProblemId(subjectArticle.getProblemId());
+            dto.setPerfect(subjectArticle.getSequence() > 0);
+            dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
+            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(), loginUser.getOpenId()));
 //        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
 //                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
 //                .collect(Collectors.toList()));
-        dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("碎片化")
-                .action("移动端加载小课分享文章")
-                .memo(submitId + "");
-        operationLogService.log(operationLog);
-        return WebUtils.result(dto);
+            dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("训练")
+                    .function("碎片化")
+                    .action("移动端加载小课分享文章")
+                    .memo(submitId.toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(dto);
+        }else{
+            return WebUtils.error("小课分享不存在");
+        }
+
     }
 
     @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)

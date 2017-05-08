@@ -72,6 +72,8 @@ public class PracticeServiceImpl implements PracticeService {
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private AsstCoachCommentDao asstCoachCommentDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -215,9 +217,14 @@ public class PracticeServiceImpl implements PracticeService {
         //查询求点赞数
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if(plan!=null && plan.getRequestCommentCount()>0){
-            applicationPractice.setRequestComment(true);
+            applicationPractice.setRequestCommentCount(plan.getRequestCommentCount());
         }else{
-            applicationPractice.setRequestComment(false);
+            RiseMember riseMember = riseMemberDao.validRiseMember(openid);
+            if(riseMember!=null){
+                if(riseMember.getMemberTypeId().equals(RiseMember.ELITE)){
+                    applicationPractice.setCommentCount(0);
+                }
+            }
         }
         return applicationPractice;
     }
@@ -601,12 +608,18 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public boolean hasRequestComment(Integer problemId, String openid) {
+    public Integer hasRequestComment(Integer problemId, String openid) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
         if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
-            return true;
+            return improvementPlan.getRequestCommentCount();
         }
-        return false;
+        RiseMember riseMember = riseMemberDao.validRiseMember(openid);
+        if(riseMember!=null){
+            if(riseMember.getMemberTypeId().equals(RiseMember.ELITE)){
+                return 0;
+            }
+        }
+        return null;
     }
 
     public void deleteComment(Integer commentId) {

@@ -32,5 +32,5 @@ public class RiseWorkInfoDto {
     private List<String> picList;
     private Integer role;
     private String signature;
-    private Boolean requestComment;
+    private Integer requestCommentCount;
 }

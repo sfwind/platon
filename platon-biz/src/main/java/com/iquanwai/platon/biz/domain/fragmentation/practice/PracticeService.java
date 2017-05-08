@@ -193,7 +193,7 @@ public interface PracticeService {
      * @param problemId 小课id
      * @param openid 学员id
      */
-    boolean hasRequestComment(Integer problemId, String openid);
+    Integer hasRequestComment(Integer problemId, String openid);
 
     /**
      * 删除评论
