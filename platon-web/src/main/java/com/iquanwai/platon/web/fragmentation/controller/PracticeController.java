@@ -410,6 +410,7 @@ public class PracticeController {
                     dto.setAuthorType(item.getAuthorType());
                     dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
                     dto.setTitle(item.getTitle());
+                    dto.setRequest(item.getRequestFeedback());
                     //设置剩余请求次数
                     dto.setRequestCommentCount(practiceService.hasRequestComment(problemId, loginUser.getOpenId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
@@ -466,6 +467,7 @@ public class PracticeController {
             dto.setProblemId(subjectArticle.getProblemId());
             dto.setPerfect(subjectArticle.getSequence() > 0);
             dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
+            dto.setRequest(subjectArticle.getRequestFeedback());
             dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(), loginUser.getOpenId()));
 //        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
 //                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())

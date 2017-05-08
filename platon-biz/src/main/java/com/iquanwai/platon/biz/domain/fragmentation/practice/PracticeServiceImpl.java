@@ -216,6 +216,7 @@ public class PracticeServiceImpl implements PracticeService {
         }
         //查询求点赞数
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        applicationPractice.setRequest(submit.getRequestFeedback());
         if(plan!=null && plan.getRequestCommentCount()>0){
             applicationPractice.setRequestCommentCount(plan.getRequestCommentCount());
         }else{

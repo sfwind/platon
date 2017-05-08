@@ -30,5 +30,6 @@ public class  ApplicationPractice {
     private List<String> picList; // 图片列表 非db字段
     private Integer planId; // 计划id 非db字段
     private Integer requestCommentCount; //求点赞 非db字段
+    private Boolean request; //是否已经求点评 非db字段
 
 }
