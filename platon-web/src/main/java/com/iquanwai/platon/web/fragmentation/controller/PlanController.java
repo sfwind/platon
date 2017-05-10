@@ -23,10 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -129,12 +126,20 @@ public class PlanController {
     }
 
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser,
+                                                         @RequestParam(required = false) Integer planId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
+            planId = improvementPlan.getId();
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
+
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
@@ -155,10 +160,18 @@ public class PlanController {
     }
 
     @RequestMapping("/history/load/{series}")
-    public ResponseEntity<Map<String, Object>> loadHistoryPlan(LoginUser loginUser, @PathVariable Integer series){
+    public ResponseEntity<Map<String, Object>> loadHistoryPlan(LoginUser loginUser, @PathVariable Integer series,
+                                                               @RequestParam(required = false) Integer planId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
+            planId = improvementPlan.getId();
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
+
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
@@ -184,10 +197,17 @@ public class PlanController {
 
     @RequestMapping("/knowledge/load/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
-                                                             @PathVariable Integer knowledgeId){
+                                                             @PathVariable Integer knowledgeId,
+                                                             @RequestParam(required = false) Integer planId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            planId = improvementPlan.getId();
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -204,11 +224,17 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser,
+                                                        @RequestParam(required = false) Integer planId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            planId = improvementPlan.getId();
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -237,10 +263,17 @@ public class PlanController {
 
 
     @RequestMapping(value = "/close", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
+                                                     @RequestParam(required = false) Integer planId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            planId = improvementPlan.getId();
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -297,57 +330,30 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
     }
-    @RequestMapping("/mark/trial")
-    public ResponseEntity<Map<String,Object>> markTrialClick(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("欢迎界面")
-                .function("打点")
-                .action("点击试用版")
-                .memo("");
-        operationLogService.log(operationLog);
-        messageService.sendRiseTrialMessage(loginUser.getOpenId());
-        return WebUtils.success();
-    }
-    @RequestMapping("/mark/becomerise")
-    public ResponseEntity<Map<String,Object>> markBecomeRiseClick(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("欢迎界面")
-                .function("打点")
-                .action("点击成为RISER")
-                .memo("");
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
 
     @RequestMapping("/risemember")
     public ResponseEntity<Map<String,Object>> isRiseMember(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
-                .function("打点")
+                .function("打开小课")
                 .action("查看是否为rise会员")
                 .memo(loginUser.getRiseMember() + "");
         operationLogService.log(operationLog);
         return WebUtils.result(loginUser.getRiseMember());
     }
 
-    @RequestMapping("/risemember/tips")
-    public ResponseEntity<Map<String,Object>> markReadRiseMemberTips(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
-                .function("打点")
-                .action("打开rise会员说明页");
-        operationLogService.log(operationLog);
-        return WebUtils.result(loginUser.getRiseMember());
-    }
-
     @RequestMapping("/roadmap")
-    public ResponseEntity<Map<String, Object>> getRoadMap(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> getRoadMap(LoginUser loginUser,
+                                                          @RequestParam(required = false) Integer planId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            planId = improvementPlan.getId();
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -383,22 +389,5 @@ public class PlanController {
         dto.setOpenConsolidation(loginUser.getOpenConsolidation());
         dto.setOpenApplication(loginUser.getOpenApplication());
         return WebUtils.result(dto);
-    }
-
-    @RequestMapping("/promote")
-    public ResponseEntity<Map<String, Object>> promote(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("打点")
-                .function("升级专业版")
-                .action("点击升级专业版按钮");
-        operationLogService.log(operationLog);
-        return WebUtils.success();
     }
 }

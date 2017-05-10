@@ -184,16 +184,4 @@ public class ProblemController {
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
-
-    @RequestMapping("/member/description")
-    public ResponseEntity<Map<String, Object>> description(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课")
-                .function("打点")
-                .action("打开会员说明页");
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
 }
