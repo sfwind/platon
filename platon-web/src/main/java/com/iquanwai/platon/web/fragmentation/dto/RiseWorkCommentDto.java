@@ -14,8 +14,8 @@ public class RiseWorkCommentDto {
     private String headPic;
     private String signature;
     private Integer role;
+    private Boolean isMine;
 
     private String repliedComment; // 被回复的评论内容
     private String repliedName; // 被回复人的名字
-
 }

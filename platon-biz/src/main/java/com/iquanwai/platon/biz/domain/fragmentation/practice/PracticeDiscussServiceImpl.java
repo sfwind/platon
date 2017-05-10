@@ -51,6 +51,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setRepliedId(repliedId);
                 warmupPracticeDiscuss.setRepliedComment(repliedDiscuss.getComment());
                 warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
+                warmupPracticeDiscuss.setRepliedDel(0);
             }
         }
         warmupPracticeDiscuss.setPriority(0);
@@ -139,6 +140,13 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     @Override
+    public void deleteComment(Integer discussId) {
+        //删除评论
+        warmupPracticeDiscussDao.deleteComment(discussId);
+        //标记回复该评论的评论
+        warmupPracticeDiscussDao.markRepliedCommentDelete(discussId);
+    }
+
     public KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId) {
         KnowledgeDiscuss discuss = knowledgeDiscussDao.load(KnowledgeDiscuss.class, discussId);
         if(discuss!=null){
@@ -147,8 +155,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         }
         return discuss;
     }
-
-
 
     //填充评论的其他字段
     private void fulfilDiscuss(List<? extends AbstractComment> discuss) {

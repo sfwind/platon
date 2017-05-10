@@ -102,22 +102,6 @@ public class PracticeController {
         //TODO:改为富文本编辑器后,去掉planid校验
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
                 loginUser.getOpenId(), planId, false);
-        // 查询点赞数
-        applicationPractice.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
-        // 查询评论数
-        applicationPractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, applicationPractice.getSubmitId()));
-        // 查询我对它的点赞状态
-        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId(), loginUser.getOpenId());
-        if (myVote != null && myVote.getDel() == 0) {
-            // 点赞中
-            applicationPractice.setVoteStatus(1);
-        } else {
-            applicationPractice.setVoteStatus(0);
-        }
-        applicationPractice.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, applicationPractice.getSubmitId())
-                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
-                .collect(Collectors.toList()));
-
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -139,22 +123,6 @@ public class PracticeController {
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
                 loginUser.getOpenId(), improvementPlan.getId(), false);
-
-        // 查询点赞数
-        challengePractice.setVoteCount(practiceService.votedCount(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId()));
-        // 查询评论数
-        challengePractice.setCommentCount(practiceService.commentCount(Constants.CommentModule.CHALLENGE, challengePractice.getSubmitId()));
-        // 查询我对它的点赞状态
-        HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.CHALLENGE, challengePractice.getSubmitId(), loginUser.getOpenId());
-        if (myVote != null && myVote.getDel() == 0) {
-            // 点赞中
-            challengePractice.setVoteStatus(1);
-        } else {
-            challengePractice.setVoteStatus(0);
-        }
-        challengePractice.setPicList(pictureService.loadPicture(Constants.PictureType.CHALLENGE, challengePractice.getSubmitId())
-                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.CHALLENGE) + pic.getRealName())
-                .collect(Collectors.toList()));
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -352,6 +320,7 @@ public class PracticeController {
                 dto.setHeadPic(account.getHeadimgurl());
                 dto.setRole(account.getRole());
                 dto.setSignature(account.getSignature());
+                dto.setIsMine(item.getCommentOpenId().equals(loginUser.getOpenId()));
                 return dto;
             } else {
                 LOGGER.error("未找到该评论用户:{}", item);
@@ -380,8 +349,8 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
-        Pair<Boolean, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getContent());
-        if (result.getLeft()) {
+        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getContent());
+        if (result.getLeft()>0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
                     .function("碎片化")
@@ -389,10 +358,14 @@ public class PracticeController {
                     .memo(moduleId + ":" + submitId);
             operationLogService.log(operationLog);
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
+            resultDto.setId(result.getLeft());
             resultDto.setContent(dto.getContent());
             resultDto.setUpName(loginUser.getWeixinName());
             resultDto.setHeadPic(loginUser.getHeadimgUrl());
             resultDto.setUpTime(DateUtils.parseDateToString(new Date()));
+            resultDto.setRole(loginUser.getRole());
+            resultDto.setSignature(loginUser.getSignature());
+            resultDto.setIsMine(true);
             return WebUtils.result(resultDto);
         } else {
             return WebUtils.error("评论失败");
@@ -478,12 +451,13 @@ public class PracticeController {
                     dto.setAuthorType(item.getAuthorType());
                     dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
                     dto.setTitle(item.getTitle());
-                    dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, item.getId())
-                            .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
-                            .collect(Collectors.toList()));
+                    dto.setRequest(item.getRequestFeedback());
+                    //设置剩余请求次数
+                    dto.setRequestCommentCount(practiceService.hasRequestComment(problemId, loginUser.getOpenId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
+
         list.forEach(item -> {
             practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
         });
@@ -514,36 +488,43 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> loadSubject(LoginUser loginUser, @PathVariable("submitId") Integer submitId) {
 
         SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
-        RiseWorkInfoDto dto = new RiseWorkInfoDto();
-        dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
-        dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
-        dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getOpenId()) != null ? 1 : 0);
-        dto.setSubmitId(submitId);
-        dto.setAuthorType(subjectArticle.getAuthorType());
-        dto.setContent(subjectArticle.getContent());
-        dto.setTitle(subjectArticle.getTitle());
-        Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
-        if(profile!=null) {
-            dto.setHeadImage(profile.getHeadimgurl());
-            dto.setUserName(profile.getNickname());
-            dto.setRole(profile.getRole());
-            dto.setSignature(profile.getSignature());
+        if(subjectArticle!=null){
+            RiseWorkInfoDto dto = new RiseWorkInfoDto();
+            dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
+            dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
+            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getOpenId()) != null ? 1 : 0);
+            dto.setSubmitId(submitId);
+            dto.setAuthorType(subjectArticle.getAuthorType());
+            dto.setContent(subjectArticle.getContent());
+            dto.setTitle(subjectArticle.getTitle());
+            Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
+            if(profile!=null) {
+                dto.setHeadImage(profile.getHeadimgurl());
+                dto.setUserName(profile.getNickname());
+                dto.setRole(profile.getRole());
+                dto.setSignature(profile.getSignature());
+            }
+            dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
+            dto.setProblemId(subjectArticle.getProblemId());
+            dto.setPerfect(subjectArticle.getSequence() > 0);
+            dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
+            dto.setRequest(subjectArticle.getRequestFeedback());
+            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(), loginUser.getOpenId()));
+//        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
+//                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
+//                .collect(Collectors.toList()));
+            dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("训练")
+                    .function("碎片化")
+                    .action("移动端加载小课分享文章")
+                    .memo(submitId.toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(dto);
+        }else{
+            return WebUtils.error("小课分享不存在");
         }
-        dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
-        dto.setProblemId(subjectArticle.getProblemId());
-        dto.setPerfect(subjectArticle.getSequence() > 0);
-        dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
-        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
-                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
-                .collect(Collectors.toList()));
-        dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("碎片化")
-                .action("移动端加载小课分享文章")
-                .memo(submitId + "");
-        operationLogService.log(operationLog);
-        return WebUtils.result(dto);
+
     }
 
     @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
@@ -643,6 +624,43 @@ public class PracticeController {
                 .action("学习知识点")
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/request/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> requestComment(LoginUser loginUser,
+                                                              @PathVariable Integer moduleId,
+                                                              @PathVariable Integer submitId){
+        boolean result = practiceService.requestComment(submitId, moduleId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("写文章")
+                .action("求点评")
+                .memo(submitId.toString());
+        operationLogService.log(operationLog);
+        if(result){
+            return WebUtils.success();
+        }else{
+            return WebUtils.error("本小课求点评次数已用完");
+        }
+    }
+
+    @RequestMapping("/delete/comment/{commentId}")
+    public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser,
+                                                              @PathVariable Integer commentId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        if (improvementPlan == null) {
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        practiceService.deleteComment(commentId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("评论")
+                .action("删除评论")
+                .memo(commentId.toString());
         return WebUtils.success();
     }
 

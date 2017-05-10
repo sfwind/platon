@@ -27,9 +27,11 @@ public class RiseWorkInfoDto {
     private Boolean perfect;
     private Integer problemId;
     private Integer authorType;
-    private Boolean isMine;
-    private List<ArticleLabel> labelList;
+    private Boolean isMine; //是否是本人文章
+    private List<ArticleLabel> labelList; //标签列表
     private List<String> picList;
-    private Integer role;
-    private String signature;
+    private Integer role; //角色
+    private String signature; //学员签名
+    private Integer requestCommentCount; //求点评字数
+    private Boolean request; //是否已经求点评
 }
