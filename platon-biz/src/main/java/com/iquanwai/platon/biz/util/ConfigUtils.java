@@ -186,4 +186,8 @@ public class ConfigUtils {
 	public static int getRabbitMQPort(){
 		return getIntValue("rabbitmq.port");
 	}
+
+	public static Boolean isDevelopment(){
+		return getBooleanValue("development");
+	}
 }
