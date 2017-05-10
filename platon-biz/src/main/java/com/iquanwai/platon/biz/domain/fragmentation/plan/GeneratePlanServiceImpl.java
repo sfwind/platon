@@ -286,6 +286,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
         // 查询是否是riseMember
         Profile profile = accountService.getProfile(openid, false);
+        improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         if(profile.getRiseMember()){
             //最长开放30天
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));

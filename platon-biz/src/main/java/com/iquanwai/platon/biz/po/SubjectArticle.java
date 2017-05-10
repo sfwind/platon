@@ -21,6 +21,7 @@ public class SubjectArticle {
     private Integer pointStatus; //是否已加分（0-否，1-是）
     private Integer length; //字数
     private Date updateTime; //最后更新时间
+    private Boolean requestFeedback; //是否求点评
 
     public SubjectArticle(Integer id,String openid,Integer problemId,Integer authorType,Integer sequence,String title,String content){
         this.id = id;

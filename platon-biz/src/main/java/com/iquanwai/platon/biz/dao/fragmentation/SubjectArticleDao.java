@@ -74,7 +74,7 @@ public class SubjectArticleDao extends PracticeDBUtil {
 
     public List<SubjectArticle> loadArticles(Integer problemId,Page page){
         QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<List<SubjectArticle>> h = new BeanListHandler<SubjectArticle>(SubjectArticle.class);
+        ResultSetHandler<List<SubjectArticle>> h = new BeanListHandler<>(SubjectArticle.class);
         String sql = "select * from SubjectArticle where ProblemId = ? order by Sequence desc,UpdateTime desc limit " + page.getOffset() + "," + page.getLimit();
         try{
             return runner.query(sql,h,problemId);
@@ -82,6 +82,16 @@ public class SubjectArticleDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public void requestComment(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update SubjectArticle set RequestFeedback=1 where Id=?";
+        try {
+            runner.update(sql, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 
 }

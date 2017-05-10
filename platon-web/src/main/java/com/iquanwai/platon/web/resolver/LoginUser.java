@@ -17,6 +17,8 @@ public class LoginUser {
     private String weixinName;
     private String headimgUrl;
     private String realName;
+    private Integer role;
+    private String signature;
     private Boolean openRise;
     private Boolean riseMember;
     private Boolean openApplication; // 非db字段 是否打开过应用练习
@@ -24,6 +26,6 @@ public class LoginUser {
 
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤",
-                Profile.DEFAULT_AVATAR, null, false, false,false,false);
+                Profile.DEFAULT_AVATAR, null, 1, null, false, false,false,false);
     }
 }

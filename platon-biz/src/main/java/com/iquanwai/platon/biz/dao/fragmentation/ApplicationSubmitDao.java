@@ -24,12 +24,12 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public int insert(ApplicationSubmit applicationSubmit){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ApplicationSubmit(Openid, ApplicationId, PlanId) " +
-                "values(?,?,?)";
+        String sql = "insert into ApplicationSubmit(Openid, ApplicationId, PlanId, ProblemId) " +
+                "values(?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     applicationSubmit.getOpenid(), applicationSubmit.getApplicationId(),
-                    applicationSubmit.getPlanId());
+                    applicationSubmit.getPlanId(), applicationSubmit.getProblemId());
             return insertRs.intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -125,5 +125,15 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public void requestComment(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ApplicationSubmit set RequestFeedback=1 where Id=?";
+        try {
+            runner.update(sql, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 }

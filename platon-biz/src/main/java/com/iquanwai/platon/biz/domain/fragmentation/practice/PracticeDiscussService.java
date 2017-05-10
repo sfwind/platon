@@ -42,6 +42,11 @@ public interface PracticeDiscussService {
      * */
     WarmupPracticeDiscuss loadDiscuss(Integer discussId);
 
+    /**
+     * 删除评论
+     * @param discussId 讨论id
+     * */
+    void deleteComment(Integer discussId);
 
     KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId);
 

@@ -84,14 +84,18 @@ public class IndexController {
 
     private ModelAndView courseView(HttpServletRequest request, Account account){
         ModelAndView mav = new ModelAndView("course");
+        String resourceUrl = ConfigUtils.staticResourceUrl();
+        if(request.isSecure()){
+            resourceUrl = resourceUrl.replace("http", "https");
+        }
         if(request.getParameter("debug")!=null){
             if(ConfigUtils.isFrontDebug()){
                 mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
             }else{
-                mav.addObject("resource", ConfigUtils.staticResourceUrl());
+                mav.addObject("resource", resourceUrl);
             }
         }else{
-            mav.addObject("resource", ConfigUtils.staticResourceUrl());
+            mav.addObject("resource", resourceUrl);
         }
 
         Map<String, String> userParam = Maps.newHashMap();

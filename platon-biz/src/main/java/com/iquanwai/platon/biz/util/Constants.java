@@ -40,6 +40,12 @@ public interface Constants {
         int STUDENT  = 1;
     }
 
+    interface Module {
+        int CHALLENGE = 1;
+        int APPLICATION = 2;
+        int SUBJECT = 3;
+    }
+
     interface ViewInfo {
         interface Module {
             int CHALLENGE = 1;

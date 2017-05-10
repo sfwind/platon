@@ -19,4 +19,6 @@ public class ApplicationSubmit {
     private Date updateTime; //最后更新时间
     private Date publishTime; // 第一次提交时间
     private Integer length; //字数
+    private Boolean requestFeedback; //是否求点评
+    private Integer problemId;//小课id
 }

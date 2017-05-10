@@ -20,14 +20,16 @@ public class  ApplicationPractice {
     private Integer sequence; //出现顺序
     private Boolean del; //是否删除(0-否,1-是)
     private String practiceUid; //任务唯一编号
+
     private String content; //提交内容，非db字段
     private Integer submitId; // 提交id，非db字段
     private String submitUpdateTime;// 非db字段
-
-    private Integer voteCount; // 点赞数,非db字段
-    private Integer commentCount; // 评论数,非db字段
-    private Integer voteStatus; // 点赞状态，是否可以点赞，非db字段
+    private Integer voteCount; // 点赞数 非db字段
+    private Integer commentCount; // 评论数 非db字段
+    private Integer voteStatus; // 点赞状态，是否可以点赞 非db字段
     private List<String> picList; // 图片列表 非db字段
-    private Integer planId; // 计划id,非db字段
+    private Integer planId; // 计划id 非db字段
+    private Integer requestCommentCount; //求点赞 非db字段
+    private Boolean request; //是否已经求点评 非db字段
 
 }
