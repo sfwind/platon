@@ -558,6 +558,11 @@ public class PracticeServiceImpl implements PracticeService {
         return knowledges;
     }
 
+    @Override
+    public Knowledge loadKnowledge(Integer knowledgeId) {
+        return cacheService.getKnowledge(knowledgeId);
+    }
+
     private Knowledge getKnowledge(Integer problemId, Integer knowledgeId) {
         Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
         WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledge.getId(), problemId);
@@ -627,6 +632,10 @@ public class PracticeServiceImpl implements PracticeService {
 
     public void deleteComment(Integer commentId) {
         commentDao.deleteComment(commentId);
+    }
+
+    public ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId,String openId){
+        return applicationSubmitDao.load(applicationId, openId);
     }
 
 }

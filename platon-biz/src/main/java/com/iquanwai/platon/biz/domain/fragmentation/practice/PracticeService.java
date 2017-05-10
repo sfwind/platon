@@ -113,6 +113,8 @@ public interface PracticeService {
      */
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
+
+
     /**
      * 提交评论
      * @param moduleId 模块id
@@ -174,6 +176,8 @@ public interface PracticeService {
      */
     List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId);
 
+    Knowledge loadKnowledge(Integer knowledgeId);
+
     /**
      * 学习知识点
      * @param practicePlanId 练习id
@@ -200,5 +204,14 @@ public interface PracticeService {
      * @param commentId 评论id
      */
     void deleteComment(Integer commentId);
+
+
+    /**
+     * 根据应用练习
+     * @param applicationId
+     * @param openId
+     * @return
+     */
+    ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId, String openId);
 
 }

@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
+import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.util.page.Page;
 
@@ -18,6 +19,8 @@ public interface PracticeDiscussService {
      * @param repliedId 回复的讨论id
      * */
     void discuss(String openid, Integer warmupPracticeId, String comment, Integer repliedId);
+
+    void discussKnowledge(String openid, Integer knowledgeId, String comment, Integer repliedId);
 
     /**
      * 获取讨论内容
@@ -41,6 +44,11 @@ public interface PracticeDiscussService {
 
     /**
      * 删除评论
+     * @param discussId 讨论id
      * */
     void deleteComment(Integer discussId);
+
+    KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId);
+
+    List<KnowledgeDiscuss> loadKnowledgeDiscusses(Integer knowledgeId, Page page);
 }

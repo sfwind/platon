@@ -51,6 +51,26 @@ public class PlanController {
     @Autowired
     private MessageService messageService;
 
+    @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("选择小课")
+                .action("检查是否能够重新选择")
+                .memo(problemId.toString());
+        operationLogService.log(operationLog);
+
+        if(improvementPlan!=null){
+            LOGGER.error("planId {} is existed", improvementPlan.getId());
+            return WebUtils.error("先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
+        } else {
+            return WebUtils.success();
+        }
+    }
+
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
                                                           @PathVariable Integer problemId){
@@ -110,7 +130,6 @@ public class PlanController {
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser){
-
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
         if(improvementPlan==null){

@@ -75,4 +75,5 @@ public class CommentDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+
 }
