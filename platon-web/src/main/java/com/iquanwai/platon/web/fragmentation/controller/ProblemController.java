@@ -54,7 +54,6 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
 
-
         List<Problem> problemList = problemService.loadProblems();
         //非天使用户去除试用版小课
         if(!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())){

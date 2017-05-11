@@ -68,4 +68,19 @@ public class WarmupSubmitDao extends PracticeDBUtil {
 
         return null;
     }
+
+    public WarmupSubmit getWarmupSubmit(String openId, Integer questionId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<WarmupSubmit> h = new BeanHandler(WarmupSubmit.class);
+        try {
+            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where OpenId=? and QuestionId=?",
+                    h, openId, questionId);
+
+            return submit;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
 }

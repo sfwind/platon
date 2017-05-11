@@ -114,9 +114,15 @@ public class PracticeController {
 
     @RequestMapping("/challenge/start/{challengeId}")
     public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
-                                                                         @PathVariable Integer challengeId){
+                                                                         @PathVariable Integer challengeId,
+                                                              @RequestParam(name = "planId",required = false) Integer planId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -138,6 +144,7 @@ public class PracticeController {
                                                                @PathVariable("planId") Integer planId,
                                                                @PathVariable("challengeId") Integer challengeId,
                                                                @RequestBody SubmitDto submitDto) {
+        Assert.notNull(loginUser, "用户不能为空");
         // 先生成，之后走之前逻辑
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId, loginUser.getOpenId(), planId, true);
         Integer submitId = challengePractice.getSubmitId();
@@ -164,6 +171,7 @@ public class PracticeController {
                                                                  @PathVariable("planId") Integer planId,
                                                                  @PathVariable("applicationId") Integer applicationId,
                                                                  @RequestBody SubmitDto submitDto) {
+        Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId, loginUser.getOpenId(), planId, true);
         Integer submitId = applicationPractice.getSubmitId();
@@ -475,6 +483,7 @@ public class PracticeController {
 
     @RequestMapping(value = "/subject/desc/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadSubjectDesc(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
@@ -486,7 +495,7 @@ public class PracticeController {
 
     @RequestMapping(value = "/subject/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadSubject(LoginUser loginUser, @PathVariable("submitId") Integer submitId) {
-
+        Assert.notNull(loginUser, "用户不能为空");
         SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
         if(subjectArticle!=null){
             RiseWorkInfoDto dto = new RiseWorkInfoDto();
@@ -527,6 +536,7 @@ public class PracticeController {
 
     }
 
+    @Deprecated
     @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser,
                                                            @PathVariable Integer series){
@@ -555,6 +565,9 @@ public class PracticeController {
         }else if(result==-2){
             // 前一组未完成
             return WebUtils.error("完成之前的任务，这一组才能解锁<br> 学习和内化，都需要循序渐进哦");
+        }else if(result==-3){
+            // 小课已过期
+            return WebUtils.error("抱歉哦，课程开放期间，你未能完成前面的练习，导致这个练习无法解锁");
         }
         return WebUtils.success();
     }
@@ -576,12 +589,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> startKnowledge(LoginUser loginUser,
                                                                 @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId, improvementPlan.getProblemId());
+        List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -608,15 +616,9 @@ public class PracticeController {
     @RequestMapping("/knowledge/learn/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
                                                               @PathVariable Integer practicePlanId){
-
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
         practiceService.learnKnowledge(practicePlanId);
-        planService.checkPlanComplete(improvementPlan.getId());
+        planService.checkPlanComplete(practicePlanId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("知识点")
@@ -631,6 +633,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> requestComment(LoginUser loginUser,
                                                               @PathVariable Integer moduleId,
                                                               @PathVariable Integer submitId){
+        Assert.notNull(loginUser, "用户不能为空");
         boolean result = practiceService.requestComment(submitId, moduleId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -649,11 +652,6 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser,
                                                               @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
         practiceService.deleteComment(commentId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -661,6 +659,7 @@ public class PracticeController {
                 .function("评论")
                 .action("删除评论")
                 .memo(commentId.toString());
+        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 
@@ -669,7 +668,6 @@ public class PracticeController {
                                                                @PathVariable Integer knowledgeId,
                                                                @PathVariable Integer offset){
         Assert.notNull(loginUser, "用户不能为空");
-
         Page page = new Page();
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
         page.setPage(offset);
@@ -693,8 +691,7 @@ public class PracticeController {
     @RequestMapping(value = "/knowledge/discuss", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
-
-            if(discussDto.getComment()==null || discussDto.getComment().length()>300){
+        if(discussDto.getComment()==null || discussDto.getComment().length()>300){
             LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }

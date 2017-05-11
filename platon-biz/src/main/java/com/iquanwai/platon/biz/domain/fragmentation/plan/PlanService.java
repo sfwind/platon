@@ -52,9 +52,8 @@ public interface PlanService {
     /**
      * 获取知识点
      * @param knowledgeId 知识点id
-     * @param problemId 小课id
      */
-    Knowledge getKnowledge(Integer knowledgeId, Integer problemId);
+    Knowledge getKnowledge(Integer knowledgeId);
 
     /**
      * 训练计划结束
@@ -74,8 +73,9 @@ public interface PlanService {
      * 当前节练习是否可以做
      * @param series 节序号
      * @param improvementPlan 训练计划
-     * @return -1 未解锁
+     * @return -1 非会员未解锁
      * @return -2 之前系列未完成
+     * @return -3 小课已过期
      * */
     Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
 
@@ -100,7 +100,7 @@ public interface PlanService {
 
     /**
      * 判断小课是否完成,当理解练习和巩固练习都完成时,小课判定为完成
-     * @param planId 训练id
+     * @param practicePlanId 练习id
      */
-    void checkPlanComplete(Integer planId);
+    void checkPlanComplete(Integer practicePlanId);
 }

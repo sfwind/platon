@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
-import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -10,6 +9,7 @@ import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
@@ -45,8 +45,6 @@ public class PlanController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private MessageService messageService;
 
     @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
@@ -132,7 +130,6 @@ public class PlanController {
         ImprovementPlan improvementPlan;
         if(planId==null){
             improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
-            planId = improvementPlan.getId();
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -167,7 +164,6 @@ public class PlanController {
         ImprovementPlan improvementPlan;
         if(planId==null){
             improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
-            planId = improvementPlan.getId();
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -197,22 +193,10 @@ public class PlanController {
 
     @RequestMapping("/knowledge/load/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
-                                                             @PathVariable Integer knowledgeId,
-                                                             @RequestParam(required = false) Integer planId){
+                                                             @PathVariable Integer knowledgeId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-            planId = improvementPlan.getId();
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        Knowledge knowledge = planService.getKnowledge(knowledgeId, improvementPlan.getProblemId());
+        Knowledge knowledge = planService.getKnowledge(knowledgeId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("知识点")
@@ -231,7 +215,6 @@ public class PlanController {
         ImprovementPlan improvementPlan;
         if(planId==null){
             improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-            planId = improvementPlan.getId();
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -270,7 +253,6 @@ public class PlanController {
         ImprovementPlan improvementPlan;
         if(planId==null){
             improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-            planId = improvementPlan.getId();
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -350,7 +332,6 @@ public class PlanController {
         ImprovementPlan improvementPlan;
         if(planId==null){
             improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-            planId = improvementPlan.getId();
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -389,5 +370,46 @@ public class PlanController {
         dto.setOpenConsolidation(loginUser.getOpenConsolidation());
         dto.setOpenApplication(loginUser.getOpenApplication());
         return WebUtils.result(dto);
+    }
+
+    @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser,
+                                                             @PathVariable Integer series,
+                                                             @RequestParam(required = false) Integer planId){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
+            if(!improvementPlan.getRiseMember()){
+                return WebUtils.error("试用版仅能体验前三节内容 <br/> 点击右上角按钮，升级正式版吧");
+            }
+        }
+        Integer result = planService.checkPractice(series, improvementPlan);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("训练校验")
+                .action("训练开始校验")
+                .memo(series.toString());
+        operationLogService.log(operationLog);
+        if(result==-1){
+            // 前一组已完成 这一组未解锁
+            // 会员都会解锁，未解锁应该都是非会员
+            return WebUtils.error("该内容为付费内容，只有会员可以查看");
+        }else if(result==-2){
+            // 前一组未完成
+            return WebUtils.error("完成之前的任务，这一组才能解锁<br> 学习和内化，都需要循序渐进哦");
+        }else if(result==-3){
+            // 小课已过期
+            return WebUtils.error("抱歉哦，课程开放期间，你未能完成前面的练习，导致这个练习无法解锁");
+        }
+        return WebUtils.success();
     }
 }
