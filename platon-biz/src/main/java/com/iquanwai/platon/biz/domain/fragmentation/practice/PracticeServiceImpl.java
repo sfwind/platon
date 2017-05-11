@@ -77,7 +77,8 @@ public class PracticeServiceImpl implements PracticeService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<WarmupPractice> getWarmupPractice(Integer problemId, Integer practicePlanId){
+    @Override
+    public List<WarmupPractice> getWarmupPractices(Integer practicePlanId) {
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if(practicePlan!=null) {
@@ -92,7 +93,7 @@ public class PracticeServiceImpl implements PracticeService {
                 }else if(warmupPractice.getDifficulty()==3){
                     warmupPractice.setScore(PointRepo.HARD_SCORE);
                 }
-                Knowledge knowledge = getKnowledge(problemId, warmupPractice.getKnowledgeId());
+                Knowledge knowledge = getKnowledge(warmupPractice.getKnowledgeId());
                 warmupPractice.setKnowledge(knowledge);
                 warmupPractices.add(warmupPractice);
             }
@@ -101,17 +102,30 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds) {
-        return warmupSubmitDao.getWarmupSubmit(planId, questionIds);
+    public List<WarmupSubmit> getWarmupSubmit(Integer practicePlanId, List<Integer> questionIds) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if(practicePlan==null){
+            logger.error("{} not existed", practicePlanId);
+            return Lists.newArrayList();
+        }
+
+        return warmupSubmitDao.getWarmupSubmit(practicePlan.getPlanId(), questionIds);
+    }
+
+    @Override
+    public WarmupSubmit getWarmupSubmit(String openid, Integer questionId) {
+        return warmupSubmitDao.getWarmupSubmit(openid, questionId);
     }
 
     @Override
     public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
-                                             Integer planId, String openid) throws AnswerException{
+                                             String openid) throws AnswerException{
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
         Integer point = 0;
         warmupResult.setTotal(warmupPracticeList.size());
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        Integer planId = practicePlan.getPlanId();
         for(WarmupPractice userAnswer:warmupPracticeList){
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = cacheService.getWarmupPractice(userAnswer.getId());
@@ -141,16 +155,15 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setOpenid(openid);
             warmupSubmitDao.insert(warmupSubmit);
         }
-        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
-        if(practicePlan!=null && practicePlan.getStatus() == 0) {
+        if(practicePlan.getStatus() == 0) {
             practicePlanDao.complete(practicePlan.getId());
         }
         improvementPlanDao.updateWarmupComplete(planId);
         pointRepo.risePoint(planId, point);
+        //TODO:和risePoint合并
+        pointRepo.riseCustomerPoint(openid, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
-        pointRepo.riseCustomerPoint(openid, point);
-
 
         return warmupResult;
     }
@@ -545,14 +558,14 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId) {
+    public List<Knowledge> loadKnowledges(Integer practicePlanId) {
         List<Knowledge> knowledges = Lists.newArrayList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
 
         String practiceId = practicePlan.getPracticeId();
         String[] knowledgeIds = practiceId.split(",");
-        for(String knowledgeId:knowledgeIds){
-            Knowledge knowledge = getKnowledge(problemId, Integer.valueOf(knowledgeId));
+        for (String knowledgeId : knowledgeIds) {
+            Knowledge knowledge = getKnowledge(Integer.valueOf(knowledgeId));
             knowledges.add(knowledge);
         }
         return knowledges;
@@ -563,9 +576,9 @@ public class PracticeServiceImpl implements PracticeService {
         return cacheService.getKnowledge(knowledgeId);
     }
 
-    private Knowledge getKnowledge(Integer problemId, Integer knowledgeId) {
+    private Knowledge getKnowledge(Integer knowledgeId) {
         Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledge.getId(), problemId);
+        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledge.getId());
         if(warmupPractice!=null) {
             knowledge.setExample(cacheService.getWarmupPractice(warmupPractice.getId()));
         }

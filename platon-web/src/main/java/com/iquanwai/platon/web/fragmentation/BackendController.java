@@ -50,7 +50,7 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/mark", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser,@RequestBody MarkDto markDto) {
+    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser, @RequestBody MarkDto markDto) {
         OperationLog operationLog = OperationLog.create().openid(loginUser == null ? null : loginUser.getOpenId())
                 .module(markDto.getModule())
                 .function(markDto.getFunction())

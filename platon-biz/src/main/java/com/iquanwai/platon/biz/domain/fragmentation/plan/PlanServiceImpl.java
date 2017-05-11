@@ -173,7 +173,8 @@ public class PlanServiceImpl implements PlanService {
             // 判断是否是付费用户 || 获取前一节训练
             if(riseMember || improvementPlan.getRiseMember() || series <= ConfigUtils.preStudySerials()) {
                 List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
-                if (isDone(prePracticePlans)) {
+                //前一节必做练习已完成且小课非关闭状态
+                if (isDone(prePracticePlans) && improvementPlan.getStatus()!=ImprovementPlan.CLOSE) {
                     unlock(runningPractice, improvementPlan);
                 }
             }
@@ -302,7 +303,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
         if(practice.getKnowledge()== null) {
-            Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId(), practicePlan.getPlanId());
+            Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId());
             practice.setKnowledge(knowledge);
         }
         return practice;
@@ -328,42 +329,6 @@ public class PlanServiceImpl implements PlanService {
         return runningPractice;
     }
 
-    private List<PracticePlan> pickRunningPractice(List<PracticePlan> practicePlans, ImprovementPlan improvementPlan) {
-        Assert.notNull(improvementPlan, "训练计划不能为空");
-        Assert.notNull(practicePlans, "练习计划不能为空");
-        List<PracticePlan> runningPractice = Lists.newArrayList();
-        PracticePlan challengePractice = practicePlanDao.loadChallengePractice(improvementPlan.getId());
-        //如果有解锁钥匙,找到第一节未完成的练习,如果没有解锁钥匙,找到最后一节已解锁的练习
-        //未完成的练习
-        List<PracticePlan> incompletePractice = getFirstIncompletePractice(practicePlans);
-
-        if(CollectionUtils.isNotEmpty(incompletePractice)){
-            PracticePlan practicePlan = incompletePractice.get(0);
-            if(!practicePlan.getUnlocked()){
-                // 查看这个未完成的练习是否是会员练习
-//                if(improvementPlan.getKeycnt()>0) {
-                if (improvementPlan.getRiseMember() || practicePlan.getSeries() <= 3) {
-                    unlock(incompletePractice, improvementPlan);
-                    runningPractice.addAll(incompletePractice);
-                } else {
-                    runningPractice.addAll(getLastUnlockPractice(practicePlans));
-                }
-            }else{
-                runningPractice.addAll(incompletePractice);
-            }
-        }else{
-            runningPractice.addAll(getLastUnlockPractice(practicePlans));
-        }
-        if(CollectionUtils.isNotEmpty(runningPractice)){
-            //第一节增加小目标,其余时间不显示小目标
-            PracticePlan plan = runningPractice.get(0);
-            if(plan.getSeries()==1) {
-                runningPractice.add(challengePractice);
-            }
-        }
-
-        return runningPractice;
-    }
     //获取第一节未完成的练习
     private List<PracticePlan> getFirstIncompletePractice(List<PracticePlan> practicePlans) {
         Assert.notNull(practicePlans, "练习计划不能为空");
@@ -416,7 +381,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Knowledge getKnowledge(Integer knowledgeId, Integer problemId){
+    public Knowledge getKnowledge(Integer knowledgeId){
         //小目标的knowledgeId=null
         if(knowledgeId==null){
             Knowledge knowledge = new Knowledge();
@@ -425,7 +390,7 @@ public class PlanServiceImpl implements PlanService {
             return knowledge;
         }
         Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledgeId, problemId);
+        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledgeId);
         if(warmupPractice!=null) {
             warmupPractice = cacheService.getWarmupPractice(warmupPractice.getId());
             knowledge.setExample(warmupPractice);
@@ -524,9 +489,14 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
         if (isDone(prePracticePlans)) {
             List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);
-            //未解锁返回-1
+
             for (PracticePlan practicePlan : practicePlans) {
                 if (!practicePlan.getUnlocked()) {
+                    //已过期返回-3
+                    if(improvementPlan.getStatus()==ImprovementPlan.CLOSE){
+                        return -3;
+                    }
+                    //未付费返回-1
                     return -1;
                 }
             }
@@ -556,8 +526,9 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void checkPlanComplete(Integer planId) {
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+    public void checkPlanComplete(Integer practicePlanId) {
+        PracticePlan plan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(plan.getPlanId());
         boolean complete = true;
         for(PracticePlan practicePlan:practicePlans){
             if(practicePlan.getType()==PracticePlan.KNOWLEDGE ||
@@ -571,7 +542,7 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         if(complete){
-            improvementPlanDao.updateCompleteTime(planId);
+            improvementPlanDao.updateCompleteTime(plan.getPlanId());
         }
     }
 }
