@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -20,8 +19,6 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Autowired
     private ProfileDao profileDao;
-    @Autowired
-    private FollowUserDao followUserDao;
     @Autowired
     private PointRepo pointRepo;
 

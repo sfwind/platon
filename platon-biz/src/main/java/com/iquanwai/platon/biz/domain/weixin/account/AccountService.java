@@ -73,4 +73,8 @@ public interface AccountService {
     void reloadRegion();
 
     List<EventWall> getEventWall();
+
+    Region loadProvinceByName(String name);
+
+    Region loadCityByName(String name);
 }
