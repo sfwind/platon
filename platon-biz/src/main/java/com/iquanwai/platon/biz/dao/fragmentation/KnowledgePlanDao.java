@@ -16,6 +16,7 @@ import java.sql.SQLException;
  * Created by justin on 16/12/11.
  */
 @Repository
+@Deprecated
 public class KnowledgePlanDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 

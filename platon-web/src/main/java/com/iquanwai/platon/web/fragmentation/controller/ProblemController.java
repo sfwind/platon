@@ -120,41 +120,6 @@ public class ProblemController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping(value = "/select", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> selectProblems(LoginUser loginUser,
-                                                              @RequestBody ProblemIdListDto problemIdListDto){
-        Assert.notNull(loginUser, "用户不能为空");
-        problemService.saveProblems(problemIdListDto.getProblemIdList(), loginUser.getOpenId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
-                .function("选择问题")
-                .action("选择问题")
-                .memo(StringUtils.join(problemIdListDto.getProblemIdList(),","));
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
-
-    @RequestMapping("/load/mine")
-    public ResponseEntity<Map<String, Object>> loadMyProblems(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        List<ProblemPlan> problemPlans = problemService.loadProblems(loginUser.getOpenId());
-        problemPlans.stream().forEach(problemList -> {
-            String problem = problemService.getProblemContent(problemList.getProblemId());
-            problemList.setProblem(problem);
-            //openid置为0
-            problemList.setOpenid(null);
-        });
-        ProblemListDto problemListDto = new ProblemListDto();
-        problemListDto.setProblemList(problemPlans);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
-                .function("选择我的问题")
-                .action("选择待解决问题页");
-        operationLogService.log(operationLog);
-        return WebUtils.result(problemListDto);
-    }
-
 
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){

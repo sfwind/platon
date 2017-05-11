@@ -17,6 +17,7 @@ import java.util.List;
  * Created by justin on 16/12/4.
  */
 @Repository
+@Deprecated
 public class ProblemKnowledgeMapDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
