@@ -67,6 +67,16 @@ public class IndexController {
             }
         }
 
+        if(ConfigUtils.isDevelopment()){
+            //如果不在白名单中,直接403报错
+            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getOpenId());
+            if(!result){
+                response.sendRedirect("/403.jsp");
+                return null;
+            }
+        }
+
+
         return courseView(request, account);
     }
 

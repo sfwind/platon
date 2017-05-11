@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
@@ -70,4 +71,6 @@ public interface AccountService {
 
 
     void reloadRegion();
+
+    List<EventWall> getEventWall();
 }

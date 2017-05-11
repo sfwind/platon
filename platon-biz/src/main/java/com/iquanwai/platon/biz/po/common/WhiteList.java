@@ -13,4 +13,6 @@ public class WhiteList {
 
     //碎片化练习
     public final static String FRAG_PRACTICE = "FRAG_PRACTICE";
+    public final static String TEST = "TEST";
+
 }
