@@ -134,4 +134,50 @@ public class ProfileDao extends DBUtil {
 
         return Lists.newArrayList();
     }
+
+    public boolean submitPersonalCenterProfile(Profile profile) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=? where Openid=?";
+        try {
+            run.update(updateSql,
+                    profile.getIndustry(),
+                    profile.getFunction(),
+                    profile.getWorkingLife(),
+                    profile.getCity(),
+                    profile.getProvince(),
+                    profile.getOpenid());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
+    public void completeProfile(String openId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE Profile SET IsFull = 1 where Openid = ?";
+        try {
+            runner.update(sql, openId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public Boolean submitPersonalProfile(Profile account) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile Set MobileNo=?, Email=?, Industry=?, Function=?, WorkingLife=?, " +
+                "RealName=?, City=?, Province=? where Openid=?";
+        try {
+            run.update(updateSql,
+                    account.getMobileNo(), account.getEmail(),
+                    account.getIndustry(), account.getFunction(),
+                    account.getWorkingLife(), account.getRealName(),
+                    account.getCity(), account.getProvince(),
+                    account.getOpenid());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
 }
