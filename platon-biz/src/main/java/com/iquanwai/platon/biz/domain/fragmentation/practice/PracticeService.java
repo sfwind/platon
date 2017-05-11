@@ -13,24 +13,31 @@ import java.util.List;
 public interface PracticeService {
     /**
      * 获取巩固练习列表
-     * @param problemId 小课id
      * @param practicePlanId 训练组编号
      * */
-    List<WarmupPractice> getWarmupPractice(Integer problemId, Integer practicePlanId);
+    List<WarmupPractice> getWarmupPractices(Integer practicePlanId);
 
     /**
      * 获取巩固练习解析
-     * @param planId 训练id
+     * @param practicePlanId 练习id
      * @param questionIds 练习编号
      * */
-    List<WarmupSubmit> getWarmupSubmit(Integer planId, List<Integer> questionIds);
+    List<WarmupSubmit> getWarmupSubmit(Integer practicePlanId, List<Integer> questionIds);
+
+    /**
+     * 获取巩固练习解析
+     * @param openid 学员id
+     * @param questionId 问题id
+     * */
+    WarmupSubmit getWarmupSubmit(String openid, Integer questionId);
     /**
      * 回答巩固练习问题
      * @param warmupPracticeList 练习答案
-     * @param planId 训练id
+     * @param practicePlanId 练习id
+     * @param openid 学员id
      * */
     WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
-                                      Integer planId, String openid) throws AnswerException;
+                                      String openid) throws AnswerException;
 
     /**
      * 获取小目标
@@ -172,9 +179,8 @@ public interface PracticeService {
     /**
      * 根据训练id获取知识
      * @param practicePlanId 训练id
-     * @param problemId 小课id
      */
-    List<Knowledge> loadKnowledges(Integer practicePlanId, Integer problemId);
+    List<Knowledge> loadKnowledges(Integer practicePlanId);
 
     Knowledge loadKnowledge(Integer knowledgeId);
 

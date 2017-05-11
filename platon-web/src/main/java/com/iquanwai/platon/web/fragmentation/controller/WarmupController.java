@@ -75,13 +75,7 @@ public class WarmupController {
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
                                                            @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                improvementPlan.getProblemId(), practicePlanId);
+        List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractices(practicePlanId);
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -98,20 +92,15 @@ public class WarmupController {
                                                       @PathVariable Integer practicePlanId,
                                                       @RequestBody WarmupPracticeDto warmupPracticeDto){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
         WarmupResult warmupResult;
         try {
             warmupResult = practiceService.answerWarmupPractice(
                     warmupPracticeDto.getPractice(), practicePlanId,
-                    improvementPlan.getId(), loginUser.getOpenId());
+                    loginUser.getOpenId());
         } catch (AnswerException e) {
             return WebUtils.error("您已做完这套练习");
         }
-        planService.checkPlanComplete(improvementPlan.getId());
+        planService.checkPlanComplete(practicePlanId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -126,16 +115,10 @@ public class WarmupController {
     public ResponseEntity<Map<String, Object>> analysisWarmup(LoginUser loginUser,
                                                               @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractice(
-                improvementPlan.getProblemId(), practicePlanId);
+        List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractices(practicePlanId);
         List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         // 获取用户提交
-        List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);
+        List<WarmupSubmit> submits = practiceService.getWarmupSubmit(practicePlanId, questionIds);
         setUserChoices(warmupPracticeList, submits);
         // 获取讨论信息
         Page page = new Page();
@@ -199,18 +182,15 @@ public class WarmupController {
     public ResponseEntity<Map<String, Object>> newAnalysisWarmup(LoginUser loginUser,
                                                                  @PathVariable Integer practiceId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
         WarmupPractice warmupPractice = practiceService.getWarmupPractice(practiceId);
         List<WarmupPractice> warmupPracticeList = Lists.newArrayList();
         warmupPracticeList.add(warmupPractice);
         List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         // 获取用户提交
-        List<WarmupSubmit> submits = practiceService.getWarmupSubmit(improvementPlan.getId(), questionIds);
-        setUserChoices(warmupPracticeList, submits);
+        WarmupSubmit submit = practiceService.getWarmupSubmit(loginUser.getOpenId(), practiceId);
+        List<WarmupSubmit> warmupSubmits = Lists.newArrayList();
+        warmupSubmits.add(submit);
+        setUserChoices(warmupPracticeList, warmupSubmits);
         // 获取讨论信息
         Page page = new Page();
         page.setPage(1);
@@ -232,7 +212,6 @@ public class WarmupController {
                                                                @PathVariable Integer warmupPracticeId,
                                                                @PathVariable Integer offset){
         Assert.notNull(loginUser, "用户不能为空");
-
         Page page = new Page();
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
         page.setPage(offset);
