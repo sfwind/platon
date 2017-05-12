@@ -412,4 +412,21 @@ public class PlanController {
         }
         return WebUtils.success();
     }
+
+    @RequestMapping("/chapter/list")
+    public ResponseEntity<Map<String, Object>> chapterList(LoginUser loginUser,@RequestParam(required = false) Integer planId) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("章节")
+                .action("查询章节列表")
+                .memo(planId != null ? planId.toString() : null);
+        operationLogService.log(operationLog);
+        ImprovementPlan plan = null;
+        if (planId == null) {
+            plan = planService.getRunningPlan(loginUser.getOpenId());
+        } else {
+            plan = planService.getPlan(planId);
+        }
+        return WebUtils.result(planService.getChapterList(plan));
+    }
 }

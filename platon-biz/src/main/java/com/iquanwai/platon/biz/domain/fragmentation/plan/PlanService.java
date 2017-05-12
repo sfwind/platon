@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -48,6 +49,8 @@ public interface PlanService {
      * @param planId 训练计划id
      */
     ImprovementPlan getPlan(Integer planId);
+
+    List<ProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
      * 获取知识点

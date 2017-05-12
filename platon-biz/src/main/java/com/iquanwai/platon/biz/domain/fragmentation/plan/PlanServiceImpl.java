@@ -228,6 +228,36 @@ public class PlanServiceImpl implements PlanService {
 //        improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
     }
 
+    @Override
+    public List<ProblemSchedule> getChapterList(ImprovementPlan plan) {
+        Assert.notNull(plan, "训练计划不能为空");
+        List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(plan.getProblemId());
+        problemSchedules.sort((o1, o2) -> {
+            if(!o1.getChapter().equals(o2.getChapter())){
+                return o1.getChapter()-o2.getChapter();
+            }
+            return o1.getSection()-o2.getSection();
+        });
+        problemSchedules.forEach(item->{
+            Integer knowledgeId = item.getKnowledgeId();
+            //章序号
+            Integer chapter = item.getChapter();
+            //节序号
+            Integer section = item.getSection();
+
+            Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
+            if(knowledge!=null){
+                item.setChapterStr("第"+chapter+"章 "+knowledge.getStep());
+                item.setSectionStr(chapter + "." + section + " " + knowledge.getKnowledge());
+            } else {
+                logger.error("缺少知识点,{}", knowledgeId);
+                item.setChapterStr("缺少知识点");
+                item.setSectionStr("缺少知识点");
+            }
+        });
+        return problemSchedules;
+    }
+
 
     private void setTitleInfo(ImprovementPlan improvementPlan, int series, Integer problemId) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
