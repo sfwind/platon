@@ -1,7 +1,6 @@
-package com.iquanwai.platon.web.personalCenter.dto;
+package com.iquanwai.platon.web.personal.dto;
 
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by nethunder on 2017/2/4.

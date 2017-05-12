@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.personalCenter;
+package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -13,7 +13,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
-import com.iquanwai.platon.web.personalCenter.dto.*;
+import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;

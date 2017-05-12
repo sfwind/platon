@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.personalCenter.dto;
+package com.iquanwai.platon.web.personal.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

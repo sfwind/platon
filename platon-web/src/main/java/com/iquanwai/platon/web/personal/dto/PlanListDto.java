@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.personalCenter.dto;
+package com.iquanwai.platon.web.personal.dto;
 
 import com.iquanwai.platon.biz.po.common.MemberType;
 import lombok.Data;
