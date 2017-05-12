@@ -167,9 +167,6 @@ public class CustomerController {
         Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
         list.setRiseId(profile.getRiseId());
         list.setRiseMember(profile.getRiseMember());
-        if (profile.getRiseMember()) {
-
-        }
         return WebUtils.result(list);
     }
 
