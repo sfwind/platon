@@ -432,9 +432,12 @@ public class PlanController {
         operationLogService.log(operationLog);
         ImprovementPlan plan = null;
         if (planId == null) {
-            plan = planService.getRunningPlan(loginUser.getOpenId());
+            plan = planService.getLatestPlan(loginUser.getOpenId());
         } else {
             plan = planService.getPlan(planId);
+        }
+        if (plan == null) {
+            return WebUtils.error(null);
         }
         List<ProblemSchedule> chapterList = planService.getChapterList(plan);
         Map<Integer,ChapterDto> filterChapter = Maps.newHashMap();
