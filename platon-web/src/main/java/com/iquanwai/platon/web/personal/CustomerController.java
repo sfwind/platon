@@ -67,17 +67,21 @@ public class CustomerController {
         return WebUtils.result(accountService.getEventWall());
     }
 
-    @RequestMapping(value = "/rise", method = RequestMethod.GET)
+    @RequestMapping(value = "/account", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadRiseInfo(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
                 .function("RISE")
-                .action("查询rise信息");
+                .action("查询帐号信息");
         operationLogService.log(operationLog);
         Profile profile = profileService.getProfile(loginUser.getOpenId());
         RiseDto riseDto = new RiseDto();
-        riseDto.setPoint(profile.getPoint());
+        riseDto.setRiseId(profile.getRiseId());
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getOpenId());
+        if(riseMember!=null){
+            riseDto.setMemberType(riseMember.getName());
+        }
         return WebUtils.result(riseDto);
     }
 
@@ -134,6 +138,11 @@ public class CustomerController {
         RegionDto regionDto = new RegionDto();
         regionDto.setProvinceList(provinces.stream().map(item -> new AreaDto(item.getId() + "", item.getName(), item.getParentId() + "")).collect(Collectors.toList()));
         regionDto.setCityList(cities.stream().map(item -> new AreaDto(item.getId() + "", item.getName(), item.getParentId() + "")).collect(Collectors.toList()));
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("地区信息")
+                .action("加载地区信息");
+        operationLogService.log(operationLog);
         return WebUtils.result(regionDto);
     }
 
@@ -167,18 +176,8 @@ public class CustomerController {
         Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
         list.setRiseId(profile.getRiseId());
         list.setRiseMember(profile.getRiseMember());
+        list.setPoint(profile.getPoint());
         return WebUtils.result(list);
-    }
-
-    @RequestMapping("/feedback/open")
-    public ResponseEntity<Map<String,Object>> openFeedBack(LoginUser loginUser){
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("个人中心")
-                .function("帮助")
-                .action("打开帮助页面");
-        operationLogService.log(operationLog);
-        return WebUtils.success();
     }
 
     @RequestMapping("/member")

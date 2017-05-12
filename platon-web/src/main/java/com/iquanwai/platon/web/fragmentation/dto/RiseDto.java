@@ -7,5 +7,6 @@ import lombok.Data;
  */
 @Data
 public class RiseDto {
-    private Integer point;
+    private String riseId;
+    private String memberType;
 }

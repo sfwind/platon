@@ -15,4 +15,5 @@ public class PlanListDto {
     private List<PlanDto> donePlans;
     private Boolean riseMember;
     private MemberType memberType;
+    private Integer point;
 }
