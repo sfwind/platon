@@ -245,8 +245,8 @@ public class PlanServiceImpl implements PlanService {
 
             Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
             if(knowledge!=null){
-                item.setChapterStr("第"+chapter+"章 "+knowledge.getStep());
-                item.setSectionStr(chapter + "." + section + " " + knowledge.getKnowledge());
+                item.setChapterStr(knowledge.getStep());
+                item.setSectionStr(knowledge.getKnowledge());
             } else {
                 logger.error("缺少知识点,{}", knowledgeId);
                 item.setChapterStr("缺少知识点");
