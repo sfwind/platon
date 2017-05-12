@@ -445,18 +445,19 @@ public class PlanServiceImpl implements PlanService {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
         templateMessage.setTouser(plan.getOpenid());
-//        templateMessage.setUrl("");
+        // templateMessage.setUrl("");
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         Problem problem = cacheService.getProblem(plan.getProblemId());
         templateMessage.setData(data);
 
-        data.put("first",new TemplateMessage.Keyword("太棒了！你已完成以下小课，并获得了"+plan.getPoint()+"积分\n"));
+        data.put("first", new TemplateMessage.Keyword("太棒了！你已完成这个小课，并获得了" + plan.getPoint()
+                + "积分，打败了" + completeCheck(plan).getRight() + "%的Riser\n"));
+
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
-//        data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
-//                "是不是想到一起了→→→ （跳转调查链接）"));
-        data.put("remark",new TemplateMessage.Keyword("\n应用练习/小课论坛PC端永久开放，完成仍然加积分：www.iquanwai.com/community"));
-
+        // data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
+        //        "是不是想到一起了→→→ （跳转调查链接）"));
+        data.put("remark",new TemplateMessage.Keyword("\n微信和网页端的小课论坛和应用训练，仍可以继续补充和答题哦。有想法记得分享，和大家一起成长吧\n"));
 
         templateMessageService.sendMessage(templateMessage);
     }
