@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.common.customer;
+package com.iquanwai.platon.biz.dao.common;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
 import org.springframework.stereotype.Repository;

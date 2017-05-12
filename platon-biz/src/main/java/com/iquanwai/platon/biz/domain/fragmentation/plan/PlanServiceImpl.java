@@ -31,8 +31,6 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
-    private ProblemPlanDao problemPlanDao;
-    @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
     private NotifyMessageDao notifyMessageDao;
@@ -224,7 +222,7 @@ public class PlanServiceImpl implements PlanService {
             improvementPlan.setAlertMsg(doneApps.getRight());
         }
 
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+//        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
 //        improvementPlan.setCompleteSeries(completeSeriesCount(practicePlans));
     }
 
@@ -269,17 +267,19 @@ public class PlanServiceImpl implements PlanService {
             return o1.getSection()-o2.getSection();
         });
         //获取课程表
-        ProblemSchedule problemSchedule = problemSchedules.get(series - 1);
-        Integer knowledgeId = problemSchedule.getKnowledgeId();
-        //章序号
-        Integer chapter = problemSchedule.getChapter();
-        //节序号
-        Integer section = problemSchedule.getSection();
+        if(problemSchedules.size()>series - 1) {
+            ProblemSchedule problemSchedule = problemSchedules.get(series - 1);
+            Integer knowledgeId = problemSchedule.getKnowledgeId();
+            //章序号
+            Integer chapter = problemSchedule.getChapter();
+            //节序号
+            Integer section = problemSchedule.getSection();
 
-        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        if(knowledge!=null){
-            improvementPlan.setChapter("第"+chapter+"章 "+knowledge.getStep());
-            improvementPlan.setSection(chapter + "." + section + " " + knowledge.getKnowledge());
+            Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
+            if (knowledge != null) {
+                improvementPlan.setChapter("第" + chapter + "章 " + knowledge.getStep());
+                improvementPlan.setSection(chapter + "." + section + " " + knowledge.getKnowledge());
+            }
         }
     }
 
@@ -461,8 +461,6 @@ public class PlanServiceImpl implements PlanService {
 //        }
         //解锁所有应用练习
 //        practicePlanDao.unlockApplicationPractice(planId);
-        //更新待完成的小课状态
-        problemPlanDao.updateStatus(plan.getOpenid(), plan.getProblemId(), 2);
         //发送完成通知
         if(status == ImprovementPlan.CLOSE) {
             sendCloseMsg(plan);

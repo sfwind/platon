@@ -19,6 +19,7 @@ public class RiseMember {
 
     private String startTime; // 非DB字段，addTime
     private String endTime; // 非DB字段，expireDate
+    private String name; //非DB字段
 
     public static final int ELITE = 3;
 }

@@ -7,7 +7,7 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
-import com.iquanwai.platon.biz.domain.common.customer.EventWallDao;
+import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.EventWall;
@@ -21,6 +21,7 @@ import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -323,5 +324,33 @@ public class AccountServiceImpl implements AccountService {
             return o2.getAddTime().before(o1.getAddTime()) ? 1 : -1;
         });
         return eventWalls;
+    }
+
+    @Override
+    public Region loadProvinceByName(String name) {
+        Region result = null;
+        if (provinceList != null) {
+            for (Region province : provinceList) {
+                if (StringUtils.equals(province.getName(), name)) {
+                    result = province;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Region loadCityByName(String name) {
+        Region result = null;
+        if (cityList != null) {
+            for (Region city : cityList) {
+                if (StringUtils.equals(city.getName(), name)) {
+                    result = city;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 }
