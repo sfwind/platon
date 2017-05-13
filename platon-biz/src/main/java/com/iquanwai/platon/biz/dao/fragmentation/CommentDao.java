@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -22,14 +23,19 @@ import java.util.List;
 public class CommentDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+
+    // RepliedId RepliedOpenId RepliedComment RepliedDel
     public int insert(Comment comment) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, Device) " +
-                "VALUES (?,?,?,?,?,?)";
+        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, RepliedId," +
+                "RepliedOpenId, RepliedComment, RepliedDel, Device) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?)";
         try {
             Long id = run.insert(insertSql, new ScalarHandler<>(),
                     comment.getModuleId(),comment.getType(), comment.getReferencedId(),
-                    comment.getCommentOpenId(), comment.getContent(),comment.getDevice());
+                    comment.getCommentOpenId(), comment.getContent(), comment.getRepliedId(),
+                    comment.getRepliedOpenId(), comment.getRepliedComment(), comment.getRepliedDel()
+                    ,comment.getDevice());
 
             return id.intValue();
         } catch (SQLException e) {
