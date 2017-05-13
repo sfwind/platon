@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.WarmupPractice;

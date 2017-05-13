@@ -11,7 +11,7 @@ import java.util.List;
  */
 @Data
 public class Practice {
-    private Knowledge knowledge;
+//    private Knowledge knowledge;
     private Integer type;
     private Integer status;
     private Boolean unlocked;

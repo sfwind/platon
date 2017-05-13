@@ -165,41 +165,6 @@ public class PlanController {
         return WebUtils.result(improvementPlan);
     }
 
-    @RequestMapping("/history/load/{series}")
-    public ResponseEntity<Map<String, Object>> loadHistoryPlan(LoginUser loginUser, @PathVariable Integer series,
-                                                               @RequestParam(required = false) Integer planId){
-
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
-
-        if(improvementPlan==null){
-            return WebUtils.result(null);
-        }
-        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series, loginUser.getRiseMember());
-        // openid置为null
-        improvementPlan.setOpenid(null);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练计划")
-                .function("开始训练")
-                .action("加载历史训练")
-                .memo(improvementPlan.getId()+"");
-        operationLogService.log(operationLog);
-        if(result==-1){
-            return WebUtils.error(211,null);
-        }else if(result==-2){
-            return WebUtils.error(212,null);
-        } else if(result==-3){
-            return WebUtils.error(213, improvementPlan);
-        }
-        return WebUtils.result(improvementPlan);
-    }
-
-
     @RequestMapping("/knowledge/load/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
                                                              @PathVariable Integer knowledgeId){

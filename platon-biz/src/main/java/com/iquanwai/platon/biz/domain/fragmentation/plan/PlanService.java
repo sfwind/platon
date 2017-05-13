@@ -19,14 +19,6 @@ public interface PlanService {
     void buildPlanDetail(ImprovementPlan improvementPlan);
 
     /**
-     * 构建详细的某节训练计划
-     * @param improvementPlan 训练计划
-     * @param series 训练节号
-     * @return 0-已组装,-1-已到最后一节
-     */
-    Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series, Boolean riseMember);
-
-    /**
      * 获取学员进行中的训练
      * @param openid 学员id
      */
@@ -50,6 +42,10 @@ public interface PlanService {
      */
     ImprovementPlan getPlan(Integer planId);
 
+    /**
+     * 获取章节信息
+     * @param plan 训练计划
+     */
     List<ProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
