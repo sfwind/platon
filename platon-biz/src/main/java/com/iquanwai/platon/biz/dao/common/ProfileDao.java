@@ -31,7 +31,7 @@ public class ProfileDao extends DBUtil {
 
     public Profile queryByOpenId(String openId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<Profile> h = new BeanHandler(Profile.class);
+        ResultSetHandler<Profile> h = new BeanHandler<>(Profile.class);
 
         try {
             return run.query("SELECT * FROM Profile where Openid=?", h, openId);
