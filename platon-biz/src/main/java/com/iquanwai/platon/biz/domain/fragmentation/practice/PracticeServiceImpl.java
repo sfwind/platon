@@ -473,12 +473,8 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setDevice(Constants.Device.MOBILE);
-        if (replyedId != null) {
-            Comment replyedComment = commentDao.load(Comment.class, replyedId);
+        if(replyedId != null) {
             comment.setRepliedId(replyedId);
-            comment.setRepliedOpenId(replyedComment.getCommentOpenId());
-            comment.setRepliedComment(replyedComment.getContent());
-            comment.setRepliedDel(replyedComment.getDel());
         }
         int id = commentDao.insert(comment);
         return new MutablePair<>(id,"评论成功");

@@ -16,13 +16,7 @@ public class Comment {
     private String commentOpenId;  //评论人
     private String content; //评论内容
     private Integer del; //是否删除
-
-    private Integer RepliedId; //被回复的讨论id
-    private String RepliedOpenId; //被回复用户的openid
-    private String RepliedComment; //被回复的内容
-    private Integer RepliedDel; //被回复的内容是否被删除
-
+    private Integer RepliedId; //回复id
     private Integer device; // 提交设备
     private Date AddTime; //添加时间
-
 }

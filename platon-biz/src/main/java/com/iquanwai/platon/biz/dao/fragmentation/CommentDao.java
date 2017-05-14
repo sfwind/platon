@@ -23,25 +23,20 @@ import java.util.List;
 public class CommentDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-
-    // RepliedId RepliedOpenId RepliedComment RepliedDel
     public int insert(Comment comment) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, RepliedId," +
-                "RepliedOpenId, RepliedComment, RepliedDel, Device) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?)";
+        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, RepliedId, Device) " +
+                "VALUES (?,?,?,?,?,?,?)";
         try {
             Long id = run.insert(insertSql, new ScalarHandler<>(),
-                    comment.getModuleId(),comment.getType(), comment.getReferencedId(),
+                    comment.getModuleId(), comment.getType(), comment.getReferencedId(),
                     comment.getCommentOpenId(), comment.getContent(), comment.getRepliedId(),
-                    comment.getRepliedOpenId(), comment.getRepliedComment(), comment.getRepliedDel()
-                    ,comment.getDevice());
+                    comment.getDevice());
 
             return id.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-
         return -1;
     }
 
@@ -75,7 +70,6 @@ public class CommentDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update Comment set Del=1 where Id=?";
         try {
-
             runner.update(sql, id);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
