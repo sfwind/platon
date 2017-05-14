@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -133,8 +134,10 @@ public class PlanController {
     }
 
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request,
                                                          @RequestParam(required = false) Integer planId){
+        LOGGER.info(request.getHeader("User-Agent"));
+
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
