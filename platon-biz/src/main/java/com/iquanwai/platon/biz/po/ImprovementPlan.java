@@ -40,6 +40,7 @@ public class ImprovementPlan {
     private Boolean openRise; //非db字段 是否打开过rise
     private Integer deadline; //非db字段 离截止日期天数
 
+    private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

@@ -2,7 +2,10 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -32,8 +35,6 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private NotifyMessageDao notifyMessageDao;
-    @Autowired
     private CacheService cacheService;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
@@ -46,6 +47,23 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
+        //解锁检查
+        Integer series = improvementPlan.getCompleteSeries();
+        Integer planId = improvementPlan.getId();
+        //非会员只能解锁3章,已过期不能解锁
+        if((!improvementPlan.getRiseMember() && series>=3)){
+            improvementPlan.setLockedStatus(-2);
+        }else if(improvementPlan.getStatus() == ImprovementPlan.CLOSE){
+            improvementPlan.setLockedStatus(-3);
+        }else{
+            //解锁下一组
+            List<PracticePlan> nextSeriesPracticePlans = practicePlanDao.loadBySeries(planId,
+                    series+1);
+            if(CollectionUtils.isNotEmpty(nextSeriesPracticePlans)){
+                unlock(nextSeriesPracticePlans, planId);
+            }
+        }
+        //写入字段
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
@@ -69,6 +87,10 @@ public class PlanServiceImpl implements PlanService {
         chapters.stream().forEach(chapter -> {
             chapter.getSections().stream().forEach(section -> {
                 List<Practice> practices = practiceMap.get(section.getSeries());
+                //添加小目标
+                if (section.getSeries() == 1) {
+                    practices.add(buildPractice(practicePlanDao.loadChallengePractice(improvementPlan.getId())));
+                }
                 section.setPractices(practices);
                 sections.add(section);
             });
@@ -118,8 +140,8 @@ public class PlanServiceImpl implements PlanService {
         return problemSchedules;
     }
 
-    private void unlock(List<PracticePlan> runningPractice, ImprovementPlan improvementPlan) {
-        Assert.notNull(improvementPlan, "训练计划不能为空");
+    private void unlock(List<PracticePlan> runningPractice, Integer planId) {
+        Assert.notNull(planId, "训练计划不能为空");
         Assert.notNull(runningPractice, "练习计划不能为空");
         //如果练习未解锁,则解锁练习
         runningPractice.stream().filter(practicePlan -> !practicePlan.getUnlocked()).forEach(practicePlan -> {
@@ -127,8 +149,7 @@ public class PlanServiceImpl implements PlanService {
             practicePlanDao.unlock(practicePlan.getId());
         });
         Integer progress = runningPractice.get(0).getSeries();
-        improvementPlanDao.updateProgress(improvementPlan.getId(), progress - 1);
-        improvementPlan.setCompleteSeries(progress - 1);
+        improvementPlanDao.updateProgress(planId, progress - 1);
     }
 
     //映射
@@ -164,22 +185,6 @@ public class PlanServiceImpl implements PlanService {
 
     private boolean isOptional(Integer type) {
         return type==PracticePlan.CHALLENGE || type==PracticePlan.APPLICATION;
-    }
-
-    private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
-        Assert.notNull(improvementPlan, "训练计划不能为空");
-        //如果节数<=0,直接返回空数据
-        if(series<=0){
-            return Lists.newArrayList();
-        }
-        List<PracticePlan> runningPractice = Lists.newArrayList();
-        List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
-        runningPractice.addAll(practicePlanList);
-        //第一节增加小目标,其余时间不显示小目标
-        if(series==1) {
-            runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
-        }
-        return runningPractice;
     }
 
     @Override
@@ -280,18 +285,32 @@ public class PlanServiceImpl implements PlanService {
         return new ImmutablePair<>(true, percent);
     }
 
+    private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
+        //如果节数<=0,直接返回空数据
+        if(series<=0){
+            return Lists.newArrayList();
+        }
+        List<PracticePlan> runningPractice = Lists.newArrayList();
+        List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
+        runningPractice.addAll(practicePlanList);
+        //第一节增加小目标,其余时间不显示小目标
+        if(series==1) {
+            runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
+        }
+        return runningPractice;
+    }
+
     @Override
     public Integer checkPractice(Integer series, ImprovementPlan improvementPlan) {
-        //设置当前小节
-        improvementPlanDao.updateCurrentSeries(improvementPlan.getId(), series);
         //当前第一节返回0
         if (series == 1) {
             return 0;
         }
         //获取前一节训练
-        List<PracticePlan> prePracticePlans = pickPracticeBySeries(improvementPlan, series - 1);
+        List<PracticePlan> prePracticePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series - 1);
         if (isDone(prePracticePlans)) {
-            List<PracticePlan> practicePlans = pickPracticeBySeries(improvementPlan, series);
+            List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
 
             for (PracticePlan practicePlan : practicePlans) {
                 if (!practicePlan.getUnlocked()) {
@@ -304,8 +323,6 @@ public class PlanServiceImpl implements PlanService {
                         return -1;
                     }
                 }
-                //解锁
-                unlock(practicePlans, improvementPlan);
             }
             return 0;
         }
@@ -339,17 +356,24 @@ public class PlanServiceImpl implements PlanService {
             logger.error("{} is invalid", practicePlanId);
             return;
         }
-        List<PracticePlan> seriesPracticePlans = practicePlanDao.loadBySeries(practice.getPlanId(), practice.getSeries());
+        Integer planId = practice.getPlanId();
+        Integer series = practice.getSeries();
+        List<PracticePlan> seriesPracticePlans = practicePlanDao.loadBySeries(planId, series);
         //当节是否完成
         boolean complete = isDone(seriesPracticePlans);
         if(complete){
-            improvementPlanDao.updateProgress(practice.getPlanId(), practice.getSeries());
+            improvementPlanDao.updateProgress(planId, practice.getSeries());
         }
         //所有练习是否完成
-        List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(practice.getPlanId());
+        List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         complete = isDone(allPracticePlans);
         if(complete){
-            improvementPlanDao.updateCompleteTime(practice.getPlanId());
+            improvementPlanDao.updateCompleteTime(planId);
         }
+    }
+
+    @Override
+    public void markPlan(Integer series, Integer planId) {
+        improvementPlanDao.updateCurrentSeries(planId, series);
     }
 }

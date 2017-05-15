@@ -102,4 +102,11 @@ public interface PlanService {
      * @param practicePlanId 练习id
      */
     void checkPlanComplete(Integer practicePlanId);
+
+    /**
+     * 记录用户当前所进行的小节序号
+     * @param planId 训练id
+     * @param series 第几小节
+     */
+    void markPlan(Integer series, Integer planId);
 }

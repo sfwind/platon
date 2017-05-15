@@ -19,6 +19,7 @@ public class EventWall {
     private Date addTime;
     private Date updateTime;
     private Boolean del;
+    private Boolean showTime; //是否显示时间
 
     private String startStr;
     private String endStr;
