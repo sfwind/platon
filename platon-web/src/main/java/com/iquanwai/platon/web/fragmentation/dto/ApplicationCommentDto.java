@@ -4,7 +4,7 @@ import lombok.Data;
 
 /**
  * Created by xfduan on 2017/5/12.
- * 应用训练评论
+ * 应用训练评论回复
  */
 @Data
 public class ApplicationCommentDto {
@@ -14,6 +14,7 @@ public class ApplicationCommentDto {
     private String discussTime;
     private Integer priority;
     private String comment;
+    private Integer repliedId;
     private String repliedComment;
     private String repliedName;
     private Integer warmupPracticdId;
