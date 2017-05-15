@@ -14,7 +14,6 @@ public class ApplicationCommentDto {
     private String discussTime;
     private Integer priority;
     private String comment;
-    private Integer repliedId;
     private String repliedComment;
     private String repliedName;
     private Integer warmupPracticdId;

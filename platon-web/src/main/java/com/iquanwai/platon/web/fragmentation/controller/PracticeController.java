@@ -312,7 +312,7 @@ public class PracticeController {
                 .action("移动端加载评论")
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
-        List<ApplicationCommentDto> comments = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
+        List<ApplicationCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
             ApplicationCommentDto dto = new ApplicationCommentDto();
             if (account != null) {
@@ -325,6 +325,8 @@ public class PracticeController {
                 dto.setRepliedName(accountService.getAccount(item.getRepliedOpenId(),false).getNickname());
                 dto.setSignature(account.getSignature());
                 dto.setIsMine(loginUser.getOpenId().equals(item.getCommentOpenId()));
+                dto.setRepliedComment(item.getRepliedComment());
+                dto.setRepliedName(accountService.getAccount(item.getCommentOpenId(), false).getNickname());
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
             } else {
@@ -333,7 +335,7 @@ public class PracticeController {
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
         RefreshListDto<ApplicationCommentDto> dto = new RefreshListDto<>();
-        dto.setList(comments);
+        dto.setList(commentDtos);
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);
     }
@@ -397,9 +399,9 @@ public class PracticeController {
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
         if(result.getLeft() > 0) {
-            return WebUtils.result("success");
+            return WebUtils.result("回复成功");
         } else {
-            return WebUtils.result("fail");
+            return WebUtils.result("回复失败");
         }
     }
 

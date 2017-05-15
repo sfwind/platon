@@ -410,7 +410,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content, Integer replyedId) {
+    public Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content, Integer repliedId) {
         boolean isAsst = false;
         Profile profile = accountService.getProfile(openId, false);
         //是否是助教评论
@@ -473,9 +473,9 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setDevice(Constants.Device.MOBILE);
-        if (replyedId != null) {
-            Comment repliedComment = commentDao.load(Comment.class, replyedId);
-            comment.setRepliedId(replyedId);
+        if (repliedId != null) {
+            Comment repliedComment = commentDao.load(Comment.class, repliedId);
+            comment.setRepliedId(repliedId);
             comment.setRepliedOpenId(repliedComment.getCommentOpenId());
             comment.setRepliedComment(repliedComment.getContent());
             comment.setRepliedDel(repliedComment.getDel());
