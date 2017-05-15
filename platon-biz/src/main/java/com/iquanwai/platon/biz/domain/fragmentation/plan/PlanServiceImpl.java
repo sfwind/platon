@@ -56,6 +56,7 @@ public class PlanServiceImpl implements PlanService {
         }else if(improvementPlan.getStatus() == ImprovementPlan.CLOSE){
             improvementPlan.setLockedStatus(-3);
         }else{
+            //解锁下一组
             List<PracticePlan> nextSeriesPracticePlans = practicePlanDao.loadBySeries(planId,
                     series+1);
             if(CollectionUtils.isNotEmpty(nextSeriesPracticePlans)){
@@ -86,6 +87,10 @@ public class PlanServiceImpl implements PlanService {
         chapters.stream().forEach(chapter -> {
             chapter.getSections().stream().forEach(section -> {
                 List<Practice> practices = practiceMap.get(section.getSeries());
+                //添加小目标
+                if (section.getSeries() == 1) {
+                    practices.add(buildPractice(practicePlanDao.loadChallengePractice(improvementPlan.getId())));
+                }
                 section.setPractices(practices);
                 sections.add(section);
             });
@@ -278,6 +283,22 @@ public class PlanServiceImpl implements PlanService {
         }
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
         return new ImmutablePair<>(true, percent);
+    }
+
+    private List<PracticePlan> pickPracticeBySeries(ImprovementPlan improvementPlan, Integer series) {
+        Assert.notNull(improvementPlan, "训练计划不能为空");
+        //如果节数<=0,直接返回空数据
+        if(series<=0){
+            return Lists.newArrayList();
+        }
+        List<PracticePlan> runningPractice = Lists.newArrayList();
+        List<PracticePlan> practicePlanList = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
+        runningPractice.addAll(practicePlanList);
+        //第一节增加小目标,其余时间不显示小目标
+        if(series==1) {
+            runningPractice.add(practicePlanDao.loadChallengePractice(improvementPlan.getId()));
+        }
+        return runningPractice;
     }
 
     @Override
