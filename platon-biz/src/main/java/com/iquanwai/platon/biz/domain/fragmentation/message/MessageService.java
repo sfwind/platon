@@ -26,6 +26,8 @@ public interface MessageService {
      * */
     List<NotifyMessage> getNotifyMessage(String openid, Page page);
 
+    Integer loadOldCount(String openid);
+
     /**
      * 阅读消息
      * @param id 消息id
