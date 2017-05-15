@@ -422,4 +422,30 @@ public class PlanController {
         });
         return WebUtils.result(filterChapter.values());
     }
+
+    @RequestMapping(value = "/mark/{series}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser,
+                                                             @PathVariable Integer series,
+                                                             @RequestParam(required = false) Integer planId){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        planService.markPlan(series, improvementPlan.getId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("训练首页")
+                .action("记录训练小结")
+                .memo(series.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
 }
