@@ -316,14 +316,6 @@ public class PracticeController {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
             ApplicationCommentDto dto = new ApplicationCommentDto();
             if (account != null) {
-                // dto.setId(item.getId());
-                // dto.setContent(item.getContent());
-                // dto.setUpTime(DateUtils.parseDateToString(item.getAddTime()));
-                // dto.setUpName(account.getNickname());
-                // dto.setHeadPic(account.getHeadimgurl());
-                // dto.setRole(account.getRole());
-                // dto.setSignature(account.getSignature());
-                // dto.setIsMine(item.getCommentOpenId().equals(loginUser.getOpenId()));
                 dto.setId(item.getId());
                 dto.setName(account.getNickname());
                 dto.setAvatar(account.getHeadimgurl());
@@ -386,22 +378,24 @@ public class PracticeController {
 
     }
 
-
+    /**
+     * 移动应用练习评论回复
+     * @param loginUser
+     * @param moduleId
+     * @param submitId
+     * @param dto
+     * @return
+     */
     @RequestMapping(value = "/comment/reply/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> commentReply(LoginUser loginUser,
             @PathVariable("moduleId") Integer moduleId,
             @PathVariable("submitId") Integer submitId,
             @RequestBody ApplicationCommentDto dto) {
-        System.out.println("~~~~~~~~~~~~~~~~~~~");
-        System.out.println(moduleId);
-        System.out.println(submitId);
-        System.out.println(dto.getId());
-        System.out.println(dto.getComment());
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
-        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getComment(), dto.getId());
+        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
         if(result.getLeft() > 0) {
             return WebUtils.result("success");
         } else {

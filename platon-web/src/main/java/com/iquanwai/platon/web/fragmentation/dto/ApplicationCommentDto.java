@@ -21,4 +21,5 @@ public class ApplicationCommentDto {
     private String signature;
     private Boolean isMine;
     private Integer repliedDel;
+    private Integer repliedId;
 }
