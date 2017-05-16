@@ -2,10 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -24,6 +21,7 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/4.
@@ -42,6 +40,8 @@ public class PlanServiceImpl implements PlanService {
     private ProblemScheduleDao problemScheduleDao;
     @Autowired
     private TemplateMessageService templateMessageService;
+    @Autowired
+    private ProblemScoreDao problemScoreDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -67,7 +67,17 @@ public class PlanServiceImpl implements PlanService {
         improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate())+1);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
-        //写入非db字段
+        improvementPlan.setHasProblemScore(
+                problemScoreDao.userPorblemScoreCount(improvementPlan.getOpenid(), improvementPlan.getProblemId())>0);
+        // 所有的综合练习是否完成
+        List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
+        // 拿到未完成的综合训练
+        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType()==PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0)
+                .collect(Collectors.toList());
+        // 未完成未空则代表全部完成
+        improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
+
+        //组装小节数据
         buildSections(improvementPlan);
 
     }
