@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -16,14 +17,6 @@ public interface PlanService {
      * @param improvementPlan 训练计划
      */
     void buildPlanDetail(ImprovementPlan improvementPlan);
-
-    /**
-     * 构建详细的某节训练计划
-     * @param improvementPlan 训练计划
-     * @param series 训练节号
-     * @return 0-已组装,-1-已到最后一节
-     */
-    Integer buildSeriesPlanDetail(ImprovementPlan improvementPlan, Integer series, Boolean riseMember);
 
     /**
      * 获取学员进行中的训练
@@ -48,6 +41,12 @@ public interface PlanService {
      * @param planId 训练计划id
      */
     ImprovementPlan getPlan(Integer planId);
+
+    /**
+     * 获取章节信息
+     * @param plan 训练计划
+     */
+    List<ProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
      * 获取知识点
@@ -103,4 +102,11 @@ public interface PlanService {
      * @param practicePlanId 练习id
      */
     void checkPlanComplete(Integer practicePlanId);
+
+    /**
+     * 记录用户当前所进行的小节序号
+     * @param planId 训练id
+     * @param series 第几小节
+     */
+    void markPlan(Integer series, Integer planId);
 }

@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.po;
 
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
 import lombok.Data;
 
 import java.util.Date;
@@ -20,7 +20,9 @@ public class ImprovementPlan {
     private Date completeTime; // 完成时间
     private Integer status; //执行状态（1-正在进行, 2-已结束, 3-已过期）
     private Integer point; //积分
+    @Deprecated
     private Integer warmupComplete; //巩固练习完成数量
+    @Deprecated
     private Integer applicationComplete; //应用练习完成数量
     @Deprecated
     private Integer total; //任务总数
@@ -34,20 +36,12 @@ public class ImprovementPlan {
 
     // ----------------- 非db字段------------------
     private Problem problem; //非db字段 问题
-    private List<Practice> practice; //非db字段
-    private Integer length; //非db字段 总时长
-    private Integer deadline; //非db字段 离截止日期天数
-    private Boolean summary; //非db字段 是否显示任务总结
-    private Integer series; //非db字段 当前节号
+    private List<Section> sections; //非db字段
     private Boolean openRise; //非db字段 是否打开过rise
-    private Boolean newMessage; //非db字段 是否有新消息
-    private String chapter; // 非db字段 章名称
-    private String section; // 非db字段 节名称
-    // 首页弹窗信息
-    private Boolean doneAllIntegrated; //非db字段 是否完成所有综合练习
-    private Boolean doneCurSeriesApplication; //非db字段 是否完成当日所有应用练习
-    private String alertMsg; //非db字段 弹窗内容
-
+    private Integer deadline; //非db字段 离截止日期天数
+    private Boolean hasProblemScore; //是否已打分
+    private Boolean doneAllIntegrated; //是否做完所有综合练习
+    private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

@@ -190,4 +190,9 @@ public class ConfigUtils {
 	public static Boolean isDevelopment(){
 		return getBooleanValue("development");
 	}
+
+	public static Integer getProfileFullScore(){
+		return getIntValue("profile.full.score");
+	}
+
 }

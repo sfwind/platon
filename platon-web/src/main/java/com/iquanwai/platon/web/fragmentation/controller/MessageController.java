@@ -92,6 +92,18 @@ public class MessageController {
         return WebUtils.result(notifyMessageDto);
     }
 
+    @RequestMapping("/old/count/load")
+    public ResponseEntity<Map<String, Object>> loadUnreadCount(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("消息")
+                .function("老消息")
+                .action("查看条数");
+        operationLogService.log(operationLog);
+        Integer count = messageService.loadOldCount(loginUser.getOpenId());
+        return WebUtils.result(count);
+    }
+
     @RequestMapping(value = "/read/{id}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> readMessage(LoginUser loginUser, @PathVariable Integer id){
         Assert.notNull(loginUser, "用户不能为空");
@@ -102,6 +114,19 @@ public class MessageController {
                 .function("打开消息中心")
                 .action("读消息")
                 .memo(id.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value="/old/get")
+    public ResponseEntity<Map<String,Object>> readAll(LoginUser loginUser){
+        Assert.notNull(loginUser, "用户不能为空");
+        messageService.mark(loginUser.getOpenId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("消息中心")
+                .function("老消息")
+                .action("已知");
         operationLogService.log(operationLog);
         return WebUtils.success();
     }

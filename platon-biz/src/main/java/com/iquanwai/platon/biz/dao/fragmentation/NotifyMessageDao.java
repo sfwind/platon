@@ -50,6 +50,18 @@ public class NotifyMessageDao extends PracticeDBUtil {
         return -1;
     }
 
+    public Integer loadOldCount(String openid){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select count(*) from NotifyMessage where ToUser=? and Old = 0";
+        try{
+            ResultSetHandler<Long> h = new ScalarHandler<>();
+            return runner.query(sql, h, openid).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public void insert(NotifyMessage message){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into NotifyMessage(Message, FromUser, ToUser, Url, SendTime, IsRead, Old)" +

@@ -17,6 +17,7 @@ import java.util.List;
  * Created by justin on 16/12/8.
  */
 @Repository
+@Deprecated
 public class ProblemPlanDao extends PracticeDBUtil{
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -40,7 +41,7 @@ public class ProblemPlanDao extends PracticeDBUtil{
 
     public List<ProblemPlan> loadProblems(String openid){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<ProblemPlan>> h = new BeanListHandler(ProblemPlan.class);
+        ResultSetHandler<List<ProblemPlan>> h = new BeanListHandler<>(ProblemPlan.class);
         String sql = "SELECT * FROM ProblemPlan where Openid=? and Status=0";
         try {
             return run.query(sql, h, openid);

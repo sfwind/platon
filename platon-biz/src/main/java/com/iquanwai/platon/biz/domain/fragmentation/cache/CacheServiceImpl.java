@@ -123,15 +123,14 @@ public class CacheServiceImpl implements CacheService {
         return warmupPractice;
     }
 
-    public List<Chapter> loadRoadMap(Integer problemId) {
+    private List<Chapter> loadRoadMap(Integer problemId) {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
         Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         //按节组合成一组知识点
         problemSchedules.stream().forEach(problemSchedule -> {
-            if(problemScheduleMap.get(problemSchedule.getChapter())==null){
-                problemScheduleMap.put(problemSchedule.getChapter(), Lists.newArrayList());
-            }
-            problemScheduleMap.get(problemSchedule.getChapter()).add(problemSchedule);
+            List<ProblemSchedule> problemScheduleList = problemScheduleMap.getOrDefault(problemSchedule.getChapter(), Lists.newArrayList());
+            problemScheduleList.add(problemSchedule);
+            problemScheduleMap.put(problemSchedule.getChapter(), problemScheduleList);
         });
 
         List<Chapter> chapterList = Lists.newArrayList();
@@ -142,13 +141,16 @@ public class CacheServiceImpl implements CacheService {
             List<ProblemSchedule> scheduleList = problemScheduleMap.get(chapterSequence);
             List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection()-o2.getSection())
                     .map(problemSchedule -> {
+                        //构建小节
                         Section section = new Section();
                         Knowledge knowledge = getKnowledge(problemSchedule.getKnowledgeId());
-                        section.setKnowledge(knowledge);
+                        section.setKnowledgeId(knowledge.getId());
                         section.setName(knowledge.getKnowledge());
                         section.setSection(problemSchedule.getSection());
                         section.setSeries(problemSchedule.getSeries());
                         section.setIntegrated(Knowledge.isReview(problemSchedule.getKnowledgeId()));
+                        section.setChapterName(knowledge.getStep());
+                        section.setChapter(problemSchedule.getChapter());
                         return section;
                     })
                     .collect(Collectors.toList());
@@ -156,7 +158,7 @@ public class CacheServiceImpl implements CacheService {
             chapter.setSections(sectionList);
             chapter.setChapter(chapterSequence);
             if(CollectionUtils.isNotEmpty(sectionList)) {
-                chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledge().getId()));
+                chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledgeId()));
             }
             chapterList.add(chapter);
         });
@@ -175,6 +177,6 @@ public class CacheServiceImpl implements CacheService {
             return "";
         }
         //步骤
-        return sectionList.get(0).getKnowledge().getStep();
+        return sectionList.get(0).getChapterName();
     }
 }

@@ -1,5 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -7,13 +9,16 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
+import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,7 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -155,41 +164,6 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(improvementPlan);
     }
-
-    @RequestMapping("/history/load/{series}")
-    public ResponseEntity<Map<String, Object>> loadHistoryPlan(LoginUser loginUser, @PathVariable Integer series,
-                                                               @RequestParam(required = false) Integer planId){
-
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
-
-        if(improvementPlan==null){
-            return WebUtils.result(null);
-        }
-        Integer result = planService.buildSeriesPlanDetail(improvementPlan, series, loginUser.getRiseMember());
-        // openid置为null
-        improvementPlan.setOpenid(null);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练计划")
-                .function("开始训练")
-                .action("加载历史训练")
-                .memo(improvementPlan.getId()+"");
-        operationLogService.log(operationLog);
-        if(result==-1){
-            return WebUtils.error(211,null);
-        }else if(result==-2){
-            return WebUtils.error(212,null);
-        } else if(result==-3){
-            return WebUtils.error(213, improvementPlan);
-        }
-        return WebUtils.result(improvementPlan);
-    }
-
 
     @RequestMapping("/knowledge/load/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
@@ -410,6 +384,68 @@ public class PlanController {
             // 小课已过期
             return WebUtils.error("抱歉哦，课程开放期间，你未能完成前面的练习，导致这个练习无法解锁");
         }
+        return WebUtils.success();
+    }
+
+    @RequestMapping("/chapter/list")
+    public ResponseEntity<Map<String, Object>> chapterList(LoginUser loginUser,@RequestParam(required = false) Integer planId) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("章节")
+                .action("查询章节列表")
+                .memo(planId != null ? planId.toString() : null);
+        operationLogService.log(operationLog);
+        ImprovementPlan plan = null;
+        if (planId == null) {
+            plan = planService.getLatestPlan(loginUser.getOpenId());
+        } else {
+            plan = planService.getPlan(planId);
+        }
+        if (plan == null) {
+            return WebUtils.error(null);
+        }
+        List<ProblemSchedule> chapterList = planService.getChapterList(plan);
+        Map<Integer,ChapterDto> filterChapter = Maps.newHashMap();
+        chapterList.forEach(item->{
+            ChapterDto chapterDto = filterChapter.computeIfAbsent(item.getChapter(), (chapterId) -> {
+                ChapterDto dto = new ChapterDto();
+                dto.setChapterId(chapterId);
+                dto.setChapter(item.getChapterStr());
+                dto.setSectionList(Lists.newArrayList());
+                return dto;
+            });
+            SectionDto sectionDto = new SectionDto();
+            sectionDto.setSeries(item.getSeries());
+            sectionDto.setSection(item.getSectionStr());
+            sectionDto.setSectionId(item.getSection());
+            chapterDto.getSectionList().add(sectionDto);
+        });
+        return WebUtils.result(filterChapter.values());
+    }
+
+    @RequestMapping(value = "/mark/{series}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser,
+                                                             @PathVariable Integer series,
+                                                             @RequestParam(required = false) Integer planId){
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan;
+        if(planId==null){
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        }else{
+            improvementPlan = planService.getPlan(planId);
+        }
+        if(improvementPlan==null){
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
+        planService.markPlan(series, improvementPlan.getId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("训练首页")
+                .action("记录训练小结")
+                .memo(series.toString());
+        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 }
