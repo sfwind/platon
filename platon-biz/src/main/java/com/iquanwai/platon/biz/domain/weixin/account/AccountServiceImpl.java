@@ -7,17 +7,21 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
+import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +34,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/8/10.
@@ -54,6 +59,8 @@ public class AccountServiceImpl implements AccountService {
     private List<Region> cityList;
     @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private EventWallDao eventWallDao;
 
     private Map<String, Integer> userRoleMap = Maps.newHashMap();
 
@@ -292,5 +299,58 @@ public class AccountServiceImpl implements AccountService {
     public void reloadRegion(){
         provinceList = regionDao.loadAllProvinces();
         cityList = regionDao.loadAllCities();
+    }
+
+    @Override
+    public List<EventWall> getEventWall() {
+        List<EventWall> eventWalls = eventWallDao.loadAll(EventWall.class).stream().filter(item -> !item.getDel()).collect(Collectors.toList());
+        eventWalls.forEach(item->{
+            Date startTime = item.getStartTime();
+            Date endTime = item.getEndTime();
+            item.setStartStr(DateUtils.parseDateToFormat6(startTime));
+
+            if (DateUtils.isSameDate(startTime, endTime)) {
+                item.setEndStr(DateUtils.parseDateToTimeFormat(endTime));
+            } else {
+                item.setEndStr(DateUtils.parseDateToFormat6(endTime));
+            }
+        });
+        eventWalls.sort((o1, o2) -> {
+            if (o1.getAddTime() == null) {
+                return 1;
+            } else if (o2.getAddTime() == null) {
+                return -1;
+            }
+            return o2.getAddTime().before(o1.getAddTime()) ? 1 : -1;
+        });
+        return eventWalls;
+    }
+
+    @Override
+    public Region loadProvinceByName(String name) {
+        Region result = null;
+        if (provinceList != null) {
+            for (Region province : provinceList) {
+                if (StringUtils.equals(province.getName(), name)) {
+                    result = province;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Region loadCityByName(String name) {
+        Region result = null;
+        if (cityList != null) {
+            for (Region city : cityList) {
+                if (StringUtils.equals(city.getName(), name)) {
+                    result = city;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 }

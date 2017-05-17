@@ -50,7 +50,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public ImprovementPlan loadRunningPlan(String openid){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and CloseDate>=? and Status in (1,2)";
+        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and CloseDate>=? and Status in (1,2) and Del=0";
         ResultSetHandler<ImprovementPlan> h = new BeanHandler<>(ImprovementPlan.class);
         try {
             ImprovementPlan improvementPlan =runner.query(sql, h, openid, DateUtils.parseDateToString(new Date()));
@@ -63,7 +63,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public List<ImprovementPlan> loadAllPlans(String openid){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=?";
+        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and Del=0";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         try {
             List<ImprovementPlan> improvementPlans =runner.query(sql, h, openid);
@@ -76,7 +76,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public ImprovementPlan loadPlanByProblemId(String openid, Integer problemId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and ProblemId=?";
+        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and ProblemId=? and Del=0";
         ResultSetHandler<ImprovementPlan> h = new BeanHandler<>(ImprovementPlan.class);
         try {
             ImprovementPlan improvementPlan =runner.query(sql, h, openid, problemId);
@@ -89,7 +89,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public ImprovementPlan getLastPlan(String openid){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? order by id desc";
+        String sql = "SELECT * FROM ImprovementPlan WHERE Openid=? and Del=0 order by id desc";
         ResultSetHandler<ImprovementPlan> h = new BeanHandler<>(ImprovementPlan.class);
         try {
             ImprovementPlan improvementPlan =runner.query(sql, h, openid);
@@ -98,19 +98,6 @@ public class ImprovementPlanDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
-    }
-
-    public List<ImprovementPlan> loadAllRunningPlan(){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE Status in (1,2)";
-        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
-        try {
-            List<ImprovementPlan> improvementPlans =runner.query(sql, h);
-            return improvementPlans;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
     }
 
     public void updateStatus(Integer planId, Integer status){

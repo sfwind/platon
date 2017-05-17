@@ -56,7 +56,7 @@ public class RestfulHelper {
                 }
                 return body;
             } catch (Exception e) {
-                logger.error("execute " + requestUrl + " error", e.getCause().getMessage());
+                logger.error("execute " + requestUrl + " error", e);
             }
         }
         return "";
@@ -79,7 +79,7 @@ public class RestfulHelper {
                 logger.info("body:{}", body);
                 return body;
             } catch (Exception e) {
-                logger.error(e.getCause().getMessage(), e);
+                logger.error(e.getLocalizedMessage(), e);
             }
         }
         return "";

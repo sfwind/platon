@@ -585,42 +585,6 @@ public class PracticeController {
 
     }
 
-    @Deprecated
-    @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser,
-                                                           @PathVariable Integer series){
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
-        if(improvementPlan==null){
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
-            if(!improvementPlan.getRiseMember()){
-                return WebUtils.error("试用版仅能体验前三节内容 <br/> 点击右上角按钮，升级正式版吧");
-            }
-        }
-        Integer result = planService.checkPractice(series, improvementPlan);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("训练校验")
-                .action("训练开始校验")
-                .memo(series.toString());
-        operationLogService.log(operationLog);
-        if(result==-1){
-            // 前一组已完成 这一组未解锁
-            // 会员都会解锁，未解锁应该都是非会员
-            return WebUtils.error("该内容为付费内容，只有会员可以查看");
-        }else if(result==-2){
-            // 前一组未完成
-            return WebUtils.error("完成之前的任务，这一组才能解锁<br> 学习和内化，都需要循序渐进哦");
-        }else if(result==-3){
-            // 小课已过期
-            return WebUtils.error("抱歉哦，课程开放期间，你未能完成前面的练习，导致这个练习无法解锁");
-        }
-        return WebUtils.success();
-    }
-
     @RequestMapping(value = "/label/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadLabels(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");

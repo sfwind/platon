@@ -99,9 +99,15 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    public Integer loadOldCount(String openid) {
+        return notifyMessageDao.loadOldCount(openid);
+    }
+
+    @Override
     public void readMessage(int id) {
         notifyMessageDao.read(id);
     }
+
 
     @Override
     public void mark(String openid) {

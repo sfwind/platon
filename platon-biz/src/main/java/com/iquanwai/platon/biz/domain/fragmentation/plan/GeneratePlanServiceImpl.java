@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -29,8 +28,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class GeneratePlanServiceImpl implements GeneratePlanService {
-    @Autowired
-    private ProblemPlanDao problemPlanDao;
     @Autowired
     private CacheService cacheService;
     @Autowired
@@ -82,8 +79,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
-        //更新问题状态
-        problemPlanDao.updateStatus(openid, problemId, 1);
         //发送欢迎通知
         sendWelcomeMsg(openid, problem);
 
