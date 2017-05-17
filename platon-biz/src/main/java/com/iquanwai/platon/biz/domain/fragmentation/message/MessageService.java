@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.message;
 
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.NotifyMessage;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.page.Page;
 
 import java.util.List;
@@ -50,5 +49,19 @@ public interface MessageService {
      */
     void sendRiseTrialMessage(String openId);
 
+    /**
+     * 根据CommentId获取用户回复所在的文章内容
+     */
+    ApplicationPractice loadAppPracticeByCommentId(Integer id);
 
+    /**
+     * 根据CommentId获取相关Comment
+     */
+    List<Comment> loadRelativeComments(Integer id);
+
+    /**
+     * 根据CommentId获取对应SubjectArticle
+     * @param id Comment表中id
+     */
+    SubjectArticle loadSubjectArticleByCommentId(Integer id);
 }

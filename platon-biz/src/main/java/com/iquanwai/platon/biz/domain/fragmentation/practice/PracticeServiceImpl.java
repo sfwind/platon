@@ -658,4 +658,15 @@ public class PracticeServiceImpl implements PracticeService {
         return applicationSubmitDao.load(applicationId, openId);
     }
 
+    @Override
+    public ApplicationPractice getApplicationPracticeById(Integer id) {
+        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
+        return applicationPractice;
+    }
+
+    @Override
+    public ApplicationSubmit getApplicationSubmit(Integer id) {
+        ApplicationSubmit applicationSubmit = applicationSubmitDao.loadById(id);
+        return applicationSubmit;
+    }
 }

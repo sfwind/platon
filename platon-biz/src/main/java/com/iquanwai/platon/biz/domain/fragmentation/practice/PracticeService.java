@@ -220,4 +220,16 @@ public interface PracticeService {
      */
     ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId, String openId);
 
+
+    /**
+     * 根据ApplicationPractice中的id获取对应记录
+     * @param id 主键
+     */
+    ApplicationPractice getApplicationPracticeById(Integer id);
+
+    /**
+     * 根据Id获取ApplicationSubmit对象
+     * @param id 主键
+     */
+    ApplicationSubmit getApplicationSubmit(Integer id);
 }

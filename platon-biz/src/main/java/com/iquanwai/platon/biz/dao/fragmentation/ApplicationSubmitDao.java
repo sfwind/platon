@@ -55,6 +55,21 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return null;
     }
 
+    /**
+     * 根据ApplicationSubmit中id获取Application所有信息
+     */
+    public ApplicationSubmit loadById(Integer id) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<ApplicationSubmit> h = new BeanHandler<ApplicationSubmit>(ApplicationSubmit.class);
+        String sql = "SELECT * FROM ApplicationSubmit WHERE id = ?";
+        try {
+            return run.query(sql, h, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
     public ApplicationSubmit load(Integer applicationId, String openid){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
