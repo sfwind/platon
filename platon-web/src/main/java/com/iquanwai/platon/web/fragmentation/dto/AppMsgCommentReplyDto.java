@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
-import com.iquanwai.platon.biz.po.Comment;
 import lombok.Data;
 
 import java.util.List;

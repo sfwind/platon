@@ -58,10 +58,9 @@ public class MessageController {
         return WebUtils.result(warmupPracticeDiscuss);
     }
 
-    @RequestMapping(value = "/comment/reply/{moduleId}/{submitId}/{commentId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/comment/reply/{moduleId}/{commentId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadApplicationReplyMsg(LoginUser loginUser,
                                                                        @PathVariable Integer moduleId,
-                                                                       @PathVariable Integer submitId,
                                                                        @PathVariable Integer commentId) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
