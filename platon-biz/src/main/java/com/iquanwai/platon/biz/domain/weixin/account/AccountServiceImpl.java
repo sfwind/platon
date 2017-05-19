@@ -103,9 +103,6 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfile(String openid, boolean realTime){
         Profile profile = getProfileFromDB(openid);
         if(!realTime && profile != null){
-            if(ConfigUtils.isHttps()){
-                profile.setHeadimgurl(StringUtils.replace(profile.getHeadimgurl(), "http:", "https:"));
-            }
             return profile;
         }
         synchronized (this){
@@ -124,7 +121,7 @@ public class AccountServiceImpl implements AccountService {
 
         if(profile!=null) {
             if(profile.getHeadimgurl()!=null){
-                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https"));
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
             }
             Integer role = userRoleMap.get(profile.getOpenid());
             if (role == null) {
@@ -142,7 +139,7 @@ public class AccountServiceImpl implements AccountService {
         List<Profile> profiles = profileDao.queryAccounts(openid);
         profiles.stream().forEach(profile -> {
             if(profile.getHeadimgurl()!=null){
-                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https"));
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
             }
             Integer role = userRoleMap.get(profile.getOpenid());
             if(role==null){
