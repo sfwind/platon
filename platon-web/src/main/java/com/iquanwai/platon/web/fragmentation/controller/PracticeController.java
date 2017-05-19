@@ -17,6 +17,8 @@ import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.zookeeper.Login;
+import org.apache.zookeeper.Op;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -673,6 +675,7 @@ public class PracticeController {
 
         //清空openid
         discusses.forEach(knowledgeDiscuss -> {
+            knowledgeDiscuss.setIsMine(loginUser.getOpenId().equals(knowledgeDiscuss.getOpenid()));
             knowledgeDiscuss.setRepliedOpenid(null);
             knowledgeDiscuss.setOpenid(null);
             knowledgeDiscuss.setReferenceId(knowledgeDiscuss.getKnowledgeId());
@@ -706,6 +709,24 @@ public class PracticeController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/knowledge/discuss/del/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> deleteKnowledgeDiscuss(LoginUser loginUser, @PathVariable Integer id) {
+        int result = practiceDiscussService.deleteKnowledgeDiscussById(id);
+        String respMsg;
+        if(result > 0) {
+            respMsg = "删除成功";
+        } else {
+            respMsg = "操作失败";
+        }
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课")
+                .function("知识理解")
+                .action("删除回复")
+                .memo("KnowledgeId:" + id);
+        operationLogService.log(operationLog);
+        return WebUtils.result(respMsg);
+    }
 
     /**
      * 根据ApplicationPractice中id获取ApplicationPractice对象

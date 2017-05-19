@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import javax.management.Query;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -24,15 +25,13 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
 
     public int insert(KnowledgeDiscuss discuss){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into KnowledgeDiscuss(KnowledgeId, Openid, RepliedId, Comment, " +
-                "Priority, Del, RepliedOpenid, RepliedComment) " +
-                "values(?,?,?,?,?,?,?,?)";
+        String sql = "insert into KnowledgeDiscuss (" +
+                "KnowledgeId, Comment, Openid, Priority, RepliedId, RepliedOpenid, RepliedComment, Del) VALUES (" +
+                "?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    discuss.getKnowledgeId(), discuss.getOpenid(), discuss.getRepliedId(),
-                    discuss.getComment(), discuss.getPriority(), discuss.getDel(),
-                    discuss.getRepliedOpenid(), discuss.getRepliedComment());
-
+                    discuss.getKnowledgeId(), discuss.getComment(), discuss.getOpenid(), discuss.getPriority(), discuss.getRepliedId(),
+                    discuss.getRepliedOpenid(), discuss.getRepliedComment(), discuss.getDel());
             return result.intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -53,4 +52,22 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    /**
+     * 根据id更新该条记录的del字段
+     * @param id
+     * @return
+     */
+    public int updateDelById(Integer delValue, Integer id) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update KnowledgeDiscuss set del = ? where id = ?";
+        try {
+            int result = runner.update(sql, delValue, id);
+            return result;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
 }

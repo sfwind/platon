@@ -108,6 +108,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         fulfilDiscuss(discussesList);
         return discussesList;
     }
+    @Override
+    public Integer deleteKnowledgeDiscussById(Integer id) {
+        // 删除KnowledgeDiscuss记录，将del字段置为1
+        return knowledgeDiscussDao.updateDelById(1, id);
+    }
 
     @Override
     public Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page) {
