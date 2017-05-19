@@ -94,4 +94,13 @@ public class SubjectArticleDao extends PracticeDBUtil {
         }
     }
 
+    public void updateContent(Integer id, String content){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update SubjectArticle set Content=? where Id=?";
+        try {
+            runner.update(sql, content, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 }
