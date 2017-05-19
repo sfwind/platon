@@ -68,7 +68,7 @@ public class PlanServiceImpl implements PlanService {
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
         improvementPlan.setHasProblemScore(
-                problemScoreDao.userPorblemScoreCount(improvementPlan.getOpenid(), improvementPlan.getProblemId())>0);
+                problemScoreDao.userPorblemScoreCount(improvementPlan.getOpenid(), improvementPlan.getProblemId()) > 0);
         // 所有的综合练习是否完成
         List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
         // 拿到未完成的综合训练
@@ -134,11 +134,11 @@ public class PlanServiceImpl implements PlanService {
             }
             return o1.getSection()-o2.getSection();
         });
-        problemSchedules.forEach(item->{
+        problemSchedules.forEach(item -> {
             Integer knowledgeId = item.getKnowledgeId();
 
             Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-            if(knowledge!=null){
+            if (knowledge != null) {
                 item.setChapterStr(knowledge.getStep());
                 item.setSectionStr(knowledge.getKnowledge());
             } else {
@@ -241,22 +241,20 @@ public class PlanServiceImpl implements PlanService {
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
         //更新训练计划状态
-//        if (status == ImprovementPlan.COMPLETE) {
-//            improvementPlanDao.updatePlanComplete(planId, status);
-//        } else {
         improvementPlanDao.updateStatus(planId, status);
-//        }
         //解锁所有应用练习
 //        practicePlanDao.unlockApplicationPractice(planId);
+
+        Integer percent = improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
         //发送完成通知
         if(status == ImprovementPlan.CLOSE) {
-            sendCloseMsg(plan);
+            sendCloseMsg(plan, percent);
         }
 
-        return improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
+        return percent;
     }
 
-    private void sendCloseMsg(ImprovementPlan plan) {
+    private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
         templateMessage.setTouser(plan.getOpenid());
@@ -266,7 +264,7 @@ public class PlanServiceImpl implements PlanService {
         templateMessage.setData(data);
 
         data.put("first", new TemplateMessage.Keyword("太棒了！你已完成这个小课，并获得了" + plan.getPoint()
-                + "积分，打败了" + completeCheck(plan).getRight() + "%的Riser\n"));
+                + "积分，打败了" + percent + "%的Riser\n"));
 
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));

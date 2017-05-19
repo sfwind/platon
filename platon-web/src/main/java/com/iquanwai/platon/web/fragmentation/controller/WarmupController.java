@@ -189,7 +189,9 @@ public class WarmupController {
         // 获取用户提交
         WarmupSubmit submit = practiceService.getWarmupSubmit(loginUser.getOpenId(), practiceId);
         List<WarmupSubmit> warmupSubmits = Lists.newArrayList();
-        warmupSubmits.add(submit);
+        if(submit!=null){
+            warmupSubmits.add(submit);
+        }
         setUserChoices(warmupPracticeList, warmupSubmits);
         // 获取讨论信息
         Page page = new Page();
