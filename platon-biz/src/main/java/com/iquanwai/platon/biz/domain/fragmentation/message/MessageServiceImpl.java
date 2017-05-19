@@ -213,14 +213,6 @@ public class MessageServiceImpl implements MessageService {
         return null;
     }
 
-    @Override
-    public List<Comment> loadRelativeComments(Integer id) {
-        List<Comment> comments = Lists.newArrayList();
-        Comment comment = commentDao.load(Comment.class, id);
-        comments.add(comment);
-        return comments;
-    }
-
     private String getLikeMessage(VoteMessage voteMessage, Profile profile) {
         String message = "";
         if(voteMessage.getCount()==1){

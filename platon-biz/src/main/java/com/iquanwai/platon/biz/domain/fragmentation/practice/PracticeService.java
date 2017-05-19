@@ -129,7 +129,18 @@ public interface PracticeService {
      * @param openId 评论人
      * @param content 评论内容
      */
-    Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content, Integer replyedId);
+    Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content);
+
+    /**
+     * 回复评论
+     * @param moduleId 模块id
+     * @param referId 关联id
+     * @param openId 评论人
+     * @param content 评论内容
+     * @param repliedId 被回复评论id
+     */
+    Pair<Integer,String> replyComment(Integer moduleId, Integer referId,
+                                      String openId, String content, Integer repliedId);
 
     /*
      * 获取巩固练习
@@ -232,4 +243,10 @@ public interface PracticeService {
      * @param id 主键
      */
     ApplicationSubmit getApplicationSubmit(Integer id);
+
+    /**
+     * 根据Id获取评论
+     * @param commentId 评论id
+     */
+    Comment loadComment(Integer commentId);
 }

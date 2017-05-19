@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
@@ -10,8 +11,8 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.AppMsgCommentReplyDto;
-import com.iquanwai.platon.web.fragmentation.dto.ApplicationCommentDto;
 import com.iquanwai.platon.web.fragmentation.dto.NotifyMessageDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/2/27.
@@ -39,6 +38,8 @@ public class MessageController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private PracticeService practiceService;
 
 
     private final static int MESSAGE_PER_PAGE = 20;
@@ -70,7 +71,7 @@ public class MessageController {
         operationLogService.log(operationLog);
         AppMsgCommentReplyDto dto = new AppMsgCommentReplyDto();
         if (moduleId == 2) {
-            dto.setComments(loadRelativeComments(loginUser, commentId));
+            dto.setComment(getCommentDto(loginUser, commentId));
             // 通过commentId从ApplicationPractice数据库中读取该评论所针对的文章数据
             ApplicationPractice applicationPractice = messageService.loadAppPracticeByCommentId(commentId);
             if(applicationPractice != null) {
@@ -83,7 +84,7 @@ public class MessageController {
             return WebUtils.result(dto);
         }
         if (moduleId == 3) {
-            dto.setComments(loadRelativeComments(loginUser, commentId));
+            dto.setComment(getCommentDto(loginUser, commentId));
             SubjectArticle subjectArticle = messageService.loadSubjectArticleByCommentId(commentId);
             if(subjectArticle != null) {
                 dto.setId(subjectArticle.getId());
@@ -97,30 +98,33 @@ public class MessageController {
 
 
     /**
-     * 获取消息回复页面相关评论内容
+     * 获取消息回复页面
      * @return
      */
-    private List<ApplicationCommentDto> loadRelativeComments(LoginUser loginUser, Integer commentId) {
-        List<ApplicationCommentDto> commentDtoList = messageService.loadRelativeComments(commentId).stream().map(item -> {
-            ApplicationCommentDto commentDto = new ApplicationCommentDto();
-            Profile account = accountService.getProfile(item.getCommentOpenId(), false);
-            if(account != null) {
-                commentDto.setId(item.getId());
-                commentDto.setName(account.getNickname());
-                commentDto.setAvatar(account.getHeadimgurl());
-                commentDto.setDiscussTime(DateUtils.parseDateTimeToString(item.getAddTime()));
-                commentDto.setComment(item.getContent());
-                commentDto.setRepliedComment(item.getRepliedComment());
-                commentDto.setRepliedName(accountService.getAccount(item.getRepliedOpenId(), false).getNickname());
-                commentDto.setSignature(account.getSignature());
-                commentDto.setIsMine(loginUser.getOpenId().equals(item.getCommentOpenId()));
-                commentDto.setRepliedComment(item.getRepliedComment());
-                commentDto.setRepliedName(accountService.getAccount(item.getCommentOpenId(), false).getNickname());
-                commentDto.setRepliedDel(item.getRepliedDel());
+    private RiseWorkCommentDto getCommentDto(LoginUser loginUser, Integer commentId) {
+        Comment comment = practiceService.loadComment(commentId);
+
+        RiseWorkCommentDto commentDto = new RiseWorkCommentDto();
+        Profile account = accountService.getProfile(comment.getCommentOpenId(), false);
+        if(account != null) {
+            commentDto.setId(comment.getId());
+            commentDto.setName(account.getNickname());
+            commentDto.setAvatar(account.getHeadimgurl());
+            commentDto.setDiscussTime(DateUtils.parseDateTimeToString(comment.getAddTime()));
+            commentDto.setComment(comment.getContent());
+            commentDto.setRepliedComment(comment.getRepliedComment());
+            commentDto.setRepliedName(account.getNickname());
+            commentDto.setSignature(account.getSignature());
+            commentDto.setIsMine(loginUser.getOpenId().equals(comment.getCommentOpenId()));
+            commentDto.setRepliedComment(comment.getRepliedComment());
+            Profile repliedAccount = accountService.getProfile(comment.getRepliedOpenId(), false);
+            if(repliedAccount!=null){
+                commentDto.setRepliedName(repliedAccount.getNickname());
             }
-            return commentDto;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
-        return commentDtoList;
+            commentDto.setRepliedDel(comment.getRepliedDel());
+        }
+
+        return commentDto;
     }
 
 

@@ -57,11 +57,6 @@ public interface MessageService {
     ApplicationPractice loadAppPracticeByCommentId(Integer id);
 
     /**
-     * 根据CommentId获取相关Comment
-     */
-    List<Comment> loadRelativeComments(Integer id);
-
-    /**
      * 根据CommentId获取对应SubjectArticle
      * @param id Comment表中id
      */

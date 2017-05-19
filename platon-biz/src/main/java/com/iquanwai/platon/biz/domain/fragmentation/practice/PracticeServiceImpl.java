@@ -410,7 +410,36 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content, Integer repliedId) {
+    public Pair<Integer, String> replyComment(Integer moduleId, Integer referId, String openId,
+                                              String content, Integer repliedId) {
+        boolean isAsst = false;
+
+        Comment comment = new Comment();
+        comment.setModuleId(moduleId);
+        comment.setReferencedId(referId);
+        comment.setType(Constants.CommentType.STUDENT);
+        comment.setContent(content);
+        comment.setCommentOpenId(openId);
+        comment.setDevice(Constants.Device.MOBILE);
+        int id = commentDao.insert(comment);
+        //被回复的评论
+        Comment repliedComment = commentDao.load(Comment.class, repliedId);
+        if(repliedComment!=null && !repliedComment.getCommentOpenId().equals(openId)) {
+            String msg = "";
+            StringBuilder url = new StringBuilder("/rise/static/message/comment/reply");
+            if(moduleId == 2) {
+                msg = "评论了我的应用作业";
+            } else if(moduleId == 3) {
+                msg = "评论了我的小课分享";
+            }
+            url = url.append("?moduleId=" + moduleId + "&submitId=" + referId + "&commentId=" + id);
+            messageService.sendMessage(msg, repliedComment.getCommentOpenId(), openId, url.toString());
+        }
+        return new MutablePair<>(id,"评论成功");
+    }
+
+    @Override
+    public Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content) {
         boolean isAsst = false;
         Profile profile = accountService.getProfile(openId, false);
         //是否是助教评论
@@ -418,18 +447,7 @@ public class PracticeServiceImpl implements PracticeService {
             isAsst = Role.isAsst(profile.getRole());
         }
 
-        if (moduleId == Constants.CommentModule.CHALLENGE) {
-            ChallengeSubmit load = challengeSubmitDao.load(ChallengeSubmit.class, referId);
-            if (load == null) {
-                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
-                return new MutablePair<>(-1, "没有该文章");
-            }
-            //自己给自己评论不提醒
-            if(load.getOpenid()!=null && !load.getOpenid().equals(openId)) {
-                String url = "/rise/static/practice/challenge?id=" + load.getChallengeId();
-                messageService.sendMessage("评论了我的小目标", load.getOpenid(), openId, url);
-            }
-        } else if (moduleId == Constants.CommentModule.APPLICATION) {
+        if (moduleId == Constants.CommentModule.APPLICATION) {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
@@ -456,7 +474,7 @@ public class PracticeServiceImpl implements PracticeService {
                 return new MutablePair<>(-1, "没有该文章");
             }
             //更新助教评论状态
-            if(isAsst){
+            if (isAsst){
                 subjectArticleDao.asstFeedback(load.getId());
                 asstCoachComment(load.getOpenid(), load.getProblemId());
             }
@@ -473,13 +491,6 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setDevice(Constants.Device.MOBILE);
-        if (repliedId != null) {
-            Comment repliedComment = commentDao.load(Comment.class, repliedId);
-            comment.setRepliedId(repliedId);
-            comment.setRepliedOpenId(repliedComment.getCommentOpenId());
-            comment.setRepliedComment(repliedComment.getContent());
-            comment.setRepliedDel(repliedComment.getDel());
-        }
         int id = commentDao.insert(comment);
         return new MutablePair<>(id,"评论成功");
     }
@@ -668,5 +679,10 @@ public class PracticeServiceImpl implements PracticeService {
     public ApplicationSubmit getApplicationSubmit(Integer id) {
         ApplicationSubmit applicationSubmit = applicationSubmitDao.loadById(id);
         return applicationSubmit;
+    }
+
+    @Override
+    public Comment loadComment(Integer commentId) {
+        return commentDao.load(Comment.class, commentId);
     }
 }

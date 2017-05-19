@@ -1,10 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.message.MessageServiceImpl;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -13,7 +10,6 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -26,13 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -60,8 +50,6 @@ public class PracticeController {
     private PictureService pictureService;
     @Autowired
     private PracticeDiscussService practiceDiscussService;
-    @Autowired
-    private CommentDao commentDao;
     @Autowired
     private MessageService messageService;
 
@@ -312,9 +300,9 @@ public class PracticeController {
                 .action("移动端加载评论")
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
-        List<ApplicationCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
+        List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
-            ApplicationCommentDto dto = new ApplicationCommentDto();
+            RiseWorkCommentDto dto = new RiseWorkCommentDto();
             if (account != null) {
                 dto.setId(item.getId());
                 dto.setName(account.getNickname());
@@ -332,7 +320,7 @@ public class PracticeController {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
-        RefreshListDto<ApplicationCommentDto> dto = new RefreshListDto<>();
+        RefreshListDto<RiseWorkCommentDto> dto = new RefreshListDto<>();
         dto.setList(commentDtos);
         dto.setEnd(page.isLastPage());
         return WebUtils.result(dto);
@@ -354,7 +342,7 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
-        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getContent(), null);
+        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getComment());
         if (result.getLeft()>0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -364,10 +352,10 @@ public class PracticeController {
             operationLogService.log(operationLog);
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
             resultDto.setId(result.getLeft());
-            resultDto.setContent(dto.getContent());
-            resultDto.setUpName(loginUser.getWeixinName());
-            resultDto.setHeadPic(loginUser.getHeadimgUrl());
-            resultDto.setUpTime(DateUtils.parseDateToString(new Date()));
+            resultDto.setComment(dto.getComment());
+            resultDto.setName(loginUser.getWeixinName());
+            resultDto.setAvatar(loginUser.getHeadimgUrl());
+            resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
             resultDto.setRole(loginUser.getRole());
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
@@ -390,41 +378,38 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> commentReply(LoginUser loginUser,
             @PathVariable("moduleId") Integer moduleId,
             @PathVariable("submitId") Integer submitId,
-            @RequestBody ApplicationCommentDto dto) {
+            @RequestBody RiseWorkCommentDto dto) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
-        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
+        Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId,
+                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
         if(result.getLeft() > 0) {
-            Comment replyComment = commentDao.load(Comment.class, dto.getRepliedId());
-            System.out.println("replyComment = " + replyComment.getCommentOpenId());
-            System.out.println("loginUser.getOpenId() = " + loginUser.getOpenId());
-            if(!replyComment.getCommentOpenId().equals(loginUser.getOpenId())) {
-                String msg = "回复了我";
-                StringBuilder url = new StringBuilder("/rise/static/message/comment/reply");
-                if(moduleId == 2) {
-                    msg = "评论了我的应用作业";
-                } else if(moduleId == 3) {
-                    msg = "评论了我的小课分享";
-                }
-                url.append("?moduleId=" + moduleId + "&submitId=" + submitId + "&commentId=" + result.getLeft());
-                messageService.sendMessage(msg, replyComment.getCommentOpenId(), loginUser.getOpenId(), url.toString());
+            Comment replyComment = practiceService.loadComment(dto.getRepliedId());
+            RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
+            resultDto.setId(result.getLeft());
+            resultDto.setComment(dto.getComment());
+            resultDto.setName(loginUser.getWeixinName());
+            resultDto.setAvatar(loginUser.getHeadimgUrl());
+            resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
+            resultDto.setRole(loginUser.getRole());
+            resultDto.setSignature(loginUser.getSignature());
+            Profile profile = accountService.getProfile(replyComment.getCommentOpenId(), false);
+            if(profile!=null){
+                resultDto.setRepliedName(profile.getNickname());
             }
-            Comment newComment = commentDao.load(Comment.class, result.getLeft());
-            Profile account = accountService.getProfile(newComment.getCommentOpenId(), false);
-            ApplicationCommentDto commentDto = new ApplicationCommentDto();
-            commentDto.setId(newComment.getId());
-            commentDto.setName(account.getNickname());
-            commentDto.setAvatar(account.getHeadimgurl());
-            commentDto.setDiscussTime(DateUtils.parseDateTimeToString(newComment.getAddTime()));
-            commentDto.setComment(newComment.getContent());
-            commentDto.setRepliedComment(newComment.getRepliedComment());
-            commentDto.setRepliedName(accountService.getAccount(newComment.getRepliedOpenId(), false).getNickname());
-            commentDto.setSignature(account.getSignature());
-            commentDto.setIsMine(loginUser.getOpenId().equals(newComment.getCommentOpenId()));
-            commentDto.setRepliedDel(newComment.getRepliedDel());
-            return WebUtils.result(commentDto);
+
+            resultDto.setRepliedComment(replyComment.getContent());
+            resultDto.setIsMine(true);
+            resultDto.setRepliedDel(replyComment.getDel());
+            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                    .module("训练")
+                    .function("碎片化")
+                    .action("移动端评论回复")
+                    .memo(dto.getRepliedId().toString());
+            operationLogService.log(operationLog);
+            return WebUtils.result(resultDto);
         } else {
             return WebUtils.result("回复失败");
         }
