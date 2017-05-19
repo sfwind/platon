@@ -123,6 +123,9 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByOpenId(openid);
 
         if(profile!=null) {
+            if(profile.getHeadimgurl()!=null){
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https"));
+            }
             Integer role = userRoleMap.get(profile.getOpenid());
             if (role == null) {
                 profile.setRole(0);
@@ -138,6 +141,9 @@ public class AccountServiceImpl implements AccountService {
     public List<Profile> getProfiles(List<String> openid) {
         List<Profile> profiles = profileDao.queryAccounts(openid);
         profiles.stream().forEach(profile -> {
+            if(profile.getHeadimgurl()!=null){
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https"));
+            }
             Integer role = userRoleMap.get(profile.getOpenid());
             if(role==null){
                 profile.setRole(0);
