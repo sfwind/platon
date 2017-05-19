@@ -731,17 +731,17 @@ public class PracticeController {
     /**
      * 根据ApplicationPractice中id获取ApplicationPractice对象
      */
-    @RequestMapping(value = "/application/article/{id}/{submitId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer id, @PathVariable Integer submitId) {
+    @RequestMapping(value = "/application/article/{submitId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(id, "应用训练题库表id不能为空");
-        ApplicationPractice applicationPractice = practiceService.getApplicationPracticeById(id);
         ApplicationSubmit applicationSubmit = practiceService.getApplicationSubmit(submitId);
         AppMsgCommentReplyDto dto = new AppMsgCommentReplyDto();
-        dto.setTopic(applicationPractice.getTopic());
+        dto.setTopic(applicationSubmit.getTopic());
         dto.setDescription(applicationSubmit.getContent());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("应用练习").function("获取文章正文").memo(id.toString());
+                .module("应用练习")
+                .function("获取文章正文")
+                .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(dto);
     }

@@ -203,7 +203,7 @@ public class MessageServiceImpl implements MessageService {
     public ApplicationPractice loadAppPracticeByCommentId(Integer id) {
         Comment comment = commentDao.load(Comment.class, id);
         if(comment != null){
-            ApplicationSubmit applicationSubmit = applicationSubmitDao.loadById(comment.getReferencedId());
+            ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, comment.getReferencedId());
             if(applicationSubmit != null) {
                 ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationSubmit.getApplicationId());
                 applicationPractice.setPlanId(applicationSubmit.getPlanId());
