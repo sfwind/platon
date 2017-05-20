@@ -119,6 +119,13 @@ public class ProblemController {
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("小课列表")
+                .action("加载小课信息")
+                .memo("");
+        operationLogService.log(operationLog);
+
         return WebUtils.result(result);
     }
 
@@ -128,6 +135,13 @@ public class ProblemController {
 
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "小课分类不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("小课类别")
+                .action("加载小课类别")
+                .memo(catalogId.toString());
+        operationLogService.log(operationLog);
+
         ProblemCatalog problemCatalog = problemService.getProblemCatalog(catalogId);
 
         if (problemCatalog != null) {

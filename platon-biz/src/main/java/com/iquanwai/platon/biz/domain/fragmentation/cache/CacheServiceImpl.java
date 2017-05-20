@@ -77,8 +77,6 @@ public class CacheServiceImpl implements CacheService {
                 knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
             }
         });
-        // 缓存知识点
-        knowledgeList.stream().forEach(knowledge -> knowledgeMap.put(knowledge.getId(), knowledge));
         logger.info("knowledge init complete");
 
         // 缓存问题
