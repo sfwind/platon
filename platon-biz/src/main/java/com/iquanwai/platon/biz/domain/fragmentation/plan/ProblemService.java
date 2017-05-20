@@ -2,8 +2,8 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
-import com.iquanwai.platon.biz.po.ProblemPlan;
 import com.iquanwai.platon.biz.po.ProblemScore;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 
 import java.util.List;
 
@@ -27,6 +27,11 @@ public interface ProblemService {
      */
     List<ProblemCatalog> getProblemCatalogs();
 
+    ProblemCatalog getProblemCatalog(Integer catalogId);
+
+
+    ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId);
+
     /**
      * 给问题打分
      * @param openId 用户id
@@ -41,4 +46,7 @@ public interface ProblemService {
      * @param problemId 小课id
      */
     boolean hasProblemScore(String openId,Integer problemId);
+
+
+    Double getProblemScoreAvg(Integer problemId, Integer question);
 }

@@ -16,6 +16,9 @@ public class Problem {
     private Integer length; //训练节数
     private String description; //富文本描述
     private Integer catalogId; // 分类
+    private Integer subCatalogId; // 子目录分类
+    private String author; // 讲师
+    private Double difficultyScore;// 难度
     private String subjectDesc; //小课论坛介绍
     private String descPic; // 描述图片
     private String audio; //语音
