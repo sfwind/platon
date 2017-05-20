@@ -119,4 +119,14 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public void updateContent(Integer id, String content){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ChallengeSubmit set Content=? where Id=?";
+        try {
+            runner.update(sql, content, id);
+        }catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 }

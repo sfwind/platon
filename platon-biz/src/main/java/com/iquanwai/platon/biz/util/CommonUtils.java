@@ -154,4 +154,9 @@ public class CommonUtils {
         }
         return StringUtils.removePattern(html, "<[^>]*>");
     }
+
+    public static String replaceHttpsDomainName(String content){
+        String temp = StringUtils.replace(content, "http://www.iqycamp.com", "https://www.iqycamp.com");
+        return StringUtils.replace(temp, "http://static.iqycamp.com", "https://static.iqycamp.com");
+    }
 }

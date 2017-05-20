@@ -185,6 +185,13 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setUpdateTime(new Date());
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.CHALLENGE, submitId);
         }
+        if(submit!=null && submit.getContent()!=null){
+            String content = CommonUtils.replaceHttpsDomainName(submit.getContent());
+            if (!content.equals(submit.getContent())) {
+                submit.setContent(content);
+                challengeSubmitDao.updateContent(submit.getId(), content);
+            }
+        }
         challengePractice.setContent(submit==null?null:submit.getContent());
         challengePractice.setSubmitId(submit==null?null:submit.getId());
         challengePractice.setSubmitUpdateTime(submit==null?null:DateUtils.parseDateToString(submit.getUpdateTime()));
@@ -399,7 +406,14 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId) {
-        return applicationSubmitDao.load(applicationId);
+        return applicationSubmitDao.load(applicationId).stream().map(applicationSubmit -> {
+            String content = CommonUtils.replaceHttpsDomainName(applicationSubmit.getContent());
+            if(!content.equals(applicationSubmit.getContent())){
+                applicationSubmitDao.updateContent(applicationSubmit.getId(), content);
+                applicationSubmit.setContent(content);
+            }
+            return applicationSubmit;
+        }).collect(Collectors.toList());
     }
 
 
@@ -514,9 +528,16 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public List<SubjectArticle> loadSubjectArticles(Integer problemId,Page page) {
+    public List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page) {
         page.setTotal(subjectArticleDao.count(problemId));
-        return subjectArticleDao.loadArticles(problemId, page);
+        return subjectArticleDao.loadArticles(problemId, page).stream().map(subjectArticle -> {
+            String content = CommonUtils.replaceHttpsDomainName(subjectArticle.getContent());
+            if(!content.equals(subjectArticle.getContent())){
+                subjectArticleDao.updateContent(subjectArticle.getId(), content);
+                subjectArticle.setContent(content);
+            }
+            return subjectArticle;
+        }).collect(Collectors.toList());
     }
 
     @Override

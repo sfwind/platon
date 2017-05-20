@@ -19,6 +19,7 @@ import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -68,6 +69,13 @@ public class CacheServiceImpl implements CacheService {
     @PostConstruct
     public void init(){
         List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
+        knowledgeList.stream().forEach(knowledge -> {
+            knowledgeMap.put(knowledge.getId(), knowledge);
+            if(ConfigUtils.isHttps()){
+                knowledge.setAudio(StringUtils.replace(knowledge.getAudio(), "http:", "https:"));
+                knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
+            }
+        });
         // 缓存知识点
         knowledgeList.stream().forEach(knowledge -> knowledgeMap.put(knowledge.getId(), knowledge));
         logger.info("knowledge init complete");
@@ -77,6 +85,11 @@ public class CacheServiceImpl implements CacheService {
         problems.stream().forEach(problem -> {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
             problem.setChapterList(chapterList);
+            if(ConfigUtils.isHttps()){
+                problem.setAudio(StringUtils.replace(problem.getAudio(), "http:", "https:"));
+                problem.setPic(StringUtils.replace(problem.getPic(), "http:", "https:"));
+                problem.setDescPic(StringUtils.replace(problem.getDescPic(), "http:", "https:"));
+            }
         });
         logger.info("problem init complete");
 
@@ -85,6 +98,9 @@ public class CacheServiceImpl implements CacheService {
         warmupPractices.stream().forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
             warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            if(ConfigUtils.isHttps()){
+                warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
+            }
             warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
         });
         List<Choice> choices = choiceDao.loadAll(Choice.class);

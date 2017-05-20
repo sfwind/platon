@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -133,8 +134,10 @@ public class PlanController {
     }
 
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request,
                                                          @RequestParam(required = false) Integer planId){
+        LOGGER.info(request.getHeader("User-Agent")+", openid:"+loginUser.getOpenId());
+
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
@@ -196,6 +199,15 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练计划")
+                .function("结束训练")
+                .action("结束训练")
+                .memo(improvementPlan.getId() + "");
+        operationLogService.log(operationLog);
+        if(improvementPlan.getStatus()==ImprovementPlan.CLOSE){
+            return WebUtils.error("您的小课已完成");
+        }
         Pair<Boolean,Integer> result = planService.completeCheck(improvementPlan);
         CompletePlanDto completePlanDto = new CompletePlanDto();
         completePlanDto.setIscomplete(result.getLeft());
@@ -209,12 +221,6 @@ public class PlanController {
             completePlanDto.setMustStudyDays(0);
         }
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练计划")
-                .function("完成训练")
-                .action("完成训练")
-                .memo(improvementPlan.getId() + "");
-        operationLogService.log(operationLog);
         return WebUtils.result(completePlanDto);
     }
 

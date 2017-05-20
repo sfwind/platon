@@ -195,4 +195,13 @@ public class ConfigUtils {
 		return getIntValue("profile.full.score");
 	}
 
+	public static Boolean isHttps(){
+		String value = zkConfigUtils.getValue("open.https", "/quanwai/config/arch/");
+		if(value == null){
+			return false;
+		}
+
+		return Boolean.valueOf(value);
+	}
+
 }
