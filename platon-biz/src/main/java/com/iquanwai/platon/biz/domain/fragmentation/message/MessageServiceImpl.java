@@ -2,18 +2,11 @@ package com.iquanwai.platon.biz.domain.fragmentation.message;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.NotifyMessageDao;
-import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.ApplicationSubmit;
-import com.iquanwai.platon.biz.po.ChallengeSubmit;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.NotifyMessage;
-import com.iquanwai.platon.biz.po.SubjectArticle;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -49,6 +42,10 @@ public class MessageServiceImpl implements MessageService {
     private SubjectArticleDao subjectArticleDao;
     @Autowired
     private TemplateMessageService templateMessageService;
+    @Autowired
+    private CommentDao commentDao;
+    @Autowired
+    private ApplicationPracticeDao applicationPracticeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -202,6 +199,19 @@ public class MessageServiceImpl implements MessageService {
         templateMessageService.sendMessage(templateMessage);
     }
 
+    @Override
+    public ApplicationPractice loadAppPracticeByCommentId(Integer id) {
+        Comment comment = commentDao.load(Comment.class, id);
+        if(comment != null){
+            ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, comment.getReferencedId());
+            if(applicationSubmit != null) {
+                ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationSubmit.getApplicationId());
+                applicationPractice.setPlanId(applicationSubmit.getPlanId());
+                return applicationPractice;
+            }
+        }
+        return null;
+    }
 
     private String getLikeMessage(VoteMessage voteMessage, Profile profile) {
         String message = "";
@@ -223,6 +233,15 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         return message;
+    }
+
+    public SubjectArticle loadSubjectArticleByCommentId(Integer id) {
+        SubjectArticle subjectArticle = new SubjectArticle();
+        Comment comment = commentDao.load(Comment.class, id);
+        if(comment != null) {
+             subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
+        }
+        return subjectArticle;
     }
 
     @Setter

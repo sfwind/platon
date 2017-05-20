@@ -90,7 +90,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         if(repliedId!=null && !openid.equals(knowledgeDiscuss.getRepliedOpenid())) {
             String url = "/rise/static/message/knowledge/reply?commentId={0}&knowledgeId={1}";
             url = MessageFormat.format(url, id.toString(), knowledgeId.toString());
-            String message = "回复了我的理解练习问题";
+            String message = "回复了我的知识理解问题";
             messageService.sendMessage(message, knowledgeDiscuss.getRepliedOpenid(),
                     openid, url);
         }
@@ -107,6 +107,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<KnowledgeDiscuss> discussesList = knowledgeDiscussDao.loadDiscuss(knowledgeId, page);
         fulfilDiscuss(discussesList);
         return discussesList;
+    }
+    @Override
+    public Integer deleteKnowledgeDiscussById(Integer id) {
+        // 删除KnowledgeDiscuss记录，将del字段置为1
+        return knowledgeDiscussDao.updateDelById(1, id);
     }
 
     @Override

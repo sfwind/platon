@@ -21,4 +21,6 @@ public class ApplicationSubmit {
     private Integer length; //字数
     private Boolean requestFeedback; //是否求点评
     private Integer problemId;//小课id
+
+    private String topic; //非db字段 应用练习标题
 }

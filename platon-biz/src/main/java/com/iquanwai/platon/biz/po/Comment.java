@@ -16,7 +16,10 @@ public class Comment {
     private String commentOpenId;  //评论人
     private String content; //评论内容
     private Integer del; //是否删除
+    private Integer RepliedId; //回复id
+    private String RepliedOpenId; //回复openId
+    private String RepliedComment; //回复评论
+    private Integer RepliedDel; //回复是否删除
     private Integer device; // 提交设备
     private Date AddTime; //添加时间
-
 }

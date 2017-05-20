@@ -2,23 +2,23 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
-import com.iquanwai.platon.biz.po.NotifyMessage;
-import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.AppMsgCommentReplyDto;
 import com.iquanwai.platon.web.fragmentation.dto.NotifyMessageDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +36,11 @@ public class MessageController {
     private MessageService messageService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private PracticeService practiceService;
+
 
     private final static int MESSAGE_PER_PAGE = 20;
 
@@ -54,6 +59,75 @@ public class MessageController {
         return WebUtils.result(warmupPracticeDiscuss);
     }
 
+    @RequestMapping(value = "/comment/reply/{moduleId}/{commentId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadApplicationReplyMsg(LoginUser loginUser,
+                                                                       @PathVariable Integer moduleId,
+                                                                       @PathVariable Integer commentId) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("消息中心")
+                .function("讨论区回复")
+                .action("打开讨论区回复")
+                .memo(commentId.toString());
+        operationLogService.log(operationLog);
+        AppMsgCommentReplyDto dto = new AppMsgCommentReplyDto();
+        if (moduleId == 2) {
+            dto.setComment(getCommentDto(loginUser, commentId));
+            // 通过commentId从ApplicationPractice数据库中读取该评论所针对的文章数据
+            ApplicationPractice applicationPractice = messageService.loadAppPracticeByCommentId(commentId);
+            if(applicationPractice != null) {
+                dto.setId(applicationPractice.getId());
+                dto.setTopic(applicationPractice.getTopic());
+                dto.setDescription(applicationPractice.getDescription());
+                dto.setPlanId(applicationPractice.getPlanId());
+                dto.setIntegrated(Knowledge.isReview(applicationPractice.getKnowledgeId()));
+            }
+            return WebUtils.result(dto);
+        }
+        if (moduleId == 3) {
+            dto.setComment(getCommentDto(loginUser, commentId));
+            SubjectArticle subjectArticle = messageService.loadSubjectArticleByCommentId(commentId);
+            if(subjectArticle != null) {
+                dto.setId(subjectArticle.getId());
+                dto.setTopic(subjectArticle.getTitle());
+                dto.setDescription(subjectArticle.getContent());
+            }
+            return WebUtils.result(dto);
+        }
+        return WebUtils.result("获取文章内容失败");
+    }
+
+
+    /**
+     * 获取消息回复页面
+     * @return
+     */
+    private RiseWorkCommentDto getCommentDto(LoginUser loginUser, Integer commentId) {
+        Comment comment = practiceService.loadComment(commentId);
+
+        RiseWorkCommentDto commentDto = new RiseWorkCommentDto();
+        Profile account = accountService.getProfile(comment.getCommentOpenId(), false);
+        if(account != null) {
+            commentDto.setId(comment.getId());
+            commentDto.setName(account.getNickname());
+            commentDto.setAvatar(account.getHeadimgurl());
+            commentDto.setDiscussTime(DateUtils.parseDateTimeToString(comment.getAddTime()));
+            commentDto.setComment(comment.getContent());
+            commentDto.setRepliedComment(comment.getRepliedComment());
+            commentDto.setRepliedName(account.getNickname());
+            commentDto.setSignature(account.getSignature());
+            commentDto.setIsMine(loginUser.getOpenId().equals(comment.getCommentOpenId()));
+            commentDto.setRepliedComment(comment.getRepliedComment());
+            Profile repliedAccount = accountService.getProfile(comment.getRepliedOpenId(), false);
+            if(repliedAccount!=null){
+                commentDto.setRepliedName(repliedAccount.getNickname());
+            }
+            commentDto.setRepliedDel(comment.getRepliedDel());
+        }
+
+        return commentDto;
+    }
+
+
     @RequestMapping("/knowledge/discuss/reply/{discussId}")
     public ResponseEntity<Map<String, Object>> loadKnowledgeDiscuss(LoginUser loginUser,
                                                              @PathVariable Integer discussId){
@@ -67,6 +141,9 @@ public class MessageController {
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDiscuss);
     }
+
+
+
 
 
 
