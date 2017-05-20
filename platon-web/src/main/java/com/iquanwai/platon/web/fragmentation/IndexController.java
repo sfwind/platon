@@ -110,7 +110,9 @@ public class IndexController {
 
         Map<String, String> userParam = Maps.newHashMap();
         userParam.put("userName", account.getNickname());
-        userParam.put("headImage",account.getHeadimgurl());
+        if(account.getHeadimgurl()!=null){
+            userParam.put("headImage",account.getHeadimgurl().replace("http:","https:"));
+        }
         mav.addAllObjects(userParam);
 
         return mav;

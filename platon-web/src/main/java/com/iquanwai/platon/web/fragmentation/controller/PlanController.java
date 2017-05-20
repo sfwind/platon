@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -92,9 +93,9 @@ public class PlanController {
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
-                .function("问题优先级判断")
-                .action("选择最需要解决的问题")
+                .module("RISE")
+                .function("选择小课")
+                .action("选择小课")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(planId);
@@ -133,8 +134,10 @@ public class PlanController {
     }
 
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request,
                                                          @RequestParam(required = false) Integer planId){
+        LOGGER.info(request.getHeader("User-Agent")+", openid:"+loginUser.getOpenId());
+
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
@@ -196,7 +199,6 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("结束训练")

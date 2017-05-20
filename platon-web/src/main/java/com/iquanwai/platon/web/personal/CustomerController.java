@@ -2,7 +2,6 @@ package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.iquanwai.platon.biz.domain.common.customer.ProfileService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
@@ -53,9 +52,6 @@ public class CustomerController {
     @Autowired
     private RiseMemberService riseMemberService;
 
-    @Autowired
-    private ProfileService profileService;
-
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String,Object>> getEventList(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
@@ -75,7 +71,7 @@ public class CustomerController {
                 .function("RISE")
                 .action("查询帐号信息");
         operationLogService.log(operationLog);
-        Profile profile = profileService.getProfile(loginUser.getOpenId());
+        Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getOpenId());
@@ -94,7 +90,7 @@ public class CustomerController {
                 .action("加载个人信息");
         operationLogService.log(operationLog);
         ProfileDto profileDto = new ProfileDto();
-        Profile account = profileService.getProfile(loginUser.getOpenId());
+        Profile account = accountService.getProfile(loginUser.getOpenId(), false);
 
         try {
             BeanUtils.copyProperties(profileDto, account);
@@ -126,7 +122,7 @@ public class CustomerController {
             return WebUtils.error("提交个人信息失败");
         }
         profile.setOpenid(loginUser.getOpenId());
-        profileService.submitPersonalCenterProfile(profile);
+        accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
     }
 

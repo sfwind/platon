@@ -36,5 +36,5 @@ public class Profile {
 
 
     //默认头像
-    public static final String DEFAULT_AVATAR = "http://www.iqycamp.com/images/default_avatar.png";
+    public static final String DEFAULT_AVATAR = "https://www.iqycamp.com/images/default_avatar.png";
 }

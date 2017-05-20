@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.MemberType;
@@ -16,6 +17,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
@@ -65,6 +68,8 @@ public class AccountServiceImpl implements AccountService {
     private Map<String, Integer> userRoleMap = Maps.newHashMap();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    @Autowired
+    private PointRepo pointRepo;
 
     @PostConstruct
     public void init(){
@@ -115,6 +120,9 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByOpenId(openid);
 
         if(profile!=null) {
+            if(profile.getHeadimgurl()!=null){
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
+            }
             Integer role = userRoleMap.get(profile.getOpenid());
             if (role == null) {
                 profile.setRole(0);
@@ -130,6 +138,9 @@ public class AccountServiceImpl implements AccountService {
     public List<Profile> getProfiles(List<String> openid) {
         List<Profile> profiles = profileDao.queryAccounts(openid);
         profiles.stream().forEach(profile -> {
+            if(profile.getHeadimgurl()!=null){
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
+            }
             Integer role = userRoleMap.get(profile.getOpenid());
             if(role==null){
                 profile.setRole(0);
@@ -282,6 +293,20 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public int updateOpenConsolidation(String openId){
         return profileDao.updateOpenConsolidation(openId);
+    }
+
+    @Override
+    public void submitPersonalCenterProfile(Profile profile) {
+        Assert.notNull(profile.getOpenid(), "openID不能为空");
+        Profile oldProfile = profileDao.queryByOpenId(profile.getOpenid());
+        Boolean result = profileDao.submitPersonalCenterProfile(profile);
+        if(result && oldProfile.getIsFull()==0){
+            logger.info("用户:{} 完成个人信息填写,加{}积分",profile.getOpenid(), ConfigUtils.getProfileFullScore());
+            // 第一次提交，加分
+            pointRepo.riseCustomerPoint(profile.getOpenid(), ConfigUtils.getProfileFullScore());
+            // 更新信息状态
+            profileDao.completeProfile(profile.getOpenid());
+        }
     }
 
 
