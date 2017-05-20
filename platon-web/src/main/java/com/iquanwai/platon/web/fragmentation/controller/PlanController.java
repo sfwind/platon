@@ -90,6 +90,12 @@ public class PlanController {
             LOGGER.error("planId {} is existed", improvementPlan.getId());
             return WebUtils.error("先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
         }
+        List<ImprovementPlan> plans = planService.getPlans(loginUser.getOpenId());
+        for(ImprovementPlan plan:plans){
+            if(plan.getProblemId().equals(problemId)){
+                return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
+            }
+        }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
