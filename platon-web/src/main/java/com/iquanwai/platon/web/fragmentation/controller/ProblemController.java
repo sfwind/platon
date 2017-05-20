@@ -130,6 +130,8 @@ public class ProblemController {
     }
 
 
+
+
     @RequestMapping("/list/{catalog}")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
 
@@ -173,6 +175,53 @@ public class ProblemController {
         } else {
             return WebUtils.error("分类不能为空");
         }
+    }
+
+
+    @RequestMapping("/list/all")
+    public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
+
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("小课信息")
+                .action("加载所有小课信息")
+                .memo("");
+        operationLogService.log(operationLog);
+
+        List<ProblemCatalog> problemCatalog = problemService.getProblemCatalogs();
+        // 所有问题
+        List<Problem> problems = problemService.loadProblems();
+        //非天使用户去除试用版小课
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+            problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
+        }
+
+        Map<Integer,ProblemCatalog> catalogMap = Maps.newHashMap();
+        problemCatalog.forEach((item)->{
+            catalogMap.put(item.getId(), item);
+        });
+
+
+        List<ProblemExploreDto> list = problems.stream()
+                .map(item -> {
+                    ProblemExploreDto dto = new ProblemExploreDto();
+                    dto.setCatalog(catalogMap.get(item.getCatalogId()).getName());
+                    if (item.getSubCatalogId() != null) {
+                        ProblemSubCatalog problemSubCatalog = problemService.getProblemSubCatalog(item.getSubCatalogId());
+                        dto.setSubCatalog(problemSubCatalog.getName());
+                        dto.setSubCatalogId(problemSubCatalog.getId());
+                    }
+                    dto.setPic(item.getPic());
+                    dto.setAuthor(item.getAuthor());
+                    dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
+                    dto.setName(item.getProblem());
+                    dto.setId(item.getId());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return WebUtils.result(list);
     }
 
     @RequestMapping("/get/{problemId}")
