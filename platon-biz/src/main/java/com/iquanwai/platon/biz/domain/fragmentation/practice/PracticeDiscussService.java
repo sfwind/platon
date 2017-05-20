@@ -51,4 +51,7 @@ public interface PracticeDiscussService {
     KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId);
 
     List<KnowledgeDiscuss> loadKnowledgeDiscusses(Integer knowledgeId, Page page);
+
+    Integer deleteKnowledgeDiscussById(Integer id);
+
 }

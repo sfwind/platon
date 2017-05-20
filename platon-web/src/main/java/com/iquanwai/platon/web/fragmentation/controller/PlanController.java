@@ -199,6 +199,7 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("结束训练")
@@ -208,6 +209,7 @@ public class PlanController {
         if(improvementPlan.getStatus()==ImprovementPlan.CLOSE){
             return WebUtils.error("您的小课已完成");
         }
+
         Pair<Boolean,Integer> result = planService.completeCheck(improvementPlan);
         CompletePlanDto completePlanDto = new CompletePlanDto();
         completePlanDto.setIscomplete(result.getLeft());
