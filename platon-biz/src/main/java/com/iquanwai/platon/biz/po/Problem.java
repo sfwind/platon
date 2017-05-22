@@ -29,6 +29,7 @@ public class Problem {
     private String why; //为什么学习
     private Boolean del; //是否删除(0-否,1-是)
     private Boolean trial; //试用版（0-否,1-是）
+    private String categoryPic; //分类图示
 
     private Boolean done; // 非db字段 用户是否做过
     private Integer status; // 非db字段 用户选过小课（0-未选过,1-正在进行,2-已完成）
