@@ -10,6 +10,7 @@ public class ProblemExploreDto {
     private Integer id;
     private String catalog;
     private Integer catalogId;
+    private String catalogDescribe;
     private String subCatalog;
     private Integer subCatalogId;
     private String author;

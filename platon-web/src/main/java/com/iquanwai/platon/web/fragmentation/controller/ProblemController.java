@@ -109,14 +109,18 @@ public class ProblemController {
         List<ProblemCatalogListDto> catalogListDtos = problemCatalogs.stream()
                 .map(item -> {
                     ProblemCatalogListDto dto = new ProblemCatalogListDto();
+                    dto.setSequence(item.getSequence());
                     dto.setDescription(item.getDescription());
                     dto.setCatalogId(item.getId());
                     dto.setName(item.getName());
                     dto.setPic(item.getPic());
                     dto.setColor(item.getColor());
-                    dto.setProblemList(showProblems.get(item.getId()));
+                    List<Problem> problemsTemp = showProblems.get(item.getId());
+                    problemsTemp.sort((o1, o2) -> o2.getId() - o1.getId());
+                    dto.setProblemList(problemsTemp);
                     return dto;
                 }).collect(Collectors.toList());
+        catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember());
@@ -129,8 +133,6 @@ public class ProblemController {
 
         return WebUtils.result(result);
     }
-
-
 
 
     @RequestMapping("/list/{catalog}")
@@ -159,6 +161,7 @@ public class ProblemController {
                     .map(item -> {
                         ProblemExploreDto dto = new ProblemExploreDto();
                         dto.setCatalog(problemCatalog.getName());
+                        dto.setCatalogDescribe(problemCatalog.getDescription());
                         if (item.getSubCatalogId() != null) {
                             ProblemSubCatalog problemSubCatalog = problemService.getProblemSubCatalog(item.getSubCatalogId());
                             dto.setSubCatalog(problemSubCatalog.getName());
@@ -172,6 +175,7 @@ public class ProblemController {
                         return dto;
                     })
                     .collect(Collectors.toList());
+            list.sort((o1, o2) -> o2.getId() - o1.getId());
             return WebUtils.result(list);
         } else {
             return WebUtils.error("分类不能为空");
