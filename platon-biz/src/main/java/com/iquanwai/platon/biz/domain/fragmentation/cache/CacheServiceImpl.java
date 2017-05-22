@@ -118,7 +118,11 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存问题主分类
         List<ProblemCatalog> problemCatalogs = problemCatalogDao.loadAll(ProblemCatalog.class);
-        problemCatalogs.forEach(item -> problemCatalogMap.put(item.getId(), item));
+        problemCatalogs.forEach(item -> {
+            if (!item.getDel()) {
+                problemCatalogMap.put(item.getId(), item);
+            }
+        });
 
         // 缓存问题子分类
         List<ProblemSubCatalog> problemSubCatalogs = problemSubCatalogDao.loadAll(ProblemSubCatalog.class);

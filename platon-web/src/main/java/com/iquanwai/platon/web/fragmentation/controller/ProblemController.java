@@ -109,6 +109,7 @@ public class ProblemController {
         List<ProblemCatalogListDto> catalogListDtos = problemCatalogs.stream()
                 .map(item -> {
                     ProblemCatalogListDto dto = new ProblemCatalogListDto();
+                    dto.setDescription(item.getDescription());
                     dto.setCatalogId(item.getId());
                     dto.setName(item.getName());
                     dto.setPic(item.getPic());
@@ -164,7 +165,7 @@ public class ProblemController {
                             dto.setSubCatalogId(problemSubCatalog.getId());
                         }
                         dto.setPic(item.getPic());
-                        dto.setAuthor("孙圈圈");
+                        dto.setAuthor(item.getAuthor());
                         dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                         dto.setName(item.getProblem());
                         dto.setId(item.getId());

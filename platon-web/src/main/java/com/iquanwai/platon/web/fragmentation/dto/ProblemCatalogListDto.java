@@ -12,6 +12,7 @@ import java.util.List;
 public class ProblemCatalogListDto {
     private Integer catalogId;
     private String name;
+    private String description;
     private String pic;
     private String color;
     private List<Problem> problemList;
