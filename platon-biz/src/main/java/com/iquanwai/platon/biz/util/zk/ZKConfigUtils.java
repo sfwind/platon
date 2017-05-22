@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.util.zk;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,10 @@ public class ZKConfigUtils {
         } catch (IOException e) {
             logger.error("zk"+zkAddress+" is not connectible", e);
         }
+    }
+
+    public void reconnect() throws IOException {
+        zk = zooKeeper.getClient();
     }
 
     private void config() {
@@ -112,7 +117,15 @@ public class ZKConfigUtils {
             value = configNode.getValue();
             CONFIG_CACHE.put(key, value);
             return value;
-        } catch (Exception e) {
+        } catch (KeeperException e) {
+            try {
+                logger.error("zk " + zkAddress + " get value", e);
+                reconnect();
+                return getValueOnce(key, prePath);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        } catch (Exception e){
             logger.error("zk " + zkAddress + " get value", e);
         }
 
@@ -132,6 +145,30 @@ public class ZKConfigUtils {
             return Integer.valueOf(value);
         }catch (NumberFormatException e){
             logger.error("zk" + zkAddress + " get int {}", value);
+        }
+
+        return null;
+    }
+
+    private String getValueOnce(String key,String prePath){
+        try {
+            String value = CONFIG_CACHE.getIfPresent(key);
+            if(value!=null){
+                return value;
+            }
+            logger.info("get {} from zk", key);
+            String fullPath = prePath.concat(key);
+            if (zk.exists(fullPath, false) == null) {
+                logger.error("the full path node is none : {}", fullPath);
+                return null;
+            }
+            String json = new String(zk.getData(fullPath, false, null), "utf-8");
+            ConfigNode configNode = new Gson().fromJson(json, ConfigNode.class);
+            value = configNode.getValue();
+            CONFIG_CACHE.put(key, value);
+            return value;
+        } catch (Exception e){
+            logger.error("zk " + zkAddress + " get value", e);
         }
 
         return null;

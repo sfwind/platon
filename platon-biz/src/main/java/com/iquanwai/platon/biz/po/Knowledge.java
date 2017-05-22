@@ -14,6 +14,9 @@ public class Knowledge {
     private String analysis; //作用
     private String means; //方法
     private String keynote; //要点
+    private String analysisPic;// 作用图片
+    private String meansPic;// 方法图片
+    private String keynotePic;// 要点图片
     private String pic; //图片链接
     private String audio; //语音链接
     private Integer appear; //非db字段,是否出现过

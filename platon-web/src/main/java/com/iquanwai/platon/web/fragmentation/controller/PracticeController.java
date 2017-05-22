@@ -584,7 +584,6 @@ public class PracticeController {
                                                                 @PathVariable Integer practicePlanId){
         Assert.notNull(loginUser, "用户不能为空");
         List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId);
-
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("知识点")
