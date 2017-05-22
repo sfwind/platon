@@ -346,7 +346,7 @@ public class AccountServiceImpl implements AccountService {
             } else if (o2.getAddTime() == null) {
                 return -1;
             }
-            return o2.getAddTime().before(o1.getAddTime()) ? 1 : -1;
+            return o2.getAddTime().before(o1.getAddTime()) ? -1 : 1;
         });
         return eventWalls;
     }
