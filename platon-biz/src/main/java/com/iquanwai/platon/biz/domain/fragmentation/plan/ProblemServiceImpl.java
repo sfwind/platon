@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemScore;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +39,18 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<ProblemCatalog> getProblemCatalogs(){
-        return problemCatalogDao.loadAll(ProblemCatalog.class);
+        return cacheService.loadProblemCatalogs();
+    }
+
+    @Override
+    public ProblemCatalog getProblemCatalog(Integer catalogId){
+        return cacheService.getProblemCatalog(catalogId);
+    }
+
+
+    @Override
+    public ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId){
+        return cacheService.getProblemSubCatalog(subCatalogId);
     }
 
     @Override
@@ -53,5 +65,10 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public boolean hasProblemScore(String openId, Integer problemId) {
         return problemScoreDao.userPorblemScoreCount(openId, problemId) > 0;
+    }
+
+    @Override
+    public Double getProblemScoreAvg(Integer problemId, Integer question) {
+        return problemScoreDao.getProblemAverage(problemId,question);
     }
 }

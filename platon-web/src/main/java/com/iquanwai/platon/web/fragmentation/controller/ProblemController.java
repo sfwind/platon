@@ -10,10 +10,12 @@ import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemScore;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -107,18 +109,125 @@ public class ProblemController {
         List<ProblemCatalogListDto> catalogListDtos = problemCatalogs.stream()
                 .map(item -> {
                     ProblemCatalogListDto dto = new ProblemCatalogListDto();
+                    dto.setSequence(item.getSequence());
+                    dto.setDescription(item.getDescription());
+                    dto.setCatalogId(item.getId());
                     dto.setName(item.getName());
                     dto.setPic(item.getPic());
                     dto.setColor(item.getColor());
-                    dto.setProblemList(showProblems.get(item.getId()));
+                    List<Problem> problemsTemp = showProblems.get(item.getId());
+                    problemsTemp.sort((o1, o2) -> o2.getId() - o1.getId());
+                    dto.setProblemList(problemsTemp);
                     return dto;
                 }).collect(Collectors.toList());
+        catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("小课列表")
+                .action("加载小课信息")
+                .memo("");
+        operationLogService.log(operationLog);
+
         return WebUtils.result(result);
     }
 
+
+    @RequestMapping("/list/{catalog}")
+    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
+
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(catalogId, "小课分类不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("小课类别")
+                .action("加载小课类别")
+                .memo(catalogId.toString());
+        operationLogService.log(operationLog);
+
+        ProblemCatalog problemCatalog = problemService.getProblemCatalog(catalogId);
+
+        if (problemCatalog != null) {
+            // 所有问题
+            List<Problem> problems = problemService.loadProblems();
+            //非天使用户去除试用版小课
+            if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+                problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
+            }
+
+            List<ProblemExploreDto> list = problems.stream().filter(item -> catalogId.equals(item.getCatalogId()))
+                    .map(item -> {
+                        ProblemExploreDto dto = new ProblemExploreDto();
+                        dto.setCatalog(problemCatalog.getName());
+                        dto.setCatalogDescribe(problemCatalog.getDescription());
+                        if (item.getSubCatalogId() != null) {
+                            ProblemSubCatalog problemSubCatalog = problemService.getProblemSubCatalog(item.getSubCatalogId());
+                            dto.setSubCatalog(problemSubCatalog.getName());
+                            dto.setSubCatalogId(problemSubCatalog.getId());
+                        }
+                        dto.setPic(item.getPic());
+                        dto.setAuthor(item.getAuthor());
+                        dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
+                        dto.setName(item.getProblem());
+                        dto.setId(item.getId());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            list.sort((o1, o2) -> o2.getId() - o1.getId());
+            return WebUtils.result(list);
+        } else {
+            return WebUtils.error("分类不能为空");
+        }
+    }
+
+
+    @RequestMapping("/list/all")
+    public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
+
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("小课信息")
+                .action("加载所有小课信息")
+                .memo("");
+        operationLogService.log(operationLog);
+
+        List<ProblemCatalog> problemCatalog = problemService.getProblemCatalogs();
+        // 所有问题
+        List<Problem> problems = problemService.loadProblems();
+        //非天使用户去除试用版小课
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+            problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
+        }
+
+        Map<Integer,ProblemCatalog> catalogMap = Maps.newHashMap();
+        problemCatalog.forEach((item)->{
+            catalogMap.put(item.getId(), item);
+        });
+
+
+        List<ProblemExploreDto> list = problems.stream()
+                .map(item -> {
+                    ProblemExploreDto dto = new ProblemExploreDto();
+                    dto.setCatalog(catalogMap.get(item.getCatalogId()).getName());
+                    if (item.getSubCatalogId() != null) {
+                        ProblemSubCatalog problemSubCatalog = problemService.getProblemSubCatalog(item.getSubCatalogId());
+                        dto.setSubCatalog(problemSubCatalog.getName());
+                        dto.setSubCatalogId(problemSubCatalog.getId());
+                    }
+                    dto.setPic(item.getPic());
+                    dto.setAuthor(item.getAuthor());
+                    dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
+                    dto.setName(item.getProblem());
+                    dto.setId(item.getId());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return WebUtils.result(list);
+    }
 
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){

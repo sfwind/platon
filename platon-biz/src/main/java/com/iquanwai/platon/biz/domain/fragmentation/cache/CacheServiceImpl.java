@@ -2,16 +2,28 @@ package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemSubCatalogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.Choice;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,12 +47,23 @@ public class CacheServiceImpl implements CacheService {
     private ChoiceDao choiceDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
+    @Autowired
+    private ProblemCatalogDao problemCatalogDao;
+    @Autowired
+    private ProblemSubCatalogDao problemSubCatalogDao;
+
+
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
     //缓存知识点
     private Map<Integer, Knowledge> knowledgeMap = Maps.newHashMap();
     //缓存巩固练习
     private Map<Integer, WarmupPractice> warmupPracticeMap = Maps.newHashMap();
+    //缓存问题分类
+    private Map<Integer,ProblemCatalog> problemCatalogMap = Maps.newHashMap();
+    //缓存问题子分类
+    private Map<Integer,ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
+
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -56,6 +79,7 @@ public class CacheServiceImpl implements CacheService {
         });
         logger.info("knowledge init complete");
 
+        // 缓存问题
         problems = problemDao.loadAll(Problem.class);
         problems.stream().forEach(problem -> {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
@@ -68,6 +92,7 @@ public class CacheServiceImpl implements CacheService {
         });
         logger.info("problem init complete");
 
+        // 缓存热身训练
         List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
         warmupPractices.stream().forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
@@ -90,6 +115,18 @@ public class CacheServiceImpl implements CacheService {
         warmupPractices.stream().forEach(warmupPractice ->
                 warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence()-o2.getSequence()));
         logger.info("warmup practice init complete");
+
+        // 缓存问题主分类
+        List<ProblemCatalog> problemCatalogs = problemCatalogDao.loadAll(ProblemCatalog.class);
+        problemCatalogs.forEach(item -> {
+            if (!item.getDel()) {
+                problemCatalogMap.put(item.getId(), item);
+            }
+        });
+
+        // 缓存问题子分类
+        List<ProblemSubCatalog> problemSubCatalogs = problemSubCatalogDao.loadAll(ProblemSubCatalog.class);
+        problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
     }
 
     @Override
@@ -98,7 +135,7 @@ public class CacheServiceImpl implements CacheService {
         problems.forEach(problem -> {
             Problem newOne = new Problem();
             try {
-                BeanUtils.copyProperties(newOne, problem);
+                BeanUtils.copyProperties(problem, newOne);
                 dest.add(newOne);
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage());
@@ -121,7 +158,7 @@ public class CacheServiceImpl implements CacheService {
     public Knowledge getKnowledge(Integer knowledgeId) {
         Knowledge knowledge = new Knowledge();
         try {
-            BeanUtils.copyProperties(knowledge, knowledgeMap.get(knowledgeId));
+            BeanUtils.copyProperties(knowledgeMap.get(knowledgeId),knowledge );
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -138,6 +175,7 @@ public class CacheServiceImpl implements CacheService {
         }
         return warmupPractice;
     }
+
 
     private List<Chapter> loadRoadMap(Integer problemId) {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
@@ -180,6 +218,23 @@ public class CacheServiceImpl implements CacheService {
         });
 
         return chapterList;
+    }
+
+    @Override
+    public ProblemCatalog getProblemCatalog(Integer id){
+        return problemCatalogMap.get(id);
+    }
+
+    @Override
+    public ProblemSubCatalog getProblemSubCatalog(Integer id){
+        return problemSubCatalogMap.get(id);
+    }
+
+    @Override
+    public List<ProblemCatalog> loadProblemCatalogs(){
+        List<ProblemCatalog> lists = Lists.newArrayList();
+        lists.addAll(problemCatalogMap.values());
+        return lists;
     }
 
     @Override

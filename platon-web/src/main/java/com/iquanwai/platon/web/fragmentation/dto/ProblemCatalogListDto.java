@@ -10,7 +10,10 @@ import java.util.List;
  */
 @Data
 public class ProblemCatalogListDto {
+    private Integer catalogId;
     private String name;
+    private String description;
+    private Integer sequence;
     private String pic;
     private String color;
     private List<Problem> problemList;
