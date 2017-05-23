@@ -306,10 +306,10 @@ public class PracticeController {
                 dto.setDiscussTime(DateUtils.parseDateToString(item.getAddTime()));
                 dto.setComment(item.getContent());
                 dto.setRepliedComment(item.getRepliedComment());
-                dto.setRepliedName(accountService.getAccount(item.getRepliedOpenId(),false).getNickname());
+                dto.setRepliedName(account.getNickname());
                 dto.setSignature(account.getSignature());
                 dto.setIsMine(loginUser.getOpenId().equals(item.getCommentOpenId()));
-                dto.setRole(loginUser.getRole());
+                dto.setRole(account.getRole());
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
             } else {
