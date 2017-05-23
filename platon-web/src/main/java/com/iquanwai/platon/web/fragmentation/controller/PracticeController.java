@@ -309,6 +309,7 @@ public class PracticeController {
                 dto.setRepliedName(accountService.getAccount(item.getRepliedOpenId(),false).getNickname());
                 dto.setSignature(account.getSignature());
                 dto.setIsMine(loginUser.getOpenId().equals(item.getCommentOpenId()));
+                dto.setRole(loginUser.getRole());
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
             } else {
