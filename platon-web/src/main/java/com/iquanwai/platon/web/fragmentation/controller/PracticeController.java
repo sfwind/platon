@@ -250,9 +250,9 @@ public class PracticeController {
                     } else {
                         dto.setVoteStatus(0);
                     }
-                    dto.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, item.getId())
-                            .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
-                            .collect(Collectors.toList()));
+//                    dto.setPicList(pictureService.loadPicture(Constants.PictureType.APPLICATION, item.getId())
+//                            .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.APPLICATION) + pic.getRealName())
+//                            .collect(Collectors.toList()));
                     return dto;
                 }).sorted((left, right) -> {
                     //按发布时间排序
@@ -536,6 +536,7 @@ public class PracticeController {
             dto.setAuthorType(subjectArticle.getAuthorType());
             dto.setContent(subjectArticle.getContent());
             dto.setTitle(subjectArticle.getTitle());
+            dto.setDesc(planService.loadSubjectDesc(subjectArticle.getProblemId()));
             Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
             if(profile!=null) {
                 dto.setHeadImage(profile.getHeadimgurl());
