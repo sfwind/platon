@@ -28,6 +28,7 @@ public class Problem {
     private String how; //如何学习
     private String why; //为什么学习
     private Boolean del; //是否删除(0-否,1-是)
+    private Boolean newProblem; // 是否是新课程
     private Boolean trial; //试用版（0-否,1-是）
     private String categoryPic; //分类图示
 
