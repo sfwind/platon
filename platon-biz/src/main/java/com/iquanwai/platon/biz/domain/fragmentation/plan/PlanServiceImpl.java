@@ -370,7 +370,10 @@ public class PlanServiceImpl implements PlanService {
         //当节是否完成
         boolean complete = isDone(seriesPracticePlans);
         if(complete){
-            improvementPlanDao.updateProgress(planId, practice.getSeries());
+            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+            if(improvementPlan.getCompleteSeries()<practice.getSeries()){
+                improvementPlanDao.updateProgress(planId, practice.getSeries());
+            }
         }
         //所有练习是否完成
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
