@@ -77,7 +77,7 @@ public interface AccountService {
 
     void reloadRegion();
 
-    List<EventWall> getEventWall();
+    List<EventWall> getEventWall(String openid);
 
     Region loadProvinceByName(String name);
 

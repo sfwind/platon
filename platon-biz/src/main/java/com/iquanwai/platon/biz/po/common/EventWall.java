@@ -20,6 +20,7 @@ public class EventWall {
     private Date updateTime;
     private Boolean del;
     private Boolean showTime; //是否显示时间
+    private Integer visibility; // 会员可见性
 
     private String startStr;
     private String endStr;

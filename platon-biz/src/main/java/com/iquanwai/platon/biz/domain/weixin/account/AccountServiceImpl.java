@@ -5,11 +5,13 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.MemberType;
@@ -70,6 +72,8 @@ public class AccountServiceImpl implements AccountService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PointRepo pointRepo;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     @PostConstruct
     public void init(){
@@ -327,8 +331,27 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<EventWall> getEventWall() {
-        List<EventWall> eventWalls = eventWallDao.loadAll(EventWall.class).stream().filter(item -> !item.getDel()).collect(Collectors.toList());
+    public List<EventWall> getEventWall(String openid) {
+        RiseMember riseMember = riseMemberDao.validRiseMember(openid);
+        List<EventWall> eventWalls = eventWallDao
+                .loadAll(EventWall.class).stream().filter(item -> {
+                    if (item.getDel()) {
+                        // 删除的过滤掉
+                        return false;
+                    }
+                    if (item.getVisibility() == null) {
+                        // 不对可见性做判断
+                        return true;
+                    } else {
+                        if (item.getVisibility() == 0) {
+                            // 非会员可见
+                            return riseMember == null;
+                        } else {
+                            // 会员可见
+                            return riseMember != null && item.getVisibility().equals(riseMember.getMemberTypeId());
+                        }
+                    }
+                }).collect(Collectors.toList());
         eventWalls.forEach(item->{
             Date startTime = item.getStartTime();
             Date endTime = item.getEndTime();
