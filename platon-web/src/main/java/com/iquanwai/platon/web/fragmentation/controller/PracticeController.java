@@ -271,10 +271,10 @@ public class PracticeController {
         page.setTotal(normalSubmit.size());
         normalSubmit = normalSubmit.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
         //浏览量加1
-        normalSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
-                item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
-        superbSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
-                item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
+//        normalSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
+//                item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
+//        superbSubmit.forEach(item -> practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION,
+//                item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW));
 
         RefreshListDto<RiseWorkInfoDto> dto = new RefreshListDto<>();
         dto.setList(normalSubmit);
@@ -497,9 +497,9 @@ public class PracticeController {
                     return dto;
                 }).collect(Collectors.toList());
 
-        list.forEach(item -> {
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
-        });
+//        list.forEach(item -> {
+//            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
+//        });
         RefreshListDto<RiseWorkInfoDto> result = new RefreshListDto<>();
         result.setList(list);
         result.setEnd(page.isLastPage());
@@ -739,6 +739,18 @@ public class PracticeController {
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(dto);
+    }
+
+    @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> riseShowCount(LoginUser loginUser, @PathVariable(value = "moduleId") Integer moduleId, @PathVariable(value = "submitId") Integer submitId) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("文章")
+                .function(moduleId.toString())
+                .action("增加浏览数")
+                .memo(submitId.toString());
+        operationLogService.log(operationLog);
+        practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
+        return WebUtils.success();
     }
 
 }
