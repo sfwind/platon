@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
@@ -60,7 +61,8 @@ public class CustomerController {
                 .function("活动墙")
                 .action("查询");
         operationLogService.log(operationLog);
-        return WebUtils.result(accountService.getEventWall());
+        List<EventWall> eventWall = accountService.getEventWall(loginUser.getOpenId());
+        return WebUtils.result(eventWall);
     }
 
     @RequestMapping(value = "/account", method = RequestMethod.GET)
