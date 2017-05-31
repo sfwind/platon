@@ -362,6 +362,14 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 item.setEndStr(DateUtils.parseDateToFormat6(endTime));
             }
+            // 如果是要区别展示，且是会员的话，展示不同的url
+            if (item.getMemberDestUrl() != null && riseMember != null) {
+                item.setDestUrl(item.getMemberDestUrl());
+            }
+            // 如果不是会员的话，隐藏所有的会员url
+            if (riseMember == null) {
+                item.setMemberDestUrl(null);
+            }
         });
         eventWalls.sort((o1, o2) -> {
             if (o1.getAddTime() == null) {
