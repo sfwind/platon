@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginUser {
+    private Integer id;
     private String openId;
     private String weixinName;
     private String headimgUrl;
@@ -25,7 +26,7 @@ public class LoginUser {
     private Boolean openConsolidation; // 非db字段 是否打开过巩固练习
 
     public static LoginUser defaultUser(){
-        return new LoginUser(ConfigUtils.getDefaultOpenid(),"风之伤",
+        return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(),"风之伤",
                 Profile.DEFAULT_AVATAR, null, 1, null, false, false,false,false);
     }
 }
