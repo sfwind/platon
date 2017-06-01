@@ -138,6 +138,10 @@ public class ConfigUtils {
 		return getValue("default.openid");
 	}
 
+	public static Integer getDefaultProfileId(){
+		return getIntValue("default.profile.id");
+	}
+
 	public static Integer getVoteScore(){
 		return getIntValue("vote.score");
 	}

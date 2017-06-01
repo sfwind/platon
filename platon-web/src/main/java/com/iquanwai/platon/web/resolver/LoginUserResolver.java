@@ -92,6 +92,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         }
 
         LoginUser loginUser = new LoginUser();
+        loginUser.setId(account.getId());
         loginUser.setOpenId(account.getOpenid());
         loginUser.setWeixinName(account.getNickname());
         loginUser.setHeadimgUrl(account.getHeadimgurl());

@@ -9,6 +9,7 @@ import java.util.Date;
  */
 @Data
 public class Profile {
+    private int id;
     private String openid;	//用户的标识，对当前公众号唯一
     private String nickname; //用户的昵称
     private String city;	//用户所在城市
