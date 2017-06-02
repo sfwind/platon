@@ -62,7 +62,7 @@ public class PracticeController {
             // 传了planId
             // 检查这个planId是不是他的
             ImprovementPlan plan = planService.getPlan(planId);
-            if (plan == null || !plan.getOpenid().equals(loginUser.getOpenId())) {
+            if (plan == null || !plan.getProfileId().equals(loginUser.getId())) {
                 return WebUtils.error("参数错误，可以联系小Q反馈哦");
             }
         } else {
@@ -71,7 +71,7 @@ public class PracticeController {
             ApplicationSubmit applicationSubmit = practiceService.loadUserPlanIdByApplication(applicationId, loginUser.getOpenId());
             if (applicationSubmit == null) {
                 // 没有提交过，查询当前的planId
-                ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+                ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
                 if (improvementPlan != null) {
                     planId = improvementPlan.getId();
                 }
@@ -99,7 +99,7 @@ public class PracticeController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            improvementPlan = planService.getRunningPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -185,14 +185,14 @@ public class PracticeController {
         Integer refer = vote.getReferencedId();
         Integer status = vote.getStatus();
         String openId = loginUser.getOpenId();
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+        OperationLog operationLog = OperationLog.create().openid(openId)
                 .module("碎片化")
                 .function("挑战任务")
                 .action("移动端点赞");
         operationLogService.log(operationLog);
 
         if (status == 1) {
-            boolean result = practiceService.vote(vote.getType(), refer, openId);
+            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId);
             if (result) {
                 return WebUtils.success();
             } else {
@@ -419,7 +419,7 @@ public class PracticeController {
                                                                     @RequestBody RiseWorkInfoDto workInfoDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "难题不能为空");
-        boolean b = planService.hasProblemPlan(loginUser.getOpenId(), problemId);
+        boolean b = planService.hasProblemPlan(loginUser.getId(), problemId);
         if(!b){
             return WebUtils.error("您并没有该小课，无法提交");
         }
@@ -492,7 +492,8 @@ public class PracticeController {
                     dto.setTitle(item.getTitle());
                     dto.setRequest(item.getRequestFeedback());
                     //设置剩余请求次数
-                    dto.setRequestCommentCount(practiceService.hasRequestComment(problemId, loginUser.getOpenId()));
+                    dto.setRequestCommentCount(practiceService.hasRequestComment(problemId,
+                            loginUser.getId(), loginUser.getOpenId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
@@ -550,7 +551,8 @@ public class PracticeController {
             dto.setPerfect(subjectArticle.getSequence() > 0);
             dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
             dto.setRequest(subjectArticle.getRequestFeedback());
-            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(), loginUser.getOpenId()));
+            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
+                    loginUser.getId(), loginUser.getOpenId()));
 //        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
 //                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
 //                .collect(Collectors.toList()));
@@ -629,7 +631,7 @@ public class PracticeController {
                                                               @PathVariable Integer moduleId,
                                                               @PathVariable Integer submitId){
         Assert.notNull(loginUser, "用户不能为空");
-        boolean result = practiceService.requestComment(submitId, moduleId);
+        boolean result = practiceService.requestComment(submitId, moduleId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("写文章")

@@ -83,7 +83,7 @@ public class ProblemController {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
         // 用户的所有计划
-        List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getOpenId());
+        List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getId());
         // 用户选过的小课
         List<Integer> doneProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()==3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 用户进行中的小课

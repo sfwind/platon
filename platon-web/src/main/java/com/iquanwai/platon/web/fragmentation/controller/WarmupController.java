@@ -56,7 +56,7 @@ public class WarmupController {
     public ResponseEntity<Map<String, Object>> loadWarmup(LoginUser loginUser,
                                                           @PathVariable Integer id){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");

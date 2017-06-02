@@ -59,7 +59,7 @@ public class PlanController {
     @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
@@ -81,7 +81,7 @@ public class PlanController {
                                                           @PathVariable Integer problemId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
         if(improvementPlan!=null){
             //如果是同一个小课的训练,直接返回训练id
             if(improvementPlan.getProblemId().equals(problemId)){
@@ -90,13 +90,13 @@ public class PlanController {
             LOGGER.error("planId {} is existed", improvementPlan.getId());
             return WebUtils.error("先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
         }
-        List<ImprovementPlan> plans = planService.getPlans(loginUser.getOpenId());
+        List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         for(ImprovementPlan plan:plans){
             if(plan.getProblemId().equals(problemId)){
                 return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
             }
         }
-        Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), problemId);
+        Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
@@ -147,7 +147,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
+            improvementPlan = planService.getLatestPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -197,7 +197,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            improvementPlan = planService.getRunningPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -240,7 +240,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            improvementPlan = planService.getRunningPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -319,7 +319,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            improvementPlan = planService.getRunningPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -367,7 +367,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            improvementPlan = planService.getRunningPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
@@ -411,7 +411,7 @@ public class PlanController {
         operationLogService.log(operationLog);
         ImprovementPlan plan = null;
         if (planId == null) {
-            plan = planService.getLatestPlan(loginUser.getOpenId());
+            plan = planService.getLatestPlan(loginUser.getId());
         } else {
             plan = planService.getPlan(planId);
         }
@@ -444,7 +444,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+            improvementPlan = planService.getRunningPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }

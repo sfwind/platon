@@ -50,14 +50,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public Integer generatePlan(String openid, Integer problemId) {
+    public Integer generatePlan(String openid, Integer profileId, Integer problemId) {
         Assert.notNull(openid, "openid不能为空");
+        Assert.notNull(profileId, "profileId不能为空");
         Problem problem = cacheService.getProblem(problemId);
         if(problem == null){
             logger.error("problemId {} is invalid", problemId);
         }
         //生成训练计划
-        int planId = createPlan(problem, openid);
+        int planId = createPlan(problem, profileId, openid);
 
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
@@ -260,12 +261,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
 
-    private int createPlan(Problem problem, String openid) {
+    private int createPlan(Problem problem, Integer profileId, String openid) {
         Assert.notNull(problem, "problem不能为空");
+        Assert.notNull(profileId, "profileId不能为空");
         Assert.notNull(openid, "openid不能为空");
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
         improvementPlan.setOpenid(openid);
+        improvementPlan.setProfileId(profileId);
         improvementPlan.setWarmupComplete(0);
         improvementPlan.setApplicationComplete(0);
         improvementPlan.setProblemId(problem.getId());
