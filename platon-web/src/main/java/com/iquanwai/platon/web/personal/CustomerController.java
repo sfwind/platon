@@ -62,6 +62,7 @@ public class CustomerController {
                 .action("查询");
         operationLogService.log(operationLog);
         List<EventWall> eventWall = accountService.getEventWall(loginUser.getOpenId());
+
         return WebUtils.result(eventWall);
     }
 
