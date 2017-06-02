@@ -177,7 +177,8 @@ public class CacheServiceImpl implements CacheService {
     }
 
 
-    private List<Chapter> loadRoadMap(Integer problemId) {
+    @Override
+    public List<Chapter> loadRoadMap(Integer problemId) {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
         Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         //按节组合成一组知识点

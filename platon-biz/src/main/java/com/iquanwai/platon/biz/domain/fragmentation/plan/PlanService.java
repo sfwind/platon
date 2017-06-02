@@ -109,4 +109,6 @@ public interface PlanService {
      * @param series 第几小节
      */
     void markPlan(Integer series, Integer planId);
+
+    ImprovementReport loadUserImprovementReport(ImprovementPlan plan);
 }
