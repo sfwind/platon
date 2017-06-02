@@ -476,7 +476,7 @@ public class PracticeController {
                         dto.setRole(account.getRole());
                         dto.setSignature(account.getSignature());
                     }
-                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getUpdateTime()));
+                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getAddTime()));
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, item.getId()));
                     // 查询我对它的点赞状态
                     HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, item.getId(), loginUser.getOpenId());
@@ -549,7 +549,7 @@ public class PracticeController {
             dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
             dto.setProblemId(subjectArticle.getProblemId());
             dto.setPerfect(subjectArticle.getSequence() > 0);
-            dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getUpdateTime()));
+            dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getAddTime()));
             dto.setRequest(subjectArticle.getRequestFeedback());
             dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
                     loginUser.getId(), loginUser.getOpenId()));

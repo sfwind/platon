@@ -217,10 +217,12 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setId(submitId);
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
-        applicationPractice.setContent(submit==null?null:submit.getContent());
-        applicationPractice.setSubmitId(submit==null?null:submit.getId());
-        applicationPractice.setSubmitUpdateTime(submit==null?null:DateUtils.parseDateToString(submit.getUpdateTime()));
-        applicationPractice.setPlanId(submit==null?planId:submit.getPlanId());
+        if(submit!=null){
+            applicationPractice.setContent(submit.getContent());
+            applicationPractice.setSubmitId(submit.getId());
+            applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
+            applicationPractice.setPlanId(planId);
+        }
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
