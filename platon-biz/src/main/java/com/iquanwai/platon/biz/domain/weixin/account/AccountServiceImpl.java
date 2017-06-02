@@ -79,14 +79,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
-        //先从数据库查询account对象
-        Account account = followUserDao.queryByOpenid(openid);
-        if(!realTime && account != null) {
-            return account;
+        if(realTime){
+            return getAccountFromWeixin(openid);
+        }else{
+            //先从数据库查询account对象
+            Account account = followUserDao.queryByOpenid(openid);
+            if(account != null) {
+                return account;
+            }
+            //从微信处获取
+            return getAccountFromWeixin(openid);
         }
-
-        //从微信处获取
-        return getAccountFromWeixin(openid);
     }
 
     @Override
