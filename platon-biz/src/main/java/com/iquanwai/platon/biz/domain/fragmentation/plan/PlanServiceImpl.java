@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
@@ -62,6 +63,8 @@ public class PlanServiceImpl implements PlanService {
     private WarmupSubmitDao warmupSubmitDao;
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
+    @Autowired
+    private HomeworkVoteDao homeworkVoteDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -415,7 +418,7 @@ public class PlanServiceImpl implements PlanService {
         // problem
         report.setProblem(problem.getProblem());
         // 用时
-        Integer studyDays = DateUtils.interval(plan.getStartDate(), plan.getCompleteTime());
+        Integer studyDays = DateUtils.interval(plan.getStartDate(), plan.getCompleteTime()) + 1;
         report.setStudyDays(studyDays);
         // 打败多少人
         Integer percent = improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
@@ -424,6 +427,11 @@ public class PlanServiceImpl implements PlanService {
         report.setTotalScore(plan.getPoint());
         // 计算
         calculateReport(report, plan);
+        // 点赞与被点赞
+        Integer voteCount = homeworkVoteDao.voteCount(plan.getOpenid());
+        Integer votedCount = homeworkVoteDao.votedCount(plan.getOpenid());
+        report.setReceiveVoteCount(votedCount);
+        report.setShareVoteCount(voteCount);
         return report;
     }
 

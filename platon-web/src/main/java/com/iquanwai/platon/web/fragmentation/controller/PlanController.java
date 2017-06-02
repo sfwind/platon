@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -232,11 +233,8 @@ public class PlanController {
         return WebUtils.result(completePlanDto);
     }
 
-
-    @RequestMapping(value = "/close", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
-                                                     @RequestParam(required = false) Integer planId){
-
+    @RequestMapping(value = "/improvement/report", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> improvementReport(LoginUser loginUser, @RequestParam(required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
@@ -248,13 +246,40 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练计划")
+                .function("学习报告")
+                .action("查看学习报告")
+                .memo(improvementPlan.getId() + "");
+        operationLogService.log(operationLog);
+        ImprovementReport report = planService.loadUserImprovementReport(improvementPlan);
+        return WebUtils.result(report);
+    }
+
+
+    @RequestMapping(value = "/close", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
+                                                     @RequestParam(required = false) Integer planId) {
+
+        Assert.notNull(loginUser, "用户不能为空");
+        ImprovementPlan improvementPlan;
+        if (planId == null) {
+            improvementPlan = planService.getRunningPlan(loginUser.getOpenId());
+        } else {
+            improvementPlan = planService.getPlan(planId);
+        }
+        if (improvementPlan == null) {
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.result("您还没有制定训练计划哦");
+        }
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("完成训练")
                 .action("完成训练")
-                .memo(improvementPlan.getId()+"");
+                .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
