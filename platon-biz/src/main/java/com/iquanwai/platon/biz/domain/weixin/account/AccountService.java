@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
 
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.MemberType;
@@ -16,7 +17,7 @@ public interface AccountService {
     /**
      * 根据openid获取用户的详细信息
      * */
-    Account getAccount(String openid, boolean realTime);
+    Account getAccount(String openid, boolean realTime) throws NotFollowingException;
 
     /**
      * 根据openid获取用户详情
@@ -27,22 +28,6 @@ public interface AccountService {
      * 根据openid批量获取用户详情
      */
     List<Profile> getProfiles(List<String> openid);
-
-    /**
-     * 更新个人信息
-     * */
-    void submitPersonalInfo(Account account);
-
-    /**
-     * 收集所有关注用户的信息
-     * */
-    void collectUsers();
-
-    /**
-     * 收集新关注用户的信息
-     * */
-    void collectNewUsers();
-
     /**
      * 获取所有的省份信息
      * */
@@ -56,9 +41,13 @@ public interface AccountService {
      * 更新是否打开rise
      */
     int updateOpenRise(String openId);
-
+    /**
+     * 更新是否打开rise应用练习
+     */
     int updateOpenApplication(String openId);
-
+    /**
+     * 更新是否打开rise巩固练习
+     */
     int updateOpenConsolidation(String openId);
 
     /**
@@ -66,14 +55,7 @@ public interface AccountService {
      */
     void submitPersonalCenterProfile(Profile profile);
 
-    List<MemberType> loadMemberTypes();
-
-    MemberType loadMemberType(Integer id);
-
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
-
-    String GET_USERS_URL = "https://api.weixin.qq.com/cgi-bin/user/get?access_token={access_token}";
-
 
     void reloadRegion();
 
