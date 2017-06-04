@@ -205,6 +205,10 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+        Pair<Integer,Integer> closeable = planService.checkCloseable(improvementPlan);
+        if (closeable.getLeft() != 1) {
+            return WebUtils.error(closeable.getLeft(), closeable.getRight());
+        }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -246,7 +250,12 @@ public class PlanController {
         }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
+            return WebUtils.error("您还没有制定训练计划哦");
+        }
+
+        Pair<Integer,Integer> closeable = planService.checkCloseable(improvementPlan);
+        if (closeable.getLeft() != 1) {
+            return WebUtils.error(closeable.getLeft(), closeable.getRight());
         }
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
