@@ -3,12 +3,12 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.RedisUtil;
+import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
-import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -20,7 +20,6 @@ import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
@@ -343,7 +342,7 @@ public class AccountServiceImpl implements AccountService {
                         // 不对可见性做判断
                         return true;
                     } else {
-                        if (item.getVisibility() == 0) {
+                        if (item.getVisibility() == 1) {
                             // 非会员可见
                             return riseMember == null;
                         } else if (item.getVisibility() == 3) {
@@ -361,17 +360,6 @@ public class AccountServiceImpl implements AccountService {
                         }
                     }
                 }).collect(Collectors.toList());
-        eventWalls.forEach(item->{
-            Date startTime = item.getStartTime();
-            Date endTime = item.getEndTime();
-            item.setStartStr(DateUtils.parseDateToFormat6(startTime));
-
-            if (DateUtils.isSameDate(startTime, endTime)) {
-                item.setEndStr(DateUtils.parseDateToTimeFormat(endTime));
-            } else {
-                item.setEndStr(DateUtils.parseDateToFormat6(endTime));
-            }
-        });
         eventWalls.sort((o1, o2) -> {
             if (o1.getAddTime() == null) {
                 return 1;
