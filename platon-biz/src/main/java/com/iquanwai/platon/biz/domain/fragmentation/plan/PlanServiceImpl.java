@@ -240,18 +240,18 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public ImprovementPlan getRunningPlan(String openid) {
-        return improvementPlanDao.loadRunningPlan(openid);
+    public ImprovementPlan getRunningPlan(Integer profileId) {
+        return improvementPlanDao.loadRunningPlan(profileId);
     }
 
     @Override
-    public ImprovementPlan getLatestPlan(String openid) {
-        return improvementPlanDao.getLastPlan(openid);
+    public ImprovementPlan getLatestPlan(Integer profileId) {
+        return improvementPlanDao.getLastPlan(profileId);
     }
 
     @Override
-    public List<ImprovementPlan> getPlans(String openid){
-        return improvementPlanDao.loadAllPlans(openid);
+    public List<ImprovementPlan> getPlans(Integer profileId){
+        return improvementPlanDao.loadAllPlans(profileId);
     }
 
     @Override
@@ -362,8 +362,8 @@ public class PlanServiceImpl implements PlanService {
         return -2;
     }
 
-    public boolean hasProblemPlan(String openId, Integer problemId) {
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(openId);
+    public boolean hasProblemPlan(Integer profileId, Integer problemId) {
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         long count = improvementPlans.stream().filter(item -> item.getProblemId().equals(problemId)).count();
         return count > 0;
     }

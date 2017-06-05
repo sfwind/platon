@@ -20,21 +20,21 @@ public interface PlanService {
 
     /**
      * 获取学员进行中的训练
-     * @param openid 学员id
+     * @param profileId 学员id
      */
-    ImprovementPlan getRunningPlan(String openid);
+    ImprovementPlan getRunningPlan(Integer profileId);
 
     /**
      * 获取学员最近的训练
-     * @param openid 学员id
+     * @param profileId 学员id
      */
-    ImprovementPlan getLatestPlan(String openid);
+    ImprovementPlan getLatestPlan(Integer profileId);
 
     /**
      * 获取学员所有的训练
-     * @param openid 学员id
+     * @param profileId 学员id
      */
-    List<ImprovementPlan> getPlans(String openid);
+    List<ImprovementPlan> getPlans(Integer profileId);
 
     /**
      * 获取简略的训练计划(不含练习)
@@ -80,10 +80,10 @@ public interface PlanService {
 
     /**
      * 查询是否有该小课
-     * @param openId 用户id
+     * @param profileId 用户id
      * @param problemId 小课id
      */
-    boolean hasProblemPlan(String openId,Integer problemId);
+    boolean hasProblemPlan(Integer profileId, Integer problemId);
 
     /**
      * 获取小课介绍

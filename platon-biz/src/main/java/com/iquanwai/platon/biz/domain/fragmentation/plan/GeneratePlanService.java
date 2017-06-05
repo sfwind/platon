@@ -7,9 +7,10 @@ public interface GeneratePlanService {
     /**
      * 为学员生成训练计划
      *  @param openid 学员id
+     *  @param profileId 学员id
      *  @param problemId 问题id
      * */
-    Integer generatePlan(String openid, Integer problemId);
+    Integer generatePlan(String openid, Integer profileId, Integer problemId);
 
     // 每节的应用练习数量
     int APPLICATION_TASK_NUMBER = 2;
