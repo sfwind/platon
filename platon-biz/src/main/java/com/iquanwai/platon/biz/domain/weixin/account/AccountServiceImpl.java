@@ -264,10 +264,10 @@ public class AccountServiceImpl implements AccountService {
                             return riseMember == null;
                         } else if (item.getVisibility() == 3) {
                             //精英版可见
-                            return riseMember.getMemberTypeId() == RiseMember.ELITE;
+                            return riseMember != null && riseMember.getMemberTypeId() == RiseMember.ELITE;
                         } else if (item.getVisibility() == 4) {
                             // 专业版可见
-                            return riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
+                            return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
                         } else if (item.getVisibility() == 5) {
                             // 会员可见
                             return riseMember != null;
