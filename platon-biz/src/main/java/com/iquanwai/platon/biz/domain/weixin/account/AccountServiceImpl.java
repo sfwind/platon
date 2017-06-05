@@ -8,13 +8,13 @@ import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
+import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
@@ -256,34 +256,24 @@ public class AccountServiceImpl implements AccountService {
                         // 不对可见性做判断
                         return true;
                     } else {
-                        if (item.getVisibility() == 0) {
+                        if (item.getVisibility() == 1) {
                             // 非会员可见
                             return riseMember == null;
-                        } else {
+                        } else if (item.getVisibility() == 3) {
+                            //精英版可见
+                            return riseMember.getMemberTypeId() == RiseMember.ELITE;
+                        } else if (item.getVisibility() == 4) {
+                            // 专业版可见
+                            return riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
+                        } else if (item.getVisibility() == 5) {
                             // 会员可见
-                            return riseMember != null && item.getVisibility().equals(riseMember.getMemberTypeId());
+                            return riseMember != null;
+                        } else {
+                            logger.error("未匹配到的可见性类型,{}", item.getVisibility());
+                            return false;
                         }
                     }
                 }).collect(Collectors.toList());
-        eventWalls.forEach(item->{
-            Date startTime = item.getStartTime();
-            Date endTime = item.getEndTime();
-            item.setStartStr(DateUtils.parseDateToFormat6(startTime));
-
-            if (DateUtils.isSameDate(startTime, endTime)) {
-                item.setEndStr(DateUtils.parseDateToTimeFormat(endTime));
-            } else {
-                item.setEndStr(DateUtils.parseDateToFormat6(endTime));
-            }
-            // 如果是要区别展示，且是会员的话，展示不同的url
-            if (item.getMemberDestUrl() != null && riseMember != null) {
-                item.setDestUrl(item.getMemberDestUrl());
-            }
-            // 如果不是会员的话，隐藏所有的会员url
-            if (riseMember == null) {
-                item.setMemberDestUrl(null);
-            }
-        });
         eventWalls.sort((o1, o2) -> {
             if (o1.getAddTime() == null) {
                 return 1;

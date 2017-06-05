@@ -23,4 +23,6 @@ public class RiseMember {
     private String name; //非DB字段
 
     public static final int ELITE = 3;
+    public static final int HALF = 1;
+    public static final int ANNUAL = 2;
 }
