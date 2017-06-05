@@ -27,6 +27,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -404,6 +405,25 @@ public class PlanServiceImpl implements PlanService {
         if(complete){
             improvementPlanDao.updateCompleteTime(planId);
         }
+    }
+
+    @Override
+    public Pair<Integer,Integer> checkCloseable(ImprovementPlan plan) {
+        Integer planId = plan.getId();
+        List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
+        Boolean complete = isDone(allPracticePlans);
+        if (!complete) {
+            return new MutablePair<>(-1, 0);
+        }
+
+        int minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
+        Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
+        // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
+        if(new Date().before(minDays)){
+            return new MutablePair<>(-2, minStudyDays);
+        }
+
+        return new MutablePair<>(1, 0);
     }
 
     @Override
