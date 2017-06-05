@@ -219,10 +219,18 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setId(submitId);
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
+        // 未提交过内容，查询草稿表 ApplicationSubmitDraft
+        if(submit == null) {
+            ApplicationSubmit applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmit(openid, id, planId);
+            applicationPractice.setDraftId(applicationSubmitDraft.getId());
+            applicationPractice.setDraft(applicationSubmitDraft.getContent());
+        }
         applicationPractice.setContent(submit == null ? null : submit.getContent());
         applicationPractice.setSubmitId(submit == null ? null : submit.getId());
         applicationPractice.setSubmitUpdateTime(submit == null ? null : DateUtils.parseDateToString(submit.getUpdateTime()));
         applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
+
+
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
@@ -322,12 +330,9 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public String loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId) {
+    public ApplicationSubmit loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId) {
         ApplicationSubmit applicationSubmit =  applicationSubmitDraftDao.loadApplicationSubmit(openId, applicationId, planId);
-        if(applicationSubmit != null) {
-            return applicationSubmit.getContent();
-        }
-        return null;
+        return applicationSubmit;
     }
 
     @Override

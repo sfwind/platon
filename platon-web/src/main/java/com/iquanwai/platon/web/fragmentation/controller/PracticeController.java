@@ -203,8 +203,12 @@ public class PracticeController {
                                                                                   @PathVariable("planId") Integer planId,
                                                                                   @PathVariable("applicationId") Integer applicationId) {
         Assert.notNull(loginUser, "用户不能为空");
-        String content = practiceService.loadAutoSaveApplicationDraft(loginUser.getOpenId(), planId, applicationId);
-        return WebUtils.result(content);
+        ApplicationSubmit applicationSubmit = practiceService.loadAutoSaveApplicationDraft(loginUser.getOpenId(), planId, applicationId);
+        if(applicationSubmit != null) {
+            return WebUtils.result(applicationSubmit);
+        } else {
+            return WebUtils.error(201, applicationSubmit);
+        }
     }
 
     /**

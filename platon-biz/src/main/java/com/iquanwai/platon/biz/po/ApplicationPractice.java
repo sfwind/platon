@@ -32,4 +32,7 @@ public class  ApplicationPractice {
     private Integer requestCommentCount; //求点赞 非db字段
     private Boolean request; //是否已经求点评 非db字段
 
+    private String draft; // 草稿内容
+    private Integer draftId; // 草稿 id
+
 }
