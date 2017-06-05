@@ -3,8 +3,6 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.EventWall;
-import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 
@@ -58,8 +56,6 @@ public interface AccountService {
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
-
-    List<EventWall> getEventWall(String openid);
 
     Region loadProvinceByName(String name);
 
