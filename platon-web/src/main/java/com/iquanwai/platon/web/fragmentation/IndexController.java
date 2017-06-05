@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -44,20 +45,22 @@ public class IndexController {
         Account account=null;
         if(accessToken!=null){
             openid = oAuthService.openId(accessToken);
-            account = accountService.getAccount(openid, false);
+            try{
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            }catch (NotFollowingException e){
+                // 未关注
+                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                return null;
+            }
         }
 
-        logger.info("account:{}", account);
-        if (account != null && account.getSubscribe() != null && account.getSubscribe() == 0) {
-            // 未关注
-            response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
-            return null;
-        }
         if(!checkAccessToken(request, openid) || account==null){
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
+
         if(ConfigUtils.prePublish()){
             // 是否预发布
             boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, openid);
@@ -85,11 +88,7 @@ public class IndexController {
             return true;
         }
 
-        if(StringUtils.isEmpty(openid)){
-            return false;
-        }
-        
-        return true;
+        return !StringUtils.isEmpty(openid);
     }
 
     private ModelAndView courseView(HttpServletRequest request, Account account){

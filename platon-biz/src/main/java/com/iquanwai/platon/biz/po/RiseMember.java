@@ -10,6 +10,7 @@ import java.util.Date;
 @Data
 public class RiseMember {
     private Integer id;
+    private Integer profileId;
     private String orderId;
     private String openId;
     private Integer memberTypeId;
