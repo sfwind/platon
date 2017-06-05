@@ -242,7 +242,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getLatestPlan(loginUser.getOpenId());
+            improvementPlan = planService.getLatestPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
