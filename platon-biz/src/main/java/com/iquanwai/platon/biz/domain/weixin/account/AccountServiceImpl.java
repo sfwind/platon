@@ -262,18 +262,23 @@ public class AccountServiceImpl implements AccountService {
                         if (item.getVisibility() == 1) {
                             // 非会员可见
                             return riseMember == null;
-                        } else if (item.getVisibility() == 3) {
-                            //精英版可见
-                            return riseMember != null && riseMember.getMemberTypeId() == RiseMember.ELITE;
-                        } else if (item.getVisibility() == 4) {
-                            // 专业版可见
-                            return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
-                        } else if (item.getVisibility() == 5) {
-                            // 会员可见
-                            return riseMember != null;
+                        } else if (item.getVisibility() == 2) {
+                            // 非会员，专业版可见
+                            return riseMember == null || riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
                         } else {
-                            logger.error("未匹配到的可见性类型,{}", item.getVisibility());
-                            return false;
+                            if (item.getVisibility() == 3) {
+                                //精英版可见
+                                return riseMember != null && riseMember.getMemberTypeId() == RiseMember.ELITE;
+                            } else if (item.getVisibility() == 4) {
+                                // 专业版可见
+                                return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
+                            } else if (item.getVisibility() == 5) {
+                                // 会员可见
+                                return riseMember != null;
+                            } else {
+                                logger.error("未匹配到的可见性类型,{}", item.getVisibility());
+                                return false;
+                            }
                         }
                     }
                 }).collect(Collectors.toList());
