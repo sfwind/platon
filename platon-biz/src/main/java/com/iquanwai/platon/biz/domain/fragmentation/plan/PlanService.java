@@ -104,6 +104,14 @@ public interface PlanService {
     void checkPlanComplete(Integer practicePlanId);
 
     /**
+     * 查看是否可以完成训练
+     * @param plan 计划
+     * @return left:-1,未完成全部必做,-2,未满足最小完成天数
+     *  right:最小完成天数
+     */
+    Pair<Integer,Integer> checkCloseable(ImprovementPlan plan);
+
+    /**
      * 记录用户当前所进行的小节序号
      * @param planId 训练id
      * @param series 第几小节
