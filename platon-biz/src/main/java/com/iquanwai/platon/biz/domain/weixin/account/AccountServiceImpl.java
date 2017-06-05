@@ -8,11 +8,14 @@ import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
-import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.EventWall;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
@@ -275,12 +278,12 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }).collect(Collectors.toList());
         eventWalls.sort((o1, o2) -> {
-            if (o1.getAddTime() == null) {
+            if (o1.getStartTime() == null) {
                 return 1;
-            } else if (o2.getAddTime() == null) {
+            } else if (o2.getStartTime() == null) {
                 return -1;
             }
-            return o2.getAddTime().before(o1.getAddTime()) ? -1 : 1;
+            return o2.getStartTime().before(o1.getStartTime()) ? -1 : 1;
         });
         return eventWalls;
     }
