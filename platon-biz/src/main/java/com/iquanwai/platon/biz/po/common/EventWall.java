@@ -17,7 +17,6 @@ public class EventWall {
     private Integer type; // 活动类型
     private String pic; // 头图
     private String destUrl; // 千聊链接
-    private String memberDestUrl; // 会员跳转的url
     private Date startTime; // 开始时间
     private Date endTime; // 结束时间
     private Date addTime;

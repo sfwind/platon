@@ -346,9 +346,18 @@ public class AccountServiceImpl implements AccountService {
                         if (item.getVisibility() == 0) {
                             // 非会员可见
                             return riseMember == null;
-                        } else {
+                        } else if (item.getVisibility() == 3) {
+                            //精英版可见
+                            return riseMember.getMemberTypeId() == RiseMember.ELITE;
+                        } else if (item.getVisibility() == 4) {
+                            // 专业版可见
+                            return riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
+                        } else if (item.getVisibility() == 5) {
                             // 会员可见
-                            return riseMember != null && item.getVisibility().equals(riseMember.getMemberTypeId());
+                            return riseMember != null;
+                        } else {
+                            logger.error("未匹配到的可见性类型,{}", item.getVisibility());
+                            return false;
                         }
                     }
                 }).collect(Collectors.toList());
@@ -361,14 +370,6 @@ public class AccountServiceImpl implements AccountService {
                 item.setEndStr(DateUtils.parseDateToTimeFormat(endTime));
             } else {
                 item.setEndStr(DateUtils.parseDateToFormat6(endTime));
-            }
-            // 如果是要区别展示，且是会员的话，展示不同的url
-            if (item.getMemberDestUrl() != null && riseMember != null) {
-                item.setDestUrl(item.getMemberDestUrl());
-            }
-            // 如果不是会员的话，隐藏所有的会员url
-            if (riseMember == null) {
-                item.setMemberDestUrl(null);
             }
         });
         eventWalls.sort((o1, o2) -> {
