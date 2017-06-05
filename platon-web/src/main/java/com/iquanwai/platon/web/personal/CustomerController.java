@@ -153,7 +153,7 @@ public class CustomerController {
                 .function("RISE")
                 .action("查询小课信息");
         operationLogService.log(operationLog);
-        List<ImprovementPlan> plans = planService.getPlans(loginUser.getOpenId());
+        List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         PlanListDto list = new PlanListDto();
         List<PlanDto> runningPlans = Lists.newArrayList();
         List<PlanDto> donePlans = Lists.newArrayList();

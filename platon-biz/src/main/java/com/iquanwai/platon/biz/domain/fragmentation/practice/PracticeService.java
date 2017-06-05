@@ -104,7 +104,7 @@ public interface PracticeService {
      * @param referencedId 被点赞的id
      * @param openId 点赞的人
      */
-    boolean vote(Integer type, Integer referencedId, String openId);
+    boolean vote(Integer type, Integer referencedId, Integer profileId, String openId);
 
     /**
      * 查询应用练习提交记录
@@ -193,6 +193,10 @@ public interface PracticeService {
      */
     List<Knowledge> loadKnowledges(Integer practicePlanId);
 
+    /**
+     * 根据知识点id获取知识
+     * @param knowledgeId 知识点id
+     */
     Knowledge loadKnowledge(Integer knowledgeId);
 
     /**
@@ -206,15 +210,16 @@ public interface PracticeService {
      * @param submitId 文章提交id
      * @param moduleId 模块id（2-应用练习,3-小课分享）
      */
-    boolean requestComment(Integer submitId, Integer moduleId);
+    boolean requestComment(Integer submitId, Integer moduleId, Integer profileId);
 
 
     /**
      * 求点评次数
      * @param problemId 小课id
+     * @param profileId 学员id
      * @param openid 学员id
      */
-    Integer hasRequestComment(Integer problemId, String openid);
+    Integer hasRequestComment(Integer problemId, Integer profileId, String openid);
 
     /**
      * 删除评论
@@ -225,11 +230,11 @@ public interface PracticeService {
 
     /**
      * 根据应用练习
-     * @param applicationId
-     * @param openId
+     * @param applicationId 应用练习id
+     * @param openid 用户id
      * @return
      */
-    ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId, String openId);
+    ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId, String openid);
 
     /**
      * 根据Id获取ApplicationSubmit对象
