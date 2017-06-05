@@ -217,7 +217,7 @@ public class PlanController {
                 .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
         if(improvementPlan.getStatus()==ImprovementPlan.CLOSE){
-            return WebUtils.error("您的小课已完成");
+            return WebUtils.error(-4,"您的小课已完成");
         }
 
         Pair<Boolean,Integer> result = planService.completeCheck(improvementPlan);
@@ -250,7 +250,7 @@ public class PlanController {
         }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.error("您还没有制定训练计划哦");
+            return WebUtils.error(-3,"您还没有制定训练计划哦");
         }
 
         Pair<Integer,Integer> closeable = planService.checkCloseable(improvementPlan);
