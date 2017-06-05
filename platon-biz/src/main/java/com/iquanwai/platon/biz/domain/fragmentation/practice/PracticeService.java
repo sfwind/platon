@@ -61,6 +61,19 @@ public interface PracticeService {
      * */
     Boolean applicationSubmit(Integer id, String content);
 
+
+    Integer insertApplicationSubmitDraft(String openId, Integer profileId, Integer applicationId, Integer planId);
+
+    /**
+     * 定时自动保存 applciationSubmit 草稿
+     * @param draftId
+     * @param content
+     * @return
+     */
+    Integer updateApplicationSubmitDraft(Integer draftId, String content);
+
+    String loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId);
+
     /**
      * 提交小目标
      * @param id 提交id

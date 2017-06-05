@@ -8,4 +8,5 @@ import lombok.Data;
 @Data
 public class SubmitDto {
     private String answer;
+    private String draft;
 }
