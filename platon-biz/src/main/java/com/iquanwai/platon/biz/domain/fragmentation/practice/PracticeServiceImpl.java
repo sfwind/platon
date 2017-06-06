@@ -221,24 +221,20 @@ public class PracticeServiceImpl implements PracticeService {
         }
 
         // 未提交过内容，查询草稿表 ApplicationSubmitDraft
-        if(submit == null) {
-            ApplicationSubmit applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmit(openid, id, planId);
-            if(applicationSubmitDraft != null) {
+        if (submit == null) {
+            ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openid, id, planId);
+            if (applicationSubmitDraft != null) {
                 applicationPractice.setDraftId(applicationSubmitDraft.getId());
                 applicationPractice.setDraft(applicationSubmitDraft.getContent());
             }
         }
-        applicationPractice.setContent(submit == null ? null : submit.getContent());
-        applicationPractice.setSubmitId(submit == null ? null : submit.getId());
-        applicationPractice.setSubmitUpdateTime(submit == null ? null : DateUtils.parseDateToString(submit.getUpdateTime()));
-        applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
 
-        if(submit!=null){
+        if (submit != null) {
             applicationPractice.setContent(submit.getContent());
             applicationPractice.setSubmitId(submit.getId());
             applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
         }
-        applicationPractice.setPlanId(submit==null?planId:submit.getPlanId());
+        applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
@@ -319,16 +315,16 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Integer insertApplicationSubmitDraft(String openId, Integer profileId, Integer applicationId, Integer planId) {
-        ApplicationSubmit applicationSubmit = new ApplicationSubmit();
-        applicationSubmit.setOpenid(openId);
-        applicationSubmit.setProfileId(profileId);
-        applicationSubmit.setApplicationId(applicationId);
-        applicationSubmit.setPlanId(planId);
-        Integer queryId = applicationSubmitDraftDao.queryApplicationSubmitDraft(openId, applicationId, planId);
-        if (queryId <= 0) {
-            return applicationSubmitDraftDao.insertSubmitDraft(applicationSubmit);
+        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openId, applicationId, planId);
+        if (applicationSubmitDraft != null) {
+            return applicationSubmitDraft.getId();
         } else {
-            return queryId;
+            ApplicationSubmitDraft draft = new ApplicationSubmitDraft();
+            draft.setOpenid(openId);
+            draft.setProfileId(profileId);
+            draft.setApplicationId(applicationId);
+            draft.setPlanId(planId);
+            return applicationSubmitDraftDao.insertSubmitDraft(draft);
         }
     }
 
@@ -338,9 +334,9 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationSubmit loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId) {
-        ApplicationSubmit applicationSubmit =  applicationSubmitDraftDao.loadApplicationSubmit(openId, applicationId, planId);
-        return applicationSubmit;
+    public ApplicationSubmitDraft loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId) {
+        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openId, applicationId, planId);
+        return applicationSubmitDraft;
     }
 
     @Override
@@ -426,9 +422,9 @@ public class PracticeServiceImpl implements PracticeService {
                     return false;
                 }
                 submitOpenId = submit.getOpenid();
-              
+
                 List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
-                for(ImprovementPlan plan:improvementPlans){
+                for (ImprovementPlan plan : improvementPlans) {
                     if (plan.getProblemId().equals(submit.getProblemId())) {
                         planId = plan.getId();
                     }
@@ -674,7 +670,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public boolean requestComment(Integer submitId, Integer moduleId, Integer profileId) {
-        if(moduleId.equals(Constants.Module.APPLICATION)){
+        if (moduleId.equals(Constants.Module.APPLICATION)) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
             if (applicationSubmit.getRequestFeedback()) {
                 logger.warn("{} 已经是求点评状态", submitId);
@@ -699,7 +695,7 @@ public class PracticeServiceImpl implements PracticeService {
             Integer problemId = subjectArticle.getProblemId();
             String openid = subjectArticle.getOpenid();
             ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-            if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
+            if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
                 //更新求点评次数
                 improvementPlanDao.updateRequestComment(improvementPlan.getId(), improvementPlan.getRequestCommentCount() - 1);
                 //求点评

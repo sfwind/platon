@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.ws.Response;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -203,11 +202,17 @@ public class PracticeController {
                                                                                   @PathVariable("planId") Integer planId,
                                                                                   @PathVariable("applicationId") Integer applicationId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ApplicationSubmit applicationSubmit = practiceService.loadAutoSaveApplicationDraft(loginUser.getOpenId(), planId, applicationId);
-        if(applicationSubmit != null) {
-            return WebUtils.result(applicationSubmit);
+        ApplicationSubmitDraft applicationSubmitDraft = practiceService.loadAutoSaveApplicationDraft(loginUser.getOpenId(), planId, applicationId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("应用练习")
+                .function("应用练习提交")
+                .action("获取应用练习草稿");
+        operationLogService.log(operationLog);
+
+        if(applicationSubmitDraft != null) {
+            return WebUtils.result(applicationSubmitDraft);
         } else {
-            return WebUtils.error(201, applicationSubmit);
+            return WebUtils.error(201, applicationSubmitDraft);
         }
     }
 

@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ApplicationSubmitDraft;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -22,28 +23,14 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
     /**
      * ApplicationSubmitDraft 保存一条新纪录
      */
-    public Integer insertSubmitDraft(ApplicationSubmit applicationSubmit) {
+    public Integer insertSubmitDraft(ApplicationSubmitDraft applicationSubmitDraft) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into ApplicationSubmitDraft (Openid, ProfileId, ApplicationId, PlanId)" +
                 " values (?, ?, ?, ?)";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), applicationSubmit.getOpenid(), applicationSubmit.getProfileId(),
-                    applicationSubmit.getApplicationId(), applicationSubmit.getPlanId());
+            Long result = runner.insert(sql, new ScalarHandler<>(), applicationSubmitDraft.getOpenid(), applicationSubmitDraft.getProfileId(),
+                    applicationSubmitDraft.getApplicationId(), applicationSubmitDraft.getPlanId());
             return result.intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
-    public Integer queryApplicationSubmitDraft(String openId, Integer applicationId, Integer planId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ApplicationSubmitDraft where openId = ? and applicationId = ? and planId = ?";
-        try {
-            ApplicationSubmit applicationSubmit = runner.query(sql, new BeanHandler<>(ApplicationSubmit.class), openId, applicationId, planId);
-            if (applicationSubmit != null) {
-                return applicationSubmit.getId();
-            }
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -52,7 +39,6 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
 
     /**
      * 根据 id 对草稿进行保存更新
-     *
      * @param draftId
      * @param content
      * @return
@@ -68,11 +54,18 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
         return null;
     }
 
-    public ApplicationSubmit loadApplicationSubmit(String openId, Integer ApplicationId, Integer planId) {
+    /**
+     * 查询 ApplicationSubmitDraft 记录
+     * @param openId
+     * @param applicationId
+     * @param planId
+     * @return
+     */
+    public ApplicationSubmitDraft loadApplicationSubmitDraft(String openId, Integer applicationId, Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from ApplicationSubmitDraft where OpenId = ? and ApplicationId = ? and PlanId = ?";
         try {
-            return runner.query(sql, new BeanHandler<>(ApplicationSubmit.class), openId, ApplicationId, planId);
+            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), openId, applicationId, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

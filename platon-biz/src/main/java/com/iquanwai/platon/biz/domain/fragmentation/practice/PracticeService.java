@@ -72,7 +72,7 @@ public interface PracticeService {
      */
     Integer updateApplicationSubmitDraft(Integer draftId, String content);
 
-    ApplicationSubmit loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId);
+    ApplicationSubmitDraft loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId);
 
     /**
      * 提交小目标
