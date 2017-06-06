@@ -22,16 +22,17 @@ import java.util.List;
 public class ApplicationSubmitDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public int insert(ApplicationSubmit applicationSubmit){
+    public int insert(ApplicationSubmit applicationSubmit) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ApplicationSubmit(Openid, ApplicationId, PlanId, ProblemId) " +
-                "values(?,?,?,?)";
+        String sql = "insert into ApplicationSubmit(Openid, ProfileId, ApplicationId, PlanId, ProblemId) " +
+                "values(?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    applicationSubmit.getOpenid(), applicationSubmit.getApplicationId(),
+                    applicationSubmit.getOpenid(), applicationSubmit.getId(),
+                    applicationSubmit.getApplicationId(),
                     applicationSubmit.getPlanId(), applicationSubmit.getProblemId());
             return insertRs.intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
@@ -39,28 +40,28 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     /**
      * 查询用户提交记录
+     *
      * @param applicationId 应用练习id
-     * @param planId 计划id
-     * @param openid  openid
+     * @param planId        计划id
      */
-    public ApplicationSubmit load(Integer applicationId, Integer planId, String openid){
+    public ApplicationSubmit load(Integer applicationId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=? and PlanId=?";
+        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=? and PlanId=?";
         try {
-            return run.query(sql, h, openid, applicationId, planId);
+            return run.query(sql, h, profileId, applicationId, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
     }
 
-    public ApplicationSubmit load(Integer applicationId, String openid){
+    public ApplicationSubmit load(Integer applicationId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=?";
+        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=?";
         try {
-            return run.query(sql, h, openid, applicationId);
+            return run.query(sql, h, profileId, applicationId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -68,53 +69,53 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return null;
     }
 
-    public boolean firstAnswer(Integer id, String content, int length){
+    public boolean firstAnswer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
         }
         return true;
     }
 
-    public boolean answer(Integer id, String content, int length){
+    public boolean answer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set Content=?, Length=? where Id=?";
         try {
             runner.update(sql, content, length, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
         }
         return true;
     }
 
-    public boolean updatePointStatus(Integer id){
+    public boolean updatePointStatus(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set PointStatus=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
         }
         return true;
     }
 
-    public void asstFeedback(Integer id){
+    public void asstFeedback(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set Feedback=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public List<ApplicationSubmit> load(Integer applicationId){
+    public List<ApplicationSubmit> load(Integer applicationId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
         // TODO: 写死了大小
@@ -127,22 +128,22 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public void requestComment(Integer id){
+    public void requestComment(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set RequestFeedback=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public void updateContent(Integer id, String content){
+    public void updateContent(Integer id, String content) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set Content=? where Id=?";
         try {
             runner.update(sql, content, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }

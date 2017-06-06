@@ -169,15 +169,16 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ChallengePractice getChallengePractice(Integer id, String openid, Integer planId, boolean create) {
+    public ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
         ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
         // 查询该用户是否提交
-        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, openid);
+        ChallengeSubmit submit = challengeSubmitDao.load(id, planId, profileId);
         if(submit==null && create){
             // 没有提交，生成
             submit = new ChallengeSubmit();
             submit.setOpenid(openid);
+            submit.setProfileId(profileId);
             submit.setPlanId(planId);
             submit.setChallengeId(id);
             int submitId = challengeSubmitDao.insert(submit);
@@ -200,16 +201,18 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId, boolean create) {
+    public ApplicationPractice getApplicationPractice(Integer id, String openid,
+                                                      Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
         // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
-        ApplicationSubmit submit = applicationSubmitDao.load(id, planId, openid);
+        ApplicationSubmit submit = applicationSubmitDao.load(id, planId, profileId);
         if (submit == null && create) {
             // 没有提交，生成
             submit = new ApplicationSubmit();
             submit.setOpenid(openid);
+            submit.setProfileId(profileId);
             submit.setPlanId(planId);
             submit.setApplicationId(id);
             submit.setProblemId(applicationPractice.getProblemId());
@@ -686,8 +689,8 @@ public class PracticeServiceImpl implements PracticeService {
         commentDao.deleteComment(commentId);
     }
 
-    public ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId,String openId){
-        return applicationSubmitDao.load(applicationId, openId);
+    public ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId){
+        return applicationSubmitDao.load(applicationId, profileId);
     }
 
     @Override

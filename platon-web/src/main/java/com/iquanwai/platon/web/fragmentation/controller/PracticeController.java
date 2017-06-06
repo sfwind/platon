@@ -68,7 +68,8 @@ public class PracticeController {
         } else {
             // 没有planId，消息中心中查询
             // 通过applicationId反查,查看是哪个PlanId,
-            ApplicationSubmit applicationSubmit = practiceService.loadUserPlanIdByApplication(applicationId, loginUser.getOpenId());
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitByApplicationId(applicationId,
+                    loginUser.getId());
             if (applicationSubmit == null) {
                 // 没有提交过，查询当前的planId
                 ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
@@ -81,7 +82,7 @@ public class PracticeController {
         }
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), planId, false);
+                loginUser.getOpenId(), loginUser.getId(), planId, false);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -108,7 +109,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                loginUser.getOpenId(), improvementPlan.getId(), false);
+                loginUser.getOpenId(), loginUser.getId(), improvementPlan.getId(), false);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -126,7 +127,8 @@ public class PracticeController {
                                                                @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         // 先生成，之后走之前逻辑
-        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId, loginUser.getOpenId(), planId, true);
+        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId, loginUser.getOpenId(),
+                loginUser.getId(), planId, true);
         Integer submitId = challengePractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
@@ -153,7 +155,8 @@ public class PracticeController {
                                                                  @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
-        ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId, loginUser.getOpenId(), planId, true);
+        ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
+                loginUser.getOpenId(), loginUser.getId(), planId, true);
         Integer submitId = applicationPractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
@@ -225,7 +228,7 @@ public class PracticeController {
                 .memo(applicationId.toString());
         operationLogService.log(operationLog);
         List<RiseWorkInfoDto> submits = practiceService.loadApplicationSubmits(applicationId).stream()
-                .filter(item -> !item.getOpenid().equals(loginUser.getOpenId())).map(item -> {
+                .filter(item -> !item.getProfileId().equals(loginUser.getId())).map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
@@ -233,8 +236,8 @@ public class PracticeController {
                     dto.setPublishTime(item.getPublishTime());
                     dto.setType(Constants.PracticeType.APPLICATION);
                     dto.setSubmitId(item.getId());
-                    Profile account = accountService.getProfile(item.getOpenid(), false);
-                    if(account!=null) {
+                    Profile account = accountService.getProfile(item.getProfileId());
+                    if (account != null) {
                         dto.setUserName(account.getNickname());
                         dto.setHeadImage(account.getHeadimgurl());
                         dto.setRole(account.getRole());
@@ -257,7 +260,7 @@ public class PracticeController {
                 }).sorted((left, right) -> {
                     //按发布时间排序
                     try {
-                        return (int)((right.getPublishTime().getTime() - left.getPublishTime().getTime()) / 1000);
+                        return (int) ((right.getPublishTime().getTime() - left.getPublishTime().getTime()) / 1000);
                     } catch (Exception e) {
                         LOGGER.error("应用任务文章排序异常", e);
                         return 0;
@@ -426,6 +429,7 @@ public class PracticeController {
         Integer submitId = practiceService.submitSubjectArticle(new SubjectArticle(
                 workInfoDto.getSubmitId(),
                 loginUser.getOpenId(),
+                loginUser.getId(),
                 problemId,
                 1,
                 0,
