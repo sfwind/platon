@@ -12,7 +12,7 @@ public class EventWall {
     private Integer id;
     private String title; // 活动标题
     private String publisher; // 活动发起人
-    private String password; // 密码
+    private String subHead; // 副标题
     private String time;
     private Boolean banner; // 是否放在banner
     private Integer type; // 活动类型
