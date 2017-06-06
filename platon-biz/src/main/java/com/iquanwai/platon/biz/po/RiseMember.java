@@ -10,6 +10,7 @@ import java.util.Date;
 @Data
 public class RiseMember {
     private Integer id;
+    private Integer profileId;
     private String orderId;
     private String openId;
     private Integer memberTypeId;
@@ -22,4 +23,6 @@ public class RiseMember {
     private String name; //非DB字段
 
     public static final int ELITE = 3;
+    public static final int HALF = 1;
+    public static final int ANNUAL = 2;
 }

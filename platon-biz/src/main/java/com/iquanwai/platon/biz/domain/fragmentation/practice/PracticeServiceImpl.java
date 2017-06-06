@@ -219,6 +219,7 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setId(submitId);
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
+
         // 未提交过内容，查询草稿表 ApplicationSubmitDraft
         if(submit == null) {
             ApplicationSubmit applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmit(openid, id, planId);
@@ -232,7 +233,12 @@ public class PracticeServiceImpl implements PracticeService {
         applicationPractice.setSubmitUpdateTime(submit == null ? null : DateUtils.parseDateToString(submit.getUpdateTime()));
         applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
 
-
+        if(submit!=null){
+            applicationPractice.setContent(submit.getContent());
+            applicationPractice.setSubmitId(submit.getId());
+            applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
+        }
+        applicationPractice.setPlanId(submit==null?planId:submit.getPlanId());
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
@@ -392,8 +398,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public boolean vote(Integer type, Integer referencedId, String openId) {
-        HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, openId);
+    public boolean vote(Integer type, Integer referencedId, Integer profileId, String openid) {
+        HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, openid);
         if (vote == null) {
             Integer planId = null;
             String submitOpenId = null;
@@ -420,8 +426,9 @@ public class PracticeServiceImpl implements PracticeService {
                     return false;
                 }
                 submitOpenId = submit.getOpenid();
-                List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(submitOpenId);
-                for (ImprovementPlan plan : improvementPlans) {
+              
+                List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
+                for(ImprovementPlan plan:improvementPlans){
                     if (plan.getProblemId().equals(submit.getProblemId())) {
                         planId = plan.getId();
                     }
@@ -429,7 +436,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             HomeworkVote homeworkVote = new HomeworkVote();
             homeworkVote.setReferencedId(referencedId);
-            homeworkVote.setVoteOpenId(openId);
+            homeworkVote.setVoteOpenId(openid);
             homeworkVote.setType(type);
             homeworkVote.setVotedOpenid(submitOpenId);
             homeworkVote.setDevice(Constants.Device.MOBILE);
@@ -464,8 +471,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Pair<Integer, String> replyComment(Integer moduleId, Integer referId, String openId,
                                               String content, Integer repliedId) {
-        boolean isAsst = false;
-
         Comment comment = new Comment();
         comment.setModuleId(moduleId);
         comment.setReferencedId(referId);
@@ -668,8 +673,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public boolean requestComment(Integer submitId, Integer moduleId) {
-        if (moduleId.equals(Constants.Module.APPLICATION)) {
+    public boolean requestComment(Integer submitId, Integer moduleId, Integer profileId) {
+        if(moduleId.equals(Constants.Module.APPLICATION)){
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
             if (applicationSubmit.getRequestFeedback()) {
                 logger.warn("{} 已经是求点评状态", submitId);
@@ -693,8 +698,8 @@ public class PracticeServiceImpl implements PracticeService {
 
             Integer problemId = subjectArticle.getProblemId();
             String openid = subjectArticle.getOpenid();
-            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
-            if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+            if(improvementPlan!=null && improvementPlan.getRequestCommentCount()>0){
                 //更新求点评次数
                 improvementPlanDao.updateRequestComment(improvementPlan.getId(), improvementPlan.getRequestCommentCount() - 1);
                 //求点评
@@ -706,8 +711,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Integer hasRequestComment(Integer problemId, String openid) {
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(openid, problemId);
+    public Integer hasRequestComment(Integer problemId, Integer profileId, String openid) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
             return improvementPlan.getRequestCommentCount();
         }
