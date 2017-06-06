@@ -147,4 +147,6 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+
+
 }

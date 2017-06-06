@@ -55,7 +55,7 @@ public class PracticeController {
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId",required = false) Integer planId) {
+                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
         if (planId != null) {
@@ -95,8 +95,8 @@ public class PracticeController {
 
     @RequestMapping("/challenge/start/{challengeId}")
     public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
-                                                                         @PathVariable Integer challengeId,
-                                                              @RequestParam(name = "planId",required = false) Integer planId){
+                                                              @PathVariable Integer challengeId,
+                                                              @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
@@ -104,7 +104,7 @@ public class PracticeController {
         }else{
             improvementPlan = planService.getPlan(planId);
         }
-        if(improvementPlan==null){
+        if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
@@ -174,6 +174,49 @@ public class PracticeController {
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(result);
+    }
+
+    @RequestMapping(value = "/application/autosave/{planId}/{applicationId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> autoSaveApplication(LoginUser loginUser,
+                                                                   @PathVariable("planId") Integer planId,
+                                                                   @PathVariable("applicationId") Integer applicationId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+        Integer profileId = profile.getId();
+        Integer draftId = practiceService.insertApplicationSubmitDraft(loginUser.getOpenId(), profileId, applicationId, planId);
+        return WebUtils.result(draftId);
+    }
+
+    @RequestMapping(value = "/application/autoupdate/{draftId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> autoUpdateApplication(LoginUser loginUser, @PathVariable("draftId") Integer id,
+                                                                     @RequestBody SubmitDto submitDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(submitDto.getDraft(), "内容不能为空");
+        Integer result = practiceService.updateApplicationSubmitDraft(id, submitDto.getDraft());
+        if (result > 0) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("自动保存失败");
+        }
+    }
+
+    @RequestMapping(value = "/application/getDraft/{planId}/{applicationId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadAutoSaveApplicationSubmitDraft(LoginUser loginUser,
+                                                                                  @PathVariable("planId") Integer planId,
+                                                                                  @PathVariable("applicationId") Integer applicationId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        ApplicationSubmitDraft applicationSubmitDraft = practiceService.loadAutoSaveApplicationDraft(loginUser.getOpenId(), planId, applicationId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("应用练习")
+                .function("应用练习提交")
+                .action("获取应用练习草稿");
+        operationLogService.log(operationLog);
+
+        if(applicationSubmitDraft != null) {
+            return WebUtils.result(applicationSubmitDraft);
+        } else {
+            return WebUtils.error(201, applicationSubmitDraft);
+        }
     }
 
     /**
@@ -370,6 +413,7 @@ public class PracticeController {
 
     /**
      * 移动应用练习评论回复
+     *
      * @param loginUser
      * @param moduleId
      * @param submitId
@@ -378,16 +422,16 @@ public class PracticeController {
      */
     @RequestMapping(value = "/comment/reply/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> commentReply(LoginUser loginUser,
-            @PathVariable("moduleId") Integer moduleId,
-            @PathVariable("submitId") Integer submitId,
-            @RequestBody RiseWorkCommentDto dto) {
+                                                            @PathVariable("moduleId") Integer moduleId,
+                                                            @PathVariable("submitId") Integer submitId,
+                                                            @RequestBody RiseWorkCommentDto dto) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
-        if(result.getLeft() > 0) {
+        if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
             resultDto.setId(result.getLeft());
@@ -424,6 +468,7 @@ public class PracticeController {
                                                                     @RequestBody RiseWorkInfoDto workInfoDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "难题不能为空");
+
         boolean b = planService.hasProblemPlan(loginUser.getId(), problemId);
         if(!b){
             return WebUtils.error("您并没有该小课，无法提交");
@@ -444,7 +489,7 @@ public class PracticeController {
                 .action("移动小课输出区提交")
                 .memo(submitId + "");
         operationLogService.log(operationLog);
-        if(submitId==-1){
+        if (submitId == -1) {
             return WebUtils.error("提交失败,请保存提交内容，并联系管理员");
         }
         practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
@@ -499,6 +544,7 @@ public class PracticeController {
                     dto.setTitle(item.getTitle());
                     dto.setRequest(item.getRequestFeedback());
                     //设置剩余请求次数
+
                     dto.setRequestCommentCount(practiceService.hasRequestComment(problemId,
                             loginUser.getId(), loginUser.getOpenId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT,item.getId()));
@@ -536,7 +582,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> loadSubject(LoginUser loginUser, @PathVariable("submitId") Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
         SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
-        if(subjectArticle!=null){
+        if (subjectArticle != null) {
             RiseWorkInfoDto dto = new RiseWorkInfoDto();
             dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
             dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
@@ -571,7 +617,7 @@ public class PracticeController {
                     .memo(submitId.toString());
             operationLogService.log(operationLog);
             return WebUtils.result(dto);
-        }else{
+        } else {
             return WebUtils.error("小课分享不存在");
         }
 
@@ -592,7 +638,7 @@ public class PracticeController {
 
     @RequestMapping("/knowledge/start/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> startKnowledge(LoginUser loginUser,
-                                                                @PathVariable Integer practicePlanId){
+                                                              @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -619,7 +665,7 @@ public class PracticeController {
 
     @RequestMapping("/knowledge/learn/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
-                                                              @PathVariable Integer practicePlanId){
+                                                              @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         practiceService.learnKnowledge(practicePlanId);
         planService.checkPlanComplete(practicePlanId);
@@ -636,7 +682,7 @@ public class PracticeController {
     @RequestMapping(value = "/request/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> requestComment(LoginUser loginUser,
                                                               @PathVariable Integer moduleId,
-                                                              @PathVariable Integer submitId){
+                                                              @PathVariable Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
         boolean result = practiceService.requestComment(submitId, moduleId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -645,16 +691,16 @@ public class PracticeController {
                 .action("求点评")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        if(result){
+        if (result) {
             return WebUtils.success();
-        }else{
+        } else {
             return WebUtils.error("本小课求点评次数已用完");
         }
     }
 
     @RequestMapping("/delete/comment/{commentId}")
     public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser,
-                                                              @PathVariable Integer commentId) {
+                                                             @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "用户不能为空");
         practiceService.deleteComment(commentId);
 
@@ -670,7 +716,7 @@ public class PracticeController {
     @RequestMapping("/knowledge/discuss/{knowledgeId}/{offset}")
     public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
                                                                @PathVariable Integer knowledgeId,
-                                                               @PathVariable Integer offset){
+                                                               @PathVariable Integer offset) {
         Assert.notNull(loginUser, "用户不能为空");
         Page page = new Page();
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
@@ -696,7 +742,7 @@ public class PracticeController {
     @RequestMapping(value = "/knowledge/discuss", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
-        if(discussDto.getComment()==null || discussDto.getComment().length()>300){
+        if (discussDto.getComment() == null || discussDto.getComment().length() > 300) {
             LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }
@@ -717,7 +763,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> deleteKnowledgeDiscuss(LoginUser loginUser, @PathVariable Integer id) {
         int result = practiceDiscussService.deleteKnowledgeDiscussById(id);
         String respMsg;
-        if(result > 0) {
+        if (result > 0) {
             respMsg = "删除成功";
         } else {
             respMsg = "操作失败";

@@ -41,6 +41,8 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
+    private ApplicationSubmitDraftDao applicationSubmitDraftDao;
+    @Autowired
     private ChallengeSubmitDao challengeSubmitDao;
     @Autowired
     private WarmupSubmitDao warmupSubmitDao;
@@ -221,13 +223,21 @@ public class PracticeServiceImpl implements PracticeService {
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
 
+        // 未提交过内容，查询草稿表 ApplicationSubmitDraft
+        if (submit == null) {
+            ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openid, id, planId);
+            if (applicationSubmitDraft != null) {
+                applicationPractice.setDraftId(applicationSubmitDraft.getId());
+                applicationPractice.setDraft(applicationSubmitDraft.getContent());
+            }
+        }
+
         if (submit != null) {
             applicationPractice.setContent(submit.getContent());
             applicationPractice.setSubmitId(submit.getId());
             applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
         }
         applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
-
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
@@ -304,6 +314,32 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
         return result;
+    }
+
+    @Override
+    public Integer insertApplicationSubmitDraft(String openId, Integer profileId, Integer applicationId, Integer planId) {
+        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openId, applicationId, planId);
+        if (applicationSubmitDraft != null) {
+            return applicationSubmitDraft.getId();
+        } else {
+            ApplicationSubmitDraft draft = new ApplicationSubmitDraft();
+            draft.setOpenid(openId);
+            draft.setProfileId(profileId);
+            draft.setApplicationId(applicationId);
+            draft.setPlanId(planId);
+            return applicationSubmitDraftDao.insertSubmitDraft(draft);
+        }
+    }
+
+    @Override
+    public Integer updateApplicationSubmitDraft(Integer draftId, String content) {
+        return applicationSubmitDraftDao.updateApplicationSubmitDraft(draftId, content);
+    }
+
+    @Override
+    public ApplicationSubmitDraft loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId) {
+        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openId, applicationId, planId);
+        return applicationSubmitDraft;
     }
 
     @Override
