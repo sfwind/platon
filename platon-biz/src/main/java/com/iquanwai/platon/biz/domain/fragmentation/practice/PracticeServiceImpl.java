@@ -222,8 +222,10 @@ public class PracticeServiceImpl implements PracticeService {
         // 未提交过内容，查询草稿表 ApplicationSubmitDraft
         if(submit == null) {
             ApplicationSubmit applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmit(openid, id, planId);
-            applicationPractice.setDraftId(applicationSubmitDraft.getId());
-            applicationPractice.setDraft(applicationSubmitDraft.getContent());
+            if(applicationSubmitDraft != null) {
+                applicationPractice.setDraftId(applicationSubmitDraft.getId());
+                applicationPractice.setDraft(applicationSubmitDraft.getContent());
+            }
         }
         applicationPractice.setContent(submit == null ? null : submit.getContent());
         applicationPractice.setSubmitId(submit == null ? null : submit.getId());
