@@ -93,10 +93,10 @@ public interface PracticeService {
      * 获取点赞记录
      * @param type 点赞类型
      * @param referId 被点赞的id
-     * @param openId 点赞的openId
+     * @param profileId 点赞的profileId
      * @return 点赞记录
      */
-    HomeworkVote loadVoteRecord(Integer type, Integer referId, String openId);
+    HomeworkVote loadVoteRecord(Integer type, Integer referId, Integer profileId);
 
     /**
      * 点赞
@@ -129,7 +129,7 @@ public interface PracticeService {
      * @param openId 评论人
      * @param content 评论内容
      */
-    Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content);
+    Pair<Integer,String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content);
 
     /**
      * 回复评论
@@ -139,7 +139,7 @@ public interface PracticeService {
      * @param content 评论内容
      * @param repliedId 被回复评论id
      */
-    Pair<Integer,String> replyComment(Integer moduleId, Integer referId,
+    Pair<Integer,String> replyComment(Integer moduleId, Integer referId, Integer profileId,
                                       String openId, String content, Integer repliedId);
 
     /*

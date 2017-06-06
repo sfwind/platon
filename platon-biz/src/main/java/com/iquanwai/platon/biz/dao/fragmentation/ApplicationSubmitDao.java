@@ -28,7 +28,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
                 "values(?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    applicationSubmit.getOpenid(), applicationSubmit.getId(),
+                    applicationSubmit.getOpenid(), applicationSubmit.getProfileId(),
                     applicationSubmit.getApplicationId(),
                     applicationSubmit.getPlanId(), applicationSubmit.getProblemId());
             return insertRs.intValue();

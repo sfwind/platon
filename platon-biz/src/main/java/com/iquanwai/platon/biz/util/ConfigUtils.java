@@ -200,12 +200,7 @@ public class ConfigUtils {
 	}
 
 	public static Boolean isHttps(){
-		String value = zkConfigUtils.getValue("open.https", "/quanwai/config/arch/");
-		if(value == null){
-			return false;
-		}
-
-		return Boolean.valueOf(value);
+		return getBooleanValue("open.https");
 	}
 
 }

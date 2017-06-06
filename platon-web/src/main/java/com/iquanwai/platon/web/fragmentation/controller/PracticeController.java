@@ -246,7 +246,8 @@ public class PracticeController {
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
                     dto.setPriority(item.getPriority());
                     // 查询我对它的点赞状态
-                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(), loginUser.getOpenId());
+                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(),
+                            loginUser.getId());
                     if (myVote != null && myVote.getDel() == 0) {
                         // 点赞中
                         dto.setVoteStatus(1);
@@ -300,7 +301,7 @@ public class PracticeController {
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
-            Profile account = accountService.getProfile(item.getCommentOpenId(), false);
+            Profile account = accountService.getProfile(item.getCommentProfileId());
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
             if (account != null) {
                 dto.setId(item.getId());
@@ -311,7 +312,7 @@ public class PracticeController {
                 dto.setRepliedComment(item.getRepliedComment());
                 dto.setRepliedName(account.getNickname());
                 dto.setSignature(account.getSignature());
-                dto.setIsMine(loginUser.getOpenId().equals(item.getCommentOpenId()));
+                dto.setIsMine(loginUser.getId().equals(item.getCommentProfileId()));
                 dto.setRole(account.getRole());
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
@@ -342,7 +343,8 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
-        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getOpenId(), dto.getComment());
+        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
+                loginUser.getOpenId(), dto.getComment());
         if (result.getLeft()>0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -383,7 +385,7 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
-        Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId,
+        Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
         if(result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
@@ -395,7 +397,7 @@ public class PracticeController {
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
             resultDto.setRole(loginUser.getRole());
             resultDto.setSignature(loginUser.getSignature());
-            Profile profile = accountService.getProfile(replyComment.getCommentOpenId(), false);
+            Profile profile = accountService.getProfile(replyComment.getCommentProfileId());
             if(profile!=null){
                 resultDto.setRepliedName(profile.getNickname());
             }
@@ -473,7 +475,7 @@ public class PracticeController {
                     dto.setType(Constants.PracticeType.SUBJECT);
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
-                    Profile account = accountService.getProfile(item.getOpenid(), false);
+                    Profile account = accountService.getProfile(item.getProfileId());
                     if(account!=null) {
                         dto.setUserName(account.getNickname());
                         dto.setHeadImage(account.getHeadimgurl());
@@ -483,7 +485,8 @@ public class PracticeController {
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getAddTime()));
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, item.getId()));
                     // 查询我对它的点赞状态
-                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, item.getId(), loginUser.getOpenId());
+                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, item.getId(),
+                            loginUser.getId());
                     if (myVote != null && myVote.getDel() == 0) {
                         // 点赞中
                         dto.setVoteStatus(1);
@@ -492,7 +495,7 @@ public class PracticeController {
                     }
                     dto.setPerfect(item.getSequence() != null && item.getSequence() > 0);
                     dto.setAuthorType(item.getAuthorType());
-                    dto.setIsMine(item.getOpenid().equals(loginUser.getOpenId()));
+                    dto.setIsMine(item.getProfileId().equals(loginUser.getId()));
                     dto.setTitle(item.getTitle());
                     dto.setRequest(item.getRequestFeedback());
                     //设置剩余请求次数
@@ -537,20 +540,20 @@ public class PracticeController {
             RiseWorkInfoDto dto = new RiseWorkInfoDto();
             dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
             dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
-            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getOpenId()) != null ? 1 : 0);
+            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getId()) != null ? 1 : 0);
             dto.setSubmitId(submitId);
             dto.setAuthorType(subjectArticle.getAuthorType());
             dto.setContent(subjectArticle.getContent());
             dto.setTitle(subjectArticle.getTitle());
             dto.setDesc(planService.loadSubjectDesc(subjectArticle.getProblemId()));
-            Profile profile = accountService.getProfile(subjectArticle.getOpenid(), false);
+            Profile profile = accountService.getProfile(subjectArticle.getProfileId());
             if(profile!=null) {
                 dto.setHeadImage(profile.getHeadimgurl());
                 dto.setUserName(profile.getNickname());
                 dto.setRole(profile.getRole());
                 dto.setSignature(profile.getSignature());
             }
-            dto.setIsMine(loginUser.getOpenId().equals(subjectArticle.getOpenid()));
+            dto.setIsMine(loginUser.getId().equals(subjectArticle.getProfileId()));
             dto.setProblemId(subjectArticle.getProblemId());
             dto.setPerfect(subjectArticle.getSequence() > 0);
             dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getAddTime()));
