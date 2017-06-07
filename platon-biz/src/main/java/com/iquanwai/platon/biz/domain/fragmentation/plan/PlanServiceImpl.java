@@ -407,4 +407,10 @@ public class PlanServiceImpl implements PlanService {
     public void markPlan(Integer series, Integer planId) {
         improvementPlanDao.updateCurrentSeries(planId, series);
     }
+
+    @Override
+    public List<ImprovementPlan> loadUserPlans(String openId){
+        improvementPlanDao.loadUserPlans(openId);
+        return null;
+    }
 }

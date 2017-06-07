@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.Role;
 
 import java.util.List;
 
@@ -65,4 +66,6 @@ public interface AccountService {
     Region loadProvinceByName(String name);
 
     Region loadCityByName(String name);
+
+    Role getRole(String openid);
 }

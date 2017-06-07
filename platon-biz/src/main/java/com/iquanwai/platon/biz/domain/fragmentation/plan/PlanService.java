@@ -117,4 +117,6 @@ public interface PlanService {
      * @param series 第几小节
      */
     void markPlan(Integer series, Integer planId);
+
+    List<ImprovementPlan> loadUserPlans(String openId);
 }

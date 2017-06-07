@@ -28,8 +28,10 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     private OAuthService oAuthService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private LoginUserService loginUserService;
 
-    private static Map<String, LoginUser> loginUserMap = Maps.newHashMap();
+//    private static Map<String, LoginUser> loginUserMap = Maps.newHashMap();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,6 +59,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             }
         }
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+
+
         if(loginUserMap.containsKey(accessToken)){
             LoginUser loginUser = loginUserMap.get(accessToken);
             // 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
