@@ -393,8 +393,8 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> seriesPracticePlans = practicePlanDao.loadBySeries(planId, series);
         //当节是否完成
         boolean complete = isDone(seriesPracticePlans);
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if(complete){
-            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
             if(improvementPlan.getCompleteSeries()<practice.getSeries()){
                 improvementPlanDao.updateProgress(planId, practice.getSeries());
             }
@@ -402,28 +402,27 @@ public class PlanServiceImpl implements PlanService {
         //所有练习是否完成
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         complete = isDone(allPracticePlans);
-        if(complete){
+        if (complete && improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
+            // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
+            improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
         }
     }
 
     @Override
-    public Pair<Integer,Integer> checkCloseable(ImprovementPlan plan) {
+    public Pair<Boolean,Integer> checkCloseable(ImprovementPlan plan) {
         Integer planId = plan.getId();
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
-        if (!complete) {
-            return new MutablePair<>(-1, 0);
-        }
 
         int minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
         Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
         // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
         if(new Date().before(minDays)){
-            return new MutablePair<>(-2, minStudyDays);
+            return new MutablePair<>(complete, minStudyDays);
+        } else {
+            return new MutablePair<>(complete, 0);
         }
-
-        return new MutablePair<>(1, 0);
     }
 
     @Override
@@ -435,10 +434,12 @@ public class PlanServiceImpl implements PlanService {
     public ImprovementReport loadUserImprovementReport(ImprovementPlan plan) {
         Problem problem = cacheService.getProblem(plan.getProblemId());
         ImprovementReport report = new ImprovementReport();
+        report.setPlanId(plan.getId());
         // problem
         report.setProblem(problem.getProblem());
+        report.setPic(problem.getPic());
         // 用时
-        Integer studyDays = DateUtils.interval(plan.getStartDate(), plan.getCompleteTime()) + 1;
+        Integer studyDays = plan.getCompleteTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCompleteTime()) + 1);
         report.setStudyDays(studyDays);
         // 打败多少人
         Integer percent = improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
@@ -452,6 +453,15 @@ public class PlanServiceImpl implements PlanService {
         Integer votedCount = homeworkVoteDao.votedCount(plan.getOpenid());
         report.setReceiveVoteCount(votedCount);
         report.setShareVoteCount(voteCount);
+        Pair<Boolean, Integer> check = checkCloseable(plan);
+        report.setMustStudyDays(check.getRight());
+        // 如果有正在进行的则不显示按钮
+        ImprovementPlan lastPlan = improvementPlanDao.getLastPlan(plan.getProfileId());
+        if (lastPlan.getStatus() == 1) {
+            report.setShowNextBtn(false);
+        } else {
+            report.setShowNextBtn(true);
+        }
         return report;
     }
 

@@ -10,8 +10,11 @@ import java.util.List;
 @Data
 public class ImprovementReport {
     private String problem; //小课
+    private Integer planId;
+    private String pic; // 头图
     private Integer totalScore; //小课总得分
     private Integer percent; //打败了百分之多少的同学
+    private Integer mustStudyDays;
     private Integer studyDays; //学习时长
     private List<Chapter> chapterList; //各个章的巩固练习得分
     private Integer applicationCompleteCount; //应用练习完成数
@@ -24,4 +27,8 @@ public class ImprovementReport {
     private Integer integratedTotalScore;//综合训练总分
     private Integer shareVoteCount; //送出多少赞
     private Integer receiveVoteCount;//收获多少赞
+
+
+    // data
+    private Boolean showNextBtn;
 }
