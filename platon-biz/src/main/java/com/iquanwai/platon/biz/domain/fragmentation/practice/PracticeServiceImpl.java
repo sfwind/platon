@@ -225,7 +225,7 @@ public class PracticeServiceImpl implements PracticeService {
 
         // 未提交过内容，查询草稿表 ApplicationSubmitDraft
         if (submit == null) {
-            ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openid, id, planId);
+            ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, id, planId);
             if (applicationSubmitDraft != null) {
                 applicationPractice.setDraftId(applicationSubmitDraft.getId());
                 applicationPractice.setDraft(applicationSubmitDraft.getContent());
@@ -318,7 +318,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Integer insertApplicationSubmitDraft(String openId, Integer profileId, Integer applicationId, Integer planId) {
-        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openId, applicationId, planId);
+        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, applicationId, planId);
         if (applicationSubmitDraft != null) {
             return applicationSubmitDraft.getId();
         } else {
@@ -334,12 +334,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Integer updateApplicationSubmitDraft(Integer draftId, String content) {
         return applicationSubmitDraftDao.updateApplicationSubmitDraft(draftId, content);
-    }
-
-    @Override
-    public ApplicationSubmitDraft loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId) {
-        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(openId, applicationId, planId);
-        return applicationSubmitDraft;
     }
 
     @Override

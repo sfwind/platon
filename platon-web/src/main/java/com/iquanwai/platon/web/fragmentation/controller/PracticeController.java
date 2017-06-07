@@ -200,25 +200,6 @@ public class PracticeController {
         }
     }
 
-    @RequestMapping(value = "/application/getDraft/{planId}/{applicationId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadAutoSaveApplicationSubmitDraft(LoginUser loginUser,
-                                                                                  @PathVariable("planId") Integer planId,
-                                                                                  @PathVariable("applicationId") Integer applicationId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        ApplicationSubmitDraft applicationSubmitDraft = practiceService.loadAutoSaveApplicationDraft(loginUser.getOpenId(), planId, applicationId);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("应用练习")
-                .function("应用练习提交")
-                .action("获取应用练习草稿");
-        operationLogService.log(operationLog);
-
-        if(applicationSubmitDraft != null) {
-            return WebUtils.result(applicationSubmitDraft);
-        } else {
-            return WebUtils.error(201, applicationSubmitDraft);
-        }
-    }
-
     /**
      * 点赞或者取消点赞
      *

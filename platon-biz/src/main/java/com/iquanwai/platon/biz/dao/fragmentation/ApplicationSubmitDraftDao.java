@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
-import com.iquanwai.platon.biz.po.ApplicationSubmit;
 import com.iquanwai.platon.biz.po.ApplicationSubmitDraft;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -28,7 +27,8 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
         String sql = "insert into ApplicationSubmitDraft (Openid, ProfileId, ApplicationId, PlanId)" +
                 " values (?, ?, ?, ?)";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), applicationSubmitDraft.getOpenid(), applicationSubmitDraft.getProfileId(),
+            Long result = runner.insert(sql, new ScalarHandler<>(), applicationSubmitDraft.getOpenid(),
+                    applicationSubmitDraft.getProfileId(),
                     applicationSubmitDraft.getApplicationId(), applicationSubmitDraft.getPlanId());
             return result.intValue();
         } catch (SQLException e) {
@@ -39,6 +39,7 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
 
     /**
      * 根据 id 对草稿进行保存更新
+     *
      * @param draftId
      * @param content
      * @return
@@ -56,16 +57,17 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
 
     /**
      * 查询 ApplicationSubmitDraft 记录
-     * @param openId
+     *
+     * @param profileId
      * @param applicationId
      * @param planId
      * @return
      */
-    public ApplicationSubmitDraft loadApplicationSubmitDraft(String openId, Integer applicationId, Integer planId) {
+    public ApplicationSubmitDraft loadApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ApplicationSubmitDraft where OpenId = ? and ApplicationId = ? and PlanId = ?";
+        String sql = "select * from ApplicationSubmitDraft where ProfileId = ? and ApplicationId = ? and PlanId = ?";
         try {
-            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), openId, applicationId, planId);
+            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), profileId, applicationId, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

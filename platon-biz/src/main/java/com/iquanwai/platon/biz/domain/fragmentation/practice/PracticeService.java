@@ -72,8 +72,6 @@ public interface PracticeService {
      */
     Integer updateApplicationSubmitDraft(Integer draftId, String content);
 
-    ApplicationSubmitDraft loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId);
-
     /**
      * 提交小目标
      * @param id 提交id
