@@ -22,28 +22,28 @@ import java.util.List;
 public class SubjectArticleDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public int insert(SubjectArticle subjectArticle){
+    public int insert(SubjectArticle subjectArticle) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into SubjectArticle(Openid, ProblemId, AuthorType, Sequence,Title, Content, Length) " +
-                "values(?,?,?,?,?,?,?)";
+        String sql = "insert into SubjectArticle(Openid, ProblemId, ProfileId, AuthorType, Sequence,Title, Content, Length) " +
+                "values(?,?,?,?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    subjectArticle.getOpenid(), subjectArticle.getProblemId(),
+                    subjectArticle.getOpenid(), subjectArticle.getProblemId(), subjectArticle.getProfileId(),
                     subjectArticle.getAuthorType(), subjectArticle.getSequence(), subjectArticle.getTitle(),
                     subjectArticle.getContent(), subjectArticle.getLength());
             return insertRs.intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
     }
 
-    public void asstFeedback(Integer id){
+    public void asstFeedback(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update SubjectArticle set Feedback=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
@@ -51,7 +51,7 @@ public class SubjectArticleDao extends PracticeDBUtil {
     public boolean update(SubjectArticle subjectArticle) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update SubjectArticle set Title = ?,Content = ?, Length = ? where Id = ?";
-        try{
+        try {
             runner.update(sql, subjectArticle.getTitle(), subjectArticle.getContent(),
                     subjectArticle.getLength(), subjectArticle.getId());
         } catch (SQLException e) {
@@ -61,10 +61,10 @@ public class SubjectArticleDao extends PracticeDBUtil {
         return true;
     }
 
-    public int count(Integer problemId){
+    public int count(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select count(1) from SubjectArticle where ProblemId = ?";
-        try{
+        try {
             return runner.query(sql, new ScalarHandler<Long>(), problemId).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -72,34 +72,35 @@ public class SubjectArticleDao extends PracticeDBUtil {
         return -1;
     }
 
-    public List<SubjectArticle> loadArticles(Integer problemId,Page page){
+    public List<SubjectArticle> loadArticles(Integer problemId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<SubjectArticle>> h = new BeanListHandler<>(SubjectArticle.class);
-        String sql = "select * from SubjectArticle where ProblemId = ? order by Sequence desc,UpdateTime desc limit " + page.getOffset() + "," + page.getLimit();
-        try{
-            return runner.query(sql,h,problemId);
+        String sql = "select * from SubjectArticle where ProblemId = ? order by Sequence desc,UpdateTime desc limit "
+                + page.getOffset() + "," + page.getLimit();
+        try {
+            return runner.query(sql, h, problemId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
     }
 
-    public void requestComment(Integer id){
+    public void requestComment(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update SubjectArticle set RequestFeedback=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public void updateContent(Integer id, String content){
+    public void updateContent(Integer id, String content) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update SubjectArticle set Content=? where Id=?";
         try {
             runner.update(sql, content, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }

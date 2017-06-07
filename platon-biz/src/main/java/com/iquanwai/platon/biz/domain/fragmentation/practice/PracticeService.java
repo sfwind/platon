@@ -44,7 +44,7 @@ public interface PracticeService {
      * @param id 小目标id
      * @param openid 学员id
      * */
-    ChallengePractice getChallengePractice(Integer id, String openid, Integer planId, boolean create);
+    ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
 
     /**
      * 获取应用练习
@@ -52,7 +52,7 @@ public interface PracticeService {
      * @param openid openid
      * @param planId 训练id
      * */
-    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer planId, boolean create);
+    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
 
     /**
      * 提交应用训练
@@ -71,8 +71,6 @@ public interface PracticeService {
      * @return
      */
     Integer updateApplicationSubmitDraft(Integer draftId, String content);
-
-    ApplicationSubmitDraft loadAutoSaveApplicationDraft(String openId, Integer planId, Integer applicationId);
 
     /**
      * 提交小目标
@@ -106,10 +104,10 @@ public interface PracticeService {
      * 获取点赞记录
      * @param type 点赞类型
      * @param referId 被点赞的id
-     * @param openId 点赞的openId
+     * @param profileId 点赞的profileId
      * @return 点赞记录
      */
-    HomeworkVote loadVoteRecord(Integer type, Integer referId, String openId);
+    HomeworkVote loadVoteRecord(Integer type, Integer referId, Integer profileId);
 
     /**
      * 点赞
@@ -142,7 +140,7 @@ public interface PracticeService {
      * @param openId 评论人
      * @param content 评论内容
      */
-    Pair<Integer,String> comment(Integer moduleId, Integer referId, String openId, String content);
+    Pair<Integer,String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content);
 
     /**
      * 回复评论
@@ -152,7 +150,7 @@ public interface PracticeService {
      * @param content 评论内容
      * @param repliedId 被回复评论id
      */
-    Pair<Integer,String> replyComment(Integer moduleId, Integer referId,
+    Pair<Integer,String> replyComment(Integer moduleId, Integer referId, Integer profileId,
                                       String openId, String content, Integer repliedId);
 
     /*
@@ -244,10 +242,10 @@ public interface PracticeService {
     /**
      * 根据应用练习
      * @param applicationId 应用练习id
-     * @param openid 用户id
+     * @param profileId 用户id
      * @return
      */
-    ApplicationSubmit loadUserPlanIdByApplication(Integer applicationId, String openid);
+    ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
 
     /**
      * 根据Id获取ApplicationSubmit对象

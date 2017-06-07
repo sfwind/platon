@@ -24,11 +24,12 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public int insert(ApplicationSubmit applicationSubmit) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ApplicationSubmit(Openid, ApplicationId, PlanId, ProblemId) " +
-                "values(?,?,?,?)";
+        String sql = "insert into ApplicationSubmit(Openid, ProfileId, ApplicationId, PlanId, ProblemId) " +
+                "values(?,?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    applicationSubmit.getOpenid(), applicationSubmit.getApplicationId(),
+                    applicationSubmit.getOpenid(), applicationSubmit.getProfileId(),
+                    applicationSubmit.getApplicationId(),
                     applicationSubmit.getPlanId(), applicationSubmit.getProblemId());
             return insertRs.intValue();
         } catch (SQLException e) {
@@ -42,26 +43,25 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
      *
      * @param applicationId 应用练习id
      * @param planId        计划id
-     * @param openid        openid
      */
-    public ApplicationSubmit load(Integer applicationId, Integer planId, String openid) {
+    public ApplicationSubmit load(Integer applicationId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=? and PlanId=?";
+        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=? and PlanId=?";
         try {
-            return run.query(sql, h, openid, applicationId, planId);
+            return run.query(sql, h, profileId, applicationId, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
     }
 
-    public ApplicationSubmit load(Integer applicationId, String openid) {
+    public ApplicationSubmit load(Integer applicationId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where Openid=? and ApplicationId=?";
+        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=?";
         try {
-            return run.query(sql, h, openid, applicationId);
+            return run.query(sql, h, profileId, applicationId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

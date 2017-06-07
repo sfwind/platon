@@ -83,7 +83,7 @@ public class ZKConfigUtils {
     }
 
     public String getArchValue(String key){
-        return getValue(key,ARCH_PATH);
+        return getValue(key, ARCH_PATH);
     }
 
     public String getValue(String key){
@@ -94,13 +94,22 @@ public class ZKConfigUtils {
             } else {
                 return getArchValue(key);
             }
+        } catch (KeeperException e) {
+            try {
+                logger.error("zk " + zkAddress + " get value", e);
+                reconnect();
+                return getValueOnce(key, CONFIG_PATH);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
-            return null;
         }
+
+        return null;
     }
 
-    public String getValue(String key,String prePath){
+    public String getValue(String key, String prePath){
         try {
             String value = CONFIG_CACHE.getIfPresent(key);
             if(value!=null){
@@ -150,7 +159,7 @@ public class ZKConfigUtils {
         return null;
     }
 
-    private String getValueOnce(String key,String prePath){
+    private String getValueOnce(String key, String prePath){
         try {
             String value = CONFIG_CACHE.getIfPresent(key);
             if(value!=null){

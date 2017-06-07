@@ -105,7 +105,7 @@ public class MessageController {
         Comment comment = practiceService.loadComment(commentId);
 
         RiseWorkCommentDto commentDto = new RiseWorkCommentDto();
-        Profile account = accountService.getProfile(comment.getCommentOpenId(), false);
+        Profile account = accountService.getProfile(comment.getCommentProfileId());
         if(account != null) {
             commentDto.setId(comment.getId());
             commentDto.setName(account.getNickname());
@@ -115,7 +115,7 @@ public class MessageController {
             commentDto.setRepliedComment(comment.getRepliedComment());
             commentDto.setRepliedName(account.getNickname());
             commentDto.setSignature(account.getSignature());
-            commentDto.setIsMine(loginUser.getOpenId().equals(comment.getCommentOpenId()));
+            commentDto.setIsMine(loginUser.getId().equals(comment.getCommentProfileId()));
             commentDto.setRepliedComment(comment.getRepliedComment());
             Profile repliedAccount = accountService.getProfile(comment.getRepliedOpenId(), false);
             if(repliedAccount!=null){

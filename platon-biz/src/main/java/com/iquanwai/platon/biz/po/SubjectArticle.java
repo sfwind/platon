@@ -13,6 +13,7 @@ import java.util.Date;
 public class SubjectArticle {
     private Integer id;
     private String openid; //提交用户openid
+    private Integer profileId; //用户id
     private Integer problemId; //难题id
     private Integer authorType; //发布者类型
     private Integer sequence; // 排序字段,非0时是精彩评论
@@ -23,9 +24,11 @@ public class SubjectArticle {
     private Date addTime; //最后更新时间
     private Boolean requestFeedback; //是否求点评
 
-    public SubjectArticle(Integer id,String openid,Integer problemId,Integer authorType,Integer sequence,String title,String content){
+    public SubjectArticle(Integer id, String openid, Integer profileId, Integer problemId,
+                          Integer authorType, Integer sequence, String title, String content) {
         this.id = id;
         this.openid = openid;
+        this.profileId = profileId;
         this.problemId = problemId;
         this.authorType = authorType;
         this.sequence = sequence;

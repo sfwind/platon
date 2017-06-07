@@ -14,10 +14,12 @@ public class Comment {
     private Integer moduleId; //评论的模块 1-挑战任务 2-应用任务
     private Integer referencedId; //外键
     private String commentOpenId;  //评论人
+    private Integer commentProfileId; //评论人id
     private String content; //评论内容
     private Integer del; //是否删除
     private Integer RepliedId; //回复id
     private String RepliedOpenId; //回复openId
+    private Integer RepliedProfileId; //回复profileId
     private String RepliedComment; //回复评论
     private Integer RepliedDel; //回复是否删除
     private Integer device; // 提交设备

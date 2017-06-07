@@ -95,7 +95,7 @@ public class IndexController {
         ModelAndView mav = new ModelAndView("course");
         String resourceUrl = ConfigUtils.staticResourceUrl();
         if(request.isSecure()){
-            resourceUrl = resourceUrl.replace("http", "https");
+            resourceUrl = resourceUrl.replace("http:", "https:");
         }
         if(request.getParameter("debug")!=null){
             if(ConfigUtils.isFrontDebug()){
