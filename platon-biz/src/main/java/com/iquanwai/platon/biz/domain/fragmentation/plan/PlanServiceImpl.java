@@ -101,14 +101,19 @@ public class PlanServiceImpl implements PlanService {
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
 
-        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
+//        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
+        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+            improvementPlan.setReportStatus(-2);
+        } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
             improvementPlan.setReportStatus(1);
-        } else if(improvementPlan.getStatus() == ImprovementPlan.CLOSE){
-            Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
-            if (check.getLeft()) {
-                improvementPlan.setReportStatus(3);
-            } else {
-                improvementPlan.setReportStatus(-1);
+        } else {
+            if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+                Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
+                if (check.getLeft()) {
+                    improvementPlan.setReportStatus(3);
+                } else {
+                    improvementPlan.setReportStatus(-1);
+                }
             }
         }
 
