@@ -101,6 +101,18 @@ public class PlanServiceImpl implements PlanService {
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
 
+        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
+            improvementPlan.setReportStatus(1);
+        } else if(improvementPlan.getStatus() == ImprovementPlan.CLOSE){
+            Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
+            if (check.getLeft()) {
+                improvementPlan.setReportStatus(3);
+            } else {
+                improvementPlan.setReportStatus(-1);
+            }
+        }
+
+
         //组装小节数据
         buildSections(improvementPlan);
 
@@ -493,8 +505,18 @@ public class PlanServiceImpl implements PlanService {
         List<Integer> applicationIds = applicationPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
         List<Integer> integratedIds = integratedPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
 
-        List<ApplicationPractice> applicationPractices = applicationPracticeDao.loadPracticeList(applicationIds);
-        List<ApplicationPractice> integratedPractices = applicationPracticeDao.loadPracticeList(integratedIds);
+        List<ApplicationPractice> applicationPractices;
+        if (CollectionUtils.isEmpty(applicationIds)) {
+            applicationPractices = Lists.newArrayList();
+        } else {
+            applicationPractices = applicationPracticeDao.loadPracticeList(applicationIds);
+        }
+        List<ApplicationPractice> integratedPractices;
+        if (CollectionUtils.isEmpty(integratedIds)) {
+            integratedPractices = Lists.newArrayList();
+        } else {
+            integratedPractices = applicationPracticeDao.loadPracticeList(integratedIds);
+        }
 
         report.setApplicationTotalScore(0);
         report.setApplicationScore(0);

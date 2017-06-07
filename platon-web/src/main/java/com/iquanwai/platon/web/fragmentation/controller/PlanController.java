@@ -216,13 +216,20 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+
+        if(improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
+            // 已经是完成状态
+            return WebUtils.success();
+        }
+
         Pair<Boolean,Integer> closeable = planService.checkCloseable(improvementPlan);
         // 只要完成必做就可以complete
         if (!closeable.getLeft()) {
             return WebUtils.error(-1, "");
-        } else if (closeable.getRight() != 0) {
-            return WebUtils.error(-2, closeable.getRight());
         }
+//        else if (closeable.getRight() != 0) {
+//            return WebUtils.error(-2, closeable.getRight());
+//        }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -486,6 +493,12 @@ public class PlanController {
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
+        }
+        // fix,如果series数据不正常，则替换为边界值
+        if (series == 0) {
+            series = 1;
+        } else if (series > improvementPlan.getTotalSeries()) {
+            series = improvementPlan.getTotalSeries();
         }
         planService.markPlan(series, improvementPlan.getId());
 

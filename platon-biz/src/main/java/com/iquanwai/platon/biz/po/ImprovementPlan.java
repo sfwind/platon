@@ -44,6 +44,14 @@ public class ImprovementPlan {
     private Boolean doneAllIntegrated; //是否做完所有综合练习
     private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
 
+    /**
+     * -1：课程结束，report不能点击 plan的status=3 and 没有完成练习<br/>
+     * 1:调用complete事件，plan的status=1时 status=2时 <br/>
+     * 3：课程结束，report btn点击后直接跳转到report ， plan.status=3 and 完成练习
+     *
+     **/
+    private Integer reportStatus; // report的状态以及点击后的行为
+
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;
     public final static int CLOSE = 3;
