@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -62,10 +63,10 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         //发送回复通知
         if (repliedId != null && !profileId.equals(warmupPracticeDiscuss.getRepliedProfileId())) {
             String url = "/rise/static/message/warmup/reply?commentId={0}&warmupPracticeId={1}";
-            url = MessageFormat.format(url, id.toString(), warmupPracticeId.toString());
+            url = MessageFormat.format(url, Objects.toString(id), Objects.toString(warmupPracticeId));
             String message = "回复了我的巩固练习问题";
-            messageService.sendMessage(message, warmupPracticeDiscuss.getRepliedProfileId().toString(),
-                    profileId.toString(), url);
+            messageService.sendMessage(message, Objects.toString(warmupPracticeDiscuss.getRepliedProfileId()),
+                    Objects.toString(profileId), url);
         }
     }
 
@@ -93,10 +94,10 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         //发送回复通知
         if (repliedId != null && !profileId.equals(knowledgeDiscuss.getRepliedProfileId())) {
             String url = "/rise/static/message/knowledge/reply?commentId={0}&knowledgeId={1}";
-            url = MessageFormat.format(url, id.toString(), knowledgeId.toString());
+            url = MessageFormat.format(url, Objects.toString(id), Objects.toString(knowledgeId));
             String message = "回复了我的知识理解问题";
-            messageService.sendMessage(message, knowledgeDiscuss.getRepliedProfileId().toString(),
-                    profileId.toString(), url);
+            messageService.sendMessage(message, Objects.toString(knowledgeDiscuss.getRepliedProfileId()),
+                    Objects.toString(profileId), url);
         }
     }
 
