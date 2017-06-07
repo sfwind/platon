@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
+import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -41,7 +42,6 @@ import java.util.stream.Collectors;
 public class CustomerController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -52,16 +52,18 @@ public class CustomerController {
     private ProblemService problemService;
     @Autowired
     private RiseMemberService riseMemberService;
+    @Autowired
+    private EventWallService eventWallService;
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String,Object>> getEventList(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("个人中心")
+                .module("活动墙")
                 .function("活动墙")
                 .action("查询");
         operationLogService.log(operationLog);
-        List<EventWall> eventWall = accountService.getEventWall(loginUser.getOpenId());
+        List<EventWall> eventWall = eventWallService.getEventWall(loginUser.getOpenId());
 
         return WebUtils.result(eventWall);
     }
@@ -163,9 +165,9 @@ public class CustomerController {
             planDto.setPoint(item.getPoint());
             planDto.setProblemId(item.getProblemId());
             planDto.setPlanId(item.getId());
-            if (item.getStatus() == 1 || item.getStatus() == 2) {
+            if (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE) {
                 runningPlans.add(planDto);
-            } else if (item.getStatus() == 3) {
+            } else if (item.getStatus() == ImprovementPlan.CLOSE) {
                 donePlans.add(planDto);
             }
         });
