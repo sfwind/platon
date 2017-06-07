@@ -188,13 +188,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         //设置名称、头像和时间
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             accounts.stream().forEach(account -> {
-                if (account.getId() == warmupPracticeDiscuss.getProfileId()) {
+                if (warmupPracticeDiscuss.getProfileId()!=null &&
+                        account.getId() == warmupPracticeDiscuss.getProfileId()) {
                     warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                     warmupPracticeDiscuss.setName(account.getNickname());
                     warmupPracticeDiscuss.setRole(account.getRole());
                     warmupPracticeDiscuss.setSignature(account.getSignature());
                 }
-                if (account.getId() == warmupPracticeDiscuss.getRepliedProfileId()) {
+                if (warmupPracticeDiscuss.getRepliedProfileId() != null &&
+                        account.getId() == warmupPracticeDiscuss.getRepliedProfileId()) {
                     warmupPracticeDiscuss.setRepliedName(account.getNickname());
                 }
             });
@@ -205,13 +207,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private void fulfilDiscuss(AbstractComment warmupPracticeDiscuss) {
         Profile account = accountService.getProfile(warmupPracticeDiscuss.getProfileId());
         //设置名称、头像和时间
-        if (account.getId() == warmupPracticeDiscuss.getProfileId()) {
+        if (warmupPracticeDiscuss.getProfileId()!=null &&
+                account.getId() == warmupPracticeDiscuss.getProfileId()) {
             warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
             warmupPracticeDiscuss.setName(account.getNickname());
             warmupPracticeDiscuss.setRole(account.getRole());
             warmupPracticeDiscuss.setSignature(account.getSignature());
         }
-        if (account.getId() == (warmupPracticeDiscuss.getRepliedProfileId())) {
+        if (warmupPracticeDiscuss.getRepliedProfileId() != null &&
+                account.getId() == warmupPracticeDiscuss.getRepliedProfileId()) {
             warmupPracticeDiscuss.setRepliedName(account.getNickname());
         }
 
