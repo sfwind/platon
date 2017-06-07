@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -25,15 +24,15 @@ public class CommentDao extends PracticeDBUtil {
 
     public int insert(Comment comment) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, Content, RepliedId," +
-                "RepliedOpenId, RepliedComment, RepliedDel, Device) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?)";
+        String insertSql = "insert into Comment(ModuleId, Type, ReferencedId, CommentOpenId, CommentProfileId, Content, " +
+                "RepliedId, RepliedOpenId, RepliedProfileId, RepliedComment, RepliedDel, Device) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
             Long id = run.insert(insertSql, new ScalarHandler<>(),
-                    comment.getModuleId(),comment.getType(), comment.getReferencedId(),
-                    comment.getCommentOpenId(), comment.getContent(), comment.getRepliedId(),
-                    comment.getRepliedOpenId(), comment.getRepliedComment(), comment.getRepliedDel()
-                    ,comment.getDevice());
+                    comment.getModuleId(), comment.getType(), comment.getReferencedId(),
+                    comment.getCommentOpenId(), comment.getCommentProfileId(), comment.getContent(),
+                    comment.getRepliedId(), comment.getRepliedOpenId(), comment.getRepliedProfileId(),
+                    comment.getRepliedComment(), comment.getRepliedDel(), comment.getDevice());
 
             return id.intValue();
         } catch (SQLException e) {
@@ -46,22 +45,23 @@ public class CommentDao extends PracticeDBUtil {
     public List<Comment> loadComments(Integer moduleId, Integer referId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
-        String sql = "SELECT * FROM Comment where ReferencedId = ? and ModuleId = ?  and Del = 0 order by Type desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+        String sql = "SELECT * FROM Comment where ReferencedId = ? and ModuleId = ?  and Del = 0 " +
+                "order by Type desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
-            return run.query(sql, h, referId,moduleId);
+            return run.query(sql, h, referId, moduleId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
     }
 
-    public Integer commentCount(Integer moduleId,Integer referId){
+    public Integer commentCount(Integer moduleId, Integer referId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ScalarHandler<Long> h = new ScalarHandler<Long>();
+        ScalarHandler<Long> h = new ScalarHandler<>();
 
         try {
             Long count = run.query("SELECT count(*) FROM Comment where ReferencedId=? and ModuleId=? and Del=0",
-                    h,referId, moduleId);
+                    h, referId, moduleId);
             return count.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -69,12 +69,12 @@ public class CommentDao extends PracticeDBUtil {
         return 0;
     }
 
-    public void deleteComment(Integer id){
+    public void deleteComment(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update Comment set Del=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }

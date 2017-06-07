@@ -2,17 +2,13 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
-import com.iquanwai.platon.biz.dao.common.EventWallDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.UserRole;
@@ -36,7 +32,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/8/10.
@@ -59,16 +54,12 @@ public class AccountServiceImpl implements AccountService {
     private List<Region> cityList;
     @Autowired
     private UserRoleDao userRoleDao;
-    @Autowired
-    private EventWallDao eventWallDao;
 
     private Map<String, Integer> userRoleMap = Maps.newHashMap();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PointRepo pointRepo;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
 
     @PostConstruct
     public void init(){
@@ -104,6 +95,25 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Profile getProfile(String openid, boolean realTime){
         return getProfileFromDB(openid);
+    }
+
+    @Override
+    public Profile getProfile(Integer profileId) {
+        Profile profile = profileDao.load(Profile.class, profileId);
+
+        if(profile!=null) {
+            if(profile.getHeadimgurl()!=null){
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
+            }
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if (role == null) {
+                profile.setRole(0);
+            } else {
+                profile.setRole(role);
+            }
+        }
+
+        return profile;
     }
 
     private Profile getProfileFromDB(String openid) {
@@ -250,53 +260,6 @@ public class AccountServiceImpl implements AccountService {
     public void reloadRegion(){
         provinceList = regionDao.loadAllProvinces();
         cityList = regionDao.loadAllCities();
-    }
-
-    @Override
-    public List<EventWall> getEventWall(String openid) {
-        RiseMember riseMember = riseMemberDao.validRiseMember(openid);
-        List<EventWall> eventWalls = eventWallDao
-                .loadAll(EventWall.class).stream().filter(item -> {
-                    if (item.getDel()) {
-                        // 删除的过滤掉
-                        return false;
-                    }
-                    if (item.getVisibility() == null) {
-                        // 不对可见性做判断
-                        return true;
-                    } else {
-                        if (item.getVisibility() == 1) {
-                            // 非会员可见
-                            return riseMember == null;
-                        } else if (item.getVisibility() == 2) {
-                            // 非会员，专业版可见
-                            return riseMember == null || riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
-                        } else {
-                            if (item.getVisibility() == 3) {
-                                //精英版可见
-                                return riseMember != null && riseMember.getMemberTypeId() == RiseMember.ELITE;
-                            } else if (item.getVisibility() == 4) {
-                                // 专业版可见
-                                return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
-                            } else if (item.getVisibility() == 5) {
-                                // 会员可见
-                                return riseMember != null;
-                            } else {
-                                logger.error("未匹配到的可见性类型,{}", item.getVisibility());
-                                return false;
-                            }
-                        }
-                    }
-                }).collect(Collectors.toList());
-        eventWalls.sort((o1, o2) -> {
-            if (o1.getStartTime() == null) {
-                return 1;
-            } else if (o2.getStartTime() == null) {
-                return -1;
-            }
-            return o2.getStartTime().before(o1.getStartTime()) ? -1 : 1;
-        });
-        return eventWalls;
     }
 
     @Override

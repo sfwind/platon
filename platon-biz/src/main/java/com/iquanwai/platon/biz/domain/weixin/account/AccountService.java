@@ -26,6 +26,11 @@ public interface AccountService {
     Profile getProfile(String openid, boolean realTime);
 
     /**
+     * 根据id获取用户详情
+     */
+    Profile getProfile(Integer profileId);
+
+    /**
      * 根据openid批量获取用户详情
      */
     List<Profile> getProfiles(List<String> openid);
@@ -59,8 +64,6 @@ public interface AccountService {
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
-
-    List<EventWall> getEventWall(String openid);
 
     Region loadProvinceByName(String name);
 
