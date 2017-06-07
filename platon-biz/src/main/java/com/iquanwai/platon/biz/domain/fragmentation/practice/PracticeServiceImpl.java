@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -79,6 +81,8 @@ public class PracticeServiceImpl implements PracticeService {
     private AsstCoachCommentDao asstCoachCommentDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private UserRoleDao userRoleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -467,10 +471,9 @@ public class PracticeServiceImpl implements PracticeService {
         // applicationSubmit Id 序列 -> votes
         List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
         List<Integer> referenceIds = votes.stream().map(vote -> vote.getReferencedId()).collect(Collectors.toList()); // vote 的 referenceId 集合
-
         // applicationSubmit Id -> comments
         List<Comment> comments = commentDao.loadAllCommentsByIds(submitsIdList); // 所有评论
-        List<UserRole> userRoles = accountService.loadAllUserRoles(); // 所有用户角色信息
+        List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
         // 已被点评
         List<ApplicationSubmit> feedbackSubmits = new ArrayList<>();
         // 未被点评，有点赞
@@ -521,8 +524,6 @@ public class PracticeServiceImpl implements PracticeService {
         votedSubmits.stream().sorted((left, right) -> {
             int leftVoteCnt = 0;
             int rightVoteCnt = 0;
-            // leftVoteCnt = practiceService.votedCount(Constants.VoteType.APPLICATION, left.getId());
-            // rightVoteCnt = practiceService.votedCount(Constants.VoteType.APPLICATION, right.getId());
             for (int i = 0; i < referenceIds.size(); i++) {
                 if (referenceIds.get(i) == left.getApplicationId()) {
                     leftVoteCnt++;

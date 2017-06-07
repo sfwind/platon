@@ -268,7 +268,6 @@ public class PracticeController {
 
         // TODO 后期如果数据量增加，容易出现效率问题
         List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId);
-
         List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
                 .map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
@@ -297,7 +296,6 @@ public class PracticeController {
                     }
                     return dto;
                 }).collect(Collectors.toList());
-
         page.setTotal(applicationSubmits.size());
         riseWorkInfoDtos = riseWorkInfoDtos.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
 
