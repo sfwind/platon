@@ -73,7 +73,7 @@ public class MessageServiceImpl implements MessageService {
                 notifyMessage.setFromUserName(SYSTEM_MESSAGE_NAME);
             }else {
                 profiles.stream().forEach(profile -> {
-                    if (notifyMessage.getFromUser().equals(profile.getOpenid())) {
+                    if (notifyMessage.getFromUser().equals(String.valueOf(profile.getId()))) {
                         notifyMessage.setFromUserAvatar(profile.getHeadimgurl());
                         notifyMessage.setFromUserName(profile.getNickname());
                     }
