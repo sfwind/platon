@@ -158,4 +158,18 @@ public class HomeworkVoteDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+
+    public List<HomeworkVote> getHomeworkVotesByIds(List<Integer> questionIds) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler<>(HomeworkVote.class);
+        String questionMark = produceQuestionMark(questionIds.size());
+        String sql = "select * from HomeworkVote where ReferencedId in (" + questionMark + ")";
+        try {
+            return runner.query(sql, h, questionIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
 }

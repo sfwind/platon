@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -25,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -457,6 +460,87 @@ public class PracticeServiceImpl implements PracticeService {
         }).collect(Collectors.toList());
     }
 
+    @Override
+    public List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId) {
+        List<ApplicationSubmit> submits = loadApplicationSubmits(applicationId); // 所有应用练习
+        List<Integer> submitsIdList = submits.stream().map(submit -> submit.getId()).collect(Collectors.toList());
+        // applicationSubmit Id 序列 -> votes
+        List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
+        List<Integer> referenceIds = votes.stream().map(vote -> vote.getReferencedId()).collect(Collectors.toList()); // vote 的 referenceId 集合
+
+        // applicationSubmit Id -> comments
+        List<Comment> comments = commentDao.loadAllCommentsByIds(submitsIdList); // 所有评论
+        List<UserRole> userRoles = accountService.loadAllUserRoles(); // 所有用户角色信息
+        // 已被点评
+        List<ApplicationSubmit> feedbackSubmits = new ArrayList<>();
+        // 未被点评，有点赞
+        List<ApplicationSubmit> votedSubmits = new ArrayList<>();
+        // 未被点评、无点赞
+        List<ApplicationSubmit> restSubmits = new ArrayList<>();
+        submits.stream().forEach(submit -> {
+            if (submit.getFeedback()) {
+                feedbackSubmits.add(submit);
+            } else if (referenceIds.contains(submit.getId())) {
+                votedSubmits.add(submit);
+            } else {
+                restSubmits.add(submit);
+            }
+        });
+        // 最新被点评 -> 最后被点评
+        feedbackSubmits.sort((left, right) -> {
+            int leftFeedbackCnt = 0;
+            int rightFeedbackCnt = 0;
+            for (int i = 0; i < comments.size(); i++) {
+                Comment comment = comments.get(i);
+                // ApplicationSubmit 的 id 和 Comment 的 referenceId 一致
+                if (left.getId() == comment.getReferencedId()) {
+                    String commentOpenId = comments.get(i).getCommentOpenId();
+                    for (int j = 0; j < userRoles.size(); j++) {
+                        if (userRoles.get(j).getOpenid().equals(commentOpenId)) {
+                            if (Role.isAsst(userRoles.get(j).getRoleId())) {
+                                leftFeedbackCnt++;
+                                break;
+                            }
+                        }
+                    }
+                } else if (right.getId() == comment.getReferencedId()) {
+                    String commentOpenId = comments.get(i).getCommentOpenId();
+                    for (int j = 0; j < userRoles.size(); j++) {
+                        if (userRoles.get(j).getOpenid().equals(commentOpenId)) {
+                            if (Role.isAsst(userRoles.get(j).getRoleId())) {
+                                leftFeedbackCnt++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return leftFeedbackCnt - rightFeedbackCnt;
+        });
+        // 最多被点赞，最少被点赞 -> 最新被点评，最后被点评
+        votedSubmits.stream().sorted((left, right) -> {
+            int leftVoteCnt = 0;
+            int rightVoteCnt = 0;
+            // leftVoteCnt = practiceService.votedCount(Constants.VoteType.APPLICATION, left.getId());
+            // rightVoteCnt = practiceService.votedCount(Constants.VoteType.APPLICATION, right.getId());
+            for (int i = 0; i < referenceIds.size(); i++) {
+                if (referenceIds.get(i) == left.getApplicationId()) {
+                    leftVoteCnt++;
+                } else if (referenceIds.get(i) == right.getApplicationId()) {
+                    rightVoteCnt++;
+                }
+            }
+            return leftVoteCnt - rightVoteCnt;
+        });
+        votedSubmits.stream().sorted(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
+        // 最新提交 -> 最后提交
+        restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
+        List<ApplicationSubmit> applicationSubmits = new ArrayList<>();
+        feedbackSubmits.stream().forEach(submit -> applicationSubmits.add(submit));
+        votedSubmits.stream().forEach(submit -> applicationSubmits.add(submit));
+        restSubmits.stream().forEach(submit -> applicationSubmits.add(submit));
+        return applicationSubmits;
+    }
 
     @Override
     public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page) {

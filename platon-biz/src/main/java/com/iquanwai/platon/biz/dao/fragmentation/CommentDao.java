@@ -79,4 +79,16 @@ public class CommentDao extends PracticeDBUtil {
         }
     }
 
+    public List<Comment> loadAllCommentsByIds(List<Integer> questionIds) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<Comment>> h = new BeanListHandler<Comment>(Comment.class);
+        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(questionIds.size()) + ")";
+        try {
+            return runner.query(sql, h, questionIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
 }

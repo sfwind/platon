@@ -125,6 +125,8 @@ public interface PracticeService {
      */
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
 
+    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId);
+
     /**
      * 查询评论
      * @param moduleId 模块id
