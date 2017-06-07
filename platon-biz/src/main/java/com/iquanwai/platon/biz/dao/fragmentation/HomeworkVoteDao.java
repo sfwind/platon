@@ -88,21 +88,6 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         }
     }
 
-    /**
-     * 取消点赞
-     *
-     * @param id 点赞的id
-     */
-    public void disVote(Integer id) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE HomeworkVote set Del=1 where Id=?";
-        try {
-            runner.update(sql, id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
     public Integer votedCount(String openId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select count(1) from HomeworkVote where VotedOpenId = ?";
