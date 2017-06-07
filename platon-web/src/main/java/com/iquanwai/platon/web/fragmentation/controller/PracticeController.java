@@ -9,6 +9,8 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -318,8 +320,15 @@ public class PracticeController {
                 .action("移动端加载评论")
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
+
+        RefreshListDto<RiseWorkCommentDto> refreshListDto = new RefreshListDto<>();
+        // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
+            UserRole userRole = accountService.getUserRole(item.getCommentOpenId());
+            if (userRole != null && Role.isAsst(userRole.getRoleId())) {
+                refreshListDto.setFeedback(true);
+            }
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
             if (account != null) {
                 dto.setId(item.getId());
@@ -339,10 +348,9 @@ public class PracticeController {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
-        RefreshListDto<RiseWorkCommentDto> dto = new RefreshListDto<>();
-        dto.setList(commentDtos);
-        dto.setEnd(page.isLastPage());
-        return WebUtils.result(dto);
+        refreshListDto.setList(commentDtos);
+        refreshListDto.setEnd(page.isLastPage());
+        return WebUtils.result(refreshListDto);
     }
 
     /**
