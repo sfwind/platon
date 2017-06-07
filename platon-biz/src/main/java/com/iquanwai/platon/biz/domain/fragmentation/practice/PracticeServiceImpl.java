@@ -496,7 +496,7 @@ public class PracticeServiceImpl implements PracticeService {
             String msg = "";
             StringBuilder url = new StringBuilder("/rise/static/message/comment/reply");
             if (moduleId == 2) {
-                msg = "评论了我的应用作业";
+                msg = "评论了我的应用练习";
             } else if (moduleId == 3) {
                 msg = "评论了我的小课分享";
             }
