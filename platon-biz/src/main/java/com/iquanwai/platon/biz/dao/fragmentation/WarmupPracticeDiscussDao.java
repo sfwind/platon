@@ -22,7 +22,7 @@ import java.util.List;
 public class WarmupPracticeDiscussDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public int insert(WarmupPracticeDiscuss discuss){
+    public int insert(WarmupPracticeDiscuss discuss) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Openid, RepliedId, Comment, " +
                 "Priority, Del, RepliedDel, RepliedOpenid, RepliedComment) " +
@@ -31,10 +31,10 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
             Long result = runner.insert(sql, new ScalarHandler<>(),
                     discuss.getWarmupPracticeId(), discuss.getOpenid(), discuss.getRepliedId(),
                     discuss.getComment(), discuss.getPriority(), discuss.getDel(),
-                    discuss.getRepliedDel(),discuss.getRepliedOpenid(), discuss.getRepliedComment());
+                    discuss.getRepliedDel(), discuss.getRepliedOpenid(), discuss.getRepliedComment());
 
             return result.intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
@@ -43,7 +43,7 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
 
     public List<WarmupPracticeDiscuss> loadDiscuss(Integer practiceId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler(WarmupPracticeDiscuss.class);
+        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
         String sql = "SELECT * FROM WarmupPracticeDiscuss where WarmupPracticeId = ? and Del = 0 " +
                 "order by Priority desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
@@ -57,17 +57,17 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
     public void deleteComment(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update WarmupPracticeDiscuss set Del = 1 where Id = ?";
-        try{
+        try {
             runner.update(sql, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public void markRepliedCommentDelete(Integer repliedId){
+    public void markRepliedCommentDelete(Integer repliedId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update WarmupPracticeDiscuss set RepliedDel = 1 where RepliedId = ?";
-        try{
+        try {
             runner.update(sql, repliedId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

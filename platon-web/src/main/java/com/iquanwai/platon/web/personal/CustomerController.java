@@ -76,7 +76,7 @@ public class CustomerController {
                 .function("RISE")
                 .action("查询帐号信息");
         operationLogService.log(operationLog);
-        Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+        Profile profile = accountService.getProfile(loginUser.getId());
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getOpenId());
@@ -95,7 +95,7 @@ public class CustomerController {
                 .action("加载个人信息");
         operationLogService.log(operationLog);
         ProfileDto profileDto = new ProfileDto();
-        Profile account = accountService.getProfile(loginUser.getOpenId(), false);
+        Profile account = accountService.getProfile(loginUser.getId());
 
         try {
             BeanUtils.copyProperties(profileDto, account);
@@ -174,7 +174,7 @@ public class CustomerController {
         list.setRunningPlans(runningPlans);
         list.setDonePlans(donePlans);
         // 查询riseId
-        Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+        Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
         list.setRiseMember(profile.getRiseMember());
         list.setPoint(profile.getPoint());

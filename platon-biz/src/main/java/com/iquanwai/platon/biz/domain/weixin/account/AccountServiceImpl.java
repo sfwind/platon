@@ -65,9 +65,8 @@ public class AccountServiceImpl implements AccountService {
     public void init(){
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
 
-        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> {
-            userRoleMap.put(userRole.getOpenid(), userRole.getRoleId());
-        });
+        userRoleList.stream().filter(userRole1 -> !userRole1.getDel())
+                .forEach(userRole -> userRoleMap.put(userRole.getOpenid(), userRole.getRoleId()));
 
         logger.info("role init complete");
     }
@@ -129,8 +128,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Profile> getProfiles(List<String> openid) {
-        List<Profile> profiles = profileDao.queryAccounts(openid);
+    public List<Profile> getProfiles(List<Integer> profileIds) {
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
         profiles.stream().forEach(profile -> {
             if(profile.getHeadimgurl()!=null){
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));

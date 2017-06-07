@@ -46,7 +46,7 @@ public class MessageController {
 
     @RequestMapping("/warmup/discuss/reply/{discussId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
-                                                             @PathVariable Integer discussId){
+                                                             @PathVariable Integer discussId) {
         Assert.notNull(loginUser, "用户不能为空");
         WarmupPracticeDiscuss warmupPracticeDiscuss = practiceDiscussService.loadDiscuss(discussId);
 
@@ -74,7 +74,7 @@ public class MessageController {
             dto.setComment(getCommentDto(loginUser, commentId));
             // 通过commentId从ApplicationPractice数据库中读取该评论所针对的文章数据
             ApplicationPractice applicationPractice = messageService.loadAppPracticeByCommentId(commentId);
-            if(applicationPractice != null) {
+            if (applicationPractice != null) {
                 dto.setId(applicationPractice.getId());
                 dto.setTopic(applicationPractice.getTopic());
                 dto.setDescription(applicationPractice.getDescription());
@@ -86,7 +86,7 @@ public class MessageController {
         if (moduleId == 3) {
             dto.setComment(getCommentDto(loginUser, commentId));
             SubjectArticle subjectArticle = messageService.loadSubjectArticleByCommentId(commentId);
-            if(subjectArticle != null) {
+            if (subjectArticle != null) {
                 dto.setId(subjectArticle.getId());
                 dto.setTopic(subjectArticle.getTitle());
                 dto.setDescription(subjectArticle.getContent());
@@ -99,29 +99,32 @@ public class MessageController {
 
     /**
      * 获取消息回复页面
+     *
      * @return
      */
     private RiseWorkCommentDto getCommentDto(LoginUser loginUser, Integer commentId) {
         Comment comment = practiceService.loadComment(commentId);
-
         RiseWorkCommentDto commentDto = new RiseWorkCommentDto();
-        Profile account = accountService.getProfile(comment.getCommentProfileId());
-        if(account != null) {
-            commentDto.setId(comment.getId());
-            commentDto.setName(account.getNickname());
-            commentDto.setAvatar(account.getHeadimgurl());
-            commentDto.setDiscussTime(DateUtils.parseDateTimeToString(comment.getAddTime()));
-            commentDto.setComment(comment.getContent());
-            commentDto.setRepliedComment(comment.getRepliedComment());
-            commentDto.setRepliedName(account.getNickname());
-            commentDto.setSignature(account.getSignature());
-            commentDto.setIsMine(loginUser.getId().equals(comment.getCommentProfileId()));
-            commentDto.setRepliedComment(comment.getRepliedComment());
-            Profile repliedAccount = accountService.getProfile(comment.getRepliedOpenId(), false);
-            if(repliedAccount!=null){
-                commentDto.setRepliedName(repliedAccount.getNickname());
+
+        if(comment!=null){
+            Profile account = accountService.getProfile(comment.getCommentProfileId());
+            if (account != null) {
+                commentDto.setId(comment.getId());
+                commentDto.setName(account.getNickname());
+                commentDto.setAvatar(account.getHeadimgurl());
+                commentDto.setDiscussTime(DateUtils.parseDateTimeToString(comment.getAddTime()));
+                commentDto.setComment(comment.getContent());
+                commentDto.setRepliedComment(comment.getRepliedComment());
+                commentDto.setRepliedName(account.getNickname());
+                commentDto.setSignature(account.getSignature());
+                commentDto.setIsMine(loginUser.getId().equals(comment.getCommentProfileId()));
+                commentDto.setRepliedComment(comment.getRepliedComment());
+                Profile repliedAccount = accountService.getProfile(comment.getRepliedProfileId());
+                if (repliedAccount != null) {
+                    commentDto.setRepliedName(repliedAccount.getNickname());
+                }
+                commentDto.setRepliedDel(comment.getRepliedDel());
             }
-            commentDto.setRepliedDel(comment.getRepliedDel());
         }
 
         return commentDto;
@@ -130,7 +133,7 @@ public class MessageController {
 
     @RequestMapping("/knowledge/discuss/reply/{discussId}")
     public ResponseEntity<Map<String, Object>> loadKnowledgeDiscuss(LoginUser loginUser,
-                                                             @PathVariable Integer discussId){
+                                                                    @PathVariable Integer discussId) {
         Assert.notNull(loginUser, "用户不能为空");
         KnowledgeDiscuss warmupPracticeDiscuss = practiceDiscussService.loadKnowledgeDiscuss(discussId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -143,19 +146,15 @@ public class MessageController {
     }
 
 
-
-
-
-
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @ModelAttribute Page page){
+    public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
         page.setPageSize(MESSAGE_PER_PAGE);
         //首次加载时把消息置为非最新
-        if(page.getPage()==1){
-            messageService.mark(loginUser.getOpenId());
+        if (page.getPage() == 1) {
+            messageService.mark(loginUser.getId());
         }
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getOpenId(), page);
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), page);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
@@ -174,15 +173,15 @@ public class MessageController {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息")
-                .function("老消息")
+                .function("未读消息")
                 .action("查看条数");
         operationLogService.log(operationLog);
-        Integer count = messageService.loadOldCount(loginUser.getOpenId());
+        Integer count = messageService.unreadCount(loginUser.getId());
         return WebUtils.result(count);
     }
 
     @RequestMapping(value = "/read/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> readMessage(LoginUser loginUser, @PathVariable Integer id){
+    public ResponseEntity<Map<String, Object>> readMessage(LoginUser loginUser, @PathVariable Integer id) {
         Assert.notNull(loginUser, "用户不能为空");
         messageService.readMessage(id);
 
@@ -195,10 +194,10 @@ public class MessageController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value="/old/get")
-    public ResponseEntity<Map<String,Object>> readAll(LoginUser loginUser){
+    @RequestMapping(value = "/old/get")
+    public ResponseEntity<Map<String, Object>> readAll(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        messageService.mark(loginUser.getOpenId());
+        messageService.mark(loginUser.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")

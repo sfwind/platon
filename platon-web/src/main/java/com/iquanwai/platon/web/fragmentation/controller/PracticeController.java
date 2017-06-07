@@ -181,7 +181,7 @@ public class PracticeController {
                                                                    @PathVariable("planId") Integer planId,
                                                                    @PathVariable("applicationId") Integer applicationId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+        Profile profile = accountService.getProfile(loginUser.getId());
         Integer profileId = profile.getId();
         Integer draftId = practiceService.insertApplicationSubmitDraft(loginUser.getOpenId(), profileId, applicationId, planId);
         return WebUtils.result(draftId);
@@ -728,7 +728,7 @@ public class PracticeController {
             return WebUtils.result("您提交的讨论字数过长");
         }
 
-        practiceDiscussService.discussKnowledge(loginUser.getOpenId(), discussDto.getReferenceId(),
+        practiceDiscussService.discussKnowledge(loginUser.getOpenId(), loginUser.getId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -771,7 +771,8 @@ public class PracticeController {
         dto.setDescription(applicationSubmit.getContent());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("应用练习")
-                .function("获取文章正文")
+                .function("浏览文章")
+                .action("获取文章正文")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(dto);

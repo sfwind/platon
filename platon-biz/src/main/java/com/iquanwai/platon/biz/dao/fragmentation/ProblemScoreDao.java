@@ -19,31 +19,32 @@ import java.util.List;
 public class ProblemScoreDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void gradeProblem(List<ProblemScore> problemScores){
+    public void gradeProblem(List<ProblemScore> problemScores) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO ProblemScore(OpenId, ProblemId, Question, Choice) VALUES (?,?,?,?)";
-        try{
+        String sql = "INSERT INTO ProblemScore(OpenId, ProfileId, ProblemId, Question, Choice) VALUES (?,?,?,?,?)";
+        try {
             Object[][] param = new Object[problemScores.size()][];
             for (int i = 0; i < problemScores.size(); i++) {
                 ProblemScore problemScore = problemScores.get(i);
                 param[i] = new Object[4];
                 param[i][0] = problemScore.getOpenid();
-                param[i][1] = problemScore.getProblemId();
-                param[i][2] = problemScore.getQuestion();
-                param[i][3] = problemScore.getChoice();
+                param[i][1] = problemScore.getProfileId();
+                param[i][2] = problemScore.getProblemId();
+                param[i][3] = problemScore.getQuestion();
+                param[i][4] = problemScore.getChoice();
             }
-            runner.batch(sql,param);
+            runner.batch(sql, param);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public int userPorblemScoreCount(String openId,Integer problem){
+    public int userProblemScoreCount(Integer profileId, Integer problem) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(*) from ProblemScore where Openid = ? and ProblemId = ?";
-        try{
+        String sql = "select count(*) from ProblemScore where ProfileId = ? and ProblemId = ?";
+        try {
             ResultSetHandler<Long> h = new ScalarHandler<>();
-            return runner.query(sql,h, openId, problem).intValue();
+            return runner.query(sql, h, profileId, problem).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -53,9 +54,9 @@ public class ProblemScoreDao extends PracticeDBUtil {
     public Double getProblemAverage(Integer problemId, Integer question) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select AVG(Choice) from fragmentCourse.ProblemScore where ProblemId = ? and Question = ? ";
-        try{
+        try {
             ResultSetHandler<Double> h = new ScalarHandler<>();
-            return runner.query(sql,h, problemId, question);
+            return runner.query(sql, h, problemId, question);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

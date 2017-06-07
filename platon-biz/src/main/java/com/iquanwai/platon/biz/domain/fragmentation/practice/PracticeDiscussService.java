@@ -14,13 +14,22 @@ public interface PracticeDiscussService {
     /**
      * 讨论某个巩固练习
      * @param openid 发表讨论的用户openid
+     * @param profileId 发表讨论的用户id
      * @param warmupPracticeId 巩固练习id
      * @param comment 讨论内容
      * @param repliedId 回复的讨论id
      * */
-    void discuss(String openid, Integer warmupPracticeId, String comment, Integer repliedId);
+    void discuss(String openid, Integer profileId, Integer warmupPracticeId, String comment, Integer repliedId);
 
-    void discussKnowledge(String openid, Integer knowledgeId, String comment, Integer repliedId);
+    /**
+     * 讨论某个知识点
+     * @param openid 发表讨论的用户openid
+     * @param profileId 发表讨论的用户id
+     * @param knowledgeId 知识点id
+     * @param comment 讨论内容
+     * @param repliedId 回复的讨论id
+     * */
+    void discussKnowledge(String openid, Integer profileId, Integer knowledgeId, String comment, Integer repliedId);
 
     /**
      * 获取讨论内容

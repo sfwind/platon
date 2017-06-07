@@ -160,7 +160,7 @@ public class PlanController {
         improvementPlan.setOpenid(null);
         if (!loginUser.getOpenRise()) {
             // 没有点开rise
-            Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            Profile profile = accountService.getProfile(loginUser.getId());
             loginUser.setOpenRise(profile.getOpenRise());
             improvementPlan.setOpenRise(profile.getOpenRise());
         }
@@ -357,7 +357,7 @@ public class PlanController {
         OpenStatusDto dto = new OpenStatusDto();
         if (!loginUser.getOpenApplication() || !loginUser.getOpenConsolidation() || !loginUser.getOpenRise()) {
             // 没有点开其中一个
-            Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            Profile profile = accountService.getProfile(loginUser.getId());
             loginUser.setOpenRise(profile.getOpenRise());
             loginUser.setOpenConsolidation(profile.getOpenConsolidation());
             loginUser.setOpenApplication(profile.getOpenApplication());

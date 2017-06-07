@@ -30,7 +30,7 @@ public interface AccountService {
     /**
      * 根据openid批量获取用户详情
      */
-    List<Profile> getProfiles(List<String> openid);
+    List<Profile> getProfiles(List<Integer> profileIds);
     /**
      * 获取所有的省份信息
      * */

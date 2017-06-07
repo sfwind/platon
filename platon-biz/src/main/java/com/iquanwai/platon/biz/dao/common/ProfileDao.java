@@ -118,16 +118,16 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
-    public List<Profile> queryAccounts(List<String> openids) {
-        if(CollectionUtils.isEmpty(openids)){
+    public List<Profile> queryAccounts(List<Integer> profileIds) {
+        if(CollectionUtils.isEmpty(profileIds)){
             return Lists.newArrayList();
         }
-        String questionMarks = produceQuestionMark(openids.size());
+        String questionMarks = produceQuestionMark(profileIds.size());
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<Profile>> h = new BeanListHandler(Profile.class);
-        String sql = "SELECT * FROM Profile where Openid in ("+ questionMarks +")";
+        ResultSetHandler<List<Profile>> h = new BeanListHandler<>(Profile.class);
+        String sql = "SELECT * FROM Profile where Id in ("+ questionMarks +")";
         try {
-            return run.query(sql, h, openids.toArray());
+            return run.query(sql, h, profileIds.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -161,24 +161,6 @@ public class ProfileDao extends DBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-    }
-
-    public Boolean submitPersonalProfile(Profile account) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set MobileNo=?, Email=?, Industry=?, Function=?, WorkingLife=?, " +
-                "RealName=?, City=?, Province=? where Openid=?";
-        try {
-            run.update(updateSql,
-                    account.getMobileNo(), account.getEmail(),
-                    account.getIndustry(), account.getFunction(),
-                    account.getWorkingLife(), account.getRealName(),
-                    account.getCity(), account.getProvince(),
-                    account.getOpenid());
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-            return false;
-        }
-        return true;
     }
 
     public void updateMeta(Profile profile) {
