@@ -55,8 +55,6 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         }
         String accessToken = loginUserService.getToken(request);
 
-
-
         if (loginUserService.isLogin(request)) {
             LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
             // 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
@@ -69,7 +67,10 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return loginUser;
         }
 
+
         LoginUserService.Platform platform = loginUserService.checkPlatform(request);
+
+
         String openId = loginUserService.openId(platform, accessToken);
         if(StringUtils.isEmpty(openId)){
             logger.error("accessToken {} is not found in db", accessToken);

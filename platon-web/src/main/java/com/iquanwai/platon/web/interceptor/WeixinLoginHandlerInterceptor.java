@@ -1,9 +1,11 @@
 package com.iquanwai.platon.web.interceptor;
 
-import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.web.util.CookieUtils;
+import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -14,6 +16,10 @@ import javax.servlet.http.HttpServletResponse;
  * Created by justin on 16/8/26.
  */
 public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private LoginUserService loginUserService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -22,11 +28,19 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
                 return true;
             }
-            String value = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-            //没有access_token,跳转去授权
+            LoginUserService.Platform platform = loginUserService.checkPlatform(request);
+            logger.info("拦截器，平台:{}", platform);
+            String value = loginUserService.getToken(request);
             if (StringUtils.isEmpty(value)) {
-                WebUtils.auth(request, response);
-                return false;
+                switch (platform) {
+                    case Wechat:
+                        WebUtils.auth(request, response);
+                        return false;
+                    case PC:
+                        logger.error("不该有pc");
+                        return false;
+                }
+
             }
         }
         return true;

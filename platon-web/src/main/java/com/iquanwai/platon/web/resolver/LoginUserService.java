@@ -171,6 +171,7 @@ public class LoginUserService {
     }
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
+        logger.info("loginUserService:检查平台:{}", platform);
         switch (platform) {
             case PC:return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
             case Wechat:return CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
