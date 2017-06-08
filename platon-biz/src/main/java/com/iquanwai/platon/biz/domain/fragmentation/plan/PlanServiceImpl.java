@@ -2,11 +2,20 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -77,6 +86,23 @@ public class PlanServiceImpl implements PlanService {
                 .collect(Collectors.toList());
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
+
+//        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
+        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+            improvementPlan.setReportStatus(-2);
+        } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
+            improvementPlan.setReportStatus(1);
+        } else {
+            if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+                Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
+                if (check.getLeft()) {
+                    improvementPlan.setReportStatus(3);
+                } else {
+                    improvementPlan.setReportStatus(-1);
+                }
+            }
+        }
+
 
         //组装小节数据
         buildSections(improvementPlan);
@@ -370,8 +396,8 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> seriesPracticePlans = practicePlanDao.loadBySeries(planId, series);
         //当节是否完成
         boolean complete = isDone(seriesPracticePlans);
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if(complete){
-            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
             if(improvementPlan.getCompleteSeries()<practice.getSeries()){
                 improvementPlanDao.updateProgress(planId, practice.getSeries());
             }
@@ -379,32 +405,32 @@ public class PlanServiceImpl implements PlanService {
         //所有练习是否完成
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         complete = isDone(allPracticePlans);
-        if(complete){
+        if (complete && improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
+            // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
+            improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
         }
     }
 
     @Override
-    public Pair<Integer,Integer> checkCloseable(ImprovementPlan plan) {
+    public Pair<Boolean,Integer> checkCloseable(ImprovementPlan plan) {
         Integer planId = plan.getId();
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
-        if (!complete) {
-            return new MutablePair<>(-1, 0);
-        }
 
         int minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
         Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
         // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
         if(new Date().before(minDays)){
-            return new MutablePair<>(-2, minStudyDays);
+            return new MutablePair<>(complete, minStudyDays);
+        } else {
+            return new MutablePair<>(complete, 0);
         }
-
-        return new MutablePair<>(1, 0);
     }
 
     @Override
     public void markPlan(Integer series, Integer planId) {
         improvementPlanDao.updateCurrentSeries(planId, series);
     }
+
 }

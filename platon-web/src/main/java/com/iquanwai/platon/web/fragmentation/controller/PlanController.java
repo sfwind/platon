@@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -15,12 +17,12 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
-import com.iquanwai.platon.web.fragmentation.dto.CompletePlanDto;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -35,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +56,8 @@ public class PlanController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ReportService reportService;
 
     @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
@@ -68,12 +71,13 @@ public class PlanController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
 
-        if(improvementPlan!=null){
-            LOGGER.error("planId {} is existed", improvementPlan.getId());
-            return WebUtils.error("先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
-        } else {
-            return WebUtils.success();
+        if (improvementPlan != null) {
+            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlan);
+            if (!check.getLeft()) {
+                return WebUtils.error(check.getRight());
+            }
         }
+        return WebUtils.success();
     }
 
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
@@ -87,8 +91,10 @@ public class PlanController {
             if(improvementPlan.getProblemId().equals(problemId)){
                 return WebUtils.result(improvementPlan.getId());
             }
-            LOGGER.error("planId {} is existed", improvementPlan.getId());
-            return WebUtils.error("先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
+            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlan);
+            if (!check.getLeft()) {
+                return WebUtils.error(check.getRight());
+            }
         }
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         for(ImprovementPlan plan:plans){
@@ -96,6 +102,14 @@ public class PlanController {
                 return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
             }
         }
+
+        if (improvementPlan != null && improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
+            // 1.正在进行中的不关闭
+            // 2.过期的不重复关闭
+            // 3.只有完成的会关闭掉
+            planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
+        }
+
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -205,10 +219,20 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        Pair<Integer,Integer> closeable = planService.checkCloseable(improvementPlan);
-        if (closeable.getLeft() != 1) {
-            return WebUtils.error(closeable.getLeft(), closeable.getRight());
+
+        if(improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
+            // 已经是完成状态
+            return WebUtils.success();
         }
+
+        Pair<Boolean,Integer> closeable = planService.checkCloseable(improvementPlan);
+        // 只要完成必做就可以complete
+        if (!closeable.getLeft()) {
+            return WebUtils.error(-1, "");
+        }
+//        else if (closeable.getRight() != 0) {
+//            return WebUtils.error(-2, closeable.getRight());
+//        }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -219,54 +243,68 @@ public class PlanController {
         if(improvementPlan.getStatus()==ImprovementPlan.CLOSE){
             return WebUtils.error(-4,"您的小课已完成");
         }
+        planService.completeCheck(improvementPlan);
 
-        Pair<Boolean,Integer> result = planService.completeCheck(improvementPlan);
-        CompletePlanDto completePlanDto = new CompletePlanDto();
-        completePlanDto.setIscomplete(result.getLeft());
-        completePlanDto.setPercent(result.getRight());
-        int minStudyDays = Double.valueOf(Math.ceil(improvementPlan.getTotalSeries() / 2.0D)).intValue();
-        Date minDays = DateUtils.afterDays(improvementPlan.getStartDate(), minStudyDays);
-            // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
-        if(new Date().before(minDays)){
-            completePlanDto.setMustStudyDays(minStudyDays);
-        } else {
-            completePlanDto.setMustStudyDays(0);
-        }
-
-        return WebUtils.result(completePlanDto);
+        return WebUtils.success();
     }
 
-
-    @RequestMapping(value = "/close", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
-                                                     @RequestParam(required = false) Integer planId){
-
+    @RequestMapping(value = "/improvement/report", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> improvementReport(LoginUser loginUser, @RequestParam(required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan;
         if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getId());
+            improvementPlan = planService.getLatestPlan(loginUser.getId());
         }else{
             improvementPlan = planService.getPlan(planId);
         }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.error(-3,"您还没有制定训练计划哦");
+            return WebUtils.result("您还没有制定训练计划哦");
         }
-
-        Pair<Integer,Integer> closeable = planService.checkCloseable(improvementPlan);
-        if (closeable.getLeft() != 1) {
-            return WebUtils.error(closeable.getLeft(), closeable.getRight());
-        }
-        planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
-                .function("完成训练")
-                .action("完成训练")
-                .memo(improvementPlan.getId()+"");
+                .function("学习报告")
+                .action("查看学习报告")
+                .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
-        return WebUtils.success();
+        ImprovementReport report = reportService.loadUserImprovementReport(improvementPlan);
+        Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
+        report.setMustStudyDays(check.getRight());
+        return WebUtils.result(report);
     }
+
+
+//    @RequestMapping(value = "/close", method = RequestMethod.POST)
+//    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
+//                                                     @RequestParam(required = false) Integer planId) {
+//
+//        Assert.notNull(loginUser, "用户不能为空");
+//        ImprovementPlan improvementPlan;
+//        if (planId == null) {
+//            improvementPlan = planService.getRunningPlan(loginUser.getId());
+//        } else {
+//            improvementPlan = planService.getPlan(planId);
+//        }
+//        if (improvementPlan == null) {
+//            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+//            return WebUtils.error(-3,"您还没有制定训练计划哦");
+//        }
+//
+//        Pair<Boolean,Integer> closeable = planService.checkCloseable(improvementPlan);
+//        if (closeable.getLeft() != 1) {
+//            return WebUtils.error(closeable.getLeft(), closeable.getRight());
+//        }
+//        planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
+//
+//        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+//                .module("训练计划")
+//                .function("完成训练")
+//                .action("完成训练")
+//                .memo(improvementPlan.getId() + "");
+//        operationLogService.log(operationLog);
+//        return WebUtils.success();
+//    }
 
     @RequestMapping(value = "/openrise", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openRise(LoginUser loginUser){
@@ -476,5 +514,21 @@ public class PlanController {
                 .memo(series.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    private Pair<Boolean,String> checkChooseNewProblem(ImprovementPlan improvementPlan){
+        Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
+        if (improvementPlan.getStatus() == 1) {
+            // status == 1 时不可以
+            LOGGER.error("planId {} is existed", improvementPlan.getId());
+            return new MutablePair<>(false,"先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
+        } else if (improvementPlan.getStatus() == 2) {
+            // STATUS == 2 已完成，查看最小完成天数
+            if (check.getRight() != 0) {
+                LOGGER.error("planId {} is existed", improvementPlan.getId());
+                return new MutablePair<>(false, "学得太猛了，再复习一下吧<br/>本小课推荐学习天数至少为" + check.getRight() + "天<br/>之后就可以开启下一小课了");
+            }
+        }
+        return new MutablePair<>(true,"");
     }
 }

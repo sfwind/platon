@@ -92,20 +92,6 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         }
     }
 
-    /**
-     * 取消点赞
-     *
-     * @param id 点赞的id
-     */
-    public void disVote(Integer id) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE HomeworkVote set Del=1 where Id=?";
-        try {
-            runner.update(sql, id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
 
     public List<HomeworkVote> getHomeworkVotesByIds(List<Integer> referencedIds) {
         if(CollectionUtils.isEmpty(referencedIds)) {
@@ -123,4 +109,26 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<HomeworkVote> votedList(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from HomeworkVote where VotedProfileId = ?";
+        try{
+            return runner.query(sql,new BeanListHandler<HomeworkVote>(HomeworkVote.class),profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+
+    public List<HomeworkVote> voteList(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from HomeworkVote where VoteProfileId = ?";
+        try{
+            return runner.query(sql,new BeanListHandler<HomeworkVote>(HomeworkVote.class),profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -13,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -149,6 +148,27 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+
+
+    public Integer problemReferenceCount(Integer problemId,List<Integer> refers){
+        if (CollectionUtils.isEmpty(refers)) {
+            return 0;
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String mask = produceQuestionMark(refers.size());
+        List<Object> params = Lists.newArrayList();
+        params.add(problemId);
+        params.addAll(refers);
+        String sql = "select Count(1) from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ")";
+
+        try{
+            return runner.query(sql, new ScalarHandler<Long>(), params.toArray()).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
 
 
