@@ -46,15 +46,15 @@ public interface AccountService {
     /**
      * 更新是否打开rise
      */
-    int updateOpenRise(String openId);
+    int updateOpenRise(Integer id);
     /**
      * 更新是否打开rise应用练习
      */
-    int updateOpenApplication(String openId);
+    int updateOpenApplication(Integer id);
     /**
      * 更新是否打开rise巩固练习
      */
-    int updateOpenConsolidation(String openId);
+    int updateOpenConsolidation(Integer id);
 
     /**
      * 在个人中心里提交用户信息

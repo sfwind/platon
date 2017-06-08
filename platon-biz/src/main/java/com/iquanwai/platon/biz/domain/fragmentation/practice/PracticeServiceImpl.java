@@ -27,8 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -171,7 +169,7 @@ public class PracticeServiceImpl implements PracticeService {
         improvementPlanDao.updateWarmupComplete(planId);
         pointRepo.risePoint(planId, point);
         //TODO:和risePoint合并
-        pointRepo.riseCustomerPoint(openid, point);
+        pointRepo.riseCustomerPoint(profileId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
 
@@ -319,7 +317,7 @@ public class PracticeServiceImpl implements PracticeService {
                 // 修改status
                 applicationSubmitDao.updatePointStatus(id);
                 // 加总分
-                pointRepo.riseCustomerPoint(submit.getOpenid(), point);
+                pointRepo.riseCustomerPoint(submit.getProfileId(), point);
             }
         }
         return result;
@@ -371,7 +369,7 @@ public class PracticeServiceImpl implements PracticeService {
                 // 修改status
                 challengeSubmitDao.updatePointStatus(id);
                 // 加总分
-                pointRepo.riseCustomerPoint(submit.getOpenid(), ConfigUtils.getChallengeScore());
+                pointRepo.riseCustomerPoint(submit.getProfileId(), ConfigUtils.getChallengeScore());
             }
 
         }
@@ -449,7 +447,7 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setDevice(Constants.Device.MOBILE);
             homeworkVoteDao.vote(homeworkVote);
             pointRepo.risePoint(planId, ConfigUtils.getVoteScore());
-            pointRepo.riseCustomerPoint(submitOpenId, ConfigUtils.getVoteScore());
+            pointRepo.riseCustomerPoint(submitProfileId, ConfigUtils.getVoteScore());
         } else {
             homeworkVoteDao.reVote(vote.getId());
         }

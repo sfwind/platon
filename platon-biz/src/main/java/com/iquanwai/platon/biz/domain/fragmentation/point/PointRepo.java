@@ -19,7 +19,7 @@ public interface PointRepo {
     /**
      * 给用户信息表加分
      */
-    void riseCustomerPoint(String openId, Integer increment);
+    void riseCustomerPoint(Integer profileId, Integer increment);
 
     /**
      * 巩固练习算分

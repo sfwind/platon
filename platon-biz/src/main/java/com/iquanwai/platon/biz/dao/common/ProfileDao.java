@@ -42,13 +42,12 @@ public class ProfileDao extends DBUtil {
         return null;
     }
 
-
-    public void updatePoint(String openId, int point) {
+    public void updatePoint(Integer id, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "UPDATE Profile SET Point = ? where Openid = ?";
+        String sql = "UPDATE Profile SET Point = ? where Id = ?";
         try {
-            asyncRun.update(sql, point, openId);
+            asyncRun.update(sql, point, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -61,9 +60,9 @@ public class ProfileDao extends DBUtil {
 
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    profile.getOpenid(), profile.getNickname(),profile.getCity(),profile.getCountry(),profile.getProvince(),
-                    profile.getHeadimgurl(),profile.getMobileNo(),profile.getEmail(),profile.getIndustry(),
-                    profile.getFunction(),profile.getWorkingLife(),profile.getRealName(),profile.getRiseId(),profile.getUnionid());
+                    profile.getOpenid(), profile.getNickname(), profile.getCity(), profile.getCountry(), profile.getProvince(),
+                    profile.getHeadimgurl(), profile.getMobileNo(), profile.getEmail(), profile.getIndustry(),
+                    profile.getFunction(), profile.getWorkingLife(), profile.getRealName(), profile.getRiseId(), profile.getUnionid());
             return insertRs.intValue();
         } catch (SQLException e) {
             if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
@@ -74,12 +73,12 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
-    public int updateOpenRise(String openId) {
+    public int updateOpenRise(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update Profile Set OpenRise=1 where Openid=?";
+        String updateSql = "Update Profile Set OpenRise=1 where Id=?";
         try {
-            Future<Integer> result = asyncRun.update(updateSql, openId);
+            Future<Integer> result = asyncRun.update(updateSql, id);
             return result.get();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -92,12 +91,12 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
-    public int updateOpenApplication(String openId){
+    public int updateOpenApplication(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update Profile Set OpenApplication=1 where Openid=?";
+        String updateSql = "Update Profile Set OpenApplication=1 where Id=?";
         try {
-            Future<Integer> result = asyncRun.update(updateSql, openId);
+            Future<Integer> result = asyncRun.update(updateSql, id);
             return result.get();
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -105,12 +104,12 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
-    public int updateOpenConsolidation(String openId){
+    public int updateOpenConsolidation(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update Profile Set OpenConsolidation=1 where Openid=?";
+        String updateSql = "Update Profile Set OpenConsolidation=1 where Id=?";
         try {
-            Future<Integer> result = asyncRun.update(updateSql, openId);
+            Future<Integer> result = asyncRun.update(updateSql, id);
             return result.get();
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -119,13 +118,13 @@ public class ProfileDao extends DBUtil {
     }
 
     public List<Profile> queryAccounts(List<Integer> profileIds) {
-        if(CollectionUtils.isEmpty(profileIds)){
+        if (CollectionUtils.isEmpty(profileIds)) {
             return Lists.newArrayList();
         }
         String questionMarks = produceQuestionMark(profileIds.size());
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Profile>> h = new BeanListHandler<>(Profile.class);
-        String sql = "SELECT * FROM Profile where Id in ("+ questionMarks +")";
+        String sql = "SELECT * FROM Profile where Id in (" + questionMarks + ")";
         try {
             return run.query(sql, h, profileIds.toArray());
         } catch (SQLException e) {
@@ -153,11 +152,11 @@ public class ProfileDao extends DBUtil {
         return true;
     }
 
-    public void completeProfile(String openId) {
+    public void completeProfile(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE Profile SET IsFull = 1 where Openid = ?";
+        String sql = "UPDATE Profile SET IsFull = 1 where Id = ?";
         try {
-            runner.update(sql, openId);
+            runner.update(sql, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

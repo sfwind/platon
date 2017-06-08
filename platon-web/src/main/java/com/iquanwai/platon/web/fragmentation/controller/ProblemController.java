@@ -204,9 +204,7 @@ public class ProblemController {
         }
 
         Map<Integer, ProblemCatalog> catalogMap = Maps.newHashMap();
-        problemCatalog.forEach((item) -> {
-            catalogMap.put(item.getId(), item);
-        });
+        problemCatalog.forEach((item) -> catalogMap.put(item.getId(), item));
 
 
         List<ProblemExploreDto> list = problems.stream()

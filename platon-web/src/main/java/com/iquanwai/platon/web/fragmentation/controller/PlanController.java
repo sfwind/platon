@@ -271,7 +271,7 @@ public class PlanController {
     @RequestMapping(value = "/openrise", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openRise(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenRise(loginUser.getOpenId());
+        int count = accountService.updateOpenRise(loginUser.getId());
         if (count > 0) {
             loginUser.setOpenRise(true);
         }
@@ -281,7 +281,7 @@ public class PlanController {
     @RequestMapping(value = "/open/application", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openComprehension(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenApplication(loginUser.getOpenId());
+        int count = accountService.updateOpenApplication(loginUser.getId());
         if (count > 0) {
             loginUser.setOpenApplication(true);
         }
@@ -291,7 +291,7 @@ public class PlanController {
     @RequestMapping(value = "/open/consolidation", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openConsolidation(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenConsolidation(loginUser.getOpenId());
+        int count = accountService.updateOpenConsolidation(loginUser.getId());
         if (count > 0) {
             loginUser.setOpenConsolidation(true);
         }
@@ -418,7 +418,7 @@ public class PlanController {
                 .action("查询章节列表")
                 .memo(planId != null ? planId.toString() : null);
         operationLogService.log(operationLog);
-        ImprovementPlan plan = null;
+        ImprovementPlan plan;
         if (planId == null) {
             plan = planService.getLatestPlan(loginUser.getId());
         } else {
