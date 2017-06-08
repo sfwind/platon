@@ -480,6 +480,8 @@ public class PlanServiceImpl implements PlanService {
 
         report.setReceiveVoteCount(votedCount);
         report.setShareVoteCount(voteCount);
+        report.setVotedScore(votedCount * ConfigUtils.getVoteScore());
+
         Pair<Boolean, Integer> check = checkCloseable(plan);
         report.setMustStudyDays(check.getRight());
         // 如果有正在进行的则不显示按钮

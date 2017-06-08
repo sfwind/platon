@@ -27,6 +27,7 @@ public class ImprovementReport {
     private Integer integratedTotalScore;//综合训练总分
     private Integer shareVoteCount; //送出多少赞
     private Integer receiveVoteCount;//收获多少赞
+    private Integer votedScore; // 点赞收获多少分
 
 
     // data
