@@ -121,17 +121,6 @@ public class HomeworkVoteDao extends PracticeDBUtil {
     }
 
 
-    public Integer votedCount(String openId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(1) from HomeworkVote where VotedOpenId = ?";
-        try{
-            return runner.query(sql, new ScalarHandler<Long>(), openId).intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
     public List<HomeworkVote> voteList(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from HomeworkVote where VoteProfileId = ?";
@@ -141,16 +130,5 @@ public class HomeworkVoteDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
-    }
-
-    public Integer voteCount(String openId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select Count(1) from fragmentCourse.HomeworkVote where VoteOpenId = ?";
-        try{
-            return runner.query(sql, new ScalarHandler<Long>(), openId).intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
     }
 }
