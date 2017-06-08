@@ -88,7 +88,7 @@ public class CommentDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        return null;
+        return Lists.newArrayList();
     }
 
 }

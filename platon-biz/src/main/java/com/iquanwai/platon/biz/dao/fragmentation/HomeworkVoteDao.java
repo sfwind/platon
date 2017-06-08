@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.HomeworkVote;
 import org.apache.commons.dbutils.QueryRunner;
@@ -115,7 +116,7 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        return null;
+        return Lists.newArrayList();
     }
 
 }
