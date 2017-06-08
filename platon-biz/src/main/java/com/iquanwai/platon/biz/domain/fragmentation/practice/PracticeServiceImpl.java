@@ -709,7 +709,6 @@ public class PracticeServiceImpl implements PracticeService {
             }
 
             Integer problemId = subjectArticle.getProblemId();
-            String openid = subjectArticle.getOpenid();
             ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
             if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
                 //更新求点评次数

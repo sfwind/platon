@@ -26,7 +26,7 @@ public class ProblemScoreDao extends PracticeDBUtil {
             Object[][] param = new Object[problemScores.size()][];
             for (int i = 0; i < problemScores.size(); i++) {
                 ProblemScore problemScore = problemScores.get(i);
-                param[i] = new Object[4];
+                param[i] = new Object[5];
                 param[i][0] = problemScore.getOpenid();
                 param[i][1] = problemScore.getProfileId();
                 param[i][2] = problemScore.getProblemId();
