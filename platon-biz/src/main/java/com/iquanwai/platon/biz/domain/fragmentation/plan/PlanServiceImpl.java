@@ -410,7 +410,6 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public List<ImprovementPlan> loadUserPlans(String openId){
-        improvementPlanDao.loadUserPlans(openId);
-        return null;
+        return improvementPlanDao.loadUserPlans(openId);
     }
 }
