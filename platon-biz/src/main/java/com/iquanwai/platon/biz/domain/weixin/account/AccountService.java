@@ -2,9 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.*;
 
 import java.util.List;
 
@@ -16,6 +14,11 @@ public interface AccountService {
      * 根据openid获取用户的详细信息
      * */
     Account getAccount(String openid, boolean realTime) throws NotFollowingException;
+
+    /**
+     * 根据 openid 获取用户角色信息
+     */
+    UserRole getUserRole(String openid);
 
     /**
      * 根据openid获取用户详情

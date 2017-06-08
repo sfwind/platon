@@ -461,6 +461,12 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
+        // fix,如果series数据不正常，则替换为边界值
+        if (series < 1) {
+            series = 1;
+        } else if (series > improvementPlan.getTotalSeries()) {
+            series = improvementPlan.getTotalSeries();
+        }
         planService.markPlan(series, improvementPlan.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

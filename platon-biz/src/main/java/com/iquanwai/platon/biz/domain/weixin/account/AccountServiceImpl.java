@@ -86,6 +86,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public UserRole getUserRole(String openid) {
+        List<UserRole> userRoles = userRoleDao.getRoles(openid);
+        return userRoles.size() > 0 ? userRoles.get(0) : null;
+    }
+
+    @Override
     public Profile getProfile(String openid, boolean realTime){
         return getProfileFromDB(openid);
     }

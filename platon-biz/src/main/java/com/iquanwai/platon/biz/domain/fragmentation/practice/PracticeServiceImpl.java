@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
@@ -11,6 +12,7 @@ import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -25,6 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,6 +81,8 @@ public class PracticeServiceImpl implements PracticeService {
     private AsstCoachCommentDao asstCoachCommentDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private UserRoleDao userRoleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -237,6 +244,7 @@ public class PracticeServiceImpl implements PracticeService {
             applicationPractice.setContent(submit.getContent());
             applicationPractice.setSubmitId(submit.getId());
             applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
+            applicationPractice.setFeedback(submit.getFeedback());
         }
         applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
 
@@ -460,6 +468,78 @@ public class PracticeServiceImpl implements PracticeService {
         }).collect(Collectors.toList());
     }
 
+    @Override
+    public List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId) {
+        List<ApplicationSubmit> submits = loadApplicationSubmits(applicationId); // 所有应用练习
+        List<Integer> submitsIdList = submits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
+        // applicationSubmit Id 序列 -> votes
+        List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
+        List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
+        // applicationSubmit Id -> comments
+        List<Comment> comments = commentDao.loadAllCommentsByIds(submitsIdList); // 所有评论
+        List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
+        // 已被点评
+        List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
+        // 未被点评，有点赞
+        List<ApplicationSubmit> votedSubmits = Lists.newArrayList();
+        // 未被点评、无点赞
+        List<ApplicationSubmit> restSubmits = Lists.newArrayList();
+        submits.forEach(submit -> {
+            if (submit.getFeedback()) {
+                feedbackSubmits.add(submit);
+            } else if (referenceIds.contains(submit.getId())) {
+                votedSubmits.add(submit);
+            } else {
+                restSubmits.add(submit);
+            }
+        });
+        // 最新被点评 -> 最后被点评
+        feedbackSubmits.sort((left, right) -> {
+            int leftFeedbackCnt = 0;
+            int rightFeedbackCnt = 0;
+            for (Comment comment : comments) {
+                // ApplicationSubmit 的 id 和 Comment 的 referenceId 一致
+                String commentOpenId = comment.getCommentOpenId();
+                if (left.getId() == comment.getReferencedId()) {
+                    for (UserRole userRole : userRoles) {
+                        if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
+                            leftFeedbackCnt++;
+                            break;
+                        }
+                    }
+                } else if (right.getId() == comment.getReferencedId()) {
+                    for (UserRole userRole : userRoles) {
+                        if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
+                            rightFeedbackCnt++;
+                            break;
+                        }
+                    }
+                }
+            }
+            return leftFeedbackCnt - rightFeedbackCnt;
+        });
+        // 最多被点赞，最少被点赞 -> 最新被点评，最后被点评
+        votedSubmits.stream().sorted((left, right) -> {
+            int leftVoteCnt = 0;
+            int rightVoteCnt = 0;
+            for (Integer id : referenceIds) {
+                if (id.equals(left.getApplicationId())) {
+                    leftVoteCnt++;
+                } else if (id.equals(right.getApplicationId())) {
+                    rightVoteCnt++;
+                }
+            }
+            return leftVoteCnt - rightVoteCnt;
+        });
+        votedSubmits.stream().sorted(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
+        // 最新提交 -> 最后提交
+        restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
+        List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
+        applicationSubmits.addAll(feedbackSubmits);
+        applicationSubmits.addAll(votedSubmits);
+        applicationSubmits.addAll(restSubmits);
+        return applicationSubmits;
+    }
 
     @Override
     public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page) {
@@ -470,6 +550,28 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
                                               String openId, String content, Integer repliedId) {
+        // 查看该评论是否为助教回复
+        boolean isAsst = false;
+        Profile profile = accountService.getProfile(profileId);
+        if (profile != null) {
+            isAsst = Role.isAsst(profile.getRole());
+        }
+        // 获取该条评论所对应的 ApplicationSubmit
+        ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
+        if (load == null) {
+            logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+            return new MutablePair<>(-1, "没有该文章");
+        }
+        // 是助教评论
+        if (isAsst) {
+            // 将此条评论所对应的 ApplicationSubmit 置为已被助教评论
+            applicationSubmitDao.asstFeedback(load.getId());
+            Integer planId = load.getPlanId();
+            ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
+            if (plan != null) {
+                asstCoachComment(load.getOpenid(), plan.getProblemId());
+            }
+        }
 
         //被回复的评论
         Comment repliedComment = commentDao.load(Comment.class, repliedId);
@@ -757,4 +859,20 @@ public class PracticeServiceImpl implements PracticeService {
     public Comment loadComment(Integer commentId) {
         return commentDao.load(Comment.class, commentId);
     }
+
+    @Override
+    public Boolean isModifiedAfterFeedback(Integer submitId, String commentOpenid, Date commentAddDate) {
+        UserRole userRole = accountService.getUserRole(commentOpenid);
+        if (userRole != null && Role.isAsst(userRole.getRoleId())) {
+            ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
+            Date lastModifiedTime = applicationSubmit.getLastModifiedTime();
+            if (lastModifiedTime == null) {
+                return applicationSubmit.getPublishTime().compareTo(commentAddDate) > 0;
+            } else {
+                return lastModifiedTime.compareTo(commentAddDate) > 0;
+            }
+        }
+        return false;
+    }
+
 }
