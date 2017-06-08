@@ -533,7 +533,7 @@ public class PracticeServiceImpl implements PracticeService {
         votedSubmits.stream().sorted(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
         // 最新提交 -> 最后提交
         restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
-        List<ApplicationSubmit> applicationSubmits = new ArrayList<>();
+        List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
         applicationSubmits.addAll(feedbackSubmits);
         applicationSubmits.addAll(votedSubmits);
         applicationSubmits.addAll(restSubmits);
