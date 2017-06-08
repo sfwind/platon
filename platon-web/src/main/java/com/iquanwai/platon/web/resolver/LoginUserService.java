@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.resolver;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -163,6 +164,21 @@ public class LoginUserService {
         }
     }
 
+    public Boolean isLogin(HttpServletRequest request) {
+        Platform platform = checkPlatform(request);
+        String token = getToken(request);
+        return isLogin(platform, token);
+    }
+    public String getToken(HttpServletRequest request) {
+        Platform platform = checkPlatform(request);
+        switch (platform) {
+            case PC:return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
+            case Wechat:return CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
+        }
+        return null;
+    }
+
+
     public Platform checkPlatform(HttpServletRequest request) {
         String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
         String wechatToken = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
@@ -180,6 +196,18 @@ public class LoginUserService {
         return Platform.Wechat;
     }
 
+    public String openId(Platform platform,String accessToken){
+        String openid = null;
+        switch (platform) {
+            case PC:
+                openid = oAuthService.pcOpenId(accessToken);
+                break;
+            case Wechat:
+                openid = oAuthService.openId(accessToken);
+                break;
+        }
+        return openid;
+    }
     /**
      * 获取PCLoginUser
      *
@@ -197,15 +225,7 @@ public class LoginUserService {
             return new MutablePair<>(1, loginUser);
         }
 
-        String openid = null;
-        switch (platform) {
-            case PC:
-                openid = oAuthService.pcOpenId(accessToken);
-                break;
-            case Wechat:
-                openid = oAuthService.openId(accessToken);
-                break;
-        }
+        String openid = this.openId(platform, accessToken);
         if (openid == null) {
             // 没有查到openid，一般是该用户没有关注服务号
             logger.info("accessToken:{} can't find openid", accessToken);
@@ -288,5 +308,12 @@ public class LoginUserService {
         loginUser.setOpenApplication(account.getOpenApplication());
         loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
+    }
+
+    public static List<LoginUser> getAllUsers(){
+        List<LoginUser> list = Lists.newArrayList();
+        list.addAll(pcLoginUserMap.values());
+        list.addAll(wechatLoginUserMap.values());
+        return list;
     }
 }
