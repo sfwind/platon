@@ -73,7 +73,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean firstAnswer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {
@@ -85,7 +85,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean answer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=? where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {

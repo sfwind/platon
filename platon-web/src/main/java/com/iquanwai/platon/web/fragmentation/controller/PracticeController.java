@@ -263,6 +263,7 @@ public class PracticeController {
                     dto.setPublishTime(item.getPublishTime());
                     dto.setType(Constants.PracticeType.APPLICATION);
                     dto.setSubmitId(item.getId());
+                    dto.setFeedback(item.getFeedback());
                     Profile account = accountService.getProfile(item.getProfileId());
                     if (account != null) {
                         dto.setUserName(account.getNickname());
@@ -310,8 +311,8 @@ public class PracticeController {
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentOpenId(), false);
-            UserRole userRole = accountService.getUserRole(item.getCommentOpenId());
-            if (userRole != null && Role.isAsst(userRole.getRoleId())) {
+            boolean isFeedback = practiceService.isModifiedAfterFeedback(submitId,item.getCommentOpenId(), item.getAddTime());
+            if(isFeedback) {
                 refreshListDto.setFeedback(true);
             }
             RiseWorkCommentDto dto = new RiseWorkCommentDto();

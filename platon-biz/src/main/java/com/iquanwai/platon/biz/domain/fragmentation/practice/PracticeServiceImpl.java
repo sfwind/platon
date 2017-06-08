@@ -842,4 +842,20 @@ public class PracticeServiceImpl implements PracticeService {
     public Comment loadComment(Integer commentId) {
         return commentDao.load(Comment.class, commentId);
     }
+
+    @Override
+    public Boolean isModifiedAfterFeedback(Integer submitId, String commentOpenid, Date commentAddDate) {
+        UserRole userRole = accountService.getUserRole(commentOpenid);
+        if (userRole != null && Role.isAsst(userRole.getRoleId())) {
+            ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
+            Date lastModifiedTime = applicationSubmit.getLastModifiedTime();
+            if(lastModifiedTime == null) {
+                return applicationSubmit.getPublishTime().compareTo(commentAddDate) > 0 ? true : false;
+            } else {
+                return lastModifiedTime.compareTo(commentAddDate) > 0 ? true : false;
+            }
+        }
+        return false;
+    }
+
 }

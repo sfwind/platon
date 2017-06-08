@@ -19,6 +19,7 @@ public class ApplicationSubmit {
     private Integer priority; // 排序优先级
     private Date updateTime; //最后更新时间
     private Date publishTime; // 第一次提交时间
+    private Date lastModifiedTime; //最近一次内容提交时间
     private Boolean requestFeedback; //是否求点评
     private Boolean feedback; // 教练是否已点评
     private Integer length; //字数
