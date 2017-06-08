@@ -105,7 +105,7 @@ public class LoginUserService {
      * -2 key查到了，但是获取不到user，应该是没点服务号
      * 1 成功
      */
-    public Pair<Integer,Callback> refreshPcLogin(Platform platform,String sessionId){
+    public Pair<Integer,Callback> refreshLogin(Platform platform,String sessionId){
         // 有key但是没有value，重新查一遍
         // 先检查这个cookie是否合法
         Callback callback = null;
@@ -171,13 +171,13 @@ public class LoginUserService {
     }
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
-        logger.info("loginUserService:检查平台:{}", platform);
         switch (platform) {
             case PC:return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
             case Wechat:return CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
         }
         return null;
     }
+
 
 
     public Platform checkPlatform(HttpServletRequest request) {
