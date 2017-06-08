@@ -187,10 +187,10 @@ public class LoginUserService {
             // pcToken和wechatToken都为null则是移动
             return Platform.Wechat;
         };
-        if (StringUtils.isEmpty(pcToken)) {
+        if (!StringUtils.isEmpty(pcToken)) {
             return Platform.PC;
         }
-        if (StringUtils.isEmpty(wechatToken)) {
+        if (!StringUtils.isEmpty(wechatToken)) {
             return Platform.Wechat;
         }
         // 两个都存在就默认为移动
