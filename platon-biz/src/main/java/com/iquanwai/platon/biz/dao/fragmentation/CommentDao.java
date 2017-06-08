@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.Comment;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -79,12 +80,15 @@ public class CommentDao extends PracticeDBUtil {
         }
     }
 
-    public List<Comment> loadAllCommentsByIds(List<Integer> questionIds) {
+    public List<Comment> loadAllCommentsByIds(List<Integer> referencedIds) {
+        if(CollectionUtils.isEmpty(referencedIds)) {
+            return Lists.newArrayList();
+        }
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<Comment>> h = new BeanListHandler<Comment>(Comment.class);
-        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(questionIds.size()) + ")";
+        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ")";
         try {
-            return runner.query(sql, h, questionIds.toArray());
+            return runner.query(sql, h, referencedIds.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

@@ -470,20 +470,20 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId) {
         List<ApplicationSubmit> submits = loadApplicationSubmits(applicationId); // 所有应用练习
-        List<Integer> submitsIdList = submits.stream().map(submit -> submit.getId()).collect(Collectors.toList());
+        List<Integer> submitsIdList = submits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
         // applicationSubmit Id 序列 -> votes
         List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
-        List<Integer> referenceIds = votes.stream().map(vote -> vote.getReferencedId()).collect(Collectors.toList()); // vote 的 referenceId 集合
+        List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
         // applicationSubmit Id -> comments
         List<Comment> comments = commentDao.loadAllCommentsByIds(submitsIdList); // 所有评论
         List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
         // 已被点评
-        List<ApplicationSubmit> feedbackSubmits = new ArrayList<>();
+        List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
         // 未被点评，有点赞
-        List<ApplicationSubmit> votedSubmits = new ArrayList<>();
+        List<ApplicationSubmit> votedSubmits = Lists.newArrayList();
         // 未被点评、无点赞
-        List<ApplicationSubmit> restSubmits = new ArrayList<>();
-        submits.stream().forEach(submit -> {
+        List<ApplicationSubmit> restSubmits = Lists.newArrayList();
+        submits.forEach(submit -> {
             if (submit.getFeedback()) {
                 feedbackSubmits.add(submit);
             } else if (referenceIds.contains(submit.getId())) {
@@ -496,27 +496,21 @@ public class PracticeServiceImpl implements PracticeService {
         feedbackSubmits.sort((left, right) -> {
             int leftFeedbackCnt = 0;
             int rightFeedbackCnt = 0;
-            for (int i = 0; i < comments.size(); i++) {
-                Comment comment = comments.get(i);
+            for (Comment comment : comments) {
                 // ApplicationSubmit 的 id 和 Comment 的 referenceId 一致
+                String commentOpenId = comment.getCommentOpenId();
                 if (left.getId() == comment.getReferencedId()) {
-                    String commentOpenId = comments.get(i).getCommentOpenId();
-                    for (int j = 0; j < userRoles.size(); j++) {
-                        if (userRoles.get(j).getOpenid().equals(commentOpenId)) {
-                            if (Role.isAsst(userRoles.get(j).getRoleId())) {
-                                leftFeedbackCnt++;
-                                break;
-                            }
+                    for (UserRole userRole : userRoles) {
+                        if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
+                            leftFeedbackCnt++;
+                            break;
                         }
                     }
                 } else if (right.getId() == comment.getReferencedId()) {
-                    String commentOpenId = comments.get(i).getCommentOpenId();
-                    for (int j = 0; j < userRoles.size(); j++) {
-                        if (userRoles.get(j).getOpenid().equals(commentOpenId)) {
-                            if (Role.isAsst(userRoles.get(j).getRoleId())) {
-                                leftFeedbackCnt++;
-                                break;
-                            }
+                    for (UserRole userRole : userRoles) {
+                        if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
+                            rightFeedbackCnt++;
+                            break;
                         }
                     }
                 }
@@ -527,10 +521,10 @@ public class PracticeServiceImpl implements PracticeService {
         votedSubmits.stream().sorted((left, right) -> {
             int leftVoteCnt = 0;
             int rightVoteCnt = 0;
-            for (int i = 0; i < referenceIds.size(); i++) {
-                if (referenceIds.get(i) == left.getApplicationId()) {
+            for (Integer id : referenceIds) {
+                if (id.equals(left.getApplicationId())) {
                     leftVoteCnt++;
-                } else if (referenceIds.get(i) == right.getApplicationId()) {
+                } else if (id.equals(right.getApplicationId())) {
                     rightVoteCnt++;
                 }
             }
@@ -540,9 +534,9 @@ public class PracticeServiceImpl implements PracticeService {
         // 最新提交 -> 最后提交
         restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
         List<ApplicationSubmit> applicationSubmits = new ArrayList<>();
-        feedbackSubmits.stream().forEach(submit -> applicationSubmits.add(submit));
-        votedSubmits.stream().forEach(submit -> applicationSubmits.add(submit));
-        restSubmits.stream().forEach(submit -> applicationSubmits.add(submit));
+        applicationSubmits.addAll(feedbackSubmits);
+        applicationSubmits.addAll(votedSubmits);
+        applicationSubmits.addAll(restSubmits);
         return applicationSubmits;
     }
 
@@ -558,22 +552,22 @@ public class PracticeServiceImpl implements PracticeService {
         // 查看该评论是否为助教回复
         boolean isAsst = false;
         Profile profile = accountService.getProfile(profileId);
-        if(profile != null) {
+        if (profile != null) {
             isAsst = Role.isAsst(profile.getRole());
         }
         // 获取该条评论所对应的 ApplicationSubmit
         ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
-        if(load == null) {
+        if (load == null) {
             logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
             return new MutablePair<>(-1, "没有该文章");
         }
         // 是助教评论
-        if(isAsst) {
+        if (isAsst) {
             // 将此条评论所对应的 ApplicationSubmit 置为已被助教评论
             applicationSubmitDao.asstFeedback(load.getId());
             Integer planId = load.getPlanId();
             ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
-            if(plan != null) {
+            if (plan != null) {
                 asstCoachComment(load.getOpenid(), plan.getProblemId());
             }
         }
@@ -872,10 +866,10 @@ public class PracticeServiceImpl implements PracticeService {
         if (userRole != null && Role.isAsst(userRole.getRoleId())) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
             Date lastModifiedTime = applicationSubmit.getLastModifiedTime();
-            if(lastModifiedTime == null) {
-                return applicationSubmit.getPublishTime().compareTo(commentAddDate) > 0 ? true : false;
+            if (lastModifiedTime == null) {
+                return applicationSubmit.getPublishTime().compareTo(commentAddDate) > 0;
             } else {
-                return lastModifiedTime.compareTo(commentAddDate) > 0 ? true : false;
+                return lastModifiedTime.compareTo(commentAddDate) > 0;
             }
         }
         return false;
