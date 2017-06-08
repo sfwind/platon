@@ -555,6 +555,28 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
                                               String openId, String content, Integer repliedId) {
+        // 查看该评论是否为助教回复
+        boolean isAsst = false;
+        Profile profile = accountService.getProfile(profileId);
+        if(profile != null) {
+            isAsst = Role.isAsst(profile.getRole());
+        }
+        // 获取该条评论所对应的 ApplicationSubmit
+        ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
+        if(load == null) {
+            logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+            return new MutablePair<>(-1, "没有该文章");
+        }
+        // 是助教评论
+        if(isAsst) {
+            // 将此条评论所对应的 ApplicationSubmit 置为已被助教评论
+            applicationSubmitDao.asstFeedback(load.getId());
+            Integer planId = load.getPlanId();
+            ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
+            if(plan != null) {
+                asstCoachComment(load.getOpenid(), plan.getProblemId());
+            }
+        }
 
         //被回复的评论
         Comment repliedComment = commentDao.load(Comment.class, repliedId);
