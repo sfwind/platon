@@ -35,4 +35,5 @@ public class RiseWorkInfoDto {
     private String signature; //作者签名
     private Integer requestCommentCount; //求点评字数
     private Boolean request; //是否已经求点评
+    private Boolean feedback; //是否已经点评
 }

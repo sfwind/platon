@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -71,7 +73,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean firstAnswer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {
@@ -83,7 +85,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean answer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=? where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {
@@ -119,9 +121,10 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
         // TODO: 写死了大小
-        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 order by UpdateTime desc limit 50";
+        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15";
         try {
-            return run.query(sql, h, applicationId);
+            List<ApplicationSubmit> submits = run.query(sql, h, applicationId);
+            return submits;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
