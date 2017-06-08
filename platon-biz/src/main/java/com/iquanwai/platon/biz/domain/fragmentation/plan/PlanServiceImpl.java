@@ -3,11 +3,13 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
@@ -16,6 +18,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.HomeworkVote;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.PracticePlan;
@@ -66,6 +69,10 @@ public class PlanServiceImpl implements PlanService {
     private ApplicationPracticeDao applicationPracticeDao;
     @Autowired
     private HomeworkVoteDao homeworkVoteDao;
+    @Autowired
+    private ApplicationSubmitDao applicationSubmitDao;
+    @Autowired
+    private SubjectArticleDao subjectArticleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -466,8 +473,11 @@ public class PlanServiceImpl implements PlanService {
         // 计算
         calculateReport(report, plan);
         // 点赞与被点赞
-        Integer voteCount = homeworkVoteDao.voteCount(plan.getOpenid());
-        Integer votedCount = homeworkVoteDao.votedCount(plan.getOpenid());
+        List<HomeworkVote> voteList = homeworkVoteDao.voteList(plan.getProfileId());
+        List<HomeworkVote> votedList = homeworkVoteDao.votedList(plan.getProfileId());
+        Integer voteCount = calculateVoteCount(voteList, plan);
+        Integer votedCount = calculateVoteCount(votedList, plan);
+
         report.setReceiveVoteCount(votedCount);
         report.setShareVoteCount(voteCount);
         Pair<Boolean, Integer> check = checkCloseable(plan);
@@ -481,6 +491,24 @@ public class PlanServiceImpl implements PlanService {
         }
         return report;
     }
+
+    private Integer calculateVoteCount(List<HomeworkVote> list,ImprovementPlan plan){
+        Integer result = 0;
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<Integer> appList = list.stream().filter(item -> item.getType().equals(2)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
+            List<Integer> subjectList = list.stream().filter(item -> item.getType().equals(3)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(appList)) {
+                // 查询点了多少应用练习
+                result += applicationSubmitDao.problemReferenceCount(plan.getProblemId(), appList);
+            }
+            if (CollectionUtils.isNotEmpty(subjectList)) {
+                // 查询点了多少精华分享
+                result += subjectArticleDao.problemReferenceCount(plan.getProblemId(), subjectList);
+            }
+        }
+        return result;
+    }
+
 
     private void calculateReport(ImprovementReport report,ImprovementPlan plan){
         // 获得所有练习

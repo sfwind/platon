@@ -104,4 +104,20 @@ public class SubjectArticleDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+
+    public Integer problemReferenceCount(Integer problemId,List<Integer> refers){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String mask = produceQuestionMark(refers.size());
+        List<Object> params = Lists.newArrayList();
+        params.add(problemId);
+        params.addAll(refers);
+        String sql = "select Count(1) from SubjectArticle where  ProblemId = ? and Id in (" + mask + ")";
+
+        try{
+            return runner.query(sql, new ScalarHandler<Long>(), params.toArray()).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 }
