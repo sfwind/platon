@@ -243,6 +243,7 @@ public class PracticeServiceImpl implements PracticeService {
             applicationPractice.setContent(submit.getContent());
             applicationPractice.setSubmitId(submit.getId());
             applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
+            applicationPractice.setFeedback(submit.getFeedback());
         }
         applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
 
