@@ -119,5 +119,4 @@ public interface PlanService {
      */
     void markPlan(Integer series, Integer planId);
 
-    ImprovementReport loadUserImprovementReport(ImprovementPlan plan);
 }

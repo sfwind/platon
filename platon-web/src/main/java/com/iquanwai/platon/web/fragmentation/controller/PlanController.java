@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -55,6 +56,8 @@ public class PlanController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ReportService reportService;
 
     @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
@@ -265,7 +268,9 @@ public class PlanController {
                 .action("查看学习报告")
                 .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
-        ImprovementReport report = planService.loadUserImprovementReport(improvementPlan);
+        ImprovementReport report = reportService.loadUserImprovementReport(improvementPlan);
+        Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
+        report.setMustStudyDays(check.getRight());
         return WebUtils.result(report);
     }
 
