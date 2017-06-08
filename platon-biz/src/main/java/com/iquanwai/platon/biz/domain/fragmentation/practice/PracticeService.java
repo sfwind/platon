@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -122,6 +123,8 @@ public interface PracticeService {
      * @param applicationId 应用练习id
      */
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
+
+    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId);
 
     /**
      * 查询评论
@@ -258,4 +261,9 @@ public interface PracticeService {
      * @param commentId 评论id
      */
     Comment loadComment(Integer commentId);
+
+    /**
+     * 根据 ApplicationSubmit 中的 id 和对应评论的 openid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
+     */
+    Boolean isModifiedAfterFeedback(Integer submitId, String commentOpenid, Date commentAddDate);
 }

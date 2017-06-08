@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -36,6 +37,9 @@ public class WarmupSubmitDao extends PracticeDBUtil {
     }
 
     public List<WarmupSubmit> getWarmupSubmit(int planId, List<Integer> questionIds){
+        if(CollectionUtils.isEmpty(questionIds)) {
+            return Lists.newArrayList();
+        }
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<WarmupSubmit>> h = new BeanListHandler(WarmupSubmit.class);
         String questionMark = produceQuestionMark(questionIds.size());
