@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * Created by nethunder on 2017/6/7.
  */
+@Repository
 public class ClassMemberDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 

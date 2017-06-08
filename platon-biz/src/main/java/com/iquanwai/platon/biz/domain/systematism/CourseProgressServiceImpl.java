@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Created by nethunder on 2017/6/7.
  */
+@Service
 public class CourseProgressServiceImpl implements CourseProgressService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
