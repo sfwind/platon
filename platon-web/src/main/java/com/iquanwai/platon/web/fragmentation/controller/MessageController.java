@@ -202,7 +202,7 @@ public class MessageController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
                 .function("老消息")
-                .action("已知");
+                .action("标记已读");
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
