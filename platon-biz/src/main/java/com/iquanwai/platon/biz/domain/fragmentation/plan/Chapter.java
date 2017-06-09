@@ -14,4 +14,8 @@ public class Chapter {
     private List<Section> sections = Lists.newArrayList(); //小节
     private String name; //章节名称
     private boolean isIntegrated; //是否是综合练习
+
+    //非DB字段
+    private Integer myWarmScore;
+    private Integer totalWarmScore;
 }

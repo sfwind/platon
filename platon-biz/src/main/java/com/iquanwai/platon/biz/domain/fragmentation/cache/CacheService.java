@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
@@ -20,6 +21,9 @@ public interface CacheService {
     Knowledge getKnowledge(Integer knowledgeId);
     /** 获取某个巩固练习*/
     WarmupPractice getWarmupPractice(Integer practiceId);
+
+    List<Chapter> loadRoadMap(Integer problemId);
+
     /** 获取某个问题的主分类 **/
     ProblemCatalog getProblemCatalog(Integer catalogId);
     /** 获取某个问题的子分类 **/
