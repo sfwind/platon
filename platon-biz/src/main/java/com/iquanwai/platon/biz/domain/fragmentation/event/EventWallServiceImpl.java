@@ -24,8 +24,8 @@ public class EventWallServiceImpl implements EventWallService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<EventWall> getEventWall(String openid) {
-        RiseMember riseMember = riseMemberDao.validRiseMember(openid);
+    public List<EventWall> getEventWall(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
         List<EventWall> eventWalls = eventWallDao
                 .loadAll(EventWall.class).stream().filter(item -> {
                     if (item.getDel()) {

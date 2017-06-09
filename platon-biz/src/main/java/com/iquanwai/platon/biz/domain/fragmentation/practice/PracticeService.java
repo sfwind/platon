@@ -257,9 +257,8 @@ public interface PracticeService {
      *
      * @param problemId 小课id
      * @param profileId 学员id
-     * @param openid    学员id
      */
-    Integer hasRequestComment(Integer problemId, Integer profileId, String openid);
+    Integer hasRequestComment(Integer problemId, Integer profileId);
 
     /**
      * 删除评论
@@ -295,5 +294,5 @@ public interface PracticeService {
     /**
      * 根据 ApplicationSubmit 中的 id 和对应评论的 openid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
      */
-    Boolean isModifiedAfterFeedback(Integer submitId, String commentOpenid, Date commentAddDate);
+    Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
 }

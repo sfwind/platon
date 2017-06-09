@@ -311,7 +311,8 @@ public class PracticeController {
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
-            boolean isFeedback = practiceService.isModifiedAfterFeedback(submitId,item.getCommentOpenId(), item.getAddTime());
+            boolean isFeedback = practiceService.isModifiedAfterFeedback(submitId,
+                    item.getCommentProfileId(), item.getAddTime());
             if(isFeedback) {
                 refreshListDto.setFeedback(true);
             }
@@ -515,7 +516,7 @@ public class PracticeController {
                     //设置剩余请求次数
 
                     dto.setRequestCommentCount(practiceService.hasRequestComment(problemId,
-                            loginUser.getId(), loginUser.getOpenId()));
+                            loginUser.getId()));
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
@@ -574,7 +575,7 @@ public class PracticeController {
             dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getAddTime()));
             dto.setRequest(subjectArticle.getRequestFeedback());
             dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
-                    loginUser.getId(), loginUser.getOpenId()));
+                    loginUser.getId()));
 //        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
 //                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
 //                .collect(Collectors.toList()));
