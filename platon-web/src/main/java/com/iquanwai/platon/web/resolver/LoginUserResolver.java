@@ -58,8 +58,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         if (loginUserService.isLogin(request)) {
             LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
             // 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
-            if (!loginUser.getRiseMember()) {
-                Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            if(!loginUser.getRiseMember()){
+                Profile profile = accountService.getProfile(loginUser.getId());
                 if (profile != null && profile.getRiseMember()) {
                     loginUser.setRiseMember(true);
                 }

@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -22,28 +23,32 @@ import java.util.List;
 public class WarmupSubmitDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void insert(WarmupSubmit warmupSubmit){
+    public void insert(WarmupSubmit warmupSubmit) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into WarmupSubmit(Openid, QuestionId, PlanId, Content, IsRight, Score) " +
-                "values(?,?,?,?,?,?)";
+        String sql = "insert into WarmupSubmit(Openid, ProfileId, QuestionId, PlanId, Content, IsRight, Score) " +
+                "values(?,?,?,?,?,?,?)";
         try {
-            runner.insert(sql, new ScalarHandler<>(), warmupSubmit.getOpenid(), warmupSubmit.getQuestionId(),
+            runner.insert(sql, new ScalarHandler<>(), warmupSubmit.getOpenid(), warmupSubmit.getProfileId(),
+                    warmupSubmit.getQuestionId(),
                     warmupSubmit.getPlanId(), warmupSubmit.getContent(),
                     warmupSubmit.getIsRight(), warmupSubmit.getScore());
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
     public List<WarmupSubmit> getWarmupSubmit(int planId, List<Integer> questionIds){
+        if(CollectionUtils.isEmpty(questionIds)) {
+            return Lists.newArrayList();
+        }
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<WarmupSubmit>> h = new BeanListHandler(WarmupSubmit.class);
+        ResultSetHandler<List<WarmupSubmit>> h = new BeanListHandler<>(WarmupSubmit.class);
         String questionMark = produceQuestionMark(questionIds.size());
         List<Object> objects = Lists.newArrayList();
         objects.add(planId);
         objects.addAll(questionIds);
         try {
-            List<WarmupSubmit> submits = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId in ("+questionMark+")",
+            List<WarmupSubmit> submits = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId in (" + questionMark + ")",
                     h, objects.toArray());
 
             return submits;
@@ -54,27 +59,12 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public WarmupSubmit getWarmupSubmit(int planId, Integer questionId){
+    public WarmupSubmit getWarmupSubmit(Integer profileId, Integer questionId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<WarmupSubmit> h = new BeanHandler(WarmupSubmit.class);
+        ResultSetHandler<WarmupSubmit> h = new BeanHandler<>(WarmupSubmit.class);
         try {
-            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId=?",
-                    h, planId, questionId);
-
-            return submit;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return null;
-    }
-
-    public WarmupSubmit getWarmupSubmit(String openId, Integer questionId){
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<WarmupSubmit> h = new BeanHandler(WarmupSubmit.class);
-        try {
-            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where OpenId=? and QuestionId=?",
-                    h, openId, questionId);
+            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where ProfileId=? and QuestionId=?",
+                    h, profileId, questionId);
 
             return submit;
         } catch (SQLException e) {

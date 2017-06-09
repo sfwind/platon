@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-import javax.management.Query;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -23,17 +22,18 @@ import java.util.List;
 public class KnowledgeDiscussDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public int insert(KnowledgeDiscuss discuss){
+    public int insert(KnowledgeDiscuss discuss) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into KnowledgeDiscuss (" +
-                "KnowledgeId, Comment, Openid, Priority, RepliedId, RepliedOpenid, RepliedComment, Del) VALUES (" +
-                "?, ?, ?, ?, ?, ?, ?, ?)";
+                "KnowledgeId, Comment, Openid, ProfileId, Priority, RepliedId, RepliedOpenid, RepliedProfileId, RepliedComment, Del) VALUES (" +
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    discuss.getKnowledgeId(), discuss.getComment(), discuss.getOpenid(), discuss.getPriority(), discuss.getRepliedId(),
-                    discuss.getRepliedOpenid(), discuss.getRepliedComment(), discuss.getDel());
+                    discuss.getKnowledgeId(), discuss.getComment(), discuss.getOpenid(),
+                    discuss.getProfileId(), discuss.getPriority(), discuss.getRepliedId(),
+                    discuss.getRepliedOpenid(), discuss.getRepliedProfileId(), discuss.getRepliedComment(), discuss.getDel());
             return result.intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
@@ -42,7 +42,7 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
 
     public List<KnowledgeDiscuss> loadDiscuss(Integer practiceId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler(KnowledgeDiscuss.class);
+        ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler<>(KnowledgeDiscuss.class);
         String sql = "SELECT * FROM KnowledgeDiscuss where knowledgeId = ? and Del = 0 " +
                 "order by Priority desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
@@ -55,6 +55,7 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
 
     /**
      * 根据id更新该条记录的del字段
+     *
      * @param id
      * @return
      */
@@ -62,12 +63,20 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update KnowledgeDiscuss set del = ? where id = ?";
         try {
-            int result = runner.update(sql, delValue, id);
-            return result;
+            return runner.update(sql, delValue, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
     }
 
+    public void markRepliedCommentDelete(Integer repliedId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update KnowledgeDiscuss set RepliedDel = 1 where RepliedId = ?";
+        try {
+            runner.update(sql, repliedId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 }

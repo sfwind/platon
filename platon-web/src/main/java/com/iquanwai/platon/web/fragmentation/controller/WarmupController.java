@@ -49,9 +49,6 @@ public class WarmupController {
     @Autowired
     private PracticeDiscussService practiceDiscussService;
 
-    private final static int DISCUSS_PAGE_SIZE = 100;
-
-
     @RequestMapping("/{id}")
     public ResponseEntity<Map<String, Object>> loadWarmup(LoginUser loginUser,
                                                           @PathVariable Integer id){
@@ -96,7 +93,7 @@ public class WarmupController {
         try {
             warmupResult = practiceService.answerWarmupPractice(
                     warmupPracticeDto.getPractice(), practicePlanId,
-                    loginUser.getOpenId());
+                    loginUser.getOpenId(), loginUser.getId());
         } catch (AnswerException e) {
             return WebUtils.error("您已做完这套练习");
         }
@@ -187,7 +184,7 @@ public class WarmupController {
         warmupPracticeList.add(warmupPractice);
         List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         // 获取用户提交
-        WarmupSubmit submit = practiceService.getWarmupSubmit(loginUser.getOpenId(), practiceId);
+        WarmupSubmit submit = practiceService.getWarmupSubmit(loginUser.getId(), practiceId);
         List<WarmupSubmit> warmupSubmits = Lists.newArrayList();
         if(submit!=null){
             warmupSubmits.add(submit);
@@ -246,7 +243,7 @@ public class WarmupController {
             return WebUtils.result("您提交的讨论字数过长");
         }
 
-        practiceDiscussService.discuss(loginUser.getOpenId(), discussDto.getReferenceId(),
+        practiceDiscussService.discuss(loginUser.getOpenId(), loginUser.getId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

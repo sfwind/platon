@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -71,7 +72,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean firstAnswer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {
@@ -83,7 +84,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean answer(Integer id, String content, int length) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=? where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {
@@ -119,9 +120,10 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
         // TODO: 写死了大小
-        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 order by UpdateTime desc limit 50";
+        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15";
         try {
-            return run.query(sql, h, applicationId);
+            List<ApplicationSubmit> submits = run.query(sql, h, applicationId);
+            return submits;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -146,6 +148,27 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+
+
+    public Integer problemReferenceCount(Integer problemId,List<Integer> refers){
+        if (CollectionUtils.isEmpty(refers)) {
+            return 0;
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String mask = produceQuestionMark(refers.size());
+        List<Object> params = Lists.newArrayList();
+        params.add(problemId);
+        params.addAll(refers);
+        String sql = "select Count(1) from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ")";
+
+        try{
+            return runner.query(sql, new ScalarHandler<Long>(), params.toArray()).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
 
 

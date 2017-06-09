@@ -32,4 +32,19 @@ public class ApplicationPracticeDao extends PracticeDBUtil {
 
         return Lists.newArrayList();
     }
+
+    public List<ApplicationPractice> loadPracticeList(List<Integer> practiceIds){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<ApplicationPractice>> h = new BeanListHandler<>(ApplicationPractice.class);
+        String mask = produceQuestionMark(practiceIds.size());
+        List<Object> params = Lists.newArrayList();
+        params.addAll(practiceIds);
+        String sql = "SELECT * FROM ApplicationPractice where Id in (" + mask + ")";
+        try{
+            return runner.query(sql, h, params.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

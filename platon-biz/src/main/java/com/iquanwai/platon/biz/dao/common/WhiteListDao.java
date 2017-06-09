@@ -20,7 +20,7 @@ public class WhiteListDao extends DBUtil {
 
     public WhiteList loadWhiteList(String function, String openid){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<WhiteList> h = new BeanHandler(WhiteList.class);
+        ResultSetHandler<WhiteList> h = new BeanHandler<>(WhiteList.class);
         String sql = "SELECT * FROM WhiteList where Function=? and Openid=?";
         try {
             WhiteList whiteList = run.query(sql, h, function, openid);

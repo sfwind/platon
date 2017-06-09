@@ -27,9 +27,16 @@ public interface ProblemService {
      */
     List<ProblemCatalog> getProblemCatalogs();
 
+    /**
+     * 获得问题的分类
+     * @param catalogId 分类
+     */
     ProblemCatalog getProblemCatalog(Integer catalogId);
 
-
+    /**
+     * 获得问题的子分类
+     * @param subCatalogId 子分类
+     */
     ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId);
 
     /**
@@ -38,15 +45,13 @@ public interface ProblemService {
      * @param problemId 小课id
      * @param problemScores 小课打分
      */
-    void gradeProblem(Integer problemId, String openId, List<ProblemScore> problemScores);
+    void gradeProblem(Integer problemId, String openId, Integer profileId, List<ProblemScore> problemScores);
 
     /**
      * 用户是否已对问题评分
-     * @param openId 用户id
+     * @param profileId 用户id
      * @param problemId 小课id
      */
-    boolean hasProblemScore(String openId,Integer problemId);
+    boolean hasProblemScore(Integer profileId, Integer problemId);
 
-
-    Double getProblemScoreAvg(Integer problemId, Integer question);
 }

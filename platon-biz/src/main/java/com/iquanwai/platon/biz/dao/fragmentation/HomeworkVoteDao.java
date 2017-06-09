@@ -1,16 +1,20 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.HomeworkVote;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by nethunder on 2017/1/2.
@@ -86,5 +90,45 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+
+    public List<HomeworkVote> getHomeworkVotesByIds(List<Integer> referencedIds) {
+        if(CollectionUtils.isEmpty(referencedIds)) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler<>(HomeworkVote.class);
+        String questionMark = produceQuestionMark(referencedIds.size());
+        String sql = "select * from HomeworkVote where ReferencedId in (" + questionMark + ")";
+        try {
+            return runner.query(sql, h, referencedIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<HomeworkVote> votedList(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from HomeworkVote where VotedProfileId = ?";
+        try{
+            return runner.query(sql,new BeanListHandler<HomeworkVote>(HomeworkVote.class),profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+
+    public List<HomeworkVote> voteList(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from HomeworkVote where VoteProfileId = ?";
+        try{
+            return runner.query(sql,new BeanListHandler<HomeworkVote>(HomeworkVote.class),profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 }

@@ -67,9 +67,8 @@ public class AccountServiceImpl implements AccountService {
     public void init(){
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
 
-        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> {
-            userRoleMap.put(userRole.getOpenid(), userRole.getRoleId());
-        });
+        userRoleList.stream().filter(userRole1 -> !userRole1.getDel())
+                .forEach(userRole -> userRoleMap.put(userRole.getOpenid(), userRole.getRoleId()));
 
         logger.info("role init complete");
     }
@@ -86,6 +85,12 @@ public class AccountServiceImpl implements AccountService {
             //从微信处获取
             return getAccountFromWeixin(openid);
         }
+    }
+
+    @Override
+    public UserRole getUserRole(String openid) {
+        List<UserRole> userRoles = userRoleDao.getRoles(openid);
+        return userRoles.size() > 0 ? userRoles.get(0) : null;
     }
 
     @Override
@@ -131,16 +136,16 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Profile> getProfiles(List<String> openid) {
-        List<Profile> profiles = profileDao.queryAccounts(openid);
+    public List<Profile> getProfiles(List<Integer> profileIds) {
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
         profiles.stream().forEach(profile -> {
-            if(profile.getHeadimgurl()!=null){
-                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
             Integer role = userRoleMap.get(profile.getOpenid());
-            if(role==null){
+            if (role == null) {
                 profile.setRole(0);
-            }else{
+            } else {
                 profile.setRole(role);
             }
         });
@@ -224,18 +229,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public int updateOpenRise(String openId) {
-       return profileDao.updateOpenRise(openId);
+    public int updateOpenRise(Integer id) {
+       return profileDao.updateOpenRise(id);
     }
 
     @Override
-    public int updateOpenApplication(String openId){
-        return profileDao.updateOpenApplication(openId);
+    public int updateOpenApplication(Integer id){
+        return profileDao.updateOpenApplication(id);
     }
 
     @Override
-    public int updateOpenConsolidation(String openId){
-        return profileDao.updateOpenConsolidation(openId);
+    public int updateOpenConsolidation(Integer id){
+        return profileDao.updateOpenConsolidation(id);
     }
 
     @Override
@@ -246,9 +251,9 @@ public class AccountServiceImpl implements AccountService {
         if(result && oldProfile.getIsFull()==0){
             logger.info("用户:{} 完成个人信息填写,加{}积分",profile.getOpenid(), ConfigUtils.getProfileFullScore());
             // 第一次提交，加分
-            pointRepo.riseCustomerPoint(profile.getOpenid(), ConfigUtils.getProfileFullScore());
+            pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
             // 更新信息状态
-            profileDao.completeProfile(profile.getOpenid());
+            profileDao.completeProfile(profile.getId());
         }
     }
 

@@ -53,12 +53,12 @@ public class ProblemController {
     private static final String TRIAL = "RISE_PROBLEM_TRIAL";
 
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
 
         List<Problem> problemList = problemService.loadProblems();
         //非天使用户去除试用版小课
-        if(!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())){
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
             problemList = problemList.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
         ProblemDto problemDto = new ProblemDto();
@@ -75,32 +75,32 @@ public class ProblemController {
 
 
     @RequestMapping("/list/unchoose")
-    public ResponseEntity<Map<String,Object>> loadUnChooseProblems(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
         //非天使用户去除试用版小课
-        if(!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())){
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
         // 用户的所有计划
         List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getId());
         // 用户选过的小课
-        List<Integer> doneProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()==3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        List<Integer> doneProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus() == 3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 用户进行中的小课
-        List<Integer> doingProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus()!=3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        List<Integer> doingProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus() != 3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 获取所有分类
         List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
         // 可以展示的小课
-        Map<Integer,List<Problem>> showProblems = Maps.newHashMap();
+        Map<Integer, List<Problem>> showProblems = Maps.newHashMap();
         problems.forEach(item -> {
             List<Problem> temp = showProblems.computeIfAbsent(item.getCatalogId(), k -> Lists.newArrayList());
             if (doneProblemIds.contains(item.getId())) {
                 // 用户没做过这个小课
                 item.setStatus(2);
-            } else if(doingProblemIds.contains(item.getId())){
+            } else if (doingProblemIds.contains(item.getId())) {
                 item.setStatus(1);
-            } else{
+            } else {
                 item.setStatus(0);
             }
             temp.add(item);
@@ -137,7 +137,8 @@ public class ProblemController {
 
 
     @RequestMapping("/list/{catalog}")
-    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
+    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser,
+                                                                    @PathVariable(value = "catalog") Integer catalogId) {
 
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "小课分类不能为空");
@@ -203,10 +204,8 @@ public class ProblemController {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
 
-        Map<Integer,ProblemCatalog> catalogMap = Maps.newHashMap();
-        problemCatalog.forEach((item)->{
-            catalogMap.put(item.getId(), item);
-        });
+        Map<Integer, ProblemCatalog> catalogMap = Maps.newHashMap();
+        problemCatalog.forEach((item) -> catalogMap.put(item.getId(), item));
 
 
         List<ProblemExploreDto> list = problems.stream()
@@ -231,11 +230,11 @@ public class ProblemController {
     }
 
     @RequestMapping("/get/{problemId}")
-    public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId){
+    public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblem(problemId);
         // 查看该用户是否对该问题评分
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getOpenId(), problemId));
+        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("阅读问题报告")
@@ -246,9 +245,10 @@ public class ProblemController {
     }
 
     @RequestMapping("/grade/{problemId}")
-    public ResponseEntity<Map<String,Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores){
+    public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId,
+                                                          @RequestBody List<ProblemScore> problemScores) {
         Assert.notNull(loginUser, "用户不能为空");
-        problemService.gradeProblem(problemId, loginUser.getOpenId(), problemScores);
+        problemService.gradeProblem(problemId, loginUser.getOpenId(), loginUser.getId(), problemScores);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("评分")

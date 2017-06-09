@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -13,52 +14,60 @@ import java.util.List;
 public interface PracticeService {
     /**
      * 获取巩固练习列表
+     *
      * @param practicePlanId 训练组编号
-     * */
+     */
     List<WarmupPractice> getWarmupPractices(Integer practicePlanId);
 
     /**
      * 获取巩固练习解析
+     *
      * @param practicePlanId 练习id
-     * @param questionIds 练习编号
-     * */
+     * @param questionIds    练习编号
+     */
     List<WarmupSubmit> getWarmupSubmit(Integer practicePlanId, List<Integer> questionIds);
 
     /**
      * 获取巩固练习解析
-     * @param openid 学员id
+     *
+     * @param profileId  学员id
      * @param questionId 问题id
-     * */
-    WarmupSubmit getWarmupSubmit(String openid, Integer questionId);
+     */
+    WarmupSubmit getWarmupSubmit(Integer profileId, Integer questionId);
+
     /**
      * 回答巩固练习问题
+     *
      * @param warmupPracticeList 练习答案
-     * @param practicePlanId 练习id
-     * @param openid 学员id
-     * */
+     * @param practicePlanId     练习id
+     * @param openid             学员id
+     */
     WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
-                                      String openid) throws AnswerException;
+                                      String openid, Integer profileId) throws AnswerException;
 
     /**
      * 获取小目标
-     * @param id 小目标id
+     *
+     * @param id     小目标id
      * @param openid 学员id
-     * */
+     */
     ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
 
     /**
      * 获取应用练习
-     * @param id 应用练习id
+     *
+     * @param id     应用练习id
      * @param openid openid
      * @param planId 训练id
-     * */
+     */
     ApplicationPractice getApplicationPractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
 
     /**
      * 提交应用训练
-     * @param id 提交id
+     *
+     * @param id      提交id
      * @param content 提交内容
-     * */
+     */
     Boolean applicationSubmit(Integer id, String content);
 
 
@@ -66,6 +75,7 @@ public interface PracticeService {
 
     /**
      * 定时自动保存 applciationSubmit 草稿
+     *
      * @param draftId
      * @param content
      * @return
@@ -74,15 +84,16 @@ public interface PracticeService {
 
     /**
      * 提交小目标
-     * @param id 提交id
+     *
+     * @param id      提交id
      * @param content 提交内容
-     * */
+     */
     Boolean challengeSubmit(Integer id, String content);
 
     /**
      * 增加文章视图的记录数
      */
-    Integer riseArticleViewCount(Integer module,Integer id,Integer type);
+    Integer riseArticleViewCount(Integer module, Integer id, Integer type);
 
     /*
      * 获取点赞数量
@@ -94,16 +105,18 @@ public interface PracticeService {
 
     /**
      * 获取评论数
+     *
      * @param moduleId 评论模块
-     * @param referId 被评论的id
+     * @param referId  被评论的id
      * @return 评论数
      */
-    Integer commentCount(Integer moduleId,Integer referId);
+    Integer commentCount(Integer moduleId, Integer referId);
 
     /**
      * 获取点赞记录
-     * @param type 点赞类型
-     * @param referId 被点赞的id
+     *
+     * @param type      点赞类型
+     * @param referId   被点赞的id
      * @param profileId 点赞的profileId
      * @return 点赞记录
      */
@@ -111,47 +124,53 @@ public interface PracticeService {
 
     /**
      * 点赞
-     * @param type 点赞类型
+     *
+     * @param type         点赞类型
      * @param referencedId 被点赞的id
-     * @param openId 点赞的人
+     * @param openId       点赞的人
      */
     boolean vote(Integer type, Integer referencedId, Integer profileId, String openId);
 
     /**
      * 查询应用练习提交记录
+     *
      * @param applicationId 应用练习id
      */
     List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
 
+    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId);
+
     /**
      * 查询评论
+     *
      * @param moduleId 模块id
      * @param submitId 提交id
-     * @param page 分页对象
+     * @param page     分页对象
      */
     List<Comment> loadComments(Integer moduleId, Integer submitId, Page page);
 
 
-
     /**
      * 提交评论
+     *
      * @param moduleId 模块id
-     * @param referId 关联id
-     * @param openId 评论人
-     * @param content 评论内容
+     * @param referId  关联id
+     * @param openId   评论人
+     * @param content  评论内容
      */
-    Pair<Integer,String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content);
+    Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content);
 
     /**
      * 回复评论
-     * @param moduleId 模块id
-     * @param referId 关联id
-     * @param openId 评论人
-     * @param content 评论内容
+     *
+     * @param moduleId  模块id
+     * @param referId   关联id
+     * @param openId    评论人
+     * @param content   评论内容
      * @param repliedId 被回复评论id
      */
-    Pair<Integer,String> replyComment(Integer moduleId, Integer referId, Integer profileId,
-                                      String openId, String content, Integer repliedId);
+    Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
+                                       String openId, String content, Integer repliedId);
 
     /*
      * 获取巩固练习
@@ -166,58 +185,67 @@ public interface PracticeService {
 
     /**
      * 加载小课分享区文章
+     *
      * @param problemId 小课id
-     * @param page 分页对象
+     * @param page      分页对象
      */
     List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
 
     /**
      * 加载分享区文章
+     *
      * @param submitId 提交id
      */
     SubjectArticle loadSubjectArticle(Integer submitId);
 
     /**
      * 获取小课所有标签
+     *
      * @param problemId 小课id
-     * */
+     */
     List<LabelConfig> loadProblemLabels(Integer problemId);
 
     /**
      * 更新小课分享的标签
-     * @param moduleId 模块
+     *
+     * @param moduleId  模块
      * @param articleId 文章id
-     * @param labels 标签
-     * */
+     * @param labels    标签
+     */
     List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
 
     /**
      * 获取小课分享的标签
-     * @param moduleId 模块
+     *
+     * @param moduleId  模块
      * @param articleId 文章id
-     * */
+     */
     List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
 
     /**
      * 根据训练id获取知识
+     *
      * @param practicePlanId 训练id
      */
     List<Knowledge> loadKnowledges(Integer practicePlanId);
 
     /**
      * 根据知识点id获取知识
+     *
      * @param knowledgeId 知识点id
      */
     Knowledge loadKnowledge(Integer knowledgeId);
 
     /**
      * 学习知识点
+     *
      * @param practicePlanId 练习id
      */
     void learnKnowledge(Integer practicePlanId);
 
     /**
      * 求点评
+     *
      * @param submitId 文章提交id
      * @param moduleId 模块id（2-应用练习,3-小课分享）
      */
@@ -226,14 +254,16 @@ public interface PracticeService {
 
     /**
      * 求点评次数
+     *
      * @param problemId 小课id
      * @param profileId 学员id
-     * @param openid 学员id
+     * @param openid    学员id
      */
     Integer hasRequestComment(Integer problemId, Integer profileId, String openid);
 
     /**
      * 删除评论
+     *
      * @param commentId 评论id
      */
     void deleteComment(Integer commentId);
@@ -241,21 +271,29 @@ public interface PracticeService {
 
     /**
      * 根据应用练习
+     *
      * @param applicationId 应用练习id
-     * @param profileId 用户id
+     * @param profileId     用户id
      * @return
      */
     ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
 
     /**
      * 根据Id获取ApplicationSubmit对象
+     *
      * @param id 主键
      */
     ApplicationSubmit getApplicationSubmit(Integer id);
 
     /**
      * 根据Id获取评论
+     *
      * @param commentId 评论id
      */
     Comment loadComment(Integer commentId);
+
+    /**
+     * 根据 ApplicationSubmit 中的 id 和对应评论的 openid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
+     */
+    Boolean isModifiedAfterFeedback(Integer submitId, String commentOpenid, Date commentAddDate);
 }

@@ -23,13 +23,13 @@ public class NotifyMessageDao extends PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<NotifyMessage> getMyMessages(String openid, Page page){
+    public List<NotifyMessage> getMyMessages(Integer profileId, Page page){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from NotifyMessage where ToUser=? and Old=1 order by Id desc limit " +
                 + page.getOffset() + "," + page.getLimit();
         try {
-            ResultSetHandler<List<NotifyMessage>> h = new BeanListHandler(NotifyMessage.class);
-            return runner.query(sql, h, openid);
+            ResultSetHandler<List<NotifyMessage>> h = new BeanListHandler<>(NotifyMessage.class);
+            return runner.query(sql, h, profileId);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -37,12 +37,12 @@ public class NotifyMessageDao extends PracticeDBUtil {
         return null;
     }
 
-    public Integer getMyMessagesCount(String openid){
+    public Integer getMyMessagesCount(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select count(*) from NotifyMessage where ToUser=? and Old=1";
         try {
             ResultSetHandler<Long> h = new ScalarHandler<>();
-            return runner.query(sql, h, openid).intValue();
+            return runner.query(sql, h, profileId).intValue();
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -50,12 +50,12 @@ public class NotifyMessageDao extends PracticeDBUtil {
         return -1;
     }
 
-    public Integer loadOldCount(String openid){
+    public Integer loadOldCount(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select count(*) from NotifyMessage where ToUser=? and Old = 0";
         try{
             ResultSetHandler<Long> h = new ScalarHandler<>();
-            return runner.query(sql, h, openid).intValue();
+            return runner.query(sql, h, profileId).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -89,28 +89,15 @@ public class NotifyMessageDao extends PracticeDBUtil {
     }
 
 
-    public void markOld(String openid){
+    public void markOld(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update NotifyMessage set Old=1 where ToUser=? and Old=0";
         try {
-            runner.update(sql, openid);
+            runner.update(sql, profileId);
         }catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
-    }
-
-    public int newMessageCount(String openid){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(*) from NotifyMessage where ToUser=? and Old=0";
-        try {
-            ResultSetHandler<Long> h = new ScalarHandler<>();
-            return runner.query(sql, h, openid).intValue();
-        }catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return 0;
     }
 
 }

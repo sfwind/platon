@@ -20,12 +20,16 @@ public interface MessageService {
 
     /**
      * 获取所有的通知消息
-     * @param openid 接收者
+     * @param profileId 接收者
      * @param page 分页信息
      * */
-    List<NotifyMessage> getNotifyMessage(String openid, Page page);
+    List<NotifyMessage> getNotifyMessage(Integer profileId, Page page);
 
-    Integer loadOldCount(String openid);
+    /**
+     * 获取未读消息数
+     * @param profileId 接收者
+     * */
+    Integer unreadCount(Integer profileId);
 
     /**
      * 阅读消息
@@ -35,21 +39,9 @@ public interface MessageService {
 
     /**
      * 消息标记为非最新
-     * @param openid 接收者
+     * @param profileId 接收者
      * */
-    void mark(String openid);
-
-    /**
-     * 发送每日点赞通知
-     * @param homeworkVotes 每日点赞
-     * */
-    void sendLikeMessage(List<HomeworkVote> homeworkVotes);
-
-    /**
-     * 发送试用版消息
-     * @param openId openId
-     */
-    void sendRiseTrialMessage(String openId);
+    void mark(Integer profileId);
 
     /**
      * 根据CommentId获取用户回复所在的文章内容

@@ -2,9 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.common.Role;
 
 import java.util.List;
@@ -19,6 +17,11 @@ public interface AccountService {
     Account getAccount(String openid, boolean realTime) throws NotFollowingException;
 
     /**
+     * 根据 openid 获取用户角色信息
+     */
+    UserRole getUserRole(String openid);
+
+    /**
      * 根据openid获取用户详情
      */
     Profile getProfile(String openid, boolean realTime);
@@ -31,7 +34,7 @@ public interface AccountService {
     /**
      * 根据openid批量获取用户详情
      */
-    List<Profile> getProfiles(List<String> openid);
+    List<Profile> getProfiles(List<Integer> profileIds);
     /**
      * 获取所有的省份信息
      * */
@@ -44,15 +47,15 @@ public interface AccountService {
     /**
      * 更新是否打开rise
      */
-    int updateOpenRise(String openId);
+    int updateOpenRise(Integer id);
     /**
      * 更新是否打开rise应用练习
      */
-    int updateOpenApplication(String openId);
+    int updateOpenApplication(Integer id);
     /**
      * 更新是否打开rise巩固练习
      */
-    int updateOpenConsolidation(String openId);
+    int updateOpenConsolidation(Integer id);
 
     /**
      * 在个人中心里提交用户信息

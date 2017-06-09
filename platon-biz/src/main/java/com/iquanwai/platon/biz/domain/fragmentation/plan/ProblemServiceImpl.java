@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.Problem;
@@ -21,8 +20,6 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private ProblemCatalogDao problemCatalogDao;
-    @Autowired
     private ProblemScoreDao problemScoreDao;
 
     @Override
@@ -38,37 +35,34 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public List<ProblemCatalog> getProblemCatalogs(){
+    public List<ProblemCatalog> getProblemCatalogs() {
         return cacheService.loadProblemCatalogs();
     }
 
     @Override
-    public ProblemCatalog getProblemCatalog(Integer catalogId){
+    public ProblemCatalog getProblemCatalog(Integer catalogId) {
         return cacheService.getProblemCatalog(catalogId);
     }
 
 
     @Override
-    public ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId){
+    public ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId) {
         return cacheService.getProblemSubCatalog(subCatalogId);
     }
 
     @Override
-    public void gradeProblem(Integer problem, String openId, List<ProblemScore> problemScores) {
-        problemScores.forEach(item->{
+    public void gradeProblem(Integer problem, String openId, Integer profileId, List<ProblemScore> problemScores) {
+        problemScores.forEach(item -> {
             item.setOpenid(openId);
+            item.setProfileId(profileId);
             item.setProblemId(problem);
         });
         problemScoreDao.gradeProblem(problemScores);
     }
 
     @Override
-    public boolean hasProblemScore(String openId, Integer problemId) {
-        return problemScoreDao.userPorblemScoreCount(openId, problemId) > 0;
+    public boolean hasProblemScore(Integer profileId, Integer problemId) {
+        return problemScoreDao.userProblemScoreCount(profileId, problemId) > 0;
     }
 
-    @Override
-    public Double getProblemScoreAvg(Integer problemId, Integer question) {
-        return problemScoreDao.getProblemAverage(problemId,question);
-    }
 }

@@ -12,4 +12,5 @@ public class RefreshListDto<T> {
     private List<T> list;
     private List<T> highlightList;
     private boolean end;
+    private boolean isFeedback;
 }

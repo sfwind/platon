@@ -38,7 +38,7 @@ public class PointRepoImpl implements PointRepo {
 
     @PostConstruct
     public void initPoint() {
-        List<Integer> scores = Lists.newArrayList(40,60,100);
+        List<Integer> scores = Lists.newArrayList(40, 60, 100);
         logger.info("score init");
         for (int i = 0; i < scores.size(); i++) {
             score.put(i + 1, scores.get(i));
@@ -49,20 +49,20 @@ public class PointRepoImpl implements PointRepo {
     @Override
     public void risePoint(Integer planId, Integer increment) {
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
-        if(improvementPlan!=null){
-            improvementPlanDao.updatePoint(planId, improvementPlan.getPoint()+increment);
+        if (improvementPlan != null) {
+            improvementPlanDao.updatePoint(planId, improvementPlan.getPoint() + increment);
         } else {
-            logger.error("计划{} 加{}积分失败，缺少Plan记录",planId,increment);
+            logger.error("计划{} 加{}积分失败，缺少Plan记录", planId, increment);
         }
     }
 
     @Override
-    public void riseCustomerPoint(String openId, Integer increment){
-        Profile profile = profileDao.queryByOpenId(openId);
-        if(profile!=null){
-            profileDao.updatePoint(openId,profile.getPoint() + increment);
+    public void riseCustomerPoint(Integer profileId, Integer increment) {
+        Profile profile = profileDao.load(Profile.class, profileId);
+        if (profile != null) {
+            profileDao.updatePoint(profileId, profile.getPoint() + increment);
         } else {
-            logger.error("用户{} 加{}积分失败,缺少Profile记录",openId,increment);
+            logger.error("用户{} 加{}积分失败,缺少Profile记录", profileId, increment);
         }
     }
 
@@ -74,18 +74,18 @@ public class PointRepoImpl implements PointRepo {
         right.addAll(all.stream().filter(Choice::getIsRight).
                 collect(Collectors.toList()));
 
-        for(Choice choice:right){
-            if(!userChoiceList.contains(choice.getId())) {
+        for (Choice choice : right) {
+            if (!userChoiceList.contains(choice.getId())) {
                 return new ImmutablePair<>(0, false);
             }
         }
 
-        if(right.size()==userChoiceList.size()){
-            if(warmupPractice.getDifficulty()== 1){
+        if (right.size() == userChoiceList.size()) {
+            if (warmupPractice.getDifficulty() == 1) {
                 return new ImmutablePair<>(EASY_SCORE, true);
-            }else if(warmupPractice.getDifficulty()== 2){
+            } else if (warmupPractice.getDifficulty() == 2) {
                 return new ImmutablePair<>(NORMAL_SCORE, true);
-            }else if(warmupPractice.getDifficulty()== 3){
+            } else if (warmupPractice.getDifficulty() == 3) {
                 return new ImmutablePair<>(HARD_SCORE, true);
             }
         }
