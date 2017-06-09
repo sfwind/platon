@@ -33,11 +33,6 @@ public class FollowUsersDaoTest extends TestBase {
     }
 
     @Test
-    public void batchInsertTest() {
-        System.out.println(problemScoreDao.userPorblemScoreCount("fsdfsdf", 1));
-    }
-
-    @Test
     public void loadDiscussTest(){
         List<KnowledgeDiscuss> knowledgeDiscusses = knowledgeDiscussDao.loadDiscuss(1, new Page());
         knowledgeDiscusses.forEach(item->{

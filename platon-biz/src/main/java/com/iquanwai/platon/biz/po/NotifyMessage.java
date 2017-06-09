@@ -11,8 +11,8 @@ import java.util.Date;
 public class NotifyMessage {
     private int id;
     private String message;  //通知消息
-    private String fromUser; //发送者openid
-    private String toUser;  //接收者openid
+    private String fromUser; //发送者profileId
+    private String toUser;  //发送者profileId
     private Boolean isRead; //是否阅读(0-未读，1-已读)
     private Boolean old; //是否老消息(0-否，1-是)
     private Date readTime;  //阅读时间

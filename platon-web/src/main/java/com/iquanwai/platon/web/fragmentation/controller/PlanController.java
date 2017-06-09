@@ -174,7 +174,7 @@ public class PlanController {
         improvementPlan.setOpenid(null);
         if (!loginUser.getOpenRise()) {
             // 没有点开rise
-            Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            Profile profile = accountService.getProfile(loginUser.getId());
             loginUser.setOpenRise(profile.getOpenRise());
             improvementPlan.setOpenRise(profile.getOpenRise());
         }
@@ -309,7 +309,7 @@ public class PlanController {
     @RequestMapping(value = "/openrise", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openRise(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenRise(loginUser.getOpenId());
+        int count = accountService.updateOpenRise(loginUser.getId());
         if (count > 0) {
             loginUser.setOpenRise(true);
         }
@@ -319,7 +319,7 @@ public class PlanController {
     @RequestMapping(value = "/open/application", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openComprehension(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenApplication(loginUser.getOpenId());
+        int count = accountService.updateOpenApplication(loginUser.getId());
         if (count > 0) {
             loginUser.setOpenApplication(true);
         }
@@ -329,7 +329,7 @@ public class PlanController {
     @RequestMapping(value = "/open/consolidation", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openConsolidation(LoginUser loginUser){
         Assert.notNull(loginUser,"用户不能为空");
-        int count = accountService.updateOpenConsolidation(loginUser.getOpenId());
+        int count = accountService.updateOpenConsolidation(loginUser.getId());
         if (count > 0) {
             loginUser.setOpenConsolidation(true);
         }
@@ -395,7 +395,7 @@ public class PlanController {
         OpenStatusDto dto = new OpenStatusDto();
         if (!loginUser.getOpenApplication() || !loginUser.getOpenConsolidation() || !loginUser.getOpenRise()) {
             // 没有点开其中一个
-            Profile profile = accountService.getProfile(loginUser.getOpenId(), false);
+            Profile profile = accountService.getProfile(loginUser.getId());
             loginUser.setOpenRise(profile.getOpenRise());
             loginUser.setOpenConsolidation(profile.getOpenConsolidation());
             loginUser.setOpenApplication(profile.getOpenApplication());
@@ -456,7 +456,7 @@ public class PlanController {
                 .action("查询章节列表")
                 .memo(planId != null ? planId.toString() : null);
         operationLogService.log(operationLog);
-        ImprovementPlan plan = null;
+        ImprovementPlan plan;
         if (planId == null) {
             plan = planService.getLatestPlan(loginUser.getId());
         } else {

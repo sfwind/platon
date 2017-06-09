@@ -27,8 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -122,13 +120,13 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public WarmupSubmit getWarmupSubmit(String openid, Integer questionId) {
-        return warmupSubmitDao.getWarmupSubmit(openid, questionId);
+    public WarmupSubmit getWarmupSubmit(Integer profileId, Integer questionId) {
+        return warmupSubmitDao.getWarmupSubmit(profileId, questionId);
     }
 
     @Override
     public WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
-                                             String openid) throws AnswerException {
+                                             String openid, Integer profileId) throws AnswerException {
         WarmupResult warmupResult = new WarmupResult();
         Integer rightNumber = 0;
         Integer point = 0;
@@ -149,7 +147,7 @@ public class PracticeServiceImpl implements PracticeService {
                 rightNumber++;
             }
             point += score;
-            WarmupSubmit warmupSubmit = warmupSubmitDao.getWarmupSubmit(planId, practice.getId());
+            WarmupSubmit warmupSubmit = warmupSubmitDao.getWarmupSubmit(profileId, practice.getId());
             if (warmupSubmit != null) {
                 logger.error("{} has answered practice {}", openid, practice.getId());
                 throw new AnswerException();
@@ -162,6 +160,7 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setIsRight(accurate);
             warmupSubmit.setScore(score);
             warmupSubmit.setOpenid(openid);
+            warmupSubmit.setProfileId(profileId);
             warmupSubmitDao.insert(warmupSubmit);
         }
         if (practicePlan.getStatus() == 0) {
@@ -170,7 +169,7 @@ public class PracticeServiceImpl implements PracticeService {
         improvementPlanDao.updateWarmupComplete(planId);
         pointRepo.risePoint(planId, point);
         //TODO:和risePoint合并
-        pointRepo.riseCustomerPoint(openid, point);
+        pointRepo.riseCustomerPoint(profileId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
 
@@ -318,7 +317,7 @@ public class PracticeServiceImpl implements PracticeService {
                 // 修改status
                 applicationSubmitDao.updatePointStatus(id);
                 // 加总分
-                pointRepo.riseCustomerPoint(submit.getOpenid(), point);
+                pointRepo.riseCustomerPoint(submit.getProfileId(), point);
             }
         }
         return result;
@@ -370,7 +369,7 @@ public class PracticeServiceImpl implements PracticeService {
                 // 修改status
                 challengeSubmitDao.updatePointStatus(id);
                 // 加总分
-                pointRepo.riseCustomerPoint(submit.getOpenid(), ConfigUtils.getChallengeScore());
+                pointRepo.riseCustomerPoint(submit.getProfileId(), ConfigUtils.getChallengeScore());
             }
 
         }
@@ -448,7 +447,7 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setDevice(Constants.Device.MOBILE);
             homeworkVoteDao.vote(homeworkVote);
             pointRepo.risePoint(planId, ConfigUtils.getVoteScore());
-            pointRepo.riseCustomerPoint(submitOpenId, ConfigUtils.getVoteScore());
+            pointRepo.riseCustomerPoint(submitProfileId, ConfigUtils.getVoteScore());
         } else {
             homeworkVoteDao.reVote(vote.getId());
         }
@@ -597,12 +596,12 @@ public class PracticeServiceImpl implements PracticeService {
             String msg = "";
             StringBuilder url = new StringBuilder("/rise/static/message/comment/reply");
             if (moduleId == 2) {
-                msg = "评论了我的应用作业";
+                msg = "评论了我的应用练习";
             } else if (moduleId == 3) {
                 msg = "评论了我的小课分享";
             }
             url = url.append("?moduleId=").append(moduleId).append("&submitId=").append(referId).append("&commentId=").append(id);
-            messageService.sendMessage(msg, repliedComment.getCommentOpenId(), openId, url.toString());
+            messageService.sendMessage(msg, repliedComment.getCommentProfileId().toString(), profileId.toString(), url.toString());
         }
         return new MutablePair<>(id, "评论成功");
     }
@@ -610,7 +609,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content) {
         boolean isAsst = false;
-        Profile profile = accountService.getProfile(openId, false);
+        Profile profile = accountService.getProfile(profileId);
         //是否是助教评论
         if (profile != null) {
             isAsst = Role.isAsst(profile.getRole());
@@ -632,9 +631,9 @@ public class PracticeServiceImpl implements PracticeService {
                 }
             }
             //自己给自己评论不提醒
-            if (load.getOpenid() != null && !load.getOpenid().equals(openId)) {
+            if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
                 String url = "/rise/static/practice/application?id=" + load.getApplicationId();
-                messageService.sendMessage("评论了我的应用练习", load.getOpenid(), openId, url);
+                messageService.sendMessage("评论了我的应用练习", load.getProfileId().toString(), profileId.toString(), url);
             }
         } else if (moduleId == Constants.CommentModule.SUBJECT) {
             SubjectArticle load = subjectArticleDao.load(SubjectArticle.class, referId);
@@ -648,9 +647,9 @@ public class PracticeServiceImpl implements PracticeService {
                 asstCoachComment(load.getOpenid(), load.getProblemId());
             }
             //自己给自己评论不提醒
-            if (load.getOpenid() != null && !load.getOpenid().equals(openId)) {
+            if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
                 String url = "/rise/static/message/subject/reply?submitId=" + referId;
-                messageService.sendMessage("评论了我的小课分享", load.getOpenid(), openId, url);
+                messageService.sendMessage("评论了我的小课分享", load.getProfileId().toString(), profileId.toString(), url);
             }
         }
         Comment comment = new Comment();
@@ -810,7 +809,6 @@ public class PracticeServiceImpl implements PracticeService {
             }
 
             Integer problemId = subjectArticle.getProblemId();
-            String openid = subjectArticle.getOpenid();
             ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
             if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
                 //更新求点评次数

@@ -23,7 +23,7 @@ public class WarmupPracticeDao extends PracticeDBUtil {
 
     public List<WarmupPractice> loadPractice(int knowledgeId, int problemId){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<WarmupPractice>> h = new BeanListHandler(WarmupPractice.class);
+        ResultSetHandler<List<WarmupPractice>> h = new BeanListHandler<>(WarmupPractice.class);
         String sql = "SELECT * FROM WarmupPractice where KnowledgeId=? and ProblemId=?";
         try {
             return run.query(sql, h, knowledgeId, problemId);
@@ -36,7 +36,7 @@ public class WarmupPracticeDao extends PracticeDBUtil {
 
     public WarmupPractice loadExample(int knowledgeId){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<WarmupPractice> h = new BeanHandler(WarmupPractice.class);
+        ResultSetHandler<WarmupPractice> h = new BeanHandler<>(WarmupPractice.class);
         String sql = "SELECT * FROM WarmupPractice where KnowledgeId=? and Example=1";
         try {
             return run.query(sql, h, knowledgeId);
