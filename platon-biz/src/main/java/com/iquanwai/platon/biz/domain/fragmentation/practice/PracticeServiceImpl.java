@@ -147,7 +147,7 @@ public class PracticeServiceImpl implements PracticeService {
                 rightNumber++;
             }
             point += score;
-            WarmupSubmit warmupSubmit = warmupSubmitDao.getWarmupSubmit(profileId, practice.getId());
+            WarmupSubmit warmupSubmit = warmupSubmitDao.getWarmupSubmit(planId, practice.getId(), profileId);
             if (warmupSubmit != null) {
                 logger.error("{} has answered practice {}", openid, practice.getId());
                 throw new AnswerException();
