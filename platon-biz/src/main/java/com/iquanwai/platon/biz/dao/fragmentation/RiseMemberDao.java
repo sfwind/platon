@@ -6,6 +6,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
@@ -15,30 +16,15 @@ import java.sql.SQLException;
  */
 @Repository
 public class RiseMemberDao extends DBUtil {
-    private Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public int insert(RiseMember riseMember){
+    public RiseMember validRiseMember(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into RiseMember(Openid, OrderId, MemberTypeId, ExpireDate) " +
-                " VALUES (?, ?, ?, ?)";
+        String sql = "select * from RiseMember where ProfileId = ? and expired = 0";
 
         try {
-            Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                   riseMember.getOpenId(),riseMember.getOrderId(),riseMember.getMemberTypeId(),riseMember.getExpireDate());
-            return insertRs.intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
-    public RiseMember validRiseMember(String openId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseMember where OpenId = ? and expired = 0";
-
-        try{
             BeanHandler<RiseMember> handler = new BeanHandler<RiseMember>(RiseMember.class);
-            return runner.query(sql, handler, openId);
+            return runner.query(sql, handler, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

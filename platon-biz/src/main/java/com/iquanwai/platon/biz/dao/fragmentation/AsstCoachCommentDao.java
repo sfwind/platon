@@ -19,12 +19,12 @@ import java.sql.SQLException;
 public class AsstCoachCommentDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public AsstCoachComment loadAsstCoachComment(Integer problemId, String openid){
+    public AsstCoachComment loadAsstCoachComment(Integer problemId, Integer profileId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<AsstCoachComment> h = new BeanHandler<>(AsstCoachComment.class);
-        String sql = "SELECT * FROM AsstCoachComment where ProblemId=? and Openid=?";
+        String sql = "SELECT * FROM AsstCoachComment where ProblemId=? and ProfileId=?";
         try {
-            return run.query(sql, h, problemId, openid);
+            return run.query(sql, h, problemId, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -33,12 +33,12 @@ public class AsstCoachCommentDao extends PracticeDBUtil {
 
     public void insert(AsstCoachComment asstCoachComment){
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "insert into AsstCoachComment(Openid, Count, ProblemId) " +
-                "VALUES (?,?,?)";
+        String insertSql = "insert into AsstCoachComment(Openid, ProfileId, Count, ProblemId) " +
+                "VALUES (?,?,?,?)";
         try {
             run.insert(insertSql, new ScalarHandler<>(),
-                    asstCoachComment.getOpenid(), asstCoachComment.getCount(),
-                    asstCoachComment.getProblemId());
+                    asstCoachComment.getOpenid(), asstCoachComment.getProfileId(),
+                    asstCoachComment.getCount(), asstCoachComment.getProblemId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

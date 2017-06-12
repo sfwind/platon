@@ -16,9 +16,9 @@ public interface AccountService {
     Account getAccount(String openid, boolean realTime) throws NotFollowingException;
 
     /**
-     * 根据 openid 获取用户角色信息
+     * 根据 profileId 获取用户角色信息
      */
-    UserRole getUserRole(String openid);
+    UserRole getUserRole(Integer profileId);
 
     /**
      * 根据openid获取用户详情

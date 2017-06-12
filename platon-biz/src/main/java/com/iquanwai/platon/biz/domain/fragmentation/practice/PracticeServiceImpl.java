@@ -266,7 +266,7 @@ public class PracticeServiceImpl implements PracticeService {
         if (plan != null && plan.getRequestCommentCount() > 0) {
             applicationPractice.setRequestCommentCount(plan.getRequestCommentCount());
         } else {
-            RiseMember riseMember = riseMemberDao.validRiseMember(openid);
+            RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
             if (riseMember != null) {
                 if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)) {
                     applicationPractice.setRequestCommentCount(0);
@@ -564,11 +564,7 @@ public class PracticeServiceImpl implements PracticeService {
         if (isAsst) {
             // 将此条评论所对应的 ApplicationSubmit 置为已被助教评论
             applicationSubmitDao.asstFeedback(load.getId());
-            Integer planId = load.getPlanId();
-            ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
-            if (plan != null) {
-                asstCoachComment(load.getOpenid(), plan.getProblemId());
-            }
+            asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
         }
 
         //被回复的评论
@@ -624,11 +620,7 @@ public class PracticeServiceImpl implements PracticeService {
             //更新助教评论状态
             if (isAsst) {
                 applicationSubmitDao.asstFeedback(load.getId());
-                Integer planId = load.getPlanId();
-                ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
-                if (plan != null) {
-                    asstCoachComment(load.getOpenid(), plan.getProblemId());
-                }
+                asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
             }
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
@@ -644,7 +636,7 @@ public class PracticeServiceImpl implements PracticeService {
             //更新助教评论状态
             if (isAsst) {
                 subjectArticleDao.asstFeedback(load.getId());
-                asstCoachComment(load.getOpenid(), load.getProblemId());
+                asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
             }
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
@@ -664,13 +656,14 @@ public class PracticeServiceImpl implements PracticeService {
         return new MutablePair<>(id, "评论成功");
     }
 
-    private void asstCoachComment(String openId, Integer problemId) {
-        AsstCoachComment asstCoachComment = asstCoachCommentDao.loadAsstCoachComment(problemId, openId);
+    private void asstCoachComment(String openid, Integer profileId, Integer problemId) {
+        AsstCoachComment asstCoachComment = asstCoachCommentDao.loadAsstCoachComment(problemId, profileId);
         if (asstCoachComment == null) {
             asstCoachComment = new AsstCoachComment();
             asstCoachComment.setCount(1);
-            asstCoachComment.setOpenid(openId);
+            asstCoachComment.setOpenid(openid);
             asstCoachComment.setProblemId(problemId);
+            asstCoachComment.setProfileId(profileId);
             asstCoachCommentDao.insert(asstCoachComment);
         } else {
             asstCoachComment.setCount(asstCoachComment.getCount() + 1);
@@ -822,12 +815,12 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Integer hasRequestComment(Integer problemId, Integer profileId, String openid) {
+    public Integer hasRequestComment(Integer problemId, Integer profileId) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
             return improvementPlan.getRequestCommentCount();
         }
-        RiseMember riseMember = riseMemberDao.validRiseMember(openid);
+        RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
         if (riseMember != null) {
             if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)) {
                 return 0;
@@ -859,8 +852,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Boolean isModifiedAfterFeedback(Integer submitId, String commentOpenid, Date commentAddDate) {
-        UserRole userRole = accountService.getUserRole(commentOpenid);
+    public Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate) {
+        UserRole userRole = accountService.getUserRole(commentProfileId);
         if (userRole != null && Role.isAsst(userRole.getRoleId())) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
             Date lastModifiedTime = applicationSubmit.getLastModifiedTime();
