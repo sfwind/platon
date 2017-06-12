@@ -57,7 +57,7 @@ public class ProblemController {
 
         List<Problem> problemList = problemService.loadProblems();
         //非天使用户去除试用版小课
-        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getId())) {
             problemList = problemList.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
         ProblemDto problemDto = new ProblemDto();
@@ -79,7 +79,7 @@ public class ProblemController {
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
         //非天使用户去除试用版小课
-        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
         // 用户的所有计划
@@ -154,7 +154,7 @@ public class ProblemController {
             // 所有问题
             List<Problem> problems = problemService.loadProblems();
             //非天使用户去除试用版小课
-            if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+            if (!whiteListService.isInWhiteList(TRIAL, loginUser.getId())) {
                 problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
             }
 
@@ -199,7 +199,7 @@ public class ProblemController {
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
         //非天使用户去除试用版小课
-        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getOpenId())) {
+        if (!whiteListService.isInWhiteList(TRIAL, loginUser.getId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
 
