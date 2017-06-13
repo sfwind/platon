@@ -70,5 +70,5 @@ public interface AccountService {
 
     Region loadCityByName(String name);
 
-    Role getRole(String openid);
+    Role getRole(Integer profileId);
 }

@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface CourseProgressService {
 
-    List<ClassMember> loadActiveCourse(String openid);
+    List<ClassMember> loadActiveCourse(Integer profileId);
 }

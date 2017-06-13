@@ -433,8 +433,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> loadUserPlans(String openId){
-        return improvementPlanDao.loadUserPlans(openId);
+    public List<ImprovementPlan> loadUserPlans(Integer profileId){
+        return improvementPlanDao.loadUserPlans(profileId);
     }
 
 }

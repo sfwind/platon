@@ -269,7 +269,7 @@ public class ProblemController {
         ImprovementPlan runningPlan = planService.getRunningPlan(pcLoginUser.getId());
         if (runningPlan == null) {
             // 没有正在进行的主题，选一个之前做过的
-            List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getOpenId());
+            List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getId());
             if (plans.isEmpty()) {
                 // 没有买过难题
                 LOGGER.error("{} has no active plan", pcLoginUser.getOpenId());
