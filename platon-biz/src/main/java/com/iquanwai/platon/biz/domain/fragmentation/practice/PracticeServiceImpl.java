@@ -473,7 +473,6 @@ public class PracticeServiceImpl implements PracticeService {
         // applicationSubmit Id 序列 -> votes
         List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
         List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
-        // applicationSubmit Id -> comments
         List<Comment> comments = commentDao.loadAllCommentsByIds(submitsIdList); // 所有评论
         List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
         // 已被点评
@@ -491,45 +490,46 @@ public class PracticeServiceImpl implements PracticeService {
                 restSubmits.add(submit);
             }
         });
-        // 最新被点评 -> 最后被点评
+        // 最新被点评 -> 最旧被点评
         feedbackSubmits.sort((left, right) -> {
-            int leftFeedbackCnt = 0;
-            int rightFeedbackCnt = 0;
+            Date leftFeedbackDate = new Date(0);
+            Date rightFeedbackDate = new Date(0);
             for (Comment comment : comments) {
-                // ApplicationSubmit 的 id 和 Comment 的 referenceId 一致
                 String commentOpenId = comment.getCommentOpenId();
+                Date commentAddTime = comment.getAddTime();
                 if (left.getId() == comment.getReferencedId()) {
                     for (UserRole userRole : userRoles) {
                         if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
-                            leftFeedbackCnt++;
-                            break;
+                            leftFeedbackDate = commentAddTime.compareTo(leftFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
                         }
                     }
                 } else if (right.getId() == comment.getReferencedId()) {
                     for (UserRole userRole : userRoles) {
                         if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
-                            rightFeedbackCnt++;
-                            break;
+                            rightFeedbackDate = commentAddTime.compareTo(rightFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
                         }
                     }
                 }
             }
-            return leftFeedbackCnt - rightFeedbackCnt;
+            return rightFeedbackDate.compareTo(leftFeedbackDate);
         });
         // 最多被点赞，最少被点赞 -> 最新被点评，最后被点评
-        votedSubmits.stream().sorted((left, right) -> {
+        votedSubmits.sort((left, right) -> {
             int leftVoteCnt = 0;
             int rightVoteCnt = 0;
             for (Integer id : referenceIds) {
-                if (id.equals(left.getApplicationId())) {
+                if (id.equals(left.getId())) {
                     leftVoteCnt++;
-                } else if (id.equals(right.getApplicationId())) {
+                } else if (id.equals(right.getId())) {
                     rightVoteCnt++;
                 }
             }
-            return leftVoteCnt - rightVoteCnt;
+            if (leftVoteCnt == rightVoteCnt) {
+                return right.getPublishTime().compareTo(left.getPublishTime());
+            } else {
+                return rightVoteCnt - leftVoteCnt;
+            }
         });
-        votedSubmits.stream().sorted(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
         // 最新提交 -> 最后提交
         restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
         List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
