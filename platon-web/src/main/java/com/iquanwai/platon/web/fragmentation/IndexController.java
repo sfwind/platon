@@ -63,7 +63,7 @@ public class IndexController {
 
         if(ConfigUtils.prePublish()){
             // 是否预发布
-            boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, openid);
+            boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, loginUser.getId());
             if(!inWhite){
                 response.sendRedirect("/403.jsp");
                 return null;
@@ -72,7 +72,7 @@ public class IndexController {
 
         if(ConfigUtils.isDevelopment()){
             //如果不在白名单中,直接403报错
-            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getOpenId());
+            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
             if(!result){
                 response.sendRedirect("/403.jsp");
                 return null;

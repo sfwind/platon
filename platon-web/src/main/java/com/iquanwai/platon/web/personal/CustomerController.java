@@ -63,7 +63,7 @@ public class CustomerController {
                 .function("活动墙")
                 .action("查询");
         operationLogService.log(operationLog);
-        List<EventWall> eventWall = eventWallService.getEventWall(loginUser.getOpenId());
+        List<EventWall> eventWall = eventWallService.getEventWall(loginUser.getId());
 
         return WebUtils.result(eventWall);
     }
@@ -79,7 +79,7 @@ public class CustomerController {
         Profile profile = accountService.getProfile(loginUser.getId());
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
-        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getOpenId());
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if(riseMember!=null){
             riseDto.setMemberType(riseMember.getName());
         }
@@ -184,7 +184,7 @@ public class CustomerController {
     @RequestMapping("/member")
     public ResponseEntity<Map<String,Object>> riseMember(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
-        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getOpenId());
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("用户信息")
                 .function("RISE")

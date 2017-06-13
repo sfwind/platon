@@ -12,7 +12,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Autowired
     private WhiteListDao whiteListDao;
     @Override
-    public boolean isInWhiteList(String function, String openid) {
-        return whiteListDao.loadWhiteList(function, openid)!=null;
+    public boolean isInWhiteList(String function, Integer profileId) {
+        return whiteListDao.loadWhiteList(function, profileId)!=null;
     }
 }

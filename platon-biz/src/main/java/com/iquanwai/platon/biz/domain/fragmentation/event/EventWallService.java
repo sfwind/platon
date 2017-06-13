@@ -11,7 +11,7 @@ public interface EventWallService {
 
     /**
      * 获取活动墙信息
-     * @param openid 用户id
+     * @param profileId 用户id
      * */
-    List<EventWall> getEventWall(String openid);
+    List<EventWall> getEventWall(Integer profileId);
 }

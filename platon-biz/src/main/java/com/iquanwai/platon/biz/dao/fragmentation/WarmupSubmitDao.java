@@ -37,8 +37,8 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         }
     }
 
-    public List<WarmupSubmit> getWarmupSubmit(int planId, List<Integer> questionIds){
-        if(CollectionUtils.isEmpty(questionIds)) {
+    public List<WarmupSubmit> getWarmupSubmit(int planId, List<Integer> questionIds) {
+        if (CollectionUtils.isEmpty(questionIds)) {
             return Lists.newArrayList();
         }
         QueryRunner run = new QueryRunner(getDataSource());
@@ -65,6 +65,21 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         try {
             WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where ProfileId=? and QuestionId=?",
                     h, profileId, questionId);
+
+            return submit;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
+    public WarmupSubmit getWarmupSubmit(Integer planId, Integer questionId, Integer profileId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<WarmupSubmit> h = new BeanHandler<>(WarmupSubmit.class);
+        try {
+            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId=? and ProfileId=?",
+                    h, profileId, questionId, planId);
 
             return submit;
         } catch (SQLException e) {

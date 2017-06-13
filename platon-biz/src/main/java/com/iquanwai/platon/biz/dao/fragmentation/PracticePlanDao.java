@@ -48,7 +48,7 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public List<PracticePlan> loadPracticePlan(Integer planId){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? Order by Series";
         try {
             List<PracticePlan> practicePlans = run.query(sql, h,
@@ -63,7 +63,7 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
+        ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";
         try {
             PracticePlan practicePlan = run.query(sql, h,
@@ -78,7 +78,7 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public PracticePlan loadChallengePractice(Integer planId){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
+        ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=?";
         try {
             PracticePlan practicePlan = run.query(sql, h,
@@ -113,7 +113,7 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public List<PracticePlan> loadBySeries(Integer planId, Integer series){
         QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=?";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId, series);
@@ -124,22 +124,9 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public PracticePlan loadBySeriesAndSequence(Integer planId, Integer series, Integer sequence){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<PracticePlan> h = new BeanHandler(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=? and Sequence=?";
-        try {
-            PracticePlan practicePlan = runner.query(sql, h, planId, series, sequence);
-            return practicePlan;
-        }catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
-    }
-
     public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler(PracticePlan.class);
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12)";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId);
@@ -148,15 +135,5 @@ public class PracticePlanDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
-    }
-
-    public void unlockApplicationPractice(Integer planId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PracticePlan set UnLocked=1 where PlanId=? and (Type=11 or Type=12)";
-        try {
-            runner.update(sql, planId);
-        }catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
     }
 }

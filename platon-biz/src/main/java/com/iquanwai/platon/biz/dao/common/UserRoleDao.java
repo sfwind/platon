@@ -22,12 +22,12 @@ public class UserRoleDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<UserRole> getRoles(String openid){
+    public List<UserRole> getRoles(Integer profileId){
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<UserRole>> h = new BeanListHandler(UserRole.class);
-        String sql = "SELECT * FROM UserRole where Openid=? and Del=0";
+        ResultSetHandler<List<UserRole>> h = new BeanListHandler<>(UserRole.class);
+        String sql = "SELECT * FROM UserRole where ProfileId=? and Del=0";
         try {
-            return run.query(sql, h, openid);
+            return run.query(sql, h, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
