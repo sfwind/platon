@@ -35,12 +35,13 @@ public class ClassMemberDao extends DBUtil {
         return null;
     }
 
-    public List<ClassMember> classMember(String openid){
+    public List<ClassMember> classMember(Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ClassMember>> h = new BeanListHandler<>(ClassMember.class);
 
         try {
-            List<ClassMember> classMember = run.query("SELECT * FROM ClassMember where Openid=? and Graduate = 0", h, openid);
+            List<ClassMember> classMember = run.query("SELECT * FROM ClassMember where ProfileId=? and Graduate = 0",
+                    h, profileId);
             return classMember;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -48,6 +49,7 @@ public class ClassMemberDao extends DBUtil {
 
         return Lists.newArrayList();
     }
+
 
     public void graduate(Integer id){
         QueryRunner run = new QueryRunner(getDataSource());

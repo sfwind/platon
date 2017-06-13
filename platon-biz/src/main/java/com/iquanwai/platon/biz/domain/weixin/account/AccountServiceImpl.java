@@ -292,8 +292,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Role getRole(String openid){
-        List<UserRole> userRoles = userRoleDao.getRoles(openid);
+    public Role getRole(Integer profileId){
+        List<UserRole> userRoles = userRoleDao.getRoles(profileId);
         if(CollectionUtils.isEmpty(userRoles)){
             return null;
         }else{

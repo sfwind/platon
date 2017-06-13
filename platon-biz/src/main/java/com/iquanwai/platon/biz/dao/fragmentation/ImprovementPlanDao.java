@@ -198,13 +198,12 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     }
 
     // 查询该用户付过费的plan
-    public List<ImprovementPlan> loadUserPlans(String openId){
+    public List<ImprovementPlan> loadUserPlans(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE Openid = ?";
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ?";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         try {
-            List<ImprovementPlan> improvementPlans = runner.query(sql, h, openId);
-            return improvementPlans;
+            return runner.query(sql, h, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

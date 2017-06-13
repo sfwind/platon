@@ -243,11 +243,10 @@ public class LoginUserService {
             return new MutablePair<>(-2, null);
         }
 
-        Role role = this.getUserRole(openid);
         Profile profile = accountService.getProfile(openid, false);
+
+        Role role = this.getUserRole(profile.getId());
         LoginUser temp = new LoginUser();
-
-
         temp.setOpenId(openid);
         temp.setHeadimgUrl(profile.getHeadimgurl());
         temp.setRealName(profile.getRealName());
@@ -259,13 +258,13 @@ public class LoginUserService {
         return new MutablePair<>(1, temp);
     }
 
-    public Role getUserRole(String openid){
-        Role role = accountService.getRole(openid);
+    public Role getUserRole(Integer profileId){
+        Role role = accountService.getRole(profileId);
         if (role == null) {
             // 获得用户的openid，根据openid查询用户的学号
             //如果报名了训练营或者开启了RISE,返回学生角色,反之返回陌生人
-            List<ClassMember> classMembers = courseProgressService.loadActiveCourse(openid);
-            List<ImprovementPlan> plans = planService.loadUserPlans(openid);
+            List<ClassMember> classMembers = courseProgressService.loadActiveCourse(profileId);
+            List<ImprovementPlan> plans = planService.loadUserPlans(profileId);
             if (classMembers.isEmpty() && plans.isEmpty()) {
                 role = Role.stranger();
             } else {

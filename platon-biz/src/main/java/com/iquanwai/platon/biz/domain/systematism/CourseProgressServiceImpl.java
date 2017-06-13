@@ -34,10 +34,10 @@ public class CourseProgressServiceImpl implements CourseProgressService {
     private CourseDao courseDao;
 
     @Override
-    public List<ClassMember> loadActiveCourse(String openid) {
-        List<ClassMember> classMemberList = classMemberDao.classMember(openid);
+    public List<ClassMember> loadActiveCourse(Integer profileId) {
+        List<ClassMember> classMemberList = classMemberDao.classMember(profileId);
 
-        List<ClassMember> tempList =  classMemberList.stream().filter(classMember -> !isOver(classMember))
+        return classMemberList.stream().filter(classMember -> !isOver(classMember))
                 .map(classMember -> {
                     classProgress(classMember);
                     return classMember;
@@ -52,8 +52,6 @@ public class CourseProgressServiceImpl implements CourseProgressService {
                         return 0;
                     }
                 }).collect(Collectors.toList());
-
-        return tempList;
     }
 
 
