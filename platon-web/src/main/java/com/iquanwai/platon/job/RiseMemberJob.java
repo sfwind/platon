@@ -36,7 +36,7 @@ public class RiseMemberJob {
             try {
                 if (user.getRiseMember()) {
                     // 是会员，查询现在还是不是
-                    RiseMember riseMember = riseMemberDao.validRiseMember(user.getOpenId());
+                    RiseMember riseMember = riseMemberDao.validRiseMember(user.getId());
                     if(riseMember == null){
                         // 不是会员了
                         user.setRiseMember(false);

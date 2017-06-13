@@ -88,8 +88,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UserRole getUserRole(String openid) {
-        List<UserRole> userRoles = userRoleDao.getRoles(openid);
+    public UserRole getUserRole(Integer profileId) {
+        List<UserRole> userRoles = userRoleDao.getRoles(profileId);
         return userRoles.size() > 0 ? userRoles.get(0) : null;
     }
 

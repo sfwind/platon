@@ -18,12 +18,12 @@ import java.sql.SQLException;
 public class WhiteListDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public WhiteList loadWhiteList(String function, String openid){
+    public WhiteList loadWhiteList(String function, Integer profileId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<WhiteList> h = new BeanHandler<>(WhiteList.class);
         String sql = "SELECT * FROM WhiteList where Function=? and Openid=?";
         try {
-            WhiteList whiteList = run.query(sql, h, function, openid);
+            WhiteList whiteList = run.query(sql, h, function, profileId);
             return whiteList;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

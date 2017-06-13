@@ -9,7 +9,7 @@ public interface RiseMemberService {
 
     /**
      * 获取用户rise会员信息
-     * @param openid 用户id
+     * @param profileId 用户id
      * */
-    RiseMember getRiseMember(String openid);
+    RiseMember getRiseMember(Integer profileId);
 }
