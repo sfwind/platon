@@ -490,22 +490,22 @@ public class PracticeServiceImpl implements PracticeService {
                 restSubmits.add(submit);
             }
         });
-        // 最新被点评 -> 最旧被点评
+        // 已被点评作业内部排序：最新被点评到最旧被点评
         feedbackSubmits.sort((left, right) -> {
             Date leftFeedbackDate = new Date(0);
             Date rightFeedbackDate = new Date(0);
             for (Comment comment : comments) {
-                String commentOpenId = comment.getCommentOpenId();
+                Integer commentProfileId = comment.getCommentProfileId();
                 Date commentAddTime = comment.getAddTime();
                 if (left.getId() == comment.getReferencedId()) {
                     for (UserRole userRole : userRoles) {
-                        if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
+                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
                             leftFeedbackDate = commentAddTime.compareTo(leftFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
                         }
                     }
                 } else if (right.getId() == comment.getReferencedId()) {
                     for (UserRole userRole : userRoles) {
-                        if (userRole.getOpenid().equals(commentOpenId) && Role.isAsst(userRole.getRoleId())) {
+                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
                             rightFeedbackDate = commentAddTime.compareTo(rightFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
                         }
                     }
@@ -513,7 +513,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             return rightFeedbackDate.compareTo(leftFeedbackDate);
         });
-        // 最多被点赞，最少被点赞 -> 最新被点评，最后被点评
+        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列
         votedSubmits.sort((left, right) -> {
             int leftVoteCnt = 0;
             int rightVoteCnt = 0;
@@ -530,7 +530,7 @@ public class PracticeServiceImpl implements PracticeService {
                 return rightVoteCnt - leftVoteCnt;
             }
         });
-        // 最新提交 -> 最后提交
+        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列
         restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
         List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
         applicationSubmits.addAll(feedbackSubmits);
