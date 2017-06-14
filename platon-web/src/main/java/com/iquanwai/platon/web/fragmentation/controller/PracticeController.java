@@ -312,10 +312,10 @@ public class PracticeController {
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
-            boolean isFeedback = practiceService.isModifiedAfterFeedback(submitId,
-                    item.getCommentProfileId(), item.getAddTime());
-            if(isFeedback) {
-                refreshListDto.setFeedback(true);
+            if(moduleId == Constants.CommentModule.APPLICATION){
+                boolean isModified = practiceService.isModifiedAfterFeedback(submitId,
+                        item.getCommentProfileId(), item.getAddTime());
+                refreshListDto.setIsModifiedAfterFeedback(isModified);
             }
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
             if (account != null) {
