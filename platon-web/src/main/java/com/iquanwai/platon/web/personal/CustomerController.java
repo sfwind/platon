@@ -162,6 +162,7 @@ public class CustomerController {
         plans.forEach(item -> {
             PlanDto planDto = new PlanDto();
             planDto.setName(problemService.getProblem(item.getProblemId()).getProblem());
+            planDto.setPic(problemService.getProblem(item.getProblemId()).getPic());
             planDto.setPoint(item.getPoint());
             planDto.setProblemId(item.getProblemId());
             planDto.setPlanId(item.getId());

@@ -11,4 +11,5 @@ public class PlanDto {
     private Integer point;
     private Integer problemId;
     private Integer planId;
+    private String pic; // 头图地址，切换成 static 前缀
 }
