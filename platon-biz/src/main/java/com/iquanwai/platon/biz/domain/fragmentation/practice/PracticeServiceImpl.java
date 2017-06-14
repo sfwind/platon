@@ -490,7 +490,7 @@ public class PracticeServiceImpl implements PracticeService {
                 restSubmits.add(submit);
             }
         });
-        // 已被点评作业内部排序：最新被点评到最旧被点评
+        // 已被点评作业内部排序：最新被点评到最旧被点评，点评时间越新该条作业越靠前
         feedbackSubmits.sort((left, right) -> {
             Date leftFeedbackDate = new Date(0);
             Date rightFeedbackDate = new Date(0);
@@ -513,7 +513,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             return rightFeedbackDate.compareTo(leftFeedbackDate);
         });
-        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列
+        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列，提交日期越新，越靠前。
         votedSubmits.sort((left, right) -> {
             int leftVoteCnt = 0;
             int rightVoteCnt = 0;
@@ -530,7 +530,7 @@ public class PracticeServiceImpl implements PracticeService {
                 return rightVoteCnt - leftVoteCnt;
             }
         });
-        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列
+        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列，提交日期越新，越靠前。
         restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
         List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
         applicationSubmits.addAll(feedbackSubmits);
