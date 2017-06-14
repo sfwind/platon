@@ -295,5 +295,5 @@ public interface PracticeService {
     /**
      * 根据 ApplicationSubmit 中的 id 和对应评论的 openid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
      */
-    Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
+    Pair<Boolean, Boolean> isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
 }

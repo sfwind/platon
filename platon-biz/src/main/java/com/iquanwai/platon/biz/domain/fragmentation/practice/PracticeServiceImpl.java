@@ -19,6 +19,7 @@ import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -856,18 +857,18 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate) {
+    public Pair<Boolean, Boolean> isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate) {
         UserRole userRole = accountService.getUserRole(commentProfileId);
         if (userRole != null && Role.isAsst(userRole.getRoleId())) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
             Date lastModifiedTime = applicationSubmit.getLastModifiedTime();
             if (lastModifiedTime == null) {
-                return applicationSubmit.getPublishTime().compareTo(commentAddDate) > 0;
+                return new ImmutablePair<>(true, applicationSubmit.getPublishTime().compareTo(commentAddDate) > 0);
             } else {
-                return lastModifiedTime.compareTo(commentAddDate) > 0;
+                return new ImmutablePair<>(true, lastModifiedTime.compareTo(commentAddDate) > 0);
             }
         }
-        return false;
+        return new ImmutablePair<>(false, false);
     }
 
 }
