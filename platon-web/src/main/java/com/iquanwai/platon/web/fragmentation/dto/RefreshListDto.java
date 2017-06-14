@@ -12,5 +12,5 @@ public class RefreshListDto<T> {
     private List<T> list;
     private List<T> highlightList;
     private boolean end;
-    private boolean isModifiedAfterFeedback; //是否在教练反馈后修改文章
+    private Boolean isModifiedAfterFeedback; //是否在教练反馈后修改文章
 }
