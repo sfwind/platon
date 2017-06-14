@@ -92,8 +92,8 @@ public class RedisTest extends TestBase {
             log(aKeysByPattern + "===" + (++number));
         }
 
-        long l = redisUtil.deleteByPattern("test:key:*");
-        log("删除了" + l + "行");
+//        long l = redisUtil.deleteByPattern("test:key:*");
+//        log("删除了" + l + "行");
     }
 
     @Test
