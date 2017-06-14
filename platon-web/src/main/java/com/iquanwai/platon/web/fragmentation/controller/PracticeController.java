@@ -9,8 +9,6 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Role;
-import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -25,7 +23,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -755,16 +756,13 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
         ApplicationSubmit applicationSubmit = practiceService.getApplicationSubmit(submitId);
-        AppMsgCommentReplyDto dto = new AppMsgCommentReplyDto();
-        dto.setTopic(applicationSubmit.getTopic());
-        dto.setDescription(applicationSubmit.getContent());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("应用练习")
                 .function("浏览文章")
                 .action("获取文章正文")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        return WebUtils.result(dto);
+        return WebUtils.result(applicationSubmit);
     }
 
     @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)

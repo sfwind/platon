@@ -843,6 +843,10 @@ public class PracticeServiceImpl implements PracticeService {
         Integer applicationId = applicationSubmit.getApplicationId();
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
         applicationSubmit.setTopic(applicationPractice.getTopic());
+        //点赞状态
+        applicationSubmit.setVoteCount(homeworkVoteDao.votedCount(Constants.CommentModule.APPLICATION, id));
+        applicationSubmit.setVoteStatus(homeworkVoteDao.loadVoteRecord(Constants.CommentModule.APPLICATION, id,
+                applicationSubmit.getProfileId())!=null);
         return applicationSubmit;
     }
 

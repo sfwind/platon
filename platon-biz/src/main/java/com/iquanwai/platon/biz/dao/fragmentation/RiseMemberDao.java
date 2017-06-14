@@ -23,7 +23,7 @@ public class RiseMemberDao extends DBUtil {
         String sql = "select * from RiseMember where ProfileId = ? and expired = 0";
 
         try {
-            BeanHandler<RiseMember> handler = new BeanHandler<RiseMember>(RiseMember.class);
+            BeanHandler<RiseMember> handler = new BeanHandler<>(RiseMember.class);
             return runner.query(sql, handler, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
