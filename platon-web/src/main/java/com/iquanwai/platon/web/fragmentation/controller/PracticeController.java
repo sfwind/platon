@@ -755,7 +755,7 @@ public class PracticeController {
     @RequestMapping(value = "/application/article/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ApplicationSubmit applicationSubmit = practiceService.getApplicationSubmit(submitId);
+        ApplicationSubmit applicationSubmit = practiceService.getApplicationSubmit(submitId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("应用练习")
                 .function("浏览文章")
