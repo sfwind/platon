@@ -313,10 +313,9 @@ public class PracticeController {
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
             if(moduleId == Constants.CommentModule.APPLICATION){
-                Pair<Boolean, Boolean> isModified = practiceService.isModifiedAfterFeedback(submitId,
+                boolean isModified = practiceService.isModifiedAfterFeedback(submitId,
                         item.getCommentProfileId(), item.getAddTime());
-                refreshListDto.setFeedback(isModified.getLeft());
-                refreshListDto.setIsModifiedAfterFeedback(isModified.getRight());
+                refreshListDto.setIsModifiedAfterFeedback(isModified);
             }
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
             if (account != null) {
