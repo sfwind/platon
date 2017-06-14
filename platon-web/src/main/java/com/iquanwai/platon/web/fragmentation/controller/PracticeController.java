@@ -316,7 +316,7 @@ public class PracticeController {
                 boolean isModified = practiceService.isModifiedAfterFeedback(submitId,
                         item.getCommentProfileId(), item.getAddTime());
                 if(isModified) {
-                    refreshListDto.setModifiedAfterFeedback(true);
+                    refreshListDto.setIsModifiedAfterFeedback(true);
                 }
             }
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
