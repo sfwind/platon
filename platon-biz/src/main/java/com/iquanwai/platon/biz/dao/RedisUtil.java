@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public class RedisUtil {
     private RedissonClient redissonClient;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final long defaultExpiredTime = 24 * 60 * 60;
+    private static final long EXPIRED_TIME = 24 * 60 * 60;
 
     @Autowired
     public void setRedissonClient(RedissonClient redissonClient){
@@ -58,7 +58,7 @@ public class RedisUtil {
      * @param value value
      */
     public void set(String key, Object value) {
-        set(key, value, defaultExpiredTime);
+        set(key, value, EXPIRED_TIME);
     }
 
     /**
@@ -78,7 +78,7 @@ public class RedisUtil {
         } else {
             finalValue =  JSONObject.toJSONString(value);
         }
-        bucket.set(finalValue, timeToExpired == null ? defaultExpiredTime : timeToExpired, TimeUnit.SECONDS);
+        bucket.set(finalValue, timeToExpired == null ? EXPIRED_TIME : timeToExpired, TimeUnit.SECONDS);
     }
 
     /**
