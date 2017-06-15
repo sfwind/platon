@@ -67,10 +67,10 @@ public class ReportServiceImpl implements ReportService {
         report.setPic(problem.getPic());
         // 用时
         Integer studyDays = null;
-        if (plan.getStatus() == ImprovementPlan.COMPLETE) {
-            studyDays = DateUtils.interval(plan.getStartDate()) + 1;
-        } else {
+        if (plan.getStatus() == ImprovementPlan.CLOSE) {
             studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()) + 1);
+        } else {
+            studyDays = DateUtils.interval(plan.getStartDate()) + 1;
         }
         report.setStudyDays(studyDays);
         // 打败多少人
