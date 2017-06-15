@@ -29,7 +29,7 @@ public class RedisTest extends TestBase {
                 long curTime = System.currentTimeMillis();
                 if ((curTime - thatTime) / 1000 >= 1) {
                     thatTime = curTime;
-                    log("时间:"+time++);
+                    log("时间:" + (time++) + "s");
                 }
             }
         }).start();
@@ -43,7 +43,7 @@ public class RedisTest extends TestBase {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                log(redisUtil.get("accessToken:pc"));
+                log("pc-token:"+redisUtil.get("accessToken:pc"));
                 log("线程1离开锁");
             });
         }).start();
@@ -55,7 +55,7 @@ public class RedisTest extends TestBase {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                log(redisUtil.get("accessToken:pc"));
+                log("pc-token:"+redisUtil.get("accessToken:pc"));
                 log("线程2离开锁");
             });
         }).start();
@@ -64,6 +64,7 @@ public class RedisTest extends TestBase {
         redisUtil.set("test:name","张三");
         Assert.isTrue("张三".equals(redisUtil.get("test:name")));
         log("测试设置数字");
+        redisUtil.set("test:Number", 4);
         Assert.isTrue("4".equals(redisUtil.get("test:Number")));
         log("测试设置对象");
         Profile profile = new Profile();
