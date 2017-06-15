@@ -113,7 +113,7 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from HomeworkVote where VotedProfileId = ?";
         try{
-            return runner.query(sql,new BeanListHandler<HomeworkVote>(HomeworkVote.class),profileId);
+            return runner.query(sql,new BeanListHandler<>(HomeworkVote.class),profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -125,7 +125,7 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from HomeworkVote where VoteProfileId = ?";
         try{
-            return runner.query(sql,new BeanListHandler<HomeworkVote>(HomeworkVote.class),profileId);
+            return runner.query(sql,new BeanListHandler<>(HomeworkVote.class),profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

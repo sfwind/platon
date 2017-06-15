@@ -275,6 +275,8 @@ public class PlanServiceImpl implements PlanService {
         Integer percent = improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
         //发送完成通知
         if (status == ImprovementPlan.CLOSE) {
+            // 设置关闭时间
+            improvementPlanDao.updateCloseTime(planId);
             sendCloseMsg(plan, percent);
         }
 

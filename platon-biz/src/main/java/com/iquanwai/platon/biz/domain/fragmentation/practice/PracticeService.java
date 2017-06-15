@@ -281,8 +281,9 @@ public interface PracticeService {
      * 根据Id获取ApplicationSubmit对象
      *
      * @param id 主键
+     * @param readProfileId 阅读者id
      */
-    ApplicationSubmit getApplicationSubmit(Integer id);
+    ApplicationSubmit getApplicationSubmit(Integer id, Integer readProfileId);
 
     /**
      * 根据Id获取评论

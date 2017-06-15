@@ -85,7 +85,7 @@ public class CommentDao extends PracticeDBUtil {
             return Lists.newArrayList();
         }
         QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<List<Comment>> h = new BeanListHandler<Comment>(Comment.class);
+        ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
         String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ")";
         try {
             return runner.query(sql, h, referencedIds.toArray());

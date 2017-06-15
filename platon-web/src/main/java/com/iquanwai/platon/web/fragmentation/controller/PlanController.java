@@ -259,7 +259,10 @@ public class PlanController {
         }
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
+            return WebUtils.error("您还没有制定训练计划哦");
+        }
+        if (improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
+            return WebUtils.error("您还没有完成训练计划哦");
         }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

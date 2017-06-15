@@ -25,5 +25,7 @@ public class ApplicationSubmit {
     private Integer length; //字数
     private Integer problemId;//小课id
 
+    private Integer voteCount; //非db字段 点赞数
+    private boolean voteStatus; //非db字段 是否点赞
     private String topic; //非db字段 应用练习标题
 }
