@@ -66,7 +66,12 @@ public class ReportServiceImpl implements ReportService {
         report.setProblem(problem.getProblem());
         report.setPic(problem.getPic());
         // 用时
-        Integer studyDays = plan.getCompleteTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCompleteTime()) + 1);
+        Integer studyDays = null;
+        if (plan.getStatus() == ImprovementPlan.COMPLETE) {
+            studyDays = DateUtils.interval(plan.getStartDate()) + 1;
+        } else {
+            studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()));
+        }
         report.setStudyDays(studyDays);
         // 打败多少人
         Integer percent = improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());
