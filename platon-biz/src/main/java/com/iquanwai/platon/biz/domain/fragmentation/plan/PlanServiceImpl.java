@@ -287,7 +287,7 @@ public class PlanServiceImpl implements PlanService {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
         templateMessage.setTouser(plan.getOpenid());
-        // templateMessage.setUrl("");
+        templateMessage.setUrl("https://www.iquanwai.com/survey/wjx?activity=14941027");
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         Problem problem = cacheService.getProblem(plan.getProblemId());
         templateMessage.setData(data);
@@ -297,9 +297,8 @@ public class PlanServiceImpl implements PlanService {
 
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
-        // data.put("remark",new TemplateMessage.Keyword("\nP. S. 使用中有不爽的地方？我们已经想了几个优化的点子，点击进来看看，" +
-        //        "是不是想到一起了→→→ （跳转调查链接）"));
-        data.put("remark", new TemplateMessage.Keyword("\n微信和网页端的小课论坛和应用训练，仍可以继续补充和答题哦。有想法记得分享，和大家一起成长吧\n"));
+        data.put("remark", new TemplateMessage.Keyword("\n小tip：已完成的小课，就在“我的”->”我的小课“中\n\n" +
+                "【反馈】看过小课的学习报告了吗？除了目前的学习情况，你还想了解自己的哪些学习数据呢？点击详情告诉我们吧↓↓↓"));
 
         templateMessageService.sendMessage(templateMessage);
     }
