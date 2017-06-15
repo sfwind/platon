@@ -203,4 +203,7 @@ public class ConfigUtils {
 		return getBooleanValue("open.https");
 	}
 
+	public static String domainName(){
+		return getValue("app.domain");
+	}
 }
