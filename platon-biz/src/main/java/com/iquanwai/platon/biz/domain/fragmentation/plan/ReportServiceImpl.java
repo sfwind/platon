@@ -70,7 +70,7 @@ public class ReportServiceImpl implements ReportService {
         if (plan.getStatus() == ImprovementPlan.COMPLETE) {
             studyDays = DateUtils.interval(plan.getStartDate()) + 1;
         } else {
-            studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()));
+            studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()) + 1);
         }
         report.setStudyDays(studyDays);
         // 打败多少人
