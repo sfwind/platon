@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 public class RedisUtil {
     private RedissonClient redissonClient;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final long defaultExpiredTime = 24 * 60 * 60;
 
     @Autowired
     public void setRedissonClient(RedissonClient redissonClient){
@@ -57,7 +58,7 @@ public class RedisUtil {
      * @param value value
      */
     public void set(String key, Object value) {
-        set(key, value, null);
+        set(key, value, defaultExpiredTime);
     }
 
     /**
@@ -67,20 +68,17 @@ public class RedisUtil {
      * @param timeToExpired 过期时间，单位秒
      */
     public void set(String key,Object value,Long timeToExpired){
-        Assert.notNull(key, "message 不能为null");
-        Assert.notNull(value, "object 不能为null");
+        Assert.notNull(key, "key 不能为null");
+        Assert.notNull(value, "value 不能为null");
         RBucket<String> bucket = redissonClient.getBucket(key);
         String finalValue = null;
+        // 如果是字符串就不用再转一次，如果是数字／对象都会经过fastjson转换为字符串
         if(value instanceof String){
             finalValue = value.toString();
         } else {
             finalValue =  JSONObject.toJSONString(value);
         }
-        if (timeToExpired == null) {
-            bucket.set(finalValue);
-        } else {
-            bucket.set(finalValue, timeToExpired, TimeUnit.SECONDS);
-        }
+        bucket.set(finalValue, timeToExpired == null ? defaultExpiredTime : timeToExpired, TimeUnit.SECONDS);
     }
 
     /**
@@ -104,35 +102,32 @@ public class RedisUtil {
     }
 
     /**
-     * 根据正则获取keys
+     * 根据正则获取keys,默认每次向redis请求获取10行
      * @param pattern 正则
      */
     public Iterable<String> getKeysByPattern(String pattern) {
-        return getKeysByPattern(pattern, null);
+        return redissonClient.getKeys().getKeysByPattern(pattern);
     }
 
     /**
      * 根据正则获取keys
      * @param pattern 正则
-     * @param count 获取数量
+     * @param count 每次向redis请求时最多获取多少行
      */
-    public Iterable<String> getKeysByPattern(String pattern, Integer count) {
-        if (count == null) {
-            return redissonClient.getKeys().getKeysByPattern(pattern);
-        } else {
-            return redissonClient.getKeys().getKeysByPattern(pattern, count);
-        }
+    public Iterable<String> getKeysByPattern(String pattern,Integer count) {
+        return redissonClient.getKeys().getKeysByPattern(pattern, count);
     }
 
 
-//    /**
-//     * 通过正则删除数据
-//     * @param pattern 正则
-//     * @return 删除的条数
-//     */
-//    public long deleteByPattern(String pattern){
-//        return redissonClient.getKeys().deleteByPattern(pattern);
-//    }
+
+        /**
+         * 通过正则删除数据
+         * @param pattern 正则
+         * @return 删除的条数
+         */
+    public long deleteByPattern(String pattern){
+        return redissonClient.getKeys().deleteByPattern(pattern);
+    }
 
 
     /**
