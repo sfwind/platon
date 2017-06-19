@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.ForumDBUtil;
 import com.iquanwai.platon.biz.po.forum.QuestionFollow;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class QuestionFollowDao extends ForumDBUtil {
     public List<QuestionFollow> load(Integer questionId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<QuestionFollow>> h = new BeanListHandler<>(QuestionFollow.class);
-        String sql = "SELECT * FROM QuestionFollow where QuestionId=?";
+        String sql = "SELECT * FROM QuestionFollow where QuestionId=? and Del=0";
         try {
             List<QuestionFollow> followList = run.query(sql, h, questionId);
             return followList;
@@ -46,5 +47,29 @@ public class QuestionFollowDao extends ForumDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public QuestionFollow load(Integer questionId, Integer profileId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<QuestionFollow> h = new BeanHandler<>(QuestionFollow.class);
+        String sql = "SELECT * FROM QuestionFollow where QuestionId=? and ProfileId=?";
+        try {
+            QuestionFollow followList = run.query(sql, h, questionId, profileId);
+            return followList;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    public void updateDel(Integer id, Integer del) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update QuestionFollow set Del=? where Id=?";
+        try {
+
+            runner.update(sql, del, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 }

@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.po.forum;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * Created by justin on 17/6/19.
  */
@@ -15,4 +17,5 @@ public class ForumComment {
     private Integer repliedId; //回复评论id
     private Integer repliedProfileId; //被评论者id
     private Boolean repliedDel; //被评论是否删除（0-有效，1-无效）
+    private Date addTime; //添加时间
 }

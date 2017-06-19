@@ -38,7 +38,7 @@ public class AnswerApprovalDao extends ForumDBUtil {
     public List<AnswerApproval> load(Integer answerId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<AnswerApproval>> h = new BeanListHandler<>(AnswerApproval.class);
-        String sql = "SELECT * FROM AnswerApproval where AnswerId=?";
+        String sql = "SELECT * FROM AnswerApproval where AnswerId=? and Del=0";
         try {
             List<AnswerApproval> approvalList = run.query(sql, h, answerId);
             return approvalList;
