@@ -79,7 +79,7 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         ResultSetHandler<WarmupSubmit> h = new BeanHandler<>(WarmupSubmit.class);
         try {
             WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId=? and ProfileId=?",
-                    h, profileId, questionId, planId);
+                    h, planId, questionId, profileId);
 
             return submit;
         } catch (SQLException e) {
