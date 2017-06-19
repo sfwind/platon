@@ -1,10 +1,7 @@
 package com.iquanwai.platon.biz.domain.forum;
 
 import com.iquanwai.platon.biz.dao.forum.*;
-import com.iquanwai.platon.biz.po.forum.ForumAnswer;
-import com.iquanwai.platon.biz.po.forum.ForumQuestion;
-import com.iquanwai.platon.biz.po.forum.QuestionFollow;
-import com.iquanwai.platon.biz.po.forum.QuestionTag;
+import com.iquanwai.platon.biz.po.forum.*;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,15 +54,15 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public List<ForumQuestion> loadQuestions(Integer tagId, Page page) {
-        List<QuestionTag> questionTags = questionTagDao.getQuestionTagsById(tagId);
+        List<QuestionTag> questionTags = questionTagDao.getQuestionTagsByTagId(tagId);
         List<Integer> questionIds = questionTags.stream().map(QuestionTag::getQuestionId).collect(Collectors.toList());
 
         return forumQuestionDao.getQuestionsById(questionIds, page);
     }
 
     @Override
-    public List<QuestionTag> loadTags() {
-        return forumTagDao.loadAll(QuestionTag.class);
+    public List<ForumTag> loadTags() {
+        return forumTagDao.loadAll(ForumTag.class);
     }
 
     @Override
@@ -75,6 +72,8 @@ public class QuestionServiceImpl implements QuestionService {
             forumQuestionDao.open(questionId);
             List<ForumAnswer> answerList = forumAnswerDao.load(questionId);
             forumQuestion.setAnswerList(answerList);
+            List<QuestionTag> questionTagList = questionTagDao.getQuestionTagsByQuestionId(questionId);
+            forumQuestion.setQuestionTagList(questionTagList);
         }
 
         return forumQuestion;

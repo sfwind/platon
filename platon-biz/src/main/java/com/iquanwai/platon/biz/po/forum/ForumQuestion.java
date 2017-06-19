@@ -21,4 +21,5 @@ public class ForumQuestion {
     private Date addTime; //添加时间
 
     private List<ForumAnswer> answerList; //非db字段 回答列表
+    private List<QuestionTag> questionTagList; //非db字段 问题标签
 }
