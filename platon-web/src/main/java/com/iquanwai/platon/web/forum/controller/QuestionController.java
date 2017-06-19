@@ -34,7 +34,7 @@ public class QuestionController {
 
     private static final int PAGE_SIZE = 10;
 
-    @RequestMapping("/load/{tagId}")
+    @RequestMapping("/search/{tagId}")
     public ResponseEntity<Map<String, Object>> getQuestions(LoginUser loginUser,
                                                             @PathVariable Integer tagId,
                                                             @ModelAttribute Page page) {
@@ -51,7 +51,7 @@ public class QuestionController {
         return WebUtils.result(forumQuestionList);
     }
 
-    @RequestMapping("/load/tag")
+    @RequestMapping("/tag/load")
     public ResponseEntity<Map<String, Object>> getTags(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<QuestionTag> questionTags = questionService.loadTags();
@@ -110,7 +110,7 @@ public class QuestionController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/cancel/follow/{questionId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/follow/cancel/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> unfollowQuestion(LoginUser loginUser,
                                                               @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
