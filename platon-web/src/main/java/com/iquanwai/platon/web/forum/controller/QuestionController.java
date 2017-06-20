@@ -175,7 +175,7 @@ public class QuestionController {
     public ResponseEntity<Map<String, Object>> unfollowQuestion(LoginUser loginUser,
                                                                 @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
-        questionService.unfollowQuestion(questionId, loginUser.getId());
+        questionService.unfollowQuestion(loginUser.getId(), questionId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
