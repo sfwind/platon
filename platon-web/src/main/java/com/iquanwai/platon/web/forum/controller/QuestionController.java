@@ -145,9 +145,7 @@ public class QuestionController {
 
     /**
      * 关注问题
-     * @param loginUser
-     * @param questionId
-     * @return
+     * @param questionId 问题id
      */
     @RequestMapping(value = "/follow/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> followQuestion(LoginUser loginUser,
@@ -164,6 +162,10 @@ public class QuestionController {
         return WebUtils.success();
     }
 
+    /**
+     * 取消问题关注
+     * @param questionId 问题id
+     */
     @RequestMapping(value = "/follow/cancel/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> unfollowQuestion(LoginUser loginUser,
                                                                 @PathVariable Integer questionId) {
