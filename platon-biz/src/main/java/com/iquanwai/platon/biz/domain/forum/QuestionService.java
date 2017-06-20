@@ -24,11 +24,11 @@ public interface QuestionService {
      * 根据标签id获取问题
      * @param tagId 标签id
      * */
-    List<ForumQuestion> loadQuestions(Integer tagId, Page page);
+    List<ForumQuestion> loadQuestionsByTags(Integer tagId, Page page);
 
-    List<ForumQuestion> loadQuestions(Page page,Integer loadProfileId);
+    List<ForumQuestion> loadQuestions(Integer loadProfileId, Page page);
 
-    List<ForumQuestion> loadSelfQuestions(Page page, Integer profileId);
+    List<ForumQuestion> loadSelfQuestions(Integer profileId, Page page);
 
     /**
      * 根据标签

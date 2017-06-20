@@ -70,7 +70,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<ForumQuestion> loadQuestions(Integer tagId, Page page) {
+    public List<ForumQuestion> loadQuestionsByTags(Integer tagId, Page page) {
         List<QuestionTag> questionTags = questionTagDao.getQuestionTagsByTagId(tagId);
         List<Integer> questionIds = questionTags.stream().map(QuestionTag::getQuestionId).collect(Collectors.toList());
         Integer total = questionTagDao.getQuestionTagsCountByQuestionId(tagId);
@@ -83,8 +83,9 @@ public class QuestionServiceImpl implements QuestionService {
         return result;
     }
 
+
     @Override
-    public List<ForumQuestion> loadQuestions(Page page,Integer loadProfileId){
+    public List<ForumQuestion> loadQuestions(Integer loadProfileId,Page page){
         List<ForumQuestion> questions = forumQuestionDao.getQuestions(page);
         // 查询有多少条
         Long total = forumQuestionDao.count(ForumQuestion.class);
@@ -95,7 +96,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<ForumQuestion> loadSelfQuestions(Page page, Integer profileId){
+    public List<ForumQuestion> loadSelfQuestions(Integer profileId, Page page) {
         List<ForumQuestion> forumQuestions = forumQuestionDao.getQuestions(profileId, page);
         // 查询有多少条
         Integer total = forumQuestionDao.getQuestionsCount(profileId);

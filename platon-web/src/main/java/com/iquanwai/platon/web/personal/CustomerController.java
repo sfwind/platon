@@ -66,6 +66,7 @@ public class CustomerController {
     @Autowired
     private QuestionService questionService;
 
+
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String,Object>> getEventList(LoginUser loginUser){
         Assert.notNull(loginUser, "用户不能为空");
@@ -213,7 +214,12 @@ public class CustomerController {
                 .function("论坛")
                 .action("查询我的提问");
         operationLogService.log(operationLog);
-        List<ForumQuestion> forumQuestions = questionService.loadQuestions(page, loginUser.getId());
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPage(1);
+        page.setPageSize(100);
+        List<ForumQuestion> forumQuestions = questionService.loadQuestions(loginUser.getId(), page);
         // 设置刷新列表
         RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
         result.setList(forumQuestions);
@@ -221,12 +227,21 @@ public class CustomerController {
         return WebUtils.result(forumQuestions);
     }
 
-//    @RequestMapping("/forum/mine/answers")
-//    public ResponseEntity<Map<String,Object>> loadMineAnswers(LoginUser loginUser,@ModelAttribute Page page){
-//
-//    }
-
-
-
+    @RequestMapping("/forum/mine/answers")
+    public ResponseEntity<Map<String,Object>> loadMineAnswers(LoginUser loginUser,@ModelAttribute Page page){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("论坛")
+                .action("查询我的回答");
+        operationLogService.log(operationLog);
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPage(1);
+        page.setPageSize(100);
+        List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
+        return WebUtils.result(forumQuestions);
+    }
 
 }
