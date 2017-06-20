@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.forum;
 
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.po.forum.ForumTag;
-import com.iquanwai.platon.biz.po.forum.QuestionTag;
 import com.iquanwai.platon.biz.util.page.Page;
 
 import java.util.List;
@@ -37,10 +36,10 @@ public interface QuestionService {
     /**
      * 根据id获取问题
      * @param questionId 问题id
+     * @param loadProfileId 加载问题的人
      * */
-    ForumQuestion loadQuestion(Integer questionId);
+    ForumQuestion loadQuestion(Integer questionId,Integer loadProfileId);
 
-    Boolean checkFollowStatus(Integer questionId, Integer profileId);
 
     /**
      * 关注问题

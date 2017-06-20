@@ -105,11 +105,7 @@ public class QuestionController {
     public ResponseEntity<Map<String, Object>> getQuestion(LoginUser loginUser,
                                                             @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ForumQuestion forumQuestion = questionService.loadQuestion(questionId);
-        if (forumQuestion != null) {
-            Boolean followStatus = questionService.checkFollowStatus(questionId, loginUser.getId());
-            forumQuestion.setFollow(followStatus);
-        }
+        ForumQuestion forumQuestion = questionService.loadQuestion(questionId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("问题详情页")

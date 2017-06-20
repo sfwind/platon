@@ -21,5 +21,6 @@ public class ForumAnswer {
     private String publishTimeStr;
     private String authorUserName; // 作者名字
     private String authorHeadPic; // 作者头像
+    private Boolean approval; // 是否已经赞同
 
 }

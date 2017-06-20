@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.ForumDBUtil;
 import com.iquanwai.platon.biz.po.forum.AnswerApproval;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -46,6 +47,19 @@ public class AnswerApprovalDao extends ForumDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public AnswerApproval load(Integer answerId,Integer profileId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        BeanHandler<AnswerApproval> h = new BeanHandler<AnswerApproval>(AnswerApproval.class);
+        String sql = "SELECT COUNT(*) FROM AnswerApproval where AnswerId=? and Del=0 and ProfileId=?";
+
+        try{
+            return run.query(sql, h, answerId, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 
 

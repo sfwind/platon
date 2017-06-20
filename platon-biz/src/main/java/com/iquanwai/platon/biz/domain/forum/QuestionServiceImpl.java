@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.forum;
 
+import com.iquanwai.platon.biz.dao.forum.AnswerApprovalDao;
 import com.iquanwai.platon.biz.dao.forum.ForumAnswerDao;
 import com.iquanwai.platon.biz.dao.forum.ForumQuestionDao;
 import com.iquanwai.platon.biz.dao.forum.ForumTagDao;
@@ -38,6 +39,8 @@ public class QuestionServiceImpl implements QuestionService {
     private QuestionFollowDao questionFollowDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private AnswerApprovalDao answerApprovalDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -117,9 +120,12 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public ForumQuestion loadQuestion(Integer questionId) {
+    public ForumQuestion loadQuestion(Integer questionId,Integer loadProfileId) {
         ForumQuestion forumQuestion = forumQuestionDao.load(ForumQuestion.class, questionId);
         if(forumQuestion!=null){
+            QuestionFollow load = questionFollowDao.load(questionId, loadProfileId);
+            forumQuestion.setFollow(load != null && !load.getDel());
+
             Integer point = ConfigUtils.getForumQuestionOpenPoint();
             // 加权重
             forumQuestionDao.open(questionId, point);
@@ -130,6 +136,7 @@ public class QuestionServiceImpl implements QuestionService {
                 item.setAuthorUserName(profile.getNickname());
                 item.setAuthorHeadPic(profile.getHeadimgurl());
                 item.setPublishTimeStr(DateUtils.parseDateToString(item.getPublishTime()));
+                item.setApproval(answerApprovalDao.load(item.getId(), loadProfileId) != null);
             });
             forumQuestion.setAnswerList(answerList);
             // 问题添加时间
@@ -144,16 +151,6 @@ public class QuestionServiceImpl implements QuestionService {
         return forumQuestion;
     }
 
-    @Override
-    public Boolean checkFollowStatus(Integer questionId, Integer profileId){
-        QuestionFollow load = questionFollowDao.load(questionId, profileId);
-        if (load != null && !load.getDel()) {
-            // 存在，并且未删除
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     @Override
     public void followQuestion(Integer profileId, Integer questionId) {
