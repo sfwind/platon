@@ -77,7 +77,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<ForumQuestion> loadQuestions(Page page){
+    public List<ForumQuestion> loadQuestions(Page page,Integer loadProfileId){
         List<ForumQuestion> questions = forumQuestionDao.getQuestions(page);
         // 查询有多少条
         Long total = forumQuestionDao.count(ForumQuestion.class);
@@ -110,6 +110,8 @@ public class QuestionServiceImpl implements QuestionService {
             item.setAnswerTips(answerTips);
             // 初始化添加时间
             item.setAddTimeStr(DateUtils.parseDateToString(item.getAddTime()));
+            QuestionFollow load = questionFollowDao.load(item.getId(), loadProfileId);
+            item.setFollow(load != null && !load.getDel());
         });
         return questions;
     }

@@ -45,6 +45,8 @@ public class AnswerController {
         return WebUtils.success();
     }
 
+
+
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
                                                       @ModelAttribute ForumAnswer forumAnswer) {
@@ -78,4 +80,7 @@ public class AnswerController {
         ForumAnswer forumAnswer = answerService.loadAnswer(answerId, loginUser.getId());
         return WebUtils.result(forumAnswer);
     }
+
+
+
 }

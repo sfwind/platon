@@ -38,7 +38,7 @@ public class QuestionController {
     @RequestMapping("/load/list")
     public ResponseEntity<Map<String, Object>> getQuestionList(LoginUser loginUser,@ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
-        List<ForumQuestion> forumQuestions = questionService.loadQuestions(page);
+        List<ForumQuestion> forumQuestions = questionService.loadQuestions(page,loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("首页")

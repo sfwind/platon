@@ -26,7 +26,7 @@ public interface QuestionService {
      * */
     List<ForumQuestion> loadQuestions(Integer tagId, Page page);
 
-    List<ForumQuestion> loadQuestions(Page page);
+    List<ForumQuestion> loadQuestions(Page page,Integer loadProfileId);
 
     /**
      * 根据标签
