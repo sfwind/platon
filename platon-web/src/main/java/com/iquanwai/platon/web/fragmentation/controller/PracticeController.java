@@ -254,6 +254,37 @@ public class PracticeController {
         operationLogService.log(operationLog);
 
         // TODO 后期如果数据量增加，容易出现效率问题
+        RefreshListDto<RiseWorkInfoDto> refreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
+        return WebUtils.result(refreshListDto);
+    }
+
+
+    /**
+     * 应用任务列表页加载他人的任务信息
+     *
+     * @param loginUser     登陆人
+     * @param applicationId 应用任务Id
+     */
+    @RequestMapping("/application/list/other/{applicationId}/{pageIndex}")
+    public ResponseEntity<Map<String, Object>> loadOtherApplicationListBatch(LoginUser loginUser,
+                                                                        @PathVariable Integer applicationId,
+                                                                        @PathVariable Integer pageIndex) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        Page page = new Page();
+        page.setPageSize(PAGE_SIZE*pageIndex);
+        // 该计划的应用练习是否提交
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("应用任务")
+                .action("移动端应用任务列表加载他人的应用任务")
+                .memo(applicationId.toString());
+        operationLogService.log(operationLog);
+
+        RefreshListDto<RiseWorkInfoDto> refreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
+        return WebUtils.result(refreshListDto);
+    }
+
+    private RefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
         List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId);
         List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
                 .map(item -> {
@@ -291,7 +322,7 @@ public class PracticeController {
         RefreshListDto<RiseWorkInfoDto> refreshListDto = new RefreshListDto<>();
         refreshListDto.setList(riseWorkInfoDtos);
         refreshListDto.setEnd(page.isLastPage());
-        return WebUtils.result(refreshListDto);
+        return refreshListDto;
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
