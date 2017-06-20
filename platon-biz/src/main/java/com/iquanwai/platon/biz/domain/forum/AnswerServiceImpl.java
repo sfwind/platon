@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumComment;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,8 @@ public class AnswerServiceImpl implements AnswerService {
             if (question != null) {
                 int insert = forumAnswerDao.insert(forumAnswer);
                 if (insert != -1) {
+                    // 增加回答数字
+                    forumQuestionDao.answer(questionId);
                     return forumAnswer;
                 }
                 logger.error("插入答案失败,{}", forumAnswer);
@@ -70,6 +73,7 @@ public class AnswerServiceImpl implements AnswerService {
             if (forumAnswer != null) {
                 if (profileId.equals(forumAnswer.getProfileId())) {
                     forumAnswerDao.update(answer, answerId);
+                    // 设置新的answer并返回
                     forumAnswer.setAnswer(answer);
                     return forumAnswer;
                 } else {
@@ -152,5 +156,17 @@ public class AnswerServiceImpl implements AnswerService {
         }
         logger.error("删除评失败,commentId:{}",commentId);
         return false;
+    }
+
+    @Override
+    public List<ForumAnswer> loadSelfAnswers(Integer profileId,Page page){
+        List<ForumAnswer> forumAnswers = forumAnswerDao.loadUserAnswers(profileId, page);
+        forumAnswers.forEach(item->{
+            ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, item.getQuestionId());
+            item.setQuestion(question.getTopic());
+            // set null
+            item.setProfileId(null);
+        });
+        return forumAnswers;
     }
 }

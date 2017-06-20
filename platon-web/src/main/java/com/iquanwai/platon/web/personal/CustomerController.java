@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
+import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -15,9 +16,9 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.AreaDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
@@ -65,6 +66,8 @@ public class CustomerController {
     private EventWallService eventWallService;
     @Autowired
     private QuestionService questionService;
+    @Autowired
+    private AnswerService answerService;
 
 
     @RequestMapping("/event/list")
@@ -219,11 +222,11 @@ public class CustomerController {
         }
         page.setPage(1);
         page.setPageSize(100);
-        List<ForumQuestion> forumQuestions = questionService.loadQuestions(loginUser.getId(), page);
+        List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
         // 设置刷新列表
-        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
-        result.setList(forumQuestions);
-        result.setEnd(page.isLastPage());
+//        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+//        result.setList(forumQuestions);
+//        result.setEnd(page.isLastPage());
         return WebUtils.result(forumQuestions);
     }
 
@@ -240,8 +243,9 @@ public class CustomerController {
         }
         page.setPage(1);
         page.setPageSize(100);
-        List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
-        return WebUtils.result(forumQuestions);
+        answerService.loadSelfAnswers(loginUser.getId(), page);
+        List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
+        return WebUtils.result(forumAnswers);
     }
 
 }

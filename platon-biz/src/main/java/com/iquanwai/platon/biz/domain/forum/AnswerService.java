@@ -2,6 +2,9 @@ package com.iquanwai.platon.biz.domain.forum;
 
 import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumComment;
+import com.iquanwai.platon.biz.util.page.Page;
+
+import java.util.List;
 
 /**
  * Created by justin on 17/6/19.
@@ -18,4 +21,6 @@ public interface AnswerService {
     ForumComment loadComment(Integer commentId);
 
     Boolean deleteComment(Integer commentId);
+
+    List<ForumAnswer> loadSelfAnswers(Integer profileId,Page page);
 }

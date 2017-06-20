@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.forum;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.ForumDBUtil;
 import com.iquanwai.platon.biz.po.forum.ForumAnswer;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -64,6 +65,19 @@ public class ForumAnswerDao extends ForumDBUtil {
         String sql = "SELECT * FROM ForumAnswer where QuestionId=? order by ApprovalCount desc, PublishTime desc";
         try {
             List<ForumAnswer> answerList = run.query(sql, h, questionId);
+            return answerList;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<ForumAnswer> loadUserAnswers(Integer profileId, Page page){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<List<ForumAnswer>> h = new BeanListHandler<>(ForumAnswer.class);
+        String sql = "SELECT * FROM ForumAnswer where ProfileId=? order by ApprovalCount desc, PublishTime desc limit  " + page.getOffset() + "," + page.getLimit();
+        try {
+            List<ForumAnswer> answerList = run.query(sql, h, profileId);
             return answerList;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
