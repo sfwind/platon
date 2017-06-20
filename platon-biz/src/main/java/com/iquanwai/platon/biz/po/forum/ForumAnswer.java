@@ -24,4 +24,5 @@ public class ForumAnswer {
     private String authorHeadPic; // 作者头像
     private Boolean approval; // 是否已经赞同
     private List<ForumComment> comments; // 回答的评论
+    private Boolean mine; // 是否是自己的
 }

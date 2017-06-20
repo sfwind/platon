@@ -8,7 +8,7 @@ import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 public interface AnswerService {
     void approveAnswer(Integer profileId, Integer answerId);
 
-    ForumAnswer submitAnswer(ForumAnswer forumAnswer);
+    ForumAnswer submitAnswer(Integer answerId,Integer profileId,String answer,Integer questionId);
 
     ForumAnswer loadAnswer(Integer answerId, Integer loadProfileId);
 }

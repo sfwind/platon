@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.forum.ForumAnswer;
+import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -49,12 +50,10 @@ public class AnswerController {
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
-                                                      @ModelAttribute ForumAnswer forumAnswer) {
+                                                      @ModelAttribute AnswerDto answerDto) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(forumAnswer, "答案不能为空");
-        forumAnswer.setProfileId(loginUser.getId());
-        forumAnswer.setApprovalCount(0);
-        ForumAnswer result = answerService.submitAnswer(forumAnswer);
+        Assert.notNull(answerDto, "答案不能为空");
+        ForumAnswer result = answerService.submitAnswer(answerDto.getAnswerId(), loginUser.getId(), answerDto.getAnswer(), answerDto.getQuestionId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("答案")

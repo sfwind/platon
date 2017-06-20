@@ -187,6 +187,7 @@ public class QuestionServiceImpl implements QuestionService {
                 item.setAuthorHeadPic(profile.getHeadimgurl());
                 item.setPublishTimeStr(DateUtils.parseDateToString(item.getPublishTime()));
                 item.setApproval(answerApprovalDao.load(item.getId(), loadProfileId) != null);
+                item.setMine(loadProfileId.equals(item.getProfileId()));
                 // 去掉profileId
                 item.setProfileId(null);
             });

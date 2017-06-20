@@ -49,16 +49,36 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public ForumAnswer submitAnswer(ForumAnswer forumAnswer){
-        ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, forumAnswer.getQuestionId());
-        if (question != null) {
-            int insert = forumAnswerDao.insert(forumAnswer);
-            if (insert != -1) {
-                return forumAnswer;
+    public ForumAnswer submitAnswer(Integer answerId,Integer profileId,String answer,Integer questionId){
+        if (answerId == null) {
+            ForumAnswer forumAnswer = new ForumAnswer();
+            forumAnswer.setQuestionId(questionId);
+            forumAnswer.setProfileId(profileId);
+            forumAnswer.setAnswer(answer);
+            forumAnswer.setApprovalCount(0);
+            ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, forumAnswer.getQuestionId());
+            if (question != null) {
+                int insert = forumAnswerDao.insert(forumAnswer);
+                if (insert != -1) {
+                    return forumAnswer;
+                }
+                logger.error("插入答案失败,{}", forumAnswer);
             }
-            logger.error("插入答案失败,{}", forumAnswer);
+            logger.error("提交失败，该问题为空,{}", forumAnswer);
+        } else {
+            ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
+            if (forumAnswer != null) {
+                if (profileId.equals(forumAnswer.getProfileId())) {
+                    forumAnswerDao.update(answer, answerId);
+                    forumAnswer.setAnswer(answer);
+                    return forumAnswer;
+                } else {
+                    logger.error("更新答案失败，不是自己的答案");
+                }
+            } else {
+                logger.error("更新答案失败");
+            }
         }
-        logger.error("提交失败，该问题为空,{}", forumAnswer);
         return null;
     }
 
