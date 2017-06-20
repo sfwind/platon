@@ -18,4 +18,9 @@ public class ForumComment {
     private Integer repliedProfileId; //被评论者id
     private Boolean repliedDel; //被评论是否删除（0-有效，1-无效）
     private Date addTime; //添加时间
+
+    /** 非DB字段，业务字段 **/
+    private String publishTimeStr;
+    private String authorUserName; // 作者名字
+    private String authorHeadPic; // 作者头像
 }

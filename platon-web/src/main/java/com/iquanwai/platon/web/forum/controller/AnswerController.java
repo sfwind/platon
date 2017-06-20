@@ -31,9 +31,9 @@ public class AnswerController {
     @Autowired
     private OperationLogService operationLogService;
 
-    @RequestMapping(value = "/approve/{answerId}",method = RequestMethod.POST)
-    public ResponseEntity<Map<String,Object>> approveAnwser(LoginUser loginUser,
-                                                            @PathVariable Integer answerId){
+    @RequestMapping(value = "/approve/{answerId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> approveAnwser(LoginUser loginUser,
+                                                             @PathVariable Integer answerId) {
         Assert.notNull(loginUser, "用户不能为空");
         answerService.approveAnswer(loginUser.getId(), answerId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -53,6 +53,11 @@ public class AnswerController {
         forumAnswer.setProfileId(loginUser.getId());
         forumAnswer.setApprovalCount(0);
         ForumAnswer result = answerService.submitAnswer(forumAnswer);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("答案")
+                .action("提交答案");
+        operationLogService.log(operationLog);
         if (result != null) {
             result.setAuthorHeadPic(loginUser.getHeadimgUrl());
             result.setAuthorUserName(loginUser.getWeixinName());
@@ -62,9 +67,15 @@ public class AnswerController {
         }
     }
 
-
-
-
-
-
+    @RequestMapping(value = "/load/{answerId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String,Object>> loadAnswer(LoginUser loginUser,@PathVariable Integer answerId){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("答案")
+                .action("加载答案页面");
+        operationLogService.log(operationLog);
+        ForumAnswer forumAnswer = answerService.loadAnswer(answerId, loginUser.getId());
+        return WebUtils.result(forumAnswer);
+    }
 }

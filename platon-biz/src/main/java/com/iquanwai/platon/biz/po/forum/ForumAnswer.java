@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.po.forum;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by justin on 17/6/19.
@@ -22,5 +23,5 @@ public class ForumAnswer {
     private String authorUserName; // 作者名字
     private String authorHeadPic; // 作者头像
     private Boolean approval; // 是否已经赞同
-
+    private List<ForumComment> comments; // 回答的评论
 }

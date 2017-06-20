@@ -9,4 +9,6 @@ public interface AnswerService {
     void approveAnswer(Integer profileId, Integer answerId);
 
     ForumAnswer submitAnswer(ForumAnswer forumAnswer);
+
+    ForumAnswer loadAnswer(Integer answerId, Integer loadProfileId);
 }
