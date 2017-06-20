@@ -182,6 +182,11 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
+    /**
+     * 初始化问题列表
+     * @param item 问题
+     * @param loadProfileId 执行加载操作的人
+     */
     private void initQuestionList(ForumQuestion item,Integer loadProfileId){
         Profile profile = accountService.getProfile(item.getProfileId());
         // 设置昵称
@@ -218,10 +223,10 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     /**
-     *
-     * @param exitTags
-     * @param tagIds
-     * @param questionId
+     * 选择问题tag
+     * @param exitTags 已经存在的tag，包括del的
+     * @param tagIds    用户选择的tag
+     * @param questionId 问题id
      */
     private void chooseQuestionTags(List<QuestionTag> exitTags,List<Integer> tagIds,Integer questionId){
         if (CollectionUtils.isNotEmpty(exitTags)) {
