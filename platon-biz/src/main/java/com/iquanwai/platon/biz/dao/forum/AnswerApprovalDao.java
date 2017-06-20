@@ -62,5 +62,17 @@ public class AnswerApprovalDao extends ForumDBUtil {
         return null;
     }
 
+    public Integer delete(Integer profileId,Integer answerId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE AnswerApproval SET Del = 1 WHERE ProfileId = ? and AnswerId = ?";
+
+        try {
+            return runner.update(sql, profileId, answerId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
 
 }

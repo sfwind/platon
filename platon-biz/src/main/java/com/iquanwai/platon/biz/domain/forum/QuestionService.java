@@ -26,8 +26,20 @@ public interface QuestionService {
      * */
     List<ForumQuestion> loadQuestionsByTags(Integer tagId, Page page);
 
+    /**
+     * 加载问题，不分类
+     * @param loadProfileId 进行加载操作的人
+     * @param page 分页参数
+     * @return 问题列表
+     */
     List<ForumQuestion> loadQuestions(Integer loadProfileId, Page page);
 
+    /**
+     * 加载自己的所有问题
+     * @param profileId 执行加载操作的人
+     * @param page 分页参数
+     * @return 问题列表
+     */
     List<ForumQuestion> loadSelfQuestions(Integer profileId, Page page);
 
     /**

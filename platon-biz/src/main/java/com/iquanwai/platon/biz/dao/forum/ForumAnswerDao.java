@@ -59,6 +59,16 @@ public class ForumAnswerDao extends ForumDBUtil {
         }
     }
 
+    public void cancelApprove(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ForumAnswer set ApprovalCount=ApprovalCount-1 where Id=?";
+        try {
+            runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public List<ForumAnswer> load(Integer questionId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumAnswer>> h = new BeanListHandler<>(ForumAnswer.class);

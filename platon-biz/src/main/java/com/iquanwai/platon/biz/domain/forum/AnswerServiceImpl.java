@@ -40,13 +40,29 @@ public class AnswerServiceImpl implements AnswerService {
 
 
     @Override
-    public void approveAnswer(Integer profileId,Integer answerId){
+    public Boolean approveAnswer(Integer profileId,Integer answerId){
         AnswerApproval answerApproval = new AnswerApproval();
         answerApproval.setProfileId(profileId);
         answerApproval.setAnswerId(answerId);
         answerApproval.setDel(false);
-        answerApprovalDao.insert(answerApproval);
-        forumAnswerDao.approve(answerId);
+        int id = answerApprovalDao.insert(answerApproval);
+        if (id != -1) {
+            forumAnswerDao.approve(answerId);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean cancelApproveAnswer(Integer profileId, Integer answerId){
+        Integer delete = answerApprovalDao.delete(profileId, answerId);
+        if (delete != -1) {
+            forumAnswerDao.cancelApprove(answerId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

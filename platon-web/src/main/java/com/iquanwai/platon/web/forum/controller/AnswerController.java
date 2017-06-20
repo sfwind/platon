@@ -35,17 +35,38 @@ public class AnswerController {
     private OperationLogService operationLogService;
 
     @RequestMapping(value = "/approve/{answerId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> approveAnwser(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> approveAnswer(LoginUser loginUser,
                                                              @PathVariable Integer answerId) {
         Assert.notNull(loginUser, "用户不能为空");
-        answerService.approveAnswer(loginUser.getId(), answerId);
+        Boolean result = answerService.approveAnswer(loginUser.getId(), answerId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("答案")
                 .action("赞同答案")
                 .memo(answerId.toString());
         operationLogService.log(operationLog);
-        return WebUtils.success();
+        if(result){
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("操作失败");
+        }
+    }
+
+    @RequestMapping(value = "/approve/cancel/{answerId}",method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Object>> cancelApproveAnswer(LoginUser loginUser,@PathVariable Integer answerId){
+        Assert.notNull(loginUser, "用户不能为空");
+        Boolean result = answerService.cancelApproveAnswer(loginUser.getId(), answerId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("答案")
+                .action("取消赞同答案")
+                .memo(answerId.toString());
+        operationLogService.log(operationLog);
+        if (result) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("操作失败");
+        }
     }
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
@@ -123,6 +144,8 @@ public class AnswerController {
             return WebUtils.error("删除失败");
         }
     }
+
+
 
 
 }
