@@ -4,7 +4,7 @@ import com.iquanwai.platon.biz.domain.forum.QuestionService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
-import com.iquanwai.platon.biz.po.forum.QuestionTag;
+import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.forum.dto.QuestionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -46,7 +46,7 @@ public class QuestionController {
         return WebUtils.result(forumQuestions);
     }
 
-    @RequestMapping("/load/{tagId}")
+    @RequestMapping("/search/{tagId}")
     public ResponseEntity<Map<String, Object>> getQuestions(LoginUser loginUser,
                                                             @PathVariable Integer tagId,
                                                             @ModelAttribute Page page) {
@@ -63,17 +63,17 @@ public class QuestionController {
         return WebUtils.result(forumQuestionList);
     }
 
-    @RequestMapping("/load/tag")
+    @RequestMapping("/tag/load")
     public ResponseEntity<Map<String, Object>> getTags(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        List<QuestionTag> questionTags = questionService.loadTags();
+        List<ForumTag> tags = questionService.loadTags();
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("提问页")
                 .action("查询所有标签");
         operationLogService.log(operationLog);
-        return WebUtils.result(questionTags);
+        return WebUtils.result(tags);
     }
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
@@ -122,7 +122,7 @@ public class QuestionController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/cancel/follow/{questionId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/follow/cancel/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> unfollowQuestion(LoginUser loginUser,
                                                               @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");

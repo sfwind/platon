@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.forum;
 
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.po.forum.QuestionTag;
 import com.iquanwai.platon.biz.util.page.Page;
 
@@ -31,7 +32,7 @@ public interface QuestionService {
     /**
      * 根据标签
      * */
-    List<QuestionTag> loadTags();
+    List<ForumTag> loadTags();
 
     /**
      * 根据id获取问题

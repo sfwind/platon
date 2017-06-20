@@ -7,10 +7,7 @@ import com.iquanwai.platon.biz.dao.forum.QuestionFollowDao;
 import com.iquanwai.platon.biz.dao.forum.QuestionTagDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.forum.ForumAnswer;
-import com.iquanwai.platon.biz.po.forum.ForumQuestion;
-import com.iquanwai.platon.biz.po.forum.QuestionFollow;
-import com.iquanwai.platon.biz.po.forum.QuestionTag;
+import com.iquanwai.platon.biz.po.forum.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -69,7 +66,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public List<ForumQuestion> loadQuestions(Integer tagId, Page page) {
-        List<QuestionTag> questionTags = questionTagDao.getQuestionTagsById(tagId);
+        List<QuestionTag> questionTags = questionTagDao.getQuestionTagsByTagId(tagId);
         List<Integer> questionIds = questionTags.stream().map(QuestionTag::getQuestionId).collect(Collectors.toList());
 
         return forumQuestionDao.getQuestionsById(questionIds, page);
@@ -110,8 +107,8 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<QuestionTag> loadTags() {
-        return forumTagDao.loadAll(QuestionTag.class);
+    public List<ForumTag> loadTags() {
+        return forumTagDao.loadAll(ForumTag.class);
     }
 
     @Override
@@ -136,6 +133,8 @@ public class QuestionServiceImpl implements QuestionService {
             Profile profile = accountService.getProfile(forumQuestion.getProfileId());
             forumQuestion.setAuthorHeadPic(profile.getHeadimgurl());
             forumQuestion.setAuthorUserName(profile.getNickname());
+            List<QuestionTag> questionTagList = questionTagDao.getQuestionTagsByQuestionId(questionId);
+            forumQuestion.setQuestionTagList(questionTagList);
         }
         return forumQuestion;
     }

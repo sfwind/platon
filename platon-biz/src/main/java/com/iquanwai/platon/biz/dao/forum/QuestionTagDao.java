@@ -35,12 +35,25 @@ public class QuestionTagDao extends ForumDBUtil {
         return -1;
     }
 
-    public List<QuestionTag> getQuestionTagsById(Integer tagId){
+    public List<QuestionTag> getQuestionTagsByTagId(Integer tagId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<QuestionTag>> h = new BeanListHandler<>(QuestionTag.class);
         String sql = "SELECT * FROM QuestionTag where TagId=? and Del=0";
         try {
             List<QuestionTag> questionTags = runner.query(sql, h, tagId);
+            return questionTags;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<QuestionTag> getQuestionTagsByQuestionId(Integer questionId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<QuestionTag>> h = new BeanListHandler<>(QuestionTag.class);
+        String sql = "SELECT * FROM QuestionTag where QuestionId=? and Del=0";
+        try {
+            List<QuestionTag> questionTags = runner.query(sql, h, questionId);
             return questionTags;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.dao.forum;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.ForumDBUtil;
 import com.iquanwai.platon.biz.po.forum.ForumComment;
-import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
