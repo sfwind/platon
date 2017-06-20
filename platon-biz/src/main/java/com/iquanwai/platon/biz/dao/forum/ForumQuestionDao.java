@@ -113,7 +113,7 @@ public class ForumQuestionDao extends ForumDBUtil {
         String sql = "SELECT * FROM ForumQuestion where Id in ("+ questionMark +") "+
                 "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
-            List<ForumQuestion> forumQuestions = runner.query(sql, h, questionIds);
+            List<ForumQuestion> forumQuestions = runner.query(sql, h, questionIds.toArray());
             return forumQuestions;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

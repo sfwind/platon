@@ -65,17 +65,17 @@ public class QuestionController {
         page.setPageSize(PAGE_SIZE);
         List<ForumQuestion> forumQuestionList = questionService.loadQuestionsByTags(tagId, page);
 
+        RefreshListDto<ForumQuestion> refreshListDto = new RefreshListDto<>();
+        refreshListDto.setList(forumQuestionList);
+        refreshListDto.setEnd(page.isLastPage());
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("提问页")
                 .action("查询已有问题")
                 .memo(tagId.toString());
         operationLogService.log(operationLog);
-
-        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
-        result.setList(forumQuestionList);
-        result.setEnd(page.isLastPage());
-        return WebUtils.result(forumQuestionList);
+        return WebUtils.result(refreshListDto);
     }
 
     @RequestMapping("/tag/load")
@@ -95,8 +95,11 @@ public class QuestionController {
     public ResponseEntity<Map<String, Object>> submit(LoginUser loginUser,
                                                       @RequestBody QuestionDto questionDto) {
         Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(questionDto.getTopic(), "问题标题不能为空");
+        Assert.notNull(questionDto.getDescription(), "问题描述不能为空");
 
-        questionService.publish(questionDto.getQuestionId(),loginUser.getId(), questionDto.getTopic(), questionDto.getDescription(),
+        questionService.publish(questionDto.getQuestionId(), loginUser.getId(),
+                questionDto.getTopic(), questionDto.getDescription(),
                 questionDto.getTagIds());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
