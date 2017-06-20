@@ -112,7 +112,12 @@ public class QuestionServiceImpl implements QuestionService {
         List<Integer> questionIds = questionTags.stream().map(QuestionTag::getQuestionId).collect(Collectors.toList());
         Integer total = questionTagDao.getQuestionTagsCountByQuestionId(tagId);
         page.setTotal(total);
-        return forumQuestionDao.getQuestionsById(questionIds, page);
+        List<ForumQuestion> result = forumQuestionDao.getQuestionsById(questionIds, page);
+        result.forEach(item->{
+            // 去掉profileId
+            item.setProfileId(null);
+        });
+        return result;
     }
 
     @Override
@@ -151,6 +156,10 @@ public class QuestionServiceImpl implements QuestionService {
             item.setAddTimeStr(DateUtils.parseDateToString(item.getAddTime()));
             QuestionFollow load = questionFollowDao.load(item.getId(), loadProfileId);
             item.setFollow(load != null && !load.getDel());
+
+            item.setMine(loadProfileId.equals(item.getProfileId()));
+            // 去掉profileId
+            item.setProfileId(null);
         });
         return questions;
     }
@@ -178,6 +187,8 @@ public class QuestionServiceImpl implements QuestionService {
                 item.setAuthorHeadPic(profile.getHeadimgurl());
                 item.setPublishTimeStr(DateUtils.parseDateToString(item.getPublishTime()));
                 item.setApproval(answerApprovalDao.load(item.getId(), loadProfileId) != null);
+                // 去掉profileId
+                item.setProfileId(null);
             });
             forumQuestion.setAnswerList(answerList);
             // 问题添加时间
@@ -188,6 +199,11 @@ public class QuestionServiceImpl implements QuestionService {
             forumQuestion.setAuthorUserName(profile.getNickname());
             List<QuestionTag> questionTagList = questionTagDao.getQuestionTagsByQuestionId(questionId);
             forumQuestion.setQuestionTagList(questionTagList);
+        }
+        // 去掉profileId,判断是否是自己的
+        if (forumQuestion != null) {
+            forumQuestion.setMine(loadProfileId.equals(forumQuestion.getProfileId()));
+            forumQuestion.setProfileId(null);
         }
         return forumQuestion;
     }
