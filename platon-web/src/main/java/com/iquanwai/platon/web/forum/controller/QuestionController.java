@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.forum.dto.QuestionDto;
+import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -43,6 +44,10 @@ public class QuestionController {
                 .function("首页")
                 .action("查询问题列表");
         operationLogService.log(operationLog);
+
+        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+        result.setList(forumQuestions);
+        result.setEnd(page.isLastPage());
         return WebUtils.result(forumQuestions);
     }
 
@@ -60,6 +65,10 @@ public class QuestionController {
                 .action("查询已有问题")
                 .memo(tagId.toString());
         operationLogService.log(operationLog);
+
+        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+        result.setList(forumQuestionList);
+        result.setEnd(page.isLastPage());
         return WebUtils.result(forumQuestionList);
     }
 
@@ -97,7 +106,10 @@ public class QuestionController {
                                                             @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
         ForumQuestion forumQuestion = questionService.loadQuestion(questionId);
-
+        if (forumQuestion != null) {
+            Boolean followStatus = questionService.checkFollowStatus(questionId, loginUser.getId());
+            forumQuestion.setFollow(followStatus);
+        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("问题详情页")

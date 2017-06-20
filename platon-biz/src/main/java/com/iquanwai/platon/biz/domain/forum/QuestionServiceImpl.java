@@ -68,13 +68,18 @@ public class QuestionServiceImpl implements QuestionService {
     public List<ForumQuestion> loadQuestions(Integer tagId, Page page) {
         List<QuestionTag> questionTags = questionTagDao.getQuestionTagsByTagId(tagId);
         List<Integer> questionIds = questionTags.stream().map(QuestionTag::getQuestionId).collect(Collectors.toList());
-
+        Integer total = questionTagDao.getQuestionTagsCountByQuestionId(tagId);
+        page.setTotal(total);
         return forumQuestionDao.getQuestionsById(questionIds, page);
     }
 
     @Override
     public List<ForumQuestion> loadQuestions(Page page){
         List<ForumQuestion> questions = forumQuestionDao.getQuestions(page);
+        // 查询有多少条
+        Long total = forumQuestionDao.count(ForumQuestion.class);
+        page.setTotal(total.intValue());
+        // 填充数据
         questions.forEach(item->{
             Profile profile = accountService.getProfile(item.getProfileId());
             // 设置昵称
@@ -139,10 +144,16 @@ public class QuestionServiceImpl implements QuestionService {
         return forumQuestion;
     }
 
-//    @Override
-//    public Boolean loadQuestion(Integer profileId,Integer questionId){
-//
-//    }
+    @Override
+    public Boolean checkFollowStatus(Integer questionId, Integer profileId){
+        QuestionFollow load = questionFollowDao.load(questionId, profileId);
+        if (load != null && !load.getDel()) {
+            // 存在，并且未删除
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     @Override
     public void followQuestion(Integer profileId, Integer questionId) {

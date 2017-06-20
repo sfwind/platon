@@ -40,6 +40,8 @@ public interface QuestionService {
      * */
     ForumQuestion loadQuestion(Integer questionId);
 
+    Boolean checkFollowStatus(Integer questionId, Integer profileId);
+
     /**
      * 关注问题
      * @param questionId 问题id

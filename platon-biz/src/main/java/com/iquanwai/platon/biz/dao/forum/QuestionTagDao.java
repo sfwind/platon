@@ -48,6 +48,19 @@ public class QuestionTagDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
+    public Integer getQuestionTagsCountByQuestionId(Integer tagId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "SELECT COUNT(*) FROM QuestionTag where TagId=? and Del=0";
+        try {
+            return runner.query(sql, h, tagId).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+
     public List<QuestionTag> getQuestionTagsByQuestionId(Integer questionId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<QuestionTag>> h = new BeanListHandler<>(QuestionTag.class);
