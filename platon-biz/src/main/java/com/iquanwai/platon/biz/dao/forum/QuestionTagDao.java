@@ -76,10 +76,9 @@ public class QuestionTagDao extends ForumDBUtil {
 
     public Integer reChooseTag(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
-        ScalarHandler<Long> h = new ScalarHandler<>();
         String sql = "UPDATE QuestionTag set Del = 0 where Id = ?";
         try{
-            return runner.update(sql, h, id);
+            return runner.update(sql, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -91,7 +90,7 @@ public class QuestionTagDao extends ForumDBUtil {
         ScalarHandler<Long> h = new ScalarHandler<>();
         String sql = "UPDATE QuestionTag set Del = 1 where Id = ?";
         try{
-            return runner.update(sql, h, id);
+            return runner.update(sql, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
