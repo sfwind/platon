@@ -94,6 +94,20 @@ public class AnswerServiceImpl implements AnswerService {
                     comment.setAuthorUserName(profile.getNickname());
                     comment.setAuthorHeadPic(profile.getHeadimgurl());
                     comment.setPublishTimeStr(DateUtils.parseDateToString(comment.getAddTime()));
+                    if (comment.getRepliedId() != null) {
+                        if (comment.getRepliedProfileId() != null) {
+                            Profile commentProfile = accountService.getProfile(comment.getRepliedProfileId());
+                            comment.setRepliedName(commentProfile.getNickname());
+                        }
+                        // 被回复
+                        if (comment.getRepliedDel()) {
+                            // 回复的人已经删掉了
+                            comment.setComment("该评论已删除");
+                        } else {
+                            ForumComment repliedComment = forumCommentDao.load(ForumComment.class, comment.getRepliedId());
+                            comment.setRepliedComment(repliedComment.getComment());
+                        }
+                    }
                 });
             }
             answer.setComments(comments);
@@ -121,5 +135,22 @@ public class AnswerServiceImpl implements AnswerService {
         }
         forumCommentDao.comment(forumComment);
         return forumComment;
+    }
+
+    @Override
+    public ForumComment loadComment(Integer commentId){
+        return forumCommentDao.load(ForumComment.class, commentId);
+    }
+
+    @Override
+    public Boolean deleteComment(Integer commentId){
+        Integer count = forumCommentDao.deleteComment(commentId);
+        if (count != -1) {
+            // 更新其他状态
+            forumCommentDao.updateRepliedDel(commentId);
+            return true;
+        }
+        logger.error("删除评失败,commentId:{}",commentId);
+        return false;
     }
 }

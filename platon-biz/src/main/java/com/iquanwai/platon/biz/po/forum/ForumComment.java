@@ -23,4 +23,7 @@ public class ForumComment {
     private String publishTimeStr;
     private String authorUserName; // 作者名字
     private String authorHeadPic; // 作者头像
+
+    private String repliedComment; // 被回复的评论内容
+    private String repliedName; // 被回复人的名字
 }

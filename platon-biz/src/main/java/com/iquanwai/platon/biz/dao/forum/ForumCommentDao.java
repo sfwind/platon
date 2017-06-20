@@ -52,4 +52,27 @@ public class ForumCommentDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
+    public Integer deleteComment(Integer commentId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "update ForumComment set Del = 1 where Id = ?";
+        try{
+            return runner.update(sql, commentId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public Integer updateRepliedDel(Integer commentId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "update ForumComment set RepliedDel = 1 where RepliedId = ?";
+        try{
+            return runner.update(sql, commentId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 }

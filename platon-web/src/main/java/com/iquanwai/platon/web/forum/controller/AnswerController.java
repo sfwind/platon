@@ -94,7 +94,33 @@ public class AnswerController {
         if (forumComment != null) {
             return WebUtils.result(forumComment);
         } else {
+            logger.error("评论失败:{}", commentDto);
             return WebUtils.error("评论失败");
+        }
+    }
+
+    @RequestMapping(value = "/delete/comment/{commentId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser, @PathVariable Integer commentId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("答案")
+                .action("删除评论");
+        operationLogService.log(operationLog);
+        ForumComment forumComment = answerService.loadComment(commentId);
+        if (forumComment == null) {
+            logger.error("无法删除，该评论异常,commentId:{}", commentId);
+            return WebUtils.error("无法删除，该评论异常");
+        } else if (!forumComment.getCommentProfileId().equals(loginUser.getId())) {
+            logger.error("无法删除，该评论是其他人发布的:{}", commentId);
+            return WebUtils.error("无法删除，该评论是其他人发布的");
+        }
+        Boolean result = answerService.deleteComment(commentId);
+        if (result) {
+            return WebUtils.success();
+        } else {
+            logger.error("删除评论失败,{}", commentId);
+            return WebUtils.error("删除失败");
         }
     }
 

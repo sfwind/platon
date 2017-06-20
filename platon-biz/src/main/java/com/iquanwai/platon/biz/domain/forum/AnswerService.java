@@ -14,4 +14,8 @@ public interface AnswerService {
     ForumAnswer loadAnswer(Integer answerId, Integer loadProfileId);
 
     ForumComment commentAnswer(Integer answerId, Integer repliedCommentId, Integer profileId, String comment);
+
+    ForumComment loadComment(Integer commentId);
+
+    Boolean deleteComment(Integer commentId);
 }
