@@ -134,4 +134,30 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public List<ForumQuestion> getQuestions(Integer profileId,Page page) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<ForumQuestion>> h = new BeanListHandler<>(ForumQuestion.class);
+        String sql = "SELECT * FROM ForumQuestion where ProfileId = ? " +
+                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+        try {
+            List<ForumQuestion> forumQuestions = runner.query(sql, h, profileId);
+            return forumQuestions;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public Integer getQuestionsCount(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "SELECT COUNT(*) FROM ForumQuestion where ProfileId=?";
+        try {
+            return runner.query(sql, h, profileId).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 }

@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
+import com.iquanwai.platon.biz.domain.forum.QuestionService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
@@ -14,8 +15,15 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
-import com.iquanwai.platon.web.personal.dto.*;
+import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.RefreshListDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
+import com.iquanwai.platon.web.personal.dto.AreaDto;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
+import com.iquanwai.platon.web.personal.dto.PlanListDto;
+import com.iquanwai.platon.web.personal.dto.ProfileDto;
+import com.iquanwai.platon.web.personal.dto.RegionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -24,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,6 +63,8 @@ public class CustomerController {
     private RiseMemberService riseMemberService;
     @Autowired
     private EventWallService eventWallService;
+    @Autowired
+    private QuestionService questionService;
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String,Object>> getEventList(LoginUser loginUser){
@@ -193,4 +204,29 @@ public class CustomerController {
         operationLogService.log(operationLog);
         return WebUtils.result(riseMember);
     }
+
+    @RequestMapping("/forum/mine/questions")
+    public ResponseEntity<Map<String,Object>> loadMineQuestions(LoginUser loginUser,@ModelAttribute Page page){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("论坛")
+                .action("查询我的提问");
+        operationLogService.log(operationLog);
+        List<ForumQuestion> forumQuestions = questionService.loadQuestions(page, loginUser.getId());
+        // 设置刷新列表
+        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+        result.setList(forumQuestions);
+        result.setEnd(page.isLastPage());
+        return WebUtils.result(forumQuestions);
+    }
+
+//    @RequestMapping("/forum/mine/answers")
+//    public ResponseEntity<Map<String,Object>> loadMineAnswers(LoginUser loginUser,@ModelAttribute Page page){
+//
+//    }
+
+
+
+
 }

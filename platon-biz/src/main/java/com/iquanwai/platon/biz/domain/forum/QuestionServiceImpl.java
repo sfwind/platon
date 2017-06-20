@@ -69,43 +69,6 @@ public class QuestionServiceImpl implements QuestionService {
         return id;
     }
 
-    private void chooseQuestionTags(List<QuestionTag> exitTags,List<Integer> tagIds,Integer questionId){
-        if (CollectionUtils.isNotEmpty(exitTags)) {
-            // 存在tag，先处理老tag
-            try {
-                exitTags.forEach(tag -> {
-                    if (tagIds.contains(tag.getTagId())) {
-                        if (tag.getDel()) {
-                            // 已删除但这次已选择，需要恢复
-                            questionTagDao.reChooseTag(tag.getId());
-                        }
-                        // 已选择，之前也未删除，不作处理，只删掉就好了
-                        tagIds.remove(tag.getTagId());
-                    } else {
-                        // 这次选择的不包含已有的
-                        questionTagDao.deleteQuestionTag(tag.getId());
-                    }
-                });
-            } catch (Exception e) {
-                logger.error("插入问题标签失败", e);
-            }
-        }
-        // 是否还有待处理tag
-        if (CollectionUtils.isNotEmpty(tagIds)) {
-            try {
-                tagIds.forEach(tagId -> {
-                    QuestionTag questionTag = new QuestionTag();
-                    questionTag.setTagId(tagId);
-                    questionTag.setQuestionId(questionId);
-                    questionTag.setDel(false);
-                    questionTagDao.insert(questionTag);
-                });
-            } catch (Exception e) {
-                logger.error("插入问题标签失败", e);
-            }
-        }
-    }
-
     @Override
     public List<ForumQuestion> loadQuestions(Integer tagId, Page page) {
         List<QuestionTag> questionTags = questionTagDao.getQuestionTagsByTagId(tagId);
@@ -127,41 +90,19 @@ public class QuestionServiceImpl implements QuestionService {
         Long total = forumQuestionDao.count(ForumQuestion.class);
         page.setTotal(total.intValue());
         // 填充数据
-        questions.forEach(item->{
-            Profile profile = accountService.getProfile(item.getProfileId());
-            // 设置昵称
-            item.setAuthorUserName(profile.getNickname());
-            // 设置头像
-            item.setAuthorHeadPic(profile.getHeadimgurl());
-            // 查询多少人回答
-            List<ForumAnswer> answers = forumAnswerDao.load(item.getId());
-            // 初始化回答提示
-            String answerTips = "";
-            if (CollectionUtils.isNotEmpty(answers)) {
-                List<Integer> answerProfiles = answers.stream().limit(2).map(ForumAnswer::getProfileId).collect(Collectors.toList());
-                List<String> answerNames = answerProfiles.stream().map(profileId -> {
-                    Profile temp = accountService.getProfile(profileId);
-                    return temp.getNickname();
-                }).collect(Collectors.toList());
-                if (answers.size() > 1) {
-                    answerTips = "查看" + StringUtils.join(answerNames, "、") + "等" + answers.size() + "人的回答";
-                } else {
-                    answerTips = "查看" + answerNames.get(0) + "的回答";
-                }
-            } else {
-                answerTips = "成为第一个回答者";
-            }
-            item.setAnswerTips(answerTips);
-            // 初始化添加时间
-            item.setAddTimeStr(DateUtils.parseDateToString(item.getAddTime()));
-            QuestionFollow load = questionFollowDao.load(item.getId(), loadProfileId);
-            item.setFollow(load != null && !load.getDel());
-
-            item.setMine(loadProfileId.equals(item.getProfileId()));
-            // 去掉profileId
-            item.setProfileId(null);
-        });
+        questions.forEach(item -> initQuestionList(item, loadProfileId));
         return questions;
+    }
+
+    @Override
+    public List<ForumQuestion> loadSelfQuestions(Page page, Integer profileId){
+        List<ForumQuestion> forumQuestions = forumQuestionDao.getQuestions(profileId, page);
+        // 查询有多少条
+        Integer total = forumQuestionDao.getQuestionsCount(profileId);
+        page.setTotal(total);
+        // 填充数据
+        forumQuestions.forEach(item -> initQuestionList(item, profileId));
+        return forumQuestions;
     }
 
     @Override
@@ -236,6 +177,84 @@ public class QuestionServiceImpl implements QuestionService {
                 Integer followPoint = ConfigUtils.getForumQuestionFollowPoint();
                 questionFollowDao.updateDel(questionFollow.getId(), 1);
                 forumQuestionDao.unfollow(questionId, followPoint);
+            }
+        }
+    }
+
+    private void initQuestionList(ForumQuestion item,Integer loadProfileId){
+        Profile profile = accountService.getProfile(item.getProfileId());
+        // 设置昵称
+        item.setAuthorUserName(profile.getNickname());
+        // 设置头像
+        item.setAuthorHeadPic(profile.getHeadimgurl());
+        // 查询多少人回答
+        List<ForumAnswer> answers = forumAnswerDao.load(item.getId());
+        // 初始化回答提示
+        String answerTips = "";
+        if (CollectionUtils.isNotEmpty(answers)) {
+            List<Integer> answerProfiles = answers.stream().limit(2).map(ForumAnswer::getProfileId).collect(Collectors.toList());
+            List<String> answerNames = answerProfiles.stream().map(profileId -> {
+                Profile temp = accountService.getProfile(profileId);
+                return temp.getNickname();
+            }).collect(Collectors.toList());
+            if (answers.size() > 1) {
+                answerTips = "查看" + StringUtils.join(answerNames, "、") + "等" + answers.size() + "人的回答";
+            } else {
+                answerTips = "查看" + answerNames.get(0) + "的回答";
+            }
+        } else {
+            answerTips = "成为第一个回答者";
+        }
+        item.setAnswerTips(answerTips);
+        // 初始化添加时间
+        item.setAddTimeStr(DateUtils.parseDateToString(item.getAddTime()));
+        QuestionFollow load = questionFollowDao.load(item.getId(), loadProfileId);
+        item.setFollow(load != null && !load.getDel());
+
+        item.setMine(loadProfileId.equals(item.getProfileId()));
+        // 去掉profileId
+        item.setProfileId(null);
+    }
+
+    /**
+     *
+     * @param exitTags
+     * @param tagIds
+     * @param questionId
+     */
+    private void chooseQuestionTags(List<QuestionTag> exitTags,List<Integer> tagIds,Integer questionId){
+        if (CollectionUtils.isNotEmpty(exitTags)) {
+            // 存在tag，先处理老tag
+            try {
+                exitTags.forEach(tag -> {
+                    if (tagIds.contains(tag.getTagId())) {
+                        if (tag.getDel()) {
+                            // 已删除但这次已选择，需要恢复
+                            questionTagDao.reChooseTag(tag.getId());
+                        }
+                        // 已选择，之前也未删除，不作处理，只删掉就好了
+                        tagIds.remove(tag.getTagId());
+                    } else {
+                        // 这次选择的不包含已有的
+                        questionTagDao.deleteQuestionTag(tag.getId());
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("插入问题标签失败", e);
+            }
+        }
+        // 是否还有待处理tag
+        if (CollectionUtils.isNotEmpty(tagIds)) {
+            try {
+                tagIds.forEach(tagId -> {
+                    QuestionTag questionTag = new QuestionTag();
+                    questionTag.setTagId(tagId);
+                    questionTag.setQuestionId(questionId);
+                    questionTag.setDel(false);
+                    questionTagDao.insert(questionTag);
+                });
+            } catch (Exception e) {
+                logger.error("插入问题标签失败", e);
             }
         }
     }

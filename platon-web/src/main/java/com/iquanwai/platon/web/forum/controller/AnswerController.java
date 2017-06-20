@@ -4,6 +4,8 @@ import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.forum.ForumAnswer;
+import com.iquanwai.platon.biz.po.forum.ForumComment;
+import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
 import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -46,8 +48,6 @@ public class AnswerController {
         return WebUtils.success();
     }
 
-
-
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
                                                       @ModelAttribute AnswerDto answerDto) {
@@ -80,6 +80,23 @@ public class AnswerController {
         return WebUtils.result(forumAnswer);
     }
 
+    @RequestMapping(value = "/comment", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> commentAnswer(LoginUser loginUser, @ModelAttribute AnswerCommentDto commentDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("答案")
+                .action("评论答案");
+        operationLogService.log(operationLog);
+
+        ForumComment forumComment = answerService.commentAnswer(commentDto.getAnswerId(),
+                commentDto.getRepliedCommentId(), loginUser.getId(), commentDto.getComment());
+        if (forumComment != null) {
+            return WebUtils.result(forumComment);
+        } else {
+            return WebUtils.error("评论失败");
+        }
+    }
 
 
 }

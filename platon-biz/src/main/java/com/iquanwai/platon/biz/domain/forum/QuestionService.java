@@ -28,6 +28,8 @@ public interface QuestionService {
 
     List<ForumQuestion> loadQuestions(Page page,Integer loadProfileId);
 
+    List<ForumQuestion> loadSelfQuestions(Page page, Integer profileId);
+
     /**
      * 根据标签
      * */

@@ -100,4 +100,26 @@ public class AnswerServiceImpl implements AnswerService {
         }
         return answer;
     }
+
+    @Override
+    public ForumComment commentAnswer(Integer answerId, Integer repliedCommentId, Integer profileId, String comment){
+        ForumComment forumComment = new ForumComment();
+        forumComment.setComment(comment);
+        forumComment.setCommentProfileId(profileId);
+        forumComment.setDel(false);
+        forumComment.setAnswerId(answerId);
+        if (repliedCommentId != null) {
+            ForumComment repliedComment = forumCommentDao.load(ForumComment.class, repliedCommentId);
+            if (repliedComment == null) {
+                logger.error("回复评论失败，没有该评论");
+                return null;
+            } else {
+                forumComment.setRepliedId(repliedCommentId);
+                forumComment.setRepliedProfileId(repliedComment.getCommentProfileId());
+                forumComment.setRepliedDel(false);
+            }
+        }
+        forumCommentDao.comment(forumComment);
+        return forumComment;
+    }
 }
