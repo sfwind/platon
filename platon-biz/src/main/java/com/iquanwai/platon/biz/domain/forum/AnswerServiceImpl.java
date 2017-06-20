@@ -76,6 +76,7 @@ public class AnswerServiceImpl implements AnswerService {
                     comment.setPublishTimeStr(DateUtils.parseDateToString(comment.getAddTime()));
                 });
             }
+            answer.setComments(comments);
         }
         return answer;
     }
