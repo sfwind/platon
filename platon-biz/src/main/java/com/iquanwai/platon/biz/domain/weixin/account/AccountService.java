@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.common.Role;
 
 import java.util.List;
 
@@ -68,4 +69,6 @@ public interface AccountService {
     Region loadProvinceByName(String name);
 
     Region loadCityByName(String name);
+
+    Role getRole(Integer profileId);
 }

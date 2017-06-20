@@ -29,4 +29,18 @@ public class OAuthServiceImpl implements OAuthService {
         return callback.getOpenid();
     }
 
+    @Override
+    public String pcOpenId(String act){
+        if (act == null) {
+            logger.info("error，pc _qt is null");
+            return null;
+        }
+        Callback callback = callbackDao.queryByPcAccessToken(act);
+        if (callback == null) {
+            logger.error("pcAccessToken {} is invalid", act);
+            return null;
+        }
+        return callback.getOpenid();
+    }
+
 }

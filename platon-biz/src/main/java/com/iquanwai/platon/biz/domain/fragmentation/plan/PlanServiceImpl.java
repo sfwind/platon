@@ -433,4 +433,9 @@ public class PlanServiceImpl implements PlanService {
         improvementPlanDao.updateCurrentSeries(planId, series);
     }
 
+    @Override
+    public List<ImprovementPlan> loadUserPlans(Integer profileId){
+        return improvementPlanDao.loadUserPlans(profileId);
+    }
+
 }

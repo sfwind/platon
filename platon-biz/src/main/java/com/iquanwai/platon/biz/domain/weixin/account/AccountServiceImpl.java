@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -18,6 +19,7 @@ import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -287,6 +289,17 @@ public class AccountServiceImpl implements AccountService {
             }
         }
         return result;
+    }
+
+    @Override
+    public Role getRole(Integer profileId){
+        List<UserRole> userRoles = userRoleDao.getRoles(profileId);
+        if(CollectionUtils.isEmpty(userRoles)){
+            return null;
+        }else{
+            Integer roleId = userRoles.get(0).getRoleId();
+            return userRoleDao.load(Role.class, roleId);
+        }
     }
 
     private void updateProfile(Account accountNew) throws IllegalAccessException, InvocationTargetException {
