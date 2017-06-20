@@ -20,5 +20,12 @@ public class ForumQuestion {
     private Integer weight; //排序权重
     private Date addTime; //添加时间
 
+    /** 非DB字段，业务字段 **/
+    private String answerTips; // 成为第一个回答者／。。等n人回答了问题
+    private String addTimeStr; // 添加时间字符串
+    private String authorUserName; // 作者名字
+    private String authorHeadPic; // 作者头像
+    private Boolean follow; // 是否关注
+
     private List<ForumAnswer> answerList; //非db字段 回答列表
 }

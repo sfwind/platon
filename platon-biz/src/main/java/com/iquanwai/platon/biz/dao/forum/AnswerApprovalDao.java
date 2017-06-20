@@ -47,4 +47,6 @@ public class AnswerApprovalDao extends ForumDBUtil {
         }
         return Lists.newArrayList();
     }
+
+
 }

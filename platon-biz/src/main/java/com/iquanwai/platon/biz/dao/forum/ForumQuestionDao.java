@@ -50,9 +50,12 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public void follow(Integer id) {
+    public void follow(Integer id,Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ForumQuestion set FollowCount=FollowCount+1 where Id=?";
+        if (point == null) {
+            point = 0;
+        }
+        String sql = "update ForumQuestion set FollowCount=FollowCount+1,Weight=Weight+" + point +" where Id=?";
         try {
 
             runner.update(sql, id);
@@ -61,9 +64,12 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public void unfollow(Integer id) {
+    public void unfollow(Integer id,Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ForumQuestion set FollowCount=FollowCount-1 where Id=? and FollowCount>0";
+        if (point == null) {
+            point = 0;
+        }
+        String sql = "update ForumQuestion set FollowCount=FollowCount-1,Weight=Weight-"+ point +" where Id=? and FollowCount>0";
         try {
 
             runner.update(sql, id);
@@ -72,10 +78,13 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public void open(Integer id) {
+    public void open(Integer id,Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
-        String sql = "update ForumQuestion set OpenCount=OpenCount+1 where Id=?";
+        if (point == null) {
+            point = 0;
+        }
+        String sql = "update ForumQuestion set OpenCount=OpenCount+1 , Weight=Weight+" + point + " where Id=?";
         try {
             asyncRun.update(sql, id);
         } catch (SQLException e) {
@@ -105,6 +114,20 @@ public class ForumQuestionDao extends ForumDBUtil {
                 "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ForumQuestion> forumQuestions = runner.query(sql, h, questionIds);
+            return forumQuestions;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<ForumQuestion> getQuestions(Page page) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<ForumQuestion>> h = new BeanListHandler<>(ForumQuestion.class);
+        String sql = "SELECT * FROM ForumQuestion " +
+                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+        try {
+            List<ForumQuestion> forumQuestions = runner.query(sql, h);
             return forumQuestions;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

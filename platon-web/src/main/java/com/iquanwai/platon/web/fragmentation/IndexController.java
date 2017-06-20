@@ -70,6 +70,13 @@ public class IndexController {
             }
         }
 
+        // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
+        Boolean showForum = true;
+        if (ConfigUtils.isForumTest()) {
+            // 论坛处于测试中,在白名单则显示，否则隐藏
+            showForum = whiteListService.isInWhiteList(WhiteList.FORUM, loginUser.getId());
+        }
+
         if(ConfigUtils.isDevelopment()){
             //如果不在白名单中,直接403报错
             boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
@@ -80,7 +87,7 @@ public class IndexController {
         }
 
 
-        return courseView(request, account);
+        return courseView(request, account,showForum);
     }
 
     private boolean checkAccessToken(HttpServletRequest request, String openid){
@@ -91,28 +98,29 @@ public class IndexController {
         return !StringUtils.isEmpty(openid);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, Account account){
+    private ModelAndView courseView(HttpServletRequest request, Account account, Boolean showForum) {
         ModelAndView mav = new ModelAndView("course");
         String resourceUrl = ConfigUtils.staticResourceUrl();
-        if(request.isSecure()){
+        if (request.isSecure()) {
             resourceUrl = resourceUrl.replace("http:", "https:");
         }
-        if(request.getParameter("debug")!=null){
-            if(ConfigUtils.isFrontDebug()){
+        if (request.getParameter("debug") != null) {
+            if (ConfigUtils.isFrontDebug()) {
                 mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
-            }else{
+            } else {
                 mav.addObject("resource", resourceUrl);
             }
-        }else{
+        } else {
             mav.addObject("resource", resourceUrl);
         }
 
         Map<String, String> userParam = Maps.newHashMap();
         userParam.put("userName", account.getNickname());
-        if(account.getHeadimgurl()!=null){
-            userParam.put("headImage",account.getHeadimgurl().replace("http:","https:"));
+        if (account.getHeadimgurl() != null) {
+            userParam.put("headImage", account.getHeadimgurl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);
+        mav.addObject("showForum", showForum);
 
         return mav;
     }

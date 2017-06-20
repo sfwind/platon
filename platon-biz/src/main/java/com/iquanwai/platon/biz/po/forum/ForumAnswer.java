@@ -16,4 +16,10 @@ public class ForumAnswer {
     private Integer approvalCount; //赞同数
     private Date publishTime; //发布时间
     private Date lastModifiedTime; //最后修改时间
+
+    /** 非DB字段，业务字段 **/
+    private String publishTimeStr;
+    private String authorUserName; // 作者名字
+    private String authorHeadPic; // 作者头像
+
 }
