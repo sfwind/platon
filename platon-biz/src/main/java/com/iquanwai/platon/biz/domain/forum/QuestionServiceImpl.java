@@ -8,7 +8,11 @@ import com.iquanwai.platon.biz.dao.forum.QuestionFollowDao;
 import com.iquanwai.platon.biz.dao.forum.QuestionTagDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.forum.*;
+import com.iquanwai.platon.biz.po.forum.ForumAnswer;
+import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.po.forum.ForumTag;
+import com.iquanwai.platon.biz.po.forum.QuestionFollow;
+import com.iquanwai.platon.biz.po.forum.QuestionTag;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -45,26 +49,61 @@ public class QuestionServiceImpl implements QuestionService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public int publish(Integer profileId, String topic, String description, List<Integer> tagIds) {
-        ForumQuestion forumQuestion = new ForumQuestion();
-        forumQuestion.setProfileId(profileId);
-        forumQuestion.setTopic(topic);
-        forumQuestion.setDescription(description);
-        int id = forumQuestionDao.insert(forumQuestion);
-
-        try {
-            tagIds.forEach(tagId -> {
-                QuestionTag questionTag = new QuestionTag();
-                questionTag.setTagId(tagId);
-                questionTag.setQuestionId(id);
-                questionTag.setDel(false);
-                questionTagDao.insert(questionTag);
-            });
-        } catch (Exception e) {
-            logger.error("插入问题标签失败", e);
+    public int publish(Integer questionId,Integer profileId, String topic, String description, List<Integer> tagIds) {
+        int id;
+        if (questionId == null) {
+            // 新问题提交
+            ForumQuestion forumQuestion = new ForumQuestion();
+            forumQuestion.setProfileId(profileId);
+            forumQuestion.setTopic(topic);
+            forumQuestion.setDescription(description);
+            id = forumQuestionDao.insert(forumQuestion);
+        } else {
+            // 老问题修改
+            id = questionId;
+            forumQuestionDao.update(description, topic, id);
         }
-
+        // 处理tag
+        List<QuestionTag> existTagIds = questionTagDao.getQuestionTagsByQuestionId(id);
+        chooseQuestionTags(existTagIds, tagIds, questionId);
         return id;
+    }
+
+    private void chooseQuestionTags(List<QuestionTag> exitTags,List<Integer> tagIds,Integer questionId){
+        if (CollectionUtils.isNotEmpty(exitTags)) {
+            // 存在tag，先处理老tag
+            try {
+                exitTags.forEach(tag -> {
+                    if (tagIds.contains(tag.getTagId())) {
+                        if (tag.getDel()) {
+                            // 已删除但这次已选择，需要恢复
+                            questionTagDao.reChooseTag(tag.getId());
+                        }
+                        // 已选择，之前也未删除，不作处理，只删掉就好了
+                        tagIds.remove(tag.getTagId());
+                    } else {
+                        // 这次选择的不包含已有的
+                        questionTagDao.deleteQuestionTag(tag.getId());
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("插入问题标签失败", e);
+            }
+        }
+        // 是否还有待处理tag
+        if (CollectionUtils.isNotEmpty(tagIds)) {
+            try {
+                tagIds.forEach(tagId -> {
+                    QuestionTag questionTag = new QuestionTag();
+                    questionTag.setTagId(tagId);
+                    questionTag.setQuestionId(questionId);
+                    questionTag.setDel(false);
+                    questionTagDao.insert(questionTag);
+                });
+            } catch (Exception e) {
+                logger.error("插入问题标签失败", e);
+            }
+        }
     }
 
     @Override

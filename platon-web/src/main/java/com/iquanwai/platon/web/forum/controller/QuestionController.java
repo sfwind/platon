@@ -90,7 +90,7 @@ public class QuestionController {
                                                       @RequestBody QuestionDto questionDto) {
         Assert.notNull(loginUser, "用户不能为空");
 
-        questionService.publish(loginUser.getId(), questionDto.getTopic(), questionDto.getDescription(),
+        questionService.publish(questionDto.getQuestionId(),loginUser.getId(), questionDto.getTopic(), questionDto.getDescription(),
                 questionDto.getTagIds());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

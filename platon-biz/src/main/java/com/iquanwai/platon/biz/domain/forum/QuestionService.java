@@ -17,7 +17,7 @@ public interface QuestionService {
      * @param description 描述
      * @param tagIds    问题标签
      * */
-    int publish(Integer profileId, String topic, String description, List<Integer> tagIds);
+    int publish(Integer questionId,Integer profileId, String topic, String description, List<Integer> tagIds);
 
 
     /**

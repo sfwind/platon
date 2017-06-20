@@ -12,4 +12,5 @@ public class QuestionDto {
     private List<Integer> tagIds;
     private String topic;
     private String description;
+    private Integer questionId;
 }
