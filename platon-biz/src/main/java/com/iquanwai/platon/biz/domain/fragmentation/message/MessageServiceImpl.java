@@ -37,8 +37,6 @@ public class MessageServiceImpl implements MessageService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String SYSTEM_MESSAGE ="AUTO";
-    private static final String SYSTEM_MESSAGE_NAME ="系统消息";
 
     @Override
     //TODO:改造成消息队列
@@ -67,12 +65,12 @@ public class MessageServiceImpl implements MessageService {
                 .collect(Collectors.toList());
         List<Profile> profiles = accountService.getProfiles(profileIds);
         //更新头像和昵称
-        notifyMessages.stream().forEach(notifyMessage -> {
-            if(notifyMessage.getFromUser().equals(SYSTEM_MESSAGE)){
+        notifyMessages.forEach(notifyMessage -> {
+            if (notifyMessage.getFromUser().equals(SYSTEM_MESSAGE)) {
                 notifyMessage.setFromUserAvatar(Profile.DEFAULT_AVATAR);
                 notifyMessage.setFromUserName(SYSTEM_MESSAGE_NAME);
-            }else {
-                profiles.stream().forEach(profile -> {
+            } else {
+                profiles.forEach(profile -> {
                     if (notifyMessage.getFromUser().equals(String.valueOf(profile.getId()))) {
                         notifyMessage.setFromUserAvatar(profile.getHeadimgurl());
                         notifyMessage.setFromUserName(profile.getNickname());

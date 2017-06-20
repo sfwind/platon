@@ -53,4 +53,7 @@ public interface MessageService {
      * @param id Comment表中id
      */
     SubjectArticle loadSubjectArticleByCommentId(Integer id);
+
+    String SYSTEM_MESSAGE ="AUTO";
+    String SYSTEM_MESSAGE_NAME ="系统消息";
 }

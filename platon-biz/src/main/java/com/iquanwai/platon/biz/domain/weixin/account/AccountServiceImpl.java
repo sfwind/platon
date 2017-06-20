@@ -136,7 +136,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<Profile> getProfiles(List<Integer> profileIds) {
         List<Profile> profiles = profileDao.queryAccounts(profileIds);
-        profiles.stream().forEach(profile -> {
+        profiles.forEach(profile -> {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
