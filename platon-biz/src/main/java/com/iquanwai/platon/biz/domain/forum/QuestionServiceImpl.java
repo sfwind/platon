@@ -85,7 +85,7 @@ public class QuestionServiceImpl implements QuestionService {
 
 
     @Override
-    public List<ForumQuestion> loadQuestions(Integer loadProfileId,Page page){
+    public List<ForumQuestion> loadQuestions(Integer loadProfileId, Page page){
         List<ForumQuestion> questions = forumQuestionDao.getQuestions(page);
         // 查询有多少条
         Long total = forumQuestionDao.count(ForumQuestion.class);

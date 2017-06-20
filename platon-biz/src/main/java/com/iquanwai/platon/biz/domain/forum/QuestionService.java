@@ -19,7 +19,6 @@ public interface QuestionService {
      * */
     int publish(Integer questionId, Integer profileId, String topic, String description, List<Integer> tagIds);
 
-
     /**
      * 根据标签id获取问题
      * @param tagId 标签id

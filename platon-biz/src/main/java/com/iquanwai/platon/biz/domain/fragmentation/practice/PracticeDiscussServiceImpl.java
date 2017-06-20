@@ -128,7 +128,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         Map<Integer, List<WarmupPracticeDiscuss>> result = Maps.newHashMap();
 
         //并发获取评论提高效率
-        warmupPracticeIds.stream().forEach(warmupPracticeId -> {
+        warmupPracticeIds.forEach(warmupPracticeId -> {
             FutureTask futureTask = new FutureTask(() -> warmupPracticeDiscussDao.loadDiscuss(warmupPracticeId, page));
             futureTask.run();
             try {

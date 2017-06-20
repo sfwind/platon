@@ -36,9 +36,9 @@ public class QuestionController {
     private static final int PAGE_SIZE = 10;
 
     @RequestMapping("/load/list")
-    public ResponseEntity<Map<String, Object>> getQuestionList(LoginUser loginUser,@ModelAttribute Page page) {
+    public ResponseEntity<Map<String, Object>> getQuestionList(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
-        List<ForumQuestion> forumQuestions = questionService.loadQuestions(loginUser.getId(),page);
+        List<ForumQuestion> forumQuestions = questionService.loadQuestions(loginUser.getId(), page);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("首页")
@@ -112,7 +112,7 @@ public class QuestionController {
 
     @RequestMapping("/load/{questionId}")
     public ResponseEntity<Map<String, Object>> getQuestion(LoginUser loginUser,
-                                                            @PathVariable Integer questionId) {
+                                                           @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
         ForumQuestion forumQuestion = questionService.loadQuestion(questionId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -126,7 +126,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/follow/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> followQuestion(LoginUser loginUser,
-                                                           @PathVariable Integer questionId) {
+                                                              @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
         questionService.followQuestion(questionId, loginUser.getId());
 
@@ -141,7 +141,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/follow/cancel/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> unfollowQuestion(LoginUser loginUser,
-                                                              @PathVariable Integer questionId) {
+                                                                @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
         questionService.unfollowQuestion(questionId, loginUser.getId());
 
