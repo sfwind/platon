@@ -28,7 +28,8 @@ public class QuestionFollowDao extends ForumDBUtil {
                 "values(?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    questionFollow.getProfileId(), questionFollow.getQuestionId());
+                    questionFollow.getQuestionId()
+                    , questionFollow.getProfileId());
             return insertRs.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
