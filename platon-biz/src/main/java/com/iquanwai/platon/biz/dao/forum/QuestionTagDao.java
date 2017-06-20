@@ -21,6 +21,11 @@ import java.util.List;
 public class QuestionTagDao extends ForumDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * 插入问题tag
+     * @param questionTag 问题tag pojo
+     * @return 插入的id
+     */
     public int insert(QuestionTag questionTag) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into QuestionTag(QuestionId, TagId, Del) " +
@@ -35,6 +40,11 @@ public class QuestionTagDao extends ForumDBUtil {
         return -1;
     }
 
+    /**
+     * 根据tag获取问题tag列表
+     * @param tagId tagId
+     * @return 问题tag列表
+     */
     public List<QuestionTag> getQuestionTagsByTagId(Integer tagId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<QuestionTag>> h = new BeanListHandler<>(QuestionTag.class);
@@ -48,6 +58,11 @@ public class QuestionTagDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
+    /**
+     * 获取某个tag下的问题数量
+     * @param tagId tagId
+     * @return 该tag下的问题数量
+     */
     public Integer getQuestionTagsCountByQuestionId(Integer tagId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<>();
@@ -61,6 +76,11 @@ public class QuestionTagDao extends ForumDBUtil {
     }
 
 
+    /**
+     * 获取这个问题的未删除tag
+     * @param questionId 问题id
+     * @return tag列表
+     */
     public List<QuestionTag> getQuestionTagsByQuestionId(Integer questionId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<QuestionTag>> h = new BeanListHandler<>(QuestionTag.class);
@@ -74,6 +94,29 @@ public class QuestionTagDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
+    /**
+     * 获取这个问题的所有tag，包括已删除的
+     * @param questionId 问题id
+     * @return tag列表
+     */
+    public List<QuestionTag> getAllQuestionTagsByQuestionId(Integer questionId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<QuestionTag>> h = new BeanListHandler<>(QuestionTag.class);
+        String sql = "SELECT * FROM QuestionTag where QuestionId=?";
+        try {
+            List<QuestionTag> questionTags = runner.query(sql, h, questionId);
+            return questionTags;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 重新选择tag
+     * @param id tagId
+     * @return 修改行数
+     */
     public Integer reChooseTag(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE QuestionTag set Del = 0 where Id = ?";
@@ -85,6 +128,11 @@ public class QuestionTagDao extends ForumDBUtil {
         return -1;
     }
 
+    /**
+     * 删除问题tag
+     * @param id tagId
+     * @return 修改行数
+     */
     public Integer deleteQuestionTag(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<>();

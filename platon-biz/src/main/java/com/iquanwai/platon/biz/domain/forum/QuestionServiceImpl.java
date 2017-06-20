@@ -64,7 +64,7 @@ public class QuestionServiceImpl implements QuestionService {
             forumQuestionDao.update(description, topic, id);
         }
         // 处理tag
-        List<QuestionTag> existTagIds = questionTagDao.getQuestionTagsByQuestionId(id);
+        List<QuestionTag> existTagIds = questionTagDao.getAllQuestionTagsByQuestionId(id);
         chooseQuestionTags(existTagIds, tagIds, questionId);
         return id;
     }

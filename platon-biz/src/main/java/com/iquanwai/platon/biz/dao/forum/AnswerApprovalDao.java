@@ -22,10 +22,13 @@ import java.util.List;
 public class AnswerApprovalDao extends ForumDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * 插入回答支持表
+     */
     public int insert(AnswerApproval answerApproval) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into AnswerApproval(AnswerId, ProfileId, Del) " +
-                "values(?,?,?)";
+        String sql = "insert into AnswerApproval(AnswerId, ProfileId) " +
+                "values(?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     answerApproval.getAnswerId(), answerApproval.getProfileId());
@@ -49,10 +52,15 @@ public class AnswerApprovalDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
+    /**
+     * 加载回答支持数据
+     * @param answerId 回答id
+     * @param profileId 支持的人
+     */
     public AnswerApproval load(Integer answerId,Integer profileId){
         QueryRunner run = new QueryRunner(getDataSource());
-        BeanHandler<AnswerApproval> h = new BeanHandler<AnswerApproval>(AnswerApproval.class);
-        String sql = "SELECT COUNT(*) FROM AnswerApproval where AnswerId=? and Del=0 and ProfileId=?";
+        BeanHandler<AnswerApproval> h = new BeanHandler<>(AnswerApproval.class);
+        String sql = "SELECT * FROM AnswerApproval where AnswerId=? and Del=0 and ProfileId=?";
 
         try{
             return run.query(sql, h, answerId, profileId);
@@ -62,6 +70,12 @@ public class AnswerApprovalDao extends ForumDBUtil {
         return null;
     }
 
+    /**
+     * 取消对回答的支持
+     * @param profileId 进行取消操作的人
+     * @param answerId 回答id
+     * @return 修改的行数
+     */
     public Integer delete(Integer profileId,Integer answerId){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE AnswerApproval SET Del = 1 WHERE ProfileId = ? and AnswerId = ?";
