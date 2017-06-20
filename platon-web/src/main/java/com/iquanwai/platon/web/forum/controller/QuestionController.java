@@ -35,6 +35,10 @@ public class QuestionController {
 
     private static final int PAGE_SIZE = 10;
 
+    /**
+     * 首页，加载问题列表
+     * @param page 默认10条每页
+     */
     @RequestMapping("/load/list")
     public ResponseEntity<Map<String, Object>> getQuestionList(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -51,9 +55,14 @@ public class QuestionController {
         RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
         result.setList(forumQuestions);
         result.setEnd(page.isLastPage());
-        return WebUtils.result(forumQuestions);
+        return WebUtils.result(result);
     }
 
+    /**
+     * 加载不同tag下的问题列表
+     * @param tagId tagId
+     * @param page 分页
+     */
     @RequestMapping("/search/{tagId}")
     public ResponseEntity<Map<String, Object>> getQuestions(LoginUser loginUser,
                                                             @PathVariable Integer tagId,
@@ -78,6 +87,9 @@ public class QuestionController {
         return WebUtils.result(refreshListDto);
     }
 
+    /**
+     * 加载tag
+     */
     @RequestMapping("/tag/load")
     public ResponseEntity<Map<String, Object>> getTags(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -91,9 +103,12 @@ public class QuestionController {
         return WebUtils.result(tags);
     }
 
+    /**
+     * 提交／编辑问题
+     * @param questionDto 问题dto，如果没传questionId则代表第一次提交，否则为编辑
+     */
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submit(LoginUser loginUser,
-                                                      @RequestBody QuestionDto questionDto) {
+    public ResponseEntity<Map<String, Object>> submit(LoginUser loginUser, @RequestBody QuestionDto questionDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(questionDto.getTopic(), "问题标题不能为空");
         Assert.notNull(questionDto.getDescription(), "问题描述不能为空");
@@ -110,6 +125,10 @@ public class QuestionController {
         return WebUtils.success();
     }
 
+    /**
+     * 加载问题，问题详情页
+     * @param questionId 问题id
+     */
     @RequestMapping("/load/{questionId}")
     public ResponseEntity<Map<String, Object>> getQuestion(LoginUser loginUser,
                                                            @PathVariable Integer questionId) {
@@ -124,6 +143,12 @@ public class QuestionController {
         return WebUtils.result(forumQuestion);
     }
 
+    /**
+     * 关注问题
+     * @param loginUser
+     * @param questionId
+     * @return
+     */
     @RequestMapping(value = "/follow/{questionId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> followQuestion(LoginUser loginUser,
                                                               @PathVariable Integer questionId) {

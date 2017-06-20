@@ -34,6 +34,10 @@ public class AnswerController {
     @Autowired
     private OperationLogService operationLogService;
 
+    /**
+     * 对答案进行支持
+     * @param answerId 答案id
+     */
     @RequestMapping(value = "/approve/{answerId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> approveAnswer(LoginUser loginUser,
                                                              @PathVariable Integer answerId) {
@@ -52,6 +56,10 @@ public class AnswerController {
         }
     }
 
+    /**
+     * 取消对答案的支持
+     * @param answerId 答案id
+     */
     @RequestMapping(value = "/approve/cancel/{answerId}",method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> cancelApproveAnswer(LoginUser loginUser,@PathVariable Integer answerId){
         Assert.notNull(loginUser, "用户不能为空");
@@ -69,6 +77,10 @@ public class AnswerController {
         }
     }
 
+    /**
+     * 提交／编辑答案
+     * @param answerDto 答案dto，里面的answerId如果不传则为提交，传了则为编辑
+     */
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
                                                       @ModelAttribute AnswerDto answerDto) {
@@ -89,6 +101,10 @@ public class AnswerController {
         }
     }
 
+    /**
+     * 加载答案信息，用于评论页面
+     * @param answerId 答案id
+     */
     @RequestMapping(value = "/load/{answerId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String,Object>> loadAnswer(LoginUser loginUser,@PathVariable Integer answerId){
         Assert.notNull(loginUser, "用户不能为空");
@@ -101,6 +117,10 @@ public class AnswerController {
         return WebUtils.result(forumAnswer);
     }
 
+    /**
+     * 评论答案
+     * @param commentDto 评论dto
+     */
     @RequestMapping(value = "/comment", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> commentAnswer(LoginUser loginUser, @ModelAttribute AnswerCommentDto commentDto) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -120,6 +140,10 @@ public class AnswerController {
         }
     }
 
+    /**
+     * 删除评论
+     * @param commentId 评论id
+     */
     @RequestMapping(value = "/delete/comment/{commentId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser, @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -144,8 +168,5 @@ public class AnswerController {
             return WebUtils.error("删除失败");
         }
     }
-
-
-
 
 }

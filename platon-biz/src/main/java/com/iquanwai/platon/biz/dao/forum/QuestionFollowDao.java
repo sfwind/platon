@@ -24,8 +24,8 @@ public class QuestionFollowDao extends ForumDBUtil {
 
     public int insert(QuestionFollow questionFollow) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into QuestionFollow(QuestionId, ProfileId, Del) " +
-                "values(?,?,?)";
+        String sql = "insert into QuestionFollow(QuestionId, ProfileId) " +
+                "values(?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     questionFollow.getProfileId(), questionFollow.getQuestionId());
