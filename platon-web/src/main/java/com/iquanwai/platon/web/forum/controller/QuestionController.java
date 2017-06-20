@@ -156,7 +156,7 @@ public class QuestionController {
     public ResponseEntity<Map<String, Object>> followQuestion(LoginUser loginUser,
                                                               @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
-        questionService.followQuestion(questionId, loginUser.getId());
+        questionService.followQuestion(loginUser.getId(), questionId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
