@@ -10,6 +10,4 @@ public class HomeworkVoteDto {
     private Integer type;
     private Integer referencedId;
     private Integer status; // 1 点赞 2 取消
-
-    private Integer device;
 }

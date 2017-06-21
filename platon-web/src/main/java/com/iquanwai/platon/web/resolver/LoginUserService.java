@@ -14,6 +14,7 @@ import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.po.systematism.ClassMember;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -74,9 +75,11 @@ public class LoginUserService {
     public  void login(Platform platform, String sessionId, LoginUser loginUser) {
         switch(platform){
             case PC:
+                loginUser.setDevice(Constants.Device.PC);
                 pcLoginUserMap.put(sessionId, loginUser);
                 break;
             case Wechat:
+                loginUser.setDevice(Constants.Device.MOBILE);
                 wechatLoginUserMap.put(sessionId, loginUser);
                 break;
         }

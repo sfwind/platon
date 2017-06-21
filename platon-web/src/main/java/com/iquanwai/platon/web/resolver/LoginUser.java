@@ -24,9 +24,10 @@ public class LoginUser {
     private Boolean riseMember;
     private Boolean openApplication; // 非db字段 是否打开过应用练习
     private Boolean openConsolidation; // 非db字段 是否打开过巩固练习
+    private Integer Device; // 1-pc 2-mobile
 
     public static LoginUser defaultUser(){
-        return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(),"风之伤",
-                Profile.DEFAULT_AVATAR, null, 1, null, false, false,false,false);
+        return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(), "风之伤",
+                Profile.DEFAULT_AVATAR, null, 1, null, false, false, false, false, 1);
     }
 }
