@@ -398,7 +398,10 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public boolean vote(Integer type, Integer referencedId, Integer profileId, String openid) {
+    public boolean vote(Integer type, Integer referencedId, Integer profileId, String openid,Integer device) {
+        if (device == null) {
+            device = Constants.Device.MOBILE;
+        }
         HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, profileId);
         if (vote == null) {
             Integer planId = null;
@@ -444,7 +447,7 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setType(type);
             homeworkVote.setVotedOpenid(submitOpenId);
             homeworkVote.setVotedProfileId(submitProfileId);
-            homeworkVote.setDevice(Constants.Device.MOBILE);
+            homeworkVote.setDevice(device);
             homeworkVoteDao.vote(homeworkVote);
             pointRepo.risePoint(planId, ConfigUtils.getVoteScore());
             pointRepo.riseCustomerPoint(submitProfileId, ConfigUtils.getVoteScore());
@@ -547,7 +550,10 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
-                                              String openId, String content, Integer repliedId) {
+                                              String openId, String content, Integer repliedId, Integer device) {
+        if (device == null) {
+            device = Constants.Device.MOBILE;
+        }
         // 查看该评论是否为助教回复
         boolean isAsst = false;
         Profile profile = accountService.getProfile(profileId);
@@ -585,7 +591,7 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setRepliedDel(0);
         comment.setRepliedOpenId(repliedComment.getCommentOpenId());
         comment.setRepliedId(repliedId);
-        comment.setDevice(Constants.Device.MOBILE);
+        comment.setDevice(device);
         int id = commentDao.insert(comment);
         //评论自己的评论,不发通知
         if (!repliedComment.getCommentProfileId().equals(profileId)) {
@@ -603,7 +609,10 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content) {
+    public Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content,Integer device) {
+        if (device == null) {
+            device = Constants.Device.MOBILE;
+        }
         //先插入评论
         Comment comment = new Comment();
         comment.setModuleId(moduleId);
@@ -612,7 +621,7 @@ public class PracticeServiceImpl implements PracticeService {
         comment.setContent(content);
         comment.setCommentOpenId(openId);
         comment.setCommentProfileId(profileId);
-        comment.setDevice(Constants.Device.MOBILE);
+        comment.setDevice(device);
         int id = commentDao.insert(comment);
 
         boolean isAsst = false;
