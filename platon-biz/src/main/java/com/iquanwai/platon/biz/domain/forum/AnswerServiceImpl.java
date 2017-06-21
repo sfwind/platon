@@ -296,6 +296,7 @@ public class AnswerServiceImpl implements AnswerService {
         forumComment.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
         // 是自己的
         forumComment.setMine(true);
+        forumComment.setId(id);
         return forumComment;
     }
 
