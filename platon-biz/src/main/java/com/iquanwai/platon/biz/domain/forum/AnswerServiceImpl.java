@@ -324,4 +324,9 @@ public class AnswerServiceImpl implements AnswerService {
         });
         return forumAnswers;
     }
+
+    @Override
+    public List<ForumAnswer> loadUserQuestionAnswers(Integer questionId, Integer profileId) {
+        return forumAnswerDao.loadUserQuestionAnswers(questionId, profileId);
+    }
 }

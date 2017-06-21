@@ -9,6 +9,7 @@ import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
 import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -86,12 +88,21 @@ public class AnswerController {
                                                       @RequestBody AnswerDto answerDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(answerDto, "答案不能为空");
-        ForumAnswer result = answerService.submitAnswer(answerDto.getAnswerId(), loginUser.getId(), answerDto.getAnswer(), answerDto.getQuestionId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("答案")
                 .action("提交答案");
         operationLogService.log(operationLog);
+        // 检查是否是新提交的，不能重复提交
+        if (answerDto.getAnswerId() == null) {
+            // 是新提交的
+            List<ForumAnswer> answers = answerService.loadUserQuestionAnswers(answerDto.getQuestionId(), loginUser.getId());
+            if (CollectionUtils.isNotEmpty(answers)) {
+                return WebUtils.error("您已经回答过该问题，可以编辑您之前的回答哦");
+            }
+        }
+        // 提交或者编辑
+        ForumAnswer result = answerService.submitAnswer(answerDto.getAnswerId(), loginUser.getId(), answerDto.getAnswer(), answerDto.getQuestionId());
         if (result != null) {
             result.setAuthorHeadPic(loginUser.getHeadimgUrl());
             result.setAuthorUserName(loginUser.getWeixinName());

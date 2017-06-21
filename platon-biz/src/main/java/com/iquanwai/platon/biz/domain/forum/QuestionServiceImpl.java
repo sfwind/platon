@@ -198,13 +198,14 @@ public class QuestionServiceImpl implements QuestionService {
         // 初始化回答提示
         String answerTips = "";
         if (CollectionUtils.isNotEmpty(answers)) {
-            List<Integer> answerProfiles = answers.stream().limit(2).map(ForumAnswer::getProfileId).collect(Collectors.toList());
-            List<String> answerNames = answerProfiles.stream().map(profileId -> {
+            List<Integer> distinctUsers = answers.stream().map(ForumAnswer::getProfileId).distinct().collect(Collectors.toList());
+            List<String> answerNames = distinctUsers.stream().limit(2).map(profileId -> {
                 Profile temp = accountService.getProfile(profileId);
                 return temp.getNickname();
             }).collect(Collectors.toList());
-            if (answers.size() > 1) {
-                answerTips = "查看" + StringUtils.join(answerNames, "、") + "等" + answers.size() + "人的回答";
+
+            if (distinctUsers.size() > 1) {
+                answerTips = "查看" + StringUtils.join(answerNames, "、") + "等" + distinctUsers.size() + "人的回答";
             } else {
                 answerTips = "查看" + answerNames.get(0) + "的回答";
             }

@@ -94,4 +94,17 @@ public class ForumAnswerDao extends ForumDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public List<ForumAnswer> loadUserQuestionAnswers(Integer questionId,Integer profileId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<List<ForumAnswer>> h = new BeanListHandler<>(ForumAnswer.class);
+        String sql = "select * from ForumAnswer where QuestionId = ? and ProfileId = ?";
+        try{
+            List<ForumAnswer> answers = run.query(sql, h, questionId, profileId);
+            return answers;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

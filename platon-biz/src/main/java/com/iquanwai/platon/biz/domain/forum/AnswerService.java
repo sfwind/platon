@@ -74,4 +74,12 @@ public interface AnswerService {
      * @return 回答列表
      */
     List<ForumAnswer> loadSelfAnswers(Integer profileId,Page page);
+
+    /**
+     * 查询用户对问题的回答
+     * @param questionId 问题id
+     * @param profileId 用户id
+     * @return 回答列表
+     */
+    List<ForumAnswer> loadUserQuestionAnswers(Integer questionId, Integer profileId);
 }
