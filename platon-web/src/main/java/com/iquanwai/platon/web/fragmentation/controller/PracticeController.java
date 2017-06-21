@@ -137,7 +137,12 @@ public class PracticeController {
         Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            if (submitDto.getDevice() == null || submitDto.getDevice() != Constants.ViewInfo.EventType.PC_SUBMIT) {
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
+            } else {
+                // 默认是移动提交
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            }
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -165,7 +170,13 @@ public class PracticeController {
         Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            if (submitDto.getDevice() != null && submitDto.getDevice() == Constants.ViewInfo.EventType.PC_SUBMIT) {
+                // PC提交
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
+            } else {
+                // 默认移动端提交
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            }
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -219,7 +230,10 @@ public class PracticeController {
         operationLogService.log(operationLog);
 
         if (status == 1) {
-            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId);
+            if (vote.getDevice() == null || vote.getDevice() != Constants.Device.PC) {
+                vote.setDevice(Constants.Device.MOBILE);
+            }
+            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId, vote.getDevice());
             if (result) {
                 return WebUtils.success();
             } else {
@@ -388,8 +402,13 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
+        Integer device = dto.getDevice();
+        if (device == null || dto.getDevice() != Constants.Device.PC) {
+            // 默认是移动提交
+            device = Constants.Device.MOBILE;
+        }
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment());
+                loginUser.getOpenId(), dto.getComment(), device);
         if (result.getLeft()>0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -431,8 +450,12 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
+        if (dto.getDevice() == null || dto.getDevice() != Constants.Device.PC) {
+            // 默认移动
+            dto.setDevice(Constants.Device.MOBILE);
+        }
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
+                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId(), dto.getDevice());
         if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();

@@ -9,4 +9,5 @@ import lombok.Data;
 public class SubmitDto {
     private String answer;
     private String draft;
+    private Integer device;
 }

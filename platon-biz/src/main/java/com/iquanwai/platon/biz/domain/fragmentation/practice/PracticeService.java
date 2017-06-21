@@ -129,7 +129,7 @@ public interface PracticeService {
      * @param referencedId 被点赞的id
      * @param openId       点赞的人
      */
-    boolean vote(Integer type, Integer referencedId, Integer profileId, String openId);
+    boolean vote(Integer type, Integer referencedId, Integer profileId, String openId,Integer device);
 
     /**
      * 查询应用练习提交记录
@@ -157,8 +157,9 @@ public interface PracticeService {
      * @param referId  关联id
      * @param openId   评论人
      * @param content  评论内容
+     * @param device 设备，默认是移动提交
      */
-    Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content);
+    Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content,Integer device);
 
     /**
      * 回复评论
@@ -168,9 +169,10 @@ public interface PracticeService {
      * @param openId    评论人
      * @param content   评论内容
      * @param repliedId 被回复评论id
+     * @param device 提交设备
      */
     Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
-                                       String openId, String content, Integer repliedId);
+                                       String openId, String content, Integer repliedId,Integer device);
 
     /*
      * 获取巩固练习

@@ -20,4 +20,7 @@ public class RiseWorkCommentDto {
     private String repliedComment; // 被回复的评论内容
     private String repliedName; // 被回复人的名字
     private Integer repliedDel; //被回复人评论是否删除
+
+    //提交设备
+    private Integer device;
 }
