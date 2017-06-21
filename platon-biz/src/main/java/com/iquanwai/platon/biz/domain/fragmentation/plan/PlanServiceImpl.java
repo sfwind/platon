@@ -2,24 +2,14 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -261,7 +251,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Integer completePlan(Integer planId, Integer status) {
+    public void completePlan(Integer planId, Integer status) {
         //训练计划结束
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         logger.info("{} is terminated", planId);
@@ -277,8 +267,6 @@ public class PlanServiceImpl implements PlanService {
             improvementPlanDao.updateCloseTime(planId);
             sendCloseMsg(plan, percent);
         }
-
-        return percent;
     }
 
     private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
@@ -302,21 +290,21 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Boolean, Integer> completeCheck(ImprovementPlan improvementPlan) {
+    public boolean completeCheck(ImprovementPlan improvementPlan) {
         Assert.notNull(improvementPlan, "训练计划不能为空");
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
         if (!isDone(practicePlans)) {
-            return new ImmutablePair<>(false, -1);
+            return false;
         }
 
         //完成训练计划
-        int percent = completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
+        completePlan(improvementPlan.getId(), ImprovementPlan.COMPLETE);
         //更新完成时间
         if (improvementPlan.getCompleteTime() == null) {
             improvementPlanDao.updateCompleteTime(improvementPlan.getId());
         }
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
-        return new ImmutablePair<>(true, percent);
+        return true;
     }
 
     @Override

@@ -58,15 +58,14 @@ public interface PlanService {
      * 训练计划结束
      * @param planId 训练计划id
      * @param status 训练状态
-     * @return 打败了多少用户
      */
-    Integer completePlan(Integer planId, Integer status);
+    void completePlan(Integer planId, Integer status);
 
     /**
      * 结束训练计划校验
      * @param improvementPlan 训练计划
      */
-    Pair<Boolean, Integer> completeCheck(ImprovementPlan improvementPlan);
+    boolean completeCheck(ImprovementPlan improvementPlan);
 
     /**
      * 当前节练习是否可以做
