@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/10/8.
@@ -58,6 +62,14 @@ public class BackendController {
                 .memo(markDto.getMemo());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/login/users", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loginUsersList(@RequestParam(value = "openid") String openid) {
+        List<LoginUser> allUser = LoginUserService.getAllUsers();
+        LOGGER.info("openid:{},users:{}", openid, allUser);
+        List<LoginUser> list = allUser.stream().filter(item -> item.getOpenId().equals(openid)).collect(Collectors.toList());
+        return WebUtils.result(list);
     }
 
 
