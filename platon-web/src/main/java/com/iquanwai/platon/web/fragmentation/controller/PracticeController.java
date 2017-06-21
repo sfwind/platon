@@ -338,6 +338,7 @@ public class PracticeController {
                 .action("移动端加载评论")
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
+        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
 
         RefreshListDto<RiseWorkCommentDto> refreshListDto = new RefreshListDto<>();
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
