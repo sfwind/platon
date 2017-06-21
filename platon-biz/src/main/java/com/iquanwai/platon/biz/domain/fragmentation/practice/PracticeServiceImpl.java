@@ -604,13 +604,23 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content) {
+        //先插入评论
+        Comment comment = new Comment();
+        comment.setModuleId(moduleId);
+        comment.setReferencedId(referId);
+        comment.setType(Constants.CommentType.STUDENT);
+        comment.setContent(content);
+        comment.setCommentOpenId(openId);
+        comment.setCommentProfileId(profileId);
+        comment.setDevice(Constants.Device.MOBILE);
+        int id = commentDao.insert(comment);
+
         boolean isAsst = false;
         Profile profile = accountService.getProfile(profileId);
         //是否是助教评论
         if (profile != null) {
             isAsst = Role.isAsst(profile.getRole());
         }
-
         if (moduleId == Constants.CommentModule.APPLICATION) {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
@@ -624,7 +634,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
-                String url = "/rise/static/practice/application?id=" + load.getApplicationId();
+                String url = "/rise/static/message/application/reply?submitId=" + load.getApplicationId()+"&commentId="+id;
                 messageService.sendMessage("评论了我的应用练习", load.getProfileId().toString(), profileId.toString(), url);
             }
         } else if (moduleId == Constants.CommentModule.SUBJECT) {
@@ -644,15 +654,6 @@ public class PracticeServiceImpl implements PracticeService {
                 messageService.sendMessage("评论了我的小课分享", load.getProfileId().toString(), profileId.toString(), url);
             }
         }
-        Comment comment = new Comment();
-        comment.setModuleId(moduleId);
-        comment.setReferencedId(referId);
-        comment.setType(Constants.CommentType.STUDENT);
-        comment.setContent(content);
-        comment.setCommentOpenId(openId);
-        comment.setCommentProfileId(profileId);
-        comment.setDevice(Constants.Device.MOBILE);
-        int id = commentDao.insert(comment);
         return new MutablePair<>(id, "评论成功");
     }
 
