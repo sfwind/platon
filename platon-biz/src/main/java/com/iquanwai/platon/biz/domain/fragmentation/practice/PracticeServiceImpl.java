@@ -634,7 +634,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
-                String url = "/rise/static/message/application/reply?submitId=" + load.getApplicationId()+"&commentId="+id;
+                String url = "/rise/static/message/application/reply?submitId=" + referId + "&commentId=" + id;
                 messageService.sendMessage("评论了我的应用练习", load.getProfileId().toString(), profileId.toString(), url);
             }
         } else if (moduleId == Constants.CommentModule.SUBJECT) {
@@ -847,7 +847,7 @@ public class PracticeServiceImpl implements PracticeService {
         //点赞状态
         applicationSubmit.setVoteCount(homeworkVoteDao.votedCount(Constants.CommentModule.APPLICATION, id));
         applicationSubmit.setVoteStatus(homeworkVoteDao.loadVoteRecord(Constants.CommentModule.APPLICATION, id,
-                readProfileId)!=null);
+                readProfileId) != null);
         return applicationSubmit;
     }
 
