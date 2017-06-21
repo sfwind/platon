@@ -47,9 +47,9 @@ public class AnswerServiceImpl implements AnswerService {
     @Autowired
     private MessageService messageService;
 
-    private static final String ANSWER_URL = "/message/question/answer";
+    private static final String ANSWER_URL = "/rise/static/message/question/answer";
 
-    private static final String COMMENT_URL = "/message/answer/comment";
+    private static final String COMMENT_URL = "/rise/static/message/answer/comment";
 
     @Override
     public Boolean approveAnswer(Integer profileId, Integer answerId) {
