@@ -228,7 +228,7 @@ public class AnswerServiceImpl implements AnswerService {
                         // 被回复
                         if (comment.getRepliedDel()) {
                             // 回复的人已经删掉了
-                            comment.setComment("该评论已删除");
+                            comment.setRepliedComment("该评论已删除");
                         } else {
                             ForumComment repliedComment = forumCommentDao.load(ForumComment.class, comment.getRepliedId());
                             comment.setRepliedComment(repliedComment.getComment());
