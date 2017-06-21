@@ -67,7 +67,7 @@ public class BackendController {
     @RequestMapping(value = "/login/users", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loginUsersList(@RequestParam(value = "openid") String openid) {
         List<LoginUser> allUser = LoginUserService.getAllUsers();
-        LOGGER.info("openid:{},users:{}", openid, allUser);
+        LOGGER.info("openid:{},users:{}", openid, allUser.size());
         List<LoginUser> list = allUser.stream().filter(item -> item.getOpenId().equals(openid)).collect(Collectors.toList());
         return WebUtils.result(list);
     }
