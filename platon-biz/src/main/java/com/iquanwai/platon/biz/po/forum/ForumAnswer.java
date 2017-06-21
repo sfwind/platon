@@ -25,5 +25,5 @@ public class ForumAnswer {
     private Boolean approval; // 是否已经赞同
     private List<ForumComment> comments; // 回答的评论
     private Boolean mine; // 是否是自己的
-    private String question; // 答案的问题
+    private String topic; // 答案的问题
 }

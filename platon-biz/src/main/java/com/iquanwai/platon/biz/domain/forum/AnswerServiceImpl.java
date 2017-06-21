@@ -238,10 +238,23 @@ public class AnswerServiceImpl implements AnswerService {
                     comment.setRepliedProfileId(null);
                 });
             }
+
+            ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, answer.getQuestionId());
+            answer.setTopic(question.getTopic());
+            // 是否是自己的
+            answer.setMine(answer.getProfileId().equals(loadProfileId));
+            Profile profile = accountService.getProfile(answer.getProfileId());
+            answer.setAuthorHeadPic(profile.getHeadimgurl());
+            answer.setAuthorUserName(profile.getNickname());
+            // 发布时间
             answer.setPublishTimeStr(DateUtils.parseDateToString(answer.getPublishTime()));
+            // 评论
             answer.setComments(comments);
+            // 是否支持
+            answer.setApproval(answerApprovalDao.load(answerId, loadProfileId) != null);
             // 隐藏profileId
             answer.setProfileId(null);
+
         }
         return answer;
     }
@@ -301,7 +314,7 @@ public class AnswerServiceImpl implements AnswerService {
         List<ForumAnswer> forumAnswers = forumAnswerDao.loadUserAnswers(profileId, page);
         forumAnswers.forEach(item->{
             ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, item.getQuestionId());
-            item.setQuestion(question.getTopic());
+            item.setTopic(question.getTopic());
             // set null
             item.setProfileId(null);
         });
