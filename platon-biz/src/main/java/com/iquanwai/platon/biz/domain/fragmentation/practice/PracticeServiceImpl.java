@@ -613,6 +613,16 @@ public class PracticeServiceImpl implements PracticeService {
         if (device == null) {
             device = Constants.Device.MOBILE;
         }
+        //先插入评论
+        Comment comment = new Comment();
+        comment.setModuleId(moduleId);
+        comment.setReferencedId(referId);
+        comment.setType(Constants.CommentType.STUDENT);
+        comment.setContent(content);
+        comment.setCommentOpenId(openId);
+        comment.setCommentProfileId(profileId);
+        comment.setDevice(device);
+        int id = commentDao.insert(comment);
 
         boolean isAsst = false;
         Profile profile = accountService.getProfile(profileId);
@@ -620,7 +630,6 @@ public class PracticeServiceImpl implements PracticeService {
         if (profile != null) {
             isAsst = Role.isAsst(profile.getRole());
         }
-
         if (moduleId == Constants.CommentModule.APPLICATION) {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
@@ -634,7 +643,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
-                String url = "/rise/static/practice/application?id=" + load.getApplicationId();
+                String url = "/rise/static/message/application/reply?submitId=" + referId + "&commentId=" + id;
                 messageService.sendMessage("评论了我的应用练习", load.getProfileId().toString(), profileId.toString(), url);
             }
         } else if (moduleId == Constants.CommentModule.SUBJECT) {
@@ -654,15 +663,6 @@ public class PracticeServiceImpl implements PracticeService {
                 messageService.sendMessage("评论了我的小课分享", load.getProfileId().toString(), profileId.toString(), url);
             }
         }
-        Comment comment = new Comment();
-        comment.setModuleId(moduleId);
-        comment.setReferencedId(referId);
-        comment.setType(Constants.CommentType.STUDENT);
-        comment.setContent(content);
-        comment.setCommentOpenId(openId);
-        comment.setCommentProfileId(profileId);
-        comment.setDevice(device);
-        int id = commentDao.insert(comment);
         return new MutablePair<>(id, "评论成功");
     }
 
@@ -850,13 +850,15 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public ApplicationSubmit getApplicationSubmit(Integer id, Integer readProfileId) {
         ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, id);
-        Integer applicationId = applicationSubmit.getApplicationId();
-        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
-        applicationSubmit.setTopic(applicationPractice.getTopic());
-        //点赞状态
-        applicationSubmit.setVoteCount(homeworkVoteDao.votedCount(Constants.CommentModule.APPLICATION, id));
-        applicationSubmit.setVoteStatus(homeworkVoteDao.loadVoteRecord(Constants.CommentModule.APPLICATION, id,
-                readProfileId)!=null);
+        if (applicationSubmit != null) {
+            Integer applicationId = applicationSubmit.getApplicationId();
+            ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
+            applicationSubmit.setTopic(applicationPractice.getTopic());
+            //点赞状态
+            applicationSubmit.setVoteCount(homeworkVoteDao.votedCount(Constants.CommentModule.APPLICATION, id));
+            applicationSubmit.setVoteStatus(homeworkVoteDao.loadVoteRecord(Constants.CommentModule.APPLICATION, id,
+                    readProfileId) != null);
+        }
         return applicationSubmit;
     }
 
