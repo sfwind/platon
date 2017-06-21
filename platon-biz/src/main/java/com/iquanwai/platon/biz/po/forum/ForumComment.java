@@ -26,4 +26,6 @@ public class ForumComment {
 
     private String repliedComment; // 被回复的评论内容
     private String repliedName; // 被回复人的名字
+
+    private Boolean mine; // 是否是自己的
 }

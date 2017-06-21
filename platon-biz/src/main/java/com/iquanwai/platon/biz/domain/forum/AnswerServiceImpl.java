@@ -234,6 +234,7 @@ public class AnswerServiceImpl implements AnswerService {
                             comment.setRepliedComment(repliedComment.getComment());
                         }
                     }
+                    comment.setMine(comment.getCommentProfileId().equals(loadProfileId));
                     comment.setCommentProfileId(null);
                     comment.setRepliedProfileId(null);
                 });
@@ -289,6 +290,9 @@ public class AnswerServiceImpl implements AnswerService {
                 commentMsg(id, forumAnswer.getProfileId(), profileId);
             }
         }
+        forumComment.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
+        // 是自己的
+        forumComment.setMine(true);
         return forumComment;
     }
 
