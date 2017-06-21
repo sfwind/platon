@@ -820,14 +820,21 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> riseShowCount(LoginUser loginUser, @PathVariable(value = "moduleId") Integer moduleId, @PathVariable(value = "submitId") Integer submitId) {
+    public ResponseEntity<Map<String, Object>> riseShowCount(LoginUser loginUser,
+                                                             @PathVariable(value = "moduleId") Integer moduleId,
+                                                             @PathVariable(value = "submitId") Integer submitId,
+                                                             @RequestParam(required = false, value = "device") Integer device) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("文章")
                 .function(moduleId.toString())
                 .action("增加浏览数")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
+        if (device == null || device == Constants.ViewInfo.EventType.PC_SUBMIT) {
+            practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
+        } else {
+            practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
+        }
         return WebUtils.success();
     }
 
