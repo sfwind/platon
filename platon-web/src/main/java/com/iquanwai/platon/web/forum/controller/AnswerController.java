@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -83,7 +83,7 @@ public class AnswerController {
      */
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
-                                                      @ModelAttribute AnswerDto answerDto) {
+                                                      @RequestBody AnswerDto answerDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(answerDto, "答案不能为空");
         ForumAnswer result = answerService.submitAnswer(answerDto.getAnswerId(), loginUser.getId(), answerDto.getAnswer(), answerDto.getQuestionId());
@@ -122,7 +122,7 @@ public class AnswerController {
      * @param commentDto 评论dto
      */
     @RequestMapping(value = "/comment", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> commentAnswer(LoginUser loginUser, @ModelAttribute AnswerCommentDto commentDto) {
+    public ResponseEntity<Map<String, Object>> commentAnswer(LoginUser loginUser, @RequestBody AnswerCommentDto commentDto) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")

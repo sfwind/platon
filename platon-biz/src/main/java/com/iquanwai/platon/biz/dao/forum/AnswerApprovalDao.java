@@ -71,22 +71,42 @@ public class AnswerApprovalDao extends ForumDBUtil {
     }
 
     /**
-     * 取消对回答的支持
+     * 加载回答支持数据,包括已删除的
+     * @param answerId 回答id
+     * @param profileId 支持的人
+     */
+    public AnswerApproval loadUserAnswerApproval(Integer answerId,Integer profileId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        BeanHandler<AnswerApproval> h = new BeanHandler<>(AnswerApproval.class);
+        String sql = "SELECT * FROM AnswerApproval where AnswerId=? and ProfileId=?";
+
+        try{
+            return run.query(sql, h, answerId, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    /**
+     * 取消/恢复对回答的支持
      * @param profileId 进行取消操作的人
      * @param answerId 回答id
      * @return 修改的行数
      */
-    public Integer delete(Integer profileId,Integer answerId){
+    public Integer update(Integer profileId,Integer answerId,Integer del){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE AnswerApproval SET Del = 1 WHERE ProfileId = ? and AnswerId = ?";
+        String sql = "UPDATE AnswerApproval SET Del = ? WHERE ProfileId = ? and AnswerId = ?";
 
         try {
-            return runner.update(sql, profileId, answerId);
+            return runner.update(sql, del, profileId, answerId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
     }
+
+
 
 
 }

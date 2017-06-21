@@ -1,10 +1,18 @@
 package com.iquanwai.platon.biz.domain.forum;
 
-import com.iquanwai.platon.biz.dao.forum.*;
+import com.iquanwai.platon.biz.dao.forum.AnswerApprovalDao;
+import com.iquanwai.platon.biz.dao.forum.ForumAnswerDao;
+import com.iquanwai.platon.biz.dao.forum.ForumCommentDao;
+import com.iquanwai.platon.biz.dao.forum.ForumQuestionDao;
+import com.iquanwai.platon.biz.dao.forum.QuestionFollowDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.forum.*;
+import com.iquanwai.platon.biz.po.forum.AnswerApproval;
+import com.iquanwai.platon.biz.po.forum.ForumAnswer;
+import com.iquanwai.platon.biz.po.forum.ForumComment;
+import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.po.forum.QuestionFollow;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -14,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,30 +53,67 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public Boolean approveAnswer(Integer profileId, Integer answerId) {
-        AnswerApproval answerApproval = new AnswerApproval();
-        answerApproval.setProfileId(profileId);
-        answerApproval.setAnswerId(answerId);
-        answerApproval.setDel(false);
-        int id = answerApprovalDao.insert(answerApproval);
-        if (id != -1) {
-            forumAnswerDao.approve(answerId);
-            ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
-            if (forumAnswer != null) {
-                approveAnswerMsg(answerId, forumAnswer.getProfileId(), profileId);
+        AnswerApproval exist = answerApprovalDao.loadUserAnswerApproval(answerId, profileId);
+        if (exist != null) {
+            if (exist.getDel()) {
+                // 恢复
+                Integer update = answerApprovalDao.update(profileId, answerId, 0);
+                if (update != -1) {
+                    // 恢复支持，加1
+                    forumAnswerDao.approve(answerId);
+                    return true;
+                } else {
+                    // sql报错，返回false
+                    return false;
+                }
+            } else {
+                logger.error("用户:{},已关注这个问题:{},无法再次关注!", profileId, answerId);
+                // 已关注了，可能多次点击，继续返回true就可以
+                return true;
             }
-            return true;
         } else {
-            return false;
+            // 新增
+            AnswerApproval answerApproval = new AnswerApproval();
+            answerApproval.setProfileId(profileId);
+            answerApproval.setAnswerId(answerId);
+            answerApproval.setDel(false);
+            int id = answerApprovalDao.insert(answerApproval);
+            if (id != -1) {
+                forumAnswerDao.approve(answerId);
+                ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
+                if (forumAnswer != null) {
+                    approveAnswerMsg(answerId, forumAnswer.getProfileId(), profileId);
+                }
+                return true;
+            } else {
+                // sql报错，返回false
+                return false;
+            }
         }
     }
 
     @Override
     public Boolean cancelApproveAnswer(Integer profileId, Integer answerId){
-        Integer delete = answerApprovalDao.delete(profileId, answerId);
-        if (delete != -1) {
-            forumAnswerDao.cancelApprove(answerId);
-            return true;
+        AnswerApproval exist = answerApprovalDao.loadUserAnswerApproval(answerId, profileId);
+        if (exist != null) {
+            // 存在
+            if (exist.getDel()) {
+                // 已经删除，返回true就可以
+                return true;
+            } else {
+                // 未删除，进行操作
+                Integer delete = answerApprovalDao.update(profileId, answerId, 1);
+                if (delete != -1) {
+                    forumAnswerDao.cancelApprove(answerId);
+                    return true;
+                } else {
+                    // sql报错，返回false
+                    return false;
+                }
+            }
         } else {
+            // 不存在
+            logger.error("用户:{}取关 {} 失败，不存在该支持.", profileId, answerId);
             return false;
         }
     }
@@ -87,6 +133,7 @@ public class AnswerServiceImpl implements AnswerService {
                     // 增加回答数字
                     forumQuestionDao.answer(questionId);
                     answerQuestionMsg(questionId, profileId, question.getProfileId());
+                    forumAnswer.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
                     return forumAnswer;
                 }
                 logger.error("插入答案失败,{}", forumAnswer);
@@ -99,6 +146,7 @@ public class AnswerServiceImpl implements AnswerService {
                     forumAnswerDao.update(answer, answerId);
                     // 设置新的answer并返回
                     forumAnswer.setAnswer(answer);
+                    forumAnswer.setPublishTimeStr(DateUtils.parseDateToString(forumAnswer.getPublishTime()));
                     return forumAnswer;
                 } else {
                     logger.error("更新答案失败，不是自己的答案");
@@ -166,6 +214,7 @@ public class AnswerServiceImpl implements AnswerService {
             // 加载评论
             List<ForumComment> comments = forumCommentDao.getComments(answerId);
             if (CollectionUtils.isNotEmpty(comments)) {
+                // 对评论信息作处理，添加逻辑字段
                 comments.forEach(comment -> {
                     Profile profile = accountService.getProfile(comment.getCommentProfileId());
                     comment.setAuthorUserName(profile.getNickname());

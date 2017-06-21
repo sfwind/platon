@@ -41,11 +41,9 @@ public class ForumCommentDao extends ForumDBUtil {
     public List<ForumComment> getComments(Integer answerId){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumComment>> h = new BeanListHandler<>(ForumComment.class);
-        String sql = "SELECT * FROM ForumComment where AnswerId=? and Del=0 "+
-                "order by AddTime desc limit";
+        String sql = "SELECT * FROM ForumComment where AnswerId=? and Del=0";
         try {
-            List<ForumComment> comments = runner.query(sql, h, answerId);
-            return comments;
+            return runner.query(sql, h, answerId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
