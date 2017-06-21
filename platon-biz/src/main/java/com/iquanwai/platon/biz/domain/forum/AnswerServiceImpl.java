@@ -234,10 +234,14 @@ public class AnswerServiceImpl implements AnswerService {
                             comment.setRepliedComment(repliedComment.getComment());
                         }
                     }
+                    comment.setCommentProfileId(null);
+                    comment.setRepliedProfileId(null);
                 });
             }
             answer.setPublishTimeStr(DateUtils.parseDateToString(answer.getPublishTime()));
             answer.setComments(comments);
+            // 隐藏profileId
+            answer.setProfileId(null);
         }
         return answer;
     }
