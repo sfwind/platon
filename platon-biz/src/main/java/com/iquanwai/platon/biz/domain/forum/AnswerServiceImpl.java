@@ -277,6 +277,9 @@ public class AnswerServiceImpl implements AnswerService {
                 forumComment.setRepliedId(repliedCommentId);
                 forumComment.setRepliedProfileId(repliedComment.getCommentProfileId());
                 forumComment.setRepliedDel(false);
+                Profile profile = accountService.getProfile(repliedComment.getCommentProfileId());
+                forumComment.setRepliedName(profile.getNickname());
+                forumComment.setRepliedComment(repliedComment.getComment());
             }
         }
         int id = forumCommentDao.comment(forumComment);

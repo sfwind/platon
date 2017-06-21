@@ -144,6 +144,8 @@ public class AnswerController {
         ForumComment forumComment = answerService.commentAnswer(commentDto.getAnswerId(),
                 commentDto.getRepliedCommentId(), loginUser.getId(), commentDto.getComment());
         if (forumComment != null) {
+            forumComment.setAuthorHeadPic(loginUser.getHeadimgUrl());
+            forumComment.setAuthorUserName(loginUser.getWeixinName());
             return WebUtils.result(forumComment);
         } else {
             logger.error("评论失败:{}", commentDto);
