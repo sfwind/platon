@@ -106,6 +106,7 @@ public class AnswerController {
         if (result != null) {
             result.setAuthorHeadPic(loginUser.getHeadimgUrl());
             result.setAuthorUserName(loginUser.getWeixinName());
+            result.setMine(true);
             return WebUtils.result(result);
         } else {
             return WebUtils.error("提交失败");
