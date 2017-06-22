@@ -26,4 +26,5 @@ public class ForumAnswer {
     private List<ForumComment> comments; // 回答的评论
     private Boolean mine; // 是否是自己的
     private String topic; // 答案的问题
+    private Integer commentCount;
 }

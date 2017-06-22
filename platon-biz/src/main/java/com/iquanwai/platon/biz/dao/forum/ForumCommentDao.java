@@ -73,4 +73,16 @@ public class ForumCommentDao extends ForumDBUtil {
         }
         return -1;
     }
+
+    public Integer getCommentCount(Integer answerId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "SELECT Count(*) FROM ForumComment where AnswerId=? and Del=0";
+        try {
+            return runner.query(sql, h, answerId).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 }

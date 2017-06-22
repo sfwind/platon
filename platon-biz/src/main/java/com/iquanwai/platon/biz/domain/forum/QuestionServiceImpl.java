@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.forum;
 
 import com.iquanwai.platon.biz.dao.forum.AnswerApprovalDao;
 import com.iquanwai.platon.biz.dao.forum.ForumAnswerDao;
+import com.iquanwai.platon.biz.dao.forum.ForumCommentDao;
 import com.iquanwai.platon.biz.dao.forum.ForumQuestionDao;
 import com.iquanwai.platon.biz.dao.forum.ForumTagDao;
 import com.iquanwai.platon.biz.dao.forum.QuestionFollowDao;
@@ -45,6 +46,8 @@ public class QuestionServiceImpl implements QuestionService {
     private AccountService accountService;
     @Autowired
     private AnswerApprovalDao answerApprovalDao;
+    @Autowired
+    private ForumCommentDao forumCommentDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -130,6 +133,7 @@ public class QuestionServiceImpl implements QuestionService {
                 item.setPublishTimeStr(DateUtils.parseDateToString(item.getPublishTime()));
                 item.setApproval(answerApprovalDao.load(item.getId(), loadProfileId) != null);
                 item.setMine(loadProfileId.equals(item.getProfileId()));
+                item.setCommentCount(forumCommentDao.getCommentCount(item.getId()));
                 // 去掉profileId
                 item.setProfileId(null);
             });
