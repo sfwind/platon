@@ -134,6 +134,8 @@ public class AnswerServiceImpl implements AnswerService {
                     forumQuestionDao.answer(questionId);
                     answerQuestionMsg(questionId, profileId, question.getProfileId());
                     forumAnswer.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
+                    // 新增，肯定是0
+                    forumAnswer.setCommentCount(0);
                     return forumAnswer;
                 }
                 logger.error("插入答案失败,{}", forumAnswer);
@@ -147,6 +149,7 @@ public class AnswerServiceImpl implements AnswerService {
                     // 设置新的answer并返回
                     forumAnswer.setAnswer(answer);
                     forumAnswer.setPublishTimeStr(DateUtils.parseDateToString(forumAnswer.getPublishTime()));
+                    forumAnswer.setCommentCount(forumCommentDao.getCommentCount(answerId));
                     return forumAnswer;
                 } else {
                     logger.error("更新答案失败，不是自己的答案");
