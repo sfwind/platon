@@ -214,6 +214,7 @@ public class AnswerServiceImpl implements AnswerService {
             // 加载评论
             List<ForumComment> comments = forumCommentDao.getComments(answerId);
             if (CollectionUtils.isNotEmpty(comments)) {
+                answer.setCommentCount(forumCommentDao.getCommentCount(answerId));
                 // 对评论信息作处理，添加逻辑字段
                 comments.forEach(comment -> {
                     Profile profile = accountService.getProfile(comment.getCommentProfileId());
