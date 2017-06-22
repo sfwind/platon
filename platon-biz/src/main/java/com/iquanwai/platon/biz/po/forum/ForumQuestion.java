@@ -27,6 +27,7 @@ public class ForumQuestion {
     private String authorHeadPic; // 作者头像
     private Boolean follow; // 是否关注
     private Boolean mine; // 是否是自己的问题
+    private Boolean answered; // 是否已经回答
 
     private List<ForumAnswer> answerList; //非db字段 回答列表
     private List<QuestionTag> questionTagList; //非db字段 问题标签

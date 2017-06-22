@@ -133,6 +133,9 @@ public class QuestionServiceImpl implements QuestionService {
                 // 去掉profileId
                 item.setProfileId(null);
             });
+            // 是否已回答
+            List<ForumAnswer> answers = forumAnswerDao.loadUserQuestionAnswers(questionId, loadProfileId);
+            forumQuestion.setAnswered(CollectionUtils.isNotEmpty(answers));
             forumQuestion.setAnswerList(answerList);
             // 问题添加时间
             forumQuestion.setAddTimeStr(DateUtils.parseDateToString(forumQuestion.getAddTime()));
