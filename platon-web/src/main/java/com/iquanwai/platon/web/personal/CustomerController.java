@@ -150,7 +150,7 @@ public class CustomerController {
     @RequestMapping(value = {"/plans","/pc/plans"}, method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadUserPlans(LoginUser loginUser) {
         if (loginUser == null) {
-            WebUtils.error(401, "未登录");
+            return WebUtils.error(401, "未登录");
         }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
