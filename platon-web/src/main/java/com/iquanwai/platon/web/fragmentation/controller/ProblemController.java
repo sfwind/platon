@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemCatalog;
@@ -255,5 +256,32 @@ public class ProblemController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping("curId")
+    public ResponseEntity<Map<String, Object>> loadCurProblemId(LoginUser pcLoginUser) {
+        Assert.notNull(pcLoginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(pcLoginUser.getOpenId())
+                .module("训练")
+                .function("碎片化")
+                .action("获取用户当前在解决的问题Id");
+        operationLogService.log(operationLog);
+        ImprovementPlan runningPlan = planService.getRunningPlan(pcLoginUser.getId());
+        if (runningPlan == null) {
+            // 没有正在进行的主题，选一个之前做过的
+            List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getId());
+            if (plans.isEmpty()) {
+                // 没有买过难题
+                LOGGER.error("{} has no active plan", pcLoginUser.getOpenId());
+                return WebUtils.error(ErrorConstants.NOT_PAY_FRAGMENT, "没找到进行中的RISE训练");
+            } else {
+                // 购买过直接选最后一个
+                ImprovementPlan plan = plans.get(plans.size() - 1);
+                return WebUtils.result(plan.getProblemId());
+            }
+        } else {
+            // 有正在进行的主题，直接返回id
+            return WebUtils.result(runningPlan.getProblemId());
+        }
     }
 }

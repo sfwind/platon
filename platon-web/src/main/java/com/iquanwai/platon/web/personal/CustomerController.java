@@ -162,9 +162,12 @@ public class CustomerController {
         return WebUtils.result(regionDto);
     }
 
-    @RequestMapping(value = "/plans", method = RequestMethod.GET)
+    @RequestMapping(value = {"/plans","/pc/plans"}, method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadUserPlans(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
+        if (loginUser == null) {
+            return WebUtils.error(401, "未登录");
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
                 .function("RISE")
@@ -177,6 +180,7 @@ public class CustomerController {
         plans.forEach(item -> {
             PlanDto planDto = new PlanDto();
             planDto.setName(problemService.getProblem(item.getProblemId()).getProblem());
+            planDto.setPic(problemService.getProblem(item.getProblemId()).getPic());
             planDto.setPoint(item.getPoint());
             planDto.setProblemId(item.getProblemId());
             planDto.setPlanId(item.getId());

@@ -9,4 +9,6 @@ public interface OAuthService {
      * 根据accessToken，获取授权用户的openid
      * */
     String openId(String accessToken);
+
+    String pcOpenId(String act);
 }
