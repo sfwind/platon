@@ -164,7 +164,7 @@ public class AnswerServiceImpl implements AnswerService {
 
     private void answerQuestionMsg(Integer questionId, Integer answerId, Integer answerProfileId, Integer questionProfileId) {
         //发送给提问者
-        String answerUrl = ConfigUtils.domainName() + ANSWER_URL + "?questionId=" + questionId + "&answerId=" + answerId;
+        String answerUrl = ANSWER_URL + "?questionId=" + questionId + "&answerId=" + answerId;
         Profile profile = accountService.getProfile(answerProfileId);
         messageService.sendMessage(profile.getNickname() + "回答了我的论坛提问", questionProfileId.toString(),
                 answerProfileId.toString(), answerUrl);
@@ -184,7 +184,7 @@ public class AnswerServiceImpl implements AnswerService {
     private void approveAnswerMsg(Integer questionId, Integer answerId, Integer answerProfileId, Integer approveProfileId) {
         //发送给回答者,自己给自己赞同,不发消息提醒
         if (!answerProfileId.equals(approveProfileId)) {
-            String answerUrl = ConfigUtils.domainName() + ANSWER_URL + "?questionId" + questionId + "&answerId=" + answerId;
+            String answerUrl = ANSWER_URL + "?questionId" + questionId + "&answerId=" + answerId;
             Profile profile = accountService.getProfile(approveProfileId);
             messageService.sendMessage(profile.getNickname() + "很认可你的回答，并给你点了赞", answerProfileId.toString(),
                     approveProfileId.toString(), answerUrl);
@@ -194,7 +194,7 @@ public class AnswerServiceImpl implements AnswerService {
     private void commentMsg(Integer answerId, Integer commentId, Integer answerProfileId, Integer commentProfileId) {
         //发送给回答者,自己给自己评论,不发消息提醒
         if (!answerProfileId.equals(commentProfileId)) {
-            String commentUrl = ConfigUtils.domainName() + COMMENT_URL + "?answerId=" + answerId + "&commentId=" + commentId;
+            String commentUrl = COMMENT_URL + "?answerId=" + answerId + "&commentId=" + commentId;
             Profile profile = accountService.getProfile(commentProfileId);
             messageService.sendMessage(profile.getNickname() + "回复了我的论坛答案", answerProfileId.toString(),
                     commentProfileId.toString(), commentUrl);
@@ -204,7 +204,7 @@ public class AnswerServiceImpl implements AnswerService {
     private void replyMsg(Integer answerId, Integer commentId, Integer commentedProfileId, Integer commentProfileId) {
         //发送给回答者,自己给自己回复,不发消息提醒
         if (!commentedProfileId.equals(commentProfileId)) {
-            String commentUrl = ConfigUtils.domainName() + COMMENT_URL + "?answerId=" + answerId + "&commentId=" + commentId;
+            String commentUrl = COMMENT_URL + "?answerId=" + answerId + "&commentId=" + commentId;
             Profile profile = accountService.getProfile(commentProfileId);
             messageService.sendMessage(profile.getNickname() + "回复了我的论坛评论", commentedProfileId.toString(),
                     commentProfileId.toString(), commentUrl);
