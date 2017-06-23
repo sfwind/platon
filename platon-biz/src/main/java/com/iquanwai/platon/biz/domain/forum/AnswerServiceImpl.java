@@ -82,7 +82,7 @@ public class AnswerServiceImpl implements AnswerService {
                 forumAnswerDao.approve(answerId);
                 ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
                 if (forumAnswer != null) {
-                    approveAnswerMsg(answerId, forumAnswer.getProfileId(), profileId);
+                    approveAnswerMsg(forumAnswer.getQuestionId(), answerId, forumAnswer.getProfileId(), profileId);
                 }
                 return true;
             } else {
@@ -93,7 +93,7 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public Boolean cancelApproveAnswer(Integer profileId, Integer answerId){
+    public Boolean cancelApproveAnswer(Integer profileId, Integer answerId) {
         AnswerApproval exist = answerApprovalDao.loadUserAnswerApproval(answerId, profileId);
         if (exist != null) {
             // 存在
@@ -132,7 +132,7 @@ public class AnswerServiceImpl implements AnswerService {
                 if (insert != -1) {
                     // 增加回答数字
                     forumQuestionDao.answer(questionId);
-                    answerQuestionMsg(questionId, profileId, question.getProfileId());
+                    answerQuestionMsg(questionId, insert, profileId, question.getProfileId());
                     forumAnswer.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
                     // 新增，肯定是0
                     forumAnswer.setCommentCount(0);
@@ -162,9 +162,9 @@ public class AnswerServiceImpl implements AnswerService {
         return null;
     }
 
-    private void answerQuestionMsg(Integer questionId, Integer answerProfileId, Integer questionProfileId) {
+    private void answerQuestionMsg(Integer questionId, Integer answerId, Integer answerProfileId, Integer questionProfileId) {
         //发送给提问者
-        String answerUrl = ConfigUtils.domainName() + ANSWER_URL + "?questionId=" + questionId;
+        String answerUrl = ConfigUtils.domainName() + ANSWER_URL + "?questionId=" + questionId + "&answerId=" + answerId;
         Profile profile = accountService.getProfile(answerProfileId);
         messageService.sendMessage(profile.getNickname() + "回答了我的论坛提问", questionProfileId.toString(),
                 answerProfileId.toString(), answerUrl);
@@ -181,30 +181,30 @@ public class AnswerServiceImpl implements AnswerService {
         }
     }
 
-    private void approveAnswerMsg(Integer answerId, Integer answerProfileId, Integer approveProfileId) {
+    private void approveAnswerMsg(Integer questionId, Integer answerId, Integer answerProfileId, Integer approveProfileId) {
         //发送给回答者,自己给自己赞同,不发消息提醒
         if (!answerProfileId.equals(approveProfileId)) {
-            String answerUrl = ConfigUtils.domainName() + ANSWER_URL + "?answerId=" + answerId;
+            String answerUrl = ConfigUtils.domainName() + ANSWER_URL + "?questionId" + questionId + "&answerId=" + answerId;
             Profile profile = accountService.getProfile(approveProfileId);
             messageService.sendMessage(profile.getNickname() + "很认可你的回答，并给你点了赞", answerProfileId.toString(),
                     approveProfileId.toString(), answerUrl);
         }
     }
 
-    private void commentMsg(Integer commentId, Integer answerProfileId, Integer commentProfileId) {
+    private void commentMsg(Integer answerId, Integer commentId, Integer answerProfileId, Integer commentProfileId) {
         //发送给回答者,自己给自己评论,不发消息提醒
         if (!answerProfileId.equals(commentProfileId)) {
-            String commentUrl = ConfigUtils.domainName() + COMMENT_URL + "?commentId=" + commentId;
+            String commentUrl = ConfigUtils.domainName() + COMMENT_URL + "?answerId=" + answerId + "&commentId=" + commentId;
             Profile profile = accountService.getProfile(commentProfileId);
             messageService.sendMessage(profile.getNickname() + "回复了我的论坛答案", answerProfileId.toString(),
                     commentProfileId.toString(), commentUrl);
         }
     }
 
-    private void replyMsg(Integer commentId, Integer commentedProfileId, Integer commentProfileId) {
+    private void replyMsg(Integer answerId, Integer commentId, Integer commentedProfileId, Integer commentProfileId) {
         //发送给回答者,自己给自己回复,不发消息提醒
         if (!commentedProfileId.equals(commentProfileId)) {
-            String commentUrl = ConfigUtils.domainName() + COMMENT_URL + "?commentId=" + commentId;
+            String commentUrl = ConfigUtils.domainName() + COMMENT_URL + "?answerId=" + answerId + "&commentId=" + commentId;
             Profile profile = accountService.getProfile(commentProfileId);
             messageService.sendMessage(profile.getNickname() + "回复了我的论坛评论", commentedProfileId.toString(),
                     commentProfileId.toString(), commentUrl);
@@ -290,12 +290,12 @@ public class AnswerServiceImpl implements AnswerService {
         int id = forumCommentDao.comment(forumComment);
         if (repliedCommentId != null) {
             //发回复消息
-            replyMsg(id, repliedComment.getCommentProfileId(), profileId);
+            replyMsg(answerId, id, repliedComment.getCommentProfileId(), profileId);
         } else {
             ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
             if (forumAnswer != null) {
                 //发评论消息
-                commentMsg(id, forumAnswer.getProfileId(), profileId);
+                commentMsg(answerId, id, forumAnswer.getProfileId(), profileId);
             }
         }
         forumComment.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
@@ -323,9 +323,9 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public List<ForumAnswer> loadSelfAnswers(Integer profileId,Page page){
+    public List<ForumAnswer> loadSelfAnswers(Integer profileId, Page page) {
         List<ForumAnswer> forumAnswers = forumAnswerDao.loadUserAnswers(profileId, page);
-        forumAnswers.forEach(item->{
+        forumAnswers.forEach(item -> {
             ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, item.getQuestionId());
             item.setTopic(question.getTopic());
             // set null
