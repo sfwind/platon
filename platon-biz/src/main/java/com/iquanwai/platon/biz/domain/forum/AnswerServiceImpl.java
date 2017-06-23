@@ -136,6 +136,7 @@ public class AnswerServiceImpl implements AnswerService {
                     forumAnswer.setPublishTimeStr(DateUtils.parseDateToString(new Date()));
                     // 新增，肯定是0
                     forumAnswer.setCommentCount(0);
+                    forumAnswer.setId(insert);
                     return forumAnswer;
                 }
                 logger.error("插入答案失败,{}", forumAnswer);
