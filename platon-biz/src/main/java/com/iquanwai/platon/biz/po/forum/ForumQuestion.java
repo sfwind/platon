@@ -30,5 +30,5 @@ public class ForumQuestion {
     private Boolean answered; // 是否已经回答
 
     private List<ForumAnswer> answerList; //非db字段 回答列表
-    private List<QuestionTag> questionTagList; //非db字段 问题标签
+    private List<ForumTag> forumTags; //非db字段 问题标签
 }

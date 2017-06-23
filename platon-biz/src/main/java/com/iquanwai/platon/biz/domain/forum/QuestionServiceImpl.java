@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.forum;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.forum.AnswerApprovalDao;
 import com.iquanwai.platon.biz.dao.forum.ForumAnswerDao;
 import com.iquanwai.platon.biz.dao.forum.ForumCommentDao;
@@ -148,7 +149,12 @@ public class QuestionServiceImpl implements QuestionService {
             forumQuestion.setAuthorHeadPic(profile.getHeadimgurl());
             forumQuestion.setAuthorUserName(profile.getNickname());
             List<QuestionTag> questionTagList = questionTagDao.getQuestionTagsByQuestionId(questionId);
-            forumQuestion.setQuestionTagList(questionTagList);
+            List<ForumTag> forumTags = Lists.newArrayList();
+            questionTagList.stream().forEach(questionTag -> {
+                ForumTag forumTag = forumTagDao.load(ForumTag.class, questionTag.getTagId());
+                forumTags.add(forumTag);
+            });
+            forumQuestion.setForumTags(forumTags);
         }
         // 去掉profileId,判断是否是自己的
         if (forumQuestion != null) {
