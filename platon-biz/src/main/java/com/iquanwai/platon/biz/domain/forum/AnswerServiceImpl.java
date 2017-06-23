@@ -1,19 +1,10 @@
 package com.iquanwai.platon.biz.domain.forum;
 
-import com.iquanwai.platon.biz.dao.forum.AnswerApprovalDao;
-import com.iquanwai.platon.biz.dao.forum.ForumAnswerDao;
-import com.iquanwai.platon.biz.dao.forum.ForumCommentDao;
-import com.iquanwai.platon.biz.dao.forum.ForumQuestionDao;
-import com.iquanwai.platon.biz.dao.forum.QuestionFollowDao;
+import com.iquanwai.platon.biz.dao.forum.*;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.forum.AnswerApproval;
-import com.iquanwai.platon.biz.po.forum.ForumAnswer;
-import com.iquanwai.platon.biz.po.forum.ForumComment;
-import com.iquanwai.platon.biz.po.forum.ForumQuestion;
-import com.iquanwai.platon.biz.po.forum.QuestionFollow;
-import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.po.forum.*;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
@@ -184,7 +175,7 @@ public class AnswerServiceImpl implements AnswerService {
     private void approveAnswerMsg(Integer questionId, Integer answerId, Integer answerProfileId, Integer approveProfileId) {
         //发送给回答者,自己给自己赞同,不发消息提醒
         if (!answerProfileId.equals(approveProfileId)) {
-            String answerUrl = ANSWER_URL + "?questionId" + questionId + "&answerId=" + answerId;
+            String answerUrl = ANSWER_URL + "?questionId=" + questionId + "&answerId=" + answerId;
             Profile profile = accountService.getProfile(approveProfileId);
             messageService.sendMessage(profile.getNickname() + "很认可你的回答，并给你点了赞", answerProfileId.toString(),
                     approveProfileId.toString(), answerUrl);
