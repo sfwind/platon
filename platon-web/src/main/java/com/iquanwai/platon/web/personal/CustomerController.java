@@ -243,7 +243,6 @@ public class CustomerController {
         }
         page.setPage(1);
         page.setPageSize(100);
-        answerService.loadSelfAnswers(loginUser.getId(), page);
         List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
         return WebUtils.result(forumAnswers);
     }
