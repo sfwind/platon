@@ -118,7 +118,7 @@ public class QuestionController {
         Assert.notNull(questionDto.getTopic(), "问题标题不能为空");
         Assert.notNull(questionDto.getDescription(), "问题描述不能为空");
 
-        questionService.publish(questionDto.getQuestionId(), loginUser.getId(),
+        int questionId = questionService.publish(questionDto.getQuestionId(), loginUser.getId(),
                 questionDto.getTopic(), questionDto.getDescription(),
                 questionDto.getTagIds());
 
@@ -127,7 +127,7 @@ public class QuestionController {
                 .function("提问页")
                 .action("提交问题");
         operationLogService.log(operationLog);
-        return WebUtils.success();
+        return WebUtils.result(questionId);
     }
 
     /**
