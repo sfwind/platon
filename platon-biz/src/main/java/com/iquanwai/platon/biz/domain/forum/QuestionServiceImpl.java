@@ -52,7 +52,7 @@ public class QuestionServiceImpl implements QuestionService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public int publish(Integer questionId,Integer profileId, String topic, String description, List<Integer> tagIds) {
+    public int publish(Integer questionId, Integer profileId, String topic, String description, List<Integer> tagIds) {
         int id;
         if (questionId == null) {
             // 新问题提交
@@ -68,7 +68,7 @@ public class QuestionServiceImpl implements QuestionService {
         }
         // 处理tag
         List<QuestionTag> existTagIds = questionTagDao.getAllQuestionTagsByQuestionId(id);
-        chooseQuestionTags(existTagIds, tagIds, questionId);
+        chooseQuestionTags(existTagIds, tagIds, id);
         return id;
     }
 
@@ -79,7 +79,7 @@ public class QuestionServiceImpl implements QuestionService {
         Integer total = questionTagDao.getQuestionTagsCountByQuestionId(tagId);
         page.setTotal(total);
         List<ForumQuestion> result = forumQuestionDao.getQuestionsById(questionIds, page);
-        result.forEach(item->{
+        result.forEach(item -> {
             // 去掉profileId
             item.setProfileId(null);
         });
@@ -88,7 +88,7 @@ public class QuestionServiceImpl implements QuestionService {
 
 
     @Override
-    public List<ForumQuestion> loadQuestions(Integer loadProfileId, Page page){
+    public List<ForumQuestion> loadQuestions(Integer loadProfileId, Page page) {
         List<ForumQuestion> questions = forumQuestionDao.getQuestions(page);
         // 查询有多少条
         Long total = forumQuestionDao.count(ForumQuestion.class);
@@ -115,9 +115,9 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public ForumQuestion loadQuestion(Integer questionId,Integer loadProfileId) {
+    public ForumQuestion loadQuestion(Integer questionId, Integer loadProfileId) {
         ForumQuestion forumQuestion = forumQuestionDao.load(ForumQuestion.class, questionId);
-        if(forumQuestion!=null){
+        if (forumQuestion != null) {
             QuestionFollow load = questionFollowDao.load(questionId, loadProfileId);
             forumQuestion.setFollow(load != null && !load.getDel());
 
@@ -126,7 +126,7 @@ public class QuestionServiceImpl implements QuestionService {
             forumQuestionDao.open(questionId, point);
             // 设置答案列表
             List<ForumAnswer> answerList = forumAnswerDao.load(questionId);
-            answerList.forEach(item->{
+            answerList.forEach(item -> {
                 Profile profile = accountService.getProfile(item.getProfileId());
                 item.setAuthorUserName(profile.getNickname());
                 item.setAuthorHeadPic(profile.getHeadimgurl());
@@ -163,14 +163,14 @@ public class QuestionServiceImpl implements QuestionService {
     public void followQuestion(Integer profileId, Integer questionId) {
         QuestionFollow questionFollow = questionFollowDao.load(questionId, profileId);
         Integer followPoint = ConfigUtils.getForumQuestionFollowPoint();
-        if(questionFollow==null){
+        if (questionFollow == null) {
             questionFollow = new QuestionFollow();
             questionFollow.setProfileId(profileId);
             questionFollow.setQuestionId(questionId);
             questionFollowDao.insert(questionFollow);
-            forumQuestionDao.follow(questionId,followPoint);
-        }else{
-            if(questionFollow.getDel()){
+            forumQuestionDao.follow(questionId, followPoint);
+        } else {
+            if (questionFollow.getDel()) {
                 questionFollowDao.updateDel(questionFollow.getId(), 0);
                 forumQuestionDao.follow(questionId, followPoint);
             }
@@ -180,8 +180,8 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public void unfollowQuestion(Integer profileId, Integer questionId) {
         QuestionFollow questionFollow = questionFollowDao.load(questionId, profileId);
-        if(questionFollow!=null){
-            if(!questionFollow.getDel()){
+        if (questionFollow != null) {
+            if (!questionFollow.getDel()) {
                 Integer followPoint = ConfigUtils.getForumQuestionFollowPoint();
                 questionFollowDao.updateDel(questionFollow.getId(), 1);
                 forumQuestionDao.unfollow(questionId, followPoint);
@@ -191,10 +191,11 @@ public class QuestionServiceImpl implements QuestionService {
 
     /**
      * 初始化问题列表
-     * @param item 问题
+     *
+     * @param item          问题
      * @param loadProfileId 执行加载操作的人
      */
-    private void initQuestionList(ForumQuestion item,Integer loadProfileId){
+    private void initQuestionList(ForumQuestion item, Integer loadProfileId) {
         Profile profile = accountService.getProfile(item.getProfileId());
         // 设置昵称
         item.setAuthorUserName(profile.getNickname());
@@ -232,11 +233,12 @@ public class QuestionServiceImpl implements QuestionService {
 
     /**
      * 选择问题tag
-     * @param exitTags 已经存在的tag，包括del的
-     * @param tagIds    用户选择的tag
+     *
+     * @param exitTags   已经存在的tag，包括del的
+     * @param tagIds     用户选择的tag
      * @param questionId 问题id
      */
-    private void chooseQuestionTags(List<QuestionTag> exitTags,List<Integer> tagIds,Integer questionId){
+    private void chooseQuestionTags(List<QuestionTag> exitTags, List<Integer> tagIds, Integer questionId) {
         if (CollectionUtils.isNotEmpty(exitTags)) {
             // 存在tag，先处理老tag
             try {
