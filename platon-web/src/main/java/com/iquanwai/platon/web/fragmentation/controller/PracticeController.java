@@ -137,7 +137,12 @@ public class PracticeController {
         Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            LOGGER.info("提交平台:{}", loginUser.getDevice());
+            if (loginUser.getDevice() == Constants.Device.PC) {
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
+            } else {
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            }
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -165,7 +170,11 @@ public class PracticeController {
         Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            if (loginUser.getDevice() == Constants.Device.PC) {
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
+            } else {
+                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+            }
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -218,8 +227,14 @@ public class PracticeController {
                 .action("移动端点赞");
         operationLogService.log(operationLog);
 
+        Integer device = null;
+        if (loginUser.getDevice() == Constants.Device.PC) {
+            device = Constants.Device.PC;
+        } else {
+            device = Constants.Device.MOBILE;
+        }
         if (status == 1) {
-            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId);
+            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId, device);
             if (result) {
                 return WebUtils.success();
             } else {
@@ -338,6 +353,7 @@ public class PracticeController {
                 .action("移动端加载评论")
                 .memo(moduleId + ":" + submitId);
         operationLogService.log(operationLog);
+        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
 
         RefreshListDto<RiseWorkCommentDto> refreshListDto = new RefreshListDto<>();
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
@@ -388,8 +404,16 @@ public class PracticeController {
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
+        Integer device = null;
+        if (loginUser.getDevice() == Constants.Device.PC) {
+            device = Constants.Device.PC;
+        } else {
+            device = Constants.Device.MOBILE;
+        }
+
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment());
+                loginUser.getOpenId(), dto.getComment(), device);
+
         if (result.getLeft()>0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -432,7 +456,7 @@ public class PracticeController {
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId());
+                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
         if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
@@ -494,7 +518,11 @@ public class PracticeController {
         if (submitId == -1) {
             return WebUtils.error("提交失败,请保存提交内容，并联系管理员");
         }
-        practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+        if (loginUser.getDevice() == Constants.Device.PC) {
+            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
+        } else {
+            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
+        }
         workInfoDto.setPerfect(false);
         workInfoDto.setAuthorType(1);
         workInfoDto.setSubmitId(submitId);
@@ -797,14 +825,20 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> riseShowCount(LoginUser loginUser, @PathVariable(value = "moduleId") Integer moduleId, @PathVariable(value = "submitId") Integer submitId) {
+    public ResponseEntity<Map<String, Object>> riseShowCount(LoginUser loginUser,
+                                                             @PathVariable(value = "moduleId") Integer moduleId,
+                                                             @PathVariable(value = "submitId") Integer submitId) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("文章")
                 .function(moduleId.toString())
                 .action("增加浏览数")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
+        if ((loginUser.getDevice() == Constants.Device.PC)) {
+            practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.PC_SHOW);
+        } else {
+            practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
+        }
         return WebUtils.success();
     }
 
