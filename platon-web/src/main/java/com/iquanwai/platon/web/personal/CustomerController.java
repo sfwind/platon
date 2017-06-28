@@ -14,8 +14,8 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
-import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
+import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -56,7 +56,7 @@ public class CustomerController {
     private EventWallService eventWallService;
 
     @RequestMapping("/event/list")
-    public ResponseEntity<Map<String,Object>> getEventList(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("活动墙")
@@ -80,7 +80,7 @@ public class CustomerController {
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
-        if(riseMember!=null){
+        if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
         }
         return WebUtils.result(riseDto);
@@ -100,7 +100,7 @@ public class CustomerController {
         try {
             BeanUtils.copyProperties(profileDto, account);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error",e);
+            logger.error("beanUtils copy props error", e);
             return WebUtils.error("加载个人信息失败");
         }
         // 查询id
@@ -119,11 +119,11 @@ public class CustomerController {
                 .function("个人信息")
                 .action("提交个人信息");
         operationLogService.log(operationLog);
-        Profile profile =  new Profile();
+        Profile profile = new Profile();
         try {
-            BeanUtils.copyProperties(profile,profileDto);
+            BeanUtils.copyProperties(profile, profileDto);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error",e);
+            logger.error("beanUtils copy props error", e);
             return WebUtils.error("提交个人信息失败");
         }
         profile.setOpenid(loginUser.getOpenId());
@@ -147,7 +147,7 @@ public class CustomerController {
         return WebUtils.result(regionDto);
     }
 
-    @RequestMapping(value = {"/plans","/pc/plans"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/plans", "/pc/plans"}, method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadUserPlans(LoginUser loginUser) {
         if (loginUser == null) {
             return WebUtils.error(401, "未登录");
@@ -186,15 +186,41 @@ public class CustomerController {
     }
 
     @RequestMapping("/member")
-    public ResponseEntity<Map<String,Object>> riseMember(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> riseMember(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("用户信息")
                 .function("RISE")
                 .action("查询rise会员信息")
-                .memo(riseMember!=null?new Gson().toJson(riseMember):"none");
+                .memo(riseMember != null ? new Gson().toJson(riseMember) : "none");
         operationLogService.log(operationLog);
         return WebUtils.result(riseMember);
+    }
+
+    @RequestMapping(value = "/valid/sms", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> validCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        boolean result = accountService.validCode(validCodeDto.getCode(), loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("用户信息")
+                .function("个人信息")
+                .action("验证")
+                .memo(validCodeDto.getCode() + ":" + result);
+        operationLogService.log(operationLog);
+        return result ? WebUtils.success() : WebUtils.error("验证失败");
+    }
+
+    @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> sendCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        boolean result = accountService.sendValidCode(validCodeDto.getPhone(), loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("用户信息")
+                .function("个人信息")
+                .action("发送验证码")
+                .memo(validCodeDto.getPhone() + ":" + result);
+        operationLogService.log(operationLog);
+        return WebUtils.result(result);
     }
 }

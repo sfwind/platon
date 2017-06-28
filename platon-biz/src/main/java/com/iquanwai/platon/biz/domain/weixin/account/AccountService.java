@@ -71,4 +71,14 @@ public interface AccountService {
     Region loadCityByName(String name);
 
     Role getRole(Integer profileId);
+
+    /**
+     * 发送验证码
+     */
+    boolean sendValidCode(String phone, Integer profileId);
+
+    /**
+     * 发送验证码
+     */
+    boolean validCode(String code, Integer profileId);
 }

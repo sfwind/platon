@@ -206,4 +206,8 @@ public class ConfigUtils {
 	public static String domainName(){
 		return getValue("app.domain");
 	}
+
+	public static String sendShortMessageUrl(){
+		return getValue("send.sms.url");
+	}
 }

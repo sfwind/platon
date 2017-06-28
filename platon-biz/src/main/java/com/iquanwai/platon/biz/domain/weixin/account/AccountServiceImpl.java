@@ -4,17 +4,17 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
+import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
+import com.iquanwai.platon.biz.domain.common.message.SMSDto;
+import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Region;
-import com.iquanwai.platon.biz.po.common.Role;
-import com.iquanwai.platon.biz.po.common.UserRole;
+import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
@@ -62,6 +62,10 @@ public class AccountServiceImpl implements AccountService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PointRepo pointRepo;
+    @Autowired
+    private ShortMessageService shortMessageService;
+    @Autowired
+    private SMSValidCodeDao smsValidCodeDao;
 
     @PostConstruct
     public void init(){
@@ -300,6 +304,36 @@ public class AccountServiceImpl implements AccountService {
             Integer roleId = userRoles.get(0).getRoleId();
             return userRoleDao.load(Role.class, roleId);
         }
+    }
+
+    @Override
+    public boolean sendValidCode(String phone, Integer profileId) {
+        if(!shortMessageService.canSend(profileId)){
+            return false;
+        }
+        SMSDto smsDto = new SMSDto();
+        smsDto.setPhone(phone);
+        smsDto.setProfileId(profileId);
+        String code = CommonUtils.randomNumber(4);
+        smsDto.setContent("验证码:"+code+"，请在30分钟内完成验证。");
+        //插入验证码
+        SMSValidCode SMSValidCode = new SMSValidCode(smsDto, code, Constants.ValidCode.MOBILE_VALID);
+        smsValidCodeDao.insert(SMSValidCode);
+        return shortMessageService.sendShortMessage(smsDto);
+    }
+
+    @Override
+    public boolean validCode(String code, Integer profileId) {
+        SMSValidCode smsValidCode = smsValidCodeDao.loadValidCode(profileId);
+
+        if(smsValidCode == null){
+            return false;
+        }
+        //过期校验
+        if(smsValidCode.getExpiredTime().before(new Date())){
+            return false;
+        }
+        return smsValidCode.getCode().equals(code);
     }
 
     private void updateProfile(Account accountNew) throws IllegalAccessException, InvocationTargetException {
