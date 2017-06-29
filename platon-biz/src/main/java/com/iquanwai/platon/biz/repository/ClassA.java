@@ -8,10 +8,5 @@ import lombok.Data;
 @Data
 public class ClassA {
     private Integer id;
-    private Integer account_number;
-    private String firstname;
-    private String lastname;
-    private String gender;
-    private String address;
-    private String email;
+    private String topic;
 }

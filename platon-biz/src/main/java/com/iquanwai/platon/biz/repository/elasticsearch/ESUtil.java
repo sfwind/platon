@@ -2,25 +2,26 @@ package com.iquanwai.platon.biz.repository.elasticsearch;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
-import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 
 /**
  * Created by nethunder on 2017/6/28.
@@ -30,18 +31,10 @@ public abstract class ESUtil {
     @Autowired
     private ESClientFactory esClientFactory;
 
-    protected TransportClient getClient(){
-        return esClientFactory.getClient();
-    }
+    protected abstract TransportClient getClient();
 
-    private TransportClient client;
     public abstract String getIndex();
     public abstract String getType();
-
-    @PostConstruct
-    public void init(){
-        client = getClient();
-    }
 
     /**
      * 1。超时
@@ -49,12 +42,6 @@ public abstract class ESUtil {
      * 3。连接，线程安全 安全
      */
     public ESUtil(){
-//        try {
-//            client = new PreBuiltTransportClient(Settings.EMPTY)
-//                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
-//        } catch (UnknownHostException e) {
-//            logger.error(e.getLocalizedMessage(), e);
-//        }
     }
 
 
@@ -65,18 +52,34 @@ public abstract class ESUtil {
      * @return 搜索到的数据
      */
     public <T> T load(String id,Class<T> clazz){
-        GetRequest request = new GetRequest(getIndex(), getType(), id);
-        ActionFuture<GetResponse> getResponseActionFuture = client.get(request);
-        try {
-            GetResponse response = getResponseActionFuture.get();
-            if (response != null && response.getSource() != null) {
-                return JSON.parseObject(response.getSourceAsBytes(), clazz);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error(e.getLocalizedMessage(), e);
+        GetResponse response = getClient().prepareGet(getIndex(),getType(),id).setOperationThreaded(false).get();
+        if (response != null && response.getSource() != null) {
+            return JSON.parseObject(response.getSourceAsBytes(), clazz);
+        } else {
+            return null;
         }
-        return null;
     }
+
+    /**
+     * 插入数据，由子类调用
+     * @param id 文档id
+     * @param bean 数据
+     * @return 响应
+     */
+    public IndexResponse insert(Integer id,XContentBuilder bean){
+        Assert.notNull(bean, "插入数据不能为null");
+
+        boolean exist = getClient().prepareGet(getIndex(), getType(), id.toString()).get().isExists();
+        if (exist) {
+            logger.error("该ES文档id已存在:{}", id);
+            throw new RuntimeException("该ES文档ID:" + id + "已存在");
+        }
+        return getClient().prepareIndex(getIndex(), getType(), id.toString())
+                .setSource(bean)
+                .get();
+    }
+
+
 
     /**
      * 基本的搜索方法，具体的查询数据可以在子类里写
@@ -86,31 +89,36 @@ public abstract class ESUtil {
      * @param page 分页
      * @return 搜索结果
      */
-    public <T> SearchResult search(Class<T> clazz, QueryBuilder builder, Page page) {
+    public <T> SearchResult<T> search(Class<T> clazz, QueryBuilder builder, Page page) {
         /*
         * 关于SearchType
         * QUERY_THEN_FETCH 速度快，分数可能不准，不计算全部分片的数据
         * DFS_QUERY_THEN_FETCH 速度慢一些，分数会计算所有分片
         */
-        SearchResult result = new SearchResult();
-        SearchResponse response = client.prepareSearch(getIndex())
+        SearchResult<T> result = new SearchResult<T>();
+        SearchResponse response = getClient().prepareSearch(getIndex())
                 .setTypes(getType())
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                 .setQuery(builder) // Query
                 .setFrom(page.getOffset()).setSize(page.getPageSize())
                 .get();
         if (response != null && response.getHits() != null) {
+            int failedShards = response.getFailedShards();
+            if (failedShards > 0) {
+                logger.error("参与查询的分片失败:{}", response.getShardFailures());
+            }
             result.setMaxScore(response.getHits().getMaxScore());
             result.setTotalHits(response.getHits().getTotalHits());
-            List<DocValue> hits = Lists.newArrayList();
+            List<T> list = Lists.newArrayList();
             for (SearchHit hit : response.getHits()) {
-                T temp = JSON.parseObject(hit.getSourceAsString(), clazz);
-                DocValue<T> dataHit = new DocValue<T>();
-                dataHit.setData(temp);
-                dataHit.setId(Integer.valueOf(hit.getId()));
-                hits.add(dataHit);
+                Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+//                rowData.put("_index", hit.getIndex());
+//                rowData.put("_type", hit.getType());
+                sourceAsMap.put("id", hit.getId());
+                T temp = JSON.parseObject(CommonUtils.mapToJson(sourceAsMap), clazz);
+                list.add(temp);
             }
-            result.setHits(hits);
+            result.setHits(list);
         }
 
         return result;
@@ -151,23 +159,11 @@ public abstract class ESUtil {
      */
     public void delete(String id){
         try {
-            client.prepareDelete(getIndex(), getType(), id).execute().actionGet();
+            getClient().prepareDelete(getIndex(), getType(), id).execute().actionGet();
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    /**
-     * 根据索引名称删除索引
-     * @param indexName 索引名称
-     */
-    public static void deleteIndex(String indexName){
-        IndicesExistsRequest ier = new IndicesExistsRequest();
-        ier.indices(indexName.toLowerCase());
 
-        boolean exists = getClient().admin().indices().exists(ier).actionGet().isExists();
-        if (exists) {
-            getClient().admin().indices().prepareDelete(indexName.toLowerCase()).execute().actionGet();
-        }
-    }
 }

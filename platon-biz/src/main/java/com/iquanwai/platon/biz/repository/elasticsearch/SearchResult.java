@@ -8,8 +8,8 @@ import java.util.List;
  * Created by nethunder on 2017/6/28.
  */
 @Data
-public class SearchResult {
-    private List<DocValue> hits;
+public class SearchResult<T> {
+    private List<T> hits;
 
     public long totalHits;
 

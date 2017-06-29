@@ -10,7 +10,7 @@ import java.util.List;
  */
 @Data
 public class ForumQuestion {
-    private int id;
+    private Integer id;
     private String topic; //标题
     private String description; //问题详情
     private Integer profileId; //提问者id
@@ -19,6 +19,7 @@ public class ForumQuestion {
     private Integer answerCount; //回答数
     private Integer weight; //排序权重
     private Date addTime; //添加时间
+    private Date lastModifiedTime;
 
     /** 非DB字段，业务字段 **/
     private String answerTips; // 成为第一个回答者／。。等n人回答了问题

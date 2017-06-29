@@ -15,6 +15,7 @@ import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.po.forum.QuestionFollow;
 import com.iquanwai.platon.biz.po.forum.QuestionTag;
+import com.iquanwai.platon.biz.repository.forum.ForumQuestionRepository;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -49,6 +50,8 @@ public class QuestionServiceImpl implements QuestionService {
     private AnswerApprovalDao answerApprovalDao;
     @Autowired
     private ForumCommentDao forumCommentDao;
+    @Autowired
+    private ForumQuestionRepository forumQuestionRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -62,10 +65,21 @@ public class QuestionServiceImpl implements QuestionService {
             forumQuestion.setTopic(topic);
             forumQuestion.setDescription(description);
             id = forumQuestionDao.insert(forumQuestion);
+            if (id != -1) {
+                // 插入
+                ForumQuestion load = forumQuestionDao.load(ForumQuestion.class, id);
+                boolean insert = forumQuestionRepository.insert(id, topic, description, profileId);
+                logger.info("插入es结果:{}", insert);
+
+            } else {
+                logger.error("插入问题失败");
+            }
         } else {
             // 老问题修改
             id = questionId;
             forumQuestionDao.update(description, topic, id);
+            // 更新
+            forumQuestionRepository.update(id, topic, description);
         }
         // 处理tag
         List<QuestionTag> existTagIds = questionTagDao.getAllQuestionTagsByQuestionId(id);
