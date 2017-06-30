@@ -7,6 +7,6 @@ import lombok.Data;
  */
 @Data
 public class ResultDto {
-    private String msg;
+    private MessageDto messageDto;
     private int code;
 }
