@@ -90,6 +90,20 @@ public abstract class ESUtil {
      * @return 搜索结果
      */
     public <T> SearchResult<T> search(Class<T> clazz, QueryBuilder builder, Page page) {
+        // 基本信息校验
+        if (page == null) {
+            page = new Page();
+        }
+        boolean indicesExists = indicesExists(getClient(), getIndex());
+        if (!indicesExists) {
+            logger.error("索引不存在:{}", getIndex());
+            return null;
+        }
+        boolean typesExists = typesExists(getClient(), getIndex(), getType());
+        if (!typesExists) {
+            logger.error("类型不存在:{}", getType());
+            return null;
+        }
         /*
         * 关于SearchType
         * QUERY_THEN_FETCH 速度快，分数可能不准，不计算全部分片的数据
