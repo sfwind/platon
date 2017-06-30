@@ -10,4 +10,5 @@ public class ActivityMsg {
     private String startTime;
     private String endTime;
     private String message;
+    private String url;
 }

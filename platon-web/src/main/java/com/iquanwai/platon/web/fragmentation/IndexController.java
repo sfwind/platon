@@ -105,8 +105,10 @@ public class IndexController {
             logger.debug("删除key {}", WELCOME_MSG_REDIS_KEY+loginUser.getId());
             redisUtil.deleteByKey(WELCOME_MSG_REDIS_KEY + loginUser.getId());
         }
-
-        return WebUtils.result(msg);
+        String json = ConfigUtils.getWelcomeMsg();
+        Gson gson = new Gson();
+        ActivityMsg activityMsg = gson.fromJson(json, ActivityMsg.class);
+        return WebUtils.result(activityMsg);
     }
 
     private void loginMsg(LoginUser loginUser) {
@@ -124,14 +126,14 @@ public class IndexController {
                 if (lastLoginTime == null) {
                     //保存60秒
                     logger.debug("{}很久未登录", loginUser.getId());
-                    redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), msg.getMessage(), 60L);
+                    redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
                 }else{
                     Date lastLogin = DateUtils.parseStringToDateTime(lastLoginTime);
                     //上次登录时间早于活动开始时间
                     if(lastLogin.before(start)){
                         //保存60秒
                         logger.debug("{}上次登录时间早于活动时间", loginUser.getId());
-                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), msg.getMessage(), 60L);
+                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
                     }else{
                         logger.debug("{}上次登录时间晚于活动时间", loginUser.getId());
                     }

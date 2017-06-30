@@ -26,12 +26,12 @@ public class ShortMessageServiceImpl implements ShortMessageService {
     @Override
     public boolean sendShortMessage(SMSDto smsDto) {
         String shortMessageUrl = ConfigUtils.sendShortMessageUrl();
-//        Gson gson = new Gson();
-//        String body = restfulHelper.post(shortMessageUrl, gson.toJson(smsDto));
-//        ResultDto resultDto = gson.fromJson(body, ResultDto.class);
-//        if (resultDto != null) {
-//            return resultDto.getCode() == SUCCESS;
-//        }
+        Gson gson = new Gson();
+        String body = restfulHelper.post(shortMessageUrl, gson.toJson(smsDto));
+        ResultDto resultDto = gson.fromJson(body, ResultDto.class);
+        if (resultDto != null) {
+            return resultDto.getCode() == SUCCESS;
+        }
         return false;
     }
 
