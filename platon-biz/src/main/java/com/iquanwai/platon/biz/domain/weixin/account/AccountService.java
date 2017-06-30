@@ -74,11 +74,16 @@ public interface AccountService {
 
     /**
      * 发送验证码
+     * @param phone 手机号码
+     * @param profileId 用户id
+     * @param areaCode 区号
      */
-    boolean sendValidCode(String phone, Integer profileId);
+    boolean sendValidCode(String phone, Integer profileId, String areaCode);
 
     /**
-     * 发送验证码
+     * 验证验证码
+     * @param profileId 用户id
+     * @param code 用户输入的验证码
      */
     boolean validCode(String code, Integer profileId);
 }

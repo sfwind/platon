@@ -79,6 +79,7 @@ public class CustomerController {
         Profile profile = accountService.getProfile(loginUser.getId());
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
+        riseDto.setMobile(profile.getMobileNo());
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
@@ -214,7 +215,8 @@ public class CustomerController {
     @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(loginUser, "用户不能为空");
-        boolean result = accountService.sendValidCode(validCodeDto.getPhone(), loginUser.getId());
+        boolean result = accountService.sendValidCode(validCodeDto.getPhone(),
+                loginUser.getId(), validCodeDto.getAreaCode());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("用户信息")
                 .function("个人信息")

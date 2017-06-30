@@ -136,6 +136,16 @@ public class RedisUtil {
         return redissonClient.getKeys().deleteByPattern(pattern);
     }
 
+    /**
+     * 通过key删除数据
+     *
+     * @param key key
+     * @return 删除的条数
+     */
+    public long deleteByKey(String key) {
+        return redissonClient.getKeys().delete(key);
+    }
+
 
     /**
      * 获取value <br/>

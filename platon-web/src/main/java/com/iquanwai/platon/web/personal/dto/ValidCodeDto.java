@@ -8,5 +8,6 @@ import lombok.Data;
 @Data
 public class ValidCodeDto {
     private String code;
+    private String areaCode;
     private String phone;
 }

@@ -68,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
     private SMSValidCodeDao smsValidCodeDao;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
 
         userRoleList.stream().filter(userRole1 -> !userRole1.getDel())
@@ -78,12 +78,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
-        if(realTime){
+        if (realTime) {
             return getAccountFromWeixin(openid);
-        }else{
+        } else {
             //先从数据库查询account对象
             Account account = followUserDao.queryByOpenid(openid);
-            if(account != null) {
+            if (account != null) {
                 return account;
             }
             //从微信处获取
@@ -98,7 +98,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Profile getProfile(String openid, boolean realTime){
+    public Profile getProfile(String openid, boolean realTime) {
         return getProfileFromDB(openid);
     }
 
@@ -106,9 +106,9 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
 
-        if(profile!=null) {
-            if(profile.getHeadimgurl()!=null){
-                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
+        if (profile != null) {
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
             Integer role = userRoleMap.get(profile.getOpenid());
             if (role == null) {
@@ -124,9 +124,9 @@ public class AccountServiceImpl implements AccountService {
     private Profile getProfileFromDB(String openid) {
         Profile profile = profileDao.queryByOpenId(openid);
 
-        if(profile!=null) {
-            if(profile.getHeadimgurl()!=null){
-                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:","https:"));
+        if (profile != null) {
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
             Integer role = userRoleMap.get(profile.getOpenid());
             if (role == null) {
@@ -162,11 +162,11 @@ public class AccountServiceImpl implements AccountService {
         String url = USER_INFO_URL;
         Map<String, String> map = Maps.newHashMap();
         map.put("openid", openid);
-        logger.info("请求用户信息:{}",openid);
+        logger.info("请求用户信息:{}", openid);
         url = CommonUtils.placeholderReplace(url, map);
 
         String body = restfulHelper.get(url);
-        logger.info("请求用户信息结果:{}",body);
+        logger.info("请求用户信息结果:{}", body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         Account accountNew = new Account();
         try {
@@ -184,12 +184,12 @@ public class AccountServiceImpl implements AccountService {
             }, Date.class);
 
             BeanUtils.populate(accountNew, result);
-            if(accountNew.getSubscribe() == 0){
+            if (accountNew.getSubscribe() == 0) {
                 //未关注直接抛异常
                 throw new NotFollowingException();
             }
             Account finalQuery = followUserDao.queryByOpenid(openid);
-            if(finalQuery==null) {
+            if (finalQuery == null) {
                 redisUtil.lock("lock:wx:user:insert", (lock) -> {
                     if (accountNew.getNickname() != null) {
                         logger.info("插入用户信息:{}", accountNew);
@@ -201,14 +201,14 @@ public class AccountServiceImpl implements AccountService {
                         }
                     }
                 });
-            }else{
-                logger.info("更新用户信息:{}",accountNew);
-                if(accountNew.getNickname()!=null) {
+            } else {
+                logger.info("更新用户信息:{}", accountNew);
+                if (accountNew.getNickname() != null) {
                     followUserDao.updateMeta(accountNew);
                     updateProfile(accountNew);
                 }
             }
-        } catch (NotFollowingException e1){
+        } catch (NotFollowingException e1) {
             throw new NotFollowingException();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -218,7 +218,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<Region> loadAllProvinces() {
-        if(provinceList ==null){
+        if (provinceList == null) {
             provinceList = regionDao.loadAllProvinces();
         }
         return provinceList;
@@ -226,7 +226,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<Region> loadCities() {
-        if(cityList==null) {
+        if (cityList == null) {
             cityList = regionDao.loadAllCities();
         }
         return cityList;
@@ -234,16 +234,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public int updateOpenRise(Integer id) {
-       return profileDao.updateOpenRise(id);
+        return profileDao.updateOpenRise(id);
     }
 
     @Override
-    public int updateOpenApplication(Integer id){
+    public int updateOpenApplication(Integer id) {
         return profileDao.updateOpenApplication(id);
     }
 
     @Override
-    public int updateOpenConsolidation(Integer id){
+    public int updateOpenConsolidation(Integer id) {
         return profileDao.updateOpenConsolidation(id);
     }
 
@@ -252,8 +252,8 @@ public class AccountServiceImpl implements AccountService {
         Assert.notNull(profile.getOpenid(), "openID不能为空");
         Profile oldProfile = profileDao.queryByOpenId(profile.getOpenid());
         Boolean result = profileDao.submitPersonalCenterProfile(profile);
-        if(result && oldProfile.getIsFull()==0){
-            logger.info("用户:{} 完成个人信息填写,加{}积分",profile.getOpenid(), ConfigUtils.getProfileFullScore());
+        if (result && oldProfile.getIsFull() == 0) {
+            logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
             // 第一次提交，加分
             pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
             // 更新信息状态
@@ -262,7 +262,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void reloadRegion(){
+    public void reloadRegion() {
         provinceList = regionDao.loadAllProvinces();
         cityList = regionDao.loadAllCities();
     }
@@ -296,26 +296,31 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Role getRole(Integer profileId){
+    public Role getRole(Integer profileId) {
         List<UserRole> userRoles = userRoleDao.getRoles(profileId);
-        if(CollectionUtils.isEmpty(userRoles)){
+        if (CollectionUtils.isEmpty(userRoles)) {
             return null;
-        }else{
+        } else {
             Integer roleId = userRoles.get(0).getRoleId();
             return userRoleDao.load(Role.class, roleId);
         }
     }
 
     @Override
-    public boolean sendValidCode(String phone, Integer profileId) {
-        if(!shortMessageService.canSend(profileId)){
+    public boolean sendValidCode(String phone, Integer profileId, String areaCode) {
+        if (!shortMessageService.canSend(profileId)) {
             return false;
         }
         SMSDto smsDto = new SMSDto();
+        //拼接区号
+        if (areaCode != null) {
+            //首位去0,补+号
+            phone = "+" + StringUtils.removeStart(areaCode, "0") + phone;
+        }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
         String code = CommonUtils.randomNumber(4);
-        smsDto.setContent("验证码:"+code+"，请在30分钟内完成验证。");
+        smsDto.setContent("验证码:" + code + "，请在30分钟内完成验证。");
         //插入验证码
         SMSValidCode SMSValidCode = new SMSValidCode(smsDto, code, Constants.ValidCode.MOBILE_VALID);
         smsValidCodeDao.insert(SMSValidCode);
@@ -326,39 +331,41 @@ public class AccountServiceImpl implements AccountService {
     public boolean validCode(String code, Integer profileId) {
         SMSValidCode smsValidCode = smsValidCodeDao.loadValidCode(profileId);
 
-        if(smsValidCode == null){
+        if (smsValidCode == null) {
             return false;
         }
         //过期校验
-        if(smsValidCode.getExpiredTime().before(new Date())){
+        if (smsValidCode.getExpiredTime().before(new Date())) {
             return false;
         }
-        return smsValidCode.getCode().equals(code);
+
+        if(smsValidCode.getCode().equals(code)){
+            profileDao.updateMobile(smsValidCode.getPhone(), profileId);
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private void updateProfile(Account accountNew) throws IllegalAccessException, InvocationTargetException {
         Profile profile = getProfileFromDB(accountNew.getOpenid());
-        if(profile==null){
+        if (profile == null) {
             profile = new Profile();
-            try{
+            try {
                 BeanUtils.copyProperties(profile, accountNew);
-                logger.info("插入Profile表信息:{}",profile);
+                logger.info("插入Profile表信息:{}", profile);
                 profile.setRiseId(CommonUtils.randomString(7));
                 profileDao.insertProfile(profile);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                logger.error("beanUtils copy props error",e);
-            } catch (SQLException err){
+                logger.error("beanUtils copy props error", e);
+            } catch (SQLException err) {
                 profile.setRiseId(CommonUtils.randomString(7));
-                try{
+                try {
                     profileDao.insertProfile(profile);
-                } catch (SQLException subErr){
-                    logger.error("插入Profile失败，openId:{},riseId:{}",profile.getOpenid(),profile.getRiseId());
+                } catch (SQLException subErr) {
+                    logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
                 }
             }
-        }else{
-            //更新原数据
-            BeanUtils.copyProperties(profile,accountNew);
-            profileDao.updateMeta(profile);
         }
     }
 }

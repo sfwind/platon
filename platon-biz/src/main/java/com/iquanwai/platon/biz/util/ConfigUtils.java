@@ -210,4 +210,8 @@ public class ConfigUtils {
 	public static String sendShortMessageUrl(){
 		return getValue("send.sms.url");
 	}
+
+	public static String getWelcomeMsg(){
+		return getValue("login.welcome.msg");
+	}
 }
