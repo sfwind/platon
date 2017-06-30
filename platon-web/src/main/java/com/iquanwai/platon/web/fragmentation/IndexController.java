@@ -99,15 +99,18 @@ public class IndexController {
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getIndexMsg(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> getIndexMsg(HttpServletRequest request, HttpServletResponse response,
+                                                           LoginUser loginUser){
         String msg = redisUtil.get(WELCOME_MSG_REDIS_KEY + loginUser.getId());
+        ActivityMsg activityMsg = null;
         if(msg != null){
-            logger.info("删除key {}", WELCOME_MSG_REDIS_KEY+loginUser.getId());
+            logger.info("删除key {}", WELCOME_MSG_REDIS_KEY + loginUser.getId());
             redisUtil.deleteByKey(WELCOME_MSG_REDIS_KEY + loginUser.getId());
+            String json = ConfigUtils.getWelcomeMsg();
+            Gson gson = new Gson();
+            activityMsg = gson.fromJson(json, ActivityMsg.class);
         }
-        String json = ConfigUtils.getWelcomeMsg();
-        Gson gson = new Gson();
-        ActivityMsg activityMsg = gson.fromJson(json, ActivityMsg.class);
+
         return WebUtils.result(activityMsg);
     }
 
