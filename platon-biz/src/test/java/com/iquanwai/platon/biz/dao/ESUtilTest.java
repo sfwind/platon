@@ -46,6 +46,15 @@ public class ESUtilTest extends TestBase{
     }
 
     @Test
+    public void searchTest(){
+        long start = System.currentTimeMillis();
+        List<ForumQuestion> forumQuestions = forumQuestionRepository.searchQuestions("修改后",new Page());
+        System.out.println(JSON.toJSONString(forumQuestions));
+        long end = System.currentTimeMillis();
+        System.out.println(end-start);
+    }
+
+    @Test
     public void insertTest() {
         ForumQuestion forumQuestion = forumQuestionDao.load(ForumQuestion.class, 62);
     }

@@ -1,13 +1,18 @@
 package com.iquanwai.platon.biz.repository.forum;
 
+import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.repository.elasticsearch.ESClientFactory;
 import com.iquanwai.platon.biz.repository.elasticsearch.ESUtil;
+import com.iquanwai.platon.biz.repository.elasticsearch.SearchResult;
+import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Data;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -84,4 +90,19 @@ public class ForumQuestionRepository extends ESUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+
+    public List<ForumQuestion> searchQuestions(String content,Page page){
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+//        boolQueryBuilder.must(QueryBuilders.matchQuery("age", "40"));
+//        boolQueryBuilder.must(QueryBuilders.matchQuery("gender", "M"));
+        boolQueryBuilder.should(QueryBuilders.matchQuery("topic.max", content));
+        boolQueryBuilder.should(QueryBuilders.matchQuery("description.max", content));
+        SearchResult<ForumQuestion> search = search(ForumQuestion.class, boolQueryBuilder, page);
+        if (search != null) {
+            return search.getHits();
+        } else {
+            return null;
+        }
+    }
+
 }

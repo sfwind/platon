@@ -109,6 +109,7 @@ public abstract class ESUtil {
             }
             result.setMaxScore(response.getHits().getMaxScore());
             result.setTotalHits(response.getHits().getTotalHits());
+            page.setTotal(Long.valueOf(result.getTotalHits()).intValue());
             List<T> list = Lists.newArrayList();
             for (SearchHit hit : response.getHits()) {
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();

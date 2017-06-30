@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,6 +53,25 @@ public class QuestionController {
                 .module("论坛")
                 .function("首页")
                 .action("查询问题列表");
+        operationLogService.log(operationLog);
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPageSize(PAGE_SIZE);
+        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+        result.setList(forumQuestions);
+        result.setEnd(page.isLastPage());
+        return WebUtils.result(result);
+    }
+
+    @RequestMapping("/search/question")
+    public ResponseEntity<Map<String, Object>> searchQuestions(LoginUser loginUser, @ModelAttribute Page page, @RequestParam String content) {
+        Assert.notNull(loginUser, "用户不能为空");
+        List<ForumQuestion> forumQuestions = questionService.searchQuestions(loginUser.getId(), content, page);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("搜索")
+                .action("搜索问题");
         operationLogService.log(operationLog);
         if (page == null) {
             page = new Page();
@@ -185,4 +205,5 @@ public class QuestionController {
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
+
 }

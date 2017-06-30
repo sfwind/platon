@@ -114,6 +114,14 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    public List<ForumQuestion> searchQuestions(Integer loadProfileId, String content, Page page){
+        List<ForumQuestion> questions = forumQuestionRepository.searchQuestions(content, page);
+        // 填充数据
+        questions.forEach(item -> initQuestionList(item, loadProfileId));
+        return questions;
+    }
+
+    @Override
     public List<ForumQuestion> loadSelfQuestions(Integer profileId, Page page) {
         List<ForumQuestion> forumQuestions = forumQuestionDao.getQuestions(profileId, page);
         // 查询有多少条
