@@ -14,6 +14,7 @@ import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.po.systematism.ClassMember;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -172,6 +174,11 @@ public class LoginUserService {
         String token = getToken(request);
         return isLogin(platform, token);
     }
+
+    public void logout(String sessionId) {
+        pcLoginUserMap.remove(sessionId);
+    }
+
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
         switch (platform) {
@@ -180,8 +187,6 @@ public class LoginUserService {
         }
         return null;
     }
-
-
 
     public Platform checkPlatform(HttpServletRequest request) {
         String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
