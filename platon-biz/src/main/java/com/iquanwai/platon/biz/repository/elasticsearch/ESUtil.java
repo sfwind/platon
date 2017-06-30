@@ -97,12 +97,12 @@ public abstract class ESUtil {
         boolean indicesExists = indicesExists(getClient(), getIndex());
         if (!indicesExists) {
             logger.error("索引不存在:{}", getIndex());
-            return null;
+            return SearchResult.nonResult(page);
         }
         boolean typesExists = typesExists(getClient(), getIndex(), getType());
         if (!typesExists) {
             logger.error("类型不存在:{}", getType());
-            return null;
+            return SearchResult.nonResult(page);
         }
         /*
         * 关于SearchType
