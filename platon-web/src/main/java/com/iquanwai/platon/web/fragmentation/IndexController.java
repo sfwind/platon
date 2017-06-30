@@ -102,7 +102,7 @@ public class IndexController {
     public ResponseEntity<Map<String, Object>> getIndexMsg(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser){
         String msg = redisUtil.get(WELCOME_MSG_REDIS_KEY + loginUser.getId());
         if(msg != null){
-            logger.debug("删除key {}", WELCOME_MSG_REDIS_KEY+loginUser.getId());
+            logger.info("删除key {}", WELCOME_MSG_REDIS_KEY+loginUser.getId());
             redisUtil.deleteByKey(WELCOME_MSG_REDIS_KEY + loginUser.getId());
         }
         String json = ConfigUtils.getWelcomeMsg();
@@ -125,21 +125,21 @@ public class IndexController {
                 //很久未登录
                 if (lastLoginTime == null) {
                     //保存60秒
-                    logger.debug("{}很久未登录", loginUser.getId());
+                    logger.info("{}很久未登录", loginUser.getId());
                     redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
                 }else{
                     Date lastLogin = DateUtils.parseStringToDateTime(lastLoginTime);
                     //上次登录时间早于活动开始时间
                     if(lastLogin.before(start)){
                         //保存60秒
-                        logger.debug("{}上次登录时间早于活动时间", loginUser.getId());
+                        logger.info("{}上次登录时间早于活动时间", loginUser.getId());
                         redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
                     }else{
-                        logger.debug("{}上次登录时间晚于活动时间", loginUser.getId());
+                        logger.info("{}上次登录时间晚于活动时间", loginUser.getId());
                     }
                 }
             }else{
-                logger.debug("活动已过期", loginUser.getId());
+                logger.info("活动已过期", loginUser.getId());
             }
         }
 
