@@ -27,6 +27,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -318,6 +319,14 @@ public class AccountServiceImpl implements AccountService {
         if (areaCode != null && !areaCode.equals("86")) {
             //首位去0,补+号
             phone = "+" + StringUtils.removeStart(areaCode, "0") + phone;
+        }
+        Profile profile = profileDao.load(Profile.class, profileId);
+        if (profile == null) {
+            return new ImmutablePair<>(false, "系统错误,请联系小Q");
+        } else {
+            if (profile.getMobileNo().equals(phone)) {
+                return new ImmutablePair<>(false, "该手机号已绑定");
+            }
         }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
