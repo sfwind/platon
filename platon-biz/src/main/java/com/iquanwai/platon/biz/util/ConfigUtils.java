@@ -83,10 +83,6 @@ public class ConfigUtils {
 		return getBooleanValue("open.log");
 	}
 
-	public static String getAPIKey() {
-		return getValue("api.key");
-	}
-
 	public static String getSecret() {
 		return getValue("secret");
 	}
@@ -157,10 +153,6 @@ public class ConfigUtils {
 
 	public static String courseStartMsg(){
 		return getValue("course.start.msg");
-	}
-
-	public static String productTrailMsg(){
-		return getValue("product.trial.msg");
 	}
 
 	public static String courseCloseMsg(){
