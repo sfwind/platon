@@ -34,8 +34,11 @@ public class ShortMessageServiceImpl implements ShortMessageService {
         String body = restfulHelper.post(shortMessageUrl, gson.toJson(smsDto));
         ResultDto resultDto = gson.fromJson(body, ResultDto.class);
         if (resultDto != null) {
-            return resultDto.getCode() == SUCCESS;
+            if(resultDto.getCode() == SUCCESS){
+                return true;
+            }
         }
+        logger.error("send error {}", body);
         return false;
     }
 

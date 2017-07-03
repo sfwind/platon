@@ -223,6 +223,6 @@ public class CustomerController {
                 .action("发送验证码")
                 .memo(validCodeDto.getPhone() + ":" + result);
         operationLogService.log(operationLog);
-        return WebUtils.result(result);
+        return result ? WebUtils.success() : WebUtils.error("发送失败");
     }
 }
