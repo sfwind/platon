@@ -99,17 +99,15 @@ public class CommonUtils {
         return sb.toString();
     }
 
-    public static String sign(final Map<String, String> params){
-        List<String> list = new ArrayList(params.keySet());
-        Collections.sort(list);
-
-        List<String> kvList = Lists.transform(list, input -> input+"="+params.get(input));
-
-        String digest = StringUtils.join(kvList.iterator(), "&")
-                .concat("&key=")
-                .concat(ConfigUtils.getAPIKey());
-
-        return MessageDigestHelper.getMD5String(digest);
+    public static String randomNumber(int length) {
+        String base = "0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
     }
 
     //保留两位小数
