@@ -324,7 +324,7 @@ public class AccountServiceImpl implements AccountService {
         if (profile == null) {
             return new ImmutablePair<>(false, "系统错误,请联系小Q");
         } else {
-            if (profile.getMobileNo().equals(phone)) {
+            if (phone.equals(profile.getMobileNo())) {
                 return new ImmutablePair<>(false, "该手机号已绑定");
             }
         }
