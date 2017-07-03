@@ -104,10 +104,10 @@ public class IndexController {
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getIndexMsg(HttpServletRequest request, HttpServletResponse response,
-                                                           LoginUser loginUser){
+                                                           LoginUser loginUser) {
         String msg = redisUtil.get(WELCOME_MSG_REDIS_KEY + loginUser.getId());
         ActivityMsg activityMsg = null;
-        if(msg != null){
+        if (msg != null) {
             logger.info("删除key {}", WELCOME_MSG_REDIS_KEY + loginUser.getId());
             redisUtil.deleteByKey(WELCOME_MSG_REDIS_KEY + loginUser.getId());
             String json = ConfigUtils.getWelcomeMsg();
@@ -128,32 +128,32 @@ public class IndexController {
             //获取最后登录时间
             String lastLoginTime = redisUtil.get(LOGIN_REDIS_KEY + loginUser.getId());
             //活动未过期
-            if(end.after(new Date())){
+            if (end.after(new Date())) {
                 //很久未登录
                 if (lastLoginTime == null) {
                     //保存60秒
                     logger.info("{}很久未登录", loginUser.getId());
                     ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
                     //首次登录用户不发活动信息
-                    if(improvementPlan!=null){
+                    if (improvementPlan != null) {
                         redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
                     }
-                }else{
+                } else {
                     Date lastLogin = DateUtils.parseStringToDateTime(lastLoginTime);
                     //上次登录时间早于活动开始时间
-                    if(lastLogin.before(start)){
+                    if (lastLogin.before(start)) {
                         //保存60秒
                         logger.info("{}上次登录时间早于活动时间", loginUser.getId());
                         //首次登录用户不发活动信息
                         ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
-                        if(improvementPlan!=null){
+                        if (improvementPlan != null) {
                             redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
                         }
-                    }else{
+                    } else {
                         logger.info("{}上次登录时间晚于活动时间", loginUser.getId());
                     }
                 }
-            }else{
+            } else {
                 logger.info("活动已过期", loginUser.getId());
             }
         }

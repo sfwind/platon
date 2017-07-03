@@ -319,6 +319,7 @@ public class AccountServiceImpl implements AccountService {
         }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
+        smsDto.setType(SMSDto.NORMAL);
         String code = CommonUtils.randomNumber(4);
         smsDto.setContent("验证码:" + code + "，请在30分钟内完成验证。");
         //插入验证码
@@ -339,10 +340,10 @@ public class AccountServiceImpl implements AccountService {
             return false;
         }
 
-        if(smsValidCode.getCode().equals(code)){
+        if (smsValidCode.getCode().equals(code)) {
             profileDao.updateMobile(smsValidCode.getPhone(), profileId);
             return true;
-        }else{
+        } else {
             return false;
         }
     }

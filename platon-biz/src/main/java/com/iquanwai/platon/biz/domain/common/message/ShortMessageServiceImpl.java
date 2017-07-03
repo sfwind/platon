@@ -21,7 +21,7 @@ public class ShortMessageServiceImpl implements ShortMessageService {
 
     private static final long TIMEOUT = 60L;
 
-    private static final String CAN_SEND_KEY = "SEND_SMS_PERIOD_KEY";
+    private static final String CAN_SEND_KEY = "send:sms:period:key";
 
     private static final int SUCCESS = 200;
 
@@ -34,7 +34,7 @@ public class ShortMessageServiceImpl implements ShortMessageService {
         String body = restfulHelper.post(shortMessageUrl, gson.toJson(smsDto));
         ResultDto resultDto = gson.fromJson(body, ResultDto.class);
         if (resultDto != null) {
-            if(resultDto.getCode() == SUCCESS){
+            if (resultDto.getCode() == SUCCESS) {
                 return true;
             }
         }
@@ -44,11 +44,11 @@ public class ShortMessageServiceImpl implements ShortMessageService {
 
     @Override
     public boolean canSend(Integer profileId) {
-        String value = redisUtil.get(CAN_SEND_KEY+profileId);
-        if(value!=null){
+        String value = redisUtil.get(CAN_SEND_KEY + profileId);
+        if (value != null) {
             return false;
         }
-        redisUtil.set(CAN_SEND_KEY+profileId, "send", TIMEOUT);
+        redisUtil.set(CAN_SEND_KEY + profileId, "send", TIMEOUT);
         return true;
     }
 }

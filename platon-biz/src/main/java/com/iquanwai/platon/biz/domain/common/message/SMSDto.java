@@ -13,5 +13,8 @@ public class SMSDto {
     private Integer profileId;
     private String phone;
     private String content;
-    private Map<String,String> replace;
+    private Integer type; // 短信类型 1.非营销  2.营销
+
+    public static final int NORMAL = 1;
+    public static final int PROMOTION = 2;
 }
