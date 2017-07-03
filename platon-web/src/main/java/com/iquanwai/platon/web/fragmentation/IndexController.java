@@ -144,7 +144,11 @@ public class IndexController {
                     if(lastLogin.before(start)){
                         //保存60秒
                         logger.info("{}上次登录时间早于活动时间", loginUser.getId());
-                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
+                        //首次登录用户不发活动信息
+                        ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
+                        if(improvementPlan!=null){
+                            redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
+                        }
                     }else{
                         logger.info("{}上次登录时间晚于活动时间", loginUser.getId());
                     }
