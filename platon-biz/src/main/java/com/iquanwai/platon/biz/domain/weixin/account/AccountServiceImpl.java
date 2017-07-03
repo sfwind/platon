@@ -21,6 +21,8 @@ import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -307,9 +309,9 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public boolean sendValidCode(String phone, Integer profileId, String areaCode) {
+    public Pair<Boolean, String> sendValidCode(String phone, Integer profileId, String areaCode) {
         if (!shortMessageService.canSend(profileId)) {
-            return false;
+            return new ImmutablePair<>(false, "操作太频繁，请稍候再试");
         }
         SMSDto smsDto = new SMSDto();
         //拼接区号

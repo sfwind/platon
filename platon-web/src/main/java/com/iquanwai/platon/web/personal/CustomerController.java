@@ -19,6 +19,7 @@ import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,14 +216,14 @@ public class CustomerController {
     @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(loginUser, "用户不能为空");
-        boolean result = accountService.sendValidCode(validCodeDto.getPhone(),
+        Pair<Boolean, String> result = accountService.sendValidCode(validCodeDto.getPhone(),
                 loginUser.getId(), validCodeDto.getAreaCode());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("用户信息")
                 .function("个人信息")
                 .action("发送验证码")
-                .memo(validCodeDto.getPhone() + ":" + result);
+                .memo(validCodeDto.getPhone() + ":" + result.getLeft());
         operationLogService.log(operationLog);
-        return result ? WebUtils.success() : WebUtils.error("发送失败");
+        return result.getLeft() ? WebUtils.success() : WebUtils.error(result.getRight());
     }
 }
