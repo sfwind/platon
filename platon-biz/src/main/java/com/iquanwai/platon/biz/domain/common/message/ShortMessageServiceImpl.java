@@ -40,7 +40,7 @@ public class ShortMessageServiceImpl implements ShortMessageService {
                 return new ImmutablePair<>(true, null);
             }else{
                 logger.error("send error {}", body);
-                return new ImmutablePair<>(false, resultDto.getMessageDto().getDesc());
+                return new ImmutablePair<>(false, resultDto.getMsg().getDesc());
             }
         }
         logger.error("send error {}", body);
