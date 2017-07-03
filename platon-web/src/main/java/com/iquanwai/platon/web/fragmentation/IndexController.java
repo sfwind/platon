@@ -127,8 +127,8 @@ public class IndexController {
             Date end = DateUtils.parseStringToDateTime(msg.getEndTime());
             //获取最后登录时间
             String lastLoginTime = redisUtil.get(LOGIN_REDIS_KEY + loginUser.getId());
-            //活动未过期
-            if (end.after(new Date())) {
+            //活动未过期 且已开始
+            if (end.after(new Date()) && start.before(new Date())) {
                 //很久未登录
                 if (lastLoginTime == null) {
                     //保存60秒
