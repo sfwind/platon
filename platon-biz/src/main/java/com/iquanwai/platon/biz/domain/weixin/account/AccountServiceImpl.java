@@ -314,8 +314,8 @@ public class AccountServiceImpl implements AccountService {
             return new ImmutablePair<>(false, "操作太频繁，请稍候再试");
         }
         SMSDto smsDto = new SMSDto();
-        //拼接区号
-        if (areaCode != null) {
+        //拼接区号不加中国区号
+        if (areaCode != null && !areaCode.equals("86")) {
             //首位去0,补+号
             phone = "+" + StringUtils.removeStart(areaCode, "0") + phone;
         }
