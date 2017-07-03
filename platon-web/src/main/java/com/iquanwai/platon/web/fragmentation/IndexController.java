@@ -51,8 +51,8 @@ public class IndexController {
 
     private static final String INDEX_URL = "/rise/static/plan/main";
 
-    private static final String LOGIN_REDIS_KEY = "LOGIN_";
-    private static final String WELCOME_MSG_REDIS_KEY = "WELCOME_MSG_";
+    private static final String LOGIN_REDIS_KEY = "login:";
+    private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
 
     @RequestMapping(value = "/rise/static/**", method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
