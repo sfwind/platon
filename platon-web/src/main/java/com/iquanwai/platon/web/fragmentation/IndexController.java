@@ -4,9 +4,11 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -40,6 +42,8 @@ public class IndexController {
     private AccountService accountService;
     @Autowired
     private WhiteListService whiteListService;
+    @Autowired
+    private PlanService planService;
     @Autowired
     private RedisUtil redisUtil;
 
@@ -129,7 +133,11 @@ public class IndexController {
                 if (lastLoginTime == null) {
                     //保存60秒
                     logger.info("{}很久未登录", loginUser.getId());
-                    redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
+                    ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
+                    //首次登录用户不发活动信息
+                    if(improvementPlan!=null){
+                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
+                    }
                 }else{
                     Date lastLogin = DateUtils.parseStringToDateTime(lastLoginTime);
                     //上次登录时间早于活动开始时间
