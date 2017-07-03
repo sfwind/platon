@@ -141,7 +141,7 @@ public class CustomerController {
             logger.error("beanUtils copy props error",e);
             return WebUtils.error("提交个人信息失败");
         }
-        profile.setOpenid(loginUser.getOpenId());
+        profile.setId(loginUser.getId());
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
     }

@@ -136,7 +136,7 @@ public class ProfileDao extends DBUtil {
 
     public boolean submitPersonalCenterProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=? where Openid=?";
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=? where id=?";
         try {
             run.update(updateSql,
                     profile.getIndustry(),
@@ -144,7 +144,7 @@ public class ProfileDao extends DBUtil {
                     profile.getWorkingLife(),
                     profile.getCity(),
                     profile.getProvince(),
-                    profile.getOpenid());
+                    profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;

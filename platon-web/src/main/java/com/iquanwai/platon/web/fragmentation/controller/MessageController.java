@@ -154,7 +154,7 @@ public class MessageController {
         if (page.getPage() == 1) {
             messageService.mark(loginUser.getId());
         }
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), page);
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")

@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Getter;
@@ -54,7 +55,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<NotifyMessage> getNotifyMessage(Integer profileId, Page page) {
+    public List<NotifyMessage> getNotifyMessage(Integer profileId, Integer deviceType, Page page) {
         List<NotifyMessage> notifyMessages = notifyMessageDao.getMyMessages(profileId, page);
         int total = notifyMessageDao.getMyMessagesCount(profileId);
         page.setTotal(total);
@@ -82,8 +83,21 @@ public class MessageServiceImpl implements MessageService {
             //清空openid
             notifyMessage.setToUser(null);
             notifyMessage.setFromUser(null);
+            // 根据 PC 和移动端修改跳转 URL
+            if(deviceType == Constants.Device.PC) {
+                String url = notifyMessage.getUrl();
+                if(url.contains("/rise/static/message/warmup/reply")) {
+                    url = url.replace("/rise/static/message/warmup/reply", "/fragment/message/warmup/reply");
+                } else if(url.contains("/rise/static/message/knowledge/reply")) {
+                    url = url.replace("/rise/static/message/knowledge/reply", "/fragment/message/knowledge/reply");
+                } else if(url.contains("/rise/static/message/comment/reply")) {
+                    url = url.replace("/rise/static/message/comment/reply", "/fragment/message/comment/reply");
+                } else {
+                    url = "/fragment/message";
+                }
+                notifyMessage.setUrl(url);
+            }
         });
-
         return notifyMessages;
     }
 
