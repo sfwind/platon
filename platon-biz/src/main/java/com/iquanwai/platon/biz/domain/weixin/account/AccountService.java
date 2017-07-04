@@ -4,6 +4,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.common.Role;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -71,4 +72,19 @@ public interface AccountService {
     Region loadCityByName(String name);
 
     Role getRole(Integer profileId);
+
+    /**
+     * 发送验证码
+     * @param phone 手机号码
+     * @param profileId 用户id
+     * @param areaCode 区号
+     */
+    Pair<Boolean, String> sendValidCode(String phone, Integer profileId, String areaCode);
+
+    /**
+     * 验证验证码
+     * @param profileId 用户id
+     * @param code 用户输入的验证码
+     */
+    boolean validCode(String code, Integer profileId);
 }

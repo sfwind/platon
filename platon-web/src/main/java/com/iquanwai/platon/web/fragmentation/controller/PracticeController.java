@@ -772,7 +772,7 @@ public class PracticeController {
     @RequestMapping(value = "/knowledge/discuss", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
-        if (discussDto.getComment() == null || discussDto.getComment().length() > 300) {
+        if (discussDto.getComment() == null || discussDto.getComment().length() > 1000) {
             LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }

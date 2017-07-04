@@ -83,10 +83,6 @@ public class ConfigUtils {
 		return getBooleanValue("open.log");
 	}
 
-	public static String getAPIKey() {
-		return getValue("api.key");
-	}
-
 	public static String getSecret() {
 		return getValue("secret");
 	}
@@ -159,10 +155,6 @@ public class ConfigUtils {
 		return getValue("course.start.msg");
 	}
 
-	public static String productTrailMsg(){
-		return getValue("product.trial.msg");
-	}
-
 	public static String courseCloseMsg(){
 		return getValue("course.pass.msg");
 	}
@@ -217,5 +209,13 @@ public class ConfigUtils {
 
 	public static Integer getForumQuestionFollowPoint(){
 		return getIntValue("forum.question.follow.point");
+	}
+
+	public static String sendShortMessageUrl(){
+		return getValue("send.sms.url");
+	}
+
+	public static String getWelcomeMsg(){
+		return getValue("login.welcome.msg");
 	}
 }
