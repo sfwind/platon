@@ -560,20 +560,34 @@ public class PracticeServiceImpl implements PracticeService {
         if (profile != null) {
             isAsst = Role.isAsst(profile.getRole());
         }
-        // 获取该条评论所对应的 ApplicationSubmit
-        ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
-        if (load == null) {
-            logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
-            return new MutablePair<>(-1, "没有该文章");
-        }
-        // 是助教评论
-        if (isAsst) {
-            // 将此条评论所对应的 ApplicationSubmit 置为已被助教评论
-            applicationSubmitDao.asstFeedback(load.getId());
-            asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
+
+        if(moduleId == Constants.CommentModule.APPLICATION) {
+            ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(-1, "没有该文章");
+            }
+            // 是助教评论
+            if (isAsst) {
+                // 将此条评论所对应的 ApplicationSubmit 置为已被助教评论
+                applicationSubmitDao.asstFeedback(load.getId());
+                asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
+            }
+        }else if (moduleId == Constants.CommentModule.SUBJECT){
+            SubjectArticle load = subjectArticleDao.load(SubjectArticle.class, referId);
+            if (load == null) {
+                logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
+                return new MutablePair<>(-1, "没有该文章");
+            }
+            // 是助教评论
+            if (isAsst) {
+                // 将此条评论所对应的 SubjectArticle 置为已被助教评论
+                subjectArticleDao.asstFeedback(load.getId());
+                asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
+            }
         }
 
-        //被回复的评论
+            //被回复的评论
         Comment repliedComment = commentDao.load(Comment.class, repliedId);
         if (repliedComment == null) {
             return new MutablePair<>(-1, "评论失败");

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,19 +37,33 @@ public class BackendController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> log(@RequestBody ErrorLogDto errorLogDto){
+    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser) {
         String data = errorLogDto.getResult();
-        if(data.length()>900){
-            data = data.substring(0, 900);
+        StringBuilder sb = new StringBuilder();
+        if (data.length() > 700) {
+            data = data.substring(0, 700);
         }
-        String cookieStr= errorLogDto.getCookie();
+        sb.append("url:");
+        sb.append(errorLogDto.getUrl());
+        sb.append(";ip:");
+        sb.append(request.getHeader("X-Forwarded-For"));
+        sb.append(";data:");
+        sb.append(data);
+        sb.append(";cookie:");
+        if (sb.length() < 1024) {
+            String cookie = errorLogDto.getCookie();
+            int remain = 1024 - sb.length();
+            if (remain < cookie.length()) {
+                cookie = cookie.substring(0, remain);
+            }
+            sb.append(cookie);
+        }
 
-        String openid = oAuthService.openId(getAccessTokenFromCookie(cookieStr));
-        OperationLog operationLog = OperationLog.create().openid(openid)
+        OperationLog operationLog = OperationLog.create().openid(loginUser == null ? null : loginUser.getOpenId())
                 .module("记录前端bug")
                 .function("bug")
-                .action("记录RISE bug")
-                .memo("url:"+errorLogDto.getUrl()+";data:"+data);
+                .action("bug")
+                .memo(sb.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
