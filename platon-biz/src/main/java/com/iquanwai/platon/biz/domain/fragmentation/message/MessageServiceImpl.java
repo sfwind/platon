@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/2/27.
- *  */
+ */
 @Service
 public class MessageServiceImpl implements MessageService {
     @Autowired
@@ -84,18 +84,22 @@ public class MessageServiceImpl implements MessageService {
             notifyMessage.setToUser(null);
             notifyMessage.setFromUser(null);
             // 根据 PC 和移动端修改跳转 URL
-            if(deviceType == Constants.Device.PC) {
+            if (deviceType == Constants.Device.PC) {
                 String url = notifyMessage.getUrl();
-                if(url.contains("/rise/static/message/warmup/reply")) {
-                    url = url.replace("/rise/static/message/warmup/reply", "/fragment/message/warmup/reply");
-                } else if(url.contains("/rise/static/message/knowledge/reply")) {
-                    url = url.replace("/rise/static/message/knowledge/reply", "/fragment/message/knowledge/reply");
-                } else if(url.contains("/rise/static/message/comment/reply")) {
-                    url = url.replace("/rise/static/message/comment/reply", "/fragment/message/comment/reply");
-                } else {
-                    url = "/fragment/message";
+                if (url != null) {
+                    if (url.contains("/rise/static/message/warmup/reply")) {
+                        url = url.replace("/rise/static/message/warmup/reply", "/fragment/message/warmup/reply");
+                    } else if (url.contains("/rise/static/message/knowledge/reply")) {
+                        url = url.replace("/rise/static/message/knowledge/reply", "/fragment/message/knowledge/reply");
+                    } else if (url.contains("/rise/static/message/comment/reply")) {
+                        url = url.replace("/rise/static/message/comment/reply", "/fragment/message/comment/reply");
+                    } else if (url.contains("/rise/static/message/application/reply")) {
+                        url = url.replace("/rise/static/message/application/reply", "/fragment/application/comment");
+                    } else if(!url.contains("http") && !url.contains("https")) {
+                        url = "/fragment/message";
+                    }
+                    notifyMessage.setUrl(url);
                 }
-                notifyMessage.setUrl(url);
             }
         });
         return notifyMessages;
@@ -120,9 +124,9 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public ApplicationPractice loadAppPracticeByCommentId(Integer id) {
         Comment comment = commentDao.load(Comment.class, id);
-        if(comment != null){
+        if (comment != null) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, comment.getReferencedId());
-            if(applicationSubmit != null) {
+            if (applicationSubmit != null) {
                 ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationSubmit.getApplicationId());
                 applicationPractice.setPlanId(applicationSubmit.getPlanId());
                 return applicationPractice;
@@ -134,15 +138,15 @@ public class MessageServiceImpl implements MessageService {
     public SubjectArticle loadSubjectArticleByCommentId(Integer id) {
         SubjectArticle subjectArticle = new SubjectArticle();
         Comment comment = commentDao.load(Comment.class, id);
-        if(comment != null) {
-             subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
+        if (comment != null) {
+            subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
         }
         return subjectArticle;
     }
 
     @Setter
     @Getter
-    class VoteMessage{
+    class VoteMessage {
         private int referenceId;
         private int type;
         private HomeworkVote lastVote;
@@ -171,7 +175,7 @@ public class MessageServiceImpl implements MessageService {
             return result;
         }
 
-        public void increment(){
+        public void increment() {
             this.count++;
         }
     }
