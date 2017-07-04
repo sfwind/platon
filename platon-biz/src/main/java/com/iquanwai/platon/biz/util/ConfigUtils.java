@@ -210,7 +210,6 @@ public class ConfigUtils {
 	public static String getWelcomeMsg(){
 		return getValue("login.welcome.msg");
 	}
-}
 
 	public static Integer getForumQuestionOpenPoint(){
 		return getIntValue("forum.question.open.point");
