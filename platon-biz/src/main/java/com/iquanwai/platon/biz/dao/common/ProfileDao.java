@@ -172,4 +172,15 @@ public class ProfileDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+
+    public void updateMobile(String mobileNo, Integer id) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile Set MobileNo=? where Id=?";
+        try {
+            run.update(updateSql,
+                    mobileNo, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 }

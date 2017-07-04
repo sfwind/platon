@@ -68,6 +68,9 @@ public interface Constants {
         int APPLICATION = 2;
         int SUBJECT = 3;
     }
+    interface ValidCode{
+        int MOBILE_VALID = 1;
+    }
 
     int DISCUSS_PAGE_SIZE = 100;
 }
