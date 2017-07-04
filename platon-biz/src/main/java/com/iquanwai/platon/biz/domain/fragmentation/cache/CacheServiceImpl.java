@@ -122,10 +122,24 @@ public class CacheServiceImpl implements CacheService {
             if (!item.getDel()) {
                 problemCatalogMap.put(item.getId(), item);
             }
+            // 设置分类名字
+            problems.forEach(problem->{
+                if (item.getId().equals(problem.getCatalogId())) {
+                    problem.setCatalog(item.getName());
+                }
+            });
         });
 
         // 缓存问题子分类
         List<ProblemSubCatalog> problemSubCatalogs = problemSubCatalogDao.loadAll(ProblemSubCatalog.class);
+        problemSubCatalogs.forEach(item->{
+            // 设置子分类名字
+            problems.forEach(problem->{
+                if (item.getId().equals(problem.getSubCatalogId())) {
+                    problem.setSubCatalog(item.getName());
+                }
+            });
+        });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
     }
 

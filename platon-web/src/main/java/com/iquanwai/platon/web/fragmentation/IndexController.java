@@ -105,6 +105,7 @@ public class IndexController {
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getIndexMsg(HttpServletRequest request, HttpServletResponse response,
                                                            LoginUser loginUser) {
+        redisUtil.pingTest();
         String msg = redisUtil.get(WELCOME_MSG_REDIS_KEY + loginUser.getId());
         ActivityMsg activityMsg = null;
         if (msg != null) {
