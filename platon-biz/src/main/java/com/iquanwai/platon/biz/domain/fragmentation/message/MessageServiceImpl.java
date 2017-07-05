@@ -86,20 +86,7 @@ public class MessageServiceImpl implements MessageService {
             // 根据 PC 和移动端修改跳转 URL
             if (deviceType == Constants.Device.PC) {
                 String url = notifyMessage.getUrl();
-                if (url != null) {
-                    if (url.contains("/rise/static/message/warmup/reply")) {
-                        url = url.replace("/rise/static/message/warmup/reply", "/fragment/message/warmup/reply");
-                    } else if (url.contains("/rise/static/message/knowledge/reply")) {
-                        url = url.replace("/rise/static/message/knowledge/reply", "/fragment/message/knowledge/reply");
-                    } else if (url.contains("/rise/static/message/comment/reply")) {
-                        url = url.replace("/rise/static/message/comment/reply", "/fragment/message/comment/reply");
-                    } else if (url.contains("/rise/static/message/application/reply")) {
-                        url = url.replace("/rise/static/message/application/reply", "/fragment/application/comment");
-                    } else if(!url.contains("http") && !url.contains("https")) {
-                        url = "/fragment/message";
-                    }
-                    notifyMessage.setUrl(url);
-                }
+                notifyMessage.setUrl(MessageURL.getPCUrl(url));
             }
         });
         return notifyMessages;
