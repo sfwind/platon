@@ -69,13 +69,13 @@ public class PlanServiceImpl implements PlanService {
             // 这个是会员的plan
             if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
                 // 已关闭
-                improvementPlan.setDeadline(-1);
+                improvementPlan.setDeadline(0);
             } else {
                 improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
             }
         } else {
             // 非会员，不显示
-            improvementPlan.setDeadline(0);
+            improvementPlan.setDeadline(-1);
         }
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
