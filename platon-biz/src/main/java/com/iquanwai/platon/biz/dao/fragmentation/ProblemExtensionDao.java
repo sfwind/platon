@@ -7,6 +7,8 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
+
 /**
  * Created by xfduan on 2017/7/5.
  */
@@ -16,16 +18,22 @@ public class ProblemExtensionDao extends PracticeDBUtil {
 
 
     /**
-     * insert 字段：catalog subCatalog problem problemId extension
-     * @param problemExtension
-     * @return
+     * 更新 ProblemExtension 数据
      */
-    public Integer insert(ProblemExtension problemExtension) {
+    public Integer insert(ProblemExtension extension) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ProblemExtention () values ()";
+        String sql = "insert into ProblemExtension " +
+                "(Catalog, SubCatalog, Problem, ProblemId, Extension, Recommendation, Online, Offline) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?)";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), problemExtension.get)
+            Long result = runner.insert(sql, new ScalarHandler<>(),
+                    extension.getCatalog(), extension.getSubCatalog(), extension.getProblem(), extension.getProblemId(),
+                    extension.getExtension(), extension.getRecommendation(), extension.getOnline(), extension.getOffline());
+            return result.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
         }
+        return -1;
     }
 
 }
