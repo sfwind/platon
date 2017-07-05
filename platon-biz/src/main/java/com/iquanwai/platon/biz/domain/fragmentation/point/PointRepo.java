@@ -18,6 +18,8 @@ public interface PointRepo {
 
     /**
      * 给用户信息表加分
+     * @param profileId 用户id
+     * @param increment 积分增幅
      */
     void riseCustomerPoint(Integer profileId, Integer increment);
 
