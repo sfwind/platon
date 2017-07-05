@@ -35,23 +35,23 @@
         <property name="maxStatements" value="1000" />
     </bean>
 
-    <bean id="dao.forum.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="jdbcUrl" value="${db.forum.url}" />
-        <property name="user" value="${db.name}" />
-        <property name="password" value="${db.password}" />
-        <property name="driverClass" value="com.mysql.jdbc.Driver" />
-        <!--最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->
-        <property name="maxIdleTime" value="600" />
-        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 -->
-        <property name="checkoutTimeout" value="3000"/>
-        <!--每1800秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->
-        <property name="idleConnectionTestPeriod" value="1800" />
-        <!--连接池中保留的最小连接数。-->
-        <property name="minPoolSize" value="5" />
-        <!--连接池中保留的最大连接数。Default: 15 -->
-        <property name="maxPoolSize" value="15" />
-        <property name="maxStatements" value="1000" />
-    </bean>
+    <!--<bean id="dao.forum.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
+        <!--<property name="jdbcUrl" value="${db.forum.url}" />-->
+        <!--<property name="user" value="${db.name}" />-->
+        <!--<property name="password" value="${db.password}" />-->
+        <!--<property name="driverClass" value="com.mysql.jdbc.Driver" />-->
+        <!--&lt;!&ndash;最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 &ndash;&gt;-->
+        <!--<property name="maxIdleTime" value="600" />-->
+        <!--&lt;!&ndash; 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 &ndash;&gt;-->
+        <!--<property name="checkoutTimeout" value="3000"/>-->
+        <!--&lt;!&ndash;每1800秒检查所有连接池中的空闲连接。默认值: 0，不检查 &ndash;&gt;-->
+        <!--<property name="idleConnectionTestPeriod" value="1800" />-->
+        <!--&lt;!&ndash;连接池中保留的最小连接数。&ndash;&gt;-->
+        <!--<property name="minPoolSize" value="5" />-->
+        <!--&lt;!&ndash;连接池中保留的最大连接数。Default: 15 &ndash;&gt;-->
+        <!--<property name="maxPoolSize" value="15" />-->
+        <!--<property name="maxStatements" value="1000" />-->
+    <!--</bean>-->
 
     <!-- transaction domain, use JtaTransactionManager for global tx -->
     <bean id="dao.transactionManager"
