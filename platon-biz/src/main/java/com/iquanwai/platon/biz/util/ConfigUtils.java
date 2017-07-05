@@ -199,6 +199,18 @@ public class ConfigUtils {
 		return getValue("app.domain");
 	}
 
+	public static Boolean isForumTest(){
+		return getBooleanValue("rise.forum.test");
+	}
+
+	public static Integer getForumQuestionOpenPoint(){
+		return getIntValue("forum.question.open.point");
+	}
+
+	public static Integer getForumQuestionFollowPoint(){
+		return getIntValue("forum.question.follow.point");
+	}
+
 	public static String sendShortMessageUrl(){
 		return getValue("send.sms.url");
 	}

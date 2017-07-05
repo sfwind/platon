@@ -185,11 +185,11 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select  my_cnt*100/all_cnt from\n" +
                 "(select count(1) as all_cnt from ImprovementPlan where ProblemId = ?) t1,\n" +
-                " (select count(1) as my_cnt from ImprovementPlan where ProblemId = ? and Point<?) t2";
+                " (select count(1) as my_cnt from ImprovementPlan where ProblemId = ? and Point>?) t2";
         ResultSetHandler<List<BigDecimal>> h = new ColumnListHandler<>();
         try {
             List<BigDecimal> list =runner.query(sql, h, problemId, problemId, point);
-            return list.get(0).intValue();
+            return 100-list.get(0).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

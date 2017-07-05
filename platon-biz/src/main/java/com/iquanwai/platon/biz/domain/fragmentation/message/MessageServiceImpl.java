@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Getter;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/2/27.
- *  */
+ */
 @Service
 public class MessageServiceImpl implements MessageService {
     @Autowired
@@ -37,8 +38,6 @@ public class MessageServiceImpl implements MessageService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String SYSTEM_MESSAGE ="AUTO";
-    private static final String SYSTEM_MESSAGE_NAME ="系统消息";
 
     @Override
     //TODO:改造成消息队列
@@ -56,7 +55,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<NotifyMessage> getNotifyMessage(Integer profileId, Page page) {
+    public List<NotifyMessage> getNotifyMessage(Integer profileId, Integer deviceType, Page page) {
         List<NotifyMessage> notifyMessages = notifyMessageDao.getMyMessages(profileId, page);
         int total = notifyMessageDao.getMyMessagesCount(profileId);
         page.setTotal(total);
@@ -67,12 +66,12 @@ public class MessageServiceImpl implements MessageService {
                 .collect(Collectors.toList());
         List<Profile> profiles = accountService.getProfiles(profileIds);
         //更新头像和昵称
-        notifyMessages.stream().forEach(notifyMessage -> {
-            if(notifyMessage.getFromUser().equals(SYSTEM_MESSAGE)){
+        notifyMessages.forEach(notifyMessage -> {
+            if (notifyMessage.getFromUser().equals(SYSTEM_MESSAGE)) {
                 notifyMessage.setFromUserAvatar(Profile.DEFAULT_AVATAR);
                 notifyMessage.setFromUserName(SYSTEM_MESSAGE_NAME);
-            }else {
-                profiles.stream().forEach(profile -> {
+            } else {
+                profiles.forEach(profile -> {
                     if (notifyMessage.getFromUser().equals(String.valueOf(profile.getId()))) {
                         notifyMessage.setFromUserAvatar(profile.getHeadimgurl());
                         notifyMessage.setFromUserName(profile.getNickname());
@@ -84,8 +83,25 @@ public class MessageServiceImpl implements MessageService {
             //清空openid
             notifyMessage.setToUser(null);
             notifyMessage.setFromUser(null);
+            // 根据 PC 和移动端修改跳转 URL
+            if (deviceType == Constants.Device.PC) {
+                String url = notifyMessage.getUrl();
+                if (url != null) {
+                    if (url.contains("/rise/static/message/warmup/reply")) {
+                        url = url.replace("/rise/static/message/warmup/reply", "/fragment/message/warmup/reply");
+                    } else if (url.contains("/rise/static/message/knowledge/reply")) {
+                        url = url.replace("/rise/static/message/knowledge/reply", "/fragment/message/knowledge/reply");
+                    } else if (url.contains("/rise/static/message/comment/reply")) {
+                        url = url.replace("/rise/static/message/comment/reply", "/fragment/message/comment/reply");
+                    } else if (url.contains("/rise/static/message/application/reply")) {
+                        url = url.replace("/rise/static/message/application/reply", "/fragment/application/comment");
+                    } else if(!url.contains("http") && !url.contains("https")) {
+                        url = "/fragment/message";
+                    }
+                    notifyMessage.setUrl(url);
+                }
+            }
         });
-
         return notifyMessages;
     }
 
@@ -108,9 +124,9 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public ApplicationPractice loadAppPracticeByCommentId(Integer id) {
         Comment comment = commentDao.load(Comment.class, id);
-        if(comment != null){
+        if (comment != null) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, comment.getReferencedId());
-            if(applicationSubmit != null) {
+            if (applicationSubmit != null) {
                 ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationSubmit.getApplicationId());
                 applicationPractice.setPlanId(applicationSubmit.getPlanId());
                 return applicationPractice;
@@ -122,15 +138,15 @@ public class MessageServiceImpl implements MessageService {
     public SubjectArticle loadSubjectArticleByCommentId(Integer id) {
         SubjectArticle subjectArticle = new SubjectArticle();
         Comment comment = commentDao.load(Comment.class, id);
-        if(comment != null) {
-             subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
+        if (comment != null) {
+            subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
         }
         return subjectArticle;
     }
 
     @Setter
     @Getter
-    class VoteMessage{
+    class VoteMessage {
         private int referenceId;
         private int type;
         private HomeworkVote lastVote;
@@ -159,7 +175,7 @@ public class MessageServiceImpl implements MessageService {
             return result;
         }
 
-        public void increment(){
+        public void increment() {
             this.count++;
         }
     }

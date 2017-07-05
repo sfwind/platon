@@ -86,6 +86,13 @@ public class IndexController {
             }
         }
 
+        // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
+        Boolean showForum = true;
+        if (ConfigUtils.isForumTest()) {
+            // 论坛处于测试中,在白名单则显示，否则隐藏
+            showForum = whiteListService.isInWhiteList(WhiteList.FORUM, loginUser.getId());
+        }
+
         if (ConfigUtils.isDevelopment()) {
             //如果不在白名单中,直接403报错
             boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
@@ -99,7 +106,7 @@ public class IndexController {
             loginMsg(loginUser);
         }
 
-        return courseView(request, account);
+        return courseView(request, account,showForum);
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
@@ -171,7 +178,7 @@ public class IndexController {
         return !StringUtils.isEmpty(openid);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, Account account) {
+    private ModelAndView courseView(HttpServletRequest request, Account account, Boolean showForum) {
         ModelAndView mav = new ModelAndView("course");
         String resourceUrl = ConfigUtils.staticResourceUrl();
         if (request.isSecure()) {
@@ -193,6 +200,7 @@ public class IndexController {
             userParam.put("headImage", account.getHeadimgurl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);
+        mav.addObject("showForum", showForum);
 
         return mav;
     }

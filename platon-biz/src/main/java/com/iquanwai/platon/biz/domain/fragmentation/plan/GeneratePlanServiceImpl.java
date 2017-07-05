@@ -151,7 +151,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<ChallengePractice> practices = challengePracticeDao.loadPractice(problem.getId());
 
         List<ChallengePractice> challengePractices = selectChallenge(practices);
-        challengePractices.stream().forEach(practice->{
+        challengePractices.forEach(practice->{
             PracticePlan practicePlan = new PracticePlan();
             practicePlan.setUnlocked(true);
             practicePlan.setPlanId(planId);

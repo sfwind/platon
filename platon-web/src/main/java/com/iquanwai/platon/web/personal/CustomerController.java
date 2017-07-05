@@ -3,6 +3,8 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
+import com.iquanwai.platon.biz.domain.forum.AnswerService;
+import com.iquanwai.platon.biz.domain.forum.QuestionService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
@@ -14,6 +16,9 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.forum.ForumAnswer;
+import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -25,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,6 +61,11 @@ public class CustomerController {
     private RiseMemberService riseMemberService;
     @Autowired
     private EventWallService eventWallService;
+    @Autowired
+    private QuestionService questionService;
+    @Autowired
+    private AnswerService answerService;
+
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
@@ -128,7 +139,7 @@ public class CustomerController {
             logger.error("beanUtils copy props error", e);
             return WebUtils.error("提交个人信息失败");
         }
-        profile.setOpenid(loginUser.getOpenId());
+        profile.setId(loginUser.getId());
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
     }
@@ -200,6 +211,45 @@ public class CustomerController {
         return WebUtils.result(riseMember);
     }
 
+    @RequestMapping("/forum/mine/questions")
+    public ResponseEntity<Map<String,Object>> loadMineQuestions(LoginUser loginUser,@ModelAttribute Page page){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("论坛")
+                .action("查询我的提问");
+        operationLogService.log(operationLog);
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPage(1);
+        page.setPageSize(100);
+        List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
+        // 设置刷新列表
+//        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+//        result.setList(forumQuestions);
+//        result.setEnd(page.isLastPage());
+        return WebUtils.result(forumQuestions);
+    }
+
+    @RequestMapping("/forum/mine/answers")
+    public ResponseEntity<Map<String,Object>> loadMineAnswers(LoginUser loginUser,@ModelAttribute Page page){
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("论坛")
+                .action("查询我的回答");
+        operationLogService.log(operationLog);
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPage(1);
+        page.setPageSize(100);
+        answerService.loadSelfAnswers(loginUser.getId(), page);
+        List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
+        return WebUtils.result(forumAnswers);
+    }
+
     @RequestMapping(value = "/valid/sms", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> validCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -226,4 +276,5 @@ public class CustomerController {
         operationLogService.log(operationLog);
         return result.getLeft() ? WebUtils.success() : WebUtils.error(result.getRight());
     }
+
 }
