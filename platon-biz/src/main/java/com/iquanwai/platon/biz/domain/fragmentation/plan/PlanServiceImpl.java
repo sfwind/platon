@@ -64,18 +64,19 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         //写入字段
-        // 关闭时间,1.非会员，不显示 2.会员-已关闭 显示已关闭， 3.会员-未关闭-学习中/已完成 显示关闭时间
-        if (improvementPlan.getRiseMember()) {
-            // 这个是会员的plan
-            if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
-                // 已关闭
-                improvementPlan.setDeadline(0);
-            } else {
-                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-            }
+        // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+            // 已关闭
+            improvementPlan.setDeadline(0);
         } else {
-            // 非会员，不显示
-            improvementPlan.setDeadline(-1);
+            // 未关闭
+            if (improvementPlan.getRiseMember()) {
+                // 会员 显示关闭时间
+                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
+            } else {
+                // 非会员，不显示
+                improvementPlan.setDeadline(-1);
+            }
         }
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
