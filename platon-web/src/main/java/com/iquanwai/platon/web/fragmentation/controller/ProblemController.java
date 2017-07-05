@@ -73,7 +73,6 @@ public class ProblemController {
         return WebUtils.result(problemDto);
     }
 
-
     @RequestMapping("/list/unchoose")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -135,7 +134,6 @@ public class ProblemController {
         return WebUtils.result(result);
     }
 
-
     @RequestMapping("/list/{catalog}")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser,
                                                                     @PathVariable(value = "catalog") Integer catalogId) {
@@ -183,7 +181,6 @@ public class ProblemController {
             return WebUtils.error("分类不能为空");
         }
     }
-
 
     @RequestMapping("/list/all")
     public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
@@ -284,4 +281,9 @@ public class ProblemController {
             return WebUtils.result(runningPlan.getProblemId());
         }
     }
+
+
+
+
+
 }
