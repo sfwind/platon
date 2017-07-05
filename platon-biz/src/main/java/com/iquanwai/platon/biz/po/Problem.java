@@ -19,6 +19,7 @@ public class Problem {
     private Integer subCatalogId; // 子目录分类
     private String author; // 讲师
     private String authorDesc; //讲师介绍
+    private String authorPic; // 讲师图片
     private Double difficultyScore;// 难度
     private String subjectDesc; //小课论坛介绍
     private String descPic; // 描述图片

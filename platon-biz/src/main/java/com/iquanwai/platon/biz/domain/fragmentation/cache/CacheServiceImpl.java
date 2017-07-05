@@ -88,6 +88,7 @@ public class CacheServiceImpl implements CacheService {
                 problem.setAudio(StringUtils.replace(problem.getAudio(), "http:", "https:"));
                 problem.setPic(StringUtils.replace(problem.getPic(), "http:", "https:"));
                 problem.setDescPic(StringUtils.replace(problem.getDescPic(), "http:", "https:"));
+                problem.setAuthorPic(StringUtils.replace(problem.getAuthorPic(), "http:", "https:"));
             }
         });
         logger.info("problem init complete");
