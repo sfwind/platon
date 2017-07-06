@@ -97,7 +97,10 @@ public class CacheServiceImpl implements CacheService {
         List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
         warmupPractices.forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
-            warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            //添加非复习知识点
+            if(!Knowledge.isReview(warmupPractice.getKnowledgeId())){
+                warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            }
             if(ConfigUtils.isHttps()){
                 warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
             }

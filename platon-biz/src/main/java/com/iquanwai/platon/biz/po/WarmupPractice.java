@@ -26,10 +26,10 @@ public class WarmupPractice implements Cloneable{
     private Boolean example; //是否例题(0-否,1-是)
     private String practiceUid; //任务唯一编号
     private Integer score; //非db字段 分值
-    private List<Choice> choiceList; //所有选项
-    private List<WarmupPracticeDiscuss> discussList; //巩固练习讨论
-    private List<Integer> choice; //用户选择选项
-    private Knowledge knowledge; //知识点
+    private List<Choice> choiceList; //非db字段 所有选项
+    private List<WarmupPracticeDiscuss> discussList; //非db字段 巩固练习讨论
+    private List<Integer> choice; //非db字段 用户选择选项
+    private Knowledge knowledge; //非db字段 知识点
 
 
     @Override
