@@ -23,7 +23,7 @@ public interface MessageService {
      * @param profileId 接收者
      * @param page 分页信息
      * */
-    List<NotifyMessage> getNotifyMessage(Integer profileId, Page page);
+    List<NotifyMessage> getNotifyMessage(Integer profileId, Integer deviceType, Page page);
 
     /**
      * 获取未读消息数
@@ -53,4 +53,7 @@ public interface MessageService {
      * @param id Comment表中id
      */
     SubjectArticle loadSubjectArticleByCommentId(Integer id);
+
+    String SYSTEM_MESSAGE ="AUTO";
+    String SYSTEM_MESSAGE_NAME ="系统消息";
 }

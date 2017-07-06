@@ -13,6 +13,7 @@
         reactMountPoint: "react-app",
         userName: "${userName}",
         headImage:"${headImage}",
+        showForum:"${showForum}"
     }
 </script>
 

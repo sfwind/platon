@@ -136,9 +136,9 @@ public class WarmupController {
     }
 
     private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss, String openid) {
-        warmupPracticeList.stream().forEach(warmupPractice -> {
+        warmupPracticeList.forEach(warmupPractice -> {
             List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
-            list.stream().forEach(warmupPracticeDiscuss -> {
+            list.forEach(warmupPracticeDiscuss -> {
                 //是否是学员本人的评论
                 if(warmupPracticeDiscuss.getOpenid().equals(openid)){
                     warmupPracticeDiscuss.setIsMine(true);
@@ -164,7 +164,7 @@ public class WarmupController {
                         LOGGER.error("No.{} warmup submit is invalid", warmupSubmit.getId());
                     }
                 }
-                warmupPractice.getChoiceList().stream().forEach(choice -> {
+                warmupPractice.getChoiceList().forEach(choice -> {
                     if (choiceIds.contains(choice.getId())) {
                         choice.setSelected(true);
                     } else {
@@ -217,7 +217,7 @@ public class WarmupController {
         List<WarmupPracticeDiscuss> discusses = practiceDiscussService.loadDiscuss(warmupPracticeId, page);
 
         //清空openid
-        discusses.stream().forEach(warmupPracticeDiscuss -> {
+        discusses.forEach(warmupPracticeDiscuss -> {
             if(warmupPracticeDiscuss.getOpenid().equals(loginUser.getOpenId())){
                 warmupPracticeDiscuss.setIsMine(true);
             }

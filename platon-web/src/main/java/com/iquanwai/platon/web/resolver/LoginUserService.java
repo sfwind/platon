@@ -95,7 +95,8 @@ public class LoginUserService {
     public boolean isLogin(Platform platform, String sessionId) {
         LoginUser loginUser = this.loadUser(platform, sessionId);
         if (loginUser != null) {
-            logger.info("cookie:{},已登录,user:{},nickName:{}", sessionId, loginUser.getOpenId(), loginUser.getWeixinName());
+            // 只在未登录的时候打印
+//            logger.info("cookie:{},已登录,user:{},nickName:{}", sessionId, loginUser.getOpenId(), loginUser.getWeixinName());
             return true;
         } else {
             logger.info("cookie:{},没有登录", sessionId);
@@ -172,6 +173,11 @@ public class LoginUserService {
         String token = getToken(request);
         return isLogin(platform, token);
     }
+
+    public void logout(String sessionId) {
+        pcLoginUserMap.remove(sessionId);
+    }
+
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
         switch (platform) {
@@ -180,8 +186,6 @@ public class LoginUserService {
         }
         return null;
     }
-
-
 
     public Platform checkPlatform(HttpServletRequest request) {
         String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);

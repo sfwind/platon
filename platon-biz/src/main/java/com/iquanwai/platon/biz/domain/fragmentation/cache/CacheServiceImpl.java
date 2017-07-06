@@ -70,7 +70,7 @@ public class CacheServiceImpl implements CacheService {
     @PostConstruct
     public void init(){
         List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
-        knowledgeList.stream().forEach(knowledge -> {
+        knowledgeList.forEach(knowledge -> {
             knowledgeMap.put(knowledge.getId(), knowledge);
             if(ConfigUtils.isHttps()){
                 knowledge.setAudio(StringUtils.replace(knowledge.getAudio(), "http:", "https:"));
@@ -81,7 +81,7 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存问题
         problems = problemDao.loadAll(Problem.class);
-        problems.stream().forEach(problem -> {
+        problems.forEach(problem -> {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
             problem.setChapterList(chapterList);
             if(ConfigUtils.isHttps()){
@@ -95,7 +95,7 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存热身训练
         List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
-        warmupPractices.stream().forEach(warmupPractice -> {
+        warmupPractices.forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
             warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
             if(ConfigUtils.isHttps()){
@@ -104,7 +104,7 @@ public class CacheServiceImpl implements CacheService {
             warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
         });
         List<Choice> choices = choiceDao.loadAll(Choice.class);
-        choices.stream().forEach(choice -> {
+        choices.forEach(choice -> {
             Integer questionId = choice.getQuestionId();
             WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
             if(warmupPractice!=null){
@@ -113,7 +113,7 @@ public class CacheServiceImpl implements CacheService {
         });
 
         //选项按sequence排序
-        warmupPractices.stream().forEach(warmupPractice ->
+        warmupPractices.forEach(warmupPractice ->
                 warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence()-o2.getSequence()));
         logger.info("warmup practice init complete");
 
@@ -197,7 +197,7 @@ public class CacheServiceImpl implements CacheService {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
         Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         //按节组合成一组知识点
-        problemSchedules.stream().forEach(problemSchedule -> {
+        problemSchedules.forEach(problemSchedule -> {
             List<ProblemSchedule> problemScheduleList = problemScheduleMap.getOrDefault(problemSchedule.getChapter(), Lists.newArrayList());
             problemScheduleList.add(problemSchedule);
             problemScheduleMap.put(problemSchedule.getChapter(), problemScheduleList);
@@ -206,7 +206,7 @@ public class CacheServiceImpl implements CacheService {
         List<Chapter> chapterList = Lists.newArrayList();
 
         //构建章节
-        problemScheduleMap.keySet().stream().forEach(chapterSequence ->{
+        problemScheduleMap.keySet().forEach(chapterSequence ->{
             Chapter chapter = new Chapter();
             List<ProblemSchedule> scheduleList = problemScheduleMap.get(chapterSequence);
             List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection()-o2.getSection())

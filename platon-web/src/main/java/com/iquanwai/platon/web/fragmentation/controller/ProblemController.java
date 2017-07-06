@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rise/problem")
 public class ProblemController {
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private ProblemService problemService;
     @Autowired
@@ -72,7 +72,6 @@ public class ProblemController {
         operationLogService.log(operationLog);
         return WebUtils.result(problemDto);
     }
-
 
     @RequestMapping("/list/unchoose")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser) {
@@ -135,10 +134,8 @@ public class ProblemController {
         return WebUtils.result(result);
     }
 
-
     @RequestMapping("/list/{catalog}")
-    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser,
-                                                                    @PathVariable(value = "catalog") Integer catalogId) {
+    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
 
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "小课分类不能为空");
@@ -183,7 +180,6 @@ public class ProblemController {
             return WebUtils.error("分类不能为空");
         }
     }
-
 
     @RequestMapping("/list/all")
     public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
@@ -245,8 +241,7 @@ public class ProblemController {
     }
 
     @RequestMapping("/grade/{problemId}")
-    public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId,
-                                                          @RequestBody List<ProblemScore> problemScores) {
+    public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores) {
         Assert.notNull(loginUser, "用户不能为空");
         problemService.gradeProblem(problemId, loginUser.getOpenId(), loginUser.getId(), problemScores);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -272,7 +267,7 @@ public class ProblemController {
             List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getId());
             if (plans.isEmpty()) {
                 // 没有买过难题
-                LOGGER.error("{} has no active plan", pcLoginUser.getOpenId());
+                logger.error("{} has no active plan", pcLoginUser.getOpenId());
                 return WebUtils.error(ErrorConstants.NOT_PAY_FRAGMENT, "没找到进行中的RISE训练");
             } else {
                 // 购买过直接选最后一个
