@@ -53,8 +53,25 @@ public interface ProblemService {
 
     /**
      * 更新 ProblemExtension 数据
-     * @param problemExtension
+     */
+    Integer insertProblemExtension(ProblemExtension problemExtension);
+
+    /**
+     * 提交 ProblemActivity 数据
+     */
+    Integer insertProblemActivity(ProblemActivity problemActivity);
+
+    /**
+     * 根据 ProblemId 获取 ProblemExtension 信息
+     * @param problemId
      * @return
      */
-    Integer updateProblemExtension(ProblemExtension problemExtension);
+    ProblemExtension loadProblemExtensionByProblemId(Integer problemId);
+
+    /**
+     * 根据 ProblemId 获取 ProblemActivity 列表
+     * @param problemId
+     * @return
+     */
+    List<ProblemActivity> loadProblemActivitiesByProblemId(Integer problemId);
 }

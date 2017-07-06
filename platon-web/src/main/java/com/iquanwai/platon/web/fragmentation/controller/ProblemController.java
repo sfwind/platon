@@ -280,11 +280,44 @@ public class ProblemController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("小课").function("小课扩展").action("更新小课扩展");
         operationLogService.log(operationLog);
-        Integer result = problemService.updateProblemExtension(problemExtension);
+        Integer result = problemService.insertProblemExtension(problemExtension);
         if (result > 0) {
             return WebUtils.success();
         } else {
             return WebUtils.error("更新失败");
+        }
+    }
+
+    @RequestMapping(value = "/submit/activity", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> updateProblemActivity(LoginUser loginUser, @RequestBody ProblemActivity problemActivity) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemActivity.getProblemId(), "小课 Id 不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课").function("小课扩展").action("更新小课活动");
+        operationLogService.log(operationLog);
+        Integer result = problemService.insertProblemActivity(problemActivity);
+        if(result > 0) {
+            return WebUtils.result("更新成功");
+        } else {
+            return WebUtils.error("更新失败");
+        }
+    }
+
+    @RequestMapping(value = "/extension/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadProblemExtension(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemId, "请求 ProblemId 不能为空");
+        OperationLog operationLog = OperationLog.create().module("小课").action("小课扩展").function("获取小课扩展数据");
+        operationLogService.log(operationLog);
+        ProblemExtension extension = problemService.loadProblemExtensionByProblemId(problemId);
+        List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
+        if (extension != null && activities != null) {
+            extension.setActivities(activities);
+            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.Online.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.Offline.equals(activity.getType())).collect(Collectors.toList()));
+            return WebUtils.result(extension);
+        } else {
+            return WebUtils.error("当前小课暂无延伸学习相关内容");
         }
     }
 
