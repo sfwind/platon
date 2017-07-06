@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.dao;
 
 import com.alibaba.fastjson.JSONObject;
-import org.redisson.api.Node;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -40,14 +38,6 @@ public class RedisUtil {
      */
     public String get(String key) {
         return get(String.class, key);
-    }
-
-    public void pingTest(){
-        Collection<Node> nodes = redissonClient.getNodesGroup().getNodes();
-        for (Node node : nodes) {
-            logger.info(JSONObject.toJSONString(node));
-            logger.info("node ping:" + node.ping());
-        }
     }
 
     /**
