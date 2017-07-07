@@ -17,7 +17,7 @@ public class ProblemActivity {
     private String location; // 活动地址
     private String workshop; // 工作坊名称
     private String uri; // 资源链接地址
-    private Integer password; // 密码
+    private String password; // 密码
     private Integer type; // 活动类型 0-线上 1-线下
     private String addTime;
     private String updateTime;
