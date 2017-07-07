@@ -18,6 +18,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
+import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -517,6 +518,35 @@ public class PlanController {
                 .memo(series.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
+
+        List<ImprovementPlan> runningPlans = Lists.newArrayList();
+        List<ImprovementPlan> completedPlans = Lists.newArrayList();
+        PlanListDto planListDto = new PlanListDto();
+        planListDto.setRunningPlans(runningPlans);
+        planListDto.setCompletedPlans(completedPlans);
+        plans.forEach(item -> {
+            if (item.getStatus() == ImprovementPlan.CLOSE) {
+                completedPlans.add(item);
+            } else {
+                runningPlans.add(item);
+            }
+            // 清除openid
+            item.setOpenid(null);
+            item.setProfileId(null);
+        });
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练")
+                .function("计划列表")
+                .action("查询计划列表");
+        operationLogService.log(operationLog);
+        return WebUtils.result(planListDto);
     }
 
     private Pair<Boolean,String> checkChooseNewProblem(ImprovementPlan improvementPlan){
