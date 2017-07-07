@@ -41,13 +41,13 @@ public class ForumQuestionRepository extends ESUtil {
     private String type;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         client = esClientFactory.getClient();
         index = "forumquestion";
-        type  = "doc";
+        type = "doc";
     }
 
-    public boolean insert(Integer id,String topic,String description,Integer profileId) {
+    public boolean insert(Integer id, String topic, String description, Integer profileId) {
         try {
             XContentBuilder xContentBuilder = jsonBuilder()
                     .startObject()
@@ -75,7 +75,7 @@ public class ForumQuestionRepository extends ESUtil {
         return false;
     }
 
-    public void update(Integer id,String topic,String description){
+    public void update(Integer id, String topic, String description) {
         UpdateRequest updateRequest = null;
         try {
             updateRequest = new UpdateRequest(getIndex(), getType(), id.toString())
@@ -91,7 +91,7 @@ public class ForumQuestionRepository extends ESUtil {
         }
     }
 
-    public List<ForumQuestion> searchQuestions(String content,Page page){
+    public List<ForumQuestion> searchQuestions(String content, Page page) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 //        boolQueryBuilder.must(QueryBuilders.matchQuery("age", "40"));
 //        boolQueryBuilder.must(QueryBuilders.matchQuery("gender", "M"));

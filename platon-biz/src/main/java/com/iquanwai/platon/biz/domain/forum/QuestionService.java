@@ -33,6 +33,13 @@ public interface QuestionService {
      */
     List<ForumQuestion> loadQuestions(Integer loadProfileId, Page page);
 
+    /**
+     * 搜索问题
+     * @param loadProfileId 搜索的人
+     * @param content 搜索内容
+     * @param page 分页参数
+     * @return 问题列表
+     */
     List<ForumQuestion> searchQuestions(Integer loadProfileId, String content, Page page);
 
     /**

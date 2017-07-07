@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.TestBase;
 import com.iquanwai.platon.biz.dao.forum.ForumQuestionDao;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
-import com.iquanwai.platon.biz.repository.ClassA;
 import com.iquanwai.platon.biz.repository.elasticsearch.ESManager;
 import com.iquanwai.platon.biz.repository.elasticsearch.SearchResult;
 import com.iquanwai.platon.biz.repository.forum.ForumQuestionRepository;
@@ -34,15 +33,14 @@ public class ESUtilTest extends TestBase{
 
     @Test
     public void utilsTest() {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.must(QueryBuilders.matchQuery("age", "40"));
-        boolQueryBuilder.must(QueryBuilders.matchQuery("gender", "M"));
-//        "bank", "account",
-        SearchResult<ClassA> search = forumQuestionRepository.search(ClassA.class, boolQueryBuilder, new Page());
-        List<ClassA> hits = search.getHits();
-        for (ClassA hit : hits) {
-            System.out.println(JSON.toJSONString(hit));
-        }
+//        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+//        boolQueryBuilder.must(QueryBuilders.matchQuery("age", "40"));
+//        boolQueryBuilder.must(QueryBuilders.matchQuery("gender", "M"));
+//        SearchResult<ClassA> search = forumQuestionRepository.search(ClassA.class, boolQueryBuilder, new Page());
+//        List<ClassA> hits = search.getHits();
+//        for (ClassA hit : hits) {
+//            System.out.println(JSON.toJSONString(hit));
+//        }
     }
 
     @Test

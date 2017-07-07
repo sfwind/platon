@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.forum.dto.QuestionDto;
 import com.iquanwai.platon.web.forum.dto.RefreshListDto;
+import com.iquanwai.platon.web.forum.dto.SearchDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -204,6 +205,31 @@ public class QuestionController {
                 .memo(questionId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> searchQuestion(LoginUser loginUser,
+                                                                @ModelAttribute Page page,
+                                                                @RequestBody SearchDto searchDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPageSize(PAGE_SIZE);
+        List<ForumQuestion> forumQuestions = questionService.searchQuestions(loginUser.getId(),
+                searchDto.getQuery(), page);
+
+        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+        result.setList(forumQuestions);
+        result.setEnd(page.isLastPage());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("论坛")
+                .function("问题")
+                .action("搜索问题")
+                .memo(searchDto.getQuery());
+        operationLogService.log(operationLog);
+        return WebUtils.result(result);
     }
 
 }
