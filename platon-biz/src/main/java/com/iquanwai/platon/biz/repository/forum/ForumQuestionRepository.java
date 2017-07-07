@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.repository.elasticsearch.ESUtil;
 import com.iquanwai.platon.biz.repository.elasticsearch.SearchResult;
 import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Data;
+import lombok.Getter;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -30,14 +31,15 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
  * Created by nethunder on 2017/6/28.
  */
 @Repository
-@Data
 public class ForumQuestionRepository extends ESUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     private ESClientFactory esClientFactory;
-
+    @Getter
     private TransportClient client;
+    @Getter
     private String index;
+    @Getter
     private String type;
 
     @PostConstruct
@@ -69,7 +71,7 @@ public class ForumQuestionRepository extends ESUtil {
                 logger.error("插入论坛提问失败");
                 return false;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return false;
@@ -86,7 +88,7 @@ public class ForumQuestionRepository extends ESUtil {
                             .endObject());
             UpdateResponse updateResponse = client.update(updateRequest).get();
             logger.info("更新结果:{}", updateResponse);
-        } catch (IOException | ExecutionException | InterruptedException e) {
+        } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
