@@ -88,6 +88,7 @@ public class CacheServiceImpl implements CacheService {
                 problem.setAudio(StringUtils.replace(problem.getAudio(), "http:", "https:"));
                 problem.setPic(StringUtils.replace(problem.getPic(), "http:", "https:"));
                 problem.setDescPic(StringUtils.replace(problem.getDescPic(), "http:", "https:"));
+                problem.setAuthorPic(StringUtils.replace(problem.getAuthorPic(), "http:", "https:"));
             }
         });
         logger.info("problem init complete");
@@ -96,7 +97,10 @@ public class CacheServiceImpl implements CacheService {
         List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
         warmupPractices.forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
-            warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            //添加非复习知识点
+            if(!Knowledge.isReview(warmupPractice.getKnowledgeId())){
+                warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            }
             if(ConfigUtils.isHttps()){
                 warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
             }
@@ -122,10 +126,24 @@ public class CacheServiceImpl implements CacheService {
             if (!item.getDel()) {
                 problemCatalogMap.put(item.getId(), item);
             }
+            // 设置分类名字
+            problems.forEach(problem->{
+                if (item.getId().equals(problem.getCatalogId())) {
+                    problem.setCatalog(item.getName());
+                }
+            });
         });
 
         // 缓存问题子分类
         List<ProblemSubCatalog> problemSubCatalogs = problemSubCatalogDao.loadAll(ProblemSubCatalog.class);
+        problemSubCatalogs.forEach(item->{
+            // 设置子分类名字
+            problems.forEach(problem->{
+                if (item.getId().equals(problem.getSubCatalogId())) {
+                    problem.setSubCatalog(item.getName());
+                }
+            });
+        });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
     }
 
