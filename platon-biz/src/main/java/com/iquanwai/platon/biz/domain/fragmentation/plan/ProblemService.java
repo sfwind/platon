@@ -1,9 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemCatalog;
-import com.iquanwai.platon.biz.po.ProblemScore;
-import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.*;
 
 import java.util.List;
 
@@ -54,4 +51,27 @@ public interface ProblemService {
      */
     boolean hasProblemScore(Integer profileId, Integer problemId);
 
+    /**
+     * 更新 ProblemExtension 数据
+     */
+    Integer insertProblemExtension(ProblemExtension problemExtension);
+
+    /**
+     * 提交 ProblemActivity 数据
+     */
+    Integer insertProblemActivity(ProblemActivity problemActivity);
+
+    /**
+     * 根据 ProblemId 获取 ProblemExtension 信息
+     * @param problemId
+     * @return
+     */
+    ProblemExtension loadProblemExtensionByProblemId(Integer problemId);
+
+    /**
+     * 根据 ProblemId 获取 ProblemActivity 列表
+     * @param problemId
+     * @return
+     */
+    List<ProblemActivity> loadProblemActivitiesByProblemId(Integer problemId);
 }
