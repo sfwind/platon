@@ -35,7 +35,7 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
                 return true;
             }
             LoginUserService.Platform platform = loginUserService.checkPlatform(request);
-            logger.info("拦截器，平台:{}", platform);
+//            logger.info("拦截器，平台:{}", platform);
             String value = loginUserService.getToken(request);
             if (StringUtils.isEmpty(value)) {
                 switch (platform) {

@@ -51,6 +51,13 @@ public class PointRepoImpl implements PointRepo {
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if (improvementPlan != null) {
             improvementPlanDao.updatePoint(planId, improvementPlan.getPoint() + increment);
+            Integer profileId = improvementPlan.getProfileId();
+            Profile profile = profileDao.load(Profile.class, profileId);
+            if (profile != null) {
+                profileDao.updatePoint(profileId, profile.getPoint() + increment);
+            } else {
+                logger.error("用户{} 加{}积分失败,缺少Profile记录", profileId, increment);
+            }
         } else {
             logger.error("计划{} 加{}积分失败，缺少Plan记录", planId, increment);
         }
