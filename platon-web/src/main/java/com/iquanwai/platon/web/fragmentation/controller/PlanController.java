@@ -63,7 +63,7 @@ public class PlanController {
     @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
+         List<ImprovementPlan> improvementPlans = planService.getRunningPlan(loginUser.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
@@ -71,32 +71,45 @@ public class PlanController {
                 .action("检查是否能够重新选择")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
-
-        if (improvementPlan != null) {
-            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlan);
-            if (!check.getLeft()) {
-                return WebUtils.error(check.getRight());
-            }
+        Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+        if (!check.getLeft()) {
+            return WebUtils.error(check.getRight());
         }
+        if (improvementPlans.size() != 0) {
+            // 第二门需要提示一下
+            return WebUtils.error(201, "为了更专注的学习，同时最多进行两门小课，确定选择吗？");
+        }
+        // 现在完成小课必须在learn页面
+//
+//        if (improvementPlans != null) {
+//            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+//            if (!check.getLeft()) {
+//                return WebUtils.error(check.getRight());
+//            }
+//        }
         return WebUtils.success();
     }
+
 
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
                                                           @PathVariable Integer problemId){
-
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
-        if(improvementPlan!=null){
+        List<ImprovementPlan> improvementPlans = planService.getRunningPlan(loginUser.getId());
+        if (improvementPlans.size() >= 1) {
             //如果是同一个小课的训练,直接返回训练id
-            if(improvementPlan.getProblemId().equals(problemId)){
-                return WebUtils.result(improvementPlan.getId());
+            for (ImprovementPlan plan : improvementPlans) {
+                if (plan.getProblemId().equals(problemId)) {
+                    return WebUtils.result(plan.getId());
+                }
             }
-            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlan);
+
+            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
             if (!check.getLeft()) {
                 return WebUtils.error(check.getRight());
             }
         }
+
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         for(ImprovementPlan plan:plans){
             if(plan.getProblemId().equals(problemId)){
@@ -104,12 +117,13 @@ public class PlanController {
             }
         }
 
-        if (improvementPlan != null && improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
-            // 1.正在进行中的不关闭
-            // 2.过期的不重复关闭
-            // 3.只有完成的会关闭掉
-            planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
-        }
+        // TODO 这里前移
+//        if (improvementPlan != null && improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
+//            // 1.正在进行中的不关闭
+//            // 2.过期的不重复关闭
+//            // 3.只有完成的会关闭掉
+//            planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
+//        }
 
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
 
@@ -156,16 +170,11 @@ public class PlanController {
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request,
-                                                         @RequestParam(required = false) Integer planId){
+                                                         @RequestParam Integer planId){
         LOGGER.info(request.getHeader("User-Agent")+", openid:"+loginUser.getOpenId());
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getLatestPlan(loginUser.getId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
         if(improvementPlan==null){
             return WebUtils.result(null);
         }
@@ -207,15 +216,10 @@ public class PlanController {
 
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser,
-                                                        @RequestParam(required = false) Integer planId){
+                                                        @RequestParam Integer planId){
 
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -231,9 +235,6 @@ public class PlanController {
         if (!closeable.getLeft()) {
             return WebUtils.error(-1, "");
         }
-//        else if (closeable.getRight() != 0) {
-//            return WebUtils.error(-2, closeable.getRight());
-//        }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -250,14 +251,9 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/improvement/report", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> improvementReport(LoginUser loginUser, @RequestParam(required = false) Integer planId) {
+    public ResponseEntity<Map<String, Object>> improvementReport(LoginUser loginUser, @RequestParam Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getLatestPlan(loginUser.getId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.error("您还没有制定训练计划哦");
@@ -273,42 +269,59 @@ public class PlanController {
                 .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
         ImprovementReport report = reportService.loadUserImprovementReport(improvementPlan);
+        if (report.getApplicationShouldCount().equals(report.getApplicationCompleteCount())
+                && report.getIntegratedShouldCount().equals(report.getIntegratedCompleteCount())) {
+            report.setDoneAllApps(true);
+        } else {
+            report.setDoneAllApps(false);
+        }
         Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
         report.setMustStudyDays(check.getRight());
         return WebUtils.result(report);
     }
 
 
-//    @RequestMapping(value = "/close", method = RequestMethod.POST)
-//    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
-//                                                     @RequestParam(required = false) Integer planId) {
-//
-//        Assert.notNull(loginUser, "用户不能为空");
-//        ImprovementPlan improvementPlan;
-//        if (planId == null) {
-//            improvementPlan = planService.getRunningPlan(loginUser.getId());
-//        } else {
-//            improvementPlan = planService.getPlan(planId);
-//        }
-//        if (improvementPlan == null) {
-//            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-//            return WebUtils.error(-3,"您还没有制定训练计划哦");
-//        }
-//
-//        Pair<Boolean,Integer> closeable = planService.checkCloseable(improvementPlan);
-//        if (closeable.getLeft() != 1) {
-//            return WebUtils.error(closeable.getLeft(), closeable.getRight());
-//        }
-//        planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
-//
-//        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-//                .module("训练计划")
-//                .function("完成训练")
-//                .action("完成训练")
-//                .memo(improvementPlan.getId() + "");
-//        operationLogService.log(operationLog);
-//        return WebUtils.success();
-//    }
+    @RequestMapping(value = "/close", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
+                                                     @RequestParam Integer planId) {
+
+        Assert.notNull(loginUser, "用户不能为空");
+
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
+        if (improvementPlan == null) {
+            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            return WebUtils.error(-3,"您还没有制定训练计划哦");
+        }
+        // 关闭的时候点击查看是否可以关闭
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("训练计划")
+                .function("完成训练")
+                .action("完成训练")
+                .memo(improvementPlan.getId() + "");
+        operationLogService.log(operationLog);
+
+        Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
+
+        if (!check.getLeft()) {
+            // 没有完成必做
+            return WebUtils.error(-1, "先完成所有的知识理解和巩固练习<br/>才能查看报告哦");
+        } else {
+            // 完成必做,查看最小完成天数
+            if (check.getRight() != 0) {
+                return WebUtils.error("学得太猛了，再复习一下吧<br/>本小课推荐学习天数至少为" + check.getRight() + "天<br/>之后就可以完成小课了");
+            }
+        }
+
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+            // 如果plan已经关闭了，则不再重复调用service
+            return WebUtils.success();
+        }
+        // 可以关闭，进行关闭
+        planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
+
+
+        return WebUtils.success();
+    }
 
     @RequestMapping(value = "/openrise", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> openRise(LoginUser loginUser){
@@ -365,16 +378,12 @@ public class PlanController {
     }
 
     @RequestMapping("/roadmap")
+    @Deprecated
     public ResponseEntity<Map<String, Object>> getRoadMap(LoginUser loginUser,
-                                                          @RequestParam(required = false) Integer planId){
+                                                          @RequestParam Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
-        if(improvementPlan==null){
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
+        if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
@@ -414,20 +423,15 @@ public class PlanController {
     @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser,
                                                              @PathVariable Integer series,
-                                                             @RequestParam(required = false) Integer planId){
+                                                             @RequestParam Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
-        if(improvementPlan==null){
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
+        if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
         if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
-            if(!improvementPlan.getRiseMember()){
+            if (!improvementPlan.getRiseMember()) {
                 return WebUtils.error("试用版仅能体验前三节内容 <br/> 点击右上角按钮，升级正式版吧");
             }
         }
@@ -438,14 +442,14 @@ public class PlanController {
                 .action("训练开始校验")
                 .memo(series.toString());
         operationLogService.log(operationLog);
-        if(result==-1){
+        if (result == -1) {
             // 前一组已完成 这一组未解锁
             // 会员都会解锁，未解锁应该都是非会员
             return WebUtils.error("该内容为付费内容，只有会员可以查看");
-        }else if(result==-2){
+        } else if (result == -2) {
             // 前一组未完成
             return WebUtils.error("完成之前的任务，这一组才能解锁<br> 学习和内化，都需要循序渐进哦");
-        }else if(result==-3){
+        } else if (result == -3) {
             // 小课已过期
             return WebUtils.error("抱歉哦，课程开放期间，你未能完成前面的练习，导致这个练习无法解锁");
         }
@@ -453,19 +457,14 @@ public class PlanController {
     }
 
     @RequestMapping("/chapter/list")
-    public ResponseEntity<Map<String, Object>> chapterList(LoginUser loginUser,@RequestParam(required = false) Integer planId) {
+    public ResponseEntity<Map<String, Object>> chapterList(LoginUser loginUser,@RequestParam Integer planId) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("章节")
                 .action("查询章节列表")
                 .memo(planId != null ? planId.toString() : null);
         operationLogService.log(operationLog);
-        ImprovementPlan plan;
-        if (planId == null) {
-            plan = planService.getLatestPlan(loginUser.getId());
-        } else {
-            plan = planService.getPlan(planId);
-        }
+        ImprovementPlan plan = planService.getPlan(planId);
         if (plan == null) {
             return WebUtils.error(null);
         }
@@ -491,14 +490,9 @@ public class PlanController {
     @RequestMapping(value = "/mark/{series}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser,
                                                              @PathVariable Integer series,
-                                                             @RequestParam(required = false) Integer planId){
+                                                             @RequestParam Integer planId){
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if(planId==null){
-            improvementPlan = planService.getRunningPlan(loginUser.getId());
-        }else{
-            improvementPlan = planService.getPlan(planId);
-        }
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
         if(improvementPlan==null){
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
@@ -549,6 +543,11 @@ public class PlanController {
         return WebUtils.result(planListDto);
     }
 
+    /**
+     * @param improvementPlan
+     * @return
+     */
+    @Deprecated
     private Pair<Boolean,String> checkChooseNewProblem(ImprovementPlan improvementPlan){
         Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
         if (improvementPlan.getStatus() == 1) {
@@ -563,5 +562,23 @@ public class PlanController {
             }
         }
         return new MutablePair<>(true,"");
+    }
+
+    private Pair<Boolean,String> checkChooseNewProblem(List<ImprovementPlan> improvementPlan,Boolean riseMember){
+        if(riseMember){
+            if (improvementPlan.size() >= 2) {
+                // 会员已经有两门再学
+                return new MutablePair<>(false, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
+            } else {
+                return new MutablePair<>(true, "");
+            }
+        } else {
+            if (improvementPlan.size() >= 1) {
+                // 非会员已经有一门了，则不可再选
+                return new MutablePair<>(false, "试用版只能试用一门小课的前三节哦");
+            } else {
+                return new MutablePair<>(true, "");
+            }
+        }
     }
 }

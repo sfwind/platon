@@ -45,6 +45,7 @@ public interface PracticeService {
     WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
                                       String openid, Integer profileId) throws AnswerException;
 
+
     /**
      * 获取小目标
      *

@@ -42,6 +42,8 @@ public class PlanServiceImpl implements PlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private ProblemScoreDao problemScoreDao;
+    @Autowired
+    private ChallengePracticeDao challengePracticeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -80,15 +82,27 @@ public class PlanServiceImpl implements PlanService {
 
 //        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
         if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+            // 计划正在进行中,暂时不能显示学习报告，需要完成必做
             improvementPlan.setReportStatus(-2);
         } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
-            improvementPlan.setReportStatus(1);
+
+            Pair<Boolean, Integer> check = checkCloseable(improvementPlan);
+            if (check.getRight() != 0) {
+                // 未满足最小天数
+                improvementPlan.setReportStatus(2);
+                improvementPlan.setMustStudyDays(check.getRight());
+            } else {
+                // 计划已经完成，显示完成按钮
+                improvementPlan.setReportStatus(1);
+            }
         } else {
             if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
                 Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
                 if (check.getLeft()) {
+                    // 完成必做，可以查看
                     improvementPlan.setReportStatus(3);
                 } else {
+                    // 未完成必做，不能查看
                     improvementPlan.setReportStatus(-1);
                 }
             }
@@ -249,7 +263,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public ImprovementPlan getRunningPlan(Integer profileId) {
+    public List<ImprovementPlan> getRunningPlan(Integer profileId) {
         return improvementPlanDao.loadRunningPlan(profileId);
     }
 
@@ -436,6 +450,20 @@ public class PlanServiceImpl implements PlanService {
             calcDeadLine(plan);
         });
         return improvementPlans;
+    }
+
+    @Override
+    public ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId) {
+        ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
+        if (challengePractice != null) {
+            List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
+            for (ImprovementPlan plan : plans) {
+                if (plan.getProblemId().equals(id)) {
+                    return plan;
+                }
+            }
+        }
+        return null;
     }
 
 }

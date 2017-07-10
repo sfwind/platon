@@ -261,8 +261,8 @@ public class ProblemController {
                 .function("碎片化")
                 .action("获取用户当前在解决的问题Id");
         operationLogService.log(operationLog);
-        ImprovementPlan runningPlan = planService.getRunningPlan(pcLoginUser.getId());
-        if (runningPlan == null) {
+        List<ImprovementPlan> runningPlan = planService.getRunningPlan(pcLoginUser.getId());
+        if (runningPlan.size() == 0) {
             // 没有正在进行的主题，选一个之前做过的
             List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getId());
             if (plans.isEmpty()) {
@@ -276,7 +276,7 @@ public class ProblemController {
             }
         } else {
             // 有正在进行的主题，直接返回id
-            return WebUtils.result(runningPlan.getProblemId());
+            return WebUtils.result(runningPlan.get(0).getProblemId());
         }
     }
 }

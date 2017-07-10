@@ -22,7 +22,7 @@ public interface PlanService {
      * 获取学员进行中的训练
      * @param profileId 学员id
      */
-    ImprovementPlan getRunningPlan(Integer profileId);
+    List<ImprovementPlan> getRunningPlan(Integer profileId);
 
     /**
      * 获取学员最近的训练
@@ -128,5 +128,8 @@ public interface PlanService {
      * 获取用户的计划列表，主要用在列表页面，会set小课头图和名字
      */
     List<ImprovementPlan> getPlanList(Integer profileId);
+
+    ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
+
 
 }
