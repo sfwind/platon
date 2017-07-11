@@ -98,15 +98,10 @@ public class PracticeController {
     @RequestMapping("/challenge/start/{challengeId}")
     public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
                                                               @PathVariable Integer challengeId,
-                                                              @RequestParam(name = "planId",required = false) Integer planId) {
+                                                              @RequestParam(name = "planId") Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if (planId == null) {
-            // 通过challengeId查planId
-            improvementPlan = planService.getPlanByChallengeId(challengeId, loginUser.getId());
-        } else {
-            improvementPlan = planService.getPlan(planId);
-        }
+        ImprovementPlan  improvementPlan = planService.getPlan(planId);
+
         if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
