@@ -22,7 +22,7 @@ public interface PlanService {
      * 获取学员进行中的训练
      * @param profileId 学员id
      */
-    ImprovementPlan getRunningPlan(Integer profileId);
+    List<ImprovementPlan> getRunningPlan(Integer profileId);
 
     /**
      * 获取学员最近的训练
@@ -118,6 +118,18 @@ public interface PlanService {
      */
     void markPlan(Integer series, Integer planId);
 
+    /**
+     * 获取用户plan，包括已删除的
+     * 主要用在resolve里，判断用户是否用过rise
+     */
     List<ImprovementPlan> loadUserPlans(Integer profileId);
+
+    /**
+     * 获取用户的计划列表，主要用在列表页面，会set小课头图和名字
+     */
+    List<ImprovementPlan> getPlanList(Integer profileId);
+
+    ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
+
 
 }

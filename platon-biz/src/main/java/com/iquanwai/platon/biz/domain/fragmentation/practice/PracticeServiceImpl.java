@@ -172,6 +172,8 @@ public class PracticeServiceImpl implements PracticeService {
         return warmupResult;
     }
 
+
+
     @Override
     public ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");

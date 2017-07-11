@@ -42,6 +42,8 @@ public class PlanServiceImpl implements PlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private ProblemScoreDao problemScoreDao;
+    @Autowired
+    private ChallengePracticeDao challengePracticeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -65,6 +67,54 @@ public class PlanServiceImpl implements PlanService {
         }
         //写入字段
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
+        calcDeadLine(improvementPlan);
+        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+        improvementPlan.setProblem(problem);
+        improvementPlan.setHasProblemScore(
+                problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(), improvementPlan.getProblemId()) > 0);
+        // 所有的综合练习是否完成
+        List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
+        // 拿到未完成的综合训练
+        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0)
+                .collect(Collectors.toList());
+        // 未完成未空则代表全部完成
+        improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
+
+        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+            // 计划正在进行中,暂时不能显示学习报告，需要完成必做
+            improvementPlan.setReportStatus(-2);
+        } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
+
+            Pair<Boolean, Integer> check = checkCloseable(improvementPlan);
+            if (check.getRight() != 0) {
+                // 未满足最小天数
+                improvementPlan.setReportStatus(2);
+                improvementPlan.setMustStudyDays(check.getRight());
+            } else {
+                // 计划已经完成，显示完成按钮
+                improvementPlan.setReportStatus(1);
+            }
+        } else {
+            if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+                Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
+                if (check.getLeft()) {
+                    // 完成必做，可以查看
+                    improvementPlan.setReportStatus(3);
+                } else {
+                    // 未完成必做，不能查看
+                    improvementPlan.setReportStatus(-1);
+                }
+            }
+        }
+
+
+        //组装小节数据
+        buildSections(improvementPlan);
+    }
+
+    private void calcDeadLine(ImprovementPlan improvementPlan) {
+        //写入字段
+        // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
         if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
             // 已关闭
             improvementPlan.setDeadline(0);
@@ -78,38 +128,6 @@ public class PlanServiceImpl implements PlanService {
                 improvementPlan.setDeadline(-1);
             }
         }
-        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-        improvementPlan.setProblem(problem);
-        improvementPlan.setHasProblemScore(
-                problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(), improvementPlan.getProblemId()) > 0);
-        // 所有的综合练习是否完成
-        List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
-        // 拿到未完成的综合训练
-        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0)
-                .collect(Collectors.toList());
-        // 未完成未空则代表全部完成
-        improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
-
-//        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
-        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
-            improvementPlan.setReportStatus(-2);
-        } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
-            improvementPlan.setReportStatus(1);
-        } else {
-            if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
-                Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
-                if (check.getLeft()) {
-                    improvementPlan.setReportStatus(3);
-                } else {
-                    improvementPlan.setReportStatus(-1);
-                }
-            }
-        }
-
-
-        //组装小节数据
-        buildSections(improvementPlan);
-
     }
 
     private void buildSections(ImprovementPlan improvementPlan) {
@@ -244,7 +262,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public ImprovementPlan getRunningPlan(Integer profileId) {
+    public List<ImprovementPlan> getRunningPlan(Integer profileId) {
         return improvementPlanDao.loadRunningPlan(profileId);
     }
 
@@ -419,6 +437,32 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public List<ImprovementPlan> loadUserPlans(Integer profileId){
         return improvementPlanDao.loadUserPlans(profileId);
+    }
+
+    @Override
+    public List<ImprovementPlan> getPlanList(Integer profileId) {
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
+        improvementPlans.forEach(plan -> {
+            Problem problem = cacheService.getProblem(plan.getProblemId());
+            plan.setProblem(problem);
+            plan.setProblemId(problem.getId());
+            calcDeadLine(plan);
+        });
+        return improvementPlans;
+    }
+
+    @Override
+    public ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId) {
+        ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
+        if (challengePractice != null) {
+            List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
+            for (ImprovementPlan plan : plans) {
+                if (plan.getProblemId().equals(id)) {
+                    return plan;
+                }
+            }
+        }
+        return null;
     }
 
 }
