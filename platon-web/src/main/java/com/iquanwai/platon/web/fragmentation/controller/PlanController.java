@@ -60,6 +60,12 @@ public class PlanController {
     @Autowired
     private ReportService reportService;
 
+    /**
+     * 检查是否能选课<br/>
+     * 逻辑：
+     * 1.会员可以选两门<br/>
+     * 2.试用版可以选一门
+     */
     @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -71,26 +77,28 @@ public class PlanController {
                 .action("检查是否能够重新选择")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
-        Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
-        if (!check.getLeft()) {
-            return WebUtils.error(check.getRight());
+        Pair<Integer, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+        if (check.getLeft() < 0) {
+            if (check.getLeft() == -1) {
+                return WebUtils.error(202, check.getRight());
+            } else if (check.getLeft() == -2) {
+                return WebUtils.error(203, check.getRight());
+            }
         }
         if (improvementPlans.size() != 0) {
             // 第二门需要提示一下
             return WebUtils.error(201, "为了更专注的学习，同时最多进行两门小课，确定选择吗？");
         }
-        // 现在完成小课必须在learn页面
-//
-//        if (improvementPlans != null) {
-//            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
-//            if (!check.getLeft()) {
-//                return WebUtils.error(check.getRight());
-//            }
-//        }
+        // 现在完成小课必须在learn页面，所以这里只需要判断是否是小课已完成
         return WebUtils.success();
     }
 
 
+    /**
+     * 选小课，生成学习计划<br/>
+     * 如果是正在进行的小课，就直接返回计划id<br/>
+     * 这里不修改旧的学习计划的状态<br/>
+     */
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
                                                           @PathVariable Integer problemId){
@@ -104,8 +112,8 @@ public class PlanController {
                 }
             }
 
-            Pair<Boolean, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
-            if (!check.getLeft()) {
+            Pair<Integer, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+            if (check.getLeft() < 0) {
                 return WebUtils.error(check.getRight());
             }
         }
@@ -117,14 +125,6 @@ public class PlanController {
             }
         }
 
-        // TODO 这里前移
-//        if (improvementPlan != null && improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
-//            // 1.正在进行中的不关闭
-//            // 2.过期的不重复关闭
-//            // 3.只有完成的会关闭掉
-//            planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
-//        }
-
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -135,6 +135,7 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(planId);
     }
+
 
 
     @RequestMapping("/play/{planId}")
@@ -168,6 +169,9 @@ public class PlanController {
         return WebUtils.result(playIntroduceDto);
     }
 
+    /**
+     * 加载学习计划，必须传planId
+     */
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request,
                                                          @RequestParam Integer planId){
@@ -543,42 +547,25 @@ public class PlanController {
         return WebUtils.result(planListDto);
     }
 
-    /**
-     * @param improvementPlan
-     * @return
-     */
-    @Deprecated
-    private Pair<Boolean,String> checkChooseNewProblem(ImprovementPlan improvementPlan){
-        Pair<Boolean, Integer> check = planService.checkCloseable(improvementPlan);
-        if (improvementPlan.getStatus() == 1) {
-            // status == 1 时不可以
-            LOGGER.error("planId {} is existed", improvementPlan.getId());
-            return new MutablePair<>(false,"先完成进行中的小课，才能选择另一个哦<br/>一次专心学一门吧");
-        } else if (improvementPlan.getStatus() == 2) {
-            // STATUS == 2 已完成，查看最小完成天数
-            if (check.getRight() != 0) {
-                LOGGER.error("planId {} is existed", improvementPlan.getId());
-                return new MutablePair<>(false, "学得太猛了，再复习一下吧<br/>本小课推荐学习天数至少为" + check.getRight() + "天<br/>之后就可以开启下一小课了");
-            }
-        }
-        return new MutablePair<>(true,"");
-    }
 
-    private Pair<Boolean,String> checkChooseNewProblem(List<ImprovementPlan> improvementPlan,Boolean riseMember){
+    /**
+     * 检查是否能够选新课
+     * @param plans 正在进行的小课
+     * @param riseMember 是否是会员
+     * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
+     */
+    private Pair<Integer,String> checkChooseNewProblem(List<ImprovementPlan> plans,Boolean riseMember){
         if(riseMember){
-            if (improvementPlan.size() >= 2) {
+            if (plans.size() >= 2) {
                 // 会员已经有两门再学
-                return new MutablePair<>(false, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
-            } else {
-                return new MutablePair<>(true, "");
+                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
             }
         } else {
-            if (improvementPlan.size() >= 1) {
+            if (plans.size() >= 1) {
                 // 非会员已经有一门了，则不可再选
-                return new MutablePair<>(false, "试用版只能试用一门小课的前三节哦");
-            } else {
-                return new MutablePair<>(true, "");
+                return new MutablePair<>(-2, "试用版只能试用一门小课的前三节哦");
             }
         }
+        return new MutablePair<>(1, "");
     }
 }

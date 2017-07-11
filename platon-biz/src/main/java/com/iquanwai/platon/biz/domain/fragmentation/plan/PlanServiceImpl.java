@@ -80,7 +80,6 @@ public class PlanServiceImpl implements PlanService {
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
 
-//        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING || improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
         if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做
             improvementPlan.setReportStatus(-2);
