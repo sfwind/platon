@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -518,6 +520,19 @@ public class PlanController {
         return WebUtils.success();
     }
 
+    public static void main(String[] args) {
+        List<Date> list = Lists.newArrayList();
+        list.add(DateUtils.parseStringToDate("2017-03-19"));
+        list.add(DateUtils.parseStringToDate("2017-05-19"));
+        list.add(DateUtils.parseStringToDate("2017-04-19"));
+        list.forEach(item -> System.out.println(DateUtils.parseDateToString(item)));
+        System.out.println();
+        list.sort((left,right)->{
+            return left.compareTo(right);
+        });
+        list.forEach(item -> System.out.println(DateUtils.parseDateToString(item)));
+    }
+
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -538,7 +553,15 @@ public class PlanController {
             item.setOpenid(null);
             item.setProfileId(null);
         });
-
+        runningPlans.sort(Comparator.comparing(ImprovementPlan::getStartDate));
+        completedPlans.sort((left, right) -> {
+            if (left.getCloseTime() == null) {
+                return 1;
+            } else if (right.getCloseTime() == null) {
+                return 0;
+            }
+            return right.getCloseTime().compareTo(left.getCloseTime());
+        });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("计划列表")
