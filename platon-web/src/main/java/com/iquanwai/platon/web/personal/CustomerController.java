@@ -20,6 +20,11 @@ import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
+import com.iquanwai.platon.web.personal.dto.AreaDto;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
+import com.iquanwai.platon.web.personal.dto.PlanListDto;
+import com.iquanwai.platon.web.personal.dto.ProfileDto;
+import com.iquanwai.platon.web.personal.dto.RegionDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -211,6 +216,33 @@ public class CustomerController {
         return WebUtils.result(riseMember);
     }
 
+    @RequestMapping(value = "/valid/sms", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> validCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        boolean result = accountService.validCode(validCodeDto.getCode(), loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("用户信息")
+                .function("个人信息")
+                .action("验证")
+                .memo(validCodeDto.getCode() + ":" + result);
+        operationLogService.log(operationLog);
+        return result ? WebUtils.success() : WebUtils.error("验证失败");
+    }
+
+    @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> sendCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Pair<Boolean, String> result = accountService.sendValidCode(validCodeDto.getPhone(),
+                loginUser.getId(), validCodeDto.getAreaCode());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("用户信息")
+                .function("个人信息")
+                .action("发送验证码")
+                .memo(validCodeDto.getPhone() + ":" + result.getLeft());
+        operationLogService.log(operationLog);
+        return result.getLeft() ? WebUtils.success() : WebUtils.error(result.getRight());
+    }
+
     @RequestMapping("/forum/mine/questions")
     public ResponseEntity<Map<String,Object>> loadMineQuestions(LoginUser loginUser,@ModelAttribute Page page){
         Assert.notNull(loginUser, "用户不能为空");
@@ -245,36 +277,8 @@ public class CustomerController {
         }
         page.setPage(1);
         page.setPageSize(100);
-        answerService.loadSelfAnswers(loginUser.getId(), page);
         List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
         return WebUtils.result(forumAnswers);
-    }
-
-    @RequestMapping(value = "/valid/sms", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> validCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        boolean result = accountService.validCode(validCodeDto.getCode(), loginUser.getId());
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("用户信息")
-                .function("个人信息")
-                .action("验证")
-                .memo(validCodeDto.getCode() + ":" + result);
-        operationLogService.log(operationLog);
-        return result ? WebUtils.success() : WebUtils.error("验证失败");
-    }
-
-    @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Pair<Boolean, String> result = accountService.sendValidCode(validCodeDto.getPhone(),
-                loginUser.getId(), validCodeDto.getAreaCode());
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("用户信息")
-                .function("个人信息")
-                .action("发送验证码")
-                .memo(validCodeDto.getPhone() + ":" + result.getLeft());
-        operationLogService.log(operationLog);
-        return result.getLeft() ? WebUtils.success() : WebUtils.error(result.getRight());
     }
 
 }

@@ -21,9 +21,8 @@ import java.util.List;
  */
 @Repository
 public class ForumDBUtil {
-    // TODO 临时解决 forum
     @Autowired
-    @Qualifier("dao.fragment.dataSource")
+    @Qualifier("dao.forum.dataSource")
     private DataSource ds;
 
     private Logger logger = LoggerFactory.getLogger(getClass());

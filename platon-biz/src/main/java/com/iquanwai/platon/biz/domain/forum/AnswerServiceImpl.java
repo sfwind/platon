@@ -63,18 +63,21 @@ public class AnswerServiceImpl implements AnswerService {
                 return true;
             }
         } else {
+            ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
+            if(forumAnswer == null) {
+                return false;
+            }
             // 新增
             AnswerApproval answerApproval = new AnswerApproval();
             answerApproval.setProfileId(profileId);
             answerApproval.setAnswerId(answerId);
+            answerApproval.setQuestionId(forumAnswer.getQuestionId());
+            answerApproval.setAnswerProfileId(forumAnswer.getProfileId());
             answerApproval.setDel(false);
             int id = answerApprovalDao.insert(answerApproval);
             if (id != -1) {
                 forumAnswerDao.approve(answerId);
-                ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
-                if (forumAnswer != null) {
-                    approveAnswerMsg(forumAnswer.getQuestionId(), answerId, forumAnswer.getProfileId(), profileId);
-                }
+//                approveAnswerMsg(forumAnswer.getQuestionId(), answerId, forumAnswer.getProfileId(), profileId);
                 return true;
             } else {
                 // sql报错，返回false

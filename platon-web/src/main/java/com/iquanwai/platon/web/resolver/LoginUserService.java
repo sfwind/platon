@@ -99,6 +99,7 @@ public class LoginUserService {
 //            logger.info("cookie:{},已登录,user:{},nickName:{}", sessionId, loginUser.getOpenId(), loginUser.getWeixinName());
             return true;
         } else {
+            // 只有没登录时会打印一次
             logger.info("cookie:{},没有登录,platform:{}", sessionId, platform);
             return false;
         }
