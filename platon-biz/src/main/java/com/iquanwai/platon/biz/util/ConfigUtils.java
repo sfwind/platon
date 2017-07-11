@@ -203,19 +203,19 @@ public class ConfigUtils {
 		return getBooleanValue("rise.forum.test");
 	}
 
-	public static String sendShortMessageUrl(){
-		return getValue("send.sms.url");
-	}
-
-	public static String getWelcomeMsg(){
-		return getValue("login.welcome.msg");
-	}
-
 	public static Integer getForumQuestionOpenPoint(){
 		return getIntValue("forum.question.open.point");
 	}
 
 	public static Integer getForumQuestionFollowPoint(){
 		return getIntValue("forum.question.follow.point");
+	}
+
+	public static String sendShortMessageUrl(){
+		return getValue("send.sms.url");
+	}
+
+	public static String getWelcomeMsg(){
+		return getValue("login.welcome.msg");
 	}
 }

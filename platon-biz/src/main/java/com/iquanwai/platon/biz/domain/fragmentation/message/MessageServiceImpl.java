@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Getter;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/2/27.
- *  */
+ */
 @Service
 public class MessageServiceImpl implements MessageService {
     @Autowired
@@ -54,7 +55,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<NotifyMessage> getNotifyMessage(Integer profileId, Page page) {
+    public List<NotifyMessage> getNotifyMessage(Integer profileId, Integer deviceType, Page page) {
         List<NotifyMessage> notifyMessages = notifyMessageDao.getMyMessages(profileId, page);
         int total = notifyMessageDao.getMyMessagesCount(profileId);
         page.setTotal(total);
@@ -82,8 +83,12 @@ public class MessageServiceImpl implements MessageService {
             //清空openid
             notifyMessage.setToUser(null);
             notifyMessage.setFromUser(null);
+            // 根据 PC 和移动端修改跳转 URL
+            if (deviceType == Constants.Device.PC) {
+                String url = notifyMessage.getUrl();
+                notifyMessage.setUrl(MessageURL.getPCUrl(url));
+            }
         });
-
         return notifyMessages;
     }
 
@@ -106,9 +111,9 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public ApplicationPractice loadAppPracticeByCommentId(Integer id) {
         Comment comment = commentDao.load(Comment.class, id);
-        if(comment != null){
+        if (comment != null) {
             ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, comment.getReferencedId());
-            if(applicationSubmit != null) {
+            if (applicationSubmit != null) {
                 ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationSubmit.getApplicationId());
                 applicationPractice.setPlanId(applicationSubmit.getPlanId());
                 return applicationPractice;
@@ -120,15 +125,15 @@ public class MessageServiceImpl implements MessageService {
     public SubjectArticle loadSubjectArticleByCommentId(Integer id) {
         SubjectArticle subjectArticle = new SubjectArticle();
         Comment comment = commentDao.load(Comment.class, id);
-        if(comment != null) {
-             subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
+        if (comment != null) {
+            subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
         }
         return subjectArticle;
     }
 
     @Setter
     @Getter
-    class VoteMessage{
+    class VoteMessage {
         private int referenceId;
         private int type;
         private HomeworkVote lastVote;
@@ -157,7 +162,7 @@ public class MessageServiceImpl implements MessageService {
             return result;
         }
 
-        public void increment(){
+        public void increment() {
             this.count++;
         }
     }

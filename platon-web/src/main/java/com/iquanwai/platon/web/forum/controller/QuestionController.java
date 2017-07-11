@@ -16,13 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -63,54 +57,6 @@ public class QuestionController {
         result.setList(forumQuestions);
         result.setEnd(page.isLastPage());
         return WebUtils.result(result);
-    }
-
-    @RequestMapping("/search/question")
-    public ResponseEntity<Map<String, Object>> searchQuestions(LoginUser loginUser, @ModelAttribute Page page, @RequestParam String content) {
-        Assert.notNull(loginUser, "用户不能为空");
-        List<ForumQuestion> forumQuestions = questionService.searchQuestions(loginUser.getId(), content, page);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("论坛")
-                .function("搜索")
-                .action("搜索问题");
-        operationLogService.log(operationLog);
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPageSize(PAGE_SIZE);
-        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
-        result.setList(forumQuestions);
-        result.setEnd(page.isLastPage());
-        return WebUtils.result(result);
-    }
-
-    /**
-     * 加载不同tag下的问题列表
-     * @param tagId tagId
-     * @param page 分页
-     */
-    @RequestMapping("/search/{tagId}")
-    public ResponseEntity<Map<String, Object>> getQuestions(LoginUser loginUser,
-                                                            @PathVariable Integer tagId,
-                                                            @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户不能为空");
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPageSize(PAGE_SIZE);
-        List<ForumQuestion> forumQuestionList = questionService.loadQuestionsByTags(tagId, page);
-
-        RefreshListDto<ForumQuestion> refreshListDto = new RefreshListDto<>();
-        refreshListDto.setList(forumQuestionList);
-        refreshListDto.setEnd(page.isLastPage());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("论坛")
-                .function("提问页")
-                .action("查询已有问题")
-                .memo(tagId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(refreshListDto);
     }
 
     /**

@@ -5,7 +5,6 @@ import com.iquanwai.platon.biz.repository.elasticsearch.ESClientFactory;
 import com.iquanwai.platon.biz.repository.elasticsearch.ESUtil;
 import com.iquanwai.platon.biz.repository.elasticsearch.SearchResult;
 import com.iquanwai.platon.biz.util.page.Page;
-import lombok.Data;
 import lombok.Getter;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -20,10 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 

@@ -7,11 +7,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemCatalog;
-import com.iquanwai.platon.biz.po.ProblemScore;
-import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
@@ -24,10 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +33,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rise/problem")
 public class ProblemController {
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private ProblemService problemService;
     @Autowired
@@ -72,7 +65,6 @@ public class ProblemController {
         operationLogService.log(operationLog);
         return WebUtils.result(problemDto);
     }
-
 
     @RequestMapping("/list/unchoose")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser) {
@@ -135,10 +127,8 @@ public class ProblemController {
         return WebUtils.result(result);
     }
 
-
     @RequestMapping("/list/{catalog}")
-    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser,
-                                                                    @PathVariable(value = "catalog") Integer catalogId) {
+    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
 
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "小课分类不能为空");
@@ -183,7 +173,6 @@ public class ProblemController {
             return WebUtils.error("分类不能为空");
         }
     }
-
 
     @RequestMapping("/list/all")
     public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
@@ -245,8 +234,7 @@ public class ProblemController {
     }
 
     @RequestMapping("/grade/{problemId}")
-    public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId,
-                                                          @RequestBody List<ProblemScore> problemScores) {
+    public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores) {
         Assert.notNull(loginUser, "用户不能为空");
         problemService.gradeProblem(problemId, loginUser.getOpenId(), loginUser.getId(), problemScores);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -272,7 +260,7 @@ public class ProblemController {
             List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getId());
             if (plans.isEmpty()) {
                 // 没有买过难题
-                LOGGER.error("{} has no active plan", pcLoginUser.getOpenId());
+                logger.error("{} has no active plan", pcLoginUser.getOpenId());
                 return WebUtils.error(ErrorConstants.NOT_PAY_FRAGMENT, "没找到进行中的RISE训练");
             } else {
                 // 购买过直接选最后一个
@@ -284,4 +272,53 @@ public class ProblemController {
             return WebUtils.result(runningPlan.getProblemId());
         }
     }
+
+    @RequestMapping(value = "/submit/extension", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> updateProblemExtension(LoginUser loginUser, @RequestBody ProblemExtension problemExtension) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemExtension.getProblemId(), "小课 Id 不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课").function("小课扩展").action("更新小课扩展");
+        operationLogService.log(operationLog);
+        Integer result = problemService.insertProblemExtension(problemExtension);
+        if (result > 0) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("更新失败");
+        }
+    }
+
+    @RequestMapping(value = "/submit/activity", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> updateProblemActivity(LoginUser loginUser, @RequestBody ProblemActivity problemActivity) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemActivity.getProblemId(), "小课 Id 不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课").function("小课扩展").action("更新小课活动");
+        operationLogService.log(operationLog);
+        Integer result = problemService.insertProblemActivity(problemActivity);
+        if(result > 0) {
+            return WebUtils.result("更新成功");
+        } else {
+            return WebUtils.error("更新失败");
+        }
+    }
+
+    @RequestMapping(value = "/extension/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadProblemExtension(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemId, "请求 ProblemId 不能为空");
+        OperationLog operationLog = OperationLog.create().module("小课").action("小课扩展").function("获取小课扩展数据");
+        operationLogService.log(operationLog);
+        ProblemExtension extension = problemService.loadProblemExtensionByProblemId(problemId);
+        List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
+        if (extension != null && activities != null) {
+            extension.setActivities(activities);
+            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.Online.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.Offline.equals(activity.getType())).collect(Collectors.toList()));
+            return WebUtils.result(extension);
+        } else {
+            return WebUtils.error("当前小课暂无延伸学习相关内容");
+        }
+    }
+
 }

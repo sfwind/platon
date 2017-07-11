@@ -100,8 +100,6 @@ public class PracticeServiceImpl implements PracticeService {
                 } else if (warmupPractice.getDifficulty() == 3) {
                     warmupPractice.setScore(PointRepo.HARD_SCORE);
                 }
-                Knowledge knowledge = getKnowledge(warmupPractice.getKnowledgeId());
-                warmupPractice.setKnowledge(knowledge);
                 warmupPractices.add(warmupPractice);
             }
         }
@@ -168,8 +166,6 @@ public class PracticeServiceImpl implements PracticeService {
         }
         improvementPlanDao.updateWarmupComplete(planId);
         pointRepo.risePoint(planId, point);
-        //TODO:和risePoint合并
-        pointRepo.riseCustomerPoint(profileId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
 
@@ -316,8 +312,6 @@ public class PracticeServiceImpl implements PracticeService {
                 pointRepo.risePoint(submit.getPlanId(), point);
                 // 修改status
                 applicationSubmitDao.updatePointStatus(id);
-                // 加总分
-                pointRepo.riseCustomerPoint(submit.getProfileId(), point);
             }
         }
         return result;
@@ -368,8 +362,6 @@ public class PracticeServiceImpl implements PracticeService {
                 pointRepo.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
                 // 修改status
                 challengeSubmitDao.updatePointStatus(id);
-                // 加总分
-                pointRepo.riseCustomerPoint(submit.getProfileId(), ConfigUtils.getChallengeScore());
             }
 
         }
@@ -450,7 +442,6 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setDevice(device);
             homeworkVoteDao.vote(homeworkVote);
             pointRepo.risePoint(planId, ConfigUtils.getVoteScore());
-            pointRepo.riseCustomerPoint(submitProfileId, ConfigUtils.getVoteScore());
         } else {
             homeworkVoteDao.reVote(vote.getId());
         }
