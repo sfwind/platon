@@ -23,6 +23,7 @@ import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
@@ -39,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +87,7 @@ public class PlanController {
                 return WebUtils.error(203, check.getRight());
             }
         }
-        if (improvementPlans.size() != 0) {
+        if (CollectionUtils.isNotEmpty(improvementPlans)) {
             // 第二门需要提示一下
             return WebUtils.error(201, "为了更专注的学习，同时最多进行两门小课，确定选择吗？");
         }
@@ -517,19 +517,6 @@ public class PlanController {
                 .memo(series.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
-    }
-
-    public static void main(String[] args) {
-        List<Date> list = Lists.newArrayList();
-        list.add(DateUtils.parseStringToDate("2017-03-19"));
-        list.add(DateUtils.parseStringToDate("2017-05-19"));
-        list.add(DateUtils.parseStringToDate("2017-04-19"));
-        list.forEach(item -> System.out.println(DateUtils.parseDateToString(item)));
-        System.out.println();
-        list.sort((left,right)->{
-            return left.compareTo(right);
-        });
-        list.forEach(item -> System.out.println(DateUtils.parseDateToString(item)));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
