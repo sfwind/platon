@@ -32,4 +32,5 @@ public class ImprovementReport {
 
     // data
     private Boolean showNextBtn;
+    private Boolean doneAllApps;
 }
