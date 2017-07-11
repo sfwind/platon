@@ -310,7 +310,7 @@ public class PlanController {
 
         if (!check.getLeft()) {
             // 没有完成必做
-            return WebUtils.error(-1, "先完成所有的知识理解和巩固练习<br/>才能查看报告哦");
+            return WebUtils.error(-1, "先完成所有的知识理解和巩固练习<br/>才能完成小课哦");
         } else {
             // 完成必做,查看最小完成天数
             if (check.getRight() != 0) {
@@ -324,7 +324,6 @@ public class PlanController {
         }
         // 可以关闭，进行关闭
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
-
 
         return WebUtils.success();
     }
