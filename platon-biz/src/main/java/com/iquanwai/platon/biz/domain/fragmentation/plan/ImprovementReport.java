@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.iquanwai.platon.biz.po.Recommendation;
 import lombok.Data;
 
 import java.util.List;
@@ -29,7 +30,8 @@ public class ImprovementReport {
     private Integer receiveVoteCount;//收获多少赞
     private Integer votedScore; // 点赞收获多少分
 
-
     // data
     private Boolean showNextBtn;
+    private List<Recommendation> recommendations;
+
 }
