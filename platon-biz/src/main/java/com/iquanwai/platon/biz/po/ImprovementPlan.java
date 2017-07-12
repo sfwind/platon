@@ -52,6 +52,7 @@ public class ImprovementPlan {
      *
      **/
     private Integer reportStatus; // report的状态以及点击后的行为
+    private Integer mustStudyDays; // 最小学习天数
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

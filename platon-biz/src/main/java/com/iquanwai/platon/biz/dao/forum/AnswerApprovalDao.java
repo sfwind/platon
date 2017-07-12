@@ -27,11 +27,12 @@ public class AnswerApprovalDao extends ForumDBUtil {
      */
     public int insert(AnswerApproval answerApproval) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into AnswerApproval(AnswerId, ProfileId) " +
-                "values(?,?)";
+        String sql = "insert into AnswerApproval(QuestionId, AnswerId, AnswerProfileId, ProfileId) " +
+                "values(?,?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    answerApproval.getAnswerId(), answerApproval.getProfileId());
+                    answerApproval.getQuestionId(), answerApproval.getAnswerId(),
+                    answerApproval.getAnswerProfileId(), answerApproval.getProfileId());
             return insertRs.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

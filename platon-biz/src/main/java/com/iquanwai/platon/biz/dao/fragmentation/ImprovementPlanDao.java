@@ -48,17 +48,17 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return -1;
     }
 
-    public ImprovementPlan loadRunningPlan(Integer profileId){
+    public List<ImprovementPlan> loadRunningPlan(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId=? and CloseDate>=? and Status in (1,2) and Del=0";
-        ResultSetHandler<ImprovementPlan> h = new BeanHandler<>(ImprovementPlan.class);
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+
         try {
-            ImprovementPlan improvementPlan =runner.query(sql, h, profileId, DateUtils.parseDateToString(new Date()));
-            return improvementPlan;
+            return runner.query(sql, h, profileId, DateUtils.parseDateToString(new Date()));
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        return null;
+        return Lists.newArrayList();
     }
 
     public List<ImprovementPlan> loadAllPlans(Integer profileId){

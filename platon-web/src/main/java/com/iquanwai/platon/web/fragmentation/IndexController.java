@@ -54,8 +54,8 @@ public class IndexController {
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
 
-    @RequestMapping(value = "/rise/static/**", method = RequestMethod.GET)
-    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"},method = RequestMethod.GET)
+    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception{
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;

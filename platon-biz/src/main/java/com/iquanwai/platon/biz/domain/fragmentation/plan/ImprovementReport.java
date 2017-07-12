@@ -32,6 +32,7 @@ public class ImprovementReport {
 
     // data
     private Boolean showNextBtn;
+    private Boolean doneAllApps;
     private List<Recommendation> recommendations;
 
 }

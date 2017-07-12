@@ -55,7 +55,7 @@ public class PracticeController {
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
+                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId",required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
         if (planId != null) {
@@ -72,10 +72,12 @@ public class PracticeController {
                     loginUser.getId());
             if (applicationSubmit == null) {
                 // 没有提交过，查询当前的planId
-                ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
-                if (improvementPlan != null) {
-                    planId = improvementPlan.getId();
-                }
+                // TODO 这里要仔细检查
+                return WebUtils.error("参数错误，可以联系小Q反馈哦");
+//                ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
+//                if (improvementPlan != null) {
+//                    planId = improvementPlan.getId();
+//                }
             } else {
                 planId = applicationSubmit.getPlanId();
             }
@@ -96,14 +98,10 @@ public class PracticeController {
     @RequestMapping("/challenge/start/{challengeId}")
     public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
                                                               @PathVariable Integer challengeId,
-                                                              @RequestParam(name = "planId", required = false) Integer planId) {
+                                                              @RequestParam(name = "planId") Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan;
-        if (planId == null) {
-            improvementPlan = planService.getRunningPlan(loginUser.getId());
-        } else {
-            improvementPlan = planService.getPlan(planId);
-        }
+        ImprovementPlan  improvementPlan = planService.getPlan(planId);
+
         if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
