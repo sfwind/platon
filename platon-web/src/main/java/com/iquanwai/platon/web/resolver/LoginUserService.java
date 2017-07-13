@@ -303,7 +303,7 @@ public class LoginUserService {
                 account = accountService.getProfile(openId, false);
             }
         } catch (NotFollowingException e) {
-
+            logger.error("异常，openid:{}，没有查到", openId);
         }
 
         if(account==null){
