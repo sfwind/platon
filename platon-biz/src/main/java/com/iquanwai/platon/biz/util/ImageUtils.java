@@ -1,18 +1,24 @@
 package com.iquanwai.platon.biz.util;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.File;
 
 /**
  * Created by justin on 17/7/12.
  */
 public class ImageUtils {
-
+    private static OkHttpClient client = new OkHttpClient();
+    private static Logger logger = LoggerFactory.getLogger(ImageUtils.class);
     /*
     * 变成一个圆形
     * @param inputImage 需要修改的图片
@@ -73,29 +79,21 @@ public class ImageUtils {
     * @param url 图片链接
     * */
     public static BufferedImage getUrlByBufferedImage(String url) {
-        try {
-            URL urlObj = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
-// 连接超时
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-            conn.setConnectTimeout(2500);
-// 读取超时 --服务器响应比较慢,增大时间
-            conn.setReadTimeout(2500);
-            conn.setRequestMethod("GET");
-            conn.addRequestProperty("Accept-Language", "zh-cn");
-            conn.addRequestProperty("Content-type", "image/png");
-            conn.addRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727)");
-            conn.connect();
-            BufferedImage bufImg = ImageIO.read(conn.getInputStream());
-            conn.disconnect();
-            return bufImg;
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        if(StringUtils.isNotEmpty(url)) {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                return ImageIO.read(response.body().byteStream());
+            } catch (Exception e) {
+                logger.error("execute " + url + " error", e);
+            }
         }
+
         return null;
-
-
     }
 
     public static BufferedImage overlapImage(BufferedImage big, BufferedImage small, int x, int y) {
@@ -105,28 +103,30 @@ public class ImageUtils {
         return big;
     }
 
-//    public static void main(String[] args) {
-//        try {
-//            long l1 = System.currentTimeMillis();
-//
-//            //获取图片的流
-//            BufferedImage big = getUrlByBufferedImage("http://wx.qlogo.cn/mmopen/Q3auHgzwzM6LrkJRYApibxYsAEYm2CmS7JZwX09AmHsP0X2VJQSpibHyoHsQKNcvqf1hzFgJr6l40vyhH7KtGWupGmgKHwFibbiaOOS0qKuvjsQ/0");
-//            BufferedImage small = getUrlByBufferedImage("http://static.iqycamp.com/images/logo.png");
-//
-//            //处理图片将其压缩成正方形的小图
-////            BufferedImage  convertImage = writeText(url, 22, 22);
-//            //裁剪成圆形 （传入的图像必须是正方形的 才会 圆形 如果是长方形的比例则会变成椭圆的）
-////            convertImage = convertCircular(url);
-//            big = overlapImage(big, small, 100, 100);
-//            //生成的图片位置
-//            String imagePath = "/Users/justin/a.png";
-//            ImageIO.write(big, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
-//            long l2 = System.currentTimeMillis();
-//            System.out.println(l2 - l1);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public static void main(String[] args) {
+        try {
+            long l1 = System.currentTimeMillis();
+
+            //获取图片的流
+
+            BufferedImage big = getUrlByBufferedImage("http://wx.qlogo.cn/mmopen/Q3auHgzwzM6LrkJRYApibxYsAEYm2CmS7JZwX09AmHsP0X2VJQSpibHyoHsQKNcvqf1hzFgJr6l40vyhH7KtGWupGmgKHwFibbiaOOS0qKuvjsQ/64");
+            BufferedImage small = getUrlByBufferedImage("http://static.iqycamp.com/images/logo.png");
+            long l2 = System.currentTimeMillis();
+            System.out.println(l2 - l1);
+            //处理图片将其压缩成正方形的小图
+//            BufferedImage  convertImage = writeText(big, 22, 22);
+            //裁剪成圆形 （传入的图像必须是正方形的 才会 圆形 如果是长方形的比例则会变成椭圆的）
+            big = convertCircular(big);
+            big = overlapImage(big, small, 100, 100);
+            //生成的图片位置
+            String imagePath = "/Users/justin/a.png";
+            ImageIO.write(small, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
+            long l3 = System.currentTimeMillis();
+            System.out.println(l3 - l2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 
