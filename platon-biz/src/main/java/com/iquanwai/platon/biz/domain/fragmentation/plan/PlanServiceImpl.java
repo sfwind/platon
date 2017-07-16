@@ -44,6 +44,8 @@ public class PlanServiceImpl implements PlanService {
     private ProblemScoreDao problemScoreDao;
     @Autowired
     private ChallengePracticeDao challengePracticeDao;
+    @Autowired
+    private RiseCourseDao riseCourseDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -267,6 +269,45 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Pair<Integer,String> checkPayCourse(Integer profileId,Integer problemId){
+        //
+        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        if (plan == null) {
+            // 没有学过这个小课，可以购买
+            return new MutablePair<>(1, "");
+        } else {
+            // 学过这个小课，查看status == 4
+            if (plan.getStatus() == ImprovementPlan.TRIALCLOSE) {
+                // 试用到期，可以购买
+                return new MutablePair<>(1, "");
+            } else if (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE) {
+                return new MutablePair<>(-1, "该小课可以正常学习,无需购买");
+            } else {
+                return new MutablePair<>(-2, "该小课无需购买");
+            }
+
+        }
+    }
+
+    @Override
+    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Boolean riseMember) {
+
+        if (riseMember) {
+            if (plans.size() >= 2) {
+                // 会员已经有两门再学
+                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
+            }
+        } else {
+            if (plans.size() >= 1) {
+                // 非会员已经有一门了，则不可再选
+                return new MutablePair<>(-2, "试用版是能试用一门小课哦");
+            }
+        }
+
+        return new MutablePair<>(1, "");
+    }
+
+    @Override
     public ImprovementPlan getLatestPlan(Integer profileId) {
         return improvementPlanDao.getLastPlan(profileId);
     }
@@ -274,6 +315,11 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public List<ImprovementPlan> getPlans(Integer profileId) {
         return improvementPlanDao.loadAllPlans(profileId);
+    }
+
+    @Override
+    public RiseCourse getRiseCourseOrder(Integer profileId,Integer problemId){
+        return riseCourseDao.loadOrder(profileId, problemId);
     }
 
     @Override

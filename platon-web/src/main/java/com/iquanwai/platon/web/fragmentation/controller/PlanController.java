@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseCourse;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -24,7 +25,6 @@ import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
@@ -68,10 +69,9 @@ public class PlanController {
      * 1.会员可以选两门<br/>
      * 2.试用版可以选一门
      */
-    @RequestMapping(value = "/choose/problem/check/{problemId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable Integer problemId) {
+    @RequestMapping(value = "/choose/problem/check/{problemId}/{type}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId, @PathVariable(value = "type") Integer type) {
         Assert.notNull(loginUser, "用户不能为空");
-         List<ImprovementPlan> improvementPlans = planService.getRunningPlan(loginUser.getId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
@@ -79,7 +79,15 @@ public class PlanController {
                 .action("检查是否能够重新选择")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
-        Pair<Integer, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+
+        List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
+
+        List<ImprovementPlan> runningPlans = improvementPlans.stream()
+                .filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
+                .collect(Collectors.toList());
+
+        // 检查是否能选新课
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getRiseMember());
         if (check.getLeft() < 0) {
             if (check.getLeft() == -1) {
                 return WebUtils.error(202, check.getRight());
@@ -87,10 +95,77 @@ public class PlanController {
                 return WebUtils.error(203, check.getRight());
             }
         }
-        if (CollectionUtils.isNotEmpty(improvementPlans)) {
+        // 可以选新课，接下来判断这门课是不是已经学过
+        ImprovementPlan plan = improvementPlans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
+        // 该小课是不是限免小课
+        Integer freeProblemId = ConfigUtils.getTrialProblemId();
+
+        // 不同操作的检查
+        switch (type) {
+            case 1: {
+                // 直接选小课
+                if (!loginUser.getRiseMember()) {
+                    return WebUtils.error("您不是年费会员，需要单独购买小课哦");
+                }
+                break;
+            }
+            case 2: {
+                // 购买小课
+                if (plan != null) {
+                    // 学过该小课
+                    switch (plan.getStatus()) {
+                        case ImprovementPlan.RUNNING:
+                            // 正在进行中，不能购买
+                            return WebUtils.error(204, "小课正在进行中");
+                        case ImprovementPlan.COMPLETE:
+                            // 无需购买
+                            return WebUtils.error(205, "小课已经完成，无需购买");
+                        case ImprovementPlan.CLOSE:
+                            // 关闭状态
+                            return WebUtils.error("该小课无需购买");
+                        case ImprovementPlan.TRIALCLOSE:
+                            // 试学结束，查看会员类型
+                            if (loginUser.getRiseMember()) {
+                                // 是会员，不需要购买
+                                return WebUtils.error("您已经是会员，无需单独购买小课");
+                            }
+                            // 不是会员，需要购买
+                            // ignore
+                            break;
+                    }
+                } else {
+                    // 没有学过该小课
+                    if (loginUser.getRiseMember()) {
+                        // 已经是会员，无需购买
+                        return WebUtils.error("您已经是会员，无需单独购买小课");
+                    }
+                    // 不是会员，需要购买
+                }
+                break;
+            }
+            case 3: {
+                // 限免小课试用
+                if (!problemId.equals(freeProblemId)) {
+                    // 不是限免小课
+                    return WebUtils.error("该小课不是限免小课");
+                } else {
+                    // 是限免小课
+                    if (plan != null) {
+                        // 已经试用过了
+                        return WebUtils.error("您已经试用过该小课，无法重复试用");
+                    } else {
+                        // 没有试用过
+                        //ignore
+                    }
+                }
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(runningPlans)) {
             // 第二门需要提示一下
             return WebUtils.error(201, "为了更专注的学习，同时最多进行两门小课，确定选择吗？");
         }
+
         // 现在完成小课必须在learn页面，所以这里只需要判断是否是小课已完成
         return WebUtils.success();
     }
@@ -105,28 +180,39 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
                                                           @PathVariable Integer problemId){
         Assert.notNull(loginUser, "用户不能为空");
-        List<ImprovementPlan> improvementPlans = planService.getRunningPlan(loginUser.getId());
-        if (improvementPlans.size() >= 1) {
+        List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
+
+        // 获取正在学习的小课
+        List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
+
+        // 有正在学习的小课
+        if (runningPlans.size() >= 1) {
             //如果是同一个小课的训练,直接返回训练id
-            for (ImprovementPlan plan : improvementPlans) {
+            for (ImprovementPlan plan : runningPlans) {
                 if (plan.getProblemId().equals(problemId)) {
                     return WebUtils.result(plan.getId());
                 }
             }
-
-            Pair<Integer, String> check = this.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
-            if (check.getLeft() < 0) {
-                return WebUtils.error(check.getRight());
-            }
         }
 
-        List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
-        for(ImprovementPlan plan:plans){
+        Pair<Integer, String> check = planService.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+
+        if (check.getLeft() < 0) {
+            return WebUtils.error(check.getRight());
+        }
+        // 之前是否学过这个小课，避免重复生成计划
+        for(ImprovementPlan plan:improvementPlans){
             if(plan.getProblemId().equals(problemId)){
                 return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
             }
         }
 
+        // 这里生成小课训练计划，另外在检查一下是否是会员或者购买了这个小课
+        RiseCourse riseCourseOrder = planService.getRiseCourseOrder(loginUser.getId(), problemId);
+        if (!loginUser.getRiseMember() && riseCourseOrder == null) {
+            // 既没有购买过这个小课，又不是rise会员
+            return WebUtils.error("非rise会员需要单独购买小课哦");
+        }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -554,27 +640,5 @@ public class PlanController {
                 .action("查询计划列表");
         operationLogService.log(operationLog);
         return WebUtils.result(planListDto);
-    }
-
-
-    /**
-     * 检查是否能够选新课
-     * @param plans 正在进行的小课
-     * @param riseMember 是否是会员
-     * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
-     */
-    private Pair<Integer,String> checkChooseNewProblem(List<ImprovementPlan> plans,Boolean riseMember){
-        if(riseMember){
-            if (plans.size() >= 2) {
-                // 会员已经有两门再学
-                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
-            }
-        } else {
-            if (plans.size() >= 1) {
-                // 非会员已经有一门了，则不可再选
-                return new MutablePair<>(-2, "试用版只能试用一门小课的前三节哦");
-            }
-        }
-        return new MutablePair<>(1, "");
     }
 }

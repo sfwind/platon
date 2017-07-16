@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseCourse;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -24,6 +25,18 @@ public interface PlanService {
      */
     List<ImprovementPlan> getRunningPlan(Integer profileId);
 
+
+    Pair<Integer,String> checkPayCourse(Integer profileId, Integer problemId);
+
+    /**
+     * 检查是否能够选新课
+     *
+     * @param plans  用户的小课数据
+     * @param riseMember 是否是会员
+     * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
+     */
+    Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Boolean riseMember);
+
     /**
      * 获取学员最近的训练
      * @param profileId 学员id
@@ -35,6 +48,8 @@ public interface PlanService {
      * @param profileId 学员id
      */
     List<ImprovementPlan> getPlans(Integer profileId);
+
+    RiseCourse getRiseCourseOrder(Integer profileId, Integer problemId);
 
     /**
      * 获取简略的训练计划(不含练习)

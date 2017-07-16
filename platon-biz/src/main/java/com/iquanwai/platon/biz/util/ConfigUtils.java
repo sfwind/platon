@@ -218,4 +218,8 @@ public class ConfigUtils {
 	public static String getWelcomeMsg(){
 		return getValue("login.welcome.msg");
 	}
+
+	public static Integer getTrialProblemId(){
+		return getIntValue("rise.trial.problem.id");
+	}
 }
