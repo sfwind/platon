@@ -94,6 +94,7 @@ public class OperationServiceImpl implements OperationService {
                 Coupon coupon = new Coupon();
                 coupon.setOpenId(sourceProfile.getOpenid());
                 coupon.setProfileId(sourceProfile.getId());
+                // TODO 优惠券金额、过期时间
                 coupon.setAmount(50);
                 coupon.setExpiredDate(DateUtils.parseStringToDateTime("2018-01-01 00:00:00"));
                 coupon.setDescription("限免推广券");
