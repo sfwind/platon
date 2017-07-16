@@ -40,8 +40,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
     @Autowired
-    private ChallengePracticeDao challengePracticeDao;
-    @Autowired
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
     private ApplicationSubmitDraftDao applicationSubmitDraftDao;
@@ -177,7 +175,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
-        ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
+        ChallengePractice challengePractice = new ChallengePractice(id);
         // 查询该用户是否提交
         ChallengeSubmit submit = challengeSubmitDao.load(id, planId, profileId);
         if (submit == null && create) {
