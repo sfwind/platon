@@ -46,7 +46,7 @@ public class SubscribeReceiver {
                 JSONObject json = JSONObject.parseObject(message);
                 String scene = json.get("scene").toString();
                 logger.info("scene:", scene);
-                String openId = json.get("openId").toString();
+                String openId = json.get("openid").toString();
                 logger.info("openId:", openId);
                 operationService.recordPromotionLevel(openId, scene);
             }
