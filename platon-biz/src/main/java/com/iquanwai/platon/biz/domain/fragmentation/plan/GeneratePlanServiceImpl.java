@@ -37,8 +37,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
     @Autowired
-    private ChallengePracticeDao challengePracticeDao;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
@@ -148,21 +146,17 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
         Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selected = Lists.newArrayList();
-        List<ChallengePractice> practices = challengePracticeDao.loadPractice(problem.getId());
 
-        List<ChallengePractice> challengePractices = selectChallenge(practices);
-        challengePractices.forEach(practice->{
-            PracticePlan practicePlan = new PracticePlan();
-            practicePlan.setUnlocked(true);
-            practicePlan.setPlanId(planId);
-            practicePlan.setType(PracticePlan.CHALLENGE);
-            practicePlan.setPracticeId(practice.getId()+"");
-            practicePlan.setStatus(0);
-            practicePlan.setSequence(WARMUP_SEQUENCE+APPLICATION_TASK_NUMBER+1);
-            practicePlan.setSeries(0);
+        PracticePlan practicePlan = new PracticePlan();
+        practicePlan.setUnlocked(true);
+        practicePlan.setPlanId(planId);
+        practicePlan.setType(PracticePlan.CHALLENGE);
+        practicePlan.setPracticeId(problem.getId()+"");
+        practicePlan.setStatus(0);
+        practicePlan.setSequence(WARMUP_SEQUENCE+APPLICATION_TASK_NUMBER+1);
+        practicePlan.setSeries(0);
 //            practicePlan.setSummary(false);
-            selected.add(practicePlan);
-        });
+        selected.add(practicePlan);
 
         return selected;
     }
