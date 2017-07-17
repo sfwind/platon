@@ -47,7 +47,6 @@ public class QRCodeServiceImpl implements QRCodeService {
 
     private QRResponse generate(String json) {
         String body = restfulHelper.post(GEN_QRCODE_URL, json);
-        System.out.println("return message " + body);
         Gson gson = new Gson();
         return gson.fromJson(body, QRResponse.class);
     }
