@@ -296,7 +296,15 @@ public class LoginUserService {
     }
 
     public LoginUser getLoginUser(String openId) {
-        Profile account = accountService.getProfile(openId, false);
+        Profile account = null;
+        try {
+            Account temp = accountService.getAccount(openId, false);
+            if (temp != null) {
+                account = accountService.getProfile(openId, false);
+            }
+        } catch (NotFollowingException e) {
+            logger.error("异常，openid:{}，没有查到", openId);
+        }
 
         if(account==null){
             logger.error("openId {} is not found in db", openId);
