@@ -6,7 +6,7 @@ import lombok.Data;
  * Created by nethunder on 2017/7/14.
  */
 @Data
-public class RiseCourse {
+public class RiseCourseOrder {
     private Integer id;
     private Integer profileId;
     private String openid;

@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
-import com.iquanwai.platon.biz.po.RiseCourse;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -19,13 +19,13 @@ import java.sql.SQLException;
 public class RiseCourseDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public int insert(RiseCourse riseCourse) {
+    public int insert(RiseCourseOrder riseCourseOrder) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into RiseCourse(ProfileId, Openid, ProblemId, OrderId) " +
+        String sql = "insert into RiseCourseOrder(ProfileId, Openid, ProblemId, OrderId) " +
                 " VALUES (?, ?, ?, ?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    riseCourse.getProfileId(), riseCourse.getOpenid(), riseCourse.getProblemId(), riseCourse.getOrderId());
+                    riseCourseOrder.getProfileId(), riseCourseOrder.getOpenid(), riseCourseOrder.getProblemId(), riseCourseOrder.getOrderId());
             return insertRs.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -33,12 +33,12 @@ public class RiseCourseDao extends DBUtil {
         return -1;
     }
 
-    public RiseCourse loadOrder(String orderId) {
+    public RiseCourseOrder loadOrder(String orderId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<RiseCourse> h = new BeanHandler<>(RiseCourse.class);
+        ResultSetHandler<RiseCourseOrder> h = new BeanHandler<>(RiseCourseOrder.class);
 
         try {
-            RiseCourse order = run.query("SELECT * FROM RiseCourse where OrderId=? ", h, orderId);
+            RiseCourseOrder order = run.query("SELECT * FROM RiseCourseOrder where OrderId=? ", h, orderId);
             return order;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -47,12 +47,12 @@ public class RiseCourseDao extends DBUtil {
         return null;
     }
 
-    public RiseCourse loadOrder(Integer profileId, Integer problemId) {
+    public RiseCourseOrder loadEntryOrder(Integer profileId, Integer problemId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<RiseCourse> h = new BeanHandler<>(RiseCourse.class);
+        ResultSetHandler<RiseCourseOrder> h = new BeanHandler<>(RiseCourseOrder.class);
 
         try {
-            RiseCourse order = run.query("SELECT * FROM RiseCourse where ProfileId=? and ProblemId=？ ", h, profileId, problemId);
+            RiseCourseOrder order = run.query("SELECT * FROM RiseCourseOrder where ProfileId=? and ProblemId=？and Entry=1 and IsDel=0 ", h, profileId, problemId);
             return order;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

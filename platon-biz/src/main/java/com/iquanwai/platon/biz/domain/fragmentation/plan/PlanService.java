@@ -3,7 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.RiseCourse;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -49,7 +49,7 @@ public interface PlanService {
      */
     List<ImprovementPlan> getPlans(Integer profileId);
 
-    RiseCourse getRiseCourseOrder(Integer profileId, Integer problemId);
+    RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId);
 
     /**
      * 获取简略的训练计划(不含练习)

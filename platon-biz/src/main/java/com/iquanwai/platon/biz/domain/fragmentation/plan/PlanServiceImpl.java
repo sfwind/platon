@@ -320,8 +320,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public RiseCourse getRiseCourseOrder(Integer profileId,Integer problemId){
-        return riseCourseDao.loadOrder(profileId, problemId);
+    public RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId){
+        return riseCourseDao.loadEntryOrder(profileId, problemId);
     }
 
     @Override
