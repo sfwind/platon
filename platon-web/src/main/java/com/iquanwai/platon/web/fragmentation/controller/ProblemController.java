@@ -274,6 +274,7 @@ public class ProblemController {
             }
         } else {
             // 学过这个小课
+            dto.setPlanId(plan.getId());
             switch (plan.getStatus()) {
                 case ImprovementPlan.RUNNING:{
                     buttonStatus = 3;

@@ -11,4 +11,5 @@ public class RiseCourseDto {
     private Problem problem;
     private Double fee;
     private Integer buttonStatus;
+    private Integer planId;
 }
