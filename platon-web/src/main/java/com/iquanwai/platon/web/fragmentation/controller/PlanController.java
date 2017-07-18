@@ -87,7 +87,7 @@ public class PlanController {
                 .collect(Collectors.toList());
 
         // 检查是否能选新课
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getRiseMember());
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
         if (check.getLeft() < 0) {
             if (check.getLeft() == -1) {
                 return WebUtils.error(202, check.getRight());
@@ -102,14 +102,14 @@ public class PlanController {
 
         // 不同操作的检查
         switch (type) {
-            case 1: {
+            case 2: {
                 // 直接选小课
                 if (!loginUser.getRiseMember()) {
                     return WebUtils.error("您不是年费会员，需要单独购买小课哦");
                 }
                 break;
             }
-            case 2: {
+            case 1: {
                 // 购买小课
                 if (plan != null) {
                     // 学过该小课
@@ -195,7 +195,7 @@ public class PlanController {
             }
         }
 
-        Pair<Integer, String> check = planService.checkChooseNewProblem(improvementPlans, loginUser.getRiseMember());
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
 
         if (check.getLeft() < 0) {
             return WebUtils.error(check.getRight());

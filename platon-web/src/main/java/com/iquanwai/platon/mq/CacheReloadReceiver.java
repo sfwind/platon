@@ -41,7 +41,6 @@ public class CacheReloadReceiver {
 
     @PostConstruct
     public void init(){
-        logger.info("---------test:{}", System.getProperty("es.set.netty.runtime.available.processors"));
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(null, TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
         Channel channel = receiver.getChannel();

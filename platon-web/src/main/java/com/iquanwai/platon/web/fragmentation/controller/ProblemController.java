@@ -7,12 +7,20 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemActivity;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
+import com.iquanwai.platon.biz.po.ProblemExtension;
+import com.iquanwai.platon.biz.po.ProblemScore;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseCourseDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -20,7 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -231,6 +243,67 @@ public class ProblemController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(problem);
+    }
+
+    @RequestMapping("/open/{problemId}")
+    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Problem problem = problemService.getProblem(problemId);
+        // 查看该用户是否对该问题评分
+        RiseCourseDto dto = new RiseCourseDto();
+        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
+        // 是否会员
+        Boolean isMember = loginUser.getRiseMember();
+        List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
+        ImprovementPlan plan = plans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
+        Integer buttonStatus;
+        if (plan == null) {
+            // 没学过这个小课
+            if (isMember) {
+                // 是会员，显示按钮"选择"
+                buttonStatus = 2;
+            } else {
+                // 不是会员，查询一下这个小课是不是限免小课
+                if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+                    // 是限免小课,显示"限时免费"
+                    buttonStatus = 5;
+                } else {
+                    // 不是限免小课,显示两个按钮
+                    buttonStatus = 1;
+                }
+            }
+        } else {
+            // 学过这个小课
+            switch (plan.getStatus()) {
+                case ImprovementPlan.RUNNING:{
+                    buttonStatus = 3;
+                    break;
+                }
+                case ImprovementPlan.COMPLETE:
+                case ImprovementPlan.CLOSE: {
+                    buttonStatus = 4;
+                    break;
+                }
+                case ImprovementPlan.TRIALCLOSE: {
+                    buttonStatus = 1;
+                    break;
+                }
+                default:
+                    // 按钮状态有问题
+                    buttonStatus = -1;
+                    break;
+            }
+        }
+        dto.setFee(ConfigUtils.getRiseCourseFee());
+        dto.setButtonStatus(buttonStatus);
+        dto.setProblem(problem);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("查询小课信息")
+                .action("打开小课介绍页")
+                .memo(problemId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(dto);
     }
 
     @RequestMapping("/grade/{problemId}")

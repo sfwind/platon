@@ -290,19 +290,21 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Boolean riseMember) {
+    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
 
-        if (riseMember) {
+//        if (riseMember) {
             if (plans.size() >= 2) {
                 // 会员已经有两门再学
                 return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
             }
-        } else {
-            if (plans.size() >= 1) {
-                // 非会员已经有一门了，则不可再选
-                return new MutablePair<>(-2, "试用版是能试用一门小课哦");
-            }
-        }
+//        }
+
+//        else {
+//            if (plans.size() >= 1) {
+//                // 非会员已经有一门了，则不可再选
+//                return new MutablePair<>(-2, "试用版是能试用一门小课哦");
+//            }
+//        }
 
         return new MutablePair<>(1, "");
     }

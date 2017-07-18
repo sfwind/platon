@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
@@ -53,6 +54,12 @@ public class IndexController {
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
+
+    @PostConstruct
+    public void init(){
+        logger.info("---------load es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
+    }
+
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"},method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception{
