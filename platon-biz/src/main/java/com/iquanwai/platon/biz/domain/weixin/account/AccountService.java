@@ -87,4 +87,10 @@ public interface AccountService {
      * @param code 用户输入的验证码
      */
     boolean validCode(String code, Integer profileId);
+
+    /**
+     * 是否是rise会员
+     * @param profileId profileId
+     */
+    Boolean isRiseMember(Integer profileId);
 }
