@@ -37,7 +37,7 @@ public class RiseCourseDao extends DBUtil {
         ResultSetHandler<RiseCourseOrder> h = new BeanHandler<>(RiseCourseOrder.class);
 
         try {
-            RiseCourseOrder order = run.query("SELECT * FROM RiseCourseOrder where ProfileId=? and ProblemId=？and Entry=1 and IsDel=0 ", h, profileId, problemId);
+            RiseCourseOrder order = run.query("SELECT * FROM RiseCourseOrder where Entry=1 and IsDel=0 and ProfileId = ? and ProblemId = ?", h, profileId,problemId);
             return order;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
