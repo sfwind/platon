@@ -13,4 +13,8 @@ public class PromotionUser {
     private String source; // 用户来源 推广人
     private Integer action; // 0-新用户 1-已试用 2-已付费
 
+    public static final int NEW_USER = 0;
+    public static final int TRIAL = 1;
+    public static final int PAY = 2;
+
 }

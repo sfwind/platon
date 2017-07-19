@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
@@ -12,6 +13,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.Recommendation;
 import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -63,12 +65,13 @@ public class PlanController {
     private AccountService accountService;
     @Autowired
     private ReportService reportService;
+    @Autowired
+    private OperationService operationService;
 
     /**
      * 检查是否能选课<br/>
      * 逻辑：
      * 1.会员可以选两门<br/>
-     * 2.试用版可以选一门
      */
     @RequestMapping(value = "/choose/problem/check/{problemId}/{type}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId, @PathVariable(value = "type") Integer type) {
@@ -221,7 +224,10 @@ public class PlanController {
             return WebUtils.error("非rise会员需要单独购买小课哦");
         }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
-
+        if (problemId.equals(trialProblemId)) {
+            // 限免小课
+            operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("选择小课")

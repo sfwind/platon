@@ -2,6 +2,7 @@ package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
+import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
@@ -50,6 +51,7 @@ public class PayResultReceiver {
                 if (quanwai == null) {
                     logger.error("获取支付成功mq消息异常");
                 } else {
+                    operationService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
                 }
             }
         };
