@@ -57,7 +57,7 @@ public class PlanServiceImpl implements PlanService {
 //        } else
 //
         //已过期不能解锁
-        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
             improvementPlan.setLockedStatus(-3);
         } else {
             //解锁下一组
