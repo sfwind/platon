@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
@@ -19,6 +21,7 @@ import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.ImageUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -28,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,19 +64,20 @@ public class CacheServiceImpl implements CacheService {
     //缓存巩固练习
     private Map<Integer, WarmupPractice> warmupPracticeMap = Maps.newHashMap();
     //缓存问题分类
-    private Map<Integer,ProblemCatalog> problemCatalogMap = Maps.newHashMap();
+    private Map<Integer, ProblemCatalog> problemCatalogMap = Maps.newHashMap();
     //缓存问题子分类
-    private Map<Integer,ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
-
+    private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
+    //缓存背景图片 base64
+    private List<BufferedImage> essenceCardImageList = Lists.newArrayList();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
-    public void init(){
+    public void init() {
         List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
         knowledgeList.forEach(knowledge -> {
             knowledgeMap.put(knowledge.getId(), knowledge);
-            if(ConfigUtils.isHttps()){
+            if (ConfigUtils.isHttps()) {
                 knowledge.setAudio(StringUtils.replace(knowledge.getAudio(), "http:", "https:"));
                 knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
             }
@@ -84,7 +89,7 @@ public class CacheServiceImpl implements CacheService {
         problems.forEach(problem -> {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
             problem.setChapterList(chapterList);
-            if(ConfigUtils.isHttps()){
+            if (ConfigUtils.isHttps()) {
                 problem.setAudio(StringUtils.replace(problem.getAudio(), "http:", "https:"));
                 problem.setPic(StringUtils.replace(problem.getPic(), "http:", "https:"));
                 problem.setDescPic(StringUtils.replace(problem.getDescPic(), "http:", "https:"));
@@ -98,10 +103,10 @@ public class CacheServiceImpl implements CacheService {
         warmupPractices.forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
             //添加非复习知识点
-            if(!Knowledge.isReview(warmupPractice.getKnowledgeId())){
+            if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
                 warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
             }
-            if(ConfigUtils.isHttps()){
+            if (ConfigUtils.isHttps()) {
                 warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
             }
             warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
@@ -110,14 +115,14 @@ public class CacheServiceImpl implements CacheService {
         choices.forEach(choice -> {
             Integer questionId = choice.getQuestionId();
             WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
-            if(warmupPractice!=null){
+            if (warmupPractice != null) {
                 warmupPractice.getChoiceList().add(choice);
             }
         });
 
         //选项按sequence排序
         warmupPractices.forEach(warmupPractice ->
-                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence()-o2.getSequence()));
+                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
         logger.info("warmup practice init complete");
 
         // 缓存问题主分类
@@ -127,7 +132,7 @@ public class CacheServiceImpl implements CacheService {
                 problemCatalogMap.put(item.getId(), item);
             }
             // 设置分类名字
-            problems.forEach(problem->{
+            problems.forEach(problem -> {
                 if (item.getId().equals(problem.getCatalogId())) {
                     problem.setCatalog(item.getName());
                 }
@@ -136,15 +141,27 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存问题子分类
         List<ProblemSubCatalog> problemSubCatalogs = problemSubCatalogDao.loadAll(ProblemSubCatalog.class);
-        problemSubCatalogs.forEach(item->{
+        problemSubCatalogs.forEach(item -> {
             // 设置子分类名字
-            problems.forEach(problem->{
+            problems.forEach(problem -> {
                 if (item.getId().equals(problem.getSubCatalogId())) {
                     problem.setSubCatalog(item.getName());
                 }
             });
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
+
+        // 缓存卡片背景图片 base64 的值
+        JSONArray base64ImageJsonArr = JSONObject.parseArray(ConfigUtils.getEssenceCardBackImgs());
+        List<String> imageUrlArr = Lists.newArrayList();
+        for (int i = 0; i < base64ImageJsonArr.size(); i++) {
+            imageUrlArr.add(base64ImageJsonArr.getString(i));
+        }
+        imageUrlArr.forEach(item -> {
+            BufferedImage image = ImageUtils.getBufferedImageByUrl(item);
+            essenceCardImageList.add(image);
+        });
+
     }
 
     @Override
@@ -164,8 +181,8 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public Problem getProblem(Integer problemId) {
-        for(Problem problem:problems){
-            if(problem.getId()==problemId){
+        for (Problem problem : problems) {
+            if (problem.getId() == problemId) {
                 return problem;
             }
         }
@@ -176,7 +193,7 @@ public class CacheServiceImpl implements CacheService {
     public Knowledge getKnowledge(Integer knowledgeId) {
         Knowledge knowledge = new Knowledge();
         try {
-            BeanUtils.copyProperties(knowledgeMap.get(knowledgeId),knowledge );
+            BeanUtils.copyProperties(knowledgeMap.get(knowledgeId), knowledge);
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -194,7 +211,6 @@ public class CacheServiceImpl implements CacheService {
         return warmupPractice;
     }
 
-
     @Override
     public List<Chapter> loadRoadMap(Integer problemId) {
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
@@ -209,10 +225,10 @@ public class CacheServiceImpl implements CacheService {
         List<Chapter> chapterList = Lists.newArrayList();
 
         //构建章节
-        problemScheduleMap.keySet().forEach(chapterSequence ->{
+        problemScheduleMap.keySet().forEach(chapterSequence -> {
             Chapter chapter = new Chapter();
             List<ProblemSchedule> scheduleList = problemScheduleMap.get(chapterSequence);
-            List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection()-o2.getSection())
+            List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection() - o2.getSection())
                     .map(problemSchedule -> {
                         //构建小节
                         Section section = new Section();
@@ -230,7 +246,7 @@ public class CacheServiceImpl implements CacheService {
             chapter.setName(chapterName(sectionList));
             chapter.setSections(sectionList);
             chapter.setChapter(chapterSequence);
-            if(CollectionUtils.isNotEmpty(sectionList)) {
+            if (CollectionUtils.isNotEmpty(sectionList)) {
                 chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledgeId()));
             }
             chapterList.add(chapter);
@@ -240,20 +256,25 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public ProblemCatalog getProblemCatalog(Integer id){
+    public ProblemCatalog getProblemCatalog(Integer id) {
         return problemCatalogMap.get(id);
     }
 
     @Override
-    public ProblemSubCatalog getProblemSubCatalog(Integer id){
+    public ProblemSubCatalog getProblemSubCatalog(Integer id) {
         return problemSubCatalogMap.get(id);
     }
 
     @Override
-    public List<ProblemCatalog> loadProblemCatalogs(){
+    public List<ProblemCatalog> loadProblemCatalogs() {
         List<ProblemCatalog> lists = Lists.newArrayList();
         lists.addAll(problemCatalogMap.values());
         return lists;
+    }
+
+    @Override
+    public List<BufferedImage> loadEssenceCardImage() {
+        return essenceCardImageList;
     }
 
     @Override
@@ -263,7 +284,7 @@ public class CacheServiceImpl implements CacheService {
 
 
     private String chapterName(List<Section> sectionList) {
-        if(CollectionUtils.isEmpty(sectionList)){
+        if (CollectionUtils.isEmpty(sectionList)) {
             return "";
         }
         //步骤

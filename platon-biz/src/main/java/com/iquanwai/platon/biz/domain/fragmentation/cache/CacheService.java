@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -30,6 +31,8 @@ public interface CacheService {
     ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId);
     /** 获取所有问题主分类 **/
     List<ProblemCatalog> loadProblemCatalogs();
+
+    List<BufferedImage> loadEssenceCardImage();
 
     /** 更新缓存*/
     void reload();
