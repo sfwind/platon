@@ -659,4 +659,40 @@ public class PlanController {
     }
 
 
+    /**
+     * 当用户做完某一章节的所有巩固练习后，后台回复章节卡片
+     */
+    @RequestMapping(value = "/chapter/card/{problemId}/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        String chapterCardData = planService.loadChapterCard(problemId, practicePlanId);
+        if (chapterCardData != null) {
+            return WebUtils.result(chapterCardData);
+        } else {
+            return WebUtils.error("当前章节未完成");
+        }
+    }
+
+
+    /**
+     * 检查是否能够选新课
+     *
+     * @param plans      正在进行的小课
+     * @param riseMember 是否是会员
+     * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
+     */
+    private Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Boolean riseMember) {
+        if (riseMember) {
+            if (plans.size() >= 2) {
+                // 会员已经有两门再学
+                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
+            }
+        } else {
+            if (plans.size() >= 1) {
+                // 非会员已经有一门了，则不可再选
+                return new MutablePair<>(-2, "试用版只能试用一门小课的前三节哦");
+            }
+        }
+        return new MutablePair<>(1, "");
+    }
 }

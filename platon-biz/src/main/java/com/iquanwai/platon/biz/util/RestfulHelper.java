@@ -123,7 +123,7 @@ public class RestfulHelper {
         return "";
     }
 
-    public String getPlain(String requestUrl) {
+    public ResponseBody getPlain(String requestUrl) {
         if(StringUtils.isNotEmpty(requestUrl)) {
             Request request = new Request.Builder()
                     .url(requestUrl)
@@ -131,14 +131,13 @@ public class RestfulHelper {
 
             try {
                 Response response = client.newCall(request).execute();
-                String body = response.body().string();
 
-                return body;
+                return response.body();
             } catch (Exception e) {
                 logger.error("execute " + requestUrl + " error", e);
             }
         }
-        return "";
+        return null;
     }
 
 }

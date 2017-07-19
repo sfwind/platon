@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.iquanwai.platon.biz.po.common.Profile;
+
 /**
  * Created by xfduan on 2017/7/14.
  */
@@ -16,5 +18,7 @@ public interface OperationService {
      * 3、若当前推广人成功推广人数超过 n 个，则发送优惠券信息
      */
     void recordOrderAndSendMsg(String openId, Integer newAction);
+
+    String loadEssenceCard(Integer profileId, Integer problemId, Integer knowledgeId);
 
 }
