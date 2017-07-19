@@ -129,9 +129,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(openid, false);
         String first;
         if(profile!=null){
-            first = "Hi，"+profile.getNickname()+"，你刚才选择了RISE小课：\n";
+            first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
         }else{
-            first = "Hi，你刚才选择了RISE小课：\n";
+            first = "Hi，你刚才选择了圈外小课：\n";
         }
         int length = problem.getLength();
         String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH - 1));

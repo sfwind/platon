@@ -3,6 +3,11 @@ package com.iquanwai.platon.biz.util;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +16,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by justin on 17/7/12.
@@ -103,28 +110,22 @@ public class ImageUtils {
         return big;
     }
 
-    public static void main(String[] args) {
+
+    public static void convert2PNG(InputStream in, OutputStream out)throws IOException, TranscoderException
+    {
+        Transcoder transcoder = new PNGTranscoder();
         try {
-            long l1 = System.currentTimeMillis();
-
-            //获取图片的流
-
-            BufferedImage big = getUrlByBufferedImage("http://wx.qlogo.cn/mmopen/Q3auHgzwzM6LrkJRYApibxYsAEYm2CmS7JZwX09AmHsP0X2VJQSpibHyoHsQKNcvqf1hzFgJr6l40vyhH7KtGWupGmgKHwFibbiaOOS0qKuvjsQ/64");
-            BufferedImage small = getUrlByBufferedImage("http://static.iqycamp.com/images/logo.png");
-            long l2 = System.currentTimeMillis();
-            System.out.println(l2 - l1);
-            //处理图片将其压缩成正方形的小图
-//            BufferedImage  convertImage = writeText(big, 22, 22);
-            //裁剪成圆形 （传入的图像必须是正方形的 才会 圆形 如果是长方形的比例则会变成椭圆的）
-            big = convertCircular(big);
-            big = overlapImage(big, small, 100, 100);
-            //生成的图片位置
-            String imagePath = "/Users/justin/a.png";
-            ImageIO.write(small, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
-            long l3 = System.currentTimeMillis();
-            System.out.println(l3 - l2);
-        } catch (Exception e) {
-            e.printStackTrace();
+            TranscoderInput input = new TranscoderInput(in);
+            try {
+                TranscoderOutput output = new TranscoderOutput(out);
+                transcoder.transcode(input, output);
+            } catch (TranscoderException e){
+                logger.error("transcoder error", e);
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
         }
     }
 }
