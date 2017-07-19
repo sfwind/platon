@@ -24,11 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sun.misc.BASE64Encoder;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProblemServiceImpl implements ProblemService {
+
     @Autowired
     private CacheService cacheService;
     @Autowired
@@ -60,6 +61,23 @@ public class ProblemServiceImpl implements ProblemService {
     private QRCodeService qrCodeService;
     @Autowired
     private AccountService accountService;
+
+    // bufferedImages缓存
+    private List<BufferedImage> bufferedImages;
+
+    // TODO
+    @PostConstruct
+    public void init() {
+        bufferedImages = Lists.newArrayList();
+        JSONObject base64ImageJsonArr = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
+        List<String> imageUrlArr = Lists.newArrayList();
+        for (int i = 0; i < base64ImageJsonArr.size(); i++) {
+            imageUrlArr.add(base64ImageJsonArr.getString(Integer.toString(i + 1)));
+        }
+        imageUrlArr.forEach(item -> {
+            bufferedImages.add(ImageUtils.getBufferedImageByUrl(item));
+        });
+    }
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -157,7 +175,6 @@ public class ProblemServiceImpl implements ProblemService {
         Integer profileId = plan.getProfileId(); // 用来获取用户新的 profileId
         Profile profile = profileDao.load(Profile.class, profileId);
         // 绘图数据
-        List<BufferedImage> bufferedImages = cacheService.loadEssenceCardImage();
         QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
         BufferedImage qrImage = null;
         try {
@@ -168,15 +185,15 @@ public class ProblemServiceImpl implements ProblemService {
         System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
         // 获取用户头像图片
         String headImgUrl = profile.getHeadimgurl();
-        if("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
+        if ("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
             headImgUrl = headImgUrl.substring(0, headImgUrl.length() - 2) + "/64";
         }
         BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         // 如果用户头像过期，则拉取实时新头像
-        if(headImg == null) {
+        if (headImg == null) {
             Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
             headImgUrl = realProfile.getHeadimgurl();
-            headImg =  ImageUtils.getBufferedImageByUrl(headImgUrl);
+            headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         }
         Problem problem = cacheService.getProblem(problemId);
         // 获取 essenceCard 所有与当前小课相关的数据
@@ -203,7 +220,7 @@ public class ProblemServiceImpl implements ProblemService {
             essenceCard.setChapter(chapter.getName());
             essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
             System.out.println("paintImage1 " + DateUtils.parseDateTimeToString(new Date()));
-            essenceCard.setEssenceImgBase(getEssenceCardImg(chapterId, profileId, bufferedImages, qrImage, headImg));
+            essenceCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapterId), qrImage, headImg));
             System.out.println("paintImage2 " + DateUtils.parseDateTimeToString(new Date()));
             cards.add(essenceCard);
             // 计算已完成的章节号
@@ -237,20 +254,19 @@ public class ProblemServiceImpl implements ProblemService {
         if (essenceCardMap.get(0) != null) {
             lastCard.setEssenceContent(tempEssenceCard.getEssenceContent());
         }
-        lastCard.setEssenceImgBase(getEssenceCardImg(0, profileId, bufferedImages, qrImage, headImg));
+        lastCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapters.size() + 1), qrImage, headImg));
         lastCard.setChapter("章总结");
         lastCard.setChapterNo("章总结");
         cards.add(lastCard);
         return new MutablePair<>(problem.getProblem(), cards);
     }
 
-    private String getEssenceCardImg(Integer chapterId, Integer profileId, List<BufferedImage> backImages, BufferedImage qrImage, BufferedImage headImg) {
+    private String getEssenceCardImg(Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg) {
         Profile profile = profileDao.load(Profile.class, profileId);
         System.out.println("imageInner1 " + DateUtils.parseDateTimeToString(new Date()));
 
         // 获取绘图背景图片
         // List<BufferedImage> backImages = cacheService.loadEssenceCardImage();
-        BufferedImage targetImage = backImages.get(chapterId);
         System.out.println("imageInner2 " + DateUtils.parseDateTimeToString(new Date()));
 
         // 获取二维码图片
@@ -296,6 +312,11 @@ public class ProblemServiceImpl implements ProblemService {
         System.out.println("imageInner6 " + DateUtils.parseDateTimeToString(new Date()));
         BASE64Encoder encoder = new BASE64Encoder();
         return "data:image/png;base64," + encoder.encode(outputStream.toByteArray());
+    }
+
+    private BufferedImage loadBufferedImageByChapterId(Integer chapterId) {
+        chapterId = chapterId % bufferedImages.size() == 0 ? bufferedImages.size() : chapterId % bufferedImages.size();
+        return bufferedImages.get(chapterId - 1);
     }
 
 }

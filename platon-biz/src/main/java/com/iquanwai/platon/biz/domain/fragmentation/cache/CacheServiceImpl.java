@@ -1,7 +1,5 @@
 package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
@@ -21,7 +19,6 @@ import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,7 +52,6 @@ public class CacheServiceImpl implements CacheService {
     private ProblemCatalogDao problemCatalogDao;
     @Autowired
     private ProblemSubCatalogDao problemSubCatalogDao;
-
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -150,17 +146,6 @@ public class CacheServiceImpl implements CacheService {
             });
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
-
-        // 缓存卡片背景图片 base64 的值
-        JSONArray base64ImageJsonArr = JSONObject.parseArray(ConfigUtils.getEssenceCardBackImgs());
-        List<String> imageUrlArr = Lists.newArrayList();
-        for (int i = 0; i < base64ImageJsonArr.size(); i++) {
-            imageUrlArr.add(base64ImageJsonArr.getString(i));
-        }
-        imageUrlArr.forEach(item -> {
-            BufferedImage image = ImageUtils.getBufferedImageByUrl(item);
-            essenceCardImageList.add(image);
-        });
 
     }
 
@@ -273,15 +258,9 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public List<BufferedImage> loadEssenceCardImage() {
-        return essenceCardImageList;
-    }
-
-    @Override
     public void reload() {
         init();
     }
-
 
     private String chapterName(List<Section> sectionList) {
         if (CollectionUtils.isEmpty(sectionList)) {

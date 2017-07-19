@@ -32,8 +32,6 @@ public interface CacheService {
     /** 获取所有问题主分类 **/
     List<ProblemCatalog> loadProblemCatalogs();
 
-    List<BufferedImage> loadEssenceCardImage();
-
     /** 更新缓存*/
     void reload();
 }
