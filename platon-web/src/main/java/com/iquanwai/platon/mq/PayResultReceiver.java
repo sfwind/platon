@@ -37,7 +37,7 @@ public class PayResultReceiver {
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(PayResultReceiver.QUEUE, PayResultReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
         Channel channel = receiver.getChannel();
-        logger.info("通道建立：{}" + PayResultReceiver.TOPIC);
+        logger.info("通道建立：{}", PayResultReceiver.TOPIC);
         Consumer consumer = getConsumer(channel);
         receiver.listen(consumer);
     }
