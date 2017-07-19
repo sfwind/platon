@@ -501,13 +501,10 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId) {
-        ChallengePractice challengePractice = challengePracticeDao.load(ChallengePractice.class, id);
-        if (challengePractice != null) {
-            List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
-            for (ImprovementPlan plan : plans) {
-                if (plan.getProblemId().equals(id)) {
-                    return plan;
-                }
+        List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
+        for (ImprovementPlan plan : plans) {
+            if (plan.getProblemId().equals(id)) {
+                return plan;
             }
         }
         return null;

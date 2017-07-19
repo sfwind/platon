@@ -2,23 +2,11 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.WarmupSubmit;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -27,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +33,8 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
+    private ProblemDao problemDao;
+    @Autowired
     private CacheService cacheService;
     @Autowired
     private WarmupSubmitDao warmupSubmitDao;
@@ -55,6 +46,8 @@ public class ReportServiceImpl implements ReportService {
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
     private SubjectArticleDao subjectArticleDao;
+    @Autowired
+    private RecommendationDao recommendationDao;
 
     @Override
     public ImprovementReport loadUserImprovementReport(ImprovementPlan plan) {
@@ -97,10 +90,19 @@ public class ReportServiceImpl implements ReportService {
         } else {
             report.setShowNextBtn(true);
         }
+        // 增加推荐学习数据
+        List<Recommendation> recommendations = loadRecommendation(problem.getId());
+        report.setRecommendations(recommendations);
+
         return report;
     }
 
-    private Integer calculateVoteCount(List<HomeworkVote> list,ImprovementPlan plan){
+    @Override
+    public List<Recommendation> loadRecommendationByProblemId(Integer problemId) {
+        return loadRecommendation(problemId);
+    }
+
+    private Integer calculateVoteCount(List<HomeworkVote> list, ImprovementPlan plan) {
         Integer result = 0;
         if (CollectionUtils.isNotEmpty(list)) {
             List<Integer> appList = list.stream().filter(item -> item.getType().equals(2)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
@@ -117,8 +119,7 @@ public class ReportServiceImpl implements ReportService {
         return result;
     }
 
-
-    private void calculateReport(ImprovementReport report,ImprovementPlan plan){
+    private void calculateReport(ImprovementReport report, ImprovementPlan plan) {
         // 获得所有练习
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(plan.getId());
         // 热身练习
@@ -142,7 +143,7 @@ public class ReportServiceImpl implements ReportService {
         calculateAppScores(report, applicationPlanList, integratedPlanList);
     }
 
-    private void calculateAppScores(ImprovementReport report,List<PracticePlan> applicationPlanList, List<PracticePlan> integratedPlanList) {
+    private void calculateAppScores(ImprovementReport report, List<PracticePlan> applicationPlanList, List<PracticePlan> integratedPlanList) {
         List<Integer> applicationIds = applicationPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
         List<Integer> integratedIds = integratedPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
 
@@ -164,10 +165,10 @@ public class ReportServiceImpl implements ReportService {
         report.setIntegratedTotalScore(0);
         report.setIntegratedScore(0);
         // 计算分数
-        applicationPlanList.forEach(item->{
+        applicationPlanList.forEach(item -> {
             // 已完成，计算分数
             Optional<ApplicationPractice> first = applicationPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
-            first.ifPresent(practice->{
+            first.ifPresent(practice -> {
                 Integer point = PointRepoImpl.score.get(practice.getDifficulty());
                 if (item.getStatus() == 1) {
                     report.setApplicationScore(report.getApplicationScore() + point);
@@ -176,10 +177,10 @@ public class ReportServiceImpl implements ReportService {
             });
         });
 
-        integratedPlanList.forEach(item->{
+        integratedPlanList.forEach(item -> {
             // 已完成，计算分数
             Optional<ApplicationPractice> first = integratedPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
-            first.ifPresent(practice->{
+            first.ifPresent(practice -> {
                 Integer point = PointRepoImpl.score.get(practice.getDifficulty());
                 if (item.getStatus() == 1) {
                     report.setIntegratedScore(report.getIntegratedScore() + point);
@@ -201,7 +202,7 @@ public class ReportServiceImpl implements ReportService {
         report.setIntegratedCompleteCount(totalCompeleteIntegrated.intValue());
     }
 
-    private void calculateWarmupScores(ImprovementReport report,ImprovementPlan plan,List<PracticePlan> warmPlanList){
+    private void calculateWarmupScores(ImprovementReport report, ImprovementPlan plan, List<PracticePlan> warmPlanList) {
         // 获得warmPlanList
         List<WarmupPractice> warmupPractices = initWarmupScores(warmPlanList);
         // 获得用户的提交记录
@@ -212,9 +213,9 @@ public class ReportServiceImpl implements ReportService {
         // 用户提交的小节
         Map<Integer, List<WarmupSubmit>> submitMap = Maps.newHashMap();
         // 总的小节题目
-        Map<Integer,List<WarmupPractice>> totalMap = Maps.newHashMap();
+        Map<Integer, List<WarmupPractice>> totalMap = Maps.newHashMap();
         // 填充数据
-        warmPlanList.forEach(item->{
+        warmPlanList.forEach(item -> {
             // 每一个就是一个小节
             Integer series = item.getSeries();
             List<WarmupSubmit> seriesSubmits = submitMap.computeIfAbsent(series, key -> Lists.newArrayList());
@@ -232,22 +233,22 @@ public class ReportServiceImpl implements ReportService {
             }
         });
         // 计算小节得分
-        Map<Integer,Integer> seriesScores = Maps.newHashMap();
-        Map<Integer,Integer> seriesTotalScores = Maps.newHashMap();
-        submitMap.forEach((series,submits)->{
+        Map<Integer, Integer> seriesScores = Maps.newHashMap();
+        Map<Integer, Integer> seriesTotalScores = Maps.newHashMap();
+        submitMap.forEach((series, submits) -> {
             // 综合小节内题目的得分
             seriesScores.putIfAbsent(series, 0);
-            submits.forEach(item->{
+            submits.forEach(item -> {
                 seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore());
             });
         });
-        totalMap.forEach((series,practice)->{
+        totalMap.forEach((series, practice) -> {
             // 综合小节内题目的得分
             seriesTotalScores.putIfAbsent(series, 0);
             practice.forEach(item -> seriesTotalScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore()));
         });
         // 按章来区分
-        chapters.forEach(item->{
+        chapters.forEach(item -> {
             List<Section> sections = item.getSections();
             item.setMyWarmScore(0);
             item.setTotalWarmScore(0);
@@ -260,9 +261,9 @@ public class ReportServiceImpl implements ReportService {
         report.setChapterList(chapters);
     }
 
-    private List<WarmupPractice> initWarmupScores(List<PracticePlan> warmPlanList){
+    private List<WarmupPractice> initWarmupScores(List<PracticePlan> warmPlanList) {
         List<WarmupPractice> warmupPractices = Lists.newArrayList();
-        warmPlanList.forEach(item->{
+        warmPlanList.forEach(item -> {
             String practiceIds = item.getPracticeId();
             String[] practiceIdArr = practiceIds.split(",");
             for (String arrItem : practiceIdArr) {
@@ -277,9 +278,9 @@ public class ReportServiceImpl implements ReportService {
                         Integer difficulty = warmupPractice.getDifficulty();
                         if (difficulty == 1) {
                             score = PointRepo.EASY_SCORE;
-                        } else if(difficulty == 2){
+                        } else if (difficulty == 2) {
                             score = PointRepo.NORMAL_SCORE;
-                        } else if(difficulty == 3){
+                        } else if (difficulty == 3) {
                             score = PointRepo.HARD_SCORE;
                         } else {
                             logger.error("难度系数不正常,{},{}", difficulty, practiceId);
@@ -297,4 +298,23 @@ public class ReportServiceImpl implements ReportService {
         });
         return warmupPractices;
     }
+
+    private List<Recommendation> loadRecommendation(Integer problemId) {
+        List<Recommendation> recommendations = recommendationDao.loadRecommendationByProblemId(problemId);
+        for (Recommendation recommendation : recommendations) {
+            String recommendIds = recommendation.getRecommendIds();
+            List<String> problemIdList = Lists.newArrayList();
+            if (recommendIds != null && !recommendIds.equals("")) {
+                problemIdList = Arrays.asList(recommendIds.split("、"));
+            }
+            // 根据 ProblemId 列表获取所有的相关 Problem 信息
+            List<Problem> problems = Lists.newArrayList();
+            problemIdList.forEach(id -> {
+                problems.add(problemDao.load(Problem.class, Integer.parseInt(id)));
+            });
+            recommendation.setRecommendProblems(problems);
+        }
+        return recommendations;
+    }
+
 }
