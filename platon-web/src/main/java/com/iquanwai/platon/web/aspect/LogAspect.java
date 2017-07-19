@@ -62,15 +62,17 @@ public class LogAspect {
 
         //超长请求也需要打印日志
         if(ConfigUtils.logDetail()||endTimeMillis-startTimeMillis>=1000) {
-            Gson gson = new Gson();
-            String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
-            LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
-            if (loginUser != null) {
-                userName = loginUser.getWeixinName();
+            if (requestPath == null || requestPath.contains("/rise/problem/cards/")) {
+                Gson gson = new Gson();
+                String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
+                LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
+                if (loginUser != null) {
+                    userName = loginUser.getWeixinName();
+                }
+                logger.info("\n user：" + userName
+                        + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
+                        + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + gson.toJson(outputParamMap));
             }
-            logger.info("\n user：" + userName
-                    + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
-                    + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + gson.toJson(outputParamMap));
         }
         return result;  
     }  
