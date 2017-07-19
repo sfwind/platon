@@ -238,7 +238,6 @@ public class ConfigUtils {
 		}
 	}
 
-}
     public static String getWelcomeMsg() {
         return getValue("login.welcome.msg");
     }
