@@ -43,8 +43,6 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
-    private ChallengePracticeDao challengePracticeDao;
-    @Autowired
     private RiseCourseDao riseCourseDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
