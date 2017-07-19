@@ -49,15 +49,21 @@ public class ConfigUtils {
     }
 
     public static String getValue(String key) {
+        String value = null;
         if (config.hasPath(key)) {
             return config.getString(key);
         } else {
-            String value = zkConfigUtils.getValue(key);
+            value = zkConfigUtils.getValue(key);
             if (value == null) {
                 value = zkConfigUtils.getArchValue(key);
             }
-            return value;
         }
+
+        if (value != null) {
+            // 去掉回车，换行，tab键
+            value = value.replaceAll("\r|\n|\t", "");
+        }
+        return value;
     }
 
     public static Integer getIntValue(String key) {
