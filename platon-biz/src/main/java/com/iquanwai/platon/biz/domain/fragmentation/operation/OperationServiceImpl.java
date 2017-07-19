@@ -1,5 +1,8 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 import sun.misc.BASE64Encoder;
 import sun.security.krb5.Config;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -187,11 +191,11 @@ public class OperationServiceImpl implements OperationService {
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》"));
+        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
         data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-        data.put("remark", new TemplateMessage.Keyword("感谢你对优质内容传播做出的贡献，距离50元优惠券还有" + remainCount + "个好友啦！"));
+        data.put("remark", new TemplateMessage.Keyword("\n感谢你对优质内容传播做出的贡献，距离50元优惠券还有" + remainCount + "个好友啦！"));
         templateMessageService.sendMessage(templateMessage);
     }
 
@@ -207,10 +211,10 @@ public class OperationServiceImpl implements OperationService {
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.getReceiveCouponMsg());
-        data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给9位好友，成功get一张¥50代金券"));
+        data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给9位好友，成功get一张¥50代金券\n"));
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
         data.put("keyword2", new TemplateMessage.Keyword("¥50代金券"));
-        data.put("remark", new TemplateMessage.Keyword("点击下方“圈外同学”并升级会员/报名小课，立即使用代金券，开学！"));
+        data.put("remark", new TemplateMessage.Keyword("\n点击下方“圈外同学”并升级会员/报名小课，立即使用代金券，开学！"));
         templateMessageService.sendMessage(templateMessage);
     }
 
