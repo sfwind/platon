@@ -14,6 +14,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
+import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -154,6 +155,29 @@ public class ProblemServiceImpl implements ProblemService {
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         Integer problemId = plan.getProblemId();
         Integer profileId = plan.getProfileId(); // 用来获取用户新的 profileId
+        Profile profile = profileDao.load(Profile.class, profileId);
+        // 绘图数据
+        List<BufferedImage> bufferedImages = cacheService.loadEssenceCardImage();
+        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
+        BufferedImage qrImage = null;
+        try {
+            qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
+        } catch (IOException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
+        // 获取用户头像图片
+        String headImgUrl = profile.getHeadimgurl();
+        if("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
+            headImgUrl = headImgUrl.substring(0, headImgUrl.length() - 2) + "/64";
+        }
+        BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+        // 如果用户头像过期，则拉取实时新头像
+        if(headImg == null) {
+            Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
+            headImgUrl = realProfile.getHeadimgurl();
+            headImg =  ImageUtils.getBufferedImageByUrl(headImgUrl);
+        }
         Problem problem = cacheService.getProblem(problemId);
         // 获取 essenceCard 所有与当前小课相关的数据
         List<EssenceCard> essenceCards = essenceCardDao.loadEssenceCards(problemId);
@@ -177,8 +201,9 @@ public class ProblemServiceImpl implements ProblemService {
                 essenceCard.setEssenceContent(essenceCardMap.get(chapterId).getEssenceContent());
             }
             essenceCard.setChapter(chapter.getName());
+            essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
             System.out.println("paintImage1 " + DateUtils.parseDateTimeToString(new Date()));
-            // essenceCard.setEssenceImgBase(getEssenceCardImg(essenceCard, profileId));
+            essenceCard.setEssenceImgBase(getEssenceCardImg(chapterId, profileId, bufferedImages, qrImage, headImg));
             System.out.println("paintImage2 " + DateUtils.parseDateTimeToString(new Date()));
             cards.add(essenceCard);
             // 计算已完成的章节号
@@ -211,45 +236,44 @@ public class ProblemServiceImpl implements ProblemService {
         lastCard.setCompleted(completedChapter.equals(chapters.size()));
         if (essenceCardMap.get(0) != null) {
             lastCard.setEssenceContent(tempEssenceCard.getEssenceContent());
-            // lastCard.setEssenceImgBase(getEssenceCardImg(tempEssenceCard, profileId));
         }
+        lastCard.setEssenceImgBase(getEssenceCardImg(0, profileId, bufferedImages, qrImage, headImg));
         lastCard.setChapter("章总结");
+        lastCard.setChapterNo("章总结");
         cards.add(lastCard);
         return new MutablePair<>(problem.getProblem(), cards);
     }
 
-    private String getEssenceCardImg(EssenceCard essenceCard, Integer profileId) {
+    private String getEssenceCardImg(Integer chapterId, Integer profileId, List<BufferedImage> backImages, BufferedImage qrImage, BufferedImage headImg) {
         Profile profile = profileDao.load(Profile.class, profileId);
         System.out.println("imageInner1 " + DateUtils.parseDateTimeToString(new Date()));
-        Integer chapterId = essenceCard.getChapterId();
 
         // 获取绘图背景图片
-        JSONObject backImgUrlJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
-        String backImgUrl = backImgUrlJson.getString(chapterId.toString());
-        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl(backImgUrl);
+        // List<BufferedImage> backImages = cacheService.loadEssenceCardImage();
+        BufferedImage targetImage = backImages.get(chapterId);
         System.out.println("imageInner2 " + DateUtils.parseDateTimeToString(new Date()));
 
         // 获取二维码图片
-        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
-        BufferedImage qrImage = null;
-        try {
-            qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
+        // QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
+        // BufferedImage qrImage = null;
+        // try {
+        //     qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
+        // } catch (IOException e) {
+        //     logger.error(e.getLocalizedMessage());
+        // }
+        // System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
 
         // 获取用户头像图片
-        String headImgUrl = profile.getHeadimgurl();
-        if (headImgUrl == null) {
-            // 如果用户头像为空，则拉取实时新头像
-            Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-            headImgUrl = realProfile.getHeadimgurl();
-        }
-        BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-        System.out.println("imageInner4 " + DateUtils.parseDateTimeToString(new Date()));
+        // String headImgUrl = profile.getHeadimgurl();
+        // if (headImgUrl == null) {
+        //     // 如果用户头像为空，则拉取实时新头像
+        //     Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
+        //     headImgUrl = realProfile.getHeadimgurl();
+        // }
+        // BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+        // System.out.println("imageInner4 " + DateUtils.parseDateTimeToString(new Date()));
 
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 40, 40);
+        qrImage = ImageUtils.scaleByPercentage(qrImage, 150, 150);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 150, 150);
         targetImage = ImageUtils.scaleByPercentage(targetImage, 338, 600);
         headImg = ImageUtils.convertCircular(headImg);
