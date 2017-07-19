@@ -62,7 +62,7 @@ public class LogAspect {
 
         //超长请求也需要打印日志
         if(ConfigUtils.logDetail()||endTimeMillis-startTimeMillis>=1000) {
-            if (requestPath == null || requestPath.contains("/rise/problem/cards/")) {
+            if (requestPath == null || !requestPath.contains("/rise/problem/cards/")) {
                 Gson gson = new Gson();
                 String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
                 LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
