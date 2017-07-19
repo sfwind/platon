@@ -7,7 +7,6 @@ import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +17,10 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Created by justin on 17/7/12.
@@ -154,24 +154,6 @@ public class ImageUtils {
             logger.error(e.getLocalizedMessage());
         }
         return null;
-    }
-
-    public static void main(String[] args) {
-        try {
-            File file = new File("/Users/xfduan/Pictures/dollor.svg");
-            FileInputStream inputFile = new FileInputStream(file);
-            byte[] buffer = IOUtils.toByteArray(inputFile);
-            System.out.println("buffer = " + new BASE64Encoder().encode(buffer));
-            IOUtils.closeQuietly(inputFile);
-            String base64 = new BASE64Encoder().encode(buffer);
-            System.out.println("base64 = " + base64);
-            base64 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIj4KICAgICAgICAgICAgICAgICAgICA8Zm9yZWlnbk9iamVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICAgICAgICAgICAgICAgICAgICAgIDxkaXYgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGh0bWwiPgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PgogICAgICAgICAgICAgICAgICBIZWxsbwogICAgICAgICAgICAgICAgICA8aW1nIHNyYz0iaHR0cHM6Ly9zdGF0aWMuaXF5Y2FtcC5jb20vaW1hZ2VzL2ZyYWdtZW50L2ZyZWVfbGltaXRfY2FsbF8xLnBuZz9pbWFnZXNsaW0iPjwvaW1nPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8L2ZvcmVpZ25PYmplY3Q+CiAgICAgICAgICAgICAgICAgIDwvc3ZnPg==";
-            // base64 = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTAwcHgiIGhlaWdodD0iMTAwcHgiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMDAgMTAwIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxwYXRoIGQ9Ik03MS42MzMsMi4yOEgyOC4zNjdjLTQuMjEyLDAtNy42MzUsMy40MjMtNy42MzUsNy42MzV2ODAuMTY4YzAsNC4yMTIsMy40MjMsNy42MzYsNy42MzUsNy42MzZoNDMuMjY2DQoJCWM0LjIxMywwLDcuNjM1LTMuNDI0LDcuNjM1LTcuNjM2VjkuOTE2Qzc5LjI2OCw1LjcwMyw3NS44NDYsMi4yOCw3MS42MzMsMi4yOHogTTQzLjAwMSw5LjI1NGMwLTEuMDQzLDAuODQxLTEuODg0LDEuODg0LTEuODg0DQoJCWgxMC4yM2MxLjA0NCwwLDEuODg0LDAuODQxLDEuODg0LDEuODg0djAuMDVjMCwxLjA0My0wLjg0LDEuODg0LTEuODg0LDEuODg0aC0xMC4yM2MtMS4wNDMsMC0xLjg4NC0wLjg0LTEuODg0LTEuODg0VjkuMjU0eg0KCQkgTTUwLDk0Ljg1NWMtMi4yNzcsMC00LjEzNi0xLjg1Ny00LjEzNi00LjEzNmMwLTIuMjc3LDEuODU4LTQuMTM2LDQuMTM2LTQuMTM2YzIuMjc4LDAsNC4xMzYsMS44NTgsNC4xMzYsNC4xMzYNCgkJQzU0LjEzNiw5Mi45OTgsNTIuMjc4LDk0Ljg1NSw1MCw5NC44NTV6IE03Mi45MDUsODIuNDQ5YzAsMC42OTktMC41NzIsMS4yNzItMS4yNzIsMS4yNzJIMjguMzY3Yy0wLjcsMC0xLjI3Mi0wLjU3My0xLjI3Mi0xLjI3Mg0KCQlWMTcuNTUxYzAtMC43LDAuNTcyLTEuMjcyLDEuMjcyLTEuMjcyaDQzLjI2NmMwLjcsMCwxLjI3MiwwLjU3MywxLjI3MiwxLjI3MlY4Mi40NDl6Ii8+DQoJPHBhdGggZD0iTTY2LjU1Niw3NC44MTNoLTMzLjExYy0wLjY5NiwwLTEuMjYxLDAuNTY0LTEuMjYxLDEuMjYxdjAuMDI0YzAsMC42OTYsMC41NjQsMS4yNjEsMS4yNjEsMS4yNjFoMzMuMTENCgkJYzAuNjk1LDAsMS4yNi0wLjU2NCwxLjI2LTEuMjYxdi0wLjAyNEM2Ny44MTUsNzUuMzc4LDY3LjI1MSw3NC44MTMsNjYuNTU2LDc0LjgxM3oiLz4NCgk8cGF0aCBkPSJNNjYuNTU2LDY3LjE3OWgtMzMuMTFjLTAuNjk2LDAtMS4yNjEsMC41NjQtMS4yNjEsMS4yNnYwLjAyNGMwLDAuNjk2LDAuNTY0LDEuMjYsMS4yNjEsMS4yNmgzMy4xMQ0KCQljMC42OTUsMCwxLjI2LTAuNTY0LDEuMjYtMS4yNnYtMC4wMjRDNjcuODE1LDY3Ljc0Myw2Ny4yNTEsNjcuMTc5LDY2LjU1Niw2Ny4xNzl6Ii8+DQoJPHBhdGggZD0iTTUwLjg0LDQ2LjIzMmMtMi45MjcsMC01LjE4LTIuMTk1LTUuMTgtMi4xOTVsLTIuMDQ4LDIuODRjMCwwLDIuMDc4LDIuMzEsNS44NTMsMi43NXYyLjY5MmgyLjUxNnYtMi42OTINCgkJYzMuNTY5LTAuNDY5LDUuNjQ4LTMuMDEzLDUuNjQ4LTUuOTk5YzAtNi41NTUtOS44Ni01Ljk0LTkuODYtOS40MjJjMC0xLjQ2NSwxLjM3NC0yLjQ4OCwzLjEzLTIuNDg4DQoJCWMyLjYwNCwwLDQuNTk0LDEuODE1LDQuNTk0LDEuODE1bDEuNjM5LTMuMDc0YzAsMC0xLjc1NS0xLjg0NC01LjE1LTIuMTM1di0yLjY5MmgtMi41MTZ2Mi43NTENCgkJYy0zLjI0OCwwLjUyNi01LjUwMiwyLjg2Ni01LjUwMiw1Ljg4YzAsNi4yOTEsOS44OSw1Ljk0LDkuODksOS40NTJDNTMuODUzLDQ1LjQxNSw1Mi40MTgsNDYuMjMyLDUwLjg0LDQ2LjIzMnoiLz4NCgk8cGF0aCBkPSJNNjYuNTU2LDU5LjU0M2gtMzMuMTFjLTAuNjk2LDAtMS4yNjEsMC41NjQtMS4yNjEsMS4yNnYwLjAyNWMwLDAuNjk2LDAuNTY0LDEuMjYsMS4yNjEsMS4yNmgzMy4xMQ0KCQljMC42OTUsMCwxLjI2LTAuNTY0LDEuMjYtMS4yNnYtMC4wMjVDNjcuODE1LDYwLjEwOCw2Ny4yNTEsNTkuNTQzLDY2LjU1Niw1OS41NDN6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==";
-            OutputStream out = new FileOutputStream(new File("/Users/xfduan/Pictures/bbb.png"));
-            ImageUtils.convertSvg2Png(base64, out);
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
-        }
     }
 
     // public static void main(String[] args) {

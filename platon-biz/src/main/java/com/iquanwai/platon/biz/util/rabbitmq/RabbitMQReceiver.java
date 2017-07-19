@@ -47,7 +47,7 @@ public class RabbitMQReceiver {
             this.queue = queue;
 
             //队列交换机绑定
-            channel.queueBind(queue, topic, "");
+            channel.queueBind(queue, topic, queue);
         }catch (IOException e) {
             //ignore
         }
