@@ -70,6 +70,13 @@ public class PlanServiceImpl implements PlanService {
         calcDeadLine(improvementPlan);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
+        // 当前 Problem 是否为限免小课
+        Integer freeLimitProblemId = ConfigUtils.getTrialProblemId();
+        if (freeLimitProblemId != null && freeLimitProblemId == problem.getId()) {
+            improvementPlan.setFree(true);
+        } else {
+            improvementPlan.setFree(false);
+        }
         improvementPlan.setHasProblemScore(
                 problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(), improvementPlan.getProblemId()) > 0);
         // 所有的综合练习是否完成
@@ -80,7 +87,7 @@ public class PlanServiceImpl implements PlanService {
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
 
-        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+        if (improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做
             improvementPlan.setReportStatus(-2);
         } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
@@ -400,7 +407,7 @@ public class PlanServiceImpl implements PlanService {
         boolean complete = isDone(seriesPracticePlans);
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         // 更新进度
-        if(complete && improvementPlan.getCompleteSeries()<practice.getSeries()){
+        if (complete && improvementPlan.getCompleteSeries() < practice.getSeries()) {
             improvementPlanDao.updateProgress(planId, practice.getSeries());
         }
         //所有练习是否完成
@@ -414,7 +421,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Boolean,Integer> checkCloseable(ImprovementPlan plan) {
+    public Pair<Boolean, Integer> checkCloseable(ImprovementPlan plan) {
         Integer planId = plan.getId();
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
@@ -422,7 +429,7 @@ public class PlanServiceImpl implements PlanService {
         int minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
         Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
         // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
-        if(new Date().before(minDays)){
+        if (new Date().before(minDays)) {
             return new MutablePair<>(complete, minStudyDays);
         } else {
             return new MutablePair<>(complete, 0);
@@ -435,7 +442,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> loadUserPlans(Integer profileId){
+    public List<ImprovementPlan> loadUserPlans(Integer profileId) {
         return improvementPlanDao.loadUserPlans(profileId);
     }
 
@@ -460,6 +467,27 @@ public class PlanServiceImpl implements PlanService {
                 if (plan.getProblemId().equals(id)) {
                     return plan;
                 }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String loadChapterCard(Integer problemId, Integer practicePlanId) {
+        List<ProblemSchedule> schedules = problemScheduleDao.loadProblemSchedule(problemId);
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        // 获取当前完成的巩固练习所在顺序
+        Integer currentSeries = practicePlan.getSeries();
+        List<ProblemSchedule> tempSchedules = schedules.stream().filter(schedule -> currentSeries.equals(schedule.getSeries())).collect(Collectors.toList());
+        // 获取当前 series 所在章节号
+        if (tempSchedules.size() > 0) {
+            Integer chapter = tempSchedules.get(0).getChapter();
+            // 根据章节号过滤出所有的 ProblemSchedule
+            List<ProblemSchedule> targetSchedules = schedules.stream().filter(schedule -> chapter.equals(schedule.getChapter())).collect(Collectors.toList());
+            Long lgCount = targetSchedules.stream().filter(schedule -> schedule.getSeries() > currentSeries).count();
+            if (lgCount.intValue() <= 0) {
+                // 当前章节还有未完成的巩固练习
+                return "hello world!";
             }
         }
         return null;

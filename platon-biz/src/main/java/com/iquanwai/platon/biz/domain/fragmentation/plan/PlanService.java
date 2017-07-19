@@ -132,4 +132,5 @@ public interface PlanService {
     ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
 
 
+    String loadChapterCard(Integer problemId, Integer practicePlanId);
 }

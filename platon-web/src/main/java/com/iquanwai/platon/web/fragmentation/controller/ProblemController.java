@@ -9,12 +9,10 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
+import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -296,7 +294,7 @@ public class ProblemController {
                 .module("小课").function("小课扩展").action("更新小课活动");
         operationLogService.log(operationLog);
         Integer result = problemService.insertProblemActivity(problemActivity);
-        if(result > 0) {
+        if (result > 0) {
             return WebUtils.result("更新成功");
         } else {
             return WebUtils.error("更新失败");
@@ -318,6 +316,20 @@ public class ProblemController {
             return WebUtils.result(extension);
         } else {
             return WebUtils.error("当前小课暂无延伸学习相关内容");
+        }
+    }
+
+    @RequestMapping(value = "/cards/{planId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadProblemCards(LoginUser loginUser, @PathVariable Integer planId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Pair<String, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
+        if (essenceCards == null) {
+            return WebUtils.error("未找到当前小课相关卡包信息");
+        } else {
+            CardCollectionDto dto = new CardCollectionDto();
+            dto.setProblem(essenceCards.getLeft());
+            dto.setCards(essenceCards.getRight());
+            return WebUtils.result(dto);
         }
     }
 
