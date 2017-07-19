@@ -14,6 +14,7 @@ import com.rabbitmq.client.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.io.IOException;
 /**
  * Created by nethunder on 2017/7/19.
  */
+@Service
 public class PayResultReceiver {
 
     public static final String TOPIC = "rise_pay_success_topic";
@@ -46,7 +48,7 @@ public class PayResultReceiver {
             public void handleDelivery(String consumerTag, Envelope envelope,
                                        AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body);
-                logger.info("receiver message {}", message);
+                logger.info("获取支付成功 message {}", message);
                 QuanwaiOrder quanwai = JSONObject.parseObject(message, QuanwaiOrder.class);
                 if (quanwai == null) {
                     logger.error("获取支付成功mq消息异常");
