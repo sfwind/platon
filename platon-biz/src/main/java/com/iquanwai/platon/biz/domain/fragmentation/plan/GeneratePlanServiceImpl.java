@@ -282,15 +282,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         // 查询是否是riseMember
         Profile profile = accountService.getProfile(profileId);
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
-        if(profile.getRiseMember()){
-            //最长开放30天
-            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
-            improvementPlan.setRiseMember(true);
+        // 限免小课开放7天，其他小课30天
+        Integer trialProblemId = ConfigUtils.getTrialProblemId();
+        if (Integer.valueOf(problem.getId()).equals(trialProblemId)) {
+            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), TRIAL_PROBLEM_MAX_LENGTH));
         } else {
-            improvementPlan.setCloseDate(DateUtils.parseStringToDate("2099-1-1"));
-            improvementPlan.setRiseMember(false);
+            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         }
-
+        improvementPlan.setRiseMember(profile.getRiseMember());
         return improvementPlanDao.insert(improvementPlan);
 
     }

@@ -52,10 +52,12 @@ public class PlanServiceImpl implements PlanService {
         //解锁检查
         Integer series = improvementPlan.getCompleteSeries();
         Integer planId = improvementPlan.getId();
-        //非会员只能解锁3章,已过期不能解锁
-        if ((!improvementPlan.getRiseMember() && series >= 3)) {
-            improvementPlan.setLockedStatus(-2);
-        } else if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+//        if ((!improvementPlan.getRiseMember() && series >= 3)) {
+//            improvementPlan.setLockedStatus(-2);
+//        } else
+//
+        //已过期不能解锁
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
             improvementPlan.setLockedStatus(-3);
         } else {
             //解锁下一组
