@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.util.rabbitmq;
 
+import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -73,4 +74,20 @@ public class RabbitMQPublisher {
         }
     }
 
+    public <T> void publish(T message) throws ConnectException {
+        //重连尝试
+        if(connection==null || channel==null){
+            init(topic, ipAddress, port);
+        }
+        if(channel==null){
+            throw new ConnectException();
+        }
+
+        String json = new Gson().toJson(message);
+        try {
+            channel.basicPublish(topic, "", null, json.getBytes());
+        }catch (IOException e) {
+            //ignore
+        }
+    }
 }

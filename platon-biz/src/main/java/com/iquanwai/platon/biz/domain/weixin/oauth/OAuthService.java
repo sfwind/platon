@@ -5,6 +5,7 @@ package com.iquanwai.platon.biz.domain.weixin.oauth;
  */
 public interface OAuthService {
     String ACCESS_TOKEN_COOKIE_NAME = "_act";
+    String PC_ACCESS_TOKEN_COOKIE_NAME = "_qt";
     /**
      * 根据accessToken，获取授权用户的openid
      * */

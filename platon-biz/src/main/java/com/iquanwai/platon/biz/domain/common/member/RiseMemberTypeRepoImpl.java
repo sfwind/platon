@@ -30,7 +30,7 @@ public class RiseMemberTypeRepoImpl implements RiseMemberTypeRepo {
     public void init(){
         List<MemberType> types = memberTypeDao.loadAll(MemberType.class);
         types.forEach(item -> memberTypes.put(item.getId(), item));
-        logger.info("RISE会员价格:{}", RiseMemberTypeRepoImpl.memberTypes);
+        logger.info("圈外会员价格:{}", RiseMemberTypeRepoImpl.memberTypes);
     }
 
     @Override

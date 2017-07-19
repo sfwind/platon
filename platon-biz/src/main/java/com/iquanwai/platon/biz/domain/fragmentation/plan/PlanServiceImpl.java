@@ -238,7 +238,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private boolean isOptional(Integer type) {
-        return type == PracticePlan.CHALLENGE || type == PracticePlan.APPLICATION;
+        return type == PracticePlan.CHALLENGE ||
+                type == PracticePlan.APPLICATION || type == PracticePlan.APPLICATION_REVIEW;
     }
 
     @Override
@@ -308,7 +309,7 @@ public class PlanServiceImpl implements PlanService {
         templateMessage.setData(data);
 
         data.put("first", new TemplateMessage.Keyword("太棒了！你已完成这个小课，并获得了" + plan.getPoint()
-                + "积分，打败了" + percent + "%的Riser\n"));
+                + "积分，打败了" + percent + "%的圈柚\n"));
 
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));

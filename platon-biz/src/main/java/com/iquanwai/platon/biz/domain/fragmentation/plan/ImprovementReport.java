@@ -22,10 +22,6 @@ public class ImprovementReport {
     private Integer applicationShouldCount;// 应用练习总份数
     private Integer applicationScore; //应用练习得分
     private Integer applicationTotalScore;//应用练习总分
-    private Integer integratedCompleteCount; //综合练习完成数
-    private Integer integratedShouldCount; //综合练习总份数
-    private Integer integratedScore;//综合练习得分
-    private Integer integratedTotalScore;//综合训练总分
     private Integer shareVoteCount; //送出多少赞
     private Integer receiveVoteCount;//收获多少赞
     private Integer votedScore; // 点赞收获多少分

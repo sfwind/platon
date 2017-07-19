@@ -20,6 +20,7 @@ public class  ApplicationPractice {
     private Integer sequence; //出现顺序
     private Boolean del; //是否删除(0-否,1-是)
     private String practiceUid; //任务唯一编号
+    private String pic; //题目图片
 
     private String content; //提交内容，非db字段
     private Integer submitId; // 提交id，非db字段
