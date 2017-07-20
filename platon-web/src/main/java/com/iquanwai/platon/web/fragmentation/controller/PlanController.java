@@ -25,6 +25,7 @@ import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -631,37 +632,53 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
-
-        List<ImprovementPlan> runningPlans = Lists.newArrayList();
-        List<ImprovementPlan> completedPlans = Lists.newArrayList();
+        List<PlanDto> runningPlans = Lists.newArrayList();
+        List<PlanDto> completedPlans = Lists.newArrayList();
+        List<PlanDto> trialClosedPlans = Lists.newArrayList();
+        plans.forEach(item -> {
+            PlanDto plan = new PlanDto();
+            plan.setPlanId(item.getId());
+            plan.setCompleteSeries(item.getCompleteSeries());
+            plan.setTotalSeries(item.getTotalSeries());
+            plan.setPoint(item.getPoint());
+            plan.setDeadline(item.getDeadline());
+            plan.setName(item.getProblem().getProblem());
+            plan.setPic(item.getProblem().getPic());
+            plan.setStartDate(item.getStartDate());
+            plan.setCloseTime(item.getCloseTime());
+            if (item.getStatus() == ImprovementPlan.CLOSE) {
+                completedPlans.add(plan);
+            } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE) {
+                trialClosedPlans.add(plan);
+            } else {
+                runningPlans.add(plan);
+            }
+        });
         PlanListDto planListDto = new PlanListDto();
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
-        plans.forEach(item -> {
-            if (item.getStatus() == ImprovementPlan.CLOSE) {
-                completedPlans.add(item);
-            } else {
-                runningPlans.add(item);
-            }
-            // 清除openid
-            item.setOpenid(null);
-            item.setProfileId(null);
-        });
-        runningPlans.sort(Comparator.comparing(ImprovementPlan::getStartDate));
-        completedPlans.sort((left, right) -> {
-            if (left.getCloseTime() == null) {
-                return 1;
-            } else if (right.getCloseTime() == null) {
-                return 0;
-            }
-            return right.getCloseTime().compareTo(left.getCloseTime());
-        });
+        planListDto.setTrialClosedPlans(trialClosedPlans);
+
+        runningPlans.sort(Comparator.comparing(PlanDto::getStartDate));
+        completedPlans.sort(this::sortPlans);
+        trialClosedPlans.sort(this::sortPlans);
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("计划列表")
                 .action("查询计划列表");
         operationLogService.log(operationLog);
         return WebUtils.result(planListDto);
+    }
+
+    // 倒序排列
+    private int sortPlans(PlanDto left,PlanDto right) {
+        if (left.getCloseTime() == null) {
+            return 1;
+        } else if (right.getCloseTime() == null) {
+            return 0;
+        }
+        return right.getCloseTime().compareTo(left.getCloseTime());
     }
 
 

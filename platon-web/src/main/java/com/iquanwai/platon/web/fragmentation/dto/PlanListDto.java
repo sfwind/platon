@@ -1,6 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
-import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
 import lombok.Data;
 
 import java.util.List;
@@ -10,7 +10,9 @@ import java.util.List;
  */
 @Data
 public class PlanListDto {
-    private List<ImprovementPlan> runningPlans;
-    private List<ImprovementPlan> completedPlans;
+    private List<PlanDto> runningPlans;
+    private List<PlanDto> completedPlans;
+    private List<PlanDto> trialClosedPlans;
     private Boolean riseMember;
+
 }
