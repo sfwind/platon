@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.font.CFont;
 import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
@@ -31,6 +32,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -212,6 +214,14 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
+        InputStream in = getClass().getResourceAsStream("fonts/simsun.ttc");
+        Font font;
+        try {
+            font = Font.createFont(Font.TRUETYPE_FONT, in);
+        } catch (FontFormatException | IOException e) {
+            logger.error(e.getLocalizedMessage());
+            return null;
+        }
         Profile profile = profileDao.load(Profile.class, profileId);
         // TargetImage
         BufferedImage targetImage = loadTargetImageByChapterId(chapterId);
@@ -227,19 +237,19 @@ public class ProblemServiceImpl implements ProblemService {
         targetImage = ImageUtils.overlapImage(targetImage, headImg, 497, 1147);
         // NickName
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
-        if(essenceCard == null) {
+        if (essenceCard == null) {
             return null;
         }
         targetImage = ImageUtils.writeText(targetImage, 278, 1230, profile.getNickname() + "邀请你，",
-                new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+                font.deriveFont(24f), new Color(51, 51, 51));
         targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
-                new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+                font.deriveFont(24f), new Color(51, 51, 51));
         // 课程标题
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
         targetImage = ImageUtils.writeText(targetImage, 380, 320, titleArr[0],
-                new Font("Helvetica", Font.PLAIN, 60), new Color(51, 51, 51));
+                font.deriveFont(60f), new Color(51, 51, 51));
         targetImage = ImageUtils.writeText(targetImage, 264, 420, titleArr[1],
-                new Font("Helvetica", Font.PLAIN, 60), new Color(255, 255, 255));
+                font.deriveFont(60f), new Color(255, 255, 255));
         // 渲染课程精华卡片文本
         String[] contentArr = essenceCard.getEssenceContent().split("\\|");
         targetImage = writeContentOnImage(targetImage, contentArr, contentArr.length);
@@ -310,6 +320,14 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     private BufferedImage writeSinglePara(BufferedImage targetImage, String text, Integer x, Integer y) {
+        InputStream in = getClass().getResourceAsStream("fonts/simsun.ttc");
+        Font font;
+        try {
+            font = Font.createFont(Font.TRUETYPE_FONT, in);
+        } catch (FontFormatException | IOException e) {
+            logger.error(e.getLocalizedMessage());
+            return null;
+        }
         Integer splitNum = 12;
         int content4Size = text.length() / splitNum == 0 ? 1 : text.length() / splitNum + 1;
         for (int i = 0; i < content4Size; i++) {
@@ -322,7 +340,7 @@ public class ProblemServiceImpl implements ProblemService {
                 writeText = text.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
             }
             targetImage = ImageUtils.writeText(targetImage, x, y + i * 35, writeText,
-                    new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+                    font.deriveFont(24f), new Color(51, 51, 51));
         }
         return targetImage;
     }
