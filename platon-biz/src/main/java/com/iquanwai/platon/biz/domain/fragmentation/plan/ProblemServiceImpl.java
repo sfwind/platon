@@ -214,7 +214,7 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
-        InputStream in = getClass().getResourceAsStream("fonts/simsun.ttc");
+        InputStream in = getClass().getResourceAsStream("/fonts/simsun.ttc");
         Font font;
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
@@ -320,7 +320,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     private BufferedImage writeSinglePara(BufferedImage targetImage, String text, Integer x, Integer y) {
-        InputStream in = getClass().getResourceAsStream("fonts/simsun.ttc");
+        InputStream in = getClass().getResourceAsStream("/fonts/simsun.ttc");
         Font font;
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
