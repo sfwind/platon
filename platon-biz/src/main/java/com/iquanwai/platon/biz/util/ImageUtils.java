@@ -18,6 +18,8 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -77,8 +79,9 @@ public class ImageUtils {
     * */
     public static BufferedImage writeText(BufferedImage inputImage, int x, int y, String text, Font font, Color color) {
         Graphics2D graphics2d = inputImage.createGraphics();
-        graphics2d.setColor(color);
         graphics2d.setFont(font);
+        graphics2d.setColor(color);
+        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics2d.drawString(CommonUtils.filterEmoji(text), x, y);
         graphics2d.dispose();
         return inputImage;

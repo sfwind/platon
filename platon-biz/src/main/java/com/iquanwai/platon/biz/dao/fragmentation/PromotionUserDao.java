@@ -66,4 +66,20 @@ public class PromotionUserDao extends DBUtil {
         return Lists.newArrayList();
     }
 
+    /**
+     * 根据推广人的 ProfileId 获取数据
+     */
+    public List<PromotionUser> loadUsersByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM PromotionUser WHERE ProfileId = ?";
+        ResultSetHandler<List<PromotionUser>> h = new BeanListHandler<>(PromotionUser.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return Lists.newArrayList();
+    }
+
+
 }

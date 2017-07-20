@@ -23,6 +23,8 @@ import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseCourseDto;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -57,6 +59,7 @@ public class ProblemController {
     private PlanService planService;
     @Autowired
     private WhiteListService whiteListService;
+    @Autowired
 
     private static final String TRIAL = "RISE_PROBLEM_TRIAL";
 
@@ -411,5 +414,19 @@ public class ProblemController {
             return WebUtils.result(dto);
         }
     }
+
+    @RequestMapping(value = "/card/{problemId}/{chapterId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer chapterId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().module("小课卡包").function("小课卡包").action("点卡卡包卡片").memo(chapterId.toString());
+        operationLogService.log(operationLog);
+        String essenceCardImgBase64 = problemService.loadEssenceCardImg(loginUser.getId(), problemId, chapterId);
+        if (essenceCardImgBase64 != null) {
+            return WebUtils.result(essenceCardImgBase64);
+        } else {
+            return WebUtils.error("该精华卡片正在制作中，敬请期待");
+        }
+    }
+
 
 }

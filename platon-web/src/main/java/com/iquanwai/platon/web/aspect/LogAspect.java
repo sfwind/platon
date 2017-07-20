@@ -19,13 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
-  
-/** 
- *  
-* @ClassName: LogAspect  
-* @Description: 日志记录AOP实现  
-*
- */  
+
+/**
+ * @ClassName: LogAspect
+ * @Description: 日志记录AOP实现
+ */
 @Aspect
 @Component
 public class LogAspect {
@@ -33,22 +31,21 @@ public class LogAspect {
 
     @Autowired
     private LoginUserService loginUserService;
-  
-    /** 
-     *  
-     * @Title：doAround 
-     * @Description: 环绕触发  
+
+    /**
      * @param pjp
-     * @return 
-     * @throws Throwable 
+     * @return
+     * @throws Throwable
+     * @Title：doAround
+     * @Description: 环绕触发
      */
     @Around("@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object doAround(ProceedingJoinPoint pjp) throws Throwable {
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        ServletRequestAttributes sra = (ServletRequestAttributes)ra;  
+        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
         // 获取输入参数  
-        Map<?,?> inputParamMap = request.getParameterMap();
+        Map<?, ?> inputParamMap = request.getParameterMap();
         // 获取请求地址  
         String requestPath = request.getRequestURI();
         String userName = null;
@@ -62,19 +59,17 @@ public class LogAspect {
 
         //超长请求也需要打印日志
         if(ConfigUtils.logDetail()||endTimeMillis-startTimeMillis>=1000) {
-            if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {
-                Gson gson = new Gson();
-                String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
-                LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
-                if (loginUser != null) {
-                    userName = loginUser.getWeixinName();
-                }
-                logger.info("\n user：" + userName
-                        + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
-                        + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + gson.toJson(outputParamMap));
+            if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {Gson gson = new Gson();
+            String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
+            LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
+            if (loginUser != null) {
+                userName = loginUser.getWeixinName();
             }
+            String str = gson.toJson(outputParamMap).length() > 1024 ? gson.toJson(outputParamMap).substring(0, 1024) : gson.toJson(outputParamMap);logger.info("\n user：" + userName
+                    + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
+                    + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + str);}
         }
-        return result;  
-    }  
+        return result;
+    }
 
 }  

@@ -2,13 +2,20 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.ImageUtils;
+import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -18,9 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +54,17 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
+    private ProfileDao profileDao;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private EssenceCardDao essenceCardDao;
+    @Autowired
     private RiseCourseDao riseCourseDao;
+    @Autowired
+    private ProblemService problemService;
+    @Autowired
+    private QRCodeService qrCodeService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -403,7 +424,6 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> prePracticePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series - 1);
         if (isDone(prePracticePlans)) {
             List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
-
             for (PracticePlan practicePlan : practicePlans) {
                 if (!practicePlan.getUnlocked()) {
                     //已过期返回-3
@@ -518,22 +538,31 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadChapterCard(Integer problemId, Integer practicePlanId) {
-        List<ProblemSchedule> schedules = problemScheduleDao.loadProblemSchedule(problemId);
+    public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
+        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
-        List<ProblemSchedule> tempSchedules = schedules.stream().filter(schedule -> currentSeries.equals(schedule.getSeries())).collect(Collectors.toList());
-        // 获取当前 series 所在章节号
-        if (tempSchedules.size() > 0) {
-            Integer chapter = tempSchedules.get(0).getChapter();
-            // 根据章节号过滤出所有的 ProblemSchedule
-            List<ProblemSchedule> targetSchedules = schedules.stream().filter(schedule -> chapter.equals(schedule.getChapter())).collect(Collectors.toList());
-            Long lgCount = targetSchedules.stream().filter(schedule -> schedule.getSeries() > currentSeries).count();
-            if (lgCount.intValue() <= 0) {
-                // 当前章节还有未完成的巩固练习
-                return "hello world!";
+
+        Boolean isLearningSuccess = false;
+        Integer targetChapterId = 0;
+        for (Chapter chapter : chapters) {
+            List<Section> sections = chapter.getSections();
+            for (Section section : sections) {
+                // 用户当前学习的章节号对应到具体的 section
+                if (section.getSeries().equals(currentSeries)) {
+                    Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
+                    isLearningSuccess = lgSeriesCount.intValue() <= 0;
+                    targetChapterId = chapter.getChapter();
+                    break;
+                }
             }
+        }
+
+        if (isLearningSuccess) {
+            return problemService.loadEssenceCardImg(profileId, problemId, targetChapterId);
+        } else {
+            System.out.println("当前小课正在学习当中");
         }
         return null;
     }

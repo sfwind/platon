@@ -28,6 +28,7 @@ import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
@@ -43,9 +44,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -688,7 +692,10 @@ public class PlanController {
     @RequestMapping(value = "/chapter/card/{problemId}/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
-        String chapterCardData = planService.loadChapterCard(problemId, practicePlanId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("小课学习").action("打开小课学习")
+                .function("加载章节卡片").memo(loginUser.getWeixinName());
+        operationLogService.log(operationLog);
+        String chapterCardData = planService.loadChapterCard(loginUser.getId(), problemId, practicePlanId);
         if (chapterCardData != null) {
             return WebUtils.result(chapterCardData);
         } else {

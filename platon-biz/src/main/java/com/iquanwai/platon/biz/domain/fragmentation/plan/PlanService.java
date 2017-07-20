@@ -146,6 +146,12 @@ public interface PlanService {
 
     ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
 
-
-    String loadChapterCard(Integer problemId, Integer practicePlanId);
+    /**
+     * 用户每学习完一章之后，弹出该章章节卡
+     * @param profileId
+     * @param problemId
+     * @param practicePlanId
+     * @return
+     */
+    String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId);
 }

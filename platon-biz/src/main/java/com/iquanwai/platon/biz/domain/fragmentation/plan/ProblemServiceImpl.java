@@ -12,7 +12,6 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -29,8 +28,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.util.Date;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,21 +62,17 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private AccountService accountService;
 
-    // bufferedImages缓存
-    private List<BufferedImage> bufferedImages;
+    private Map<Integer, BufferedImage> bufferedImageMap = Maps.newHashMap();
 
-    // TODO
     @PostConstruct
     public void init() {
-        bufferedImages = Lists.newArrayList();
-        JSONObject base64ImageJsonArr = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
-        List<String> imageUrlArr = Lists.newArrayList();
-        for (int i = 0; i < base64ImageJsonArr.size(); i++) {
-            imageUrlArr.add(base64ImageJsonArr.getString(Integer.toString(i + 1)));
+        // 初始化所有背景图的 bufferedImages 缓存
+        JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
+        for (int i = 0; i < base64ImageJson.size(); i++) {
+            String url = base64ImageJson.getString(Integer.toString(i + 1));
+            System.out.println("url = " + url);
+            bufferedImageMap.put(i + 1, ImageUtils.getBufferedImageByUrl(url));
         }
-        imageUrlArr.forEach(item -> {
-            bufferedImages.add(ImageUtils.getBufferedImageByUrl(item));
-        });
     }
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -168,21 +164,124 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public Pair<String, List<EssenceCard>> loadProblemCards(Integer planId) {
-        System.out.println("point1 " + DateUtils.parseDateTimeToString(new Date()));
         // 根据 planId 获取 improvement 中的 problemId
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         Integer problemId = plan.getProblemId();
-        Integer profileId = plan.getProfileId(); // 用来获取用户新的 profileId
-        Profile profile = profileDao.load(Profile.class, profileId);
-        // 绘图数据
-        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
-        BufferedImage qrImage = null;
+        // 获取 essenceCard 所有与当前小课相关的数据
+        Problem problem = cacheService.getProblem(problemId);
+        Integer completeSeries = plan.getCompleteSeries();
+        List<Chapter> chapters = problem.getChapterList();
+        // 目标 essenceList
+        List<EssenceCard> cards = Lists.newArrayList();
+        Integer tempChapter = 0;
+        for (Chapter chapter : chapters) {
+            Integer chapterId = chapter.getChapter();
+            EssenceCard essenceCard = new EssenceCard();
+            essenceCard.setProblemId(problemId);
+            essenceCard.setChapterId(chapterId);
+            essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
+            if (chapterId == chapters.size()) {
+                essenceCard.setChapter("小课知识清单");
+            } else {
+                essenceCard.setChapter(chapter.getName());
+            }
+            cards.add(essenceCard);
+            // 计算已完成的章节号
+            List<Section> sections = chapter.getSections();
+            for (Section section : sections) {
+                if (section.getSeries().equals(completeSeries)) {
+                    tempChapter = section.getChapter();
+                }
+            }
+        }
+        Integer completedChapter = 0;
+        for (Chapter chapter : chapters) {
+            if (chapter.getChapter().equals(tempChapter)) {
+                List<Section> sections = chapter.getSections();
+                Long resultCnt = sections.stream().filter(section -> section.getSeries() > completeSeries).count();
+                completedChapter = resultCnt > 0 ? chapter.getChapter() - 1 : chapter.getChapter();
+            }
+        }
+        for (EssenceCard essenceCard : cards) {
+            essenceCard.setCompleted(essenceCard.getChapterId() <= completedChapter);
+        }
+        return new MutablePair<>(problem.getProblem(), cards);
+    }
+
+    // 获取精华卡图
+    @Override
+    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
+        InputStream in = getClass().getResourceAsStream("/fonts/simsun.ttf");
+        Font font;
         try {
-            qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
+            font = Font.createFont(Font.TRUETYPE_FONT, in);
+        } catch (FontFormatException | IOException e) {
+            logger.error(e.getLocalizedMessage());
+            return null;
+        }
+        Profile profile = profileDao.load(Profile.class, profileId);
+        // TargetImage
+        BufferedImage targetImage = loadTargetImageByChapterId(chapterId);
+        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
+        // QrImage
+        BufferedImage qrImage = loadQrImage(profile);
+        qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1087);
+        // HeadImage
+        BufferedImage headImg = loadHeadImage(profile);
+        headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
+        headImg = ImageUtils.convertCircular(headImg);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 497, 1147);
+        // NickName
+        EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
+        if (essenceCard == null) {
+            return null;
+        }
+        targetImage = ImageUtils.writeText(targetImage, 278, 1230, profile.getNickname() + "邀请你，",
+                font.deriveFont(24f), new Color(51, 51, 51));
+        targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
+                font.deriveFont(24f), new Color(51, 51, 51));
+        // 课程标题
+        String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
+        targetImage = ImageUtils.writeText(targetImage, 380, 320, titleArr[0],
+                font.deriveFont(60f), new Color(51, 51, 51));
+        targetImage = ImageUtils.writeText(targetImage, 264, 420, titleArr[1],
+                font.deriveFont(60f), new Color(255, 255, 255));
+        // 渲染课程精华卡片文本
+        String[] contentArr = essenceCard.getEssenceContent().split("\\|");
+        targetImage = writeContentOnImage(targetImage, contentArr, contentArr.length);
+        ByteArrayOutputStream outputStream = null;
+        try {
+            outputStream = new ByteArrayOutputStream();
+            ImageIO.write(targetImage, "jpg", outputStream);
+            ImageIO.write(targetImage, "a.jpg", new File("/usr/betauser/deploy"));
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
-        System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
+        BASE64Encoder encoder = new BASE64Encoder();
+        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+    }
+
+    // 获取绘图底层背景
+    public BufferedImage loadTargetImageByChapterId(Integer chapterId) {
+        chapterId = chapterId % bufferedImageMap.size() == 0 ? bufferedImageMap.size() : chapterId % bufferedImageMap.size();
+        return bufferedImageMap.get(chapterId);
+    }
+
+    // 获取二维码
+    public BufferedImage loadQrImage(Profile profile) {
+        // 绘图数据
+        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profile.getId(), null);
+        try {
+            return ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
+        } catch (IOException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    // 获取用户头像
+    public BufferedImage loadHeadImage(Profile profile) {
         // 获取用户头像图片
         String headImgUrl = profile.getHeadimgurl();
         if ("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
@@ -195,128 +294,52 @@ public class ProblemServiceImpl implements ProblemService {
             headImgUrl = realProfile.getHeadimgurl();
             headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         }
-        Problem problem = cacheService.getProblem(problemId);
-        // 获取 essenceCard 所有与当前小课相关的数据
-        List<EssenceCard> essenceCards = essenceCardDao.loadEssenceCards(problemId);
-        System.out.println("point2 " + DateUtils.parseDateTimeToString(new Date()));
-        Map<Integer, EssenceCard> essenceCardMap = Maps.newHashMap();
-        for (EssenceCard essenceCard : essenceCards) {
-            essenceCardMap.put(essenceCard.getChapterId(), essenceCard);
-        }
-        Integer completeSeries = plan.getCompleteSeries();
-        List<Chapter> chapters = problem.getChapterList();
-        // 目标 essenceList
-        List<EssenceCard> cards = Lists.newArrayList();
-        Integer tempChapter = 0;
-        System.out.println("point3 " + DateUtils.parseDateTimeToString(new Date()));
-        for (Chapter chapter : chapters) {
-            Integer chapterId = chapter.getChapter();
-            EssenceCard essenceCard = new EssenceCard();
-            essenceCard.setProblemId(problemId);
-            essenceCard.setChapterId(chapterId);
-            if (essenceCardMap.get(chapterId) != null) {
-                essenceCard.setEssenceContent(essenceCardMap.get(chapterId).getEssenceContent());
-            }
-            essenceCard.setChapter(chapter.getName());
-            essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
-            System.out.println("paintImage1 " + DateUtils.parseDateTimeToString(new Date()));
-            essenceCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapterId), qrImage, headImg));
-            System.out.println("paintImage2 " + DateUtils.parseDateTimeToString(new Date()));
-            cards.add(essenceCard);
-            // 计算已完成的章节号
-            List<Section> sections = chapter.getSections();
-            for (Section section : sections) {
-                if (section.getSeries().equals(completeSeries)) {
-                    tempChapter = section.getChapter();
-                }
-            }
-        }
-        System.out.println("point4 " + DateUtils.parseDateTimeToString(new Date()));
-        Integer completedChapter = 0;
-        for (Chapter chapter : chapters) {
-            if (chapter.getChapter().equals(tempChapter)) {
-                List<Section> sections = chapter.getSections();
-                Long resultCnt = sections.stream().filter(section -> section.getSeries() > completeSeries).count();
-                completedChapter = resultCnt > 0 ? chapter.getChapter() - 1 : chapter.getChapter();
-            }
-        }
-        System.out.println("point5 " + DateUtils.parseDateTimeToString(new Date()));
-        for (EssenceCard essenceCard : cards) {
-            essenceCard.setCompleted(essenceCard.getChapterId() <= completedChapter);
-        }
-        System.out.println("point6 " + DateUtils.parseDateTimeToString(new Date()));
-        // 最后添加章总结数据
-        EssenceCard lastCard = new EssenceCard();
-        EssenceCard tempEssenceCard = essenceCardMap.get(0);
-        lastCard.setProblemId(problemId);
-        lastCard.setChapterId(0);
-        lastCard.setCompleted(completedChapter.equals(chapters.size()));
-        if (essenceCardMap.get(0) != null) {
-            lastCard.setEssenceContent(tempEssenceCard.getEssenceContent());
-        }
-        lastCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapters.size() + 1), qrImage, headImg));
-        lastCard.setChapter("章总结");
-        lastCard.setChapterNo("章总结");
-        cards.add(lastCard);
-        return new MutablePair<>(problem.getProblem(), cards);
+        return headImg;
     }
 
-    private String getEssenceCardImg(Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg) {
-        Profile profile = profileDao.load(Profile.class, profileId);
-        System.out.println("imageInner1 " + DateUtils.parseDateTimeToString(new Date()));
+    // 将段落正文填充到图像中
+    public BufferedImage writeContentOnImage(BufferedImage targetImage, String[] contentArr, Integer paraSize) {
+        // 精华内容
+        String content1 = contentArr[0];
+        targetImage = writeSinglePara(targetImage, content1, 404, 520);
 
-        // 获取绘图背景图片
-        // List<BufferedImage> backImages = cacheService.loadEssenceCardImage();
-        System.out.println("imageInner2 " + DateUtils.parseDateTimeToString(new Date()));
+        String content2 = contentArr[1];
+        targetImage = writeSinglePara(targetImage, content2, 404, 680);
 
-        // 获取二维码图片
-        // QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
-        // BufferedImage qrImage = null;
-        // try {
-        //     qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
-        // } catch (IOException e) {
-        //     logger.error(e.getLocalizedMessage());
-        // }
-        // System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
+        String content3 = contentArr[2];
+        targetImage = writeSinglePara(targetImage, content3, 404, 840);
 
-        // 获取用户头像图片
-        // String headImgUrl = profile.getHeadimgurl();
-        // if (headImgUrl == null) {
-        //     // 如果用户头像为空，则拉取实时新头像
-        //     Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-        //     headImgUrl = realProfile.getHeadimgurl();
-        // }
-        // BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-        // System.out.println("imageInner4 " + DateUtils.parseDateTimeToString(new Date()));
+        if (paraSize == 4) {
+            String content4 = contentArr[3];
+            targetImage = writeSinglePara(targetImage, content4, 404, 1000);
+        }
+        return targetImage;
+    }
 
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 150, 150);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 150, 150);
-        targetImage = ImageUtils.scaleByPercentage(targetImage, 338, 600);
-        headImg = ImageUtils.convertCircular(headImg);
-        headImg = ImageUtils.scaleByPercentage(headImg, 60, 60);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 10, 10);
-        targetImage = ImageUtils.writeText(targetImage, 60, 10, profile.getNickname(),
-                new Font("微软雅黑", Font.BOLD, 18), new Color(102, 102, 102));
-        targetImage = ImageUtils.writeText(targetImage, 40, 50, "理清问题需求，澄清偏差",
-                new Font("微软雅黑", Font.BOLD, 24), new Color(51, 51, 51));
-        System.out.println("imageInner5 " + DateUtils.parseDateTimeToString(new Date()));
-        ByteArrayOutputStream outputStream = null;
+    private BufferedImage writeSinglePara(BufferedImage targetImage, String text, Integer x, Integer y) {
+        InputStream in = getClass().getResourceAsStream("/fonts/simsun.ttf");
+        Font font;
         try {
-            outputStream = new ByteArrayOutputStream();
-            ImageIO.write(targetImage, "png", outputStream);
-            // String imagePath = "/Users/xfduan/Pictures/a.png";
-            // ImageIO.write(targetImage, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
-        } catch (IOException e) {
+            font = Font.createFont(Font.TRUETYPE_FONT, in);
+        } catch (FontFormatException | IOException e) {
             logger.error(e.getLocalizedMessage());
+            return null;
         }
-        System.out.println("imageInner6 " + DateUtils.parseDateTimeToString(new Date()));
-        BASE64Encoder encoder = new BASE64Encoder();
-        return "data:image/png;base64," + encoder.encode(outputStream.toByteArray());
-    }
-
-    private BufferedImage loadBufferedImageByChapterId(Integer chapterId) {
-        chapterId = chapterId % bufferedImages.size() == 0 ? bufferedImages.size() : chapterId % bufferedImages.size();
-        return bufferedImages.get(chapterId - 1);
+        Integer splitNum = 12;
+        int content4Size = text.length() / splitNum == 0 ? 1 : text.length() / splitNum + 1;
+        for (int i = 0; i < content4Size; i++) {
+            String writeText;
+            if (i == 0) {
+                writeText = "-  " + (text.length() > splitNum ? text.substring(0, splitNum - 1) : text);
+            } else if (i == content4Size - 1) {
+                writeText = text.substring(splitNum * i - 1);
+            } else {
+                writeText = text.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
+            }
+            targetImage = ImageUtils.writeText(targetImage, x, y + i * 35, writeText,
+                    font.deriveFont(24f), new Color(51, 51, 51));
+        }
+        return targetImage;
     }
 
 }

@@ -41,7 +41,7 @@ public class EssenceCardDao extends PracticeDBUtil {
     public EssenceCard loadEssenceCard(Integer problemId, Integer knowledgeId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<EssenceCard> h = new BeanHandler<>(EssenceCard.class);
-        String sql = "SELECT * FROM EssenceCard WHERE ProblemId = ? and KnowledgeId = ?";
+        String sql = "SELECT * FROM EssenceCard WHERE ProblemId = ? and ChapterId = ?";
         try {
             return runner.query(sql, h, problemId, knowledgeId);
         } catch (SQLException e) {
