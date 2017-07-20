@@ -227,16 +227,19 @@ public class ProblemServiceImpl implements ProblemService {
         targetImage = ImageUtils.overlapImage(targetImage, headImg, 497, 1147);
         // NickName
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
+        if(essenceCard == null) {
+            return null;
+        }
         targetImage = ImageUtils.writeText(targetImage, 278, 1230, profile.getNickname() + "邀请你，",
-                new Font("宋体", Font.PLAIN, 24), new Color(51, 51, 51));
+                new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
         targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
-                new Font("宋体", Font.PLAIN, 24), new Color(51, 51, 51));
+                new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
         // 课程标题
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
         targetImage = ImageUtils.writeText(targetImage, 380, 320, titleArr[0],
-                new Font("宋体", Font.PLAIN, 60), new Color(51, 51, 51));
+                new Font("Helvetica", Font.PLAIN, 60), new Color(51, 51, 51));
         targetImage = ImageUtils.writeText(targetImage, 264, 420, titleArr[1],
-                new Font("宋体", Font.PLAIN, 60), new Color(255, 255, 255));
+                new Font("Helvetica", Font.PLAIN, 60), new Color(255, 255, 255));
         // 渲染课程精华卡片文本
         String[] contentArr = essenceCard.getEssenceContent().split("\\|");
         targetImage = writeContentOnImage(targetImage, contentArr, contentArr.length);
@@ -319,7 +322,7 @@ public class ProblemServiceImpl implements ProblemService {
                 writeText = text.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
             }
             targetImage = ImageUtils.writeText(targetImage, x, y + i * 35, writeText,
-                    new Font("宋体", Font.PLAIN, 24), new Color(51, 51, 51));
+                    new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
         }
         return targetImage;
     }
