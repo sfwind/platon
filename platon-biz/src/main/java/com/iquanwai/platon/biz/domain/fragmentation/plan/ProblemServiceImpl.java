@@ -29,6 +29,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -243,6 +244,7 @@ public class ProblemServiceImpl implements ProblemService {
         try {
             outputStream = new ByteArrayOutputStream();
             ImageIO.write(targetImage, "jpg", outputStream);
+            ImageIO.write(targetImage, "a.jpg", new File("/usr/betauser/deploy"));
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
