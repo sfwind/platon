@@ -82,7 +82,11 @@ public class ImageUtils {
         graphics2d.setColor(color);
         graphics2d.setFont(font);
         graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics2d.drawString(CommonUtils.filterEmoji(text), x, y);
+        try {
+            graphics2d.drawString(new String(CommonUtils.filterEmoji(text).getBytes("utf8"), "gbk"), x, y);
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getLocalizedMessage());
+        }
         graphics2d.dispose();
         return inputImage;
     }
