@@ -17,6 +17,7 @@ import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +54,7 @@ public class WarmupController {
 
     @RequestMapping("/{id}")
     public ResponseEntity<Map<String, Object>> loadWarmup(LoginUser loginUser,
-                                                          @PathVariable Integer id){
+                                                          @PathVariable Integer id) {
         Assert.notNull(loginUser, "用户不能为空");
         List<ImprovementPlan> improvementPlan = planService.getRunningPlan(loginUser.getId());
         if (improvementPlan.size() == 0) {
@@ -70,7 +73,7 @@ public class WarmupController {
 
     @RequestMapping("/start/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
-                                                           @PathVariable Integer practicePlanId){
+                                                           @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractices(practicePlanId);
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
@@ -87,8 +90,25 @@ public class WarmupController {
     @RequestMapping(value = "/answer/{practicePlanId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
                                                       @PathVariable Integer practicePlanId,
-                                                      @RequestBody WarmupPracticeDto warmupPracticeDto){
+                                                      @RequestBody WarmupPracticeDto warmupPracticeDto) {
         Assert.notNull(loginUser, "用户不能为空");
+
+        OkHttpClient client = new OkHttpClient.Builder().readTimeout(5, TimeUnit.SECONDS).build();
+        Request request = new Request.Builder().url("http://www.baidu.com")
+                .get().build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                System.out.println("Fail");
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                System.out.println(response.body().string());
+
+            }
+        });
+
         WarmupResult warmupResult;
         try {
             warmupResult = practiceService.answerWarmupPractice(
@@ -110,7 +130,7 @@ public class WarmupController {
 
     @RequestMapping("/analysis/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> analysisWarmup(LoginUser loginUser,
-                                                              @PathVariable Integer practicePlanId){
+                                                              @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractices(practicePlanId);
         List<Integer> questionIds = warmupPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
@@ -140,7 +160,7 @@ public class WarmupController {
             List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
             list.forEach(warmupPracticeDiscuss -> {
                 //是否是学员本人的评论
-                if(warmupPracticeDiscuss.getOpenid().equals(openid)){
+                if (warmupPracticeDiscuss.getOpenid().equals(openid)) {
                     warmupPracticeDiscuss.setIsMine(true);
                 }
                 warmupPracticeDiscuss.setRepliedOpenid(null);
@@ -153,7 +173,7 @@ public class WarmupController {
 
     //根据用户提交记录匹配题目选项
     private void setUserChoices(List<WarmupPractice> warmupPracticeList, List<WarmupSubmit> submits) {
-        for(WarmupSubmit warmupSubmit:submits){
+        for (WarmupSubmit warmupSubmit : submits) {
             warmupPracticeList.stream().filter(warmupPractice -> warmupPractice.getId() == warmupSubmit.getQuestionId()).forEach(warmupPractice -> {
                 String[] choices = warmupSubmit.getContent().split(",");
                 List<Integer> choiceIds = Lists.newArrayList();
@@ -186,7 +206,7 @@ public class WarmupController {
         // 获取用户提交
         WarmupSubmit submit = practiceService.getWarmupSubmit(loginUser.getId(), practiceId);
         List<WarmupSubmit> warmupSubmits = Lists.newArrayList();
-        if(submit!=null){
+        if (submit != null) {
             warmupSubmits.add(submit);
         }
         setUserChoices(warmupPracticeList, warmupSubmits);
@@ -209,7 +229,7 @@ public class WarmupController {
     @RequestMapping("/load/discuss/{warmupPracticeId}/{offset}")
     public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
                                                                @PathVariable Integer warmupPracticeId,
-                                                               @PathVariable Integer offset){
+                                                               @PathVariable Integer offset) {
         Assert.notNull(loginUser, "用户不能为空");
         Page page = new Page();
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
@@ -218,7 +238,7 @@ public class WarmupController {
 
         //清空openid
         discusses.forEach(warmupPracticeDiscuss -> {
-            if(warmupPracticeDiscuss.getOpenid().equals(loginUser.getOpenId())){
+            if (warmupPracticeDiscuss.getOpenid().equals(loginUser.getOpenId())) {
                 warmupPracticeDiscuss.setIsMine(true);
             }
             warmupPracticeDiscuss.setRepliedOpenid(null);
@@ -238,7 +258,7 @@ public class WarmupController {
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody WarmupPracticeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
 
-        if(discussDto.getComment()==null || discussDto.getComment().length()>1000){
+        if (discussDto.getComment() == null || discussDto.getComment().length() > 1000) {
             LOGGER.error("{} 巩固练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }

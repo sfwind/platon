@@ -2,13 +2,20 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.ImageUtils;
+import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -18,9 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +54,17 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
+    private ProfileDao profileDao;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private EssenceCardDao essenceCardDao;
+    @Autowired
     private ChallengePracticeDao challengePracticeDao;
+    @Autowired
+    private ProblemService problemService;
+    @Autowired
+    private QRCodeService qrCodeService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -473,22 +494,86 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadChapterCard(Integer problemId, Integer practicePlanId) {
-        List<ProblemSchedule> schedules = problemScheduleDao.loadProblemSchedule(problemId);
+    public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
+        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
-        List<ProblemSchedule> tempSchedules = schedules.stream().filter(schedule -> currentSeries.equals(schedule.getSeries())).collect(Collectors.toList());
-        // 获取当前 series 所在章节号
-        if (tempSchedules.size() > 0) {
-            Integer chapter = tempSchedules.get(0).getChapter();
-            // 根据章节号过滤出所有的 ProblemSchedule
-            List<ProblemSchedule> targetSchedules = schedules.stream().filter(schedule -> chapter.equals(schedule.getChapter())).collect(Collectors.toList());
-            Long lgCount = targetSchedules.stream().filter(schedule -> schedule.getSeries() > currentSeries).count();
-            if (lgCount.intValue() <= 0) {
-                // 当前章节还有未完成的巩固练习
-                return "hello world!";
+
+        Boolean isLearningSuccess = false;
+        Integer targetChapterId = 0;
+        for (Chapter chapter : chapters) {
+            List<Section> sections = chapter.getSections();
+            for (Section section : sections) {
+                // 用户当前学习的章节号对应到具体的 section
+                if (section.getSeries().equals(currentSeries)) {
+                    Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
+                    isLearningSuccess = lgSeriesCount.intValue() <= 0;
+                    targetChapterId = chapter.getChapter();
+                    break;
+                }
             }
+        }
+
+        if (isLearningSuccess) {
+            System.out.println("当前章节学习结束");
+            // Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg, EssenceCard essenceCard
+            System.out.println("1 = " + new Date());
+            Profile profile = profileDao.load(Profile.class, profileId);
+
+            // headImg
+            String headImgUrl = profile.getHeadimgurl();
+            if ("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
+                headImgUrl = headImgUrl.substring(0, headImgUrl.length() - 2) + "/64";
+            }
+            final String targetHeadImgUrl = headImgUrl;
+            // BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+            BufferedImage headImg = null;
+            ExecutorService executor = Executors.newCachedThreadPool();
+            Future<BufferedImage> bufferedImageFuture = executor.submit(new Callable<BufferedImage>() {
+                @Override
+                public BufferedImage call() throws Exception {
+                    return ImageUtils.getBufferedImageByUrl(targetHeadImgUrl);
+                }
+            });
+
+            // // 如果用户头像过期，则拉取实时新头像
+            // if (headImg == null) {
+            //     Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
+            //     headImgUrl = realProfile.getHeadimgurl();
+            //     headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+            // }
+            System.out.println("2 = " + new Date());
+            // targetImage
+            BufferedImage targetImage = problemService.loadBufferedImageByChapterId(targetChapterId);
+            System.out.println("3 = " + new Date());
+            // qrImage
+            QRResponse qrResponse = qrCodeService.generateTemporaryQRCode("freeLimit_" + profileId, null);
+            BufferedImage qrImage = null;
+            try {
+                qrImage = ImageIO.read(qrCodeService.showQRCode(qrResponse.getTicket()));
+            } catch (IOException e) {
+                logger.error(e.getLocalizedMessage());
+            }
+            System.out.println("4 = " + new Date());
+            // essenceCard
+            EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
+
+            System.out.println("6 = " + new Date());
+            try {
+                headImg = bufferedImageFuture.get();
+                executor.shutdown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+            System.out.println("7 = " + new Date());
+            String targetBase64 = problemService.getEssenceCardImg(profileId, targetImage, qrImage, headImg, essenceCard);
+            System.out.println("8 = " + new Date());
+            return targetBase64;
+        } else {
+            System.out.println("当前小课正在学习当中");
         }
         return null;
     }

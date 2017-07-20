@@ -168,21 +168,19 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public Pair<String, List<EssenceCard>> loadProblemCards(Integer planId) {
-        System.out.println("point1 " + DateUtils.parseDateTimeToString(new Date()));
         // 根据 planId 获取 improvement 中的 problemId
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         Integer problemId = plan.getProblemId();
         Integer profileId = plan.getProfileId(); // 用来获取用户新的 profileId
         Profile profile = profileDao.load(Profile.class, profileId);
         // 绘图数据
-        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
+        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profileId, null);
         BufferedImage qrImage = null;
         try {
             qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
-        System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
         // 获取用户头像图片
         String headImgUrl = profile.getHeadimgurl();
         if ("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
@@ -198,7 +196,6 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = cacheService.getProblem(problemId);
         // 获取 essenceCard 所有与当前小课相关的数据
         List<EssenceCard> essenceCards = essenceCardDao.loadEssenceCards(problemId);
-        System.out.println("point2 " + DateUtils.parseDateTimeToString(new Date()));
         Map<Integer, EssenceCard> essenceCardMap = Maps.newHashMap();
         for (EssenceCard essenceCard : essenceCards) {
             essenceCardMap.put(essenceCard.getChapterId(), essenceCard);
@@ -208,7 +205,6 @@ public class ProblemServiceImpl implements ProblemService {
         // 目标 essenceList
         List<EssenceCard> cards = Lists.newArrayList();
         Integer tempChapter = 0;
-        System.out.println("point3 " + DateUtils.parseDateTimeToString(new Date()));
         for (Chapter chapter : chapters) {
             Integer chapterId = chapter.getChapter();
             EssenceCard essenceCard = new EssenceCard();
@@ -217,11 +213,14 @@ public class ProblemServiceImpl implements ProblemService {
             if (essenceCardMap.get(chapterId) != null) {
                 essenceCard.setEssenceContent(essenceCardMap.get(chapterId).getEssenceContent());
             }
-            essenceCard.setChapter(chapter.getName());
             essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
-            System.out.println("paintImage1 " + DateUtils.parseDateTimeToString(new Date()));
-            essenceCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapterId), qrImage, headImg));
-            System.out.println("paintImage2 " + DateUtils.parseDateTimeToString(new Date()));
+            if (chapterId == chapters.size()) {
+                essenceCard.setChapter("小课知识清单");
+                essenceCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(6), qrImage, headImg, essenceCardMap.get(chapterId)));
+            } else {
+                essenceCard.setChapter(chapter.getName());
+                essenceCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapterId), qrImage, headImg, essenceCardMap.get(chapterId)));
+            }
             cards.add(essenceCard);
             // 计算已完成的章节号
             List<Section> sections = chapter.getSections();
@@ -231,7 +230,6 @@ public class ProblemServiceImpl implements ProblemService {
                 }
             }
         }
-        System.out.println("point4 " + DateUtils.parseDateTimeToString(new Date()));
         Integer completedChapter = 0;
         for (Chapter chapter : chapters) {
             if (chapter.getChapter().equals(tempChapter)) {
@@ -240,83 +238,124 @@ public class ProblemServiceImpl implements ProblemService {
                 completedChapter = resultCnt > 0 ? chapter.getChapter() - 1 : chapter.getChapter();
             }
         }
-        System.out.println("point5 " + DateUtils.parseDateTimeToString(new Date()));
         for (EssenceCard essenceCard : cards) {
             essenceCard.setCompleted(essenceCard.getChapterId() <= completedChapter);
         }
-        System.out.println("point6 " + DateUtils.parseDateTimeToString(new Date()));
-        // 最后添加章总结数据
-        EssenceCard lastCard = new EssenceCard();
-        EssenceCard tempEssenceCard = essenceCardMap.get(0);
-        lastCard.setProblemId(problemId);
-        lastCard.setChapterId(0);
-        lastCard.setCompleted(completedChapter.equals(chapters.size()));
-        if (essenceCardMap.get(0) != null) {
-            lastCard.setEssenceContent(tempEssenceCard.getEssenceContent());
-        }
-        lastCard.setEssenceImgBase(getEssenceCardImg(profileId, loadBufferedImageByChapterId(chapters.size() + 1), qrImage, headImg));
-        lastCard.setChapter("章总结");
-        lastCard.setChapterNo("章总结");
-        cards.add(lastCard);
         return new MutablePair<>(problem.getProblem(), cards);
     }
 
-    private String getEssenceCardImg(Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg) {
+    /**
+     * @param profileId
+     * @param targetImage 背景图片
+     * @param qrImage     二维码图片
+     * @param headImg     头像图片
+     */
+    @Override
+    public String getEssenceCardImg(Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg, EssenceCard essenceCard) {
         Profile profile = profileDao.load(Profile.class, profileId);
-        System.out.println("imageInner1 " + DateUtils.parseDateTimeToString(new Date()));
-
-        // 获取绘图背景图片
-        // List<BufferedImage> backImages = cacheService.loadEssenceCardImage();
-        System.out.println("imageInner2 " + DateUtils.parseDateTimeToString(new Date()));
-
-        // 获取二维码图片
-        // QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit" + profileId, null);
-        // BufferedImage qrImage = null;
-        // try {
-        //     qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
-        // } catch (IOException e) {
-        //     logger.error(e.getLocalizedMessage());
-        // }
-        // System.out.println("imageInner3 " + DateUtils.parseDateTimeToString(new Date()));
-
-        // 获取用户头像图片
-        // String headImgUrl = profile.getHeadimgurl();
-        // if (headImgUrl == null) {
-        //     // 如果用户头像为空，则拉取实时新头像
-        //     Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-        //     headImgUrl = realProfile.getHeadimgurl();
-        // }
-        // BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-        // System.out.println("imageInner4 " + DateUtils.parseDateTimeToString(new Date()));
-
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 150, 150);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 150, 150);
-        targetImage = ImageUtils.scaleByPercentage(targetImage, 338, 600);
+        // TargetImage
+        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
+        // QrImage
+        qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1087);
+        // HeadImage
+        headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
         headImg = ImageUtils.convertCircular(headImg);
-        headImg = ImageUtils.scaleByPercentage(headImg, 60, 60);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 10, 10);
-        targetImage = ImageUtils.writeText(targetImage, 60, 10, profile.getNickname(),
-                new Font("微软雅黑", Font.BOLD, 18), new Color(102, 102, 102));
-        targetImage = ImageUtils.writeText(targetImage, 40, 50, "理清问题需求，澄清偏差",
-                new Font("微软雅黑", Font.BOLD, 24), new Color(51, 51, 51));
-        System.out.println("imageInner5 " + DateUtils.parseDateTimeToString(new Date()));
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 497, 1147);
+        // NickName
+        targetImage = ImageUtils.writeText(targetImage, 278, 1230, profile.getNickname() + "邀请你，",
+                new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+        targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
+                new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+        // 课程标题
+        String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
+        targetImage = ImageUtils.writeText(targetImage, 380, 320, titleArr[0],
+                new Font("Helvetica", Font.PLAIN, 60), new Color(51, 51, 51));
+        targetImage = ImageUtils.writeText(targetImage, 264, 420, titleArr[1],
+                new Font("Helvetica", Font.PLAIN, 60), new Color(255, 255, 255));
+        // 渲染课程精华卡片文本
+        String[] contentArr = essenceCard.getEssenceContent().split("\\|");
+        targetImage = generateThreeContent(targetImage, contentArr, contentArr.length);
         ByteArrayOutputStream outputStream = null;
         try {
             outputStream = new ByteArrayOutputStream();
             ImageIO.write(targetImage, "png", outputStream);
-            // String imagePath = "/Users/xfduan/Pictures/a.png";
-            // ImageIO.write(targetImage, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
-        System.out.println("imageInner6 " + DateUtils.parseDateTimeToString(new Date()));
         BASE64Encoder encoder = new BASE64Encoder();
         return "data:image/png;base64," + encoder.encode(outputStream.toByteArray());
     }
 
-    private BufferedImage loadBufferedImageByChapterId(Integer chapterId) {
+    @Override
+    public BufferedImage loadBufferedImageByChapterId(Integer chapterId) {
         chapterId = chapterId % bufferedImages.size() == 0 ? bufferedImages.size() : chapterId % bufferedImages.size();
         return bufferedImages.get(chapterId - 1);
     }
+
+    private BufferedImage generateThreeContent(BufferedImage targetImage, String[] contentArr, Integer paraSize) {
+        int splitNum = 12;
+        // 精华内容
+        String content1 = contentArr[0];
+        int content1Size = content1.length() / splitNum == 0 ? 1 : content1.length() / splitNum + 1;
+        for (int i = 0; i < content1Size; i++) {
+            String writeText;
+            if (i == 0) {
+                writeText = "-  " + (content1.length() > splitNum ? content1.substring(0, splitNum - 1) : content1);
+            } else if (i == content1Size - 1) {
+                writeText = content1.substring(splitNum * i - 1);
+            } else {
+                writeText = content1.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
+            }
+            targetImage = ImageUtils.writeText(targetImage, 404, 520 + i * 35, writeText,
+                    new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+        }
+        String content2 = contentArr[1];
+        int content2Size = content2.length() / splitNum == 0 ? 1 : content2.length() / splitNum + 1;
+        for (int i = 0; i < content2Size; i++) {
+            String writeText;
+            if (i == 0) {
+                writeText = "-  " + (content2.length() > splitNum ? content2.substring(0, splitNum - 1) : content2);
+            } else if (i == content2Size - 1) {
+                writeText = content2.substring(splitNum * i - 1);
+            } else {
+                writeText = content2.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
+            }
+            targetImage = ImageUtils.writeText(targetImage, 404, 680 + i * 35, writeText,
+                    new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+        }
+        String content3 = contentArr[2];
+        int content3Size = content3.length() / splitNum == 0 ? 1 : content3.length() / splitNum + 1;
+        for (int i = 0; i < content3Size; i++) {
+            String writeText;
+            if (i == 0) {
+                writeText = "-  " + (content3.length() > splitNum ? content3.substring(0, splitNum - 1) : content3);
+            } else if (i == content3Size - 1) {
+                writeText = content3.substring(splitNum * i - 1);
+            } else {
+                writeText = content3.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
+            }
+            targetImage = ImageUtils.writeText(targetImage, 404, 840 + i * 35, writeText,
+                    new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+        }
+        if (paraSize == 4) {
+            String content4 = contentArr[3];
+            int content4Size = content4.length() / splitNum == 0 ? 1 : content4.length() / splitNum + 1;
+            for (int i = 0; i < content4Size; i++) {
+                String writeText;
+                if (i == 0) {
+                    writeText = "-  " + (content4.length() > splitNum ? content4.substring(0, splitNum - 1) : content4);
+                } else if (i == content4Size - 1) {
+                    writeText = content4.substring(splitNum * i - 1);
+                } else {
+                    writeText = content4.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
+                }
+                targetImage = ImageUtils.writeText(targetImage, 404, 1000 + i * 35, writeText,
+                        new Font("Helvetica", Font.PLAIN, 24), new Color(51, 51, 51));
+            }
+        }
+        return targetImage;
+    }
+
 
 }

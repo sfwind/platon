@@ -1,7 +1,5 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
@@ -15,7 +13,6 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.EssenceCard;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -25,12 +22,9 @@ import com.iquanwai.platon.biz.util.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.objenesis.instantiator.sun.MagicInstantiator;
 import org.springframework.stereotype.Service;
 import sun.misc.BASE64Encoder;
-import sun.security.krb5.Config;
 
-import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -62,13 +56,11 @@ public class OperationServiceImpl implements OperationService {
     private ProfileDao profileDao;
     @Autowired
     private CouponDao couponDao;
-    @Autowired
-    private EssenceCardDao essenceCardDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     // 活动前缀
-    private static String prefix = "freeLimit";
+    private static String prefix = "freeLimit_";
     // 推广成功人数限额
     private static Integer successNum = 9;
 
@@ -104,11 +96,17 @@ public class OperationServiceImpl implements OperationService {
                 promotionUserDao.updateActionByOpenId(openId, newAction);
             }
             // 必是成功推广，此时给推广人发送成功推送信息
-            String source = orderUser.getSource();
-            // 查看推广人当前所有推广的新人列表
-            List<PromotionUser> newUsers = promotionUserDao.loadUsersBySource(source);
-            List<PromotionUser> successUsers = newUsers.stream().filter(user -> user.getAction() > 0).collect(Collectors.toList());
-
+            List<PromotionUser> newUsers;
+            List<PromotionUser> successUsers;
+            Integer profileId = orderUser.getProfileId();
+            if (profileId != null) {
+                newUsers = promotionUserDao.loadUsersByProfileId(profileId);
+            } else {
+                String source = orderUser.getSource();
+                // 查看推广人当前所有推广的新人列表
+                newUsers = promotionUserDao.loadUsersBySource(source);
+            }
+            successUsers = newUsers.stream().filter(user -> user.getAction() > 0).collect(Collectors.toList());
             // 发送推广成功消息
             Integer sourceProfileId = Integer.parseInt(orderUser.getSource().substring(prefix.length())); // 推广人 ProfileId
             Profile sourceProfile = profileDao.load(Profile.class, sourceProfileId); // 推广人 Profile
@@ -162,7 +160,7 @@ public class OperationServiceImpl implements OperationService {
         headImg = ImageUtils.scaleByPercentage(headImg, 60, 60);
         targetImage = ImageUtils.overlapImage(targetImage, headImg, 10, 10);
         targetImage = ImageUtils.writeText(targetImage, 60, 10, profile.getNickname(),
-                new Font("微软雅黑", Font.BOLD, 18), new Color(102, 102, 102));
+                new Font("微软雅黑", Font.BOLD, 24), new Color(102, 102, 102));
         targetImage = ImageUtils.writeText(targetImage, 40, 50, "理清问题需求，澄清偏差",
                 new Font("微软雅黑", Font.BOLD, 24), new Color(51, 51, 51));
 

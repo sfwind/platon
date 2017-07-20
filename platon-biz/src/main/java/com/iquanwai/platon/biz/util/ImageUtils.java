@@ -19,6 +19,8 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
@@ -79,6 +81,7 @@ public class ImageUtils {
         Graphics2D graphics2d = inputImage.createGraphics();
         graphics2d.setColor(color);
         graphics2d.setFont(font);
+        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics2d.drawString(CommonUtils.filterEmoji(text), x, y);
         graphics2d.dispose();
         return inputImage;

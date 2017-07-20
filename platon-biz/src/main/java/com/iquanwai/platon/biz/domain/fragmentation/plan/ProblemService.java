@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.*;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -80,4 +81,8 @@ public interface ProblemService {
      * 根据 planId 获取卡包页面数据
      */
     Pair<String, List<EssenceCard>> loadProblemCards(Integer planId);
+
+    String getEssenceCardImg(Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg, EssenceCard essenceCard);
+
+    BufferedImage loadBufferedImageByChapterId(Integer chapterId);
 }

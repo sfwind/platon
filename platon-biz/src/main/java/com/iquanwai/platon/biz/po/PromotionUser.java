@@ -11,6 +11,7 @@ public class PromotionUser {
     private Integer id;
     private String openId; // 用户 openId
     private String source; // 用户来源 推广人
+    private Integer profileId; // 推广人即来源的 ProfileId
     private Integer action; // 0-新用户 1-已试用 2-已付费
 
 }
