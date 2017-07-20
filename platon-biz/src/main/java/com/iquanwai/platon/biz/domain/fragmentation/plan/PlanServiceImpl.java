@@ -376,7 +376,6 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> prePracticePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series - 1);
         if (isDone(prePracticePlans)) {
             List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
-
             for (PracticePlan practicePlan : practicePlans) {
                 if (!practicePlan.getUnlocked()) {
                     //已过期返回-3
@@ -516,62 +515,7 @@ public class PlanServiceImpl implements PlanService {
         }
 
         if (isLearningSuccess) {
-            System.out.println("当前章节学习结束");
-            // Integer profileId, BufferedImage targetImage, BufferedImage qrImage, BufferedImage headImg, EssenceCard essenceCard
-            System.out.println("1 = " + new Date());
-            Profile profile = profileDao.load(Profile.class, profileId);
-
-            // headImg
-            String headImgUrl = profile.getHeadimgurl();
-            if ("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
-                headImgUrl = headImgUrl.substring(0, headImgUrl.length() - 2) + "/64";
-            }
-            final String targetHeadImgUrl = headImgUrl;
-            // BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-            BufferedImage headImg = null;
-            ExecutorService executor = Executors.newCachedThreadPool();
-            Future<BufferedImage> bufferedImageFuture = executor.submit(new Callable<BufferedImage>() {
-                @Override
-                public BufferedImage call() throws Exception {
-                    return ImageUtils.getBufferedImageByUrl(targetHeadImgUrl);
-                }
-            });
-
-            // // 如果用户头像过期，则拉取实时新头像
-            // if (headImg == null) {
-            //     Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-            //     headImgUrl = realProfile.getHeadimgurl();
-            //     headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-            // }
-            System.out.println("2 = " + new Date());
-            // targetImage
-            BufferedImage targetImage = problemService.loadBufferedImageByChapterId(targetChapterId);
-            System.out.println("3 = " + new Date());
-            // qrImage
-            QRResponse qrResponse = qrCodeService.generateTemporaryQRCode("freeLimit_" + profileId, null);
-            BufferedImage qrImage = null;
-            try {
-                qrImage = ImageIO.read(qrCodeService.showQRCode(qrResponse.getTicket()));
-            } catch (IOException e) {
-                logger.error(e.getLocalizedMessage());
-            }
-            System.out.println("4 = " + new Date());
-            // essenceCard
-            EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
-
-            System.out.println("6 = " + new Date());
-            try {
-                headImg = bufferedImageFuture.get();
-                executor.shutdown();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            System.out.println("7 = " + new Date());
-            String targetBase64 = problemService.getEssenceCardImg(profileId, targetImage, qrImage, headImg, essenceCard);
-            System.out.println("8 = " + new Date());
-            return targetBase64;
+            return problemService.loadEssenceCardImg(profileId, problemId, targetChapterId);
         } else {
             System.out.println("当前小课正在学习当中");
         }

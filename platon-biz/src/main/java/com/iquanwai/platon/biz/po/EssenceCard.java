@@ -18,12 +18,9 @@ public class EssenceCard {
     /**
      * 非 db 字段
      */
+    private String thumbnail; // 缩略图
     private Boolean completed; // 是否已经完成
     private String chapter; // 章节名称
     private String chapterNo; // 章节号
-    private String essenceImgBase; // Base64编码
-
-
-
 
 }
