@@ -108,7 +108,9 @@ public class OperationServiceImpl implements OperationService {
             }
             successUsers = newUsers.stream().filter(user -> user.getAction() > 0).collect(Collectors.toList());
             // 发送推广成功消息
-            Integer sourceProfileId = Integer.parseInt(orderUser.getSource().substring(prefix.length())); // 推广人 ProfileId
+            // 获取的是来源的 profileId (推广人的 profileId)
+            Integer sourceProfileId = orderUser.getProfileId();
+            if (sourceProfileId == null) return;
             Profile sourceProfile = profileDao.load(Profile.class, sourceProfileId); // 推广人 Profile
             // TODO 拿到优惠券之后是否还继续发送选课消息
             if (successUsers.size() <= successNum) {
