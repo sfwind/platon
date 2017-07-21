@@ -560,6 +560,18 @@ public class PlanController {
     }
 
 
+    @RequestMapping(value = "/chapter/card/access/{problemId}/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Boolean authority = planService.loadChapterCardAccess(loginUser.getId(), problemId, practicePlanId);
+        if (authority != null) {
+            return WebUtils.result(authority);
+        } else {
+            return WebUtils.error("服务异常，请联系管理员重试");
+        }
+    }
+
+
     /**
      * 当用户做完某一章节的所有巩固练习后，后台回复章节卡片
      */
@@ -576,7 +588,6 @@ public class PlanController {
             return WebUtils.error("当前章节未完成");
         }
     }
-
 
     /**
      * 检查是否能够选新课

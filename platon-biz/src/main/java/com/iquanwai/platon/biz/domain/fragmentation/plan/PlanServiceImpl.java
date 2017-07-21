@@ -493,6 +493,36 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
+        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (practicePlan == null) {
+            return false;
+        }
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        Integer completeSeries = improvementPlan.getCompleteSeries();
+        // 获取当前完成的巩固练习所在顺序
+        Integer currentSeries = practicePlan.getSeries();
+        if (!currentSeries.equals(completeSeries)) {
+            return false;
+        }
+        Boolean isLearningSuccess = false;
+        for (Chapter chapter : chapters) {
+            List<Section> sections = chapter.getSections();
+            for (Section section : sections) {
+                // 用户当前学习的章节号对应到具体的 section
+                if (section.getSeries().equals(currentSeries)) {
+                    Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
+                    isLearningSuccess = lgSeriesCount.intValue() <= 0;
+                    break;
+                }
+            }
+        }
+        return isLearningSuccess;
+    }
+
+
+    @Override
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
         List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
