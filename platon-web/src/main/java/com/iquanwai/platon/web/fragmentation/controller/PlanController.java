@@ -648,7 +648,7 @@ public class PlanController {
             plan.setCloseTime(item.getCloseTime());
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(plan);
-            } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE) {
+            } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE || item.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
                 trialClosedPlans.add(plan);
             } else {
                 runningPlans.add(plan);

@@ -59,5 +59,6 @@ public class ImprovementPlan {
     public final static int COMPLETE = 2;
     public final static int CLOSE = 3;
     public final static int TRIALCLOSE = 4;
+    public final static int TEMP_TRIALCLOSE=-1;
 
 }

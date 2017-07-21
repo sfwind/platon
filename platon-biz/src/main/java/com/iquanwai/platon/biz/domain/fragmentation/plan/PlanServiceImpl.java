@@ -3,19 +3,27 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
-import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
-import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -25,13 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -78,7 +82,9 @@ public class PlanServiceImpl implements PlanService {
 //        } else
 //
         //已过期不能解锁
-        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
             improvementPlan.setLockedStatus(-3);
         } else {
             //解锁下一组
@@ -305,13 +311,15 @@ public class PlanServiceImpl implements PlanService {
             return new MutablePair<>(1, "");
         } else {
             // 学过这个小课，查看status == 4
-            if (plan.getStatus() == ImprovementPlan.TRIALCLOSE) {
+            if (plan.getStatus() == ImprovementPlan.TRIALCLOSE || plan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
                 // 试用到期，可以购买
                 return new MutablePair<>(1, "");
-            } else if (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE) {
-                return new MutablePair<>(-1, "该小课可以正常学习,无需购买");
             } else {
-                return new MutablePair<>(-2, "该小课无需购买");
+                if (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE) {
+                    return new MutablePair<>(-1, "该小课可以正常学习,无需购买");
+                } else {
+                    return new MutablePair<>(-2, "该小课无需购买");
+                }
             }
 
         }

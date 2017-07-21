@@ -297,6 +297,10 @@ public class ProblemController {
                     buttonStatus = 1;
                     break;
                 }
+                case ImprovementPlan.TEMP_TRIALCLOSE: {
+                    buttonStatus = 5;
+                    break;
+                }
                 default:
                     // 按钮状态有问题
                     buttonStatus = -1;
