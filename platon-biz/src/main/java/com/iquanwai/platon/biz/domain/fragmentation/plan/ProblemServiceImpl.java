@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
@@ -28,7 +29,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -211,7 +211,7 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
-        InputStream in = getClass().getResourceAsStream("/fonts/simsun.ttf");
+        InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
         Font font;
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
@@ -231,14 +231,20 @@ public class ProblemServiceImpl implements ProblemService {
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
         headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 497, 1147);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 477, 1140);
         // NickName
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
         if (essenceCard == null) {
             return null;
         }
-        targetImage = ImageUtils.writeText(targetImage, 278, 1230, profile.getNickname() + "邀请你，",
-                font.deriveFont(24f), new Color(51, 51, 51));
+        String nickName = CommonUtils.filterEmoji(profile.getNickname());
+        if (nickName == null || nickName.length() == 0) {
+            targetImage = ImageUtils.writeText(targetImage, 278, 1230, "你的好友邀请你，",
+                    font.deriveFont(24f), new Color(51, 51, 51));
+        } else {
+            targetImage = ImageUtils.writeText(targetImage, 278, 1230, nickName + "邀请你，",
+                    font.deriveFont(24f), new Color(51, 51, 51));
+        }
         targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
                 font.deriveFont(24f), new Color(51, 51, 51));
         // 课程标题
@@ -249,12 +255,11 @@ public class ProblemServiceImpl implements ProblemService {
                 font.deriveFont(60f), new Color(255, 255, 255));
         // 渲染课程精华卡片文本
         String[] contentArr = essenceCard.getEssenceContent().split("\\|");
-        targetImage = writeContentOnImage(targetImage, contentArr, contentArr.length);
+        targetImage = writeContentOnImage(targetImage, contentArr, 404, 500);
         ByteArrayOutputStream outputStream = null;
         try {
             outputStream = new ByteArrayOutputStream();
             ImageIO.write(targetImage, "jpg", outputStream);
-            ImageIO.write(targetImage, "a.jpg", new File("/usr/betauser/deploy"));
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -298,26 +303,23 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     // 将段落正文填充到图像中
-    public BufferedImage writeContentOnImage(BufferedImage targetImage, String[] contentArr, Integer paraSize) {
-        // 精华内容
-        String content1 = contentArr[0];
-        targetImage = writeSinglePara(targetImage, content1, 404, 520);
-
-        String content2 = contentArr[1];
-        targetImage = writeSinglePara(targetImage, content2, 404, 680);
-
-        String content3 = contentArr[2];
-        targetImage = writeSinglePara(targetImage, content3, 404, 840);
-
-        if (paraSize == 4) {
-            String content4 = contentArr[3];
-            targetImage = writeSinglePara(targetImage, content4, 404, 1000);
+    private BufferedImage writeContentOnImage(BufferedImage targetImage, String[] contentArr, Integer x, Integer y) {
+        for (int i = 0; i < contentArr.length; i++) {
+            String content = contentArr[i];
+            Pair<BufferedImage, Integer> pair = writeSinglePara(targetImage, content, x, y + 35);
+            if (pair != null) {
+                targetImage = pair.getLeft();
+                y = pair.getRight();
+            }
         }
         return targetImage;
     }
 
-    private BufferedImage writeSinglePara(BufferedImage targetImage, String text, Integer x, Integer y) {
-        InputStream in = getClass().getResourceAsStream("/fonts/simsun.ttf");
+    /**
+     * @return 修改之后的 BufferedImage + 底层高度
+     */
+    private Pair<BufferedImage, Integer> writeSinglePara(BufferedImage targetImage, String text, Integer x, Integer y) {
+        InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
         Font font;
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
@@ -326,12 +328,12 @@ public class ProblemServiceImpl implements ProblemService {
             return null;
         }
         Integer splitNum = 12;
-        int content4Size = text.length() / splitNum == 0 ? 1 : text.length() / splitNum + 1;
-        for (int i = 0; i < content4Size; i++) {
+        int contentSize = text.length() / splitNum == 0 ? 1 : text.length() / splitNum + 1;
+        for (int i = 0; i < contentSize; i++) {
             String writeText;
             if (i == 0) {
-                writeText = "-  " + (text.length() > splitNum ? text.substring(0, splitNum - 1) : text);
-            } else if (i == content4Size - 1) {
+                writeText = "- " + (text.length() > splitNum ? text.substring(0, splitNum - 1) : text);
+            } else if (i == contentSize - 1) {
                 writeText = text.substring(splitNum * i - 1);
             } else {
                 writeText = text.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
@@ -339,7 +341,8 @@ public class ProblemServiceImpl implements ProblemService {
             targetImage = ImageUtils.writeText(targetImage, x, y + i * 35, writeText,
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
-        return targetImage;
+        Integer endY = y + contentSize * 35;
+        return new MutablePair<>(targetImage, endY);
     }
 
 }
