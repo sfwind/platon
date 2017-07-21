@@ -163,7 +163,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Pair<String, List<EssenceCard>> loadProblemCards(Integer planId) {
+    public Pair<Problem, List<EssenceCard>> loadProblemCards(Integer planId) {
         // 根据 planId 获取 improvement 中的 problemId
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         Integer problemId = plan.getProblemId();
@@ -205,7 +205,7 @@ public class ProblemServiceImpl implements ProblemService {
         for (EssenceCard essenceCard : cards) {
             essenceCard.setCompleted(essenceCard.getChapterId() <= completedChapter);
         }
-        return new MutablePair<>(problem.getProblem(), cards);
+        return new MutablePair<>(problem, cards);
     }
 
     // 获取精华卡图

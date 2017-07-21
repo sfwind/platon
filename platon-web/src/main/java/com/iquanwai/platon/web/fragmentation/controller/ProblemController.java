@@ -404,12 +404,15 @@ public class ProblemController {
     @RequestMapping(value = "/cards/{planId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadProblemCards(LoginUser loginUser, @PathVariable Integer planId) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        Pair<String, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
+        Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
         if (essenceCards == null) {
             return WebUtils.error("未找到当前小课相关卡包信息");
         } else {
             CardCollectionDto dto = new CardCollectionDto();
-            dto.setProblem(essenceCards.getLeft());
+            if (essenceCards.getLeft() != null) {
+                dto.setProblemId(essenceCards.getLeft().getId());
+                dto.setProblem(essenceCards.getLeft().getProblem());
+            }
             dto.setCards(essenceCards.getRight());
             return WebUtils.result(dto);
         }
