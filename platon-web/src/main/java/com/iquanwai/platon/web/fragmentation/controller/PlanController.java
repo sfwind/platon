@@ -374,8 +374,7 @@ public class PlanController {
                 .memo(improvementPlan.getId() + "");
         operationLogService.log(operationLog);
         ImprovementReport report = reportService.loadUserImprovementReport(improvementPlan);
-        if (report.getApplicationShouldCount().equals(report.getApplicationCompleteCount())
-                && report.getIntegratedShouldCount().equals(report.getIntegratedCompleteCount())) {
+        if (report.getApplicationShouldCount().equals(report.getApplicationCompleteCount())) {
             report.setDoneAllApps(true);
         } else {
             report.setDoneAllApps(false);

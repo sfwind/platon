@@ -18,6 +18,9 @@ public class Knowledge {
     private String meansPic;// 方法图片
     private String keynotePic;// 要点图片
     private String pic; //图片链接
+    private String analysisAudio;// 作用语音
+    private String meansAudio;// 方法语音
+    private String keynoteAudio;// 要点语音
     private String audio; //语音链接
     private Integer appear; //非db字段,是否出现过
     private WarmupPractice example; //非db字段 例题

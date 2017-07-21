@@ -72,5 +72,11 @@ public interface Constants {
         int MOBILE_VALID = 1;
     }
 
+    interface WEIXIN_MESSAGE_TYPE{
+        int TEXT = 1;
+        int IMAGE = 2;
+        int VOICE = 3;
+    }
+
     int DISCUSS_PAGE_SIZE = 100;
 }

@@ -347,7 +347,7 @@ public class ProblemController {
             if (plans.isEmpty()) {
                 // 没有买过难题
                 logger.error("{} has no active plan", pcLoginUser.getOpenId());
-                return WebUtils.error(ErrorConstants.NOT_PAY_FRAGMENT, "没找到进行中的RISE训练");
+                return WebUtils.error(ErrorConstants.NOT_PAY_FRAGMENT, "没找到进行中的圈外小课");
             } else {
                 // 购买过直接选最后一个
                 ImprovementPlan plan = plans.get(plans.size() - 1);

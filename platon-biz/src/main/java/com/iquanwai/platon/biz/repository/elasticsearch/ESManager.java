@@ -112,7 +112,6 @@ public class ESManager {
                     .endObject()
                     .endObject();
 
-            System.out.println(mapping.string());
         } catch (Exception e){
             logger.error(e.getLocalizedMessage(), e);
         }
