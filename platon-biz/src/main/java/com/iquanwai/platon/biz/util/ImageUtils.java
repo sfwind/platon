@@ -11,16 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -115,33 +111,6 @@ public class ImageUtils {
         return big;
     }
 
-    // 将 svg 图的 base64 转成 png 的 base64
-    public static String convertSvg2Png(String svgBase64) {
-        System.out.println("svgBase64 = " + svgBase64);
-        svgBase64 = svgBase64.replace(" ", "+");
-        String testCode = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTAwcHgiIGhlaWdodD0iMTAwcHgiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMDAgMTAwIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxwYXRoIGQ9Ik03MS42MzMsMi4yOEgyOC4zNjdjLTQuMjEyLDAtNy42MzUsMy40MjMtNy42MzUsNy42MzV2ODAuMTY4YzAsNC4yMTIsMy40MjMsNy42MzYsNy42MzUsNy42MzZoNDMuMjY2DQoJCWM0LjIxMywwLDcuNjM1LTMuNDI0LDcuNjM1LTcuNjM2VjkuOTE2Qzc5LjI2OCw1LjcwMyw3NS44NDYsMi4yOCw3MS42MzMsMi4yOHogTTQzLjAwMSw5LjI1NGMwLTEuMDQzLDAuODQxLTEuODg0LDEuODg0LTEuODg0DQoJCWgxMC4yM2MxLjA0NCwwLDEuODg0LDAuODQxLDEuODg0LDEuODg0djAuMDVjMCwxLjA0My0wLjg0LDEuODg0LTEuODg0LDEuODg0aC0xMC4yM2MtMS4wNDMsMC0xLjg4NC0wLjg0LTEuODg0LTEuODg0VjkuMjU0eg0KCQkgTTUwLDk0Ljg1NWMtMi4yNzcsMC00LjEzNi0xLjg1Ny00LjEzNi00LjEzNmMwLTIuMjc3LDEuODU4LTQuMTM2LDQuMTM2LTQuMTM2YzIuMjc4LDAsNC4xMzYsMS44NTgsNC4xMzYsNC4xMzYNCgkJQzU0LjEzNiw5Mi45OTgsNTIuMjc4LDk0Ljg1NSw1MCw5NC44NTV6IE03Mi45MDUsODIuNDQ5YzAsMC42OTktMC41NzIsMS4yNzItMS4yNzIsMS4yNzJIMjguMzY3Yy0wLjcsMC0xLjI3Mi0wLjU3My0xLjI3Mi0xLjI3Mg0KCQlWMTcuNTUxYzAtMC43LDAuNTcyLTEuMjcyLDEuMjcyLTEuMjcyaDQzLjI2NmMwLjcsMCwxLjI3MiwwLjU3MywxLjI3MiwxLjI3MlY4Mi40NDl6Ii8+DQoJPHBhdGggZD0iTTY2LjU1Niw3NC44MTNoLTMzLjExYy0wLjY5NiwwLTEuMjYxLDAuNTY0LTEuMjYxLDEuMjYxdjAuMDI0YzAsMC42OTYsMC41NjQsMS4yNjEsMS4yNjEsMS4yNjFoMzMuMTENCgkJYzAuNjk1LDAsMS4yNi0wLjU2NCwxLjI2LTEuMjYxdi0wLjAyNEM2Ny44MTUsNzUuMzc4LDY3LjI1MSw3NC44MTMsNjYuNTU2LDc0LjgxM3oiLz4NCgk8cGF0aCBkPSJNNjYuNTU2LDY3LjE3OWgtMzMuMTFjLTAuNjk2LDAtMS4yNjEsMC41NjQtMS4yNjEsMS4yNnYwLjAyNGMwLDAuNjk2LDAuNTY0LDEuMjYsMS4yNjEsMS4yNmgzMy4xMQ0KCQljMC42OTUsMCwxLjI2LTAuNTY0LDEuMjYtMS4yNnYtMC4wMjRDNjcuODE1LDY3Ljc0Myw2Ny4yNTEsNjcuMTc5LDY2LjU1Niw2Ny4xNzl6Ii8+DQoJPHBhdGggZD0iTTUwLjg0LDQ2LjIzMmMtMi45MjcsMC01LjE4LTIuMTk1LTUuMTgtMi4xOTVsLTIuMDQ4LDIuODRjMCwwLDIuMDc4LDIuMzEsNS44NTMsMi43NXYyLjY5MmgyLjUxNnYtMi42OTINCgkJYzMuNTY5LTAuNDY5LDUuNjQ4LTMuMDEzLDUuNjQ4LTUuOTk5YzAtNi41NTUtOS44Ni01Ljk0LTkuODYtOS40MjJjMC0xLjQ2NSwxLjM3NC0yLjQ4OCwzLjEzLTIuNDg4DQoJCWMyLjYwNCwwLDQuNTk0LDEuODE1LDQuNTk0LDEuODE1bDEuNjM5LTMuMDc0YzAsMC0xLjc1NS0xLjg0NC01LjE1LTIuMTM1di0yLjY5MmgtMi41MTZ2Mi43NTENCgkJYy0zLjI0OCwwLjUyNi01LjUwMiwyLjg2Ni01LjUwMiw1Ljg4YzAsNi4yOTEsOS44OSw1Ljk0LDkuODksOS40NTJDNTMuODUzLDQ1LjQxNSw1Mi40MTgsNDYuMjMyLDUwLjg0LDQ2LjIzMnoiLz4NCgk8cGF0aCBkPSJNNjYuNTU2LDU5LjU0M2gtMzMuMTFjLTAuNjk2LDAtMS4yNjEsMC41NjQtMS4yNjEsMS4yNnYwLjAyNWMwLDAuNjk2LDAuNTY0LDEuMjYsMS4yNjEsMS4yNmgzMy4xMQ0KCQljMC42OTUsMCwxLjI2LTAuNTY0LDEuMjYtMS4yNnYtMC4wMjVDNjcuODE1LDYwLjEwOCw2Ny4yNTEsNTkuNTQzLDY2LjU1Niw1OS41NDN6Ii8+DQo8L2c+DQo8L3N2Zz4NCg==";
-        System.out.println("testCode  = " + testCode);
-        System.out.println("testCode = " + testCode.equals(svgBase64));
-        // 对进入 base64 数据进行解码
-        BASE64Decoder decoder = new BASE64Decoder();
-        try {
-            byte[] svgBytes = decoder.decodeBuffer(svgBase64);
-            // 准备开始对图片解码
-            PNGTranscoder t = new PNGTranscoder();
-            TranscoderInput input = new TranscoderInput(new ByteArrayInputStream(svgBytes));
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            TranscoderOutput output = new TranscoderOutput(out);
-            t.transcode(input, output);
-            out.flush();
-            // 将输出留转换成 byte[] 并进行 base64 加密
-            byte[] target = out.toByteArray();
-            return new BASE64Encoder().encode(target);
-        } catch (IOException | TranscoderException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        return null;
-    }
-
     public static String convertSvg2Png(String svgBase64, OutputStream out) {
         // 对进入 base64 数据进行解码
         BASE64Decoder decoder = new BASE64Decoder();
@@ -159,31 +128,7 @@ public class ImageUtils {
         return null;
     }
 
-    // public static void main(String[] args) {
-    //     try {
-    //         long l1 = System.currentTimeMillis();
-    //
-    //         //获取图片的流
-    //
-    //         BufferedImage big = getBufferedImageByUrl("http://wx.qlogo.cn/mmopen/Q3auHgzwzM6LrkJRYApibxYsAEYm2CmS7JZwX09AmHsP0X2VJQSpibHyoHsQKNcvqf1hzFgJr6l40vyhH7KtGWupGmgKHwFibbiaOOS0qKuvjsQ/64");
-    //         BufferedImage small = getBufferedImageByUrl("http://static.iqycamp.com/images/logo.png");
-    //         long l2 = System.currentTimeMillis();
-    //         System.out.println(l2 - l1);
-    //         // 处理图片将其压缩成正方形的小图
-    //         // BufferedImage convertImage = writeText(big, 22, 22);
-    //         // 裁剪成圆形 （传入的图像必须是正方形的 才会 圆形 如果是长方形的比例则会变成椭圆的）
-    //         big = convertCircular(big);
-    //         // big = overlapImage(big, small, 100, 100);
-    //         //生成的图片位置
-    //         String imagePath = "/Users/xfduan/Pictures/a.png";
-    //         ImageIO.write(small, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
-    //
-    //         long l3 = System.currentTimeMillis();
-    //         System.out.println(l3 - l2);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 }
+
 
 

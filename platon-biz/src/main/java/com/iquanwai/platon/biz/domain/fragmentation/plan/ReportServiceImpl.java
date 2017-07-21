@@ -59,7 +59,7 @@ public class ReportServiceImpl implements ReportService {
         report.setProblem(problem.getProblem());
         report.setPic(problem.getPic());
         // 用时
-        Integer studyDays = null;
+        Integer studyDays;
         if (plan.getStatus() == ImprovementPlan.CLOSE) {
             studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()) + 1);
         } else {
@@ -128,24 +128,19 @@ public class ReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
         // 应用练习
         List<PracticePlan> applicationPlanList = practicePlans.stream()
-                .filter(item -> item.getType().equals(PracticePlan.APPLICATION))
-                .collect(Collectors.toList());
-        // 综合练习
-        List<PracticePlan> integratedPlanList = practicePlans.stream()
-                .filter(item -> item.getType().equals(PracticePlan.APPLICATION_REVIEW))
+                .filter(item -> item.getType().equals(PracticePlan.APPLICATION) || item.getType().equals(PracticePlan.APPLICATION_REVIEW))
                 .collect(Collectors.toList());
 
         // 计算章节练习分数
         calculateWarmupScores(report, plan, warmPlanList);
         // 计算完成数量
-        calculateCompleteCount(report, applicationPlanList, integratedPlanList);
+        calculateCompleteCount(report, applicationPlanList);
         // 计算应用练习与综合练习分数
-        calculateAppScores(report, applicationPlanList, integratedPlanList);
+        calculateAppScores(report, applicationPlanList);
     }
 
-    private void calculateAppScores(ImprovementReport report, List<PracticePlan> applicationPlanList, List<PracticePlan> integratedPlanList) {
+    private void calculateAppScores(ImprovementReport report,List<PracticePlan> applicationPlanList) {
         List<Integer> applicationIds = applicationPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
-        List<Integer> integratedIds = integratedPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
 
         List<ApplicationPractice> applicationPractices;
         if (CollectionUtils.isEmpty(applicationIds)) {
@@ -153,17 +148,9 @@ public class ReportServiceImpl implements ReportService {
         } else {
             applicationPractices = applicationPracticeDao.loadPracticeList(applicationIds);
         }
-        List<ApplicationPractice> integratedPractices;
-        if (CollectionUtils.isEmpty(integratedIds)) {
-            integratedPractices = Lists.newArrayList();
-        } else {
-            integratedPractices = applicationPracticeDao.loadPracticeList(integratedIds);
-        }
 
         report.setApplicationTotalScore(0);
         report.setApplicationScore(0);
-        report.setIntegratedTotalScore(0);
-        report.setIntegratedScore(0);
         // 计算分数
         applicationPlanList.forEach(item -> {
             // 已完成，计算分数
@@ -176,30 +163,14 @@ public class ReportServiceImpl implements ReportService {
                 report.setApplicationTotalScore(report.getApplicationTotalScore() + point);
             });
         });
-
-        integratedPlanList.forEach(item -> {
-            // 已完成，计算分数
-            Optional<ApplicationPractice> first = integratedPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
-            first.ifPresent(practice -> {
-                Integer point = PointRepoImpl.score.get(practice.getDifficulty());
-                if (item.getStatus() == 1) {
-                    report.setIntegratedScore(report.getIntegratedScore() + point);
-                }
-                report.setIntegratedTotalScore(report.getIntegratedTotalScore() + point);
-            });
-        });
     }
 
-    private void calculateCompleteCount(ImprovementReport report, List<PracticePlan> applicationPlanList, List<PracticePlan> integratedPlanList) {
+    private void calculateCompleteCount(ImprovementReport report, List<PracticePlan> applicationPlanList) {
         // 数量计算
         Integer totalApplication = applicationPlanList.size();
-        Integer integratedPlan = integratedPlanList.size();
-        Long totalCompeleteApp = applicationPlanList.stream().filter(item -> item.getStatus() == 1).count();
-        Long totalCompeleteIntegrated = integratedPlanList.stream().filter(item -> item.getStatus() == 1).count();
+        Long totalCompleteApp = applicationPlanList.stream().filter(item -> item.getStatus() == 1).count();
         report.setApplicationShouldCount(totalApplication);
-        report.setIntegratedShouldCount(integratedPlan);
-        report.setApplicationCompleteCount(totalCompeleteApp.intValue());
-        report.setIntegratedCompleteCount(totalCompeleteIntegrated.intValue());
+        report.setApplicationCompleteCount(totalCompleteApp.intValue());
     }
 
     private void calculateWarmupScores(ImprovementReport report, ImprovementPlan plan, List<PracticePlan> warmPlanList) {
@@ -238,9 +209,7 @@ public class ReportServiceImpl implements ReportService {
         submitMap.forEach((series, submits) -> {
             // 综合小节内题目的得分
             seriesScores.putIfAbsent(series, 0);
-            submits.forEach(item -> {
-                seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore());
-            });
+            submits.forEach(item-> seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore()));
         });
         totalMap.forEach((series, practice) -> {
             // 综合小节内题目的得分

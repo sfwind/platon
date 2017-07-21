@@ -22,6 +22,7 @@ import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -276,7 +277,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private boolean isOptional(Integer type) {
-        return type == PracticePlan.CHALLENGE || type == PracticePlan.APPLICATION;
+        return type == PracticePlan.CHALLENGE ||
+                type == PracticePlan.APPLICATION || type == PracticePlan.APPLICATION_REVIEW;
     }
 
     @Override
@@ -303,7 +305,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Integer,String> checkPayCourse(Integer profileId,Integer problemId){
+    public Pair<Integer, String> checkPayCourse(Integer profileId, Integer problemId) {
         //
         ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (plan == null) {
@@ -329,10 +331,10 @@ public class PlanServiceImpl implements PlanService {
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
 
 //        if (riseMember) {
-            if (plans.size() >= 2) {
-                // 会员已经有两门再学
-                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
-            }
+        if (plans.size() >= 2) {
+            // 会员已经有两门再学
+            return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
+        }
 //        }
 
 //        else {
@@ -356,7 +358,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId){
+    public RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId) {
         return riseCourseDao.loadEntryOrder(profileId, problemId);
     }
 
@@ -394,7 +396,7 @@ public class PlanServiceImpl implements PlanService {
         templateMessage.setData(data);
 
         data.put("first", new TemplateMessage.Keyword("太棒了！你已完成这个小课，并获得了" + plan.getPoint()
-                + "积分，打败了" + percent + "%的Riser\n"));
+                + "积分，打败了" + percent + "%的圈柚\n"));
 
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
