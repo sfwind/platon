@@ -541,9 +541,16 @@ public class PlanServiceImpl implements PlanService {
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
         List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (practicePlan == null) {
+            return null;
+        }
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
-
+        if (!currentSeries.equals(completeSeries)) {
+            return null;
+        }
         Boolean isLearningSuccess = false;
         Integer targetChapterId = 0;
         for (Chapter chapter : chapters) {
@@ -558,13 +565,12 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
         }
-
+        // 当前章节 和 完成章节相等
         if (isLearningSuccess) {
             return problemService.loadEssenceCardImg(profileId, problemId, targetChapterId);
         } else {
-            System.out.println("当前小课正在学习当中");
+            return null;
         }
-        return null;
     }
 
 }
