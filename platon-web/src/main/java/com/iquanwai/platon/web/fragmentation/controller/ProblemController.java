@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.EssenceCard;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -16,6 +17,7 @@ import com.iquanwai.platon.biz.po.ProblemExtension;
 import com.iquanwai.platon.biz.po.ProblemScore;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.CardCollectionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
@@ -23,10 +25,9 @@ import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseCourseDto;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,7 @@ public class ProblemController {
     @Autowired
     private WhiteListService whiteListService;
     @Autowired
+    private AccountService accountService;
 
     private static final String TRIAL = "RISE_PROBLEM_TRIAL";
 
@@ -304,6 +306,10 @@ public class ProblemController {
         dto.setFee(ConfigUtils.getRiseCourseFee());
         dto.setButtonStatus(buttonStatus);
         dto.setProblem(problem);
+        Profile profile = accountService.getProfile(loginUser.getId());
+        dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
+        dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
+        // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("查询小课信息")

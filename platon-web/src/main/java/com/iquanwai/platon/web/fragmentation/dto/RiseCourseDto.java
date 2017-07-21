@@ -12,4 +12,7 @@ public class RiseCourseDto {
     private Double fee;
     private Integer buttonStatus;
     private Integer planId;
+
+    private Boolean bindMobile; // 是否已经绑定过电话
+    private Boolean isFull; // 是否填写全部用户信息
 }
