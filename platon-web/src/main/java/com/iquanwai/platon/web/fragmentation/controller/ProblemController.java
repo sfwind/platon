@@ -427,7 +427,11 @@ public class ProblemController {
     @RequestMapping(value = "/card/{problemId}/{chapterId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().module("小课卡包").function("小课卡包").action("点卡卡包卡片").memo(chapterId.toString());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课卡包")
+                .function("小课卡包")
+                .action("点开卡包卡片")
+                .memo(chapterId.toString());
         operationLogService.log(operationLog);
         String essenceCardImgBase64 = problemService.loadEssenceCardImg(loginUser.getId(), problemId, chapterId);
         if (essenceCardImgBase64 != null) {
