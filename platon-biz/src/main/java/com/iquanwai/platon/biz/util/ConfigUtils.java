@@ -235,6 +235,20 @@ public class ConfigUtils {
     }
 
     /**
+     * 获取精华卡片缩略图
+     */
+    public static String getEssenceCardThumbnails() {
+        return getValue("rise.problem.cards.thumbnail");
+    }
+
+    /**
+     * 获取精华卡片锁定图
+     */
+    public static String getEssenceCardThumbnailsLock() {
+        return getValue("rise.problem.cards.thumbnail.lock");
+    }
+
+    /**
      * 1、分享卡片成功推送
      */
     public static String getShareCodeSuccessMsg() {

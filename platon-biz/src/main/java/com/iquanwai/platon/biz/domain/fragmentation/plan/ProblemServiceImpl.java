@@ -64,14 +64,30 @@ public class ProblemServiceImpl implements ProblemService {
 
     private Map<Integer, BufferedImage> bufferedImageMap = Maps.newHashMap();
 
+    private Map<Integer, String> thumbnailMap = Maps.newHashMap();
+
+    private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
+
     @PostConstruct
     public void init() {
         // 初始化所有背景图的 bufferedImages 缓存
         JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
         for (int i = 0; i < base64ImageJson.size(); i++) {
             String url = base64ImageJson.getString(Integer.toString(i + 1));
-            System.out.println("url = " + url);
+            System.out.println("BackImageUrl = " + url);
             bufferedImageMap.put(i + 1, ImageUtils.getBufferedImageByUrl(url));
+        }
+        JSONObject essenceThumbnail = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnails());
+        for (int i = 0; i < essenceThumbnail.size(); i++) {
+            String thumbnail = essenceThumbnail.getString(Integer.toString(i + 1));
+            System.out.println("ThumbnailUrl = " + thumbnail);
+            thumbnailMap.put(i + 1, thumbnail);
+        }
+        JSONObject essenceThumbnailLock = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnailsLock());
+        for (int i = 0; i < essenceThumbnailLock.size(); i++) {
+            String thumbnailLock = essenceThumbnailLock.getString(Integer.toString(i + 1));
+            System.out.println("ThumbnailUrlLock = " + thumbnailLock);
+            thumbnailLockMap.put(i + 1, thumbnailLock);
         }
     }
 
@@ -179,6 +195,8 @@ public class ProblemServiceImpl implements ProblemService {
             EssenceCard essenceCard = new EssenceCard();
             essenceCard.setProblemId(problemId);
             essenceCard.setChapterId(chapterId);
+            essenceCard.setThumbnail(loadTargetThumbnailByChapterId(chapterId, chapters.size()));
+            essenceCard.setThumbnailLock(loadTargetThumbnailLockByChapterId(chapterId, chapters.size()));
             essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
             if (chapterId == chapters.size()) {
                 essenceCard.setChapter("小课知识清单");
@@ -219,11 +237,18 @@ public class ProblemServiceImpl implements ProblemService {
             logger.error(e.getLocalizedMessage());
             return null;
         }
-        Profile profile = profileDao.load(Profile.class, profileId);
+        Integer totalSize;
+        Problem problem = cacheService.getProblem(problemId);
+        if (problem != null) {
+            totalSize = problem.getChapterList().size();
+        } else {
+            return null;
+        }
         // TargetImage
-        BufferedImage targetImage = loadTargetImageByChapterId(chapterId);
+        BufferedImage targetImage = loadTargetImageByChapterId(chapterId, totalSize);
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         // QrImage
+        Profile profile = profileDao.load(Profile.class, profileId);
         BufferedImage qrImage = loadQrImage(profile);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1087);
@@ -268,9 +293,33 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     // 获取绘图底层背景
-    public BufferedImage loadTargetImageByChapterId(Integer chapterId) {
-        chapterId = chapterId % bufferedImageMap.size() == 0 ? bufferedImageMap.size() : chapterId % bufferedImageMap.size();
-        return bufferedImageMap.get(chapterId);
+    public BufferedImage loadTargetImageByChapterId(Integer chapterId, Integer totalSize) {
+        if (chapterId.equals(totalSize)) {
+            return bufferedImageMap.get(thumbnailMap.size());
+        } else {
+            chapterId = chapterId % bufferedImageMap.size() == 0 ? bufferedImageMap.size() : chapterId % bufferedImageMap.size();
+            return bufferedImageMap.get(chapterId);
+        }
+    }
+
+    // 获取缩略图url
+    public String loadTargetThumbnailByChapterId(Integer chapterId, Integer totalSize) {
+        if (chapterId.equals(totalSize)) {
+            return thumbnailMap.get(thumbnailMap.size());
+        } else {
+            chapterId = chapterId % thumbnailMap.size() == 0 ? thumbnailMap.size() : chapterId % thumbnailMap.size();
+            return thumbnailMap.get(chapterId);
+        }
+    }
+
+    // 获取缩略图锁定url
+    public String loadTargetThumbnailLockByChapterId(Integer chapterId, Integer totalSize) {
+        if (chapterId.equals(totalSize)) {
+            return thumbnailLockMap.get(thumbnailLockMap.size());
+        } else {
+            chapterId = chapterId % thumbnailLockMap.size() == 0 ? thumbnailLockMap.size() : chapterId % thumbnailLockMap.size();
+            return thumbnailLockMap.get(chapterId);
+        }
     }
 
     // 获取二维码
