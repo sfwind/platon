@@ -146,6 +146,8 @@ public interface PlanService {
 
     ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
 
+    Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
+
     /**
      * 用户每学习完一章之后，弹出该章章节卡
      * @param profileId
