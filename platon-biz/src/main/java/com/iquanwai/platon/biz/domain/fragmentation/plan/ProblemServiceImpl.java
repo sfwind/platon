@@ -232,7 +232,7 @@ public class ProblemServiceImpl implements ProblemService {
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
         headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 476, 1139);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 477, 1140);
         // NickName
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
         if (essenceCard == null) {
@@ -333,7 +333,7 @@ public class ProblemServiceImpl implements ProblemService {
         for (int i = 0; i < contentSize; i++) {
             String writeText;
             if (i == 0) {
-                writeText = "-  " + (text.length() > splitNum ? text.substring(0, splitNum - 1) : text);
+                writeText = "- " + (text.length() > splitNum ? text.substring(0, splitNum - 1) : text);
             } else if (i == contentSize - 1) {
                 writeText = text.substring(splitNum * i - 1);
             } else {
