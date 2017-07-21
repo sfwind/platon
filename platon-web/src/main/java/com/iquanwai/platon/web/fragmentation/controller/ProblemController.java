@@ -298,7 +298,7 @@ public class ProblemController {
                     break;
                 }
                 case ImprovementPlan.TEMP_TRIALCLOSE: {
-                    buttonStatus = 5;
+                    buttonStatus = 6;
                     break;
                 }
                 default:
