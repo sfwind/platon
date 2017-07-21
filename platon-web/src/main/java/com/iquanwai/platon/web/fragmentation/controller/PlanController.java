@@ -164,6 +164,19 @@ public class PlanController {
                     }
                 }
             }
+            case 6: {
+                // 之前刷的历史数据，这些人是可以回复状态的
+                if (plan == null) {
+                    // 数据异常
+                    return WebUtils.error("数据异常,请联系管理员");
+                } else {
+                    if (plan.getStatus() != ImprovementPlan.TEMP_TRIALCLOSE) {
+                        // 不是这样的特殊数据
+                        LOGGER.error("选小课check接口异常,profileId:{},problemId:{}", loginUser.getId(), problemId);
+                        return WebUtils.error("数据异常，请联系管理员");
+                    }
+                }
+            }
         }
 
         if (CollectionUtils.isNotEmpty(runningPlans)) {
@@ -174,7 +187,6 @@ public class PlanController {
         // 现在完成小课必须在learn页面，所以这里只需要判断是否是小课已完成
         return WebUtils.success();
     }
-
 
     /**
      * 选小课，生成学习计划<br/>
@@ -189,15 +201,10 @@ public class PlanController {
 
         // 获取正在学习的小课
         List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
-
-        // 有正在学习的小课
-        if (runningPlans.size() >= 1) {
-            //如果是同一个小课的训练,直接返回训练id
-            for (ImprovementPlan plan : runningPlans) {
-                if (plan.getProblemId().equals(problemId)) {
-                    return WebUtils.result(plan.getId());
-                }
-            }
+        ImprovementPlan curPlan = improvementPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
+        if (curPlan != null) {
+            // 正在学的包括这个小课
+            return WebUtils.result(curPlan.getId());
         }
 
         Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
@@ -207,8 +214,23 @@ public class PlanController {
         }
 
         // 之前是否学过这个小课，避免重复生成计划
-        for(ImprovementPlan plan:improvementPlans){
-            if(plan.getProblemId().equals(problemId)){
+        ImprovementPlan oldPlan = improvementPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
+        if (oldPlan != null) {
+            if (oldPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
+                // 老得是试用版
+                // 将它解锁
+                generatePlanService.reopenPlan(oldPlan);
+                operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+                // 解锁了
+                OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                        .module("RISE")
+                        .function("选择小课")
+                        .action("选择小课")
+                        .memo(problemId.toString());
+                operationLogService.log(operationLog);
+                return WebUtils.result(oldPlan.getId());
+            } else {
+                // 不是试用版那些手动修改的数据，不能再次选择
                 return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
             }
         }

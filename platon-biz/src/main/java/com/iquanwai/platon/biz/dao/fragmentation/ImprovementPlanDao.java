@@ -219,4 +219,19 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    /**
+     * 重新开课
+     * @param planId planId
+     * @param closeDate 关闭订单
+     */
+    public void reOpenPlan(Integer planId, Date closeDate) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE ImprovementPlan set RiseMember = 1,Status = 1,CloseDate =? WHERE Id = ?";
+        try{
+            runner.update(sql, closeDate, planId);
+        } catch (SQLException e){
+            logger.error(e.getLocalizedMessage());
+        }
+    }
 }
