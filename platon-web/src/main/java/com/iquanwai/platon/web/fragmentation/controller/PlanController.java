@@ -201,7 +201,10 @@ public class PlanController {
 
         // 获取正在学习的小课
         List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
-        ImprovementPlan curPlan = improvementPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
+        ImprovementPlan curPlan = improvementPlans.stream().
+                filter(plan -> plan.getProblemId().equals(problemId)
+                        && (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE))
+                .findFirst().orElse(null);
         if (curPlan != null) {
             // 正在学的包括这个小课
             return WebUtils.result(curPlan.getId());

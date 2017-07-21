@@ -22,7 +22,6 @@ import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -152,18 +151,23 @@ public class PlanServiceImpl implements PlanService {
     private void calcDeadLine(ImprovementPlan improvementPlan) {
         //写入字段
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
-        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
+            // 关闭 ， 试用到期，暂时设置试用到期
             // 已关闭
             improvementPlan.setDeadline(0);
         } else {
-            // 未关闭
-            if (improvementPlan.getRiseMember()) {
-                // 会员 显示关闭时间
-                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-            } else {
-                // 非会员，不显示
-                improvementPlan.setDeadline(-1);
-            }
+            // 未关闭 ,未关闭的都显示
+            improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
+//
+//            if (improvementPlan.getRiseMember()) {
+//                // 会员 显示关闭时间
+//                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
+//            } else {
+//                // 非会员，不显示
+//                improvementPlan.setDeadline(-1);
+//            }
         }
     }
 
