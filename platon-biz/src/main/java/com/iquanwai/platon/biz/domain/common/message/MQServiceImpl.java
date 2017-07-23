@@ -41,10 +41,21 @@ public class MQServiceImpl implements MQService {
         MessageQueue load = messageQueueDao.load(msgId);
         if (load != null) {
             String consumerIp = ip;
+            String queue = null;
             if (load.getConsumerIp() != null) {
                 consumerIp = load.getConsumerIp() + "," + ip;
             }
-            messageQueueDao.update(load.getId(), consumerIp);
+            if (load.getQueue() != null) {
+                // 已有队列处理过
+                if (dto.getQueue() != null) {
+                    queue = load.getQueue() + dto.getQueue();
+                } else {
+                    queue = load.getQueue();
+                }
+            } else {
+                queue = dto.getQueue();
+            }
+            messageQueueDao.update(load.getId(), consumerIp, queue);
         } else {
             logger.error("异常，没有改消息记录");
         }

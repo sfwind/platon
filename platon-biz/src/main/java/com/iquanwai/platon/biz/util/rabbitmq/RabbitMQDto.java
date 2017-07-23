@@ -9,4 +9,5 @@ import lombok.Data;
 public class RabbitMQDto {
     private String msgId;
     private Object message;
+    private String queue;
 }

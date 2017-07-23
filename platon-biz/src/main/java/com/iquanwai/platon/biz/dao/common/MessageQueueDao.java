@@ -50,11 +50,11 @@ public class MessageQueueDao extends DBUtil {
         return null;
     }
 
-    public void update(Integer id,String ip){
+    public void update(Integer id, String ip, String queue) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String sql = "UPDATE MessageQueue SET Status = 1, ConsumerIp=? where Id = ?";
-        try{
-            run.update(sql, ip, id);
+        String sql = "UPDATE MessageQueue SET Status = 1, ConsumerIp=?,Queue = ? where Id = ?";
+        try {
+            run.update(sql, ip, queue, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
