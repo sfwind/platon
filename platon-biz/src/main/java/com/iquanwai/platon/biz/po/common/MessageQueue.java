@@ -13,4 +13,5 @@ public class MessageQueue {
     private String queue;
     private Integer status;
     private String message;
+    private String consumerIp;
 }

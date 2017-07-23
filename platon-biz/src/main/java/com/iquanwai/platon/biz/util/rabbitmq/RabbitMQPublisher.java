@@ -1,8 +1,8 @@
 package com.iquanwai.platon.biz.util.rabbitmq;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.Gson;
 import com.iquanwai.platon.biz.po.common.MessageQueue;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -76,11 +76,18 @@ public class RabbitMQPublisher {
         }
 
         try {
-            channel.basicPublish(topic, "", null, message.getBytes());
+            String msgId = CommonUtils.randomString(32);
+
+            RabbitMQDto dto = new RabbitMQDto();
+            dto.setMsgId(msgId);
+            dto.setMessage(message);
+            String json = JSON.toJSONString(dto);
+            channel.basicPublish(topic, "", null, json.getBytes());
             if (this.sendCallback != null) {
                 MessageQueue messageQueue = new MessageQueue();
                 messageQueue.setMessage(message);
                 messageQueue.setTopic(topic);
+                messageQueue.setMsgId(msgId);
                 this.sendCallback.accept(messageQueue);
             }
         }catch (IOException e) {
@@ -97,11 +104,18 @@ public class RabbitMQPublisher {
             throw new ConnectException();
         }
 
-        String json = new Gson().toJson(message);
+        String msgId = CommonUtils.randomString(32);
+
+        RabbitMQDto dto = new RabbitMQDto();
+        dto.setMsgId(msgId);
+        dto.setMessage(message);
+        String json = JSON.toJSONString(dto);
         try {
             channel.basicPublish(topic, "", null, json.getBytes());
             if (this.sendCallback != null) {
                 MessageQueue messageQueue = new MessageQueue();
+                messageQueue.setMsgId(msgId);
+                messageQueue.setStatus(0);
                 messageQueue.setMessage(JSON.toJSONString(message));
                 messageQueue.setTopic(topic);
                 this.sendCallback.accept(messageQueue);

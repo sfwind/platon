@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.common.MessageQueue;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -24,9 +25,9 @@ public class MessageQueueDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
         try {
-            String insertSql = "INSERT INTO MessageQueue(MsgID, Topic, Queue, Status, Message) VALUES (?,?,?,?,?)";
+            String insertSql = "INSERT INTO MessageQueue(MsgId, Topic, Queue, Message) VALUES (?,?,?,?)";
             Future<Integer> result = asyncRun.update(insertSql, message.getMsgId(),
-                    message.getTopic(), message.getQueue(), 0, message.getMessage());
+                    message.getTopic(), message.getQueue(), message.getMessage());
             return result.get();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -36,5 +37,26 @@ public class MessageQueueDao extends DBUtil {
             logger.error(e.getMessage(), e);
         }
         return 0;
+    }
+
+    public MessageQueue load(String msgId){
+        QueryRunner run = new QueryRunner(getDataSource());
+        String sql = "Select * from MessageQueue where MsgId = ?";
+        try{
+            return run.query(sql, new BeanHandler<MessageQueue>(MessageQueue.class), msgId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    public void update(Integer id,String ip){
+        QueryRunner run = new QueryRunner(getDataSource());
+        String sql = "UPDATE MessageQueue SET Status = 1, ConsumerIp=? where Id = ?";
+        try{
+            run.update(sql, ip, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 }

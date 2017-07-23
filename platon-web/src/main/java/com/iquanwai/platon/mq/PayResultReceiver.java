@@ -1,23 +1,21 @@
 package com.iquanwai.platon.mq;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
 import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
+import java.util.function.Consumer;
 
 /**
  * Created by nethunder on 2017/7/19.
@@ -32,31 +30,28 @@ public class PayResultReceiver {
     @Autowired
     private OperationService operationService;
 
+    @Autowired
+    private MQService mqService;
+
     @PostConstruct
     public void init(){
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(PayResultReceiver.QUEUE, PayResultReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
         Channel channel = receiver.getChannel();
         logger.info("通道建立：{}", PayResultReceiver.TOPIC);
-        Consumer consumer = getConsumer(channel);
+        receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
+        Consumer<Object> consumer = body -> {
+            String message = JSON.toJSONString(body);
+            logger.info("获取支付成功 message {}", message);
+            QuanwaiOrder quanwai = JSONObject.parseObject(message, QuanwaiOrder.class);
+            if (quanwai == null) {
+                logger.error("获取支付成功mq消息异常");
+            } else {
+                operationService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
+            }
+        };
         receiver.listen(consumer);
     }
 
-    private Consumer getConsumer(Channel channel) {
-        return new DefaultConsumer(channel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope,
-                                       AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String message = new String(body);
-                logger.info("获取支付成功 message {}", message);
-                QuanwaiOrder quanwai = JSONObject.parseObject(message, QuanwaiOrder.class);
-                if (quanwai == null) {
-                    logger.error("获取支付成功mq消息异常");
-                } else {
-                    operationService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
-                }
-            }
-        };
-    }
 
 }
