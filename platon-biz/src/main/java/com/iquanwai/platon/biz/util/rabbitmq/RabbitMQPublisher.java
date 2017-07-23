@@ -1,6 +1,8 @@
 package com.iquanwai.platon.biz.util.rabbitmq;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.po.common.MessageQueue;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -9,6 +11,7 @@ import org.springframework.util.Assert;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.function.Consumer;
 
 /**
  * Created by justin on 17/1/19.
@@ -19,6 +22,11 @@ public class RabbitMQPublisher {
     private Channel channel;
     private String ipAddress;
     private int port = 5672;
+    private Consumer<MessageQueue> sendCallback;
+
+    public void setSendCallback(Consumer<MessageQueue> sendCallback){
+        this.sendCallback = sendCallback;
+    }
 
     public void init(String topic, String ipAddress, Integer port){
         Assert.notNull(topic, "消息主题不能为空");
@@ -69,6 +77,12 @@ public class RabbitMQPublisher {
 
         try {
             channel.basicPublish(topic, "", null, message.getBytes());
+            if (this.sendCallback != null) {
+                MessageQueue messageQueue = new MessageQueue();
+                messageQueue.setMessage(message);
+                messageQueue.setTopic(topic);
+                this.sendCallback.accept(messageQueue);
+            }
         }catch (IOException e) {
             //ignore
         }
@@ -86,6 +100,12 @@ public class RabbitMQPublisher {
         String json = new Gson().toJson(message);
         try {
             channel.basicPublish(topic, "", null, json.getBytes());
+            if (this.sendCallback != null) {
+                MessageQueue messageQueue = new MessageQueue();
+                messageQueue.setMessage(JSON.toJSONString(message));
+                messageQueue.setTopic(topic);
+                this.sendCallback.accept(messageQueue);
+            }
         }catch (IOException e) {
             //ignore
         }
