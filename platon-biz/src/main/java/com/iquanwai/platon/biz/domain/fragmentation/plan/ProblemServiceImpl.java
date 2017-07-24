@@ -265,7 +265,6 @@ public class ProblemServiceImpl implements ProblemService {
             targetImage = ImageUtils.writeText(targetImage, 278, 1230, "你的好友邀请你，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         } else {
-            String str = subByteString(nickName, 10);
             targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
