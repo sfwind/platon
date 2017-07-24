@@ -22,6 +22,7 @@ public class RabbitMQReceiver {
     private Connection connection;
     @Getter
     private Channel channel;
+    private String topic;
     private String queue;
     private int port = 5672;
     @Setter
@@ -52,6 +53,7 @@ public class RabbitMQReceiver {
                 channel.queueDeclare(queue, false, false, false, null);
             }
             this.queue = queue;
+            this.topic = topic;
 
             //队列交换机绑定
             channel.queueBind(queue, topic, "");
@@ -81,6 +83,8 @@ public class RabbitMQReceiver {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 RabbitMQDto messageQueue = JSONObject.parseObject(body, RabbitMQDto.class);
                 consumer.accept(messageQueue.getMessage());
+                messageQueue.setTopic(topic);
+                messageQueue.setQueue(queue);
                 if (afterDealQueue != null) {
                     afterDealQueue.accept(messageQueue);
                 }
