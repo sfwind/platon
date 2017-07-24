@@ -147,11 +147,11 @@ public class IndexController {
                 if (lastLoginTime == null) {
                     //保存60秒
                     logger.info("{}很久未登录", loginUser.getId());
-                    ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
-                    //首次登录用户不发活动信息
-                    if (improvementPlan != null) {
-                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
-                    }
+//                    ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
+//                    //首次登录用户不发活动信息
+//                    if (improvementPlan != null) {
+//                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
+//                    }
                 } else {
                     Date lastLogin = DateUtils.parseStringToDateTime(lastLoginTime);
                     //上次登录时间早于活动开始时间
