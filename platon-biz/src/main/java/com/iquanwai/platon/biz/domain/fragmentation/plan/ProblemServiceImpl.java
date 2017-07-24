@@ -74,19 +74,16 @@ public class ProblemServiceImpl implements ProblemService {
         JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
         for (int i = 0; i < base64ImageJson.size(); i++) {
             String url = base64ImageJson.getString(Integer.toString(i + 1));
-            System.out.println("BackImageUrl = " + url);
             bufferedImageMap.put(i + 1, ImageUtils.getBufferedImageByUrl(url));
         }
         JSONObject essenceThumbnail = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnails());
         for (int i = 0; i < essenceThumbnail.size(); i++) {
             String thumbnail = essenceThumbnail.getString(Integer.toString(i + 1));
-            System.out.println("ThumbnailUrl = " + thumbnail);
             thumbnailMap.put(i + 1, thumbnail);
         }
         JSONObject essenceThumbnailLock = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnailsLock());
         for (int i = 0; i < essenceThumbnailLock.size(); i++) {
             String thumbnailLock = essenceThumbnailLock.getString(Integer.toString(i + 1));
-            System.out.println("ThumbnailUrlLock = " + thumbnailLock);
             thumbnailLockMap.put(i + 1, thumbnailLock);
         }
     }

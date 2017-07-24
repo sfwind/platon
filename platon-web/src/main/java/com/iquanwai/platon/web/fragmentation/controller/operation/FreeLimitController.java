@@ -1,10 +1,8 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation;
 
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationServiceImpl;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,13 +50,5 @@ public class FreeLimitController {
         operationService.recordOrderAndSendMsg(openId, action);
         return WebUtils.success();
     }
-
-    @RequestMapping("/card")
-    public ResponseEntity<Map<String, Object>> loadAssenceCard(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        String imageBase64 = operationService.loadEssenceCard(loginUser.getId(), 1, 1);
-        return WebUtils.result(imageBase64);
-    }
-
 
 }

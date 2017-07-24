@@ -1,36 +1,23 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
-import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionUserDao;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.misc.BASE64Encoder;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +31,6 @@ public class OperationServiceImpl implements OperationService {
 
     @Autowired
     private TemplateMessageService templateMessageService;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
-    private QRCodeService qrCodeService;
     @Autowired
     private PromotionUserDao promotionUserDao;
     @Autowired
@@ -112,7 +95,6 @@ public class OperationServiceImpl implements OperationService {
             Integer sourceProfileId = orderUser.getProfileId();
             if (sourceProfileId == null) return;
             Profile sourceProfile = profileDao.load(Profile.class, sourceProfileId); // 推广人 Profile
-            // TODO 拿到优惠券之后是否还继续发送选课消息
             if (successUsers.size() <= successNum) {
                 sendSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
             }
@@ -132,51 +114,6 @@ public class OperationServiceImpl implements OperationService {
                 }
             }
         }
-    }
-
-    /**
-     * 获取小课精华卡
-     */
-    @Override
-    public String loadEssenceCard(Integer profileId, Integer problemId, Integer knowledgeId) {
-        Profile profile = profileDao.load(Profile.class, profileId);
-        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/free_limit_test.jpg?imageslim");
-        String headImgUrl = profile.getHeadimgurl();
-        if (headImgUrl == null) {
-            // 如果用户头像为空，则拉取实时新头像
-            Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-            headImgUrl = realProfile.getHeadimgurl();
-        }
-        targetImage = ImageUtils.scaleByPercentage(targetImage, 338, 600);
-        QRResponse response = qrCodeService.generateTemporaryQRCode("RISE30", null);
-        BufferedImage qrImage = null;
-        try {
-            qrImage = ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 90, 90);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 150, 150);
-
-        BufferedImage headImg = ImageUtils.convertCircular(ImageUtils.getBufferedImageByUrl(headImgUrl));
-        headImg = ImageUtils.scaleByPercentage(headImg, 60, 60);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 10, 10);
-        targetImage = ImageUtils.writeText(targetImage, 60, 10, profile.getNickname(),
-                new Font("微软雅黑", Font.BOLD, 24), new Color(102, 102, 102));
-        targetImage = ImageUtils.writeText(targetImage, 40, 50, "理清问题需求，澄清偏差",
-                new Font("微软雅黑", Font.BOLD, 24), new Color(51, 51, 51));
-
-        ByteArrayOutputStream outputStream = null;
-        try {
-            outputStream = new ByteArrayOutputStream();
-            ImageIO.write(targetImage, "png", outputStream);
-            String imagePath = "/Users/xfduan/Pictures/a.png";
-            ImageIO.write(targetImage, imagePath.substring(imagePath.lastIndexOf(".") + 1), new File(imagePath));
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        BASE64Encoder encoder = new BASE64Encoder();
-        return "data:image/png;base64," + encoder.encode(outputStream.toByteArray());
     }
 
     /**

@@ -1,10 +1,8 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.Profile;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
