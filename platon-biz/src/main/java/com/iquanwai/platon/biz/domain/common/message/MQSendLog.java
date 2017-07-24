@@ -10,6 +10,6 @@ public class MQSendLog {
     private Integer id;
     private String msgId;
     private String topic;
-    private Integer status;
+    private String publisherIp;
     private String message;
 }

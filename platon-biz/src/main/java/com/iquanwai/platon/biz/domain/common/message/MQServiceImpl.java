@@ -30,7 +30,17 @@ public class MQServiceImpl implements MQService {
     @Override
     public void saveMQSendOperation(MQSendLog mqSendLog){
         // 插入mqSendOperation
-        mqSendLogDao.insert(mqSendLog);
+        new Thread(() -> {
+            String ip = null;
+            try {
+                InetAddress localHost = InetAddress.getLocalHost();
+                ip = localHost.getHostAddress();
+            } catch (UnknownHostException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
+            mqSendLog.setPublisherIp(ip);
+            mqSendLogDao.insert(mqSendLog);
+        }).start();
     }
 
 
