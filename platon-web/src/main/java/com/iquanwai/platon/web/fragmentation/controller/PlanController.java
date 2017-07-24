@@ -717,7 +717,6 @@ public class PlanController {
         }
     }
 
-
     /**
      * 当用户做完某一章节的所有巩固练习后，后台回复章节卡片
      */
@@ -731,7 +730,8 @@ public class PlanController {
         if (chapterCardData != null) {
             return WebUtils.result(chapterCardData);
         } else {
-            return WebUtils.error("当前章节未完成");
+            return WebUtils.error("该卡片正在制作中，请期待~");
         }
     }
+
 }

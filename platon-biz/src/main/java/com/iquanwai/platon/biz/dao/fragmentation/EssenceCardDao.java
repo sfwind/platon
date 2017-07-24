@@ -38,12 +38,12 @@ public class EssenceCardDao extends PracticeDBUtil {
      * 根据 ProblemId 和 KnowledgeId 获取 EssenceCard
      * 如果是小课的总结，则默认的 knowledgeId 为 0
      */
-    public EssenceCard loadEssenceCard(Integer problemId, Integer knowledgeId) {
+    public EssenceCard loadEssenceCard(Integer problemId, Integer chapterId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<EssenceCard> h = new BeanHandler<>(EssenceCard.class);
         String sql = "SELECT * FROM EssenceCard WHERE ProblemId = ? and ChapterId = ?";
         try {
-            return runner.query(sql, h, problemId, knowledgeId);
+            return runner.query(sql, h, problemId, chapterId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }

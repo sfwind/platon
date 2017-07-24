@@ -15,13 +15,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -566,18 +560,23 @@ public class PlanServiceImpl implements PlanService {
             return false;
         }
         Boolean isLearningSuccess = false;
+        Integer targetChapterId = 0;
         for (Chapter chapter : chapters) {
             List<Section> sections = chapter.getSections();
             for (Section section : sections) {
                 // 用户当前学习的章节号对应到具体的 section
                 if (section.getSeries().equals(currentSeries)) {
+                    // 当一章中所有的小节完成，或者该小节是综合练习时，则完成
                     Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
                     isLearningSuccess = lgSeriesCount.intValue() <= 0;
+                    targetChapterId = chapter.getChapter();
                     break;
                 }
             }
         }
-        return isLearningSuccess;
+
+        EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
+        return isLearningSuccess && essenceCard != null;
     }
 
 
@@ -602,6 +601,7 @@ public class PlanServiceImpl implements PlanService {
             for (Section section : sections) {
                 // 用户当前学习的章节号对应到具体的 section
                 if (section.getSeries().equals(currentSeries)) {
+                    // 当一章中所有的小节完成，或者该小节是综合练习时，则完成
                     Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
                     isLearningSuccess = lgSeriesCount.intValue() <= 0;
                     targetChapterId = chapter.getChapter();
