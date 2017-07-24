@@ -22,6 +22,7 @@ import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -334,6 +335,16 @@ public class PlanController {
         // 可以关闭，进行关闭
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/open/navigator", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> openNavigator(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        int count = accountService.updateOpenNavigator(loginUser.getId());
+        if (count > 0) {
+            loginUser.setOpenNavigator(true);
+        }
         return WebUtils.success();
     }
 
