@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.util.rabbitmq;
 
 import com.alibaba.fastjson.JSON;
-import com.iquanwai.platon.biz.po.common.MessageQueue;
+import com.iquanwai.platon.biz.domain.common.message.MQSendLog;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -24,7 +24,7 @@ public class RabbitMQPublisher {
     private String ipAddress;
     private int port = 5672;
     @Setter
-    private Consumer<MessageQueue> sendCallback;
+    private Consumer<MQSendLog> sendCallback;
 
     public void init(String topic, String ipAddress, Integer port){
         Assert.notNull(topic, "消息主题不能为空");
@@ -111,12 +111,11 @@ public class RabbitMQPublisher {
         try {
             channel.basicPublish(topic, "", null, json.getBytes());
             if (this.sendCallback != null) {
-                MessageQueue messageQueue = new MessageQueue();
-                messageQueue.setMsgId(msgId);
-                messageQueue.setStatus(0);
-                messageQueue.setMessage(message instanceof String ? message.toString() : JSON.toJSONString(message));
-                messageQueue.setTopic(topic);
-                this.sendCallback.accept(messageQueue);
+                MQSendLog mqSendLog = new MQSendLog();
+                mqSendLog.setTopic(topic);
+                mqSendLog.setMsgId(msgId);
+                mqSendLog.setMessage(message instanceof String ? message.toString() : JSON.toJSONString(message));
+                this.sendCallback.accept(mqSendLog);
             }
         }catch (IOException e) {
             //ignore

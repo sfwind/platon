@@ -1,6 +1,5 @@
 package com.iquanwai.platon.mq;
 
-import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
@@ -38,7 +37,7 @@ public class CustomerReceiver {
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
 
         Consumer<Object> consumer = o -> {
-            String message = JSON.toJSONString(o);
+            String message = o.toString();
             logger.info("receive message {}", message);
             loginUserService.logout(message);
         };

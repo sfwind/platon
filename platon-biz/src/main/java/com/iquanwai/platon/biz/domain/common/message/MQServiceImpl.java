@@ -1,7 +1,8 @@
 package com.iquanwai.platon.biz.domain.common.message;
 
+import com.iquanwai.platon.biz.dao.common.MQDealLogDao;
+import com.iquanwai.platon.biz.dao.common.MQSendLogDao;
 import com.iquanwai.platon.biz.dao.common.MessageQueueDao;
-import com.iquanwai.platon.biz.po.common.MessageQueue;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +19,18 @@ import java.net.UnknownHostException;
 public class MQServiceImpl implements MQService {
     @Autowired
     private MessageQueueDao messageQueueDao;
+    @Autowired
+    private MQSendLogDao mqSendLogDao;
+    @Autowired
+    private MQDealLogDao mqDealLogDao;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
     @Override
-    public void saveMQSendOperation(MessageQueue queue){
-        messageQueueDao.insert(queue);
+    public void saveMQSendOperation(MQSendLog mqSendLog){
+        // 插入mqSendOperation
+        mqSendLogDao.insert(mqSendLog);
     }
 
 
@@ -33,32 +40,17 @@ public class MQServiceImpl implements MQService {
         String ip = null;
         try {
             InetAddress localHost = InetAddress.getLocalHost();
+            System.out.println(localHost.getHostAddress());
             ip = localHost.getHostAddress();
         } catch (UnknownHostException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-
-        MessageQueue load = messageQueueDao.load(msgId);
-        if (load != null) {
-            String consumerIp = ip;
-            String queue = null;
-            if (load.getConsumerIp() != null) {
-                consumerIp = load.getConsumerIp() + "," + ip;
-            }
-            if (load.getQueue() != null) {
-                // 已有队列处理过
-                if (dto.getQueue() != null) {
-                    queue = load.getQueue() + dto.getQueue();
-                } else {
-                    queue = load.getQueue();
-                }
-            } else {
-                queue = dto.getQueue();
-            }
-            messageQueueDao.update(load.getId(), consumerIp, queue);
-        } else {
-            logger.error("异常，没有改消息记录");
-        }
+        MQDealLog mqDealLog = new MQDealLog();
+        mqDealLog.setMsgId(msgId);
+        mqDealLog.setTopic(dto.getTopic());
+        mqDealLog.setQueue(dto.getQueue());
+        mqDealLog.setConsumerIp(ip);
+        mqDealLogDao.insert(mqDealLog);
     }
 
 }

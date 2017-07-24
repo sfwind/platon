@@ -44,8 +44,19 @@ public class EventWallServiceImpl implements EventWallService {
                             return riseMember == null || riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
                         } else {
                             if (item.getVisibility() == 3) {
+
+
                                 //精英版可见
-                                return riseMember != null && riseMember.getMemberTypeId() == RiseMember.ELITE;
+                                Boolean eliteShow = riseMember != null
+                                        && (riseMember.getMemberTypeId() == RiseMember.ELITE
+                                        || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
+                                if (!eliteShow) {
+                                    // 不是精英版可见性,查看是否购买过该小课
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+
                             } else if (item.getVisibility() == 4) {
                                 // 专业版可见
                                 return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
