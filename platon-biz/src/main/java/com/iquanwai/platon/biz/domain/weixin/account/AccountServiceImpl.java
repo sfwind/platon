@@ -239,6 +239,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public int updateOpenNavigator(Integer id) {
+        return profileDao.updateOpenNavigator(id);
+    }
+
+    @Override
     public int updateOpenRise(Integer id) {
         return profileDao.updateOpenRise(id);
     }

@@ -464,6 +464,16 @@ public class PlanController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/open/navigator", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> openNavigator(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        int count = accountService.updateOpenNavigator(loginUser.getId());
+        if (count > 0) {
+            loginUser.setOpenNavigator(true);
+        }
+        return WebUtils.success();
+    }
+
     @RequestMapping(value = "/openrise", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> openRise(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");

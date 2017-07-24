@@ -21,6 +21,7 @@ public class LoginUser {
     private Integer role;
     private String signature;
     private Boolean openRise;
+    private Boolean openNavigator;
     private Boolean riseMember;
     private Boolean openApplication; // 非db字段 是否打开过应用练习
     private Boolean openConsolidation; // 非db字段 是否打开过巩固练习
@@ -28,7 +29,7 @@ public class LoginUser {
 
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(), "风之伤",
-                Profile.DEFAULT_AVATAR, null, 1, null, false, false, false, false, 1);
+                Profile.DEFAULT_AVATAR, null, 1, null, false, false, false, false, false, 1);
     }
 
 }

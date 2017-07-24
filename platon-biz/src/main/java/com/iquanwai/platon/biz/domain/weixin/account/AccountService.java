@@ -46,6 +46,10 @@ public interface AccountService {
      * */
     List<Region> loadCities();
     /**
+     * 更新是否打开导航栏
+     */
+    int updateOpenNavigator(Integer id);
+    /**
      * 更新是否打开rise
      */
     int updateOpenRise(Integer id);
