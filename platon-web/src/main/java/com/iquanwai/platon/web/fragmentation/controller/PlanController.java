@@ -197,6 +197,7 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
                                                           @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
+        Integer trialProblemId = ConfigUtils.getTrialProblemId();
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
 
         // 获取正在学习的小课
@@ -223,8 +224,11 @@ public class PlanController {
                 // 老得是试用版
                 // 将它解锁
                 generatePlanService.reopenPlan(oldPlan);
-                operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
                 // 解锁了
+                if (problemId.equals(trialProblemId)) {
+                    // 限免小课
+                    operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+                }
                 OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                         .module("RISE")
                         .function("选择小课")
@@ -244,7 +248,6 @@ public class PlanController {
         if (!isRiseMember.equals(loginUser.getRiseMember())) {
             LOGGER.error("会员信息异常:{}", loginUser);
         }
-        Integer trialProblemId = ConfigUtils.getTrialProblemId();
         if (!isRiseMember && riseCourseOrderOrder == null && !problemId.equals(trialProblemId)) {
             // 既没有购买过这个小课，又不是rise会员,也不是限免课程
             return WebUtils.error("非rise会员需要单独购买小课哦");

@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -264,7 +265,9 @@ public class ProblemServiceImpl implements ProblemService {
             targetImage = ImageUtils.writeText(targetImage, 278, 1230, "你的好友邀请你，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         } else {
-            targetImage = ImageUtils.writeText(targetImage, 278, 1230, nickName + "邀请你，",
+            String str = subByteString(nickName, 10);
+            System.out.println("str = " + str);
+            targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
         targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
@@ -373,22 +376,52 @@ public class ProblemServiceImpl implements ProblemService {
             logger.error(e.getLocalizedMessage());
             return null;
         }
-        Integer splitNum = 12;
-        int contentSize = text.length() / splitNum == 0 ? 1 : text.length() / splitNum + 1;
-        for (int i = 0; i < contentSize; i++) {
-            String writeText;
-            if (i == 0) {
-                writeText = "- " + (text.length() > splitNum ? text.substring(0, splitNum - 1) : text);
-            } else if (i == contentSize - 1) {
-                writeText = text.substring(splitNum * i - 1);
-            } else {
-                writeText = text.substring(i * splitNum - 1, (i + 1) * splitNum - 1);
-            }
-            targetImage = ImageUtils.writeText(targetImage, x, y + i * 35, writeText,
+        List<String> textArr = splitLinesByBytes(text, 24);
+        for (int i = 0; i < textArr.size(); i++) {
+            targetImage = ImageUtils.writeText(targetImage, x, y + i * 35, textArr.get(i),
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
-        Integer endY = y + contentSize * 35;
+        Integer endY = y + textArr.size() * 35;
         return new MutablePair<>(targetImage, endY);
+    }
+
+
+    private List<String> splitLinesByBytes(String str, Integer lineByteLength) {
+        List<String> list = Lists.newArrayList();
+        int tempLength = 0;
+        StringBuilder stringBuilder = new StringBuilder("");
+        for (int i = 0; i < str.length(); i++) {
+            try {
+                tempLength += str.substring(i, i + 1).getBytes("gbk").length;
+            } catch (UnsupportedEncodingException e) {
+                logger.error(e.getLocalizedMessage());
+            }
+            stringBuilder.append(str.substring(i, i + 1));
+            if (tempLength >= lineByteLength - 1) {
+                list.add(stringBuilder.toString());
+                tempLength = 0;
+                stringBuilder = new StringBuilder("");
+            } else if (i == str.length() - 1) {
+                list.add(stringBuilder.toString());
+            }
+        }
+        return list;
+    }
+
+    private String subByteString(String str, Integer byteLength) {
+        StringBuilder builder = new StringBuilder("");
+        for (int i = 0; i < str.length(); i++) {
+            builder.append(str.substring(i, i + 1));
+            try {
+                if (builder.toString().getBytes("gbk").length >= byteLength - 1) {
+                    String targetStr = builder.toString();
+                    return str.equals(targetStr) ? targetStr : targetStr + "...";
+                }
+            } catch (UnsupportedEncodingException e) {
+                logger.error(e.getLocalizedMessage());
+            }
+        }
+        return "";
     }
 
 }
