@@ -254,7 +254,7 @@ public class ProblemServiceImpl implements ProblemService {
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
         headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 477, 1140);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 553, 1136);
         // NickName
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
         if (essenceCard == null) {
@@ -266,7 +266,6 @@ public class ProblemServiceImpl implements ProblemService {
                     font.deriveFont(24f), new Color(51, 51, 51));
         } else {
             String str = subByteString(nickName, 10);
-            System.out.println("str = " + str);
             targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
@@ -421,7 +420,7 @@ public class ProblemServiceImpl implements ProblemService {
                 logger.error(e.getLocalizedMessage());
             }
         }
-        return "";
+        return builder.toString();
     }
 
 }
