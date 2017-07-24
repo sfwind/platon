@@ -549,6 +549,7 @@ public class PlanController {
         PlanListDto planListDto = new PlanListDto();
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
+        planListDto.setOpenNavigator(loginUser.getOpenNavigator());
         plans.forEach(item -> {
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(item);

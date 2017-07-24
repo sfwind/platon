@@ -13,4 +13,5 @@ public class PlanListDto {
     private List<ImprovementPlan> runningPlans;
     private List<ImprovementPlan> completedPlans;
     private Boolean riseMember;
+    private Boolean openNavigator;
 }
