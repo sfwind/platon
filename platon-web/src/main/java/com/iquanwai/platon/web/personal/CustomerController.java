@@ -25,7 +25,7 @@ import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.personal.dto.PlanListDto;
 import com.iquanwai.platon.web.personal.dto.ProfileDto;
 import com.iquanwai.platon.web.personal.dto.RegionDto;
-import com.iquanwai.platon.web.personal.dto.*;
+import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -126,6 +127,7 @@ public class CustomerController {
         Region province = accountService.loadProvinceByName(account.getProvince());
         profileDto.setCityId(city == null ? null : city.getId());
         profileDto.setProvinceId(province == null ? null : province.getId());
+        profileDto.setBindMobile(!StringUtils.isEmpty(account.getMobileNo()));
         return WebUtils.result(profileDto);
     }
 

@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
@@ -53,6 +54,8 @@ public class AccountServiceImpl implements AccountService {
     private ProfileDao profileDao;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     private List<Region> provinceList;
 
@@ -236,6 +239,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public int updateOpenNavigator(Integer id) {
+        return profileDao.updateOpenNavigator(id);
+    }
+
+    @Override
     public int updateOpenRise(Integer id) {
         return profileDao.updateOpenRise(id);
     }
@@ -380,4 +388,5 @@ public class AccountServiceImpl implements AccountService {
             }
         }
     }
+
 }
