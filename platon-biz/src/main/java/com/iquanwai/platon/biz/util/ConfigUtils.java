@@ -283,5 +283,13 @@ public class ConfigUtils {
         return getValue("card.coupon.msg");
     }
 
+    /**
+     * 获得优惠券领奖人数
+     */
+    public static Integer getFreeLimitSuccessCnt() {
+        return getIntValue("free.limit.success.cnt");
+    }
+
+
 }
 

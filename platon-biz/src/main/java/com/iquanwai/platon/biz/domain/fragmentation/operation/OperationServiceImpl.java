@@ -45,7 +45,7 @@ public class OperationServiceImpl implements OperationService {
     // 活动前缀
     private static String prefix = "freeLimit_";
     // 推广成功人数限额
-    private static Integer successNum = 9;
+    private static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
 
     @Override
     public void recordPromotionLevel(String openId, String scene) {
@@ -118,7 +118,6 @@ public class OperationServiceImpl implements OperationService {
 
     /**
      * 发送成功推广信息
-     *
      * @param targetOpenId 目标用户 openId
      */
     private void sendSuccessOrderMsg(String targetOpenId, String orderOpenId, Integer remainCount) {
@@ -138,7 +137,6 @@ public class OperationServiceImpl implements OperationService {
 
     /**
      * 发送获得优惠券信息
-     *
      * @param targetOpenId 目标用户 openId
      */
     private void sendSuccessPromotionMsg(String targetOpenId) {
@@ -148,7 +146,7 @@ public class OperationServiceImpl implements OperationService {
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.getReceiveCouponMsg());
-        data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给9位好友，成功get一张¥50代金券\n"));
+        data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给" + successNum + "位好友，成功get一张¥50代金券\n"));
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
         data.put("keyword2", new TemplateMessage.Keyword("¥50代金券"));
         data.put("remark", new TemplateMessage.Keyword("\n点击下方“圈外同学”并升级会员/报名小课，立即使用代金券，开学！"));
