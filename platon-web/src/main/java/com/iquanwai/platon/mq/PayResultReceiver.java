@@ -37,7 +37,6 @@ public class PayResultReceiver {
     public void init(){
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(PayResultReceiver.QUEUE, PayResultReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
-        Channel channel = receiver.getChannel();
         logger.info("通道建立：{}", PayResultReceiver.TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         Consumer<Object> consumer = body -> {

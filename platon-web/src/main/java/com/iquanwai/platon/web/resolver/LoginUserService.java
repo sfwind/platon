@@ -179,6 +179,12 @@ public class LoginUserService {
         pcLoginUserMap.remove(sessionId);
     }
 
+    public void updateWeixinUser(String wechatToken){
+        LoginUser loginUser = wechatLoginUserMap.get(wechatToken);
+        loginUser = getLoginUser(loginUser.getOpenId());
+        wechatLoginUserMap.put(wechatToken, loginUser);
+    }
+
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
         switch (platform) {

@@ -1,7 +1,6 @@
 package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
-import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -26,8 +25,6 @@ public class CacheReloadReceiver {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private RiseMemberTypeRepo riseMemberTypeRepo;
-    @Autowired
     private CacheService cacheService;
     @Autowired
     private PictureService pictureService;
@@ -40,7 +37,7 @@ public class CacheReloadReceiver {
     public void init(){
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(null, TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
-        logger.info("通道建立");
+        logger.info("{} 通道建立", TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         // 监听器
         receiver.listen(msg -> {
@@ -59,7 +56,7 @@ public class CacheReloadReceiver {
                     break;
             }
         });
-        logger.info("开启队列监听");
+        logger.info("{} 开启队列监听", TOPIC);
     }
 
 
