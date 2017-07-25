@@ -264,7 +264,7 @@ public class PracticeServiceImpl implements PracticeService {
         } else {
             RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
             if (riseMember != null) {
-                if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)) {
+                if (riseMember.getMemberTypeId().equals(RiseMember.ELITE) || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
                     applicationPractice.setRequestCommentCount(0);
                 }
             }
@@ -837,7 +837,7 @@ public class PracticeServiceImpl implements PracticeService {
         }
         RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
         if (riseMember != null) {
-            if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)) {
+            if (riseMember.getMemberTypeId().equals(RiseMember.ELITE) || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
                 return 0;
             }
         }

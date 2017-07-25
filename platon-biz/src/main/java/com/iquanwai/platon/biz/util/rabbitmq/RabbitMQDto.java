@@ -10,4 +10,5 @@ public class RabbitMQDto {
     private String msgId;
     private Object message;
     private String queue;
+    private String topic;
 }

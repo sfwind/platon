@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.common.message;
 
-import com.iquanwai.platon.biz.po.common.MessageQueue;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
 
 /**
@@ -8,7 +7,7 @@ import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
  */
 public interface MQService {
 
-    void saveMQSendOperation(MessageQueue queue);
+    void saveMQSendOperation(MQSendLog queue);
 
     void updateAfterDealOperation(RabbitMQDto msgId);
 }
