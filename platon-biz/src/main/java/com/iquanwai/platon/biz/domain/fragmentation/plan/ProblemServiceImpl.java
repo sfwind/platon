@@ -268,7 +268,7 @@ public class ProblemServiceImpl implements ProblemService {
             targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
-        targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "力爆表的人",
+        targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "爆表的人",
                 font.deriveFont(24f), new Color(51, 51, 51));
         // 课程标题
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
