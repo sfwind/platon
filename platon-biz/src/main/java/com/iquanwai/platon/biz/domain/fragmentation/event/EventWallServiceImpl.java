@@ -45,7 +45,8 @@ public class EventWallServiceImpl implements EventWallService {
                         } else {
                             if (item.getVisibility() == 3) {
                                 //精英版可见
-                                return riseMember != null && riseMember.getMemberTypeId() == RiseMember.ELITE;
+                                return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                                        riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
                             } else if (item.getVisibility() == 4) {
                                 // 专业版可见
                                 return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
