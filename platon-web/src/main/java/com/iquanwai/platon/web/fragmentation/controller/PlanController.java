@@ -669,9 +669,9 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
+        List<PlanDto> trialClosedPlans = Lists.newArrayList();
         List<PlanDto> runningPlans = Lists.newArrayList();
         List<PlanDto> completedPlans = Lists.newArrayList();
-        List<PlanDto> trialClosedPlans = Lists.newArrayList();
         plans.forEach(item -> {
             PlanDto plan = new PlanDto();
             plan.setPlanId(item.getId());
@@ -692,6 +692,7 @@ public class PlanController {
             }
         });
         PlanListDto planListDto = new PlanListDto();
+        planListDto.setOpenNavigator(loginUser.getOpenNavigator());
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setTrialClosedPlans(trialClosedPlans);

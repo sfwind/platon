@@ -25,7 +25,7 @@ import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.personal.dto.PlanListDto;
 import com.iquanwai.platon.web.personal.dto.ProfileDto;
 import com.iquanwai.platon.web.personal.dto.RegionDto;
-import com.iquanwai.platon.web.personal.dto.*;
+import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;

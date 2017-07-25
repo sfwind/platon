@@ -322,6 +322,7 @@ public class LoginUserService {
         loginUser.setOpenRise(account.getOpenRise());
         loginUser.setOpenConsolidation(account.getOpenConsolidation());
         loginUser.setOpenApplication(account.getOpenApplication());
+        loginUser.setOpenNavigator(account.getOpenNavigator());
         loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
     }
