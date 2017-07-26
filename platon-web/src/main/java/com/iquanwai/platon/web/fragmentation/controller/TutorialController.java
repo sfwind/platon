@@ -10,7 +10,6 @@ import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import com.iquanwai.platon.mq.LoginUserUpdateReceiver;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
-import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import java.net.ConnectException;
 import java.util.Map;
 
@@ -34,8 +32,6 @@ import java.util.Map;
 public class TutorialController {
     @Autowired
     private MQService mqService;
-    @Autowired
-    private LoginUserService loginUserService;
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -53,51 +49,50 @@ public class TutorialController {
         rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
     }
 
-    private void sendMqMessage(HttpServletRequest request) {
-        String token = loginUserService.getToken(request);
+    private void sendMqMessage(String openid) {
         try {
-            rabbitMQPublisher.publish(token);
+            rabbitMQPublisher.publish(openid);
         } catch (ConnectException e) {
             LOGGER.error("mq连接失败", e);
         }
     }
 
     @RequestMapping(value = "/navigator", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openNavigator(LoginUser loginUser, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> openNavigator(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         int count = accountService.updateOpenNavigator(loginUser.getId());
         if (count > 0) {
-            sendMqMessage(request);
+            sendMqMessage(loginUser.getOpenId());
         }
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/rise", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openRise(LoginUser loginUser, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> openRise(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         int count = accountService.updateOpenRise(loginUser.getId());
         if (count > 0) {
-            sendMqMessage(request);
+            sendMqMessage(loginUser.getOpenId());
         }
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/application", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openComprehension(LoginUser loginUser, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> openComprehension(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         int count = accountService.updateOpenApplication(loginUser.getId());
         if (count > 0) {
-            sendMqMessage(request);
+            sendMqMessage(loginUser.getOpenId());
         }
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/consolidation", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openConsolidation(LoginUser loginUser, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> openConsolidation(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         int count = accountService.updateOpenConsolidation(loginUser.getId());
         if (count > 0) {
-            sendMqMessage(request);
+            sendMqMessage(loginUser.getOpenId());
         }
         return WebUtils.success();
     }

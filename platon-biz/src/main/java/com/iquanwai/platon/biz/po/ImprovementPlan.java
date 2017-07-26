@@ -32,7 +32,7 @@ public class ImprovementPlan {
     private Integer currentSeries; //当前访问的节数
     private Integer completeSeries; //已完成的节数
     private Integer totalSeries; //总节数
-    private Boolean riseMember; // 是否是会员
+    private Integer riseMember; //0-免费用户,1-会员,2-小课用户
     private Integer requestCommentCount; //求点赞次数
     private Integer profileId; //用户id
 
