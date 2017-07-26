@@ -44,6 +44,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private RiseCourseDao riseCourseDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -136,14 +138,24 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
         templateMessage.setUrl(ConfigUtils.domainName()+ INDEX_URL);
         Profile profile = accountService.getProfile(openid, false);
-        String first;
+
+        String first = "";
+        Integer openDays = TRIAL_PROBLEM_MAX_LENGTH;
+        Integer trialProblemId;
+        trialProblemId = ConfigUtils.getTrialProblemId();
         if(profile!=null){
             first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
-        }else{
+            if (profile.getRiseMember() != 0 && problem.getId() != trialProblemId) {
+                openDays = PROBLEM_MAX_LENGTH;
+            } else {
+                openDays = TRIAL_PROBLEM_MAX_LENGTH;
+            }
+        } else {
             first = "Hi，你刚才选择了圈外小课：\n";
         }
         int length = problem.getLength();
-        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH - 1));
+
+        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), openDays - 1));
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
@@ -293,7 +305,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         // 限免小课开放7天，其他小课30天
         Integer trialProblemId = ConfigUtils.getTrialProblemId();
-        if (Integer.valueOf(problem.getId()).equals(trialProblemId)) {
+        if (Integer.valueOf(problem.getId()).equals(trialProblemId) && profile.getRiseMember() == 0) {
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), TRIAL_PROBLEM_MAX_LENGTH));
         } else {
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
