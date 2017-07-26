@@ -200,7 +200,7 @@ public class CustomerController {
         // 查询riseId
         Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
-        list.setRiseMember(profile.getRiseMember());
+//        list.setRiseMember(profile.getRiseMember());
         list.setPoint(profile.getPoint());
         return WebUtils.result(list);
     }

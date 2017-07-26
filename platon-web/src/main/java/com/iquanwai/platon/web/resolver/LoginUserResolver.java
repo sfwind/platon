@@ -1,8 +1,5 @@
 package com.iquanwai.platon.web.resolver;
 
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -21,10 +18,6 @@ import java.util.Collection;
  * Created by tomas on 3/17/16.
  */
 public class LoginUserResolver implements HandlerMethodArgumentResolver {
-    @Autowired
-    private OAuthService oAuthService;
-    @Autowired
-    private AccountService accountService;
     @Autowired
     private LoginUserService loginUserService;
 
@@ -56,15 +49,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         String accessToken = loginUserService.getToken(request);
 
         if (loginUserService.isLogin(request)) {
-            LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
-            // 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
-            if(!loginUser.getRiseMember()){
-                Profile profile = accountService.getProfile(loginUser.getId());
-                if (profile != null && profile.getRiseMember()) {
-                    loginUser.setRiseMember(true);
-                }
-            }
-            return loginUser;
+            return loginUserService.getLoginUser(request).getRight();
         }
 
 
