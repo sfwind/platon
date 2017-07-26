@@ -9,7 +9,6 @@ import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +59,10 @@ public class SubscribeReceiver {
             operationService.recordPromotionLevel(openId, scene);
 
             String[] sceneParams = scene.split("_");
+            logger.info(sceneParams[0] + " " + sceneParams[1] + " " + sceneParams[2]);
             if (sceneParams.length == 3) {
                 String sendMsg;
-                if (sceneParams[2].equals(ConfigUtils.getTrialProblemId())) {
+                if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                     // 限免课
                     if (event.equals(SUBSCRIBE)) {
                         sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
@@ -76,6 +76,7 @@ public class SubscribeReceiver {
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
+                        logger.info(sendMsg);
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     } else if (event.equals(SCAN)) {
                         sendMsg = "你要的限免课程在这里，点击上课：\n" +
@@ -87,13 +88,12 @@ public class SubscribeReceiver {
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
+                        logger.info(sendMsg);
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     }
                 } else {
                     // 非限免
-                    sendMsg = "非限免课\n" +
-                            "\n" +
-                            "同学你好，你要的小课在这里：\n" +
+                    sendMsg = "同学你好，你要的小课在这里：\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
                             "/rise/static/problem/view?id=" +
                             sceneParams[2] +
@@ -106,6 +106,7 @@ public class SubscribeReceiver {
                             "'>找到本质问题，解决无效努力</a>\n" +
                             "\n" +
                             "完成限免小课章节有神秘卡片哦，分享还会获得¥50奖学金。";
+                    logger.info(sendMsg);
                     customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
             }
