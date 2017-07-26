@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
@@ -60,6 +61,9 @@ public class SubscribeReceiver {
 
             String[] sceneParams = scene.split("_");
             logger.info(sceneParams[0] + " " + sceneParams[1] + " " + sceneParams[2]);
+
+            Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
+            String freeProblemName = freeProblem.getProblem();
             if (sceneParams.length == 3) {
                 String sendMsg;
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
@@ -69,7 +73,7 @@ public class SubscribeReceiver {
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
-                                "'>找到本质问题，解决无效努力</a>\n" +
+                                "'>" + freeProblemName + "</a>\n" +
                                 "------------\n" +
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
@@ -81,7 +85,7 @@ public class SubscribeReceiver {
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
-                                "'>找到本质问题，解决无效努力</a>\n" +
+                                "'>" + freeProblemName + "</a>\n" +
                                 "------------\n" +
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
@@ -101,7 +105,7 @@ public class SubscribeReceiver {
                             "<a href='" + ConfigUtils.adapterDomainName() +
                             "/rise/static/plan/view?id=" +
                             ConfigUtils.getTrialProblemId() +
-                            "'>找到本质问题，解决无效努力</a>\n" +
+                            "'>" + freeProblemName + "</a>\n" +
                             "\n" +
                             "完成限免小课章节有神秘卡片哦，分享还会获得¥50奖学金。";
                     logger.info(sendMsg);
