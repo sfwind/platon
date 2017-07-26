@@ -45,7 +45,6 @@ public class SubscribeReceiver {
     public void init() {
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(null, SubscribeReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
-        Channel channel = receiver.getChannel();
         logger.info("通道建立：" + SubscribeReceiver.TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         Consumer<Object> consumer = msg -> {

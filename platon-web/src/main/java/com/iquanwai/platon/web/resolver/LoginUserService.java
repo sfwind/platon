@@ -52,7 +52,8 @@ public class LoginUserService {
      * 缓存已经登录的用户
      */
     private static Map<String, LoginUser> pcLoginUserMap = Maps.newHashMap(); // pc的登录缓存
-    private static Map<String,LoginUser> wechatLoginUserMap = Maps.newHashMap();// 微信的登录缓存
+    private static Map<String, LoginUser> wechatLoginUserMap = Maps.newHashMap();// 微信的登录缓存
+    private static List<String> waitFreshOpenids = Lists.newArrayList(); //待更新openid
 
     @Autowired
     private OAuthService oAuthService;
@@ -179,6 +180,12 @@ public class LoginUserService {
         pcLoginUserMap.remove(sessionId);
     }
 
+    public void updateWeixinUser(String wechatToken){
+        LoginUser loginUser = wechatLoginUserMap.get(wechatToken);
+        loginUser = getLoginUser(loginUser.getOpenId());
+        wechatLoginUserMap.put(wechatToken, loginUser);
+    }
+
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
         switch (platform) {
@@ -230,7 +237,12 @@ public class LoginUserService {
         // 先检查有没有缓存
         LoginUser loginUser = this.loadUser(platform, accessToken);
         if (loginUser != null) {
-            logger.debug("已缓存,_qt:{}", accessToken);
+            // 如果数据待更新,则读取数据库
+            if(waitFreshOpenids.contains(loginUser.getOpenId())){
+                loginUser = getLoginUser(loginUser.getOpenId());
+                waitFreshOpenids.remove(loginUser.getOpenId());
+            }
+//            logger.debug("已缓存,_qt:{}", accessToken);
             return new MutablePair<>(1, loginUser);
         }
 
@@ -251,19 +263,10 @@ public class LoginUserService {
             return new MutablePair<>(-2, null);
         }
 
-        Profile profile = accountService.getProfile(openid, false);
-
-        Role role = this.getUserRole(profile.getId());
-        LoginUser temp = new LoginUser();
-        temp.setOpenId(openid);
-        temp.setHeadimgUrl(profile.getHeadimgurl());
-        temp.setRealName(profile.getRealName());
-        temp.setWeixinName(profile.getNickname());
-        temp.setId(profile.getId());
-        temp.setRole(role.getId());
-        temp.setSignature(profile.getSignature());
-        logger.info("user:{}", temp);
-        return new MutablePair<>(1, temp);
+        // 重新加载loginUser
+        loginUser = getLoginUser(openid);
+        logger.info("user:{}", loginUser);
+        return new MutablePair<>(1, loginUser);
     }
 
     public Role getUserRole(Integer profileId){
@@ -311,17 +314,19 @@ public class LoginUserService {
             return null;
         }
 
+        Role role = this.getUserRole(account.getId());
         LoginUser loginUser = new LoginUser();
         loginUser.setId(account.getId());
         loginUser.setOpenId(account.getOpenid());
         loginUser.setWeixinName(account.getNickname());
         loginUser.setHeadimgUrl(account.getHeadimgurl());
         loginUser.setRealName(account.getRealName());
-        loginUser.setRole(account.getRole());
+        loginUser.setRole(role.getId());
         loginUser.setSignature(account.getSignature());
         loginUser.setOpenRise(account.getOpenRise());
         loginUser.setOpenConsolidation(account.getOpenConsolidation());
         loginUser.setOpenApplication(account.getOpenApplication());
+        loginUser.setOpenNavigator(account.getOpenNavigator());
         loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
     }

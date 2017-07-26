@@ -19,6 +19,7 @@ import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.CardCollectionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
@@ -136,7 +137,7 @@ public class ProblemController {
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
-        result.setRiseMember(loginUser.getRiseMember());
+        result.setRiseMember(loginUser.getRiseMember()!=0);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("小课列表")
@@ -261,7 +262,7 @@ public class ProblemController {
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
         // 是否会员
-        Boolean isMember = loginUser.getRiseMember();
+        Boolean isMember = loginUser.getRiseMember()!= Constants.RISE_MEMBER.MEMBERSHIP;
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         ImprovementPlan plan = plans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
         Integer buttonStatus;

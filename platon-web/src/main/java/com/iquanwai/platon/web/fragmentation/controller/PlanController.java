@@ -3,44 +3,28 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.PromotionUser;
-import com.iquanwai.platon.biz.po.Recommendation;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
-import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
-import com.iquanwai.platon.web.fragmentation.dto.PlayIntroduceDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -109,7 +93,7 @@ public class PlanController {
         switch (type) {
             case 2: {
                 // 直接选小课
-                if (!loginUser.getRiseMember()) {
+                if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                     return WebUtils.error("您不是年费会员，需要单独购买小课哦");
                 }
                 break;
@@ -130,7 +114,7 @@ public class PlanController {
                             return WebUtils.error("该小课无需购买");
                         case ImprovementPlan.TRIALCLOSE:
                             // 试学结束，查看会员类型
-                            if (loginUser.getRiseMember()) {
+                            if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                                 // 是会员，不需要购买
                                 return WebUtils.error("您已经是会员，无需单独购买小课");
                             }
@@ -140,7 +124,7 @@ public class PlanController {
                     }
                 } else {
                     // 没有学过该小课
-                    if (loginUser.getRiseMember()) {
+                    if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                         // 已经是会员，无需购买
                         return WebUtils.error("您已经是会员，无需单独购买小课");
                     }
@@ -264,38 +248,6 @@ public class PlanController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(planId);
-    }
-
-
-    @RequestMapping("/play/{planId}")
-    public ResponseEntity<Map<String, Object>> planPlayIntroduce(LoginUser loginUser,
-                                                                 @PathVariable Integer planId) {
-
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getPlan(planId);
-        if (improvementPlan == null) {
-            LOGGER.error("planId {} is invalid", planId);
-            return WebUtils.error("打开训练玩法介绍失败");
-        }
-
-        PlayIntroduceDto playIntroduceDto = new PlayIntroduceDto();
-
-        int interval = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getCloseDate());
-        playIntroduceDto.setLength(interval);
-        interval = DateUtils.interval(improvementPlan.getStartDate(), improvementPlan.getEndDate());
-        playIntroduceDto.setTotalSeries(interval);
-        DateTime dateTime = new DateTime(improvementPlan.getCloseDate());
-        int month = dateTime.getMonthOfYear();
-        int day = dateTime.getDayOfMonth();
-        playIntroduceDto.setEndDate(month + "月" + day + "日");
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("玩法")
-                .function("训练玩法介绍")
-                .action("打开玩法页")
-                .memo(planId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(playIntroduceDto);
     }
 
     /**
@@ -464,36 +416,6 @@ public class PlanController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/openrise", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openRise(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        int count = accountService.updateOpenRise(loginUser.getId());
-        if (count > 0) {
-            loginUser.setOpenRise(true);
-        }
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/open/application", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openComprehension(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        int count = accountService.updateOpenApplication(loginUser.getId());
-        if (count > 0) {
-            loginUser.setOpenApplication(true);
-        }
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/open/consolidation", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> openConsolidation(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        int count = accountService.updateOpenConsolidation(loginUser.getId());
-        if (count > 0) {
-            loginUser.setOpenConsolidation(true);
-        }
-        return WebUtils.success();
-    }
-
     @RequestMapping("/welcome")
     public ResponseEntity<Map<String, Object>> welcome(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -518,49 +440,6 @@ public class PlanController {
         return WebUtils.result(loginUser.getRiseMember());
     }
 
-    @RequestMapping("/roadmap")
-    @Deprecated
-    public ResponseEntity<Map<String, Object>> getRoadMap(LoginUser loginUser,
-                                                          @RequestParam Integer planId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan improvementPlan = planService.getPlan(planId);
-        if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
-            return WebUtils.result("您还没有制定训练计划哦");
-        }
-        List<Chapter> chapter = planService.loadRoadMap(improvementPlan.getProblemId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("学习知识点")
-                .action("打开知识点路线页");
-        operationLogService.log(operationLog);
-        return WebUtils.result(chapter);
-    }
-
-    @RequestMapping("/open/status")
-    public ResponseEntity<Map<String, Object>> getOpenStatus(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
-                .function("数据")
-                .action("查看打开状态");
-        operationLogService.log(operationLog);
-        OpenStatusDto dto = new OpenStatusDto();
-        if (!loginUser.getOpenApplication() || !loginUser.getOpenConsolidation() || !loginUser.getOpenRise()) {
-            // 没有点开其中一个
-            Profile profile = accountService.getProfile(loginUser.getId());
-            loginUser.setOpenRise(profile.getOpenRise());
-            loginUser.setOpenConsolidation(profile.getOpenConsolidation());
-            loginUser.setOpenApplication(profile.getOpenApplication());
-        }
-
-        dto.setOpenRise(loginUser.getOpenRise());
-        dto.setOpenConsolidation(loginUser.getOpenConsolidation());
-        dto.setOpenApplication(loginUser.getOpenApplication());
-        return WebUtils.result(dto);
-    }
-
     @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser,
                                                              @PathVariable Integer series,
@@ -571,11 +450,7 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
-            if (!improvementPlan.getRiseMember()) {
-                return WebUtils.error("试用版仅能体验前三节内容 <br/> 点击右上角按钮，升级正式版吧");
-            }
-        }
+
         Integer result = planService.checkPractice(series, improvementPlan);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -659,9 +534,9 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
+        List<PlanDto> trialClosedPlans = Lists.newArrayList();
         List<PlanDto> runningPlans = Lists.newArrayList();
         List<PlanDto> completedPlans = Lists.newArrayList();
-        List<PlanDto> trialClosedPlans = Lists.newArrayList();
         plans.forEach(item -> {
             PlanDto plan = new PlanDto();
             plan.setPlanId(item.getId());
@@ -682,6 +557,7 @@ public class PlanController {
             }
         });
         PlanListDto planListDto = new PlanListDto();
+        planListDto.setOpenNavigator(loginUser.getOpenNavigator());
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setTrialClosedPlans(trialClosedPlans);

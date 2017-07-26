@@ -14,5 +14,5 @@ public class PlanListDto {
     private List<PlanDto> completedPlans;
     private List<PlanDto> trialClosedPlans;
     private Boolean riseMember;
-
+    private Boolean openNavigator;
 }
