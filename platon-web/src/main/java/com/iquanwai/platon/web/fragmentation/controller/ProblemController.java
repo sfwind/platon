@@ -261,13 +261,13 @@ public class ProblemController {
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
-        // 是否会员
-        Boolean isMember = loginUser.getRiseMember()!= Constants.RISE_MEMBER.MEMBERSHIP;
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         ImprovementPlan plan = plans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
         Integer buttonStatus;
         if (plan == null) {
             // 没学过这个小课
+            // 是否会员
+            Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
             if (isMember) {
                 // 是会员，显示按钮"选择"
                 buttonStatus = 2;
