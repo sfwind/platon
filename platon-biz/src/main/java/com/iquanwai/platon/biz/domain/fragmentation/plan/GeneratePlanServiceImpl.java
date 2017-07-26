@@ -298,7 +298,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         } else {
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         }
-        improvementPlan.setRiseMember(profile.getRiseMember());
+        improvementPlan.setRiseMember(profile.getRiseMember()!=0);
         return improvementPlanDao.insert(improvementPlan);
 
     }

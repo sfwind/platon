@@ -438,7 +438,7 @@ public class PlanServiceImpl implements PlanService {
                     if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
                         return -3;
                     }
-                    if (improvementPlan.getRiseMember() == 0) {
+                    if (!improvementPlan.getRiseMember()) {
                         //未付费返回-1
                         return -1;
                     }
