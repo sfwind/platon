@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
@@ -92,7 +93,7 @@ public class PlanController {
         switch (type) {
             case 2: {
                 // 直接选小课
-                if (!loginUser.getRiseMember()) {
+                if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                     return WebUtils.error("您不是年费会员，需要单独购买小课哦");
                 }
                 break;
@@ -113,7 +114,7 @@ public class PlanController {
                             return WebUtils.error("该小课无需购买");
                         case ImprovementPlan.TRIALCLOSE:
                             // 试学结束，查看会员类型
-                            if (loginUser.getRiseMember()) {
+                            if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                                 // 是会员，不需要购买
                                 return WebUtils.error("您已经是会员，无需单独购买小课");
                             }
@@ -123,7 +124,7 @@ public class PlanController {
                     }
                 } else {
                     // 没有学过该小课
-                    if (loginUser.getRiseMember()) {
+                    if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                         // 已经是会员，无需购买
                         return WebUtils.error("您已经是会员，无需单独购买小课");
                     }
@@ -449,11 +450,7 @@ public class PlanController {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
-        if (!loginUser.getRiseMember() && series > ConfigUtils.preStudySerials()) {
-            if (!improvementPlan.getRiseMember()) {
-                return WebUtils.error("试用版仅能体验前三节内容 <br/> 点击右上角按钮，升级正式版吧");
-            }
-        }
+
         Integer result = planService.checkPractice(series, improvementPlan);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
