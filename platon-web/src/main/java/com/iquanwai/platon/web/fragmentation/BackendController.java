@@ -84,17 +84,4 @@ public class BackendController {
     }
 
 
-    private static String getAccessTokenFromCookie(String cookieStr){
-        String[] cookies = cookieStr.split(";");
-        String accessToken ="";
-        for(String cookie:cookies){
-            if(cookie.startsWith(OAuthService.ACCESS_TOKEN_COOKIE_NAME+"=")){
-                accessToken = cookie.substring(OAuthService.ACCESS_TOKEN_COOKIE_NAME.length()+1);
-                break;
-            }
-        }
-        return accessToken;
-    }
-
-
 }

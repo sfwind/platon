@@ -201,7 +201,7 @@ public class LoginUserService {
         if (StringUtils.isEmpty(pcToken) && StringUtils.isEmpty(wechatToken)) {
             // pcToken和wechatToken都为null则是移动
             return Platform.Wechat;
-        };
+        }
         if (!StringUtils.isEmpty(pcToken)) {
             return Platform.PC;
         }
