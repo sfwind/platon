@@ -53,7 +53,8 @@ public class LoginUserService {
      */
     private static Map<String, LoginUser> pcLoginUserMap = Maps.newHashMap(); // pc的登录缓存
     private static Map<String, LoginUser> wechatLoginUserMap = Maps.newHashMap();// 微信的登录缓存
-    private static List<String> waitFreshOpenids = Lists.newArrayList(); //待更新openid
+    private static List<String> waitPCRefreshOpenids = Lists.newArrayList(); //待更新openid
+    private static List<String> waitWechatRefreshOpenids = Lists.newArrayList(); //待更新openid
 
     @Autowired
     private OAuthService oAuthService;
@@ -181,7 +182,8 @@ public class LoginUserService {
     }
 
     public void updateWeixinUser(String openid){
-        waitFreshOpenids.add(openid);
+        waitPCRefreshOpenids.add(openid);
+        waitWechatRefreshOpenids.add(openid);
     }
 
     public String getToken(HttpServletRequest request) {
@@ -235,13 +237,6 @@ public class LoginUserService {
         // 先检查有没有缓存
         LoginUser loginUser = this.loadUser(platform, accessToken);
         if (loginUser != null) {
-            // 如果数据待更新,则读取数据库
-            String openid = loginUser.getOpenId();
-            if(waitFreshOpenids.contains(openid)){
-                logger.info("更新用户{}", openid);
-                loginUser = getLoginUser(openid);
-                waitFreshOpenids.remove(openid);
-            }
 //            logger.debug("已缓存,_qt:{}", accessToken);
             return new MutablePair<>(1, loginUser);
         }
@@ -290,9 +285,25 @@ public class LoginUserService {
         switch (platform) {
             case PC:
                 loginUser = pcLoginUserMap.get(accessToken);
+                // 如果数据待更新,则读取数据库
+                String openid = loginUser.getOpenId();
+                if(waitPCRefreshOpenids.contains(openid)){
+                    logger.info("更新用户{}", openid);
+                    loginUser = getLoginUser(openid);
+                    pcLoginUserMap.put(accessToken, loginUser);
+                    waitPCRefreshOpenids.remove(openid);
+                }
                 break;
             case Wechat:
                 loginUser = wechatLoginUserMap.get(accessToken);
+                // 如果数据待更新,则读取数据库
+                String openid2 = loginUser.getOpenId();
+                if(waitPCRefreshOpenids.contains(openid2)){
+                    logger.info("更新用户{}", openid2);
+                    loginUser = getLoginUser(openid2);
+                    wechatLoginUserMap.put(accessToken, loginUser);
+                    waitWechatRefreshOpenids.remove(openid2);
+                }
                 break;
         }
         return loginUser;
