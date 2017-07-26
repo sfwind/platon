@@ -69,6 +69,11 @@ public class ProblemServiceImpl implements ProblemService {
 
     private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
 
+    private BufferedImage essenceFreeTop;
+    private BufferedImage essenceFreeBottom;
+    private BufferedImage essenceNormalTop;
+
+
     @PostConstruct
     public void init() {
         // 初始化所有背景图的 bufferedImages 缓存
@@ -87,6 +92,9 @@ public class ProblemServiceImpl implements ProblemService {
             String thumbnailLock = essenceThumbnailLock.getString(Integer.toString(i + 1));
             thumbnailLockMap.put(i + 1, thumbnailLock);
         }
+        essenceFreeTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_top.png?imageslim");
+        essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_2.png?imageslim");
+        essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
     }
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -262,10 +270,10 @@ public class ProblemServiceImpl implements ProblemService {
         }
         String nickName = CommonUtils.filterEmoji(profile.getNickname());
         if (nickName == null || nickName.length() == 0) {
-            targetImage = ImageUtils.writeText(targetImage, 278, 1230, "你的好友邀请你，",
+            targetImage = ImageUtils.writeText(targetImage, 278, 1230, "你的好友邀请你学习，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         } else {
-            targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你，",
+            targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你学习，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
         targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "爆表的人",
@@ -279,6 +287,13 @@ public class ProblemServiceImpl implements ProblemService {
         // 渲染课程精华卡片文本
         String[] contentArr = essenceCard.getEssenceContent().split("\\|");
         targetImage = writeContentOnImage(targetImage, contentArr, 404, 500);
+        // 限免 非限免 图片区分
+        if(problemId.equals(ConfigUtils.getTrialProblemId())) {
+            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
+            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 257, 1105);
+        } else {
+            targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
+        }
         ByteArrayOutputStream outputStream = null;
         try {
             outputStream = new ByteArrayOutputStream();
@@ -320,7 +335,7 @@ public class ProblemServiceImpl implements ProblemService {
         }
     }
 
-    // 获取二维码
+    // 获取二维码，场景值变化
     public BufferedImage loadQrImage(Profile profile) {
         // 绘图数据
         QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profile.getId(), null);

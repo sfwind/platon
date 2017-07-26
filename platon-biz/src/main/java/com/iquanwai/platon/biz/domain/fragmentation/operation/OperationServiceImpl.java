@@ -51,12 +51,12 @@ public class OperationServiceImpl implements OperationService {
     public void recordPromotionLevel(String openId, String scene) {
         PromotionLevel tempPromotionLevel = promotionLevelDao.loadByOpenId(openId);
         if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
-
-        String source = scene.substring(prefix.length());
-        if ("RISE".equals(source)) {
+        String[] sceneParams = scene.split("_");
+        if(sceneParams.length != 3) return;
+        if ("RISE".equals(sceneParams[1])) {
             promotionLevelDao.insertPromotionLevel(openId, 1);
         } else {
-            Integer promotionProfileId = Integer.parseInt(source);
+            Integer promotionProfileId = Integer.parseInt(sceneParams[1]);
             Profile promotionProfile = profileDao.load(Profile.class, promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
             PromotionLevel promotionLevelObject = promotionLevelDao.loadByOpenId(promotionOpenId); // 推广人层级表对象
@@ -103,10 +103,9 @@ public class OperationServiceImpl implements OperationService {
                 Coupon coupon = new Coupon();
                 coupon.setOpenId(sourceProfile.getOpenid());
                 coupon.setProfileId(sourceProfile.getId());
-                // TODO 优惠券金额、过期时间
                 coupon.setAmount(50);
-                coupon.setExpiredDate(DateUtils.parseStringToDateTime("2018-01-01 00:00:00"));
-                coupon.setDescription("限免推广券");
+                coupon.setExpiredDate(DateUtils.afterYears(new Date(), 30));
+                coupon.setDescription("奖学金");
                 Integer insertResult = couponDao.insertCoupon(coupon);
                 if (insertResult > 0) {
                     // 礼品券数据保存成功，发送获得优惠券的模板消息
