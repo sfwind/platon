@@ -180,10 +180,8 @@ public class LoginUserService {
         pcLoginUserMap.remove(sessionId);
     }
 
-    public void updateWeixinUser(String wechatToken){
-        LoginUser loginUser = wechatLoginUserMap.get(wechatToken);
-        loginUser = getLoginUser(loginUser.getOpenId());
-        wechatLoginUserMap.put(wechatToken, loginUser);
+    public void updateWeixinUser(String openid){
+        waitFreshOpenids.add(openid);
     }
 
     public String getToken(HttpServletRequest request) {
