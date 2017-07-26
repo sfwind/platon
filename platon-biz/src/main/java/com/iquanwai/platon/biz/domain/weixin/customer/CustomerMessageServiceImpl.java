@@ -24,6 +24,7 @@ public class CustomerMessageServiceImpl implements CustomerMessageService {
             TextCustomerMessage customerMessage = new TextCustomerMessage(openid, message);
             Gson gson = new Gson();
             String json = gson.toJson(customerMessage);
+            logger.info("json, {}", json);
             restfulHelper.post(SEND_CUSTOMER_MESSAGE_URL, json);
         } else if(Constants.WEIXIN_MESSAGE_TYPE.IMAGE == type){
             ImageCustomerMessage customerMessage = new ImageCustomerMessage(openid, message);
