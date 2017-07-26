@@ -286,23 +286,27 @@ public class LoginUserService {
             case PC:
                 loginUser = pcLoginUserMap.get(accessToken);
                 // 如果数据待更新,则读取数据库
-                String openid = loginUser.getOpenId();
-                if(waitPCRefreshOpenids.contains(openid)){
-                    logger.info("更新用户{}", openid);
-                    loginUser = getLoginUser(openid);
-                    pcLoginUserMap.put(accessToken, loginUser);
-                    waitPCRefreshOpenids.remove(openid);
+                if(loginUser!=null){
+                    String openid = loginUser.getOpenId();
+                    if(waitPCRefreshOpenids.contains(openid)){
+                        logger.info("更新用户{}", openid);
+                        loginUser = getLoginUser(openid);
+                        pcLoginUserMap.put(accessToken, loginUser);
+                        waitPCRefreshOpenids.remove(openid);
+                    }
                 }
                 break;
             case Wechat:
                 loginUser = wechatLoginUserMap.get(accessToken);
                 // 如果数据待更新,则读取数据库
-                String openid2 = loginUser.getOpenId();
-                if(waitPCRefreshOpenids.contains(openid2)){
-                    logger.info("更新用户{}", openid2);
-                    loginUser = getLoginUser(openid2);
-                    wechatLoginUserMap.put(accessToken, loginUser);
-                    waitWechatRefreshOpenids.remove(openid2);
+                if(loginUser!=null){
+                    String openid2 = loginUser.getOpenId();
+                    if(waitPCRefreshOpenids.contains(openid2)){
+                        logger.info("更新用户{}", openid2);
+                        loginUser = getLoginUser(openid2);
+                        wechatLoginUserMap.put(accessToken, loginUser);
+                        waitWechatRefreshOpenids.remove(openid2);
+                    }
                 }
                 break;
         }
