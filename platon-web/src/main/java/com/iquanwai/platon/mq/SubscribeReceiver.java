@@ -66,13 +66,11 @@ public class SubscribeReceiver {
                     // 限免课
                     if (event.equals(SUBSCRIBE)) {
                         sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
-                                "------------------------------------------------\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
                                 "'>找到本质问题，解决无效努力</a>\n" +
-                                "\n" +
-                                "————————————\n" +
+                                "------------\n" +
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
@@ -84,7 +82,7 @@ public class SubscribeReceiver {
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
                                 "'>找到本质问题，解决无效努力</a>\n" +
-                                "————————————\n" +
+                                "------------\n" +
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
@@ -95,10 +93,10 @@ public class SubscribeReceiver {
                     // 非限免
                     sendMsg = "同学你好，你要的小课在这里：\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
-                            "/rise/static/problem/view?id=" +
+                            "/rise/static/plan/view?id=" +
                             sceneParams[2] +
                             "'>" + cacheService.getProblem(Integer.parseInt(sceneParams[2])).getProblem() + "</a>\n" +
-                            "————————————\n" +
+                            "------------\n" +
                             "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
                             "/rise/static/plan/view?id=" +
