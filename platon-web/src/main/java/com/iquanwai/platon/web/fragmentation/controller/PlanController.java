@@ -114,7 +114,7 @@ public class PlanController {
                             return WebUtils.error("该小课无需购买");
                         case ImprovementPlan.TRIALCLOSE:
                             // 试学结束，查看会员类型
-                            if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
+                            if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
                                 // 是会员，不需要购买
                                 return WebUtils.error("您已经是会员，无需单独购买小课");
                             }
@@ -124,7 +124,7 @@ public class PlanController {
                     }
                 } else {
                     // 没有学过该小课
-                    if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
+                    if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
                         // 已经是会员，无需购买
                         return WebUtils.error("您已经是会员，无需单独购买小课");
                     }
