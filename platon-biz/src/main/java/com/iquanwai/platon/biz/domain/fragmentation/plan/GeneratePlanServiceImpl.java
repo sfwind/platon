@@ -136,14 +136,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
         templateMessage.setUrl(ConfigUtils.domainName()+ INDEX_URL);
         Profile profile = accountService.getProfile(openid, false);
-        String first;
-        if(profile!=null){
-            first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
-        }else{
-            first = "Hi，你刚才选择了圈外小课：\n";
-        }
+        String first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
         int length = problem.getLength();
-        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH - 1));
+
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
+        String closeDate = DateUtils.parseDateToStringByCommon(improvementPlan.getCloseDate());
+
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
