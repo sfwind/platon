@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
-import com.iquanwai.platon.job.RiseMemberJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,7 @@ public class CacheReloadReceiver {
     private CacheService cacheService;
     @Autowired
     private PictureService pictureService;
-    @Autowired
-    private RiseMemberJob riseMemberJob;
+
     @Autowired
     private MQService mqService;
 
@@ -37,7 +35,7 @@ public class CacheReloadReceiver {
     public void init(){
         RabbitMQReceiver receiver = new RabbitMQReceiver();
         receiver.init(null, TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
-        logger.info("{} 通道建立", TOPIC);
+        logger.info("通道建立");
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         // 监听器
         receiver.listen(msg -> {
@@ -51,12 +49,9 @@ public class CacheReloadReceiver {
                     cacheService.reload();
                     pictureService.reloadModule();
                     break;
-                case "member":
-                    riseMemberJob.refreshStatus();
-                    break;
             }
         });
-        logger.info("{} 开启队列监听", TOPIC);
+        logger.info("开启队列监听");
     }
 
 

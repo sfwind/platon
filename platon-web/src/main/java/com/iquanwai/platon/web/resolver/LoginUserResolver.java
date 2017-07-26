@@ -69,9 +69,5 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         return loginUser;
     }
-
-
-    public static Collection<LoginUser> getAllUsers(){
-        return LoginUserService.getAllUsers();
-    }
+    
 }
