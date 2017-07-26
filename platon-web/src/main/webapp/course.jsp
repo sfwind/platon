@@ -23,7 +23,6 @@
 
 <script>
     function loaded(){
-        console.log('haha');
         document.querySelector('#loading').display = 'none';
     }
 </script>
