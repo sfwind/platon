@@ -49,6 +49,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         String accessToken = loginUserService.getToken(request);
 
         if (loginUserService.isLogin(request)) {
+            logger.info("request user _act {}", accessToken);
             return loginUserService.getLoginUser(request).getRight();
         }
 
@@ -69,5 +70,5 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         return loginUser;
     }
-    
+
 }
