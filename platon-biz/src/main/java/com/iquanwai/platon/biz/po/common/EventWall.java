@@ -24,4 +24,21 @@ public class EventWall {
     private Boolean del;
     private Boolean showTime; //是否显示时间
     private Integer visibility; // 会员可见性
+    private Integer problemId;
+    private Integer visibleProblemId; // 针对小课用户的可见性
+
+
+    public static final int LIVE = 1;// 直播
+    public static final int WORK_ANALYSIS = 2;// 作业分析
+    public static final int OFFLINE = 3; // 线下活动
+    public static final int MORE = 4; // 更多精彩
+
+    public interface VisibleLevel {
+        int NO_RESTRICT = 0; //不作限制
+        int NOT_RISE_MEMBER = 1; // 非会员
+        int NOT_RISE_MEMBER_AND_PROFESSIONAL = 2; // 非会员与专业版
+        int ELITE = 3; // 精英版
+        int PROFESSIONAL = 4; // 专业版
+        int RISE_MEMBER = 5; // 会员版
+    }
 }
