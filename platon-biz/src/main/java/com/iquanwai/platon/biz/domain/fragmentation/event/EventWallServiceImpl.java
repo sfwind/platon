@@ -75,7 +75,7 @@ public class EventWallServiceImpl implements EventWallService {
         } else {
             // 会员
             visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-            if (riseMember.getMemberTypeId() == RiseMember.ELITE) {
+            if (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
                 // 精英版
                 visibilities.add(EventWall.VisibleLevel.ELITE);
             } else {
