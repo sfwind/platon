@@ -262,7 +262,7 @@ public class ProblemController {
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
         // 是否会员
-        Boolean isMember = loginUser.getRiseMember()!= Constants.RISE_MEMBER.MEMBERSHIP;
+        Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         ImprovementPlan plan = plans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
         Integer buttonStatus;
