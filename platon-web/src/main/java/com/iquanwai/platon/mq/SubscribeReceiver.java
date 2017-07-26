@@ -64,7 +64,6 @@ public class SubscribeReceiver {
 
             Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
             String freeProblemName = freeProblem.getProblem();
-            logger.info("开始记录");
             operationService.recordPromotionLevel(openId, scene);
             if (sceneParams.length == 3) {
                 String sendMsg;
@@ -80,7 +79,6 @@ public class SubscribeReceiver {
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
-                        logger.info(sendMsg);
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     } else if (event.equals(SCAN)) {
                         sendMsg = "你要的限免课程在这里，点击上课：\n" +
@@ -92,7 +90,6 @@ public class SubscribeReceiver {
                                 "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
-                        logger.info(sendMsg);
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     }
                 } else {
@@ -110,7 +107,6 @@ public class SubscribeReceiver {
                             "'>" + freeProblemName + "</a>\n" +
                             "\n" +
                             "完成限免小课章节有神秘卡片哦，分享还会获得¥50奖学金。";
-                    logger.info(sendMsg);
                     customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
             }

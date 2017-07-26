@@ -148,6 +148,7 @@ public class OperationServiceImpl implements OperationService {
         data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给" + successNum + "位好友，成功get一张¥50代金券\n"));
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
         data.put("keyword2", new TemplateMessage.Keyword("¥50代金券"));
+        data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("remark", new TemplateMessage.Keyword("\n点击下方“圈外同学”并升级会员/报名小课，立即使用代金券，开学！"));
         templateMessageService.sendMessage(templateMessage);
     }
