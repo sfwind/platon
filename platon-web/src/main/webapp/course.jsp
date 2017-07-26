@@ -16,10 +16,11 @@
         showForum:"${showForum}"
     }
 </script>
-<div id="loading"><img src="//static.iqycamp.com/images/loadingPage.gif" style="display: block;margin: 0 auto;"/></div>
+<%--<div id="loading"><img src="//static.iqycamp.com/images/loadingPage.gif" style="display: block;margin: 0 auto;"/></div>--%>
 <div id="react-app"></div>
 <!-- 业务代码-->
-<script src="${resource}" onload="document.querySelector('#loading').display = 'none'"></script>
+<%--<script src="${resource}" onload="document.querySelector('#loading').display = 'none'"></script>--%>
+<script src="${resource}"></script>
 
 <script src="//res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 <script>
