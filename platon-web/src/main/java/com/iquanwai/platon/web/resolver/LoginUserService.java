@@ -236,9 +236,11 @@ public class LoginUserService {
         LoginUser loginUser = this.loadUser(platform, accessToken);
         if (loginUser != null) {
             // 如果数据待更新,则读取数据库
-            if(waitFreshOpenids.contains(loginUser.getOpenId())){
-                loginUser = getLoginUser(loginUser.getOpenId());
-                waitFreshOpenids.remove(loginUser.getOpenId());
+            String openid = loginUser.getOpenId();
+            if(waitFreshOpenids.contains(openid)){
+                logger.info("更新用户{}", openid);
+                loginUser = getLoginUser(openid);
+                waitFreshOpenids.remove(openid);
             }
 //            logger.debug("已缓存,_qt:{}", accessToken);
             return new MutablePair<>(1, loginUser);
