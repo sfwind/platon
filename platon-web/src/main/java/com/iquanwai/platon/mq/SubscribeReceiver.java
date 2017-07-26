@@ -64,6 +64,8 @@ public class SubscribeReceiver {
 
             Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
             String freeProblemName = freeProblem.getProblem();
+            logger.info("开始记录");
+            operationService.recordPromotionLevel(openId, scene);
             if (sceneParams.length == 3) {
                 String sendMsg;
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
