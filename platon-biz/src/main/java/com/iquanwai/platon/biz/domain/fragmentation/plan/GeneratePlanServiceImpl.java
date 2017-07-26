@@ -140,7 +140,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         int length = problem.getLength();
 
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
-        String closeDate = DateUtils.parseDateToStringByCommon(improvementPlan.getCloseDate());
+        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.beforeDays(improvementPlan.getCloseDate(), 1));
 
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
