@@ -43,7 +43,7 @@ public class SubscribeReceiver {
     @PostConstruct
     public void init() {
         RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, SubscribeReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
+        receiver.init("FreeLimitEvent_Queue", SubscribeReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
         logger.info("通道建立：" + SubscribeReceiver.TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         Consumer<Object> consumer = msg -> {

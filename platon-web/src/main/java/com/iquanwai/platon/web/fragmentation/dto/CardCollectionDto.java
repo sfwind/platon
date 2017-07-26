@@ -13,6 +13,7 @@ public class CardCollectionDto {
 
     private Integer problemId; // 小课 Id
     private String problem; // 小课名称
+    private Boolean isRiseMember; // 是否会员
     private List<EssenceCard> cards; // 小课信息集合
 
 }

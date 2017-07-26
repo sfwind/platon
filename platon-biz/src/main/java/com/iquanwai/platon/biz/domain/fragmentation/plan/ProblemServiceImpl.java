@@ -288,7 +288,7 @@ public class ProblemServiceImpl implements ProblemService {
         String[] contentArr = essenceCard.getEssenceContent().split("\\|");
         targetImage = writeContentOnImage(targetImage, contentArr, 404, 500);
         // 限免 非限免 图片区分
-        if(problemId.equals(ConfigUtils.getTrialProblemId())) {
+        if (problemId.equals(ConfigUtils.getTrialProblemId())) {
             targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
             targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 257, 1105);
         } else {
@@ -338,7 +338,8 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取二维码，场景值变化
     public BufferedImage loadQrImage(Profile profile, Integer problemId) {
         // 绘图数据
-        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profile.getId() + "_" + problemId, null);
+        String sceneProfileId = profile.getRiseMember() == 1 ? "RISE" : String.valueOf(profile.getId());
+        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + sceneProfileId + "_" + problemId, null);
         try {
             return ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
         } catch (IOException e) {

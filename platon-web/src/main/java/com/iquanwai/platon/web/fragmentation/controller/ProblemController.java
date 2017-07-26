@@ -137,7 +137,7 @@ public class ProblemController {
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
-        result.setRiseMember(loginUser.getRiseMember()!=0);
+        result.setRiseMember(loginUser.getRiseMember() != 0);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("小课列表")
@@ -285,7 +285,7 @@ public class ProblemController {
             // 学过这个小课
             dto.setPlanId(plan.getId());
             switch (plan.getStatus()) {
-                case ImprovementPlan.RUNNING:{
+                case ImprovementPlan.RUNNING: {
                     buttonStatus = 3;
                     break;
                 }
@@ -421,6 +421,7 @@ public class ProblemController {
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
+                dto.setIsRiseMember(loginUser.getRiseMember() == 1);
                 dto.setProblemId(essenceCards.getLeft().getId());
                 dto.setProblem(essenceCards.getLeft().getProblem());
             }
