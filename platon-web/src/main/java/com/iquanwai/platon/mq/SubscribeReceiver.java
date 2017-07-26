@@ -68,7 +68,7 @@ public class SubscribeReceiver {
                         sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
                                 "------------------------------------------------\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
-                                "/rise/static/problem/view?id=" +
+                                "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
                                 "'>找到本质问题，解决无效努力</a>\n" +
                                 "\n" +
@@ -81,7 +81,7 @@ public class SubscribeReceiver {
                     } else if (event.equals(SCAN)) {
                         sendMsg = "你要的限免课程在这里，点击上课：\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
-                                "/rise/static/problem/view?id=" +
+                                "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
                                 "'>找到本质问题，解决无效努力</a>\n" +
                                 "————————————\n" +
@@ -101,7 +101,7 @@ public class SubscribeReceiver {
                             "————————————\n" +
                             "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
-                            "/rise/static/problem/view?id=" +
+                            "/rise/static/plan/view?id=" +
                             ConfigUtils.getTrialProblemId() +
                             "'>找到本质问题，解决无效努力</a>\n" +
                             "\n" +
