@@ -255,7 +255,7 @@ public class ProblemServiceImpl implements ProblemService {
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         // QrImage
         Profile profile = profileDao.load(Profile.class, profileId);
-        BufferedImage qrImage = loadQrImage(profile);
+        BufferedImage qrImage = loadQrImage(profile, problemId);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1087);
         // HeadImage
@@ -336,9 +336,9 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     // 获取二维码，场景值变化
-    public BufferedImage loadQrImage(Profile profile) {
+    public BufferedImage loadQrImage(Profile profile, Integer problemId) {
         // 绘图数据
-        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profile.getId(), null);
+        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profile.getId() + "_" + problemId, null);
         try {
             return ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
         } catch (IOException e) {
