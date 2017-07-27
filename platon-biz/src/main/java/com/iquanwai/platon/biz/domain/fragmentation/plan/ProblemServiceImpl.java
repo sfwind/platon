@@ -280,7 +280,7 @@ public class ProblemServiceImpl implements ProblemService {
                 font.deriveFont(24f), new Color(51, 51, 51));
         // 课程标题
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
-        targetImage = ImageUtils.writeText(targetImage, 380, 320, titleArr[0],
+        targetImage = ImageUtils.writeText(targetImage, 355, 320, titleArr[0],
                 font.deriveFont(60f), new Color(51, 51, 51));
         targetImage = ImageUtils.writeText(targetImage, 245, 420, titleArr[1],
                 font.deriveFont(60f), new Color(255, 255, 255));
