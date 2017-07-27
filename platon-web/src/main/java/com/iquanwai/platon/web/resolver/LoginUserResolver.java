@@ -12,6 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 
 /**
  * Created by tomas on 3/17/16.
@@ -69,6 +70,10 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUserService.login(platform, accessToken, loginUser);
 
         return loginUser;
+    }
+
+    public static Collection<LoginUser> getAllUsers(){
+        return LoginUserService.getAllUsers();
     }
 
 }
