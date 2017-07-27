@@ -257,7 +257,7 @@ public class ProblemServiceImpl implements ProblemService {
         Profile profile = profileDao.load(Profile.class, profileId);
         BufferedImage qrImage = loadQrImage(profile, problemId);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1089);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1090);
         // HeadImage
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
@@ -280,7 +280,7 @@ public class ProblemServiceImpl implements ProblemService {
                 font.deriveFont(24f), new Color(51, 51, 51));
         // 课程标题
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
-        targetImage = ImageUtils.writeText(targetImage, 355, 320, titleArr[0],
+        targetImage = ImageUtils.writeText(targetImage, 330, 320, titleArr[0],
                 font.deriveFont(60f), new Color(51, 51, 51));
         targetImage = ImageUtils.writeText(targetImage, 245, 420, titleArr[1],
                 font.deriveFont(60f), new Color(255, 255, 255));
