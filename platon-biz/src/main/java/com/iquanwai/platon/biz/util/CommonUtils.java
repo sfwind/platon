@@ -176,22 +176,16 @@ public class CommonUtils {
     public static String filterEmoji(String source) {
         //到这里铁定包含
         StringBuilder buf = null;
-
         int len = source.length();
-
         for (int i = 0; i < len; i++) {
             char codePoint = source.charAt(i);
-
             if (isEmojiCharacter(codePoint)) {
                 if (buf == null) {
                     buf = new StringBuilder(source.length());
                 }
-
                 buf.append(codePoint);
-            } else {
             }
         }
-
         if (buf == null) {
             return source;//如果没有找到 emoji表情，则返回源字符串
         } else {

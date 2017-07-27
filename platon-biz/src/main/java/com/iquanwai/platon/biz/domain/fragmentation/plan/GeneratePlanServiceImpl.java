@@ -50,6 +50,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private static final String INDEX_URL = "/rise/static/plan/main";
 
     @Override
+    public void reopenPlan(ImprovementPlan plan){
+        if (plan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
+            improvementPlanDao.reOpenPlan(plan.getId(), DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
+        } else {
+            logger.error("异常，用户准备重新打开计划");
+        }
+    }
+
+    @Override
     public Integer generatePlan(String openid, Integer profileId, Integer problemId) {
         Assert.notNull(openid, "openid不能为空");
         Assert.notNull(profileId, "profileId不能为空");
@@ -127,14 +136,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
         templateMessage.setUrl(ConfigUtils.domainName()+ INDEX_URL);
         Profile profile = accountService.getProfile(openid, false);
-        String first;
-        if(profile!=null){
-            first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
-        }else{
-            first = "Hi，你刚才选择了圈外小课：\n";
-        }
+        String first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
         int length = problem.getLength();
-        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH - 1));
+
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
+        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.beforeDays(improvementPlan.getCloseDate(), 1));
+
         data.put("first",new TemplateMessage.Keyword(first));
         data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
@@ -282,15 +289,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         // 查询是否是riseMember
         Profile profile = accountService.getProfile(profileId);
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
-        if(profile.getRiseMember()){
-            //最长开放30天
-            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
-            improvementPlan.setRiseMember(true);
+        // 限免小课开放7天，其他小课30天
+        Integer trialProblemId = ConfigUtils.getTrialProblemId();
+        if (Integer.valueOf(problem.getId()).equals(trialProblemId) && profile.getRiseMember() != 1) {
+            // 这个小课是试用版，并且会员状态不是1(年费会员)
+            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), TRIAL_PROBLEM_MAX_LENGTH));
         } else {
-            improvementPlan.setCloseDate(DateUtils.parseStringToDate("2099-1-1"));
-            improvementPlan.setRiseMember(false);
+            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         }
-
+        improvementPlan.setRiseMember(profile.getRiseMember()!=0);
         return improvementPlanDao.insert(improvementPlan);
 
     }

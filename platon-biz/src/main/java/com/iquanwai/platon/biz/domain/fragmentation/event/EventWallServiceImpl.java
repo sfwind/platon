@@ -1,7 +1,10 @@
 package com.iquanwai.platon.biz.domain.fragmentation.event;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.EventWallDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import org.slf4j.Logger;
@@ -21,45 +24,19 @@ public class EventWallServiceImpl implements EventWallService {
     private EventWallDao eventWallDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public List<EventWall> getEventWall(Integer profileId) {
         RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
+        List<ImprovementPlan> plans = improvementPlanDao.loadRunningPlan(profileId);
+
         List<EventWall> eventWalls = eventWallDao
-                .loadAll(EventWall.class).stream().filter(item -> {
-                    if (item.getDel()) {
-                        // 删除的过滤掉
-                        return false;
-                    }
-                    if (item.getVisibility() == null) {
-                        // 不对可见性做判断
-                        return true;
-                    } else {
-                        if (item.getVisibility() == 1) {
-                            // 非会员可见
-                            return riseMember == null;
-                        } else if (item.getVisibility() == 2) {
-                            // 非会员，专业版可见
-                            return riseMember == null || riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
-                        } else {
-                            if (item.getVisibility() == 3) {
-                                //精英版可见
-                                return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                                        riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
-                            } else if (item.getVisibility() == 4) {
-                                // 专业版可见
-                                return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
-                            } else if (item.getVisibility() == 5) {
-                                // 会员可见
-                                return riseMember != null;
-                            } else {
-                                logger.error("未匹配到的可见性类型,{}", item.getVisibility());
-                                return false;
-                            }
-                        }
-                    }
-                }).collect(Collectors.toList());
+                .loadAll(EventWall.class)
+                .stream().filter((item) -> this.visibleCheck(item, riseMember,plans))
+                .collect(Collectors.toList());
         eventWalls.sort((o1, o2) -> {
             if (o1.getStartTime() == null) {
                 return 1;
@@ -69,5 +46,60 @@ public class EventWallServiceImpl implements EventWallService {
             return o2.getStartTime().before(o1.getStartTime()) ? -1 : 1;
         });
         return eventWalls;
+    }
+
+
+    private List<Integer> calculateVisible(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
+        // 计算可见性
+        List<Integer> visibilities = Lists.newArrayList();
+        ImprovementPlan plan = plans.stream()
+                .filter(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
+                        && item.getProblemId().equals(eventWall.getVisibleProblemId())).findFirst().orElse(null);
+
+        if (riseMember == null) {
+            // 非会员
+            visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
+            visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+            if (eventWall.getVisibleProblemId() != null && plan != null && eventWall.getVisibleProblemId().equals(plan.getProblemId())) {
+                // 对小课用户做特殊处理
+                visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                if (eventWall.getType() == EventWall.OFFLINE) {
+                    // 对于线下活动，权限等同于专业版
+                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
+                } else {
+                    // 对于其他，权限等于精英版
+                    visibilities.add(EventWall.VisibleLevel.ELITE);
+                }
+            }
+            return visibilities;
+        } else {
+            // 会员
+            visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+            if (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
+                // 精英版
+                visibilities.add(EventWall.VisibleLevel.ELITE);
+            } else {
+                // 专业版
+                visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
+                visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+            }
+            return visibilities;
+        }
+    }
+
+    private Boolean visibleCheck(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
+        // 删除的过滤掉
+        if (eventWall.getDel()) {
+            return false;
+        }
+
+        if (eventWall.getVisibility() == null) {
+            // 不对可见性做判断
+            return true;
+        } else {
+            // 对可见性做判断
+            List<Integer> visibilities = calculateVisible(eventWall, riseMember, plans);
+            return visibilities.contains(eventWall.getVisibility());
+        }
     }
 }

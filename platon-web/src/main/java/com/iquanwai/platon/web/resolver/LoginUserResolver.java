@@ -1,8 +1,5 @@
 package com.iquanwai.platon.web.resolver;
 
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -15,16 +12,11 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 
 /**
  * Created by tomas on 3/17/16.
  */
 public class LoginUserResolver implements HandlerMethodArgumentResolver {
-    @Autowired
-    private OAuthService oAuthService;
-    @Autowired
-    private AccountService accountService;
     @Autowired
     private LoginUserService loginUserService;
 
@@ -50,21 +42,13 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
                 return LoginUser.defaultUser();
             }else{
                 //返回模拟的openid user
-                return loginUserService.getLoginUser(request.getParameter("debug"));
+                return loginUserService.getLoginUser(request.getParameter("debug"), LoginUserService.Platform.Wechat);
             }
         }
         String accessToken = loginUserService.getToken(request);
 
         if (loginUserService.isLogin(request)) {
-            LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
-            // 之前不是会员的才需要立刻刷新一下,会员过期会在job 里跑
-            if(!loginUser.getRiseMember()){
-                Profile profile = accountService.getProfile(loginUser.getId());
-                if (profile != null && profile.getRiseMember()) {
-                    loginUser.setRiseMember(true);
-                }
-            }
-            return loginUser;
+            return loginUserService.getLoginUser(request).getRight();
         }
 
 
@@ -77,16 +61,14 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return null;
         }
 
-        LoginUser loginUser = loginUserService.getLoginUser(openId);
-        if (loginUser == null) return null;
+        LoginUser loginUser = loginUserService.getLoginUser(openId, platform);
+        if (loginUser == null) {
+            return null;
+        }
         logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
         loginUserService.login(platform, accessToken, loginUser);
 
         return loginUser;
     }
 
-
-    public static Collection<LoginUser> getAllUsers(){
-        return LoginUserService.getAllUsers();
-    }
 }

@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.util;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.batik.transcoder.Transcoder;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -11,13 +10,14 @@ import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.BASE64Decoder;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -26,6 +26,7 @@ import java.io.OutputStream;
 public class ImageUtils {
     private static OkHttpClient client = new OkHttpClient();
     private static Logger logger = LoggerFactory.getLogger(ImageUtils.class);
+
     /*
     * 变成一个圆形
     * @param inputImage 需要修改的图片
@@ -74,8 +75,9 @@ public class ImageUtils {
     * */
     public static BufferedImage writeText(BufferedImage inputImage, int x, int y, String text, Font font, Color color) {
         Graphics2D graphics2d = inputImage.createGraphics();
-        graphics2d.setColor(color);
         graphics2d.setFont(font);
+        graphics2d.setColor(color);
+        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics2d.drawString(CommonUtils.filterEmoji(text), x, y);
         graphics2d.dispose();
         return inputImage;
@@ -85,9 +87,8 @@ public class ImageUtils {
     * 通过url拉取图片信息
     * @param url 图片链接
     * */
-    public static BufferedImage getUrlByBufferedImage(String url) {
-
-        if(StringUtils.isNotEmpty(url)) {
+    public static BufferedImage getBufferedImageByUrl(String url) {
+        if (StringUtils.isNotEmpty(url)) {
             Request request = new Request.Builder()
                     .url(url)
                     .build();
@@ -99,10 +100,10 @@ public class ImageUtils {
                 logger.error("execute " + url + " error", e);
             }
         }
-
         return null;
     }
 
+    // 大图内嵌小图
     public static BufferedImage overlapImage(BufferedImage big, BufferedImage small, int x, int y) {
         Graphics2D g = big.createGraphics();
         g.drawImage(small, x, y, small.getWidth(), small.getHeight(), null);
@@ -110,24 +111,24 @@ public class ImageUtils {
         return big;
     }
 
-
-    public static void convert2PNG(InputStream in, OutputStream out)throws IOException, TranscoderException
-    {
-        Transcoder transcoder = new PNGTranscoder();
+    public static String convertSvg2Png(String svgBase64, OutputStream out) {
+        // 对进入 base64 数据进行解码
+        BASE64Decoder decoder = new BASE64Decoder();
         try {
-            TranscoderInput input = new TranscoderInput(in);
-            try {
-                TranscoderOutput output = new TranscoderOutput(out);
-                transcoder.transcode(input, output);
-            } catch (TranscoderException e){
-                logger.error("transcoder error", e);
-            } finally {
-                out.close();
-            }
-        } finally {
-            in.close();
+            byte[] svgBytes = decoder.decodeBuffer(svgBase64);
+            // 准备开始对图片解码
+            PNGTranscoder t = new PNGTranscoder();
+            TranscoderInput input = new TranscoderInput(new ByteArrayInputStream(svgBytes));
+            TranscoderOutput output = new TranscoderOutput(out);
+            t.transcode(input, output);
+            out.flush();
+        } catch (IOException | TranscoderException e) {
+            logger.error(e.getLocalizedMessage());
         }
+        return null;
     }
+
 }
+
 
 

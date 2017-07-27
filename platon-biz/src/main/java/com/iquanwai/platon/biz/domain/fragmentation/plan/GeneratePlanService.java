@@ -1,9 +1,17 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+
 /**
  * Created by justin on 16/12/13.
  */
 public interface GeneratePlanService {
+    /**
+     * 将试用版的plan解锁
+     * @param
+     */
+    void reopenPlan(ImprovementPlan planId);
+
     /**
      * 为学员生成训练计划
      *  @param openid 学员id
@@ -19,4 +27,5 @@ public interface GeneratePlanService {
     int WARMUP_SEQUENCE = 2; //巩固练习顺序
 
     int PROBLEM_MAX_LENGTH = 30; //小课最长开放时间
+    int TRIAL_PROBLEM_MAX_LENGTH = 7; //试用小课最长开放7天
 }

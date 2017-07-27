@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.weixin.customer;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class CustomerMessageServiceImpl implements CustomerMessageService {
     public void sendCustomerMessage(String openid, String message, Integer type) {
         if (Constants.WEIXIN_MESSAGE_TYPE.TEXT == type) {
             TextCustomerMessage customerMessage = new TextCustomerMessage(openid, message);
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().disableHtmlEscaping().create();
             String json = gson.toJson(customerMessage);
             restfulHelper.post(SEND_CUSTOMER_MESSAGE_URL, json);
         } else if(Constants.WEIXIN_MESSAGE_TYPE.IMAGE == type){

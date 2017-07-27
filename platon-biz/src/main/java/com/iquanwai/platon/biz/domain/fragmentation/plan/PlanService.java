@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -25,6 +26,15 @@ public interface PlanService {
     List<ImprovementPlan> getRunningPlan(Integer profileId);
 
     /**
+     * 检查是否能够选新课
+     *
+     * @param plans  用户的小课数据
+//     * @param riseMember 是否是会员
+     * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
+     */
+    Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans);
+
+    /**
      * 获取学员最近的训练
      * @param profileId 学员id
      */
@@ -35,6 +45,8 @@ public interface PlanService {
      * @param profileId 学员id
      */
     List<ImprovementPlan> getPlans(Integer profileId);
+
+    RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId);
 
     /**
      * 获取简略的训练计划(不含练习)
@@ -85,12 +97,6 @@ public interface PlanService {
     boolean hasProblemPlan(Integer profileId, Integer problemId);
 
     /**
-     * 获取小课介绍
-     * @param problemId 小课id
-     */
-    String loadSubjectDesc(Integer problemId);
-
-    /**
      * 根据训练id获取知识点路线图
      * @param problemId 小课id
      */
@@ -129,7 +135,14 @@ public interface PlanService {
      */
     List<ImprovementPlan> getPlanList(Integer profileId);
 
-    ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
+    Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
 
-
+    /**
+     * 用户每学习完一章之后，弹出该章章节卡
+     * @param profileId
+     * @param problemId
+     * @param practicePlanId
+     * @return
+     */
+    String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId);
 }

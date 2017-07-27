@@ -39,7 +39,7 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             if (StringUtils.isEmpty(value)) {
                 switch (platform) {
                     case Wechat:
-                        logger.error("拦截器，微信端重定向");
+//                        logger.error("拦截器，微信端重定向");
                         WebUtils.auth(request, response);
                         return false;
                     case PC:{
@@ -58,7 +58,7 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
                             }
                         }
                         if(cookieInvalid){
-                            logger.error("拦截器，pc端重定向");
+//                            logger.error("拦截器，pc端重定向");
                             Map<String, Object> map = Maps.newHashMap();
                             PrintWriter out = response.getWriter();
                             map.put("code", 401);

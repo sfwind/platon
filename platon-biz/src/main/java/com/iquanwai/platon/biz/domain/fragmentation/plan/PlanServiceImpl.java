@@ -2,10 +2,19 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -42,6 +51,18 @@ public class PlanServiceImpl implements PlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private ProblemScoreDao problemScoreDao;
+    @Autowired
+    private ProfileDao profileDao;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private EssenceCardDao essenceCardDao;
+    @Autowired
+    private RiseCourseDao riseCourseDao;
+    @Autowired
+    private ProblemService problemService;
+    @Autowired
+    private QRCodeService qrCodeService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,10 +71,14 @@ public class PlanServiceImpl implements PlanService {
         //解锁检查
         Integer series = improvementPlan.getCompleteSeries();
         Integer planId = improvementPlan.getId();
-        //非会员只能解锁3章,已过期不能解锁
-        if ((!improvementPlan.getRiseMember() && series >= 3)) {
-            improvementPlan.setLockedStatus(-2);
-        } else if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+//        if ((!improvementPlan.getRiseMember() && series >= 3)) {
+//            improvementPlan.setLockedStatus(-2);
+//        } else
+//
+        //已过期不能解锁
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
             improvementPlan.setLockedStatus(-3);
         } else {
             //解锁下一组
@@ -68,6 +93,13 @@ public class PlanServiceImpl implements PlanService {
         calcDeadLine(improvementPlan);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         improvementPlan.setProblem(problem);
+        // 当前 Problem 是否为限免小课
+        Integer freeLimitProblemId = ConfigUtils.getTrialProblemId();
+        if (freeLimitProblemId != null && freeLimitProblemId == problem.getId()) {
+            improvementPlan.setFree(true);
+        } else {
+            improvementPlan.setFree(false);
+        }
         improvementPlan.setHasProblemScore(
                 problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(), improvementPlan.getProblemId()) > 0);
         // 所有的综合练习是否完成
@@ -78,7 +110,7 @@ public class PlanServiceImpl implements PlanService {
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
 
-        if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+        if (improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做
             improvementPlan.setReportStatus(-2);
         } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
@@ -113,18 +145,23 @@ public class PlanServiceImpl implements PlanService {
     private void calcDeadLine(ImprovementPlan improvementPlan) {
         //写入字段
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
-        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE
+                || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
+            // 关闭 ， 试用到期，暂时设置试用到期
             // 已关闭
             improvementPlan.setDeadline(0);
         } else {
-            // 未关闭
-            if (improvementPlan.getRiseMember()) {
-                // 会员 显示关闭时间
-                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-            } else {
-                // 非会员，不显示
-                improvementPlan.setDeadline(-1);
-            }
+            // 未关闭 ,未关闭的都显示
+            improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
+//
+//            if (improvementPlan.getRiseMember()) {
+//                // 会员 显示关闭时间
+//                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
+//            } else {
+//                // 非会员，不显示
+//                improvementPlan.setDeadline(-1);
+//            }
         }
     }
 
@@ -266,6 +303,26 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
+
+//        if (riseMember) {
+        if (plans.size() >= 2) {
+            // 会员已经有两门再学
+            return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
+        }
+//        }
+
+//        else {
+//            if (plans.size() >= 1) {
+//                // 非会员已经有一门了，则不可再选
+//                return new MutablePair<>(-2, "试用版是能试用一门小课哦");
+//            }
+//        }
+
+        return new MutablePair<>(1, "");
+    }
+
+    @Override
     public ImprovementPlan getLatestPlan(Integer profileId) {
         return improvementPlanDao.getLastPlan(profileId);
     }
@@ -273,6 +330,11 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public List<ImprovementPlan> getPlans(Integer profileId) {
         return improvementPlanDao.loadAllPlans(profileId);
+    }
+
+    @Override
+    public RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId) {
+        return riseCourseDao.loadEntryOrder(profileId, problemId);
     }
 
     @Override
@@ -347,7 +409,6 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> prePracticePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series - 1);
         if (isDone(prePracticePlans)) {
             List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(improvementPlan.getId(), series);
-
             for (PracticePlan practicePlan : practicePlans) {
                 if (!practicePlan.getUnlocked()) {
                     //已过期返回-3
@@ -373,12 +434,6 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadSubjectDesc(Integer problemId) {
-        Problem load = cacheService.getProblem(problemId);
-        return load != null ? load.getSubjectDesc() : "";
-    }
-
-    @Override
     public List<Chapter> loadRoadMap(Integer problemId) {
         Problem problem = cacheService.getProblem(problemId);
 
@@ -399,7 +454,7 @@ public class PlanServiceImpl implements PlanService {
         boolean complete = isDone(seriesPracticePlans);
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         // 更新进度
-        if(complete && improvementPlan.getCompleteSeries()<practice.getSeries()){
+        if (complete && improvementPlan.getCompleteSeries() < practice.getSeries()) {
             improvementPlanDao.updateProgress(planId, practice.getSeries());
         }
         //所有练习是否完成
@@ -413,15 +468,21 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Boolean,Integer> checkCloseable(ImprovementPlan plan) {
+    public Pair<Boolean, Integer> checkCloseable(ImprovementPlan plan) {
         Integer planId = plan.getId();
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
 
-        int minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
+        // TODO 对于限免小课，不设置最小学习天数，后期删除
+        int minStudyDays;
+        if (plan.getProblemId().equals(ConfigUtils.getTrialProblemId())) {
+            minStudyDays = 0;
+        } else {
+            minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
+        }
         Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
         // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
-        if(new Date().before(minDays)){
+        if (new Date().before(minDays)) {
             return new MutablePair<>(complete, minStudyDays);
         } else {
             return new MutablePair<>(complete, 0);
@@ -434,7 +495,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> loadUserPlans(Integer profileId){
+    public List<ImprovementPlan> loadUserPlans(Integer profileId) {
         return improvementPlanDao.loadUserPlans(profileId);
     }
 
@@ -451,14 +512,75 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId) {
-        List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
-        for (ImprovementPlan plan : plans) {
-            if (plan.getProblemId().equals(id)) {
-                return plan;
+    public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
+        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (practicePlan == null) {
+            return false;
+        }
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        Integer completeSeries = improvementPlan.getCompleteSeries();
+        // 获取当前完成的巩固练习所在顺序
+        Integer currentSeries = practicePlan.getSeries();
+        if (!currentSeries.equals(completeSeries)) {
+            return false;
+        }
+        Boolean isLearningSuccess = false;
+        Integer targetChapterId = 0;
+        for (Chapter chapter : chapters) {
+            List<Section> sections = chapter.getSections();
+            for (Section section : sections) {
+                // 用户当前学习的章节号对应到具体的 section
+                if (section.getSeries().equals(currentSeries)) {
+                    // 当一章中所有的小节完成，或者该小节是综合练习时，则完成
+                    Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
+                    isLearningSuccess = lgSeriesCount.intValue() <= 0;
+                    targetChapterId = chapter.getChapter();
+                    break;
+                }
             }
         }
-        return null;
+
+        EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
+        return isLearningSuccess && essenceCard != null;
+    }
+
+
+    @Override
+    public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
+        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (practicePlan == null) {
+            return null;
+        }
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        Integer completeSeries = improvementPlan.getCompleteSeries();
+        // 获取当前完成的巩固练习所在顺序
+        Integer currentSeries = practicePlan.getSeries();
+        if (!currentSeries.equals(completeSeries)) {
+            return null;
+        }
+        Boolean isLearningSuccess = false;
+        Integer targetChapterId = 0;
+        for (Chapter chapter : chapters) {
+            List<Section> sections = chapter.getSections();
+            for (Section section : sections) {
+                // 用户当前学习的章节号对应到具体的 section
+                if (section.getSeries().equals(currentSeries)) {
+                    // 当一章中所有的小节完成，或者该小节是综合练习时，则完成
+                    Long lgSeriesCount = sections.stream().filter(item -> item.getSeries() > currentSeries).count();
+                    isLearningSuccess = lgSeriesCount.intValue() <= 0;
+                    targetChapterId = chapter.getChapter();
+                    break;
+                }
+            }
+        }
+        // 当前章节 和 完成章节相等
+        if (isLearningSuccess) {
+            return problemService.loadEssenceCardImg(profileId, problemId, targetChapterId);
+        } else {
+            return null;
+        }
     }
 
 }

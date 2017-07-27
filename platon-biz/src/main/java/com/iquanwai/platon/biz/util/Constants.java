@@ -78,5 +78,11 @@ public interface Constants {
         int VOICE = 3;
     }
 
+    interface RISE_MEMBER{
+        int FREE = 0;
+        int MEMBERSHIP = 1;
+        int COURSE_USER = 2;
+    }
+
     int DISCUSS_PAGE_SIZE = 100;
 }

@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.po.ProblemCatalog;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**

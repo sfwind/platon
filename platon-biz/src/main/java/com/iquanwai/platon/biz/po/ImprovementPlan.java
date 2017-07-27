@@ -32,12 +32,13 @@ public class ImprovementPlan {
     private Integer currentSeries; //当前访问的节数
     private Integer completeSeries; //已完成的节数
     private Integer totalSeries; //总节数
-    private Boolean riseMember; // 是否是会员
+    private Boolean riseMember; //是否付费
     private Integer requestCommentCount; //求点赞次数
     private Integer profileId; //用户id
 
     // ----------------- 非db字段------------------
     private Problem problem; //非db字段 问题
+    private Boolean free; //是否免费
     private List<Section> sections; //非db字段
     private Boolean openRise; //非db字段 是否打开过rise
     private Integer deadline; //非db字段 离截止日期天数
@@ -57,4 +58,7 @@ public class ImprovementPlan {
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;
     public final static int CLOSE = 3;
+    public final static int TRIALCLOSE = 4;
+    public final static int TEMP_TRIALCLOSE=-1;
+
 }
