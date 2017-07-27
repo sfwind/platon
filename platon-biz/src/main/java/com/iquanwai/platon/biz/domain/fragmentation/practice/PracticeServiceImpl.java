@@ -837,7 +837,8 @@ public class PracticeServiceImpl implements PracticeService {
         }
         RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
         if (riseMember != null) {
-            if (riseMember.getMemberTypeId().equals(RiseMember.ELITE) || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
+            if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)
+                    || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
                 return 0;
             }
         }

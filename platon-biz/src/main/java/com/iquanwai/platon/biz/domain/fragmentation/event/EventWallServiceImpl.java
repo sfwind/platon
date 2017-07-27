@@ -100,44 +100,6 @@ public class EventWallServiceImpl implements EventWallService {
             // 对可见性做判断
             List<Integer> visibilities = calculateVisible(eventWall, riseMember, plans);
             return visibilities.contains(eventWall.getVisibility());
-//            if (eventWall.getVisibility() == EventWall.VisibleLevel.NOT_RISE_MEMBER) {
-//                // 非会员可见
-//                return riseMember == null || this.problemUserVisible(eventWall, plans);
-//            } else {
-//                if (eventWall.getVisibility() == EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL) {
-//                    // 非会员，专业版可见
-//                    return riseMember == null || riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL;
-//                } else {
-//                    if (eventWall.getVisibility() == EventWall.VisibleLevel.ELITE) {
-//                        //精英版可见
-//                        Boolean eliteShow = riseMember != null
-//                                && (riseMember.getMemberTypeId() == RiseMember.ELITE
-//                                || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
-//                        if (!eliteShow) {
-//                            // 不是精英版可见性,查看是否购买过该小课
-//                            return false;
-//                        } else {
-//                            return true;
-//                        }
-//
-//                    } else if (eventWall.getVisibility() == EventWall.VisibleLevel.PROFESSIONAL) {
-//                        // 专业版可见
-//                        return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL);
-//                    } else if (eventWall.getVisibility() == EventWall.VisibleLevel.RISE_MEMBER) {
-//                        // 会员可见，查看该用户是否购买过该小课，并且没有过期
-//                        Boolean isRiseMember = riseMember != null;
-//                        if (isRiseMember) {
-//                            return true;
-//                        } else {
-//                            // 不是会员，查看小课购买状态
-//                            return false;
-//                        }
-//                    } else {
-//                        logger.error("未匹配到的可见性类型,{}", eventWall.getVisibility());
-//                        return false;
-//                    }
-//                }
-//            }
         }
     }
 }
