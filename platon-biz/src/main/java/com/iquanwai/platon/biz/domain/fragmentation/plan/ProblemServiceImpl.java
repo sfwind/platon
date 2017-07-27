@@ -257,7 +257,7 @@ public class ProblemServiceImpl implements ProblemService {
         Profile profile = profileDao.load(Profile.class, profileId);
         BufferedImage qrImage = loadQrImage(profile, problemId);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1090);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1091);
         // HeadImage
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
