@@ -182,8 +182,12 @@ public class LoginUserService {
     }
 
     public void updateWeixinUser(String openid){
-        waitPCRefreshOpenids.add(openid);
-        waitWechatRefreshOpenids.add(openid);
+        if(!waitPCRefreshOpenids.contains(openid)){
+            waitPCRefreshOpenids.add(openid);
+        }
+        if(!waitWechatRefreshOpenids.contains(openid)){
+            waitWechatRefreshOpenids.add(openid);
+        }
     }
 
     public String getToken(HttpServletRequest request) {
