@@ -321,7 +321,7 @@ public class ProblemController {
             boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_COURSE_PAY, loginUser.getId());
             if (!inWhite) {
                 // 没在白名单里
-                dto.setButtonStatus(-10);
+                dto.setButtonStatus(-1);
             }
         }
 
