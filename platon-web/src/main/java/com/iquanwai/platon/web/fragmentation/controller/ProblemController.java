@@ -316,7 +316,7 @@ public class ProblemController {
         Profile profile = accountService.getProfile(loginUser.getId());
         dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
         dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
-        if (ConfigUtils.getRiseCoursePayTestStatus()) {
+        if (ConfigUtils.getRiseCoursePayTestStatus() && loginUser.getRiseMember() != 1) {
             //  开启测试
             boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_COURSE_PAY, loginUser.getId());
             if (!inWhite) {
