@@ -71,6 +71,7 @@ public class SubscribeReceiver {
                     // 限免课
                     if (event.equals(SUBSCRIBE)) {
                         sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
+                                "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
@@ -82,6 +83,7 @@ public class SubscribeReceiver {
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     } else if (event.equals(SCAN)) {
                         sendMsg = "你要的限免课程在这里，点击上课：\n" +
+                                "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
@@ -95,6 +97,7 @@ public class SubscribeReceiver {
                 } else {
                     // 非限免
                     sendMsg = "同学你好，你要的小课在这里：\n" +
+                            "\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
                             "/rise/static/plan/view?id=" +
                             sceneParams[2] +
