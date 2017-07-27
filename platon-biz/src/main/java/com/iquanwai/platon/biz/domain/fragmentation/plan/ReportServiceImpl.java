@@ -65,6 +65,10 @@ public class ReportServiceImpl implements ReportService {
         } else {
             studyDays = DateUtils.interval(plan.getStartDate()) + 1;
         }
+        if (studyDays > 30) {
+            // 最多显示30天
+            studyDays = 30;
+        }
         report.setStudyDays(studyDays);
         // 打败多少人
         Integer percent = improvementPlanDao.defeatOthers(plan.getProblemId(), plan.getPoint());

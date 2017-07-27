@@ -229,9 +229,6 @@ public class PlanController {
         // 这里生成小课训练计划，另外在检查一下是否是会员或者购买了这个小课
         RiseCourseOrder riseCourseOrderOrder = planService.getEntryRiseCourseOrder(loginUser.getId(), problemId);
         Boolean isRiseMember = accountService.isRiseMember(loginUser.getId());
-        if (!isRiseMember.equals(loginUser.getRiseMember())) {
-            LOGGER.error("会员信息异常:{}", loginUser);
-        }
         if (!isRiseMember && riseCourseOrderOrder == null && !problemId.equals(trialProblemId)) {
             // 既没有购买过这个小课，又不是rise会员,也不是限免课程
             return WebUtils.error("非rise会员需要单独购买小课哦");

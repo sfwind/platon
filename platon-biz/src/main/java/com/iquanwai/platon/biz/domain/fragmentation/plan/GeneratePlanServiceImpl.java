@@ -291,7 +291,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         // 限免小课开放7天，其他小课30天
         Integer trialProblemId = ConfigUtils.getTrialProblemId();
-        if (Integer.valueOf(problem.getId()).equals(trialProblemId) && profile.getRiseMember() == 0) {
+        if (Integer.valueOf(problem.getId()).equals(trialProblemId) && profile.getRiseMember() != 1) {
+            // 这个小课是试用版，并且会员状态不是1(年费会员)
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), TRIAL_PROBLEM_MAX_LENGTH));
         } else {
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));

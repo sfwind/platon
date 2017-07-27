@@ -303,29 +303,6 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Integer, String> checkPayCourse(Integer profileId, Integer problemId) {
-        //
-        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        if (plan == null) {
-            // 没有学过这个小课，可以购买
-            return new MutablePair<>(1, "");
-        } else {
-            // 学过这个小课，查看status == 4
-            if (plan.getStatus() == ImprovementPlan.TRIALCLOSE || plan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
-                // 试用到期，可以购买
-                return new MutablePair<>(1, "");
-            } else {
-                if (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE) {
-                    return new MutablePair<>(-1, "该小课可以正常学习,无需购买");
-                } else {
-                    return new MutablePair<>(-2, "该小课无需购买");
-                }
-            }
-
-        }
-    }
-
-    @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
 
 //        if (riseMember) {
@@ -457,12 +434,6 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadSubjectDesc(Integer problemId) {
-        Problem load = cacheService.getProblem(problemId);
-        return load != null ? load.getSubjectDesc() : "";
-    }
-
-    @Override
     public List<Chapter> loadRoadMap(Integer problemId) {
         Problem problem = cacheService.getProblem(problemId);
 
@@ -538,17 +509,6 @@ public class PlanServiceImpl implements PlanService {
             calcDeadLine(plan);
         });
         return improvementPlans;
-    }
-
-    @Override
-    public ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId) {
-        List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
-        for (ImprovementPlan plan : plans) {
-            if (plan.getProblemId().equals(id)) {
-                return plan;
-            }
-        }
-        return null;
     }
 
     @Override

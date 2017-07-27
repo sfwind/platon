@@ -25,9 +25,6 @@ public interface PlanService {
      */
     List<ImprovementPlan> getRunningPlan(Integer profileId);
 
-
-    Pair<Integer,String> checkPayCourse(Integer profileId, Integer problemId);
-
     /**
      * 检查是否能够选新课
      *
@@ -100,12 +97,6 @@ public interface PlanService {
     boolean hasProblemPlan(Integer profileId, Integer problemId);
 
     /**
-     * 获取小课介绍
-     * @param problemId 小课id
-     */
-    String loadSubjectDesc(Integer problemId);
-
-    /**
      * 根据训练id获取知识点路线图
      * @param problemId 小课id
      */
@@ -143,8 +134,6 @@ public interface PlanService {
      * 获取用户的计划列表，主要用在列表页面，会set小课头图和名字
      */
     List<ImprovementPlan> getPlanList(Integer profileId);
-
-    ImprovementPlan getPlanByChallengeId(Integer id, Integer profileId);
 
     Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
 

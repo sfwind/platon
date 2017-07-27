@@ -18,6 +18,7 @@ import com.iquanwai.platon.biz.po.ProblemScore;
 import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.CardCollectionDto;
@@ -131,7 +132,8 @@ public class ProblemController {
                     dto.setColor(item.getColor());
                     List<Problem> problemsTemp = showProblems.get(item.getId());
                     problemsTemp.sort((o1, o2) -> o2.getId() - o1.getId());
-                    dto.setProblemList(problemsTemp);
+                    List<Problem> problemList = problemsTemp.stream().map(Problem::simple).collect(Collectors.toList());
+                    dto.setProblemList(problemList);
                     return dto;
                 }).collect(Collectors.toList());
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
@@ -314,6 +316,16 @@ public class ProblemController {
         Profile profile = accountService.getProfile(loginUser.getId());
         dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
         dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
+        if (ConfigUtils.getRiseCoursePayTestStatus()) {
+            //  开启测试
+            boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_COURSE_PAY, loginUser.getId());
+            if (!inWhite) {
+                // 没在白名单里
+                dto.setButtonStatus(-1);
+            }
+        }
+
+
         // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")

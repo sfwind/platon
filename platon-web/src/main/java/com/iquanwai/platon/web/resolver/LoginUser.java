@@ -29,7 +29,11 @@ public class LoginUser {
 
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(), "风之伤",
+<<<<<<< HEAD
                 Profile.DEFAULT_AVATAR, null, 1, null, true, true, 0, true, true, 1);
+=======
+                Profile.DEFAULT_AVATAR, null, 1, null, false, false, 0, false, false, 1);
+>>>>>>> d97b190ee5833084f8d94d3fac889ded088f7e41
     }
 
 }

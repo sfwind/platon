@@ -290,6 +290,13 @@ public class ConfigUtils {
         return getIntValue("free.limit.success.cnt");
     }
 
+    /**
+     * rise小课测试状态
+     */
+    public static Boolean getRiseCoursePayTestStatus(){
+        return getBooleanValue("rise.course.pay.test");
+    }
+
 
 }
 
