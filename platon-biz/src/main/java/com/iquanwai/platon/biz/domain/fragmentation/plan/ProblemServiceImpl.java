@@ -262,7 +262,7 @@ public class ProblemServiceImpl implements ProblemService {
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
         headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 553, 1136);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 601, 1141);
         // NickName
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
         if (essenceCard == null) {
@@ -270,19 +270,19 @@ public class ProblemServiceImpl implements ProblemService {
         }
         String nickName = CommonUtils.filterEmoji(profile.getNickname());
         if (nickName == null || nickName.length() == 0) {
-            targetImage = ImageUtils.writeText(targetImage, 278, 1230, "你的好友邀请你学习，",
+            targetImage = ImageUtils.writeText(targetImage, 330, 1230, "你的好友邀请你学习，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         } else {
-            targetImage = ImageUtils.writeText(targetImage, 278, 1230, subByteString(nickName, 10) + "邀请你学习，",
+            targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
-        targetImage = ImageUtils.writeText(targetImage, 278, 1265, "成为" + essenceCard.getTag() + "爆表的人",
+        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为" + essenceCard.getTag() + "爆表的人",
                 font.deriveFont(24f), new Color(51, 51, 51));
         // 课程标题
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
         targetImage = ImageUtils.writeText(targetImage, 380, 320, titleArr[0],
                 font.deriveFont(60f), new Color(51, 51, 51));
-        targetImage = ImageUtils.writeText(targetImage, 264, 420, titleArr[1],
+        targetImage = ImageUtils.writeText(targetImage, 245, 420, titleArr[1],
                 font.deriveFont(60f), new Color(255, 255, 255));
         // 渲染课程精华卡片文本
         String[] contentArr = essenceCard.getEssenceContent().split("\\|");
