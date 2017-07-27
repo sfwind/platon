@@ -27,7 +27,7 @@ public class SubscribeReceiver {
     public static final String TOPIC = "subscribe_quanwai";
 
     private static String SUBSCRIBE = "subscribe";
-    private static String SCAN = "scan";
+    private static String SCAN = "SCAN";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -69,7 +69,7 @@ public class SubscribeReceiver {
                 String sendMsg;
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                     // 限免课
-                    if (event.equals(SUBSCRIBE)) {
+                    if (event.equalsIgnoreCase(SUBSCRIBE)) {
                         sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
                                 "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
@@ -81,7 +81,7 @@ public class SubscribeReceiver {
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    } else if (event.equals(SCAN)) {
+                    } else if (event.equalsIgnoreCase(SCAN)) {
                         sendMsg = "你要的限免课程在这里，点击上课：\n" +
                                 "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
@@ -116,6 +116,5 @@ public class SubscribeReceiver {
         };
         receiver.listen(consumer);
     }
-
 
 }
