@@ -63,68 +63,74 @@ public class SubscribeReceiver {
             String[] sceneParams = scene.split("_");
             logger.info(sceneParams[0] + " " + sceneParams[1] + " " + sceneParams[2]);
 
-            Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
-            String freeProblemName = freeProblem.getProblem();
-            operationService.recordPromotionLevel(openId, scene);
-            logger.info("recordLevel, {}", openId);
-            if (sceneParams.length == 3) {
-                String sendMsg;
-                logger.info("enter first");
-                if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
-                    logger.info("限免小课");
-                    // 限免课
-                    if (event.equalsIgnoreCase(SUBSCRIBE)) {
-                        logger.info("关注事件");
-                        sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
+            try {
+                Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
+                String freeProblemName = freeProblem.getProblem();
+                operationService.recordPromotionLevel(openId, scene);
+
+                logger.info("recordLevel, {}", openId);
+                if (sceneParams.length == 3) {
+                    String sendMsg;
+                    logger.info("enter first");
+                    if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
+                        logger.info("限免小课");
+                        // 限免课
+                        if (event.equalsIgnoreCase(SUBSCRIBE)) {
+                            logger.info("关注事件");
+                            sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
+                                    "\n" +
+                                    "<a href='" + ConfigUtils.adapterDomainName() +
+                                    "/rise/static/plan/view?id=" +
+                                    ConfigUtils.getTrialProblemId() +
+                                    "'>" + freeProblemName + "</a>\n" +
+                                    "------------\n" +
+                                    "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
+                                    "\n" +
+                                    "点击上方课程，立即开始学习吧！";
+                            customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                            logger.info("关注发玩消息");
+                        } else if (event.equalsIgnoreCase(SCAN)) {
+                            logger.info("扫描事件");
+                            sendMsg = "你要的限免课程在这里，点击上课：\n" +
+                                    "\n" +
+                                    "<a href='" + ConfigUtils.adapterDomainName() +
+                                    "/rise/static/plan/view?id=" +
+                                    ConfigUtils.getTrialProblemId() +
+                                    "'>" + freeProblemName + "</a>\n" +
+                                    "------------\n" +
+                                    "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
+                                    "\n" +
+                                    "点击上方课程，立即开始学习吧！";
+                            customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                            logger.info("扫描发完消息");
+                        } else {
+                            logger.info("其他事件 pass");
+                        }
+                    } else {
+                        logger.info("非限免小课");
+                        // 非限免
+                        sendMsg = "同学你好，你要的小课在这里：\n" +
                                 "\n" +
+                                "<a href='" + ConfigUtils.adapterDomainName() +
+                                "/rise/static/plan/view?id=" +
+                                sceneParams[2] +
+                                "'>" + cacheService.getProblem(Integer.parseInt(sceneParams[2])).getProblem() + "</a>\n" +
+                                "------------\n" +
+                                "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
                                 "'>" + freeProblemName + "</a>\n" +
-                                "------------\n" +
-                                "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
-                                "点击上方课程，立即开始学习吧！";
-                        customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                        logger.info("关注发玩消息");
-                    } else if (event.equalsIgnoreCase(SCAN)) {
-                        logger.info("扫描事件");
-                        sendMsg = "你要的限免课程在这里，点击上课：\n" +
-                                "\n" +
-                                "<a href='" + ConfigUtils.adapterDomainName() +
-                                "/rise/static/plan/view?id=" +
-                                ConfigUtils.getTrialProblemId() +
-                                "'>" + freeProblemName + "</a>\n" +
-                                "------------\n" +
-                                "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
-                                "\n" +
-                                "点击上方课程，立即开始学习吧！";
+                                "学习限免小课章节可得神秘卡片哦，分享还会获得¥50奖学金。";
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         logger.info("扫描发完消息");
-                    } else {
-                        logger.info("其他事件 pass");
                     }
-                } else {
-                    logger.info("非限免小课");
-                    // 非限免
-                    sendMsg = "同学你好，你要的小课在这里：\n" +
-                            "\n" +
-                            "<a href='" + ConfigUtils.adapterDomainName() +
-                            "/rise/static/plan/view?id=" +
-                            sceneParams[2] +
-                            "'>" + cacheService.getProblem(Integer.parseInt(sceneParams[2])).getProblem() + "</a>\n" +
-                            "------------\n" +
-                            "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
-                            "<a href='" + ConfigUtils.adapterDomainName() +
-                            "/rise/static/plan/view?id=" +
-                            ConfigUtils.getTrialProblemId() +
-                            "'>" + freeProblemName + "</a>\n" +
-                            "\n" +
-                            "学习限免小课章节可得神秘卡片哦，分享还会获得¥50奖学金。";
-                    customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    logger.info("扫描发完消息");
                 }
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
             }
+
         };
         receiver.listen(consumer);
     }
