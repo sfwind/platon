@@ -49,26 +49,21 @@ public class OperationServiceImpl implements OperationService {
 
     @Override
     public void recordPromotionLevel(String openId, String scene) {
-        logger.info("enter operationservice");
         PromotionLevel tempPromotionLevel = promotionLevelDao.loadByOpenId(openId);
         if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
         String[] sceneParams = scene.split("_");
         if(sceneParams.length != 3) return;
         if ("RISE".equals(sceneParams[1])) {
-            logger.info("RISE");
             promotionLevelDao.insertPromotionLevel(openId, 1);
         } else {
-            logger.info("normal");
             Integer promotionProfileId = Integer.parseInt(sceneParams[1]);
             Profile promotionProfile = profileDao.load(Profile.class, promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
             PromotionLevel promotionLevelObject = promotionLevelDao.loadByOpenId(promotionOpenId); // 推广人层级表对象
             if (promotionLevelObject != null) {
-                logger.info("insert promotion exist");
                 Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
             } else {
-                logger.info("insert promotion null");
                 promotionLevelDao.insertPromotionLevel(openId, 1);
             }
         }
