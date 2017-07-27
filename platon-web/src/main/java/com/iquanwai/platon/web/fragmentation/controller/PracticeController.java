@@ -594,18 +594,6 @@ public class PracticeController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping(value = "/subject/desc/{problemId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadSubjectDesc(LoginUser loginUser, @PathVariable Integer problemId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("碎片化")
-                .action("移动端查询小课论坛描述")
-                .memo(problemId + "");
-        operationLogService.log(operationLog);
-        return WebUtils.result(planService.loadSubjectDesc(problemId));
-    }
-
     @RequestMapping(value = "/subject/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadSubject(LoginUser loginUser, @PathVariable("submitId") Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
