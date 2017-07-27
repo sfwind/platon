@@ -16,6 +16,9 @@ public class OperationLogServiceImpl implements OperationLogService {
 
     public void log(OperationLog operationLog) {
         if(ConfigUtils.logSwitch()) {
+            if (operationLog.getMemo() != null && operationLog.getMemo().length() > 1024) {
+                operationLog.setMemo(operationLog.getMemo().substring(0, 1024));
+            }
             operationLogDao.insert(operationLog);
         }
     }

@@ -259,7 +259,7 @@ public class LoginUserService {
         }
 
         // 重新加载loginUser
-        loginUser = getLoginUser(openid);
+        loginUser = getLoginUser(openid, platform);
         logger.info("user:{}", loginUser);
         return new MutablePair<>(1, loginUser);
     }
@@ -290,7 +290,7 @@ public class LoginUserService {
                     String openid = loginUser.getOpenId();
                     if(waitPCRefreshOpenids.contains(openid)){
                         logger.info("更新用户{}", openid);
-                        loginUser = getLoginUser(openid);
+                        loginUser = getLoginUser(openid, platform);
                         pcLoginUserMap.put(accessToken, loginUser);
                         waitPCRefreshOpenids.remove(openid);
                     }
@@ -303,7 +303,7 @@ public class LoginUserService {
                     String openid2 = loginUser.getOpenId();
                     if(waitPCRefreshOpenids.contains(openid2)){
                         logger.info("更新用户{}", openid2);
-                        loginUser = getLoginUser(openid2);
+                        loginUser = getLoginUser(openid2, platform);
                         wechatLoginUserMap.put(accessToken, loginUser);
                         waitWechatRefreshOpenids.remove(openid2);
                     }
@@ -313,7 +313,7 @@ public class LoginUserService {
         return loginUser;
     }
 
-    public LoginUser getLoginUser(String openId) {
+    public LoginUser getLoginUser(String openId, Platform platform) {
         Profile account = null;
         try {
             Account temp = accountService.getAccount(openId, false);
@@ -342,6 +342,7 @@ public class LoginUserService {
         loginUser.setOpenConsolidation(account.getOpenConsolidation());
         loginUser.setOpenApplication(account.getOpenApplication());
         loginUser.setOpenNavigator(account.getOpenNavigator());
+        loginUser.setDevice(platform.getValue());
         logger.info("rise member:{}", account.getRiseMember());
         loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
