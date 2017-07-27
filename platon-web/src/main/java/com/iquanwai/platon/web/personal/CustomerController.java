@@ -98,6 +98,7 @@ public class CustomerController {
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         riseDto.setMobile(profile.getMobileNo());
+        riseDto.setIsRiseMember(profile.getRiseMember() == 1);
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
@@ -246,7 +247,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/forum/mine/questions")
-    public ResponseEntity<Map<String,Object>> loadMineQuestions(LoginUser loginUser,@ModelAttribute Page page){
+    public ResponseEntity<Map<String, Object>> loadMineQuestions(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
@@ -267,7 +268,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/forum/mine/answers")
-    public ResponseEntity<Map<String,Object>> loadMineAnswers(LoginUser loginUser,@ModelAttribute Page page){
+    public ResponseEntity<Map<String, Object>> loadMineAnswers(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")

@@ -76,7 +76,7 @@ public class SubscribeReceiver {
                                 ConfigUtils.getTrialProblemId() +
                                 "'>" + freeProblemName + "</a>\n" +
                                 "------------\n" +
-                                "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
+                                "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
@@ -87,7 +87,7 @@ public class SubscribeReceiver {
                                 ConfigUtils.getTrialProblemId() +
                                 "'>" + freeProblemName + "</a>\n" +
                                 "------------\n" +
-                                "P. S. 完成小课章节有神秘卡片哦，分享还会获得¥50奖学金。\n" +
+                                "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
                                 "\n" +
                                 "点击上方课程，立即开始学习吧！";
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
@@ -106,7 +106,7 @@ public class SubscribeReceiver {
                             ConfigUtils.getTrialProblemId() +
                             "'>" + freeProblemName + "</a>\n" +
                             "\n" +
-                            "完成限免小课章节有神秘卡片哦，分享还会获得¥50奖学金。";
+                            "学习限免小课章节可得神秘卡片哦，分享还会获得¥50奖学金。";
                     customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
             }

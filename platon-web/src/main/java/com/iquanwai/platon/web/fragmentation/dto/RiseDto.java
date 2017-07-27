@@ -10,4 +10,5 @@ public class RiseDto {
     private String riseId;
     private String memberType;
     private String mobile;
+    private Boolean isRiseMember;
 }
