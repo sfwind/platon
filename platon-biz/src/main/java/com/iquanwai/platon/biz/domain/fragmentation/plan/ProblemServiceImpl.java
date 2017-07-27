@@ -290,7 +290,7 @@ public class ProblemServiceImpl implements ProblemService {
         // 限免 非限免 图片区分
         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
             targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
-            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 257, 1105);
+            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1114);
         } else {
             targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
         }
