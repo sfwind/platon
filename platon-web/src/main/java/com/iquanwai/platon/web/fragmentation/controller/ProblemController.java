@@ -131,7 +131,8 @@ public class ProblemController {
                     dto.setColor(item.getColor());
                     List<Problem> problemsTemp = showProblems.get(item.getId());
                     problemsTemp.sort((o1, o2) -> o2.getId() - o1.getId());
-                    dto.setProblemList(problemsTemp);
+                    List<Problem> problemList = problemsTemp.stream().map(Problem::simple).collect(Collectors.toList());
+                    dto.setProblemList(problemList);
                     return dto;
                 }).collect(Collectors.toList());
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
