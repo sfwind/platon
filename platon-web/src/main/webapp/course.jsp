@@ -17,7 +17,7 @@
         configUrl:window.location.href
     }
 </script>
-<div id="loading"><img src="//static.iqycamp.com/images/loadingPage.gif" style="display: block;margin: 0 auto;"/></div>
+<div id="loading"><img src="//static.iqycamp.com/images/loading_page2.gif" style="display: block;margin: 0 auto;"/></div>
 <div id="react-app"></div>
 <!-- 业务代码-->
 <script src="${resource}" onload="document.getElementById('loading').style.display = 'none'"></script>
