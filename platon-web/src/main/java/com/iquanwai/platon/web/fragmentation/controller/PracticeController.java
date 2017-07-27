@@ -607,7 +607,6 @@ public class PracticeController {
             dto.setAuthorType(subjectArticle.getAuthorType());
             dto.setContent(subjectArticle.getContent());
             dto.setTitle(subjectArticle.getTitle());
-            dto.setDesc(planService.loadSubjectDesc(subjectArticle.getProblemId()));
             Profile profile = accountService.getProfile(subjectArticle.getProfileId());
             if(profile!=null) {
                 dto.setHeadImage(profile.getHeadimgurl());
