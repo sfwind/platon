@@ -12,7 +12,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 
 /**
  * Created by tomas on 3/17/16.
@@ -43,7 +42,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
                 return LoginUser.defaultUser();
             }else{
                 //返回模拟的openid user
-                return loginUserService.getLoginUser(request.getParameter("debug"));
+                return loginUserService.getLoginUser(request.getParameter("debug"), LoginUserService.Platform.Wechat);
             }
         }
         String accessToken = loginUserService.getToken(request);
@@ -62,8 +61,10 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return null;
         }
 
-        LoginUser loginUser = loginUserService.getLoginUser(openId);
-        if (loginUser == null) return null;
+        LoginUser loginUser = loginUserService.getLoginUser(openId, platform);
+        if (loginUser == null) {
+            return null;
+        }
         logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
         loginUserService.login(platform, accessToken, loginUser);
 
