@@ -49,6 +49,8 @@ public class ExceptionAspect {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("exception:");
+        sb.append(e.getClass().getSimpleName());
         sb.append("url:");
         sb.append(req.getRequestURI());
         sb.append(";queryString:");
