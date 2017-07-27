@@ -13,7 +13,8 @@
         reactMountPoint: "react-app",
         userName: "${userName}",
         headImage:"${headImage}",
-        showForum:"${showForum}"
+        showForum:"${showForum}",
+        configUrl:window.location.href
     }
 </script>
 <%--<div id="loading"><img src="//static.iqycamp.com/images/loadingPage.gif" style="display: block;margin: 0 auto;"/></div>--%>
