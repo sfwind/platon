@@ -16,5 +16,6 @@ public class WhiteList {
     public final static String FRAG_PRACTICE = "FRAG_PRACTICE";
     public final static String TEST = "TEST";
     public final static String FORUM = "FORUM";
+    public final static String FRAG_COURSE_PAY = "FRAG_COURSE_PAY";
 
 }
