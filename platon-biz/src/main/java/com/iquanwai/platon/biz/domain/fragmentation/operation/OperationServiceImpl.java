@@ -106,6 +106,7 @@ public class OperationServiceImpl implements OperationService {
                 coupon.setAmount(50);
                 coupon.setExpiredDate(DateUtils.afterYears(new Date(), 30));
                 coupon.setDescription("奖学金");
+                coupon.setUsed(0);
                 Integer insertResult = couponDao.insertCoupon(coupon);
                 if (insertResult > 0) {
                     // 礼品券数据保存成功，发送获得优惠券的模板消息
