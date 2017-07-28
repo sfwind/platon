@@ -96,7 +96,6 @@ public class SubscribeReceiver {
                                     "\n" +
                                     "点击上方课程，立即开始学习吧！";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                        } else {
                         }
                     } else {
                         // 非限免

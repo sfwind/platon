@@ -410,7 +410,7 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemExtension(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "请求 ProblemId 不能为空");
-        OperationLog operationLog = OperationLog.create().module("小课").action("小课扩展").function("获取小课扩展数据");
+        OperationLog operationLog = OperationLog.create().module("小课").action("小课扩展").function("获取小课扩展数据").openid(loginUser.getOpenId());
         operationLogService.log(operationLog);
         ProblemExtension extension = problemService.loadProblemExtensionByProblemId(problemId);
         List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
