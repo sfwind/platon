@@ -51,7 +51,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     @Override
     public void reopenPlan(ImprovementPlan plan){
-        if (plan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
+        if (plan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE || plan.getStatus() == ImprovementPlan.TRIALCLOSE) {
             improvementPlanDao.reOpenPlan(plan.getId(), DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         } else {
             logger.error("异常，用户准备重新打开计划");
