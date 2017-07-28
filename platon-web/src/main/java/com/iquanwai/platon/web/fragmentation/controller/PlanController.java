@@ -204,7 +204,7 @@ public class PlanController {
         // 之前是否学过这个小课，避免重复生成计划
         ImprovementPlan oldPlan = improvementPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
         if (oldPlan != null) {
-            if (oldPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
+            if (oldPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE || oldPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
                 // 老得是试用版
                 // 将它解锁
                 generatePlanService.reopenPlan(oldPlan);

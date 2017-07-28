@@ -266,10 +266,10 @@ public class ProblemController {
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         ImprovementPlan plan = plans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
         Integer buttonStatus;
+        Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
         if (plan == null) {
             // 没学过这个小课
             // 是否会员
-            Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
             if (isMember) {
                 // 是会员，显示按钮"选择"
                 buttonStatus = 2;
@@ -297,7 +297,11 @@ public class ProblemController {
                     break;
                 }
                 case ImprovementPlan.TRIALCLOSE: {
-                    buttonStatus = 1;
+                    if (isMember) {
+                        buttonStatus = 2;
+                    } else {
+                        buttonStatus = 1;
+                    }
                     break;
                 }
                 case ImprovementPlan.TEMP_TRIALCLOSE: {
