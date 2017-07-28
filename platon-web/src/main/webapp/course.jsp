@@ -14,7 +14,7 @@
         userName: "${userName}",
         headImage:"${headImage}",
         showForum:"${showForum}",
-        configUrl:window.location.href
+        configUrl:'',
     }
 </script>
 <div id="loading"><img src="//static.iqycamp.com/images/loading_page2.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
@@ -60,6 +60,7 @@
                 mta('send', 'page');
             }
         })()
+        window.ENV.configUrl=window.location.href;
     };
 </script>
 <%--性能数据js资源--%>
