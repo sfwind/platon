@@ -310,18 +310,6 @@
                 <artifactId>netty-all</artifactId>
                 <version>4.1.12.Final</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.xmlgraphics</groupId>
-                <artifactId>batik-transcoder</artifactId>
-                <version>1.9</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.xmlgraphics</groupId>
-                <artifactId>batik-codec</artifactId>
-                <version>1.7</version>
-            </dependency>
         </dependencies>
 
     </dependencyManagement>

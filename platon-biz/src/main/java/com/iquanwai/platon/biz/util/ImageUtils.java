@@ -3,22 +3,14 @@ package com.iquanwai.platon.biz.util;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.batik.transcoder.TranscoderException;
-import org.apache.batik.transcoder.TranscoderInput;
-import org.apache.batik.transcoder.TranscoderOutput;
-import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.BASE64Decoder;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Created by justin on 17/7/12.
@@ -109,23 +101,6 @@ public class ImageUtils {
         g.drawImage(small, x, y, small.getWidth(), small.getHeight(), null);
         g.dispose();
         return big;
-    }
-
-    public static String convertSvg2Png(String svgBase64, OutputStream out) {
-        // 对进入 base64 数据进行解码
-        BASE64Decoder decoder = new BASE64Decoder();
-        try {
-            byte[] svgBytes = decoder.decodeBuffer(svgBase64);
-            // 准备开始对图片解码
-            PNGTranscoder t = new PNGTranscoder();
-            TranscoderInput input = new TranscoderInput(new ByteArrayInputStream(svgBytes));
-            TranscoderOutput output = new TranscoderOutput(out);
-            t.transcode(input, output);
-            out.flush();
-        } catch (IOException | TranscoderException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        return null;
     }
 
 }
