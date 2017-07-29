@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 public class SubscribeReceiver {
 
     public static final String TOPIC = "subscribe_quanwai";
+    public static final String QUEUE = "FreeLimitEvent_Queue";
 
     private static String SUBSCRIBE = "subscribe";
     private static String SCAN = "SCAN";
@@ -44,8 +45,8 @@ public class SubscribeReceiver {
     @PostConstruct
     public void init() {
         RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init("FreeLimitEvent_Queue", SubscribeReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
-        logger.info("通道建立：" + SubscribeReceiver.TOPIC);
+        receiver.init(QUEUE, TOPIC);
+        logger.info("通道建立：" + TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         Consumer<Object> consumer = msg -> {
 

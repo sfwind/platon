@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserResolver;
@@ -40,7 +39,7 @@ public class CacheReloadReceiver {
     @PostConstruct
     public void init(){
         RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
+        receiver.init(null, TOPIC);
         logger.info("通道建立");
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         // 监听器

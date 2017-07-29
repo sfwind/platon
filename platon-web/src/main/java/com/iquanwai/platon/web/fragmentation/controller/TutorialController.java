@@ -44,8 +44,7 @@ public class TutorialController {
     @PostConstruct
     public void init(){
         rabbitMQPublisher = new RabbitMQPublisher();
-        rabbitMQPublisher.init(LoginUserUpdateReceiver.TOPIC, ConfigUtils.getRabbitMQIp(),
-                ConfigUtils.getRabbitMQPort());
+        rabbitMQPublisher.init(LoginUserUpdateReceiver.TOPIC);
         rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
     }
 

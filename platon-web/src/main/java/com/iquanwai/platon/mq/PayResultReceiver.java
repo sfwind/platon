@@ -34,9 +34,9 @@ public class PayResultReceiver {
     private MQService mqService;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(PayResultReceiver.QUEUE, PayResultReceiver.TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
+        receiver.init(PayResultReceiver.QUEUE, PayResultReceiver.TOPIC);
         logger.info("通道建立：{}", PayResultReceiver.TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         Consumer<Object> consumer = body -> {

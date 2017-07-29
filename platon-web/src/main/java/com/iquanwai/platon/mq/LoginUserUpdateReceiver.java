@@ -1,7 +1,6 @@
 package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.domain.common.message.MQService;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class LoginUserUpdateReceiver {
     @PostConstruct
     public void init(){
         RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, TOPIC, ConfigUtils.getRabbitMQIp(), ConfigUtils.getRabbitMQPort());
+        receiver.init(null, TOPIC);
         logger.info("{} 通道建立",TOPIC);
         receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
         // 监听器

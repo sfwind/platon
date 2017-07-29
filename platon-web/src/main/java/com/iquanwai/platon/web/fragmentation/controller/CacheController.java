@@ -31,9 +31,8 @@ public class CacheController {
     @PostConstruct
     public void init(){
         rabbitMQPublisher = new RabbitMQPublisher();
-        rabbitMQPublisher.init(CacheReloadReceiver.TOPIC, ConfigUtils.getRabbitMQIp(),
-                ConfigUtils.getRabbitMQPort());
-        rabbitMQPublisher.setSendCallback(queue -> mqService.saveMQSendOperation(queue));
+        rabbitMQPublisher.init(CacheReloadReceiver.TOPIC);
+        rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
     }
 
     @RequestMapping("/reload")
