@@ -3,16 +3,13 @@ package com.iquanwai.platon.biz.util.rabbitmq;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.common.message.MQSendLog;
 import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.concurrent.TimeoutException;
@@ -25,10 +22,9 @@ public class RabbitMQPublisher {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String topic;
-    private Connection connection;
+    private RabbitMQConnection rabbitMQConnection;
     private Channel channel;
-    private String ipAddress;
-    private int port = 5672;
+
     @Setter
     private Consumer<MQSendLog> sendCallback;
 
@@ -37,32 +33,32 @@ public class RabbitMQPublisher {
         destroy();
         this.topic = topic;
 
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(ConfigUtils.getRabbitMQIp());
-        factory.setPort(ConfigUtils.getRabbitMQPort());
-        factory.setUsername(ConfigUtils.getRabbitMQUser());
-        factory.setPassword(ConfigUtils.getRabbitMQPasswd());
-
         try {
-            connection = factory.newConnection();
+            rabbitMQConnection = RabbitMQConnection.create();
+            Connection connection = rabbitMQConnection.getConnection();
+            if (connection == null) {
+                rabbitMQConnection.init();
+                connection = rabbitMQConnection.getConnection();
+            }
+            if (connection == null) {
+                logger.error("connection error");
+                return;
+            }
             channel = connection.createChannel();
             //交换机声明,广播形式
             channel.exchangeDeclare(topic, "fanout");
         } catch (IOException e) {
             logger.error("connection error", e);
-        } catch (TimeoutException e) {
-            logger.error("connection timeout", e);
         }
     }
 
-    @PreDestroy
     public void destroy() {
         try {
             if (channel != null) {
                 channel.close();
             }
-            if (connection != null) {
-                connection.close();
+            if( rabbitMQConnection!=null){
+                rabbitMQConnection.destroy();
             }
         } catch (IOException e) {
             logger.error("connection error", e);
@@ -73,7 +69,7 @@ public class RabbitMQPublisher {
 
     public <T> void publish(T message) throws ConnectException {
         //重连尝试
-        if (connection == null || channel == null) {
+        if (channel == null) {
             init(topic);
         }
         if (channel == null) {
@@ -97,7 +93,6 @@ public class RabbitMQPublisher {
             }
             logger.info("发送mq,topic:{},msgId:{},message:{}", topic, msgId, message);
         } catch (IOException e) {
-            //ignore
             logger.error("发送mq失败", e);
         }
     }
