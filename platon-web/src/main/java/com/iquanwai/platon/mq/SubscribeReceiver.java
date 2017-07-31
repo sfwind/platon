@@ -93,9 +93,7 @@ public class SubscribeReceiver {
                                     ConfigUtils.getTrialProblemId() +
                                     "'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
-                                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
-                                    "\n" +
-                                    "点击上方课程，立即开始学习吧！";
+                                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         }
                     } else {
