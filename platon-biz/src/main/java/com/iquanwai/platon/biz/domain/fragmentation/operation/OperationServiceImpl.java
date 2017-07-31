@@ -120,7 +120,7 @@ public class OperationServiceImpl implements OperationService {
                 }
             } else {
                 // 非会员
-                if (successUsers.size() <= successNum) {
+                if (successUsers.size() < successNum) {
                     sendSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
                 } else if (successUsers.size() == successNum) {
                     // 发送优惠券，Coupon 表新增数据
