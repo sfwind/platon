@@ -74,46 +74,46 @@ public class SubscribeReceiver {
                     if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                         // 限免课
                         if (event.equalsIgnoreCase(SUBSCRIBE)) {
-                            sendMsg = "欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\n" +
+                            sendMsg = "\uD83D\uDC47欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\uD83D\uDC47\n" +
                                     "\n" +
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
                                     ConfigUtils.getTrialProblemId() +
-                                    "'>" + freeProblemName + "</a>\n" +
+                                    "'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
-                                    "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
+                                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
                                     "\n" +
-                                    "点击上方课程，立即开始学习吧！";
+                                    "这里就是上课的教室，强烈建议点击右上角置顶哦~";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         } else if (event.equalsIgnoreCase(SCAN)) {
-                            sendMsg = "你要的限免课程在这里，点击上课：\n" +
+                            sendMsg = "\uD83D\uDC47你要的限免课程在这里，点击选课：\uD83D\uDC47\n" +
                                     "\n" +
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
                                     ConfigUtils.getTrialProblemId() +
-                                    "'>" + freeProblemName + "</a>\n" +
+                                    "'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
-                                    "P. S. 学习小课章节可得神秘卡片哦，分享还会获得¥50奖学金。\n" +
+                                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
                                     "\n" +
                                     "点击上方课程，立即开始学习吧！";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         }
                     } else {
                         // 非限免
-                        sendMsg = "同学你好，你要的小课在这里：\n" +
+                        sendMsg = "\uD83D\uDC47同学你好，你要的小课在这里，点击选课：\uD83D\uDC47\n" +
                                 "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 sceneParams[2] +
-                                "'>" + cacheService.getProblem(Integer.parseInt(sceneParams[2])).getProblem() + "</a>\n" +
+                                "'>『" + cacheService.getProblem(Integer.parseInt(sceneParams[2])).getProblem() + "』</a>\n" +
+                                "\n" +
+                                "完成限免小课章节有神秘卡片哦，注意收集[机智]\n" +
                                 "------------\n" +
-                                "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
+                                "P. S. 正好有一门小课限免，感兴趣可以戳："+
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
-                                "'>" + freeProblemName + "</a>\n" +
-                                "\n" +
-                                "学习限免小课章节可得神秘卡片哦，分享还会获得¥50奖学金。";
+                                "'>『" + freeProblemName + "』</a>";
                         customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     }
                 }
