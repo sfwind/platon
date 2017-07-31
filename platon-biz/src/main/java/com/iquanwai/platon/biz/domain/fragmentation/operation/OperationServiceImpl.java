@@ -106,6 +106,7 @@ public class OperationServiceImpl implements OperationService {
                 newUsers = promotionUserDao.loadUsersBySource(source);
             }
             successUsers = newUsers.stream().filter(user -> user.getAction() > 0).collect(Collectors.toList());
+            logger.info("推广成功用户人数" + successUsers.size());
             // 发送推广成功消息
             // 获取的是来源的 profileId (推广人的 profileId)
             Integer sourceProfileId = orderUser.getProfileId();
@@ -114,25 +115,30 @@ public class OperationServiceImpl implements OperationService {
             if (sourceProfile == null) return;
             // 区分是否为会员
             if (sourceProfile.getRiseMember() == 1) {
+                logger.info("是会员");
                 // 是会员
                 if (successUsers.size() <= successNum) {
                     sendNormalSuccessOrderMsg(sourceProfile.getOpenid(), openId);
                 }
             } else {
+                logger.info("不是会员");
                 // 非会员
                 if (successUsers.size() < successNum) {
+                    logger.info("正常推广");
                     sendSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
                 } else if (successUsers.size() == successNum) {
+                    logger.info("准备拿优惠券");
                     // 发送优惠券，Coupon 表新增数据
                     Coupon coupon = new Coupon();
                     coupon.setOpenId(sourceProfile.getOpenid());
                     coupon.setProfileId(sourceProfile.getId());
                     coupon.setAmount(50);
-                    coupon.setExpiredDate(DateUtils.afterYears(new Date(), 30));
+                    coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
                     coupon.setDescription("奖学金");
                     coupon.setUsed(0);
                     Integer insertResult = couponDao.insertCoupon(coupon);
                     if (insertResult > 0) {
+                        logger.info("准备塞优惠券");
                         // 礼品券数据保存成功，发送获得优惠券的模板消息
                         sendSuccessPromotionMsg(sourceProfile.getOpenid());
                         // 刷新优惠券缓存
