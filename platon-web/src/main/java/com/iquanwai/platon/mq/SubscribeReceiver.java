@@ -109,7 +109,8 @@ public class SubscribeReceiver {
                                 "\n" +
                                 "完成限免小课章节有神秘卡片哦，注意收集[机智]\n" +
                                 "------------\n" +
-                                "P. S. 正好有一门小课限免，感兴趣可以戳："+
+                                "P. S. 正好有一门小课限免，感兴趣可以戳：\n"+
+                                "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
                                 ConfigUtils.getTrialProblemId() +
