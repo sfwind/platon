@@ -293,6 +293,10 @@ public class ProblemServiceImpl implements ProblemService {
             targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1114);
         } else {
             targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
+            targetImage = ImageUtils.writeText(targetImage, 306, 1133, "长按识别二维码",
+                    font.deriveFont(28f), new Color(0, 0, 0));
+            targetImage = ImageUtils.writeText(targetImage, 306, 1169, "查看课程详情",
+                    font.deriveFont(24f), new Color(51, 51, 51));
         }
         ByteArrayOutputStream outputStream = null;
         try {
