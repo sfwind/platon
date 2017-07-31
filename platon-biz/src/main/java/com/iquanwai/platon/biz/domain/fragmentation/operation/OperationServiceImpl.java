@@ -116,7 +116,7 @@ public class OperationServiceImpl implements OperationService {
             if (sourceProfile.getRiseMember() == 1) {
                 // 是会员
                 if (successUsers.size() <= successNum) {
-                    sendNormalSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
+                    sendNormalSuccessOrderMsg(sourceProfile.getOpenid(), openId);
                 }
             } else {
                 // 非会员
@@ -166,7 +166,7 @@ public class OperationServiceImpl implements OperationService {
         templateMessageService.sendMessage(templateMessage);
     }
 
-    private void sendNormalSuccessOrderMsg(String targetOpenId, String orderOpenId, Integer remainCount) {
+    private void sendNormalSuccessOrderMsg(String targetOpenId, String orderOpenId) {
         Profile profile = profileDao.queryByOpenId(orderOpenId);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetOpenId);
