@@ -68,7 +68,7 @@ public class OperationServiceImpl implements OperationService {
         PromotionLevel tempPromotionLevel = promotionLevelDao.loadByOpenId(openId);
         if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
         String[] sceneParams = scene.split("_");
-        if(sceneParams.length != 3) return;
+        if (sceneParams.length != 3) return;
         if ("RISE".equals(sceneParams[1])) {
             promotionLevelDao.insertPromotionLevel(openId, 1);
         } else {
@@ -111,27 +111,36 @@ public class OperationServiceImpl implements OperationService {
             Integer sourceProfileId = orderUser.getProfileId();
             if (sourceProfileId == null) return;
             Profile sourceProfile = profileDao.load(Profile.class, sourceProfileId); // 推广人 Profile
-            if (successUsers.size() <= successNum) {
-                sendSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
-            }
-            if (successUsers.size() == successNum) {
-                // 发送优惠券，Coupon 表新增数据
-                Coupon coupon = new Coupon();
-                coupon.setOpenId(sourceProfile.getOpenid());
-                coupon.setProfileId(sourceProfile.getId());
-                coupon.setAmount(50);
-                coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
-                coupon.setDescription("奖学金");
-                coupon.setUsed(0);
-                Integer insertResult = couponDao.insertCoupon(coupon);
-                if (insertResult > 0) {
-                    // 礼品券数据保存成功，发送获得优惠券的模板消息
-                    sendSuccessPromotionMsg(sourceProfile.getOpenid());
-                    // 刷新优惠券信息
-                    try {
-                        rabbitMQPublisher.publish("class");
-                    } catch (ConnectException e) {
-                        logger.error(e.getLocalizedMessage());
+            if (sourceProfile == null) return;
+            // 区分是否为会员
+            if (sourceProfile.getRiseMember() == 1) {
+                // 是会员
+                if (successUsers.size() <= successNum) {
+                    sendNormalSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
+                }
+            } else {
+                // 非会员
+                if (successUsers.size() <= successNum) {
+                    sendSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
+                } else if (successUsers.size() == successNum) {
+                    // 发送优惠券，Coupon 表新增数据
+                    Coupon coupon = new Coupon();
+                    coupon.setOpenId(sourceProfile.getOpenid());
+                    coupon.setProfileId(sourceProfile.getId());
+                    coupon.setAmount(50);
+                    coupon.setExpiredDate(DateUtils.afterYears(new Date(), 30));
+                    coupon.setDescription("奖学金");
+                    coupon.setUsed(0);
+                    Integer insertResult = couponDao.insertCoupon(coupon);
+                    if (insertResult > 0) {
+                        // 礼品券数据保存成功，发送获得优惠券的模板消息
+                        sendSuccessPromotionMsg(sourceProfile.getOpenid());
+                        // 刷新优惠券缓存
+                        try {
+                            rabbitMQPublisher.publish("class");
+                        } catch (ConnectException e) {
+                            logger.error(e.getLocalizedMessage());
+                        }
                     }
                 }
             }
@@ -154,6 +163,21 @@ public class OperationServiceImpl implements OperationService {
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
         data.put("remark", new TemplateMessage.Keyword("\n感谢你对优质内容传播做出的贡献，距离50元优惠券还有" + remainCount + "个好友啦！"));
+        templateMessageService.sendMessage(templateMessage);
+    }
+
+    private void sendNormalSuccessOrderMsg(String targetOpenId, String orderOpenId, Integer remainCount) {
+        Profile profile = profileDao.queryByOpenId(orderOpenId);
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(targetOpenId);
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
+        data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+        data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+        data.put("remark", new TemplateMessage.Keyword("\n感谢你对优质内容传播做出的贡献！"));
         templateMessageService.sendMessage(templateMessage);
     }
 

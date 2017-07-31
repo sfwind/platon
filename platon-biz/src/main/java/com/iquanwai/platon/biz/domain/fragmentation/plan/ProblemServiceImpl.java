@@ -342,8 +342,7 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取二维码，场景值变化
     public BufferedImage loadQrImage(Profile profile, Integer problemId) {
         // 绘图数据
-        String sceneProfileId = profile.getRiseMember() == 1 ? "RISE" : String.valueOf(profile.getId());
-        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + sceneProfileId + "_" + problemId, null);
+        QRResponse response = qrCodeService.generateTemporaryQRCode("freeLimit_" + profile.getId() + "_" + problemId, null);
         try {
             return ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
         } catch (IOException e) {
@@ -363,6 +362,8 @@ public class ProblemServiceImpl implements ProblemService {
             headImgUrl = realProfile.getHeadimgurl();
             headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         }
+        // TODO 测试默认头像
+        headImg = null;
         // 修复两次都没有头像的用户，使用默认头像
         if (headImg == null) {
             String defaultImageUrl = "https://static.iqycamp.com/images/fragment/headImg_default.jpg?imageslim";
