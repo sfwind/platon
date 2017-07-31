@@ -44,11 +44,11 @@ public class OperationServiceImpl implements OperationService {
     @Autowired
     private CouponDao couponDao;
     @Autowired
-    private RabbitMQPublisher rabbitMQPublisher;
-    @Autowired
     private MQService mqService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    private RabbitMQPublisher rabbitMQPublisher;
 
     private String cacheReloadTopic = "confucius_resource_reload";
     // 活动前缀
