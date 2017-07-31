@@ -55,7 +55,7 @@ public class PracticeController {
 
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId",required = false) Integer planId) {
+                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
         if (planId != null) {
@@ -100,7 +100,7 @@ public class PracticeController {
                                                               @PathVariable Integer challengeId,
                                                               @RequestParam(name = "planId") Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        ImprovementPlan  improvementPlan = planService.getPlan(planId);
+        ImprovementPlan improvementPlan = planService.getPlan(planId);
 
         if (improvementPlan == null) {
             LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
@@ -209,7 +209,6 @@ public class PracticeController {
 
     /**
      * 点赞或者取消点赞
-     *
      * @param vote 1：点赞，2：取消点赞
      */
     @RequestMapping(value = "/vote", method = RequestMethod.POST)
@@ -248,8 +247,7 @@ public class PracticeController {
 
     /**
      * 应用任务列表页加载他人的任务信息
-     *
-     * @param loginUser     登陆人
+     * @param loginUser 登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}")
@@ -274,17 +272,16 @@ public class PracticeController {
 
     /**
      * 应用任务列表页加载他人的任务信息
-     *
-     * @param loginUser     登陆人
+     * @param loginUser 登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}/{pageIndex}")
     public ResponseEntity<Map<String, Object>> loadOtherApplicationListBatch(LoginUser loginUser,
-                                                                        @PathVariable Integer applicationId,
-                                                                        @PathVariable Integer pageIndex) {
+                                                                             @PathVariable Integer applicationId,
+                                                                             @PathVariable Integer pageIndex) {
         Assert.notNull(loginUser, "用户信息不能为空");
         Page page = new Page();
-        page.setPageSize(PAGE_SIZE*pageIndex);
+        page.setPageSize(PAGE_SIZE * pageIndex);
         // 该计划的应用练习是否提交
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -357,7 +354,7 @@ public class PracticeController {
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
-            if(moduleId == Constants.CommentModule.APPLICATION){
+            if (moduleId == Constants.CommentModule.APPLICATION) {
                 boolean isModified = practiceService.isModifiedAfterFeedback(submitId,
                         item.getCommentProfileId(), item.getAddTime());
                 refreshListDto.setIsModifiedAfterFeedback(isModified);
@@ -370,7 +367,10 @@ public class PracticeController {
                 dto.setDiscussTime(DateUtils.parseDateToString(item.getAddTime()));
                 dto.setComment(item.getContent());
                 dto.setRepliedComment(item.getRepliedComment());
-                dto.setRepliedName(account.getNickname());
+                Profile repliedProfile = accountService.getProfile(item.getRepliedProfileId());
+                if (repliedProfile != null) {
+                    dto.setRepliedName(repliedProfile.getNickname());
+                }
                 dto.setSignature(account.getSignature());
                 dto.setIsMine(loginUser.getId().equals(item.getCommentProfileId()));
                 dto.setRole(account.getRole());
@@ -388,11 +388,10 @@ public class PracticeController {
 
     /**
      * 评论
-     *
      * @param loginUser 登陆人
-     * @param moduleId  评论模块
-     * @param submitId  文章id
-     * @param dto       评论内容
+     * @param moduleId 评论模块
+     * @param submitId 文章id
+     * @param dto 评论内容
      */
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> comment(LoginUser loginUser,
@@ -412,7 +411,7 @@ public class PracticeController {
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), device);
 
-        if (result.getLeft()>0) {
+        if (result.getLeft() > 0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
                     .function("碎片化")
@@ -437,12 +436,6 @@ public class PracticeController {
 
     /**
      * 移动应用练习评论回复
-     *
-     * @param loginUser
-     * @param moduleId
-     * @param submitId
-     * @param dto
-     * @return
      */
     @RequestMapping(value = "/comment/reply/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> commentReply(LoginUser loginUser,
@@ -466,7 +459,7 @@ public class PracticeController {
             resultDto.setRole(loginUser.getRole());
             resultDto.setSignature(loginUser.getSignature());
             Profile profile = accountService.getProfile(replyComment.getCommentProfileId());
-            if(profile!=null){
+            if (profile != null) {
                 resultDto.setRepliedName(profile.getNickname());
             }
 
@@ -549,7 +542,7 @@ public class PracticeController {
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
                     Profile account = accountService.getProfile(item.getProfileId());
-                    if(account!=null) {
+                    if (account != null) {
                         dto.setUserName(account.getNickname());
                         dto.setHeadImage(account.getHeadimgurl());
                         dto.setRole(account.getRole());
@@ -608,7 +601,7 @@ public class PracticeController {
             dto.setContent(subjectArticle.getContent());
             dto.setTitle(subjectArticle.getTitle());
             Profile profile = accountService.getProfile(subjectArticle.getProfileId());
-            if(profile!=null) {
+            if (profile != null) {
                 dto.setHeadImage(profile.getHeadimgurl());
                 dto.setUserName(profile.getNickname());
                 dto.setRole(profile.getRole());
