@@ -84,9 +84,13 @@ public class ImageUtils {
             Request request = new Request.Builder()
                     .url(url)
                     .build();
-            Response response = null;
+            Response response;
             try {
                 response = client.newCall(request).execute();
+                String xErrorNo = response.header("X-ErrNo");
+                if (xErrorNo != null && xErrorNo.equalsIgnoreCase("-6101")) {
+                    return null;
+                }
                 return ImageIO.read(response.body().byteStream());
             } catch (Exception e) {
                 logger.error("execute " + url + " error", e);
