@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionUserDao;
+import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.Coupon;
@@ -13,11 +14,14 @@ import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +43,25 @@ public class OperationServiceImpl implements OperationService {
     private ProfileDao profileDao;
     @Autowired
     private CouponDao couponDao;
+    @Autowired
+    private RabbitMQPublisher rabbitMQPublisher;
+    @Autowired
+    private MQService mqService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    private String cacheReloadTopic = "confucius_resource_reload";
     // 活动前缀
     private static String prefix = "freeLimit_";
     // 推广成功人数限额
     private static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
+
+    @PostConstruct
+    public void init() {
+        rabbitMQPublisher = new RabbitMQPublisher();
+        rabbitMQPublisher.init(cacheReloadTopic);
+        rabbitMQPublisher.setSendCallback(queue -> mqService.saveMQSendOperation(queue));
+    }
 
     @Override
     public void recordPromotionLevel(String openId, String scene) {
@@ -104,13 +120,19 @@ public class OperationServiceImpl implements OperationService {
                 coupon.setOpenId(sourceProfile.getOpenid());
                 coupon.setProfileId(sourceProfile.getId());
                 coupon.setAmount(50);
-                coupon.setExpiredDate(DateUtils.afterYears(new Date(), 30));
+                coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
                 coupon.setDescription("奖学金");
                 coupon.setUsed(0);
                 Integer insertResult = couponDao.insertCoupon(coupon);
                 if (insertResult > 0) {
                     // 礼品券数据保存成功，发送获得优惠券的模板消息
                     sendSuccessPromotionMsg(sourceProfile.getOpenid());
+                    // 刷新优惠券信息
+                    try {
+                        rabbitMQPublisher.publish("class");
+                    } catch (ConnectException e) {
+                        logger.error(e.getLocalizedMessage());
+                    }
                 }
             }
         }
