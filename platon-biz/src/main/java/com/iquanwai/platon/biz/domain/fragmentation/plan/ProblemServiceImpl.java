@@ -356,9 +356,6 @@ public class ProblemServiceImpl implements ProblemService {
     public BufferedImage loadHeadImage(Profile profile) {
         // 获取用户头像图片
         String headImgUrl = profile.getHeadimgurl();
-        if ("/0".equals(headImgUrl.substring(headImgUrl.length() - 2))) {
-            headImgUrl = headImgUrl.substring(0, headImgUrl.length() - 2) + "/64";
-        }
         BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         // 如果用户头像过期，则拉取实时新头像
         if (headImg == null) {
