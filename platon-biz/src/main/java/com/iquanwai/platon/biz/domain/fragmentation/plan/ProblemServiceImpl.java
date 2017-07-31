@@ -363,6 +363,11 @@ public class ProblemServiceImpl implements ProblemService {
             headImgUrl = realProfile.getHeadimgurl();
             headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         }
+        // 修复两次都没有头像的用户，使用默认头像
+        if (headImg == null) {
+            String defaultImageUrl = "https://static.iqycamp.com/images/fragment/headImg_default.jpg?imageslim";
+            headImg = ImageUtils.getBufferedImageByUrl(defaultImageUrl);
+        }
         return headImg;
     }
 
