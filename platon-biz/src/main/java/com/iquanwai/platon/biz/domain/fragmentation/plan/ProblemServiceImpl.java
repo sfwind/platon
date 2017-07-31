@@ -363,6 +363,10 @@ public class ProblemServiceImpl implements ProblemService {
             headImgUrl = realProfile.getHeadimgurl();
             headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         }
+        // TODO 添加头像默认图
+        // if(headImg == null) {
+        //     headImg = ImageUtils.getBufferedImageByUrl("");
+        // }
         return headImg;
     }
 
