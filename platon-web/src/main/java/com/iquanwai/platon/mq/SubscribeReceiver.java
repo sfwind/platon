@@ -2,11 +2,13 @@ package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
@@ -38,6 +40,8 @@ public class SubscribeReceiver {
     private CustomerMessageService customerMessageService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private ProfileDao profileDao;
 
     @Autowired
     private MQService mqService;
@@ -59,7 +63,6 @@ public class SubscribeReceiver {
             logger.info("openId: {}", openId);
             String event = json.get("event").toString();
             logger.info("event: {}", event);
-            operationService.recordPromotionLevel(openId, scene);
 
             String[] sceneParams = scene.split("_");
             logger.info(sceneParams[0] + " " + sceneParams[1] + " " + sceneParams[2]);
@@ -67,7 +70,12 @@ public class SubscribeReceiver {
             try {
                 Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
                 String freeProblemName = freeProblem.getProblem();
-                operationService.recordPromotionLevel(openId, scene);
+
+                // 不是会员，才记录推广层级信息
+                Profile profile = profileDao.queryByOpenId(openId);
+                if (profile != null && profile.getRiseMember() != 1) {
+                    operationService.recordPromotionLevel(openId, scene);
+                }
 
                 if (sceneParams.length == 3) {
                     String sendMsg;
@@ -107,7 +115,7 @@ public class SubscribeReceiver {
                                 "\n" +
                                 "完成限免小课章节有神秘卡片哦，注意收集[机智]\n" +
                                 "------------\n" +
-                                "P. S. 正好有一门小课限免，感兴趣可以戳：\n"+
+                                "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
                                 "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +

@@ -80,7 +80,7 @@ public class OperationServiceImpl implements OperationService {
                 Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
             } else {
-                promotionLevelDao.insertPromotionLevel(openId, 1);
+                promotionLevelDao.insertPromotionLevel(openId, 2);
             }
         }
     }
