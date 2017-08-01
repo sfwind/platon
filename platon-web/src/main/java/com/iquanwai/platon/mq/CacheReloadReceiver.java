@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserResolver;
+import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class CacheReloadReceiver {
 
     // 刷新缓存，返回当前登录人数
     public Integer refreshStatus(){
-        Collection<LoginUser> allUsers = LoginUserResolver.getAllUsers();
+        Collection<LoginUser> allUsers = LoginUserService.getAllUsers();
         for (LoginUser user : allUsers) {
             try {
                 if (user.getRiseMember() == 1) {

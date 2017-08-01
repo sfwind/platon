@@ -25,8 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by nethunder on 2017/5/5.
@@ -51,8 +53,8 @@ public class LoginUserService {
     /**
      * 缓存已经登录的用户
      */
-    private static Map<String, LoginUser> pcLoginUserMap = Maps.newHashMap(); // pc的登录缓存
-    private static Map<String, LoginUser> wechatLoginUserMap = Maps.newHashMap();// 微信的登录缓存
+    private static Map<String, SoftReference<LoginUser>> pcLoginUserMap = Maps.newHashMap(); // pc的登录缓存
+    private static Map<String, SoftReference<LoginUser>> wechatLoginUserMap = Maps.newHashMap();// 微信的登录缓存
     private static List<String> waitPCRefreshOpenids = Lists.newArrayList(); //待更新openid
     private static List<String> waitWechatRefreshOpenids = Lists.newArrayList(); //待更新openid
 
@@ -78,11 +80,11 @@ public class LoginUserService {
         switch(platform){
             case PC:
                 loginUser.setDevice(Constants.Device.PC);
-                pcLoginUserMap.put(sessionId, loginUser);
+                pcLoginUserMap.put(sessionId, new SoftReference<>(loginUser));
                 break;
             case Wechat:
                 loginUser.setDevice(Constants.Device.MOBILE);
-                wechatLoginUserMap.put(sessionId, loginUser);
+                wechatLoginUserMap.put(sessionId, new SoftReference<>(loginUser));
                 break;
         }
     }
@@ -288,27 +290,27 @@ public class LoginUserService {
         LoginUser loginUser = null;
         switch (platform) {
             case PC:
-                loginUser = pcLoginUserMap.get(accessToken);
+                loginUser = pcLoginUserMap.get(accessToken).get();
                 // 如果数据待更新,则读取数据库
                 if(loginUser!=null){
                     String openid = loginUser.getOpenId();
                     if(waitPCRefreshOpenids.contains(openid)){
                         logger.info("更新用户{}", openid);
                         loginUser = getLoginUser(openid, platform);
-                        pcLoginUserMap.put(accessToken, loginUser);
+                        pcLoginUserMap.put(accessToken, new SoftReference<>(loginUser));
                         waitPCRefreshOpenids.remove(openid);
                     }
                 }
                 break;
             case Wechat:
-                loginUser = wechatLoginUserMap.get(accessToken);
+                loginUser = wechatLoginUserMap.get(accessToken).get();
                 // 如果数据待更新,则读取数据库
                 if(loginUser!=null){
                     String openid2 = loginUser.getOpenId();
                     if(waitPCRefreshOpenids.contains(openid2)){
                         logger.info("更新用户{}", openid2);
                         loginUser = getLoginUser(openid2, platform);
-                        wechatLoginUserMap.put(accessToken, loginUser);
+                        wechatLoginUserMap.put(accessToken, new SoftReference<>(loginUser));
                         waitWechatRefreshOpenids.remove(openid2);
                     }
                 }
@@ -347,15 +349,14 @@ public class LoginUserService {
         loginUser.setOpenApplication(account.getOpenApplication());
         loginUser.setOpenNavigator(account.getOpenNavigator());
         loginUser.setDevice(platform.getValue());
-        logger.info("rise member:{}", account.getRiseMember());
         loginUser.setRiseMember(account.getRiseMember());
         return loginUser;
     }
 
     public static List<LoginUser> getAllUsers(){
         List<LoginUser> list = Lists.newArrayList();
-        list.addAll(pcLoginUserMap.values());
-        list.addAll(wechatLoginUserMap.values());
+        list.addAll(pcLoginUserMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
+        list.addAll(wechatLoginUserMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
         return list;
     }
 }
