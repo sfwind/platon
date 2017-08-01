@@ -25,7 +25,7 @@ public interface AccountService {
     /**
      * 根据openid获取用户详情
      */
-    Profile getProfile(String openid, boolean realTime);
+    Profile getProfile(String openid);
 
     /**
      * 根据id获取用户详情

@@ -9,7 +9,9 @@ import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -362,9 +364,14 @@ public class ProblemServiceImpl implements ProblemService {
         BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         // 如果用户头像过期，则拉取实时新头像
         if (headImg == null) {
-            Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-            headImgUrl = realProfile.getHeadimgurl();
-            headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+            Account realProfile = null;
+            try {
+                realProfile = accountService.getAccount(profile.getOpenid(), true);
+                headImgUrl = realProfile.getHeadimgurl();
+                headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+            } catch (NotFollowingException e) {
+                // ignore
+            }
         }
         // 修复两次都没有头像的用户，使用默认头像
         if (headImg == null) {

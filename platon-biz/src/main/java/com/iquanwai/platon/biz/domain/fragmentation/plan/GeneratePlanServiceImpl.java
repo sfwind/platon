@@ -135,7 +135,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
         templateMessage.setUrl(ConfigUtils.domainName()+ INDEX_URL);
-        Profile profile = accountService.getProfile(openid, false);
+        Profile profile = accountService.getProfile(openid);
         String first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
         int length = problem.getLength();
 
