@@ -84,7 +84,7 @@ public class ImageUtils {
             Request request = new Request.Builder()
                     .url(url)
                     .build();
-            Response response;
+            Response response = null;
             try {
                 response = client.newCall(request).execute();
                 String xErrorNo = response.header("X-ErrNo");
@@ -94,6 +94,10 @@ public class ImageUtils {
                 return ImageIO.read(response.body().byteStream());
             } catch (Exception e) {
                 logger.error("execute " + url + " error", e);
+            } finally {
+                if(response!=null){
+                    response.close();
+                }
             }
         }
         return null;

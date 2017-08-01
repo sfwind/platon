@@ -12,7 +12,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 
 /**
  * Created by tomas on 3/17/16.
@@ -24,10 +23,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public boolean supportsParameter(MethodParameter methodParameter) {
-        if (LoginUser.class.isAssignableFrom(methodParameter.getParameterType())) {
-            return true;
-        }
-        return false;
+        return LoginUser.class.isAssignableFrom(methodParameter.getParameterType());
     }
 
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
@@ -71,9 +67,4 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         return loginUser;
     }
-
-    public static Collection<LoginUser> getAllUsers(){
-        return LoginUserService.getAllUsers();
-    }
-
 }
