@@ -300,6 +300,9 @@ public class ProblemServiceImpl implements ProblemService {
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
         ByteArrayOutputStream outputStream = null;
+        if (targetImage == null) {
+            return null;
+        }
         try {
             outputStream = new ByteArrayOutputStream();
             ImageIO.write(targetImage, "jpg", outputStream);
