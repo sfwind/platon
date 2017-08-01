@@ -74,7 +74,7 @@ public class SubscribeReceiver {
                     if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                         // 限免课
                         if (event.equalsIgnoreCase(SUBSCRIBE)) {
-                            sendMsg = "\uD83D\uDC47欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\uD83D\uDC47\n" +
+                            sendMsg = "你要的限免课程在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
                                     "\n" +
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
@@ -86,7 +86,7 @@ public class SubscribeReceiver {
                                     "这里就是上课的教室，强烈建议点击右上角置顶哦~";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         } else if (event.equalsIgnoreCase(SCAN)) {
-                            sendMsg = "\uD83D\uDC47你要的限免课程在这里，点击选课：\uD83D\uDC47\n" +
+                            sendMsg = "你要的限免课程在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
                                     "\n" +
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
@@ -98,7 +98,7 @@ public class SubscribeReceiver {
                         }
                     } else {
                         // 非限免
-                        sendMsg = "\uD83D\uDC47同学你好，你要的小课在这里，点击选课：\uD83D\uDC47\n" +
+                        sendMsg = "你要的小课在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
                                 "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +
