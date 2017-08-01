@@ -54,8 +54,7 @@ public class PracticeController {
     private static final int PAGE_SIZE = 10;
 
     @RequestMapping("/application/start/{applicationId}")
-    public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
+    public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser, @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
         if (planId != null) {
@@ -68,16 +67,11 @@ public class PracticeController {
         } else {
             // 没有planId，消息中心中查询
             // 通过applicationId反查,查看是哪个PlanId,
-            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitByApplicationId(applicationId,
-                    loginUser.getId());
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitByApplicationId(applicationId, loginUser.getId());
             if (applicationSubmit == null) {
                 // 没有提交过，查询当前的planId
                 // TODO 这里要仔细检查
                 return WebUtils.error("参数错误，可以联系小Q反馈哦");
-//                ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
-//                if (improvementPlan != null) {
-//                    planId = improvementPlan.getId();
-//                }
             } else {
                 planId = applicationSubmit.getPlanId();
             }
@@ -245,7 +239,6 @@ public class PracticeController {
         }
     }
 
-
     /**
      * 应用任务列表页加载他人的任务信息
      * @param loginUser 登陆人
@@ -269,7 +262,6 @@ public class PracticeController {
         RefreshListDto<RiseWorkInfoDto> refreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
         return WebUtils.result(refreshListDto);
     }
-
 
     /**
      * 应用任务列表页加载他人的任务信息
@@ -787,9 +779,6 @@ public class PracticeController {
         return WebUtils.result(respMsg);
     }
 
-    /**
-     * 根据ApplicationPractice中id获取ApplicationPractice对象
-     */
     @RequestMapping(value = "/application/article/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -819,6 +808,13 @@ public class PracticeController {
             practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
         }
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/application/completed/{planId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadCompletedApplicationCnt(LoginUser loginUser, @PathVariable Integer planId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        int completedApplicationCnt = practiceService.loadCompletedApplicationCnt(planId);
+        return WebUtils.result(completedApplicationCnt);
     }
 
 }

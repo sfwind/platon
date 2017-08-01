@@ -9,7 +9,9 @@ import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -300,6 +302,9 @@ public class ProblemServiceImpl implements ProblemService {
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
         ByteArrayOutputStream outputStream = null;
+        if (targetImage == null) {
+            return null;
+        }
         try {
             outputStream = new ByteArrayOutputStream();
             ImageIO.write(targetImage, "jpg", outputStream);
@@ -359,13 +364,18 @@ public class ProblemServiceImpl implements ProblemService {
         BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         // 如果用户头像过期，则拉取实时新头像
         if (headImg == null) {
-            Profile realProfile = accountService.getProfile(profile.getOpenid(), true);
-            headImgUrl = realProfile.getHeadimgurl();
-            headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+            Account realProfile = null;
+            try {
+                realProfile = accountService.getAccount(profile.getOpenid(), true);
+                headImgUrl = realProfile.getHeadimgurl();
+                headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
+            } catch (NotFollowingException e) {
+                // ignore
+            }
         }
         // 修复两次都没有头像的用户，使用默认头像
         if (headImg == null) {
-            String defaultImageUrl = "https://static.iqycamp.com/images/fragment/headImg_default_1.jpg?imageslim";
+            String defaultImageUrl = "https://static.iqycamp.com/images/fragment/headimg_default_1.jpg?imageslim";
             headImg = ImageUtils.getBufferedImageByUrl(defaultImageUrl);
         }
         return headImg;

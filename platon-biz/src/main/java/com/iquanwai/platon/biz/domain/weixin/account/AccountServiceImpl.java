@@ -104,7 +104,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Profile getProfile(String openid, boolean realTime) {
+    public Profile getProfile(String openid) {
         return getProfileFromDB(openid);
     }
 

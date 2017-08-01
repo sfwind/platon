@@ -24,6 +24,10 @@ public class ImageUtils {
     * @param inputImage 需要修改的图片
     * */
     public static BufferedImage convertCircular(BufferedImage inputImage) {
+        if(inputImage == null){
+            logger.error("input image is null");
+            return null;
+        }
         //透明底的图片
         BufferedImage image = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
         Ellipse2D.Double shape = new Ellipse2D.Double(0, 0, inputImage.getWidth(), inputImage.getHeight());
@@ -41,7 +45,10 @@ public class ImageUtils {
     * @param newHeight 新的高度
     * */
     public static BufferedImage scaleByPercentage(BufferedImage inputImage, int newWidth, int newHeight) {
-        //获取原始图像透明度类型
+        if(inputImage == null){
+            logger.error("input image is null");
+            return null;
+        }
         int type = inputImage.getColorModel().getTransparency();
         int width = inputImage.getWidth();
         int height = inputImage.getHeight();
@@ -66,6 +73,10 @@ public class ImageUtils {
     * @param color 文字颜色
     * */
     public static BufferedImage writeText(BufferedImage inputImage, int x, int y, String text, Font font, Color color) {
+        if(inputImage == null){
+            logger.error("input image is null");
+            return null;
+        }
         Graphics2D graphics2d = inputImage.createGraphics();
         graphics2d.setFont(font);
         graphics2d.setColor(color);
@@ -105,6 +116,10 @@ public class ImageUtils {
 
     // 大图内嵌小图
     public static BufferedImage overlapImage(BufferedImage big, BufferedImage small, int x, int y) {
+        if(big == null || small == null){
+            logger.error("input image is null");
+            return big;
+        }
         Graphics2D g = big.createGraphics();
         g.drawImage(small, x, y, small.getWidth(), small.getHeight(), null);
         g.dispose();

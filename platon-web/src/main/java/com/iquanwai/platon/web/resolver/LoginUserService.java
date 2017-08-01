@@ -328,7 +328,7 @@ public class LoginUserService {
         try {
             Account temp = accountService.getAccount(openId, false);
             if (temp != null) {
-                account = accountService.getProfile(openId, false);
+                account = accountService.getProfile(openId);
             }
         } catch (NotFollowingException e) {
             logger.error("异常，openid:{}，没有查到", openId);
