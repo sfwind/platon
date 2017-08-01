@@ -290,7 +290,9 @@ public class LoginUserService {
         LoginUser loginUser = null;
         switch (platform) {
             case PC:
-                loginUser = pcLoginUserMap.get(accessToken).get();
+                if(pcLoginUserMap.get(accessToken)!=null){
+                    loginUser = pcLoginUserMap.get(accessToken).get();
+                }
                 // 如果数据待更新,则读取数据库
                 if(loginUser!=null){
                     String openid = loginUser.getOpenId();
@@ -303,7 +305,9 @@ public class LoginUserService {
                 }
                 break;
             case Wechat:
-                loginUser = wechatLoginUserMap.get(accessToken).get();
+                if(wechatLoginUserMap.get(accessToken)!=null){
+                    loginUser = wechatLoginUserMap.get(accessToken).get();
+                }
                 // 如果数据待更新,则读取数据库
                 if(loginUser!=null){
                     String openid2 = loginUser.getOpenId();
