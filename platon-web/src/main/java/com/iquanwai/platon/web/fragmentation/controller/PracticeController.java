@@ -221,7 +221,8 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(openId)
                 .module("碎片化")
                 .function("挑战任务")
-                .action("移动端点赞");
+                .action("移动端点赞")
+                .memo(refer + "");
         operationLogService.log(operationLog);
 
         Integer device = null;
