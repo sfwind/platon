@@ -202,7 +202,7 @@ public class OperationServiceImpl implements OperationService {
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
         data.put("keyword2", new TemplateMessage.Keyword("¥50代金券"));
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("remark", new TemplateMessage.Keyword("\n点击下方“圈外同学”并升级会员/报名小课，立即使用代金券，开学！"));
+        data.put("remark", new TemplateMessage.Keyword("\n点击下方“上课啦”并升级会员/报名小课，立即使用代金券，开学！"));
         templateMessageService.sendMessage(templateMessage);
     }
 
