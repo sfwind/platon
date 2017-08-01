@@ -53,6 +53,7 @@ public class OperationServiceImpl implements OperationService {
     private String cacheReloadTopic = "confucius_resource_reload";
     // 活动前缀
     private static String prefix = "freeLimit_";
+    private static String naturePrefix = "natureLimit";
     // 推广成功人数限额
     private static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
 
@@ -93,7 +94,13 @@ public class OperationServiceImpl implements OperationService {
             PromotionLevel promotionLevel = promotionLevelDao.loadByOpenId(openId);
             if (promotionLevel == null) {
                 // 没有在level表里
+                PromotionUser promotionUser = new PromotionUser();
+                promotionUser.setSource(naturePrefix);
+                promotionUser.setOpenId(openId);
+                promotionUser.setAction(0);
+                promotionUser.setProfileId(null);
                 promotionLevelDao.insertPromotionLevel(openId, 1);
+                promotionUserDao.insert(promotionUser);
             }
         }
     }
