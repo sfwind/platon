@@ -49,14 +49,7 @@ public class ImageUtils {
             logger.error("input image is null");
             return null;
         }
-        int type = BufferedImage.TYPE_4BYTE_ABGR;
-        //获取原始图像透明度类型
-        if(inputImage.getColorModel() != null){
-            type = inputImage.getColorModel().getTransparency();
-        } else {
-            logger.error("color model is null");
-        }
-
+        int type = inputImage.getColorModel().getTransparency();
         int width = inputImage.getWidth();
         int height = inputImage.getHeight();
         //开启抗锯齿
