@@ -80,10 +80,24 @@ public class OperationServiceImpl implements OperationService {
                 Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
             } else {
+                promotionLevelDao.insertPromotionLevel(openId, 2);
+            }
+        }
+    }
+
+    @Override
+    public void initFirstPromotionLevel(String openId, Integer riseMember) {
+        // 不是会员
+        if (riseMember != null && riseMember != 1) {
+            // 查询是否在level表里
+            PromotionLevel promotionLevel = promotionLevelDao.loadByOpenId(openId);
+            if (promotionLevel == null) {
+                // 没有在level表里
                 promotionLevelDao.insertPromotionLevel(openId, 1);
             }
         }
     }
+
 
     @Override
     public void recordOrderAndSendMsg(String openId, Integer newAction) {

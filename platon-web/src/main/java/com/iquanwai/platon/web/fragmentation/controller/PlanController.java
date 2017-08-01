@@ -234,6 +234,9 @@ public class PlanController {
             return WebUtils.error("非rise会员需要单独购买小课哦");
         }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
+        // 初始化第一层promotionUser
+        // TODO 活动结束后删除
+        operationService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
         if (problemId.equals(trialProblemId)) {
             // 限免小课
             operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
