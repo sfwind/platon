@@ -72,8 +72,8 @@ public class OperationServiceImpl implements OperationService {
         if (sceneParams.length != 3) return;
         Profile profile = profileDao.queryByOpenId(openId);
         if (profile == null || profile.getRiseMember() == 1) {
-            // 没有profile或者是会员
-            logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{}", openId, scene);
+            // 会员扫码无效
+            logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{},profile:{}", openId, scene, profile);
             return;
         }
         if ("RISE".equals(sceneParams[1])) {
@@ -87,8 +87,8 @@ public class OperationServiceImpl implements OperationService {
                 Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
             } else {
+                // 没有推广人，推广人没有扫码，或者已经是会员
                 promotionLevelDao.insertPromotionLevel(openId, 2);
-                // 推广人没有扫码，落入到user表
                 PromotionUser promotionUser = new PromotionUser();
                 promotionUser.setSource(naturePrefix);
                 promotionUser.setOpenId(openId);
