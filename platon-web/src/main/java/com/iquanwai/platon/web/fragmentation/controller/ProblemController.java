@@ -131,7 +131,7 @@ public class ProblemController {
                     dto.setPic(item.getPic());
                     dto.setColor(item.getColor());
                     List<Problem> problemsTemp = showProblems.get(item.getId());
-                    problemsTemp.sort((o1, o2) -> o2.getId() - o1.getId());
+                    problemsTemp.sort(this::problemSort);
                     List<Problem> problemList = problemsTemp.stream().map(Problem::simple).collect(Collectors.toList());
                     dto.setProblemList(problemList);
                     return dto;
@@ -148,6 +148,33 @@ public class ProblemController {
         operationLogService.log(operationLog);
 
         return WebUtils.result(result);
+    }
+
+    private Integer problemSort(Problem left,Problem right){
+        // 限免》首发》new》有用度排序
+        // 1000 > 500 > 300 > usefulScore
+        Double leftScore = 0d;
+        Double rightScore = 0d;
+        if (left.getId() == 9) {
+            leftScore = 1000d;
+        } else if (left.getTrial()) {
+            leftScore = 500d;
+        } else if (left.getNewProblem()) {
+            leftScore = 300d;
+        } else {
+            leftScore = left.getUsefulScore();
+        }
+
+        if (right.getId() == 9) {
+            rightScore = 1000d;
+        } else if (right.getTrial()) {
+            rightScore = 500d;
+        } else if (right.getNewProblem()) {
+            rightScore = 300d;
+        } else {
+            rightScore = left.getUsefulScore();
+        }
+        return rightScore > leftScore ? 1 : -1;
     }
 
     @RequestMapping("/list/{catalog}")
