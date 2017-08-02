@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -41,7 +42,7 @@ public class FreeLimitController {
     /**
      * 发送自动选限免课的客服消息
      */
-    @RequestMapping("/choose/problem/msg")
+    @RequestMapping(value = "/choose/problem/msg", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendChooseProblemMsg(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         operationService.sendCustomerMsg(loginUser.getOpenId());
