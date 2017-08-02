@@ -172,7 +172,7 @@ public class ProblemController {
         } else if (right.getNewProblem()) {
             rightScore = 300d;
         } else {
-            rightScore = left.getUsefulScore();
+            rightScore = right.getUsefulScore();
         }
         return rightScore > leftScore ? 1 : -1;
     }
