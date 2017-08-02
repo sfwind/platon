@@ -203,14 +203,16 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, String openid,
+    public Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
                                                       Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
+        Boolean isNewApplication = false; // 该 ApplicationPractice 是否是新生成的
         // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
         ApplicationSubmit submit = applicationSubmitDao.load(id, planId, profileId);
         if (submit == null && create) {
+            isNewApplication = true; // 该 ApplicationPractice 为新创建
             // 没有提交，生成
             submit = new ApplicationSubmit();
             submit.setOpenid(openid);
@@ -267,7 +269,7 @@ public class PracticeServiceImpl implements PracticeService {
                 }
             }
         }
-        return applicationPractice;
+        return new MutablePair<>(applicationPractice, isNewApplication);
     }
 
     @Override

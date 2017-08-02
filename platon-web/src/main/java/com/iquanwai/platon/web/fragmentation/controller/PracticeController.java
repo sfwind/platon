@@ -78,7 +78,7 @@ public class PracticeController {
         }
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), loginUser.getId(), planId, false);
+                loginUser.getOpenId(), loginUser.getId(), planId, false).getLeft();
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -152,14 +152,19 @@ public class PracticeController {
                                                                  @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
-        ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
+        Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
                 loginUser.getOpenId(), loginUser.getId(), planId, true);
+
+        ApplicationPractice applicationPractice = applicationPracticeBooleanPair.getLeft();
+        Boolean isNewApplication = applicationPracticeBooleanPair.getRight();
+
         Integer submitId = applicationPractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
         }
         Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
+
         if (result) {
             // 提升提交数
             if (loginUser.getDevice() == Constants.Device.PC) {
@@ -168,13 +173,23 @@ public class PracticeController {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
             }
         }
+
+        Integer completedApplication = 0;
+        if(isNewApplication) {
+            completedApplication = practiceService.loadCompletedApplicationCnt(planId);
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("应用练习")
                 .action("提交应用练习")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        return WebUtils.result(result);
+        if(result) {
+            return WebUtils.result(completedApplication);
+        } else {
+            return WebUtils.error("应用练习提交失败");
+        }
     }
 
     @RequestMapping(value = "/application/autosave/{planId}/{applicationId}", method = RequestMethod.POST)
@@ -808,13 +823,6 @@ public class PracticeController {
             practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
         }
         return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/application/completed/{planId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadCompletedApplicationCnt(LoginUser loginUser, @PathVariable Integer planId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        int completedApplicationCnt = practiceService.loadCompletedApplicationCnt(planId);
-        return WebUtils.result(completedApplicationCnt);
     }
 
 }

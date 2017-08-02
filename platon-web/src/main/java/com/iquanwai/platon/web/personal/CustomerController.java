@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
@@ -103,6 +104,8 @@ public class CustomerController {
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
         }
+        List<Coupon> coupons = accountService.loadCoupons(profile.getId());
+        riseDto.setCoupons(coupons);
         return WebUtils.result(riseDto);
     }
 

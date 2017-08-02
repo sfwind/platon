@@ -21,4 +21,10 @@ public class Coupon {
     private String category; // 分类
     private String description; // 描述
 
+
+    /**
+     * 非 db 字段
+     */
+    private String expiredDateString; // 过期时间 string
+
 }

@@ -61,7 +61,8 @@ public interface PracticeService {
      * @param openid openid
      * @param planId 训练id
      */
-    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
+    Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
+                                                              Integer profileId, Integer planId, boolean create);
 
     /**
      * 提交应用训练
@@ -301,4 +302,5 @@ public interface PracticeService {
     Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
 
     Integer loadCompletedApplicationCnt(Integer planId);
+
 }

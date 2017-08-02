@@ -1,10 +1,12 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
@@ -12,11 +14,9 @@ import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
+import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.common.*;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.RestfulHelper;
+import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -28,7 +28,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -38,6 +37,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/8/10.
@@ -72,6 +72,8 @@ public class AccountServiceImpl implements AccountService {
     private ShortMessageService shortMessageService;
     @Autowired
     private SMSValidCodeDao smsValidCodeDao;
+    @Autowired
+    private CouponDao couponDao;
 
     @PostConstruct
     public void init() {
@@ -190,7 +192,7 @@ public class AccountServiceImpl implements AccountService {
             }, Date.class);
 
             BeanUtils.populate(accountNew, result);
-            if (accountNew.getSubscribe()!=null && accountNew.getSubscribe() == 0) {
+            if (accountNew.getSubscribe() != null && accountNew.getSubscribe() == 0) {
                 //未关注直接抛异常
                 throw new NotFollowingException();
             }
@@ -390,7 +392,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean isRiseMember(Integer profileId){
+    public Boolean isRiseMember(Integer profileId) {
         return riseMemberDao.validRiseMember(profileId) != null;
     }
+
+    @Override
+    public List<Coupon> loadCoupons(Integer profileId) {
+        List<Coupon> targetCoupons = Lists.newArrayList();
+        // 过滤出未使用并且未过期的优惠券
+        List<Coupon> sourceCoupons = couponDao.loadCoupons(profileId).stream().filter(coupon ->
+                coupon.getUsed() == 0 && coupon.getExpiredDate().compareTo(new Date()) >= 0).collect(Collectors.toList());
+        for (Coupon coupon : sourceCoupons) {
+            Coupon tempCoupon = new Coupon();
+            tempCoupon.setAmount(coupon.getAmount());
+            tempCoupon.setExpiredDateString(DateUtils.parseDateToFormat5(coupon.getExpiredDate()));
+            tempCoupon.setDescription(coupon.getDescription());
+            targetCoupons.add(tempCoupon);
+        }
+        return targetCoupons;
+    }
+
 }
+
