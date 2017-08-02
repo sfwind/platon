@@ -89,12 +89,16 @@ public class OperationServiceImpl implements OperationService {
             } else {
                 // 没有推广人，推广人没有扫码，或者已经是会员
                 promotionLevelDao.insertPromotionLevel(openId, 2);
-                PromotionUser promotionUser = new PromotionUser();
-                promotionUser.setSource(naturePrefix);
-                promotionUser.setOpenId(openId);
-                promotionUser.setAction(0);
-                promotionUser.setProfileId(null);
-                promotionUserDao.insert(promotionUser);
+                // 查看是否在user表里
+                PromotionUser exist = promotionUserDao.loadUserByOpenId(openId);
+                if (exist == null) {
+                    PromotionUser promotionUser = new PromotionUser();
+                    promotionUser.setSource(naturePrefix);
+                    promotionUser.setOpenId(openId);
+                    promotionUser.setAction(0);
+                    promotionUser.setProfileId(null);
+                    promotionUserDao.insert(promotionUser);
+                }
             }
         }
     }
