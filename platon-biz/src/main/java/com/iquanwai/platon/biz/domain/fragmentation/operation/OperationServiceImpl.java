@@ -53,6 +53,7 @@ public class OperationServiceImpl implements OperationService {
     private String cacheReloadTopic = "confucius_resource_reload";
     // 活动前缀
     private static String prefix = "freeLimit_";
+    private static String naturePrefix = "natureRaise";
     // 推广成功人数限额
     private static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
 
@@ -69,6 +70,12 @@ public class OperationServiceImpl implements OperationService {
         if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
         String[] sceneParams = scene.split("_");
         if (sceneParams.length != 3) return;
+        Profile profile = profileDao.queryByOpenId(openId);
+        if (profile == null || profile.getRiseMember() == 1) {
+            // 会员扫码无效
+            logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{},profile:{}", openId, scene, profile);
+            return;
+        }
         if ("RISE".equals(sceneParams[1])) {
             promotionLevelDao.insertPromotionLevel(openId, 1);
         } else {
@@ -76,14 +83,49 @@ public class OperationServiceImpl implements OperationService {
             Profile promotionProfile = profileDao.load(Profile.class, promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
             PromotionLevel promotionLevelObject = promotionLevelDao.loadByOpenId(promotionOpenId); // 推广人层级表对象
+            if (openId.equals(promotionOpenId)) {
+                logger.error("自己扫自己，不能入表");
+                return;
+            }
             if (promotionLevelObject != null) {
                 Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
             } else {
-                promotionLevelDao.insertPromotionLevel(openId, 1);
+                // 没有推广人，推广人没有扫码，或者已经是会员
+                promotionLevelDao.insertPromotionLevel(openId, 2);
+                // 查看是否在user表里
+                PromotionUser exist = promotionUserDao.loadUserByOpenId(openId);
+                if (exist == null) {
+                    PromotionUser promotionUser = new PromotionUser();
+                    promotionUser.setSource(naturePrefix);
+                    promotionUser.setOpenId(openId);
+                    promotionUser.setAction(0);
+                    promotionUser.setProfileId(null);
+                    promotionUserDao.insert(promotionUser);
+                }
             }
         }
     }
+
+    @Override
+    public void initFirstPromotionLevel(String openId, Integer riseMember) {
+        // 不是会员
+        if (riseMember != null && riseMember != 1) {
+            // 查询是否在level表里
+            PromotionLevel promotionLevel = promotionLevelDao.loadByOpenId(openId);
+            if (promotionLevel == null) {
+                // 没有在level表里
+                PromotionUser promotionUser = new PromotionUser();
+                promotionUser.setSource(naturePrefix);
+                promotionUser.setOpenId(openId);
+                promotionUser.setAction(0);
+                promotionUser.setProfileId(null);
+                promotionLevelDao.insertPromotionLevel(openId, 1);
+                promotionUserDao.insert(promotionUser);
+            }
+        }
+    }
+
 
     @Override
     public void recordOrderAndSendMsg(String openId, Integer newAction) {
