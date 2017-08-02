@@ -21,7 +21,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/operation/free")
 public class FreeLimitController {
-
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
@@ -39,15 +38,16 @@ public class FreeLimitController {
         return WebUtils.success();
     }
 
-    @RequestMapping("/promotion/{openId}/{scene}")
-    public ResponseEntity<Map<String, Object>> successPromotion(LoginUser loginUser, @PathVariable String openId, @PathVariable String scene) {
-        operationService.recordPromotionLevel(openId, scene);
-        return WebUtils.success();
-    }
-
-    @RequestMapping("/order/{openId}/{action}")
-    public ResponseEntity<Map<String, Object>> orderAndSendMsg(LoginUser loginUser, @PathVariable String openId, @PathVariable Integer action) {
-        operationService.recordOrderAndSendMsg(openId, action);
+    /**
+     * 发送自动选限免课的客服消息
+     */
+    @RequestMapping("/choose/problem/msg")
+    public ResponseEntity<Map<String, Object>> sendChooseProblemMsg(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        operationService.sendCustomerMsg(loginUser.getOpenId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("限免推广").function("自动选课").action("发送微信客服消息");
+        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 

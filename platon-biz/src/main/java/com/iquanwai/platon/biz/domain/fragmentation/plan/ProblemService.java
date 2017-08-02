@@ -88,7 +88,9 @@ public interface ProblemService {
      */
     Pair<Problem, List<EssenceCard>> loadProblemCards(Integer planId);
 
-    // 获取精华卡图
+    /**
+     * 获取精华卡图
+     */
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
 }

@@ -2,19 +2,10 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -52,17 +43,11 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
-    private ProfileDao profileDao;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
     private RiseCourseDao riseCourseDao;
     @Autowired
     private ProblemService problemService;
-    @Autowired
-    private QRCodeService qrCodeService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 

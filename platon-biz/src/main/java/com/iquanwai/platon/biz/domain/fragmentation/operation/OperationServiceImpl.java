@@ -1,18 +1,23 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionUserDao;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.slf4j.Logger;
@@ -21,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
@@ -40,28 +46,36 @@ public class OperationServiceImpl implements OperationService {
     @Autowired
     private PromotionLevelDao promotionLevelDao;
     @Autowired
-    private ProfileDao profileDao;
+    private AccountService accountService;
     @Autowired
     private CouponDao couponDao;
     @Autowired
     private MQService mqService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
+    @Autowired
+    private CardRepository cardRepository;
+    @Autowired
+    private UploadResourceService uploadResourceService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private RabbitMQPublisher rabbitMQPublisher;
 
-    private String cacheReloadTopic = "confucius_resource_reload";
+    private final static String cacheReloadTopic = "confucius_resource_reload";
     // 活动前缀
-    private static String prefix = "freeLimit_";
-    private static String naturePrefix = "natureRaise";
+    private final static String prefix = "freeLimit_";
+    private final static String naturePrefix = "natureRaise";
+    // 推广的熊猫卡临时存放路径
+    private final static String TEMP_IMAGE_PATH = "/data/static/images/";
     // 推广成功人数限额
-    private static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
+    private final static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
 
     @PostConstruct
     public void init() {
         rabbitMQPublisher = new RabbitMQPublisher();
         rabbitMQPublisher.init(cacheReloadTopic);
-        rabbitMQPublisher.setSendCallback(queue -> mqService.saveMQSendOperation(queue));
+        rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
     }
 
     @Override
@@ -70,7 +84,7 @@ public class OperationServiceImpl implements OperationService {
         if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
         String[] sceneParams = scene.split("_");
         if (sceneParams.length != 3) return;
-        Profile profile = profileDao.queryByOpenId(openId);
+        Profile profile = accountService.getProfile(openId);
         if (profile == null || profile.getRiseMember() == 1) {
             // 会员扫码无效
             logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{},profile:{}", openId, scene, profile);
@@ -80,7 +94,7 @@ public class OperationServiceImpl implements OperationService {
             promotionLevelDao.insertPromotionLevel(openId, 1);
         } else {
             Integer promotionProfileId = Integer.parseInt(sceneParams[1]);
-            Profile promotionProfile = profileDao.load(Profile.class, promotionProfileId);
+            Profile promotionProfile = accountService.getProfile(promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
             PromotionLevel promotionLevelObject = promotionLevelDao.loadByOpenId(promotionOpenId); // 推广人层级表对象
             if (openId.equals(promotionOpenId)) {
@@ -153,7 +167,7 @@ public class OperationServiceImpl implements OperationService {
             // 获取的是来源的 profileId (推广人的 profileId)
             Integer sourceProfileId = orderUser.getProfileId();
             if (sourceProfileId == null) return;
-            Profile sourceProfile = profileDao.load(Profile.class, sourceProfileId); // 推广人 Profile
+            Profile sourceProfile = accountService.getProfile(sourceProfileId); // 推广人 Profile
             if (sourceProfile == null) return;
             // 区分是否为会员
             if (sourceProfile.getRiseMember() == 1) {
@@ -195,12 +209,29 @@ public class OperationServiceImpl implements OperationService {
         }
     }
 
+    @Override
+    public void sendCustomerMsg(String openId) {
+        //先发文字,后发图片
+        customerMessageService.sendCustomerMessage(openId, "找到本质问题，减少无效努力”，送你一张专属课程知识卡\n继续学习请点击下方“上课啦",
+                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+
+        Profile profile = accountService.getProfile(openId);
+        BufferedImage bufferedImage = cardRepository.loadDefaultCardImg(profile);
+        if(bufferedImage!=null){
+            // 发送图片消息
+            String path = TEMP_IMAGE_PATH+CommonUtils.randomString(10)+profile.getId()+".jpg";
+            String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
+            customerMessageService.sendCustomerMessage(openId, mediaId,
+                    Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        }
+    }
+
     /**
      * 发送成功推广信息
      * @param targetOpenId 目标用户 openId
      */
     private void sendSuccessOrderMsg(String targetOpenId, String orderOpenId, Integer remainCount) {
-        Profile profile = profileDao.queryByOpenId(orderOpenId);
+        Profile profile = accountService.getProfile(orderOpenId);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
@@ -215,7 +246,7 @@ public class OperationServiceImpl implements OperationService {
     }
 
     private void sendNormalSuccessOrderMsg(String targetOpenId, String orderOpenId) {
-        Profile profile = profileDao.queryByOpenId(orderOpenId);
+        Profile profile = accountService.getProfile(orderOpenId);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
@@ -234,7 +265,7 @@ public class OperationServiceImpl implements OperationService {
      * @param targetOpenId 目标用户 openId
      */
     private void sendSuccessPromotionMsg(String targetOpenId) {
-        Profile profile = profileDao.queryByOpenId(targetOpenId);
+        Profile profile = accountService.getProfile(targetOpenId);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
