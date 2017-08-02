@@ -71,7 +71,7 @@ public class OperationServiceImpl implements OperationService {
         String[] sceneParams = scene.split("_");
         if (sceneParams.length != 3) return;
         Profile profile = profileDao.queryByOpenId(openId);
-        if (profile == null || profile.getRiseMember() == 1) {
+        if (profile != null && profile.getRiseMember() == 1) {
             // 会员扫码无效
             logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{},profile:{}", openId, scene, profile);
             return;
