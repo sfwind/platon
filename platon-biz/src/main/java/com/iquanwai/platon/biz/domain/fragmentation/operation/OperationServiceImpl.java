@@ -53,7 +53,7 @@ public class OperationServiceImpl implements OperationService {
     private String cacheReloadTopic = "confucius_resource_reload";
     // 活动前缀
     private static String prefix = "freeLimit_";
-    private static String naturePrefix = "natureLimit";
+    private static String naturePrefix = "natureRaise";
     // 推广成功人数限额
     private static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
 
@@ -70,6 +70,12 @@ public class OperationServiceImpl implements OperationService {
         if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
         String[] sceneParams = scene.split("_");
         if (sceneParams.length != 3) return;
+        Profile profile = profileDao.queryByOpenId(openId);
+        if (profile == null || profile.getRiseMember() == 1) {
+            // 没有profile或者是会员
+            logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{}", openId, scene);
+            return;
+        }
         if ("RISE".equals(sceneParams[1])) {
             promotionLevelDao.insertPromotionLevel(openId, 1);
         } else {
@@ -82,6 +88,13 @@ public class OperationServiceImpl implements OperationService {
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
             } else {
                 promotionLevelDao.insertPromotionLevel(openId, 2);
+                // 推广人没有扫码，落入到user表
+                PromotionUser promotionUser = new PromotionUser();
+                promotionUser.setSource(naturePrefix);
+                promotionUser.setOpenId(openId);
+                promotionUser.setAction(0);
+                promotionUser.setProfileId(null);
+                promotionUserDao.insert(promotionUser);
             }
         }
     }
