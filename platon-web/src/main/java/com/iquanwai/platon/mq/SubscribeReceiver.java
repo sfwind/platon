@@ -54,11 +54,8 @@ public class SubscribeReceiver {
             logger.info("receiver message {}", message);
             JSONObject json = JSONObject.parseObject(message);
             String scene = json.get("scene").toString();
-            logger.info("scene: {}", scene);
             String openId = json.get("openid").toString();
-            logger.info("openId: {}", openId);
             String event = json.get("event").toString();
-            logger.info("event: {}", event);
             operationService.recordPromotionLevel(openId, scene);
 
             String[] sceneParams = scene.split("_");
@@ -79,7 +76,7 @@ public class SubscribeReceiver {
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
                                     ConfigUtils.getTrialProblemId() +
-                                    "'>『" + freeProblemName + "』</a>\n" +
+                                    "&free=true'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
                                     "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
                                     "\n" +
@@ -91,7 +88,7 @@ public class SubscribeReceiver {
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
                                     ConfigUtils.getTrialProblemId() +
-                                    "'>『" + freeProblemName + "』</a>\n" +
+                                    "&free=true'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
                                     "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
