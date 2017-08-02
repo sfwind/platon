@@ -83,6 +83,10 @@ public class OperationServiceImpl implements OperationService {
             Profile promotionProfile = profileDao.load(Profile.class, promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
             PromotionLevel promotionLevelObject = promotionLevelDao.loadByOpenId(promotionOpenId); // 推广人层级表对象
+            if (openId.equals(promotionOpenId)) {
+                logger.error("自己扫自己，不能入表");
+                return;
+            }
             if (promotionLevelObject != null) {
                 Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
                 promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
