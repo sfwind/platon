@@ -103,4 +103,6 @@ public interface AccountService {
      * 获取优惠券信息
      */
     List<Coupon> loadCoupons(Integer profileId);
+
+    void insertCoupon(Coupon coupon);
 }

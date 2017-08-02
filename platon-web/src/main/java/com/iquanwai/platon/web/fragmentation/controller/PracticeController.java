@@ -175,8 +175,18 @@ public class PracticeController {
         }
 
         Integer completedApplication = 0;
-        if(isNewApplication) {
+        if (isNewApplication) {
             completedApplication = practiceService.loadCompletedApplicationCnt(planId);
+            if (completedApplication == 3) {
+                Coupon coupon = new Coupon();
+                coupon.setOpenId(loginUser.getOpenId());
+                coupon.setProfileId(loginUser.getId());
+                coupon.setAmount(20);
+                coupon.setUsed(0);
+                coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
+                coupon.setDescription("奖学金");
+                accountService.insertCoupon(coupon);
+            }
         }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -185,7 +195,7 @@ public class PracticeController {
                 .action("提交应用练习")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        if(result) {
+        if (result) {
             return WebUtils.result(completedApplication);
         } else {
             return WebUtils.error("应用练习提交失败");

@@ -412,5 +412,13 @@ public class AccountServiceImpl implements AccountService {
         return targetCoupons;
     }
 
+    @Override
+    public void insertCoupon(Coupon coupon) {
+        if (coupon != null) {
+            coupon.setUsed(0);
+            couponDao.insertCoupon(coupon);
+        }
+    }
+
 }
 
