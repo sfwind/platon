@@ -25,9 +25,7 @@ import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -238,7 +236,7 @@ public class CardRepositoryImpl implements CardRepository {
         return list;
     }
 
-    private String subByteString(String str, Integer byteLength) {
+    private static String subByteString(String str, Integer byteLength) {
         StringBuilder builder = new StringBuilder("");
         for (int i = 0; i < str.length(); i++) {
             builder.append(str.substring(i, i + 1));
@@ -248,7 +246,7 @@ public class CardRepositoryImpl implements CardRepository {
                     return str.equals(targetStr) ? targetStr : targetStr + "...";
                 }
             } catch (UnsupportedEncodingException e) {
-                logger.error(e.getLocalizedMessage());
+//                logger.error(e.getLocalizedMessage());
             }
         }
         return builder.toString();
@@ -305,7 +303,7 @@ public class CardRepositoryImpl implements CardRepository {
         BufferedImage headImg = loadHeadImage(profile);
         headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
         headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 601, 1141);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 578, 1134);
         // NickName
         String nickName = CommonUtils.filterEmoji(profile.getNickname());
         if (nickName == null || nickName.length() == 0) {
@@ -316,7 +314,7 @@ public class CardRepositoryImpl implements CardRepository {
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
         // TODO:文字
-        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为战斗力爆表的人",
+        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为洞察力爆表的人",
                 font.deriveFont(24f), new Color(51, 51, 51));
 
         return targetImage;
