@@ -580,7 +580,7 @@ public class PlanServiceImpl implements PlanService {
             } else {
                 // 不是会员，查询一下这个小课是不是限免小课
                 if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-                    if(autoOpen){
+                    if(autoOpen!=null && autoOpen){
                         // 限免小课自动开课，显示"下一步"
                         buttonStatus = 7;
                     }else{
