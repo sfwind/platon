@@ -212,7 +212,7 @@ public class OperationServiceImpl implements OperationService {
     @Override
     public void sendCustomerMsg(String openId) {
         //先发文字,后发图片
-        customerMessageService.sendCustomerMessage(openId, "你已领取限免小课“找到本质问题，减少无效努力”，送你一张专属课程知识卡\n继续学习请点击下方“上课啦",
+        customerMessageService.sendCustomerMessage(openId, "你已领取限免小课“找到本质问题，减少无效努力”，送你一张专属课程知识卡\n继续学习请点击下方“上课啦”",
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
         Profile profile = accountService.getProfile(openId);
