@@ -567,6 +567,7 @@ public class PlanController {
             plan.setName(item.getProblem().getProblem());
             plan.setPic(item.getProblem().getPic());
             plan.setStartDate(item.getStartDate());
+            plan.setProblemId(item.getProblemId());
             plan.setCloseTime(item.getCloseTime());
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(plan);
@@ -597,7 +598,7 @@ public class PlanController {
     }
 
     // 查询推荐的小课
-    private List<Problem> loadRecommendations(Integer profielId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
+    private List<Problem> loadRecommendations(Integer porfileId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
         // 最后要返回的
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
@@ -617,15 +618,16 @@ public class PlanController {
             problemIds = usefulProblems;
         } else {
             // 有进行中的,有用性评分的小课排在后面
-            List<Integer> collect = runningPlans.stream().map(PlanDto::getProblemId)
+            List<Integer> collect = usefulProblems.stream()
                     .filter(item -> !runningProblemId.contains(item)).collect(Collectors.toList());
-            collect.addAll(usefulProblems);
-            problemIds = collect.stream().distinct().collect(Collectors.toList());
+            runningProblemId.addAll(collect);
+            problemIds = runningProblemId.stream().distinct().collect(Collectors.toList());
         }
         // 对这些小课设定分数，用于排序
         Map<Integer,Integer> problemScores = Maps.newHashMap();
         for (int i = 0; i < problemIds.size(); i++) {
-            problemScores.putIfAbsent(problemIds.get(i), i);
+            int score = problemIds.size() - i;
+            problemScores.putIfAbsent(problemIds.get(i), score);
         }
         // 获取所有推荐，对这些推荐排序
         List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left,right)->{
@@ -639,7 +641,7 @@ public class PlanController {
                 return rightScore - leftScore;
             }
         }).collect(Collectors.toList());
-        boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, profielId);
+        boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, porfileId);
         for (Recommendation recommendation : recommendationLists) {
             // 开始过滤,这个推荐里的小课
             List<Problem> recommendProblems = recommendation.getRecommendProblems();
