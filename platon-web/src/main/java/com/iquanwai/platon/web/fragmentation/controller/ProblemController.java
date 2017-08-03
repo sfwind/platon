@@ -218,7 +218,6 @@ public class ProblemController {
                         return dto;
                     })
                     .collect(Collectors.toList());
-            list.sort((o1, o2) -> o2.getId() - o1.getId());
             return WebUtils.result(list);
         } else {
             return WebUtils.error("分类不能为空");
