@@ -24,4 +24,9 @@ public interface OperationService {
      */
     void recordOrderAndSendMsg(String openId, Integer newAction);
 
+    /**
+     * 自动选课后,发送开课消息
+     */
+    void sendCustomerMsg(String openId);
+
 }

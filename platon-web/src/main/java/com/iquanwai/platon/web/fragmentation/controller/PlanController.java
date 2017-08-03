@@ -181,6 +181,13 @@ public class PlanController {
                     }
                 }
             }
+            case 7: {
+                // 限免小课试用
+                if (plan != null) {
+                    // 已经试用过了
+                    return WebUtils.error(204, "小课正在进行中");
+                }
+            }
         }
 
         if (CollectionUtils.isNotEmpty(runningPlans)) {
