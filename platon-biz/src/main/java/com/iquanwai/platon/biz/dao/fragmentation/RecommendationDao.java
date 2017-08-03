@@ -23,7 +23,7 @@ public class RecommendationDao extends PracticeDBUtil {
      */
     public List<Recommendation> loadRecommendationByProblemId(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from Recommendation where ProblemId = ? order by sequence";
+        String sql = "select * from Recommendation where ProblemId = ? and Del = 0 order by sequence";
         ResultSetHandler<List<Recommendation>> h = new BeanListHandler<>(Recommendation.class);
         try {
             return runner.query(sql, h, problemId);

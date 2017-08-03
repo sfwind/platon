@@ -14,4 +14,5 @@ public interface ReportService {
 
     List<Recommendation> loadRecommendationByProblemId(Integer problemId);
 
+    List<Recommendation> loadAllRecommendation();
 }

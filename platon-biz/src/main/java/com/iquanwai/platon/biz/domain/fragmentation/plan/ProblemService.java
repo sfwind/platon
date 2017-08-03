@@ -9,6 +9,9 @@ import java.util.List;
  * Created by justin on 16/12/8.
  */
 public interface ProblemService {
+
+    Integer MAX_RECOMMENDATION_SIZE = 6;
+
     /**
      * 获取所有工作中的问题
      */
