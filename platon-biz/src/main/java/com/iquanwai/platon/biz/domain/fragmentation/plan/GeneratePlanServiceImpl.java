@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -254,6 +255,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<Integer> practiceIds = Lists.newArrayList();
             practiceIds.addAll(practices.stream()
                     .filter(warmupPractice -> !warmupPractice.getExample() && !warmupPractice.getDel())
+                    .sorted(Comparator.comparingInt(WarmupPractice::getSequence))
                     .map(WarmupPractice::getId)
                     .collect(Collectors.toList()));
 
@@ -263,7 +265,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         return selectedPractice;
     }
-
 
     private int createPlan(Problem problem, Integer profileId, String openid) {
         Assert.notNull(problem, "problem不能为空");
