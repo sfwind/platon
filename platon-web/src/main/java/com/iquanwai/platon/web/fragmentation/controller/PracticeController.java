@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -429,6 +430,7 @@ public class PracticeController {
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), device);
 
+
         if (result.getLeft() > 0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -445,6 +447,12 @@ public class PracticeController {
             resultDto.setRole(loginUser.getRole());
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
+
+            // 初始化教练回复的评论反馈评价
+            if(Role.isAsst(loginUser.getRole())) {
+                practiceService.initCommentEvaluation(loginUser.getId(), resultDto.getId(), null);
+            }
+
             return WebUtils.result(resultDto);
         } else {
             return WebUtils.error("评论失败");
@@ -466,6 +474,7 @@ public class PracticeController {
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
+
         if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
@@ -484,6 +493,12 @@ public class PracticeController {
             resultDto.setRepliedComment(replyComment.getContent());
             resultDto.setIsMine(true);
             resultDto.setRepliedDel(replyComment.getDel());
+
+            // 初始化教练回复的评论反馈评价
+            if(Role.isAsst(loginUser.getRole())) {
+                practiceService.initCommentEvaluation(loginUser.getId(), resultDto.getId(), replyComment.getId());
+            }
+
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
                     .function("碎片化")

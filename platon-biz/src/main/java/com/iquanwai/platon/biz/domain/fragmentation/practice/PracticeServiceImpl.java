@@ -79,6 +79,8 @@ public class PracticeServiceImpl implements PracticeService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private CommentEvaluationDao commentEvaluationDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -204,7 +206,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
-                                                      Integer profileId, Integer planId, boolean create) {
+                                                                     Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
         Boolean isNewApplication = false; // 该 ApplicationPractice 是否是新生成的
         // 查询该应用练习
@@ -684,6 +686,15 @@ public class PracticeServiceImpl implements PracticeService {
             asstCoachComment.setCount(asstCoachComment.getCount() + 1);
             asstCoachCommentDao.updateCount(asstCoachComment);
         }
+    }
+
+    @Override
+    public void initCommentEvaluation(Integer profileId, Integer commentId, Integer targetId) {
+        CommentEvaluation evaluation = new CommentEvaluation();
+        evaluation.setProfileId(profileId);
+        evaluation.setCommentId(commentId);
+        evaluation.setTargetId(targetId);
+        commentEvaluationDao.initCommentEvaluation(evaluation);
     }
 
     @Override

@@ -92,6 +92,8 @@ public interface PracticeService {
      */
     Boolean challengeSubmit(Integer id, String content);
 
+    void initCommentEvaluation(Integer profileId, Integer commentId, Integer targetId);
+
     /**
      * 增加文章视图的记录数
      */
