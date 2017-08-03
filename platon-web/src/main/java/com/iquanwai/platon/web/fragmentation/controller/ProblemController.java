@@ -36,11 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -257,62 +253,19 @@ public class ProblemController {
     }
 
     @RequestMapping("/open/{problemId}")
-    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId) {
+    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
+                                                                       @RequestParam Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblem(problemId);
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
-        List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
-        ImprovementPlan plan = plans.stream().filter(item -> item.getProblemId().equals(problemId)).findFirst().orElse(null);
-        Integer buttonStatus;
+        ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
+
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
-        if (plan == null) {
-            // 没学过这个小课
-            // 是否会员
-            if (isMember) {
-                // 是会员，显示按钮"选择"
-                buttonStatus = 2;
-            } else {
-                // 不是会员，查询一下这个小课是不是限免小课
-                if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-                    // 是限免小课,显示"限时免费"
-                    buttonStatus = 5;
-                } else {
-                    // 不是限免小课,显示两个按钮
-                    buttonStatus = 1;
-                }
-            }
-        } else {
-            // 学过这个小课
+        Integer buttonStatus = planService.problemIntroductionButtonStatus(isMember, problemId, plan, autoOpen);
+        if (plan != null) {
             dto.setPlanId(plan.getId());
-            switch (plan.getStatus()) {
-                case ImprovementPlan.RUNNING: {
-                    buttonStatus = 3;
-                    break;
-                }
-                case ImprovementPlan.COMPLETE:
-                case ImprovementPlan.CLOSE: {
-                    buttonStatus = 4;
-                    break;
-                }
-                case ImprovementPlan.TRIALCLOSE: {
-                    if (isMember) {
-                        buttonStatus = 2;
-                    } else {
-                        buttonStatus = 1;
-                    }
-                    break;
-                }
-                case ImprovementPlan.TEMP_TRIALCLOSE: {
-                    buttonStatus = 6;
-                    break;
-                }
-                default:
-                    // 按钮状态有问题
-                    buttonStatus = -1;
-                    break;
-            }
         }
         dto.setFee(ConfigUtils.getRiseCourseFee());
         dto.setButtonStatus(buttonStatus);
@@ -320,15 +273,14 @@ public class ProblemController {
         Profile profile = accountService.getProfile(loginUser.getId());
         dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
         dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
-        if (ConfigUtils.getRiseCoursePayTestStatus() && loginUser.getRiseMember() != 1) {
-            //  开启测试
-            boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_COURSE_PAY, loginUser.getId());
-            if (!inWhite) {
-                // 没在白名单里
-                dto.setButtonStatus(-1);
-            }
-        }
-
+//        if (ConfigUtils.getRiseCoursePayTestStatus() && loginUser.getRiseMember() != 1) {
+//            //  开启测试
+//            boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_COURSE_PAY, loginUser.getId());
+//            if (!inWhite) {
+//                // 没在白名单里
+//                dto.setButtonStatus(-1);
+//            }
+//        }
 
         // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
