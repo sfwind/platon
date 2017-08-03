@@ -131,7 +131,7 @@ public class ProblemController {
                     dto.setPic(item.getPic());
                     dto.setColor(item.getColor());
                     List<Problem> problemsTemp = showProblems.get(item.getId());
-                    problemsTemp.sort((o1, o2) -> o2.getId() - o1.getId());
+                    problemsTemp.sort(this::problemSort);
                     List<Problem> problemList = problemsTemp.stream().map(Problem::simple).collect(Collectors.toList());
                     dto.setProblemList(problemList);
                     return dto;
@@ -148,6 +148,33 @@ public class ProblemController {
         operationLogService.log(operationLog);
 
         return WebUtils.result(result);
+    }
+
+    private Integer problemSort(Problem left,Problem right){
+        // 限免》首发》new》有用度排序
+        // 1000 > 500 > 300 > usefulScore
+        Double leftScore = 0d;
+        Double rightScore = 0d;
+        if (left.getId() == 9) {
+            leftScore = 1000d;
+        } else if (left.getTrial()) {
+            leftScore = 500d;
+        } else if (left.getNewProblem()) {
+            leftScore = 300d;
+        } else {
+            leftScore = left.getUsefulScore();
+        }
+
+        if (right.getId() == 9) {
+            rightScore = 1000d;
+        } else if (right.getTrial()) {
+            rightScore = 500d;
+        } else if (right.getNewProblem()) {
+            rightScore = 300d;
+        } else {
+            rightScore = right.getUsefulScore();
+        }
+        return rightScore > leftScore ? 1 : -1;
     }
 
     @RequestMapping("/list/{catalog}")
@@ -171,9 +198,10 @@ public class ProblemController {
             if (!whiteListService.isInWhiteList(TRIAL, loginUser.getId())) {
                 problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
             }
+            problems = problems.stream().filter(item -> catalogId.equals(item.getCatalogId())).sorted(this::problemSort).collect(Collectors.toList());
 
-            List<ProblemExploreDto> list = problems.stream().filter(item -> catalogId.equals(item.getCatalogId()))
-                    .map(item -> {
+            List<ProblemExploreDto> list = problems
+                    .stream().map(item -> {
                         ProblemExploreDto dto = new ProblemExploreDto();
                         dto.setCatalog(problemCatalog.getName());
                         dto.setCatalogDescribe(problemCatalog.getDescription());
@@ -190,7 +218,6 @@ public class ProblemController {
                         return dto;
                     })
                     .collect(Collectors.toList());
-            list.sort((o1, o2) -> o2.getId() - o1.getId());
             return WebUtils.result(list);
         } else {
             return WebUtils.error("分类不能为空");
