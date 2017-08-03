@@ -161,6 +161,13 @@ public class PlanController {
                     }
                 }
             }
+            case 7: {
+                // 限免小课试用
+                if (plan != null) {
+                    // 已经试用过了
+                    return WebUtils.error("您已经试用过该小课，无法重复试用");
+                }
+            }
         }
 
         if (CollectionUtils.isNotEmpty(runningPlans)) {
