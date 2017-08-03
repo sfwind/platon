@@ -20,24 +20,12 @@ import java.util.Map;
  * Created by xfduan on 2017/7/14.
  */
 @RestController
-@RequestMapping("/operation/free")
+@RequestMapping("/rise/operation/free")
 public class FreeLimitController {
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
     private OperationService operationService;
-
-    /**
-     * 数据保存倾向，数据记录
-     */
-    @RequestMapping("/card/save/{knowledgeId}")
-    public ResponseEntity<Map<String, Object>> markSaveAttention(LoginUser loginUser, @PathVariable Integer knowledgeId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("限免推广").function("图片分享").action("图片保存").memo(knowledgeId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
 
     /**
      * 发送自动选限免课的客服消息
