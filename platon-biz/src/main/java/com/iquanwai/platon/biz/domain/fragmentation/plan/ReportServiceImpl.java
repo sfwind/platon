@@ -106,6 +106,26 @@ public class ReportServiceImpl implements ReportService {
         return loadRecommendation(problemId);
     }
 
+    @Override
+    public List<Recommendation> loadAllRecommendation() {
+        return recommendationDao.loadAll(Recommendation.class)
+                .stream().filter(item -> !item.getDel())
+                .map(item ->{
+                    String recommendIds = item.getRecommendIds();
+                    List<String> problemIdList = Lists.newArrayList();
+                    if (recommendIds != null && !recommendIds.equals("")) {
+                        problemIdList = Arrays.asList(recommendIds.split("、"));
+                    }
+                    // 根据 ProblemId 列表获取所有的相关 Problem 信息
+                    List<Problem> problems = Lists.newArrayList();
+                    problemIdList.forEach(id -> {
+                        problems.add(problemDao.load(Problem.class, Integer.parseInt(id)));
+                    });
+                    item.setRecommendProblems(problems);
+                    return item;
+                }).collect(Collectors.toList());
+    }
+
     private Integer calculateVoteCount(List<HomeworkVote> list, ImprovementPlan plan) {
         Integer result = 0;
         if (CollectionUtils.isNotEmpty(list)) {

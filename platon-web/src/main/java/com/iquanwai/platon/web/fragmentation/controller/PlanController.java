@@ -2,13 +2,25 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.PromotionUser;
+import com.iquanwai.platon.biz.po.Recommendation;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
@@ -24,7 +36,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -52,6 +68,10 @@ public class PlanController {
     private ReportService reportService;
     @Autowired
     private OperationService operationService;
+    @Autowired
+    private ProblemService problemService;
+    @Autowired
+    private WhiteListService whiteListService;
 
     /**
      * 检查是否能选课<br/>
@@ -556,12 +576,14 @@ public class PlanController {
                 runningPlans.add(plan);
             }
         });
+        List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, trialClosedPlans, completedPlans);
+
         PlanListDto planListDto = new PlanListDto();
         planListDto.setOpenNavigator(loginUser.getOpenNavigator());
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setTrialClosedPlans(trialClosedPlans);
-
+        planListDto.setRecommendations(recommends);
         runningPlans.sort(Comparator.comparing(PlanDto::getStartDate));
         completedPlans.sort(this::sortPlans);
         trialClosedPlans.sort(this::sortPlans);
@@ -573,6 +595,73 @@ public class PlanController {
         operationLogService.log(operationLog);
         return WebUtils.result(planListDto);
     }
+
+    // 查询推荐的小课
+    private List<Problem> loadRecommendations(Integer profielId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
+        // 最后要返回的
+        List<Problem> problems = Lists.newArrayList();
+        // 用户已经有的小课
+        List<Integer> userProblems = Lists.newArrayList();
+        List<Integer> runningProblemId = runningPlans.stream().map(PlanDto::getProblemId).collect(Collectors.toList());
+        runningPlans.forEach(item -> userProblems.add(item.getProblemId()));
+        trialClosePlans.forEach(item -> userProblems.add(item.getProblemId()));
+        completedPlans.forEach(item -> userProblems.add(item.getProblemId()));
+        List<Integer> problemIds;
+
+        // 根据有用性评分排列小课
+        List<Integer> usefulProblems = problemService.loadProblems().stream()
+                .sorted((left, right) -> right.getUsefulScore() > left.getUsefulScore() ? 1 : -1)
+                .map(Problem::getId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(runningPlans)) {
+            // 没有进行中的练习,根据实用度排序
+            problemIds = usefulProblems;
+        } else {
+            // 有进行中的,有用性评分的小课排在后面
+            List<Integer> collect = runningPlans.stream().map(PlanDto::getProblemId)
+                    .filter(item -> !runningProblemId.contains(item)).collect(Collectors.toList());
+            collect.addAll(usefulProblems);
+            problemIds = collect.stream().distinct().collect(Collectors.toList());
+        }
+        // 对这些小课设定分数，用于排序
+        Map<Integer,Integer> problemScores = Maps.newHashMap();
+        for (int i = 0; i < problemIds.size(); i++) {
+            problemScores.putIfAbsent(problemIds.get(i), i);
+        }
+        // 获取所有推荐，对这些推荐排序
+        List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left,right)->{
+            Integer rightScore = problemScores.get(right.getId());
+            Integer leftScore = problemScores.get(left.getId());
+            if (leftScore == null) {
+                return 1;
+            } else if (rightScore == null) {
+                return -1;
+            } else {
+                return rightScore - leftScore;
+            }
+        }).collect(Collectors.toList());
+        boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, profielId);
+        for (Recommendation recommendation : recommendationLists) {
+            // 开始过滤,这个推荐里的小课
+            List<Problem> recommendProblems = recommendation.getRecommendProblems();
+            for (Problem problem : recommendProblems) {
+                //非天使用户去除试用版小课
+                if (!inWhiteList) {
+                    if (problem.getTrial()) {
+                        continue;
+                    }
+                }
+                if (!userProblems.contains(problem.getId())) {
+                    // 用户没有做过 ignore
+                    problems.add(problem.simple());
+                    if (problems.size() >= ProblemService.MAX_RECOMMENDATION_SIZE) {
+                        return problems;
+                    }
+                }
+            }
+        }
+        return problems;
+    }
+
 
     // 倒序排列
     private int sortPlans(PlanDto left,PlanDto right) {
