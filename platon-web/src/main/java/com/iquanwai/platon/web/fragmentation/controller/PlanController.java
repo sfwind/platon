@@ -631,8 +631,8 @@ public class PlanController {
         }
         // 获取所有推荐，对这些推荐排序
         List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left,right)->{
-            Integer rightScore = problemScores.get(right.getId());
-            Integer leftScore = problemScores.get(left.getId());
+            Integer rightScore = problemScores.get(right.getProblemId());
+            Integer leftScore = problemScores.get(left.getProblemId());
             if (leftScore == null) {
                 return 1;
             } else if (rightScore == null) {
