@@ -652,7 +652,10 @@ public class PlanController {
                 }
                 if (!userProblems.contains(problem.getId())) {
                     // 用户没有做过 ignore
-                    problems.add(problem.simple());
+                    if (!problems.stream().map(Problem::getId).collect(Collectors.toList()).contains(problem.getId())) {
+                        // 没有添加进去
+                        problems.add(problem.simple());
+                    }
                     if (problems.size() >= ProblemService.MAX_RECOMMENDATION_SIZE) {
                         return problems;
                     }
