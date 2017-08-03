@@ -254,7 +254,7 @@ public class ProblemController {
 
     @RequestMapping("/open/{problemId}")
     public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
-                                                                       @RequestParam Boolean autoOpen) {
+                                                                       @RequestParam(required = false) Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblem(problemId);
         // 查看该用户是否对该问题评分
