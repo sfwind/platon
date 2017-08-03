@@ -198,9 +198,10 @@ public class ProblemController {
             if (!whiteListService.isInWhiteList(TRIAL, loginUser.getId())) {
                 problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
             }
+            problems = problems.stream().filter(item -> catalogId.equals(item.getCatalogId())).sorted(this::problemSort).collect(Collectors.toList());
 
-            List<ProblemExploreDto> list = problems.stream().filter(item -> catalogId.equals(item.getCatalogId()))
-                    .map(item -> {
+            List<ProblemExploreDto> list = problems
+                    .stream().map(item -> {
                         ProblemExploreDto dto = new ProblemExploreDto();
                         dto.setCatalog(problemCatalog.getName());
                         dto.setCatalogDescribe(problemCatalog.getDescription());
