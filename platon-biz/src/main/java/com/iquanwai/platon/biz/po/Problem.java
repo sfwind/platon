@@ -20,6 +20,7 @@ public class Problem {
     private String authorDesc; //讲师介绍
     private String authorPic; // 讲师图片
     private Double difficultyScore;// 难度
+    private Double usefulScore; // 实用度
     private String descPic; // 描述图片
     private String audio; //语音
     private String who; //适合人群

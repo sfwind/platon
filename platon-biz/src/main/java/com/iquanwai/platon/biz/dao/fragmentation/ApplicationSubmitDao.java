@@ -150,25 +150,23 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         }
     }
 
-
-
-    public Integer problemReferenceCount(Integer problemId,List<Integer> refers){
+    public List<ApplicationSubmit> loadBatchApplicationSubmits(Integer problemId,List<Integer> refers){
         if (CollectionUtils.isEmpty(refers)) {
-            return 0;
+            return Lists.newArrayList();
         }
         QueryRunner runner = new QueryRunner(getDataSource());
         String mask = produceQuestionMark(refers.size());
         List<Object> params = Lists.newArrayList();
         params.add(problemId);
         params.addAll(refers);
-        String sql = "select Count(1) from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ")";
+        String sql = "select * from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ")";
 
         try{
-            return runner.query(sql, new ScalarHandler<Long>(), params.toArray()).intValue();
+            return runner.query(sql, new BeanListHandler<ApplicationSubmit>(ApplicationSubmit.class), params.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        return -1;
+        return Lists.newArrayList();
     }
 
 

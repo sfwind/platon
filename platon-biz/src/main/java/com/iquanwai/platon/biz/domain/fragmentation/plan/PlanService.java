@@ -97,10 +97,11 @@ public interface PlanService {
     boolean hasProblemPlan(Integer profileId, Integer problemId);
 
     /**
-     * 根据训练id获取知识点路线图
+     * 查询是否有该小课
+     * @param profileId 用户id
      * @param problemId 小课id
      */
-    List<Chapter> loadRoadMap(Integer problemId);
+    ImprovementPlan getPlanByProblemId(Integer profileId, Integer problemId);
 
     /**
      * 判断小课是否完成,当理解练习和巩固练习都完成时,小课判定为完成
@@ -145,4 +146,10 @@ public interface PlanService {
      * @return
      */
     String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId);
+
+    /**
+     * 小课介绍页的按钮状态
+     * @return
+     */
+    Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 }

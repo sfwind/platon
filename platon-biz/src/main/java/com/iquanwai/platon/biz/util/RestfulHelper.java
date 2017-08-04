@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+
 /**
  * Created by justin on 8/3/16.
  */
@@ -133,6 +135,52 @@ public class RestfulHelper {
                 Response response = client.newCall(request).execute();
 
                 return response.body();
+            } catch (Exception e) {
+                logger.error("execute " + requestUrl + " error", e);
+            }
+        }
+        return null;
+    }
+
+    public String uploadImage(String requestUrl, File file, String imageType) {
+        if(StringUtils.isNotEmpty(requestUrl)) {
+            String accessToken = accessTokenService.getAccessToken();
+            String url = requestUrl.replace("{access_token}", accessToken);
+
+            RequestBody fileBody = RequestBody.create(MediaType.parse("image/"+imageType), file);
+
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .addFormDataPart("media", file.getPath(), fileBody)
+                    .setType(MultipartBody.FORM)
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                String body = response.body().string();
+                try {
+                    if (CommonUtils.isError(body)) {
+                        logger.error("execute {} return error, error message is {}", url, body);
+                    }
+                }catch (WeixinException e){
+                    //refresh token and try again
+                    accessToken = accessTokenService.refreshAccessToken(false);
+                    url = requestUrl.replace("{access_token}", accessToken);
+                    request = new Request.Builder()
+                            .url(url)
+                            .post(requestBody)
+                            .build();
+                    response = client.newCall(request).execute();
+                    body = response.body().string();
+                    if (CommonUtils.isError(body)) {
+                        logger.error("execute {} return error, error message is {}", url, body);
+                    }
+                }
+                return body;
             } catch (Exception e) {
                 logger.error("execute " + requestUrl + " error", e);
             }

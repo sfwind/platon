@@ -58,11 +58,9 @@ public class SubscribeReceiver {
             logger.info("receiver message {}", message);
             JSONObject json = JSONObject.parseObject(message);
             String scene = json.get("scene").toString();
-            logger.info("scene: {}", scene);
             String openId = json.get("openid").toString();
-            logger.info("openId: {}", openId);
             String event = json.get("event").toString();
-            logger.info("event: {}", event);
+            operationService.recordPromotionLevel(openId, scene);
 
             String[] sceneParams = scene.split("_");
             logger.info(sceneParams[0] + " " + sceneParams[1] + " " + sceneParams[2]);
@@ -70,43 +68,38 @@ public class SubscribeReceiver {
             try {
                 Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
                 String freeProblemName = freeProblem.getProblem();
-
-                // 不是会员，才记录推广层级信息
-                Profile profile = profileDao.queryByOpenId(openId);
-                if (profile != null && profile.getRiseMember() != 1) {
-                    operationService.recordPromotionLevel(openId, scene);
-                }
+                operationService.recordPromotionLevel(openId, scene);
 
                 if (sceneParams.length == 3) {
                     String sendMsg;
                     if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                         // 限免课
                         if (event.equalsIgnoreCase(SUBSCRIBE)) {
-                            sendMsg = "\uD83D\uDC47欢迎关注【圈外同学】，你的限免课程在这里，点击上课：\uD83D\uDC47\n" +
+                            sendMsg = "你要的限免课程在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
                                     "\n" +
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
                                     ConfigUtils.getTrialProblemId() +
-                                    "'>『" + freeProblemName + "』</a>\n" +
+                                    "&free=true'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
                                     "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
                                     "\n" +
                                     "这里就是上课的教室，强烈建议点击右上角置顶哦~";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         } else if (event.equalsIgnoreCase(SCAN)) {
-                            sendMsg = "\uD83D\uDC47你要的限免课程在这里，点击选课：\uD83D\uDC47\n" +
+                            sendMsg = "你要的限免课程在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
                                     "\n" +
                                     "<a href='" + ConfigUtils.adapterDomainName() +
                                     "/rise/static/plan/view?id=" +
                                     ConfigUtils.getTrialProblemId() +
-                                    "'>『" + freeProblemName + "』</a>\n" +
+                                    "&free=true'>『" + freeProblemName + "』</a>\n" +
                                     "------------\n" +
                                     "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n";
                             customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         }
                     } else {
                         // 非限免
-                        sendMsg = "\uD83D\uDC47同学你好，你要的小课在这里，点击选课：\uD83D\uDC47\n" +
+                        sendMsg = "你要的小课在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
                                 "\n" +
                                 "<a href='" + ConfigUtils.adapterDomainName() +
                                 "/rise/static/plan/view?id=" +

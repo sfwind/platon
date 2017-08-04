@@ -2,19 +2,10 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -52,17 +43,11 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
-    private ProfileDao profileDao;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
     private RiseCourseDao riseCourseDao;
     @Autowired
     private ProblemService problemService;
-    @Autowired
-    private QRCodeService qrCodeService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -434,10 +419,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<Chapter> loadRoadMap(Integer problemId) {
-        Problem problem = cacheService.getProblem(problemId);
-
-        return problem != null ? problem.getChapterList() : Lists.newArrayList();
+    public ImprovementPlan getPlanByProblemId(Integer profileId, Integer problemId) {
+        return improvementPlanDao.loadPlanByProblemId(profileId, problemId);
     }
 
     @Override
@@ -581,6 +564,71 @@ public class PlanServiceImpl implements PlanService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId,
+                                                   ImprovementPlan plan, Boolean autoOpen) {
+        Integer buttonStatus;
+
+        if (plan == null) {
+            // 没学过这个小课
+            // 是否会员
+            if (isMember) {
+                // 是会员，显示按钮"选择该小课"
+                buttonStatus = 2;
+            } else {
+                // 不是会员，查询一下这个小课是不是限免小课
+                if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+                    if(autoOpen!=null && autoOpen){
+                        // 限免小课自动开课，显示"下一步"
+                        buttonStatus = 7;
+                    }else{
+                        // 是限免小课，显示"限时免费"
+                        buttonStatus = 5;
+                    }
+                } else {
+                    // 不是限免小课，显示"¥ {fee}，立即学习"
+                    buttonStatus = 1;
+                }
+            }
+        } else {
+            // 学过这个小课
+            switch (plan.getStatus()) {
+                case ImprovementPlan.RUNNING: {
+                    // 小课进行中，显示按钮"小课已开始，去上课"
+                    buttonStatus = 3;
+                    break;
+                }
+                case ImprovementPlan.COMPLETE:
+                case ImprovementPlan.CLOSE: {
+                    // 小课已完成，显示按钮"小课已完成，去复习"
+                    buttonStatus = 4;
+                    break;
+                }
+                case ImprovementPlan.TRIALCLOSE: {
+                    if (isMember) {
+                        // 是会员，显示按钮"选择该小课"
+                        buttonStatus = 2;
+                    } else {
+                        // 不是会员，显示"¥ {fee}，立即学习"
+                        buttonStatus = 1;
+                    }
+                    break;
+                }
+                case ImprovementPlan.TEMP_TRIALCLOSE: {
+                    // 老状态，临时关闭，显示"限时免费，立即开始学习"
+                    buttonStatus = 6;
+                    break;
+                }
+                default:
+                    // 按钮状态有问题
+                    buttonStatus = -1;
+                    break;
+            }
+        }
+
+        return buttonStatus;
     }
 
 }

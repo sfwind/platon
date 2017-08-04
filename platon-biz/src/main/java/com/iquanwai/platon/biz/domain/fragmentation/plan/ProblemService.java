@@ -9,6 +9,9 @@ import java.util.List;
  * Created by justin on 16/12/8.
  */
 public interface ProblemService {
+
+    Integer MAX_RECOMMENDATION_SIZE = 6;
+
     /**
      * 获取所有工作中的问题
      */
@@ -88,7 +91,9 @@ public interface ProblemService {
      */
     Pair<Problem, List<EssenceCard>> loadProblemCards(Integer planId);
 
-    // 获取精华卡图
+    /**
+     * 获取精华卡图
+     */
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
 }

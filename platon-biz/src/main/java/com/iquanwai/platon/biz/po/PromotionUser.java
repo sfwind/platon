@@ -18,4 +18,6 @@ public class PromotionUser {
     public static final int TRIAL = 1;
     public static final int PAY = 2;
 
+    public static final String FIRST_PROMOTION = "freeLimit_RISE_9";
+
 }

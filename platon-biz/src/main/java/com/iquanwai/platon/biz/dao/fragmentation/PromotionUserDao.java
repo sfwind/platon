@@ -7,6 +7,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -21,6 +22,23 @@ import java.util.List;
 public class PromotionUserDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+
+    public int insert(PromotionUser promotionUser){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "insert into PromotionUser(Openid, Source, Action, ProfileId) " +
+                " VALUES (?, ?, ?, ?)";
+
+        try {
+            Long insertRs = runner.insert(sql, new ScalarHandler<>(),
+                    promotionUser.getOpenId(),promotionUser.getSource(),
+                    promotionUser.getAction(), promotionUser.getProfileId());
+            return insertRs.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 
     /**
      * 根据 OpenId 加载 PromotionUser 数据
