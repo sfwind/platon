@@ -127,20 +127,22 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private Integer calculateVoteCount(List<HomeworkVote> list, ImprovementPlan plan) {
-        Integer result = 0;
+        Long result = 0L;
         if (CollectionUtils.isNotEmpty(list)) {
             List<Integer> appList = list.stream().filter(item -> item.getType().equals(2)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
             List<Integer> subjectList = list.stream().filter(item -> item.getType().equals(3)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appList)) {
                 // 查询点了多少应用练习
-                result += applicationSubmitDao.problemReferenceCount(plan.getProblemId(), appList);
+                List<Integer> appRefs = applicationSubmitDao.loadBatchApplicationSubmits(plan.getProblemId(), appList).stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
+                result = result + appList.stream().filter(appRefs::contains).count();
             }
             if (CollectionUtils.isNotEmpty(subjectList)) {
                 // 查询点了多少精华分享
-                result += subjectArticleDao.problemReferenceCount(plan.getProblemId(), subjectList);
+                List<Integer> subRefs = subjectArticleDao.loadBatchSubjects(plan.getProblemId(), subjectList).stream().map(SubjectArticle::getId).collect(Collectors.toList());
+                result = result + subRefs.stream().filter(subRefs::contains).count();
             }
         }
-        return result;
+        return result.intValue();
     }
 
     private void calculateReport(ImprovementReport report, ImprovementPlan plan) {
