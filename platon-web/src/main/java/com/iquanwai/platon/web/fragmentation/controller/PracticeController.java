@@ -203,6 +203,13 @@ public class PracticeController {
         }
     }
 
+    @RequestMapping(value = "/application/completed/count/{planId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadCompletedApplicationCnt(LoginUser loginUser, @PathVariable Integer planId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Integer completedApplicationCnt = practiceService.loadCompletedApplicationCnt(planId);
+        return WebUtils.result(completedApplicationCnt);
+    }
+
     @RequestMapping(value = "/application/autosave/{planId}/{applicationId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> autoSaveApplication(LoginUser loginUser,
                                                                    @PathVariable("planId") Integer planId,
@@ -449,7 +456,7 @@ public class PracticeController {
             resultDto.setIsMine(true);
 
             // 初始化教练回复的评论反馈评价
-            if(Role.isAsst(loginUser.getRole())) {
+            if (Role.isAsst(loginUser.getRole())) {
                 practiceService.initCommentEvaluation(loginUser.getId(), resultDto.getId(), null);
             }
 
@@ -495,7 +502,7 @@ public class PracticeController {
             resultDto.setRepliedDel(replyComment.getDel());
 
             // 初始化教练回复的评论反馈评价
-            if(Role.isAsst(loginUser.getRole())) {
+            if (Role.isAsst(loginUser.getRole())) {
                 practiceService.initCommentEvaluation(loginUser.getId(), resultDto.getId(), replyComment.getId());
             }
 
