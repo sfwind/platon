@@ -29,4 +29,5 @@ public interface OperationService {
      */
     void sendCustomerMsg(String openId);
 
+    Boolean hasGetTheCoupon(Integer profileId);
 }

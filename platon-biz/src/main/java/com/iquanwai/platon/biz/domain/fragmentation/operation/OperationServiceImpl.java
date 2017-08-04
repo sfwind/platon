@@ -140,7 +140,6 @@ public class OperationServiceImpl implements OperationService {
         }
     }
 
-
     @Override
     public void recordOrderAndSendMsg(String openId, Integer newAction) {
         PromotionUser orderUser = promotionUserDao.loadUserByOpenId(openId); // 查询 PromotionUser 中是否存在该用户信息
@@ -213,14 +212,14 @@ public class OperationServiceImpl implements OperationService {
     public void sendCustomerMsg(String openId) {
         Profile profile = accountService.getProfile(openId);
         //先发文字,后发图片
-        customerMessageService.sendCustomerMessage(openId, "Hi，"+profile.getNickname()+"，" +
+        customerMessageService.sendCustomerMessage(openId, "Hi，" + profile.getNickname() + "，" +
                         "你已领取限免课程：找到本质问题，减少无效努力\n\n如需继续学习，请点击下方按钮“上课啦”\n\n" +
                         "\uD83D\uDC47送你一张专属知识卡+30个好友免费学习名额，立即分享出去吧！",
-                        Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         BufferedImage bufferedImage = cardRepository.loadDefaultCardImg(profile);
-        if(bufferedImage!=null){
+        if (bufferedImage != null) {
             // 发送图片消息
-            String path = TEMP_IMAGE_PATH+CommonUtils.randomString(10)+profile.getId()+".jpg";
+            String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profile.getId() + ".jpg";
             String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
             customerMessageService.sendCustomerMessage(openId, mediaId,
                     Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
@@ -278,6 +277,13 @@ public class OperationServiceImpl implements OperationService {
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("remark", new TemplateMessage.Keyword("\n点击下方“上课啦”并升级会员/报名小课，立即使用代金券，开学！"));
         templateMessageService.sendMessage(templateMessage);
+    }
+
+    @Override
+    public Boolean hasGetTheCoupon(Integer profileId) {
+        List<Coupon> coupons = couponDao.loadByProfileId(profileId);
+        Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50)).count();
+        return operationCouponCount > 0;
     }
 
 }

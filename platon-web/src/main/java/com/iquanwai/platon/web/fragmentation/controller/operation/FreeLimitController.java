@@ -8,7 +8,6 @@ import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +37,16 @@ public class FreeLimitController {
                 .module("限免推广").function("自动选课").action("发送微信客服消息");
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    /**
+     * 查看当前用户是否已经领取了此次活动的优惠券
+     */
+    @RequestMapping(value = "/coupon")
+    public ResponseEntity<Map<String, Object>> hasGetTheCoupon(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Boolean result = operationService.hasGetTheCoupon(loginUser.getId());
+        return WebUtils.result(result);
     }
 
 }
