@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -16,10 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sun.misc.BASE64Encoder;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -195,16 +194,11 @@ public class ProblemServiceImpl implements ProblemService {
         // QrImage
         Profile profile = accountService.getProfile(profileId);
         BufferedImage targetImage = cardRepository.loadEssenceCardImg(profile, problemId, chapterId, totalSize);
-        ByteArrayOutputStream outputStream = null;
         if (targetImage == null) {
             return null;
         }
-        try {
-            outputStream = new ByteArrayOutputStream();
-            ImageIO.write(targetImage, "jpg", outputStream);
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
-        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
         return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
     }

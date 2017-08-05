@@ -11,6 +11,10 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by justin on 17/7/12.
@@ -102,6 +106,7 @@ public class ImageUtils {
                 if (xErrorNo != null && xErrorNo.equalsIgnoreCase("-6101")) {
                     return null;
                 }
+                ImageIO.setUseCache(false);
                 return ImageIO.read(response.body().byteStream());
             } catch (Exception e) {
                 logger.error("execute " + url + " error", e);
@@ -110,6 +115,20 @@ public class ImageUtils {
                     response.close();
                 }
             }
+        }
+        return null;
+    }
+
+    /*
+    * 通过url拉取图片信息
+    * @param url 图片链接
+    * */
+    public static BufferedImage getBufferedImageByInputStream(InputStream inputStream) {
+        ImageIO.setUseCache(false);
+        try {
+            return ImageIO.read(inputStream);
+        } catch (IOException e) {
+            logger.error("read inputStream error", e);
         }
         return null;
     }
@@ -126,6 +145,24 @@ public class ImageUtils {
         return big;
     }
 
+
+    public static void writeToFile(BufferedImage image, String format, File file){
+        try {
+            ImageIO.setUseCache(false);
+            ImageIO.write(image, format, file);
+        } catch (IOException e) {
+            logger.error("write to file error", e);
+        }
+    }
+
+    public static void writeToOutputStream(BufferedImage image, String format, OutputStream outputStream){
+        try {
+            ImageIO.setUseCache(false);
+            ImageIO.write(image, format, outputStream);
+        } catch (IOException e) {
+            logger.error("write to outputStream error", e);
+        }
+    }
 }
 
 
