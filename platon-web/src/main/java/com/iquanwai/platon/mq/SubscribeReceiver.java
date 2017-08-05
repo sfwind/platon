@@ -10,6 +10,8 @@ import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +61,7 @@ public class SubscribeReceiver {
             operationService.recordPromotionLevel(openId, scene);
 
             String[] sceneParams = scene.split("_");
-            logger.info(sceneParams[0] + " " + sceneParams[1] + " " + sceneParams[2]);
+            logger.info(ArrayUtils.toString(sceneParams));
 
             try {
                 Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
