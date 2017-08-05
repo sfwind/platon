@@ -18,7 +18,8 @@ public class ClearImageCacheJob {
     @Scheduled(cron="${clearImageCacheJob.cron}")
     public void work(){
         logger.info("clear temp file job start");
-        File directory = ImageIO.getCacheDirectory();
+        String path = System.getProperty("java.io.tmpdir");
+        File directory = new File(path);
         File[] files = directory.listFiles();
         if(files!=null){
             for(File file:files){
