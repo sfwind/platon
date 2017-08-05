@@ -106,7 +106,6 @@ public class ImageUtils {
                 if (xErrorNo != null && xErrorNo.equalsIgnoreCase("-6101")) {
                     return null;
                 }
-                ImageIO.setUseCache(false);
                 return ImageIO.read(response.body().byteStream());
             } catch (Exception e) {
                 logger.error("execute " + url + " error", e);
@@ -124,7 +123,6 @@ public class ImageUtils {
     * @param url 图片链接
     * */
     public static BufferedImage getBufferedImageByInputStream(InputStream inputStream) {
-        ImageIO.setUseCache(false);
         try {
             return ImageIO.read(inputStream);
         } catch (IOException e) {
@@ -148,7 +146,6 @@ public class ImageUtils {
 
     public static void writeToFile(BufferedImage image, String format, File file){
         try {
-            ImageIO.setUseCache(false);
             ImageIO.write(image, format, file);
         } catch (IOException e) {
             logger.error("write to file error", e);
@@ -157,7 +154,6 @@ public class ImageUtils {
 
     public static void writeToOutputStream(BufferedImage image, String format, OutputStream outputStream){
         try {
-            ImageIO.setUseCache(false);
             ImageIO.write(image, format, outputStream);
         } catch (IOException e) {
             logger.error("write to outputStream error", e);
