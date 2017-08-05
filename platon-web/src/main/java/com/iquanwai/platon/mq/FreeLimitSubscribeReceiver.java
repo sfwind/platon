@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * Created by xfduan on 2017/7/14.
  */
 @Service
-public class SubscribeReceiver {
+public class FreeLimitSubscribeReceiver {
 
     public static final String TOPIC = "subscribe_quanwai";
     public static final String QUEUE = "FreeLimitEvent_Queue";
@@ -56,19 +56,21 @@ public class SubscribeReceiver {
             logger.info("receiver message {}", message);
             JSONObject json = JSONObject.parseObject(message);
             String scene = json.get("scene").toString();
+            if(!scene.startsWith("freeLimit")){
+                logger.info(scene);
+                return;
+            }
             String openId = json.get("openid").toString();
             String event = json.get("event").toString();
-            operationService.recordPromotionLevel(openId, scene);
 
             String[] sceneParams = scene.split("_");
-            logger.info(ArrayUtils.toString(sceneParams));
 
             try {
-                Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
-                String freeProblemName = freeProblem.getProblem();
-                operationService.recordPromotionLevel(openId, scene);
-
+                // 只记录限免小课活动
                 if (sceneParams.length == 3) {
+                    Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
+                    String freeProblemName = freeProblem.getProblem();
+                    operationService.recordPromotionLevel(openId, scene);
                     String sendMsg;
                     if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                         // 限免课
