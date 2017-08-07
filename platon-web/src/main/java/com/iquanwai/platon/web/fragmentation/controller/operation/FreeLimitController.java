@@ -39,4 +39,14 @@ public class FreeLimitController {
         return WebUtils.success();
     }
 
+    /**
+     * 查看当前用户是否已经领取了此次活动的优惠券
+     */
+    @RequestMapping(value = "/coupon")
+    public ResponseEntity<Map<String, Object>> hasGetTheCoupon(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Boolean result = operationService.hasGetTheCoupon(loginUser.getId());
+        return WebUtils.result(result);
+    }
+
 }

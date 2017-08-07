@@ -22,10 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 /**
@@ -148,12 +149,8 @@ public class CardRepositoryImpl implements CardRepository {
     private BufferedImage loadQrImage(String scene) {
         // 绘图数据
         QRResponse response = qrCodeService.generateTemporaryQRCode(scene, null);
-        try {
-            return ImageIO.read(qrCodeService.showQRCode(response.getTicket()));
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        return null;
+        InputStream inputStream = qrCodeService.showQRCode(response.getTicket());
+        return ImageUtils.getBufferedImageByInputStream(inputStream);
     }
 
     // 获取用户头像

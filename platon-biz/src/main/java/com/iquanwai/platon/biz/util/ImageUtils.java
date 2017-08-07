@@ -11,6 +11,10 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by justin on 17/7/12.
@@ -114,6 +118,19 @@ public class ImageUtils {
         return null;
     }
 
+    /*
+    * 通过url拉取图片信息
+    * @param url 图片链接
+    * */
+    public static BufferedImage getBufferedImageByInputStream(InputStream inputStream) {
+        try {
+            return ImageIO.read(inputStream);
+        } catch (IOException e) {
+            logger.error("read inputStream error", e);
+        }
+        return null;
+    }
+
     // 大图内嵌小图
     public static BufferedImage overlapImage(BufferedImage big, BufferedImage small, int x, int y) {
         if(big == null || small == null){
@@ -126,6 +143,22 @@ public class ImageUtils {
         return big;
     }
 
+
+    public static void writeToFile(BufferedImage image, String format, File file){
+        try {
+            ImageIO.write(image, format, file);
+        } catch (IOException e) {
+            logger.error("write to file error", e);
+        }
+    }
+
+    public static void writeToOutputStream(BufferedImage image, String format, OutputStream outputStream){
+        try {
+            ImageIO.write(image, format, outputStream);
+        } catch (IOException e) {
+            logger.error("write to outputStream error", e);
+        }
+    }
 }
 
 
