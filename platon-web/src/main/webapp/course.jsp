@@ -17,13 +17,13 @@
         configUrl:'',
     }
 </script>
+<script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
 <div id="loading"><img src="//static.iqycamp.com/images/loading_page2.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
 <div id="react-app"></div>
 <!-- 业务代码-->
 <script src="${resource}" onload="document.getElementById('loading').style.display = 'none'"></script>
 <%--<script src="${resource}"></script>--%>
 
-<script src="//res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -43,6 +43,7 @@
                 };
     }(window, 'mta'));
     window.onload = function () {
+        window.ENV.configUrl=window.location.href;
         //页面名称
         mta('create', 'risePage');
         //上报接口
@@ -60,7 +61,6 @@
                 mta('send', 'page');
             }
         })()
-        window.ENV.configUrl=window.location.href;
     };
 </script>
 <%--性能数据js资源--%>
