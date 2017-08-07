@@ -282,7 +282,7 @@ public class OperationServiceImpl implements OperationService {
     @Override
     public Boolean hasGetTheCoupon(Integer profileId) {
         List<Coupon> coupons = couponDao.loadByProfileId(profileId);
-        Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50)).count();
+        Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50) && coupon.getDescription().equals("奖学金")).count();
         return operationCouponCount > 0;
     }
 
