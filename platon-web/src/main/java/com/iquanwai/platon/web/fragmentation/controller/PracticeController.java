@@ -178,7 +178,7 @@ public class PracticeController {
         Integer completedApplication = 0;
         if (isNewApplication) {
             completedApplication = practiceService.loadCompletedApplicationCnt(planId);
-            if (completedApplication == 3) {
+            if (completedApplication == 3 && loginUser.getRiseMember() != 1) {
                 Coupon coupon = new Coupon();
                 coupon.setOpenId(loginUser.getOpenId());
                 coupon.setProfileId(loginUser.getId());
