@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -54,8 +55,7 @@ public class PracticeController {
     private static final int PAGE_SIZE = 10;
 
     @RequestMapping("/application/start/{applicationId}")
-    public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser,
-                                                                @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
+    public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser, @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
         if (planId != null) {
@@ -68,23 +68,18 @@ public class PracticeController {
         } else {
             // 没有planId，消息中心中查询
             // 通过applicationId反查,查看是哪个PlanId,
-            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitByApplicationId(applicationId,
-                    loginUser.getId());
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitByApplicationId(applicationId, loginUser.getId());
             if (applicationSubmit == null) {
                 // 没有提交过，查询当前的planId
                 // TODO 这里要仔细检查
                 return WebUtils.error("参数错误，可以联系小Q反馈哦");
-//                ImprovementPlan improvementPlan = planService.getRunningPlan(loginUser.getId());
-//                if (improvementPlan != null) {
-//                    planId = improvementPlan.getId();
-//                }
             } else {
                 planId = applicationSubmit.getPlanId();
             }
         }
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), loginUser.getId(), planId, false);
+                loginUser.getOpenId(), loginUser.getId(), planId, false).getLeft();
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -158,14 +153,19 @@ public class PracticeController {
                                                                  @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
-        ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
+        Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
                 loginUser.getOpenId(), loginUser.getId(), planId, true);
+
+        ApplicationPractice applicationPractice = applicationPracticeBooleanPair.getLeft();
+        Boolean isNewApplication = applicationPracticeBooleanPair.getRight();
+
         Integer submitId = applicationPractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
         }
         Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
+
         if (result) {
             // 提升提交数
             if (loginUser.getDevice() == Constants.Device.PC) {
@@ -174,13 +174,40 @@ public class PracticeController {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
             }
         }
+
+        Integer completedApplication = 0;
+        if (isNewApplication) {
+            completedApplication = practiceService.loadCompletedApplicationCnt(planId);
+            if (completedApplication == 3) {
+                Coupon coupon = new Coupon();
+                coupon.setOpenId(loginUser.getOpenId());
+                coupon.setProfileId(loginUser.getId());
+                coupon.setAmount(20);
+                coupon.setUsed(0);
+                coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
+                coupon.setDescription("奖学金");
+                accountService.insertCoupon(coupon);
+            }
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("应用练习")
                 .action("提交应用练习")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        return WebUtils.result(result);
+        if (result) {
+            return WebUtils.result(completedApplication);
+        } else {
+            return WebUtils.error("应用练习提交失败");
+        }
+    }
+
+    @RequestMapping(value = "/application/completed/count/{planId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadCompletedApplicationCnt(LoginUser loginUser, @PathVariable Integer planId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Integer completedApplicationCnt = practiceService.loadCompletedApplicationCnt(planId);
+        return WebUtils.result(completedApplicationCnt);
     }
 
     @RequestMapping(value = "/application/autosave/{planId}/{applicationId}", method = RequestMethod.POST)
@@ -245,7 +272,6 @@ public class PracticeController {
         }
     }
 
-
     /**
      * 应用任务列表页加载他人的任务信息
      * @param loginUser 登陆人
@@ -269,7 +295,6 @@ public class PracticeController {
         RefreshListDto<RiseWorkInfoDto> refreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
         return WebUtils.result(refreshListDto);
     }
-
 
     /**
      * 应用任务列表页加载他人的任务信息
@@ -412,6 +437,7 @@ public class PracticeController {
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), device);
 
+
         if (result.getLeft() > 0) {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -428,6 +454,12 @@ public class PracticeController {
             resultDto.setRole(loginUser.getRole());
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
+
+            // 初始化教练回复的评论反馈评价
+            if (Role.isAsst(loginUser.getRole())) {
+                practiceService.initCommentEvaluation(loginUser.getId(), resultDto.getId(), null);
+            }
+
             return WebUtils.result(resultDto);
         } else {
             return WebUtils.error("评论失败");
@@ -449,6 +481,7 @@ public class PracticeController {
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
                 loginUser.getOpenId(), dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
+
         if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
@@ -467,6 +500,12 @@ public class PracticeController {
             resultDto.setRepliedComment(replyComment.getContent());
             resultDto.setIsMine(true);
             resultDto.setRepliedDel(replyComment.getDel());
+
+            // 初始化教练回复的评论反馈评价
+            if (Role.isAsst(loginUser.getRole())) {
+                practiceService.initCommentEvaluation(loginUser.getId(), resultDto.getId(), replyComment.getId());
+            }
+
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
                     .function("碎片化")
@@ -787,9 +826,6 @@ public class PracticeController {
         return WebUtils.result(respMsg);
     }
 
-    /**
-     * 根据ApplicationPractice中id获取ApplicationPractice对象
-     */
     @RequestMapping(value = "/application/article/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer submitId) {
         Assert.notNull(loginUser, "用户不能为空");

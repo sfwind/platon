@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Date;
 import java.util.List;
 
@@ -42,6 +43,18 @@ public class CouponDao extends DBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM Coupon WHERE ProfileId = ? AND Used = 0 AND ExpiredDate >= " + DateUtils.parseDateToString(new Date());
         ResultSetHandler<List<Coupon>> h = new BeanListHandler<Coupon>(Coupon.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<Coupon> loadCoupons(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Coupon WHERE ProfileId = ?";
+        ResultSetHandler<List<Coupon>> h = new BeanListHandler<>(Coupon.class);
         try {
             return runner.query(sql, h, profileId);
         } catch (SQLException e) {

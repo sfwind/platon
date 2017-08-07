@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 
 import com.iquanwai.platon.biz.exception.NotFollowingException;
+import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.common.Role;
 import org.apache.commons.lang3.tuple.Pair;
@@ -97,4 +98,11 @@ public interface AccountService {
      * @param profileId profileId
      */
     Boolean isRiseMember(Integer profileId);
+
+    /**
+     * 获取优惠券信息
+     */
+    List<Coupon> loadCoupons(Integer profileId);
+
+    void insertCoupon(Coupon coupon);
 }

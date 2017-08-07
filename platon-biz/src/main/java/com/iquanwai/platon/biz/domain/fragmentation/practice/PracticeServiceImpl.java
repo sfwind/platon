@@ -79,6 +79,8 @@ public class PracticeServiceImpl implements PracticeService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private CommentEvaluationDao commentEvaluationDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -170,8 +172,6 @@ public class PracticeServiceImpl implements PracticeService {
         return warmupResult;
     }
 
-
-
     @Override
     public ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
@@ -205,14 +205,16 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationPractice getApplicationPractice(Integer id, String openid,
-                                                      Integer profileId, Integer planId, boolean create) {
+    public Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
+                                                                     Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
+        Boolean isNewApplication = false; // 该 ApplicationPractice 是否是新生成的
         // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
         // 查询该用户是否提交
         ApplicationSubmit submit = applicationSubmitDao.load(id, planId, profileId);
         if (submit == null && create) {
+            isNewApplication = true; // 该 ApplicationPractice 为新创建
             // 没有提交，生成
             submit = new ApplicationSubmit();
             submit.setOpenid(openid);
@@ -269,7 +271,7 @@ public class PracticeServiceImpl implements PracticeService {
                 }
             }
         }
-        return applicationPractice;
+        return new MutablePair<>(applicationPractice, isNewApplication);
     }
 
     @Override
@@ -390,7 +392,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public boolean vote(Integer type, Integer referencedId, Integer profileId, String openid,Integer device) {
+    public boolean vote(Integer type, Integer referencedId, Integer profileId, String openid, Integer device) {
         if (device == null) {
             device = Constants.Device.MOBILE;
         }
@@ -552,7 +554,7 @@ public class PracticeServiceImpl implements PracticeService {
             isAsst = Role.isAsst(profile.getRole());
         }
 
-        if(moduleId == Constants.CommentModule.APPLICATION) {
+        if (moduleId == Constants.CommentModule.APPLICATION) {
             ApplicationSubmit load = applicationSubmitDao.load(ApplicationSubmit.class, referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
@@ -564,7 +566,7 @@ public class PracticeServiceImpl implements PracticeService {
                 applicationSubmitDao.asstFeedback(load.getId());
                 asstCoachComment(load.getOpenid(), load.getProfileId(), load.getProblemId());
             }
-        }else if (moduleId == Constants.CommentModule.SUBJECT){
+        } else if (moduleId == Constants.CommentModule.SUBJECT) {
             SubjectArticle load = subjectArticleDao.load(SubjectArticle.class, referId);
             if (load == null) {
                 logger.error("评论模块:{} 失败，没有文章id:{}，评论内容:{}", moduleId, referId, content);
@@ -578,7 +580,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
 
-            //被回复的评论
+        //被回复的评论
         Comment repliedComment = commentDao.load(Comment.class, repliedId);
         if (repliedComment == null) {
             return new MutablePair<>(-1, "评论失败");
@@ -614,7 +616,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content,Integer device) {
+    public Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content, Integer device) {
         if (device == null) {
             device = Constants.Device.MOBILE;
         }
@@ -684,6 +686,15 @@ public class PracticeServiceImpl implements PracticeService {
             asstCoachComment.setCount(asstCoachComment.getCount() + 1);
             asstCoachCommentDao.updateCount(asstCoachComment);
         }
+    }
+
+    @Override
+    public void initCommentEvaluation(Integer profileId, Integer commentId, Integer targetId) {
+        CommentEvaluation evaluation = new CommentEvaluation();
+        evaluation.setProfileId(profileId);
+        evaluation.setCommentId(commentId);
+        evaluation.setTargetId(targetId);
+        commentEvaluationDao.initCommentEvaluation(evaluation);
     }
 
     @Override
@@ -886,6 +897,15 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
         return false;
+    }
+
+    @Override
+    public Integer loadCompletedApplicationCnt(Integer planId) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
+        Long completedCnt = practicePlans.stream().filter(practicePlan ->
+                (practicePlan.getType() == 11 || practicePlan.getType() == 12) && practicePlan.getStatus() == 1
+        ).count();
+        return completedCnt.intValue();
     }
 
 }

@@ -61,7 +61,8 @@ public interface PracticeService {
      * @param openid openid
      * @param planId 训练id
      */
-    ApplicationPractice getApplicationPractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
+    Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
+                                                              Integer profileId, Integer planId, boolean create);
 
     /**
      * 提交应用训练
@@ -90,6 +91,8 @@ public interface PracticeService {
      * @param content 提交内容
      */
     Boolean challengeSubmit(Integer id, String content);
+
+    void initCommentEvaluation(Integer profileId, Integer commentId, Integer targetId);
 
     /**
      * 增加文章视图的记录数
@@ -299,4 +302,7 @@ public interface PracticeService {
      * 根据 ApplicationSubmit 中的 id 和对应评论的 openid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
      */
     Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
+
+    Integer loadCompletedApplicationCnt(Integer planId);
+
 }
