@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
 import java.io.File;
 
 /**
@@ -17,7 +16,6 @@ public class ClearImageCacheJob {
 
     @Scheduled(cron="${clearImageCacheJob.cron}")
     public void work(){
-        logger.info("clear temp file job start");
         String path = System.getProperty("java.io.tmpdir");
         File directory = new File(path);
         File[] files = directory.listFiles();
@@ -26,7 +24,5 @@ public class ClearImageCacheJob {
                 file.delete();
             }
         }
-
-        logger.info("clear temp file job end");
     }
 }
