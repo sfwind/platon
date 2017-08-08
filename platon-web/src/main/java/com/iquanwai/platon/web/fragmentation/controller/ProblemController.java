@@ -318,6 +318,21 @@ public class ProblemController {
         return WebUtils.result(dto);
     }
 
+    @RequestMapping("/open/required/{problemId}")
+    public ResponseEntity<Map<String, Object>> loadProblemRequiredClass(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        if (loginUser.getRiseMember() == 1) {
+            // 是会员，才会继续
+            String monthStr = problemService.loadProblemSchedule(problemId);
+            if (monthStr != null) {
+                return WebUtils.result(monthStr);
+            } else {
+                return WebUtils.error(201, "该小课暂无精英训练营安排");
+            }
+        }
+        return WebUtils.error(201, "非会员");
+    }
+
     @RequestMapping("/grade/{problemId}")
     public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores) {
         Assert.notNull(loginUser, "用户不能为空");
