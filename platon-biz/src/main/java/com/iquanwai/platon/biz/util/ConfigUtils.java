@@ -305,6 +305,12 @@ public class ConfigUtils {
         return getBooleanValue("rise.course.pay.test");
     }
 
+    /**
+     * 获取训练营小课安排 json
+     */
+    public static String getRequiredClassSchedule() {
+        return getValue("requiredClass.schedule");
+    }
 
 }
 

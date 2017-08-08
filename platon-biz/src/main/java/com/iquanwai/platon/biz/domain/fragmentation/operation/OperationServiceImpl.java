@@ -250,8 +250,8 @@ public class OperationServiceImpl implements OperationService {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        templateMessage.setData(data);
         data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
         data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -270,6 +270,7 @@ public class OperationServiceImpl implements OperationService {
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
+        templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/customer/account");
         templateMessage.setTemplate_id(ConfigUtils.getReceiveCouponMsg());
         data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给" + successNum + "位好友，成功get一张¥50代金券\n"));
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
