@@ -61,11 +61,10 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         }
         warmupPracticeDiscuss.setPriority(0);
         Integer id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
-        // TODO: 二次上线打开
-//        if(warmupPracticeDiscuss.getOriginDiscussId() == null){
-//            //如果不是回复其它评论,则originDiscussId=自身
-//            warmupPracticeDiscussDao.updateOriginDiscussId(id, id);
-//        }
+        if(warmupPracticeDiscuss.getOriginDiscussId() == null){
+            //如果没有回复其它评论,则originDiscussId=自身
+            warmupPracticeDiscussDao.updateOriginDiscussId(id, id);
+        }
 
         //发送回复通知
         if (repliedId != null && !profileId.equals(warmupPracticeDiscuss.getRepliedProfileId())) {
@@ -128,32 +127,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         knowledgeDiscussDao.markRepliedCommentDelete(discussId);
         // 删除KnowledgeDiscuss记录，将del字段置为1
         return knowledgeDiscussDao.updateDelById(1, discussId);
-    }
-
-    @Override
-    public void getAllWarmupPracticeOrigin() {
-        List<WarmupPracticeDiscuss> warmupPracticeDiscusses = warmupPracticeDiscussDao.loadAll(WarmupPracticeDiscuss.class);
-        Map<Integer, WarmupPracticeDiscuss> warmupPracticeMap = Maps.newHashMap();
-        warmupPracticeDiscusses.forEach(warmupPracticeDiscuss ->
-                warmupPracticeMap.put(warmupPracticeDiscuss.getId(), warmupPracticeDiscuss));
-
-        warmupPracticeDiscusses.forEach(warmupPracticeDiscuss -> {
-            try{
-                WarmupPracticeDiscuss temp = warmupPracticeDiscuss;
-                //死循环保护
-                int times = 0;
-                while(temp.getRepliedId() != null && times++<100){
-                    temp = warmupPracticeMap.get(temp.getRepliedId());
-                }
-                if(times>100){
-                    logger.error("dead loop ERROR!!");
-                }
-                warmupPracticeDiscussDao.updateOriginDiscussId(warmupPracticeDiscuss.getId(), temp.getId());
-            }catch (Exception e){
-                logger.error(e.getLocalizedMessage(), e);
-            }
-
-        });
     }
 
     @Override

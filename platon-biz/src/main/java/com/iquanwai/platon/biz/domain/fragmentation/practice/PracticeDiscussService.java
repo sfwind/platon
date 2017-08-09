@@ -76,7 +76,4 @@ public interface PracticeDiscussService {
      * */
     Integer deleteKnowledgeDiscussById(Integer discussId);
 
-
-    void getAllWarmupPracticeOrigin();
-
 }
