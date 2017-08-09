@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
@@ -76,6 +77,13 @@ public class OperationServiceImpl implements OperationService {
         rabbitMQPublisher = new RabbitMQPublisher();
         rabbitMQPublisher.init(cacheReloadTopic);
         rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
+        // 创建图片保存目录
+        File file = new File(TEMP_IMAGE_PATH);
+        if(!file.exists()){
+            if(!file.mkdir()){
+                logger.error("创建活动图片临时保存目录失败!!!");
+            }
+        }
     }
 
     @Override
