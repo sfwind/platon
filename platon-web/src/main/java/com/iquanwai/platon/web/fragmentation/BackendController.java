@@ -1,7 +1,7 @@
 package com.iquanwai.platon.web.fragmentation;
 
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 public class BackendController {
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private PracticeDiscussService practiceDiscussService;
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -83,5 +85,15 @@ public class BackendController {
         return WebUtils.result(list);
     }
 
-
+    @RequestMapping(value = "/origin/discuss", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> warmupDiscussOrigin() {
+        new Thread(() -> {
+            try {
+                practiceDiscussService.getAllWarmupPracticeOrigin();
+            }catch (Exception e){
+                LOGGER.error("发送通知失败", e);
+            }
+        }).start();
+        return WebUtils.result("正在运行中");
+    }
 }

@@ -57,10 +57,26 @@ public interface PracticeDiscussService {
      * */
     void deleteComment(Integer discussId);
 
+    /**
+     * 获取知识点讨论
+     * @param discussId 讨论id
+     * */
     KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId);
 
+    /**
+     * 获取知识点讨论
+     * @param knowledgeId 知识点id
+     * @param page 分页信息
+     * */
     List<KnowledgeDiscuss> loadKnowledgeDiscusses(Integer knowledgeId, Page page);
 
-    Integer deleteKnowledgeDiscussById(Integer id);
+    /**
+     * 删除知识点评论
+     * @param discussId 讨论id
+     * */
+    Integer deleteKnowledgeDiscussById(Integer discussId);
+
+
+    void getAllWarmupPracticeOrigin();
 
 }
