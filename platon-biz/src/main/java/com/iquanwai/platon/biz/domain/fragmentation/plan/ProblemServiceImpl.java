@@ -211,7 +211,7 @@ public class ProblemServiceImpl implements ProblemService {
         if (schedules != null) {
             JSONObject json = JSONObject.parseObject(schedules);
             String monthStr = json.get("problem_" + problemId).toString();
-            if (monthStr.trim().length() > 0) {
+            if (monthStr != null && monthStr.trim().length() > 0) {
                 return monthStr;
             }
         }
