@@ -27,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class CacheServiceImpl implements CacheService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-//    @PostConstruct
+    @PostConstruct
     public void init() {
         List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
         knowledgeList.forEach(knowledge -> {
