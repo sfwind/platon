@@ -43,26 +43,30 @@ public class CacheReloadReceiver {
 
     @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue, exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
     public void process(byte[] data) {
-        RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
-        String message = messageQueue.getMessage().toString();
-        logger.info("receive message {}", message);
-        switch (message) {
-            case "region":
-                accountService.reloadRegion();
-                break;
-            case "reload":
-                cacheService.reload();
-                pictureService.reloadModule();
-                break;
-            case "member":
-                Integer memberSize = refreshStatus();
-                logger.info("当前登录人数:{}", memberSize);
-                break;
-        }
+        try {
+            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+            String message = messageQueue.getMessage().toString();
+            logger.info("receive message {}", message);
+            switch (message) {
+                case "region":
+                    accountService.reloadRegion();
+                    break;
+                case "reload":
+                    cacheService.reload();
+                    pictureService.reloadModule();
+                    break;
+                case "member":
+                    Integer memberSize = refreshStatus();
+                    logger.info("当前登录人数:{}", memberSize);
+                    break;
+            }
 
-        messageQueue.setTopic(TOPIC);
-        messageQueue.setQueue("auto");
-        mqService.updateAfterDealOperation(messageQueue);
+            messageQueue.setTopic(TOPIC);
+            messageQueue.setQueue("auto");
+            mqService.updateAfterDealOperation(messageQueue);
+        } catch (Exception e) {
+            logger.error("mq处理异常", e);
+        }
     }
 
     // 刷新缓存，返回当前登录人数

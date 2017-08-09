@@ -33,14 +33,18 @@ public class CustomerReceiver {
 
     @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue, exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
     public void process(byte[] data) {
-        RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
-        String message = messageQueue.getMessage().toString();
-        logger.info("receive message {}", message);
-        loginUserService.logout(message);
+        try {
+            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+            String message = messageQueue.getMessage().toString();
+            logger.info("receive message {}", message);
+            loginUserService.logout(message);
 
-        messageQueue.setTopic(TOPIC);
-        messageQueue.setQueue("auto");
-        mqService.updateAfterDealOperation(messageQueue);
+            messageQueue.setTopic(TOPIC);
+            messageQueue.setQueue("auto");
+            mqService.updateAfterDealOperation(messageQueue);
+        } catch (Exception e) {
+            logger.error("mq处理异常", e);
+        }
     }
 }
 

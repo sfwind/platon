@@ -32,20 +32,24 @@ public class PayResultReceiver {
     @Autowired
     private MQService mqService;
 
-    @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue(value = QUEUE,durable = "false",exclusive = "false",autoDelete = "false"), exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
+    @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue(value = QUEUE, durable = "false", exclusive = "false", autoDelete = "false"), exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
     public void process(byte[] data) {
-        RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
-        logger.info("receive message {}", messageQueue.getMessage().toString());
-        String message = messageQueue.getMessage().toString();
-        logger.info("获取支付成功 message {}", message);
-        QuanwaiOrder quanwai = JSONObject.parseObject(message, QuanwaiOrder.class);
-        if (quanwai == null) {
-            logger.error("获取支付成功mq消息异常");
-        } else {
-            operationService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
+        try {
+            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+            logger.info("receive message {}", messageQueue.getMessage().toString());
+            String message = messageQueue.getMessage().toString();
+            logger.info("获取支付成功 message {}", message);
+            QuanwaiOrder quanwai = JSONObject.parseObject(message, QuanwaiOrder.class);
+            if (quanwai == null) {
+                logger.error("获取支付成功mq消息异常");
+            } else {
+                operationService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
+            }
+            messageQueue.setTopic(TOPIC);
+            messageQueue.setQueue("auto");
+            mqService.updateAfterDealOperation(messageQueue);
+        } catch (Exception e) {
+            logger.error("mq处理异常", e);
         }
-        messageQueue.setTopic(TOPIC);
-        messageQueue.setQueue("auto");
-        mqService.updateAfterDealOperation(messageQueue);
     }
 }

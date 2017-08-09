@@ -46,11 +46,15 @@ public class FreeLimitSubscribeReceiver {
 
     @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue(value = QUEUE, durable = "false", autoDelete = "false", exclusive = "false"), exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
     public void process(byte[] data) {
-        RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
-        activeAction(messageQueue.getMessage().toString());
-        messageQueue.setTopic(TOPIC);
-        messageQueue.setQueue(QUEUE);
-        mqService.updateAfterDealOperation(messageQueue);
+        try {
+            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+            activeAction(messageQueue.getMessage().toString());
+            messageQueue.setTopic(TOPIC);
+            messageQueue.setQueue(QUEUE);
+            mqService.updateAfterDealOperation(messageQueue);
+        } catch (Exception e) {
+            logger.error("mq处理异常", e);
+        }
     }
 
     public void activeAction(String message) {
