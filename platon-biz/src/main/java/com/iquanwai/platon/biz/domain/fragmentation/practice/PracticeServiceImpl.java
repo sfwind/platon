@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -226,6 +227,10 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setId(submitId);
             fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
+
+        Map<Integer, Integer> scoreMap = ConfigUtils.getWorkScoreMap();
+        // 设置每道题的得分
+        applicationPractice.setApplicationScore(scoreMap.get(applicationPractice.getDifficulty()));
 
         // 未提交过内容，查询草稿表 ApplicationSubmitDraft
         if (submit == null) {
