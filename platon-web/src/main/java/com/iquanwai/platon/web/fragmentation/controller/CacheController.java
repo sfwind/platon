@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
-import com.iquanwai.platon.biz.domain.common.message.MQService;
-import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import com.iquanwai.platon.mq.CacheReloadReceiver;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -25,14 +24,12 @@ public class CacheController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
-    private MQService mqService;
+    private RabbitMQFactory rabbitMQFactory;
 
 
     @PostConstruct
     public void init(){
-        rabbitMQPublisher = new RabbitMQPublisher();
-        rabbitMQPublisher.init(CacheReloadReceiver.TOPIC);
-        rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
+        rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(CacheReloadReceiver.TOPIC);
     }
 
     @RequestMapping("/reload")

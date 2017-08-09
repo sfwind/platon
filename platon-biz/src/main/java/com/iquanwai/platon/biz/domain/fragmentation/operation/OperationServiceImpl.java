@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionUserDao;
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -19,6 +18,7 @@ import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,13 +50,13 @@ public class OperationServiceImpl implements OperationService {
     @Autowired
     private CouponDao couponDao;
     @Autowired
-    private MQService mqService;
-    @Autowired
     private CustomerMessageService customerMessageService;
     @Autowired
     private CardRepository cardRepository;
     @Autowired
     private UploadResourceService uploadResourceService;
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -73,9 +73,7 @@ public class OperationServiceImpl implements OperationService {
 
     @PostConstruct
     public void init() {
-        rabbitMQPublisher = new RabbitMQPublisher();
-        rabbitMQPublisher.init(cacheReloadTopic);
-        rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
+        rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(cacheReloadTopic);
     }
 
     @Override

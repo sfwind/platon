@@ -12,4 +12,5 @@ public class MQSendLog {
     private String topic;
     private String publisherIp;
     private String message;
+    private Boolean sendError;
 }

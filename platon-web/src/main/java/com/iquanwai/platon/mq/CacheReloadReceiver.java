@@ -1,27 +1,32 @@
 package com.iquanwai.platon.mq;
 
+import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
-import com.iquanwai.platon.web.resolver.LoginUserResolver;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 
 /**
  * Created by justin on 17/4/25.
  */
-@Service
+@Component
 public class CacheReloadReceiver {
     public final static String TOPIC = "rise_resource_reload";
 
@@ -33,39 +38,36 @@ public class CacheReloadReceiver {
     @Autowired
     private PictureService pictureService;
     @Autowired
-    private MQService mqService;
-    @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private MQService mqService;
 
-    @PostConstruct
-    public void init(){
-        RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, TOPIC);
-        logger.info("通道建立");
-        receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
-        // 监听器
-        receiver.listen(msg -> {
-            String message = msg.toString();
-            logger.info("receive message {}", message);
-            switch (message) {
-                case "region":
-                    accountService.reloadRegion();
-                    break;
-                case "reload":
-                    cacheService.reload();
-                    pictureService.reloadModule();
-                    break;
-                case "member":
-                    Integer memberSize = refreshStatus();
-                    logger.info("当前登录人数:{}", memberSize);
-                    break;
-            }
-        });
-        logger.info("开启队列监听");
+    @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue, exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
+    public void process(byte[] data, MessageProperties messageProperties) {
+        RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+        String message = messageQueue.getMessage().toString();
+        logger.info("receive message {}", message);
+        switch (message) {
+            case "region":
+                accountService.reloadRegion();
+                break;
+            case "reload":
+                cacheService.reload();
+                pictureService.reloadModule();
+                break;
+            case "member":
+                Integer memberSize = refreshStatus();
+                logger.info("当前登录人数:{}", memberSize);
+                break;
+        }
+
+        messageQueue.setTopic(TOPIC);
+        messageQueue.setQueue("auto");
+        mqService.updateAfterDealOperation(messageQueue);
     }
 
     // 刷新缓存，返回当前登录人数
-    public Integer refreshStatus(){
+    public Integer refreshStatus() {
         Collection<LoginUser> allUsers = LoginUserService.getAllUsers();
         for (LoginUser user : allUsers) {
             try {
@@ -78,7 +80,7 @@ public class CacheReloadReceiver {
                         logger.info("openId:{},expired member", user.getOpenId());
                     }
                 }
-            } catch (Exception e){
+            } catch (Exception e) {
                 logger.error("会员过期检查失败", e);
             }
         }
