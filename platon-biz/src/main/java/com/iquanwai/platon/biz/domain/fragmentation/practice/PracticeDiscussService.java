@@ -36,7 +36,7 @@ public interface PracticeDiscussService {
      * @param warmupPracticeId 巩固练习id
      * @param page 分页信息
      * */
-    List<WarmupPracticeDiscuss> loadDiscuss(Integer warmupPracticeId, Page page);
+    List<WarmupComment> loadDiscuss(Integer profileId, Integer warmupPracticeId, Page page);
 
     /**
      * 获取多个问题的讨论内容
