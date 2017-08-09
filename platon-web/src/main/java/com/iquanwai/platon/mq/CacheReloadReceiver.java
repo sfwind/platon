@@ -13,7 +13,6 @@ import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -43,7 +42,7 @@ public class CacheReloadReceiver {
     private MQService mqService;
 
     @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue, exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
-    public void process(byte[] data, MessageProperties messageProperties) {
+    public void process(byte[] data) {
         RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
         String message = messageQueue.getMessage().toString();
         logger.info("receive message {}", message);

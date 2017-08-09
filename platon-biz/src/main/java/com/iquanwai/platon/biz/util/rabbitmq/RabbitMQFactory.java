@@ -8,19 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.MessageBuilder;
-import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.net.ConnectException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by nethunder on 2017/8/8.
@@ -34,31 +28,6 @@ public class RabbitMQFactory {
     private AmqpTemplate amqpTemplate;
     @Autowired
     private AmqpAdmin amqpAdmin;
-
-
-    @PostConstruct
-    public void sendQueue() {
-        amqpAdmin.deleteQueue("test.fanout.mq");
-        RabbitMQPublisher publisher = initFanoutPublisher("test.fanout.topic");
-        Queue queue = new Queue("test.fanout.mq", false, true, true);
-        FanoutExchange exchange = new FanoutExchange("test.fanout.topic", false, false);
-        Binding binding = BindingBuilder.bind(queue).to(exchange);
-        amqpAdmin.declareQueue(queue);
-        amqpAdmin.declareExchange(exchange);
-        amqpAdmin.declareBinding(binding);
-
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    publisher.publish("消息");
-                } catch (ConnectException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 0, 1000 * 6);
-    }
 
     /**
      * 创建广播返送者
