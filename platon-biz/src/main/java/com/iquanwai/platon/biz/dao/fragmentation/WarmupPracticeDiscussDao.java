@@ -25,13 +25,14 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
     public int insert(WarmupPracticeDiscuss discuss){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Openid, Profileid, RepliedId, Comment, " +
-                "Priority, Del, RepliedOpenid, RepliedProfileid, RepliedComment) " +
-                "values(?,?,?,?,?,?,?,?,?,?)";
+                "Priority, Del, RepliedOpenid, RepliedProfileid, RepliedComment, OriginDiscussId) " +
+                "values(?,?,?,?,?,?,?,?,?,?,?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
                     discuss.getWarmupPracticeId(), discuss.getOpenid(), discuss.getProfileId(),
                     discuss.getRepliedId(), discuss.getComment(), discuss.getPriority(), discuss.getDel(),
-                    discuss.getRepliedOpenid(), discuss.getRepliedProfileId(), discuss.getRepliedComment());
+                    discuss.getRepliedOpenid(), discuss.getRepliedProfileId(),
+                    discuss.getRepliedComment(), discuss.getOriginDiscussId());
 
             return result.intValue();
         }catch (SQLException e) {
@@ -69,6 +70,16 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
         String sql = "update WarmupPracticeDiscuss set RepliedDel = 1 where RepliedId = ?";
         try {
             runner.update(sql, repliedId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void updateOriginDiscussId(Integer id, Integer originDiscussId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update WarmupPracticeDiscuss set OriginDiscussId = ? where Id = ?";
+        try {
+            runner.update(sql, originDiscussId, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
