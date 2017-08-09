@@ -132,7 +132,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 discuss.setIsMine(false);
             }
             //讨论的第一条
-            if (discuss.getOriginDiscussId() == discuss.getId()) {
+            if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() == discuss.getId()) {
                 WarmupComment warmupComment = new WarmupComment();
                 try {
                     BeanUtils.copyProperties(warmupComment, discuss);
@@ -151,7 +151,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
         discussList.forEach(discuss -> {
             //不是讨论的第一条
-            if (discuss.getOriginDiscussId() != discuss.getId()) {
+            if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() != discuss.getId()) {
                 warmupComments.forEach(warmupComment -> {
                     if (warmupComment.getId() == discuss.getOriginDiscussId()) {
                         warmupComment.getWarmupPracticeDiscussList().add(discuss);
@@ -167,7 +167,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         // 第一条评论排序 优质答案排序优先,非优质答案按时间倒序
         warmupComments.sort((o1, o2) -> {
             if (!o1.getPriorityComment().equals(o2.getPriorityComment())) {
-                return o1.getPriorityComment() - o2.getPriorityComment();
+                return o2.getPriorityComment() - o1.getPriorityComment();
             }
             return o2.getAddTime().compareTo(o1.getAddTime());
         });
