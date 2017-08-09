@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.AppMsgCommentReplyDto;
@@ -96,7 +97,6 @@ public class MessageController {
         return WebUtils.result("获取文章内容失败");
     }
 
-
     /**
      * 获取消息回复页面
      *
@@ -130,7 +130,6 @@ public class MessageController {
         return commentDto;
     }
 
-
     @RequestMapping("/knowledge/discuss/reply/{discussId}")
     public ResponseEntity<Map<String, Object>> loadKnowledgeDiscuss(LoginUser loginUser,
                                                                     @PathVariable Integer discussId) {
@@ -145,7 +144,6 @@ public class MessageController {
         return WebUtils.result(warmupPracticeDiscuss);
     }
 
-
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadMessage(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -154,7 +152,9 @@ public class MessageController {
         if (page.getPage() == 1) {
             messageService.mark(loginUser.getId());
         }
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
+        // TODO 暂时将类型改为手机方便测试
+        // List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), Constants.Device.MOBILE, page);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")

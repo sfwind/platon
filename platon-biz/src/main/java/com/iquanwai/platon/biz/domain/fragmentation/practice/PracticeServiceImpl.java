@@ -547,6 +547,11 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
+    public Comment loadApplicationReplyComment(Integer commentId) {
+        return commentDao.load(Comment.class, commentId);
+    }
+
+    @Override
     public Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
                                               String openId, String content, Integer repliedId, Integer device) {
         if (device == null) {
@@ -694,12 +699,31 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public void initCommentEvaluation(Integer profileId, Integer commentId, Integer targetId) {
-        CommentEvaluation evaluation = new CommentEvaluation();
-        evaluation.setProfileId(profileId);
-        evaluation.setCommentId(commentId);
-        evaluation.setTargetId(targetId);
-        commentEvaluationDao.initCommentEvaluation(evaluation);
+    public void initCommentEvaluation(Integer commentId) {
+        commentEvaluationDao.initCommentEvaluation(commentId);
+    }
+
+    @Override
+    public Boolean loadEvaluated(Integer commentId) {
+        CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
+        Integer evaluated = evaluation.getEvaluated();
+        if (evaluated != null) {
+            switch (evaluated) {
+                case 0:
+                    return false;
+                case 1:
+                    return true;
+                default:
+                    return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void updateEvaluation(Integer commentId, Integer useful, String reason) {
+        commentEvaluationDao.updateEvaluation(commentId, useful, reason);
     }
 
     @Override
