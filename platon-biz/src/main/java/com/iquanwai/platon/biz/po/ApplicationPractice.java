@@ -27,6 +27,7 @@ public class  ApplicationPractice {
     private String submitUpdateTime;// 非db字段
     private Integer voteCount; // 点赞数 非db字段
     private Integer commentCount; // 评论数 非db字段
+    private Integer applicationScore; // 应用题得分
     private Integer voteStatus; // 点赞状态，是否可以点赞 非db字段
     private List<String> picList; // 图片列表 非db字段
     private Integer planId; // 计划id 非db字段
