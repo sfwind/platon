@@ -84,16 +84,4 @@ public class BackendController {
         List<LoginUser> list = allUser.stream().filter(item -> item.getOpenId().equals(openid)).collect(Collectors.toList());
         return WebUtils.result(list);
     }
-
-    @RequestMapping(value = "/origin/discuss", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> warmupDiscussOrigin() {
-        new Thread(() -> {
-            try {
-                practiceDiscussService.getAllWarmupPracticeOrigin();
-            }catch (Exception e){
-                LOGGER.error("发送通知失败", e);
-            }
-        }).start();
-        return WebUtils.result("正在运行中");
-    }
 }
