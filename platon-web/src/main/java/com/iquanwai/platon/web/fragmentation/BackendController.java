@@ -1,7 +1,7 @@
 package com.iquanwai.platon.web.fragmentation;
 
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 public class BackendController {
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private PracticeDiscussService practiceDiscussService;
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -82,6 +84,4 @@ public class BackendController {
         List<LoginUser> list = allUser.stream().filter(item -> item.getOpenId().equals(openid)).collect(Collectors.toList());
         return WebUtils.result(list);
     }
-
-
 }
