@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
@@ -20,7 +21,7 @@ import java.util.Collection;
 /**
  * Created by justin on 17/4/25.
  */
-@Component
+@Service
 public class CacheReloadReceiver {
     public final static String TOPIC = "rise_resource_reload";
 
