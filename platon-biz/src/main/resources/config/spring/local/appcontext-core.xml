@@ -26,8 +26,7 @@
                                username="${rabbitmq.user}"
                                password="${rabbitmq.password}"
                                channel-cache-size="20"
-                               connection-timeout="20000"
-                               factory-timeout="20000"
+                               connection-timeout="15000"
     />
     <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" retry-template="retryTemplate" message-converter="mqConverter">
     </rabbit:template>
