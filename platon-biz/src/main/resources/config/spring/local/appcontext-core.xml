@@ -22,6 +22,7 @@
     </redisson:client>
 
     <rabbit:connection-factory id="connectionFactory"
+                               port="${rabbitmq.port}"
                                host="${rabbitmq.ip}"
                                username="${rabbitmq.user}"
                                password="${rabbitmq.password}"
