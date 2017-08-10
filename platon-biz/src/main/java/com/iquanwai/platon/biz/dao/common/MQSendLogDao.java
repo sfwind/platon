@@ -25,9 +25,9 @@ public class MQSendLogDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
         try {
-            String insertSql = "INSERT INTO MQSendLog(MsgId,PublisherIp ,Topic, Message) VALUES (?,?,?,?)";
-            Future<Integer> result = asyncRun.update(insertSql, message.getMsgId(),message.getPublisherIp(),
-                    message.getTopic(),  message.getMessage());
+            String insertSql = "INSERT INTO MQSendLog(MsgId,PublisherIp ,Topic, Message,SendError) VALUES (?,?,?,?,?)";
+            Future<Integer> result = asyncRun.update(insertSql, message.getMsgId(), message.getPublisherIp(),
+                    message.getTopic(), message.getMessage(), message.getSendError());
             return result.get();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
