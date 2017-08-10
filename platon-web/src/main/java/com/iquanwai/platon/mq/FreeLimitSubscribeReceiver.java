@@ -8,17 +8,13 @@ import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
-
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Created by xfduan on 2017/7/14.
@@ -43,19 +39,16 @@ public class FreeLimitSubscribeReceiver {
 
     @Autowired
     private MQService mqService;
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
 
-    @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue(value = QUEUE, durable = "false", autoDelete = "false", exclusive = "false"), exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
-    public void process(byte[] data) {
-        try {
-            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+    @PostConstruct
+    public void init() {
+        rabbitMQFactory.initReceiver(QUEUE, TOPIC, (messageQueue) -> {
             activeAction(messageQueue.getMessage().toString());
-            messageQueue.setTopic(TOPIC);
-            messageQueue.setQueue(QUEUE);
-            mqService.updateAfterDealOperation(messageQueue);
-        } catch (Exception e) {
-            logger.error("mq处理异常", e);
-        }
+        });
     }
+
 
     public void activeAction(String message) {
         logger.info("receiver message {}", message);

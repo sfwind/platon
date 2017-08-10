@@ -5,16 +5,13 @@ import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
 import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Created by nethunder on 2017/7/19.
@@ -28,14 +25,14 @@ public class PayResultReceiver {
 
     @Autowired
     private OperationService operationService;
-
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private MQService mqService;
 
-    @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue(value = QUEUE, durable = "false", exclusive = "false", autoDelete = "false"), exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
-    public void process(byte[] data) {
-        try {
-            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+    @PostConstruct
+    public void init(){
+        rabbitMQFactory.initReceiver(QUEUE,TOPIC,(messageQueue)->{
             logger.info("receive message {}", messageQueue.getMessage().toString());
             String message = messageQueue.getMessage().toString();
             logger.info("获取支付成功 message {}", message);
@@ -45,11 +42,6 @@ public class PayResultReceiver {
             } else {
                 operationService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
             }
-            messageQueue.setTopic(TOPIC);
-            messageQueue.setQueue("auto");
-            mqService.updateAfterDealOperation(messageQueue);
-        } catch (Exception e) {
-            logger.error("mq处理异常", e);
-        }
+        });
     }
 }

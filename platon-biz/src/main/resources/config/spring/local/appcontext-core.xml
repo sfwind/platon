@@ -26,8 +26,12 @@
                                username="${rabbitmq.user}"
                                password="${rabbitmq.password}"
                                channel-cache-size="20"
+                               connection-timeout="20000"
+                               factory-timeout="20000"
     />
-    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" retry-template="retryTemplate"/>
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" retry-template="retryTemplate" message-converter="mqConverter">
+    </rabbit:template>
+
     <rabbit:annotation-driven/>
 
     <bean id="rabbitListenerContainerFactory"
@@ -35,7 +39,9 @@
         <property name="connectionFactory" ref="connectionFactory"/>
         <property name="concurrentConsumers" value="3"/>
         <property name="maxConcurrentConsumers" value="10"/>
+        <property name="messageConverter" ref="mqConverter"/>
     </bean>
+    <bean id="mqConverter" class="com.iquanwai.platon.biz.util.rabbitmq.RabbitMQConverter"/>
 
     <bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
         <property name="backOffPolicy">

@@ -1,25 +1,20 @@
 package com.iquanwai.platon.mq;
 
-import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 
 /**
@@ -40,11 +35,12 @@ public class CacheReloadReceiver {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private MQService mqService;
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
 
-    @RabbitListener(admin = "rabbitAdmin", bindings = @QueueBinding(value = @Queue, exchange = @Exchange(value = TOPIC, type = ExchangeTypes.FANOUT)))
-    public void process(byte[] data) {
-        try {
-            RabbitMQDto messageQueue = JSONObject.parseObject(data, RabbitMQDto.class);
+    @PostConstruct
+    public void init() {
+        rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
             String message = messageQueue.getMessage().toString();
             logger.info("receive message {}", message);
             switch (message) {
@@ -60,13 +56,7 @@ public class CacheReloadReceiver {
                     logger.info("当前登录人数:{}", memberSize);
                     break;
             }
-
-            messageQueue.setTopic(TOPIC);
-            messageQueue.setQueue("auto");
-            mqService.updateAfterDealOperation(messageQueue);
-        } catch (Exception e) {
-            logger.error("mq处理异常", e);
-        }
+        });
     }
 
     // 刷新缓存，返回当前登录人数
