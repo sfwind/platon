@@ -43,7 +43,7 @@ public interface PracticeDiscussService {
      * @param warmupPracticeIds 巩固练习id列表
      * @param page 分页信息
      * */
-    Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page);
+    Map<Integer, List<WarmupComment>> loadDiscuss(Integer profileId, List<Integer> warmupPracticeIds, Page page);
 
     /**
      * 获取讨论内容

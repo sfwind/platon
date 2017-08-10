@@ -110,10 +110,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
     @Override
     public List<WarmupComment> loadDiscuss(Integer profileId, Integer warmupPracticeId, Page page) {
-        List<WarmupComment> warmupComments = Lists.newArrayList();
-
         List<WarmupPracticeDiscuss> discussList = warmupPracticeDiscussDao.loadDiscuss(warmupPracticeId, page);
         fulfilDiscuss(discussList);
+
+        return buildWarmupComment(profileId, discussList);
+    }
+
+    private List<WarmupComment> buildWarmupComment(Integer profileId, List<WarmupPracticeDiscuss> discussList) {
+        List<WarmupComment> warmupComments = Lists.newArrayList();
+
         Map<Integer, WarmupPracticeDiscuss> discussMap = Maps.newHashMap();
         discussList.forEach(warmupPracticeDiscuss ->
                 discussMap.put(warmupPracticeDiscuss.getId(), warmupPracticeDiscuss));
@@ -131,6 +136,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             } else {
                 discuss.setIsMine(false);
             }
+            // 清空用户id
+            discuss.setProfileId(null);
+            discuss.setRepliedProfileId(null);
+            discuss.setOpenid(null);
+            discuss.setRepliedOpenid(null);
             //讨论的第一条
             if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() == discuss.getId()) {
                 WarmupComment warmupComment = new WarmupComment();
@@ -197,8 +207,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     @Override
-    public Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page) {
-        Map<Integer, List<WarmupPracticeDiscuss>> result = Maps.newHashMap();
+    public Map<Integer, List<WarmupComment>> loadDiscuss(Integer profileId, List<Integer> warmupPracticeIds, Page page) {
+        Map<Integer, List<WarmupComment>> result = Maps.newHashMap();
 
         //并发获取评论提高效率
         warmupPracticeIds.forEach(warmupPracticeId -> {
@@ -207,7 +217,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             try {
                 List<WarmupPracticeDiscuss> discuss = (List<WarmupPracticeDiscuss>) futureTask.get();
                 fulfilDiscuss(discuss);
-                result.put(warmupPracticeId, discuss);
+                List<WarmupComment> warmupComments = buildWarmupComment(profileId, discuss);
+                result.put(warmupPracticeId, warmupComments);
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
             }

@@ -119,8 +119,8 @@ public class WarmupController {
         Page page = new Page();
         page.setPage(1);
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
-        Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
-        setDiscuss(warmupPracticeList, discuss, loginUser.getOpenId());
+        Map<Integer, List<WarmupComment>> discuss = practiceDiscussService.loadDiscuss(loginUser.getId(), questionIds, page);
+        setDiscuss(warmupPracticeList, discuss);
 
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
@@ -133,18 +133,9 @@ public class WarmupController {
         return WebUtils.result(warmupPracticeDto);
     }
 
-    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss, String openid) {
+    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupComment>> discuss) {
         warmupPracticeList.forEach(warmupPractice -> {
-            List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
-            list.forEach(warmupPracticeDiscuss -> {
-                //是否是学员本人的评论
-                if (warmupPracticeDiscuss.getOpenid().equals(openid)) {
-                    warmupPracticeDiscuss.setIsMine(true);
-                }
-                warmupPracticeDiscuss.setRepliedOpenid(null);
-                warmupPracticeDiscuss.setOpenid(null);
-                warmupPracticeDiscuss.setReferenceId(warmupPracticeDiscuss.getWarmupPracticeId());
-            });
+            List<WarmupComment> list = discuss.get(warmupPractice.getId());
             warmupPractice.setDiscussList(list);
         });
     }
@@ -192,8 +183,8 @@ public class WarmupController {
         Page page = new Page();
         page.setPage(1);
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
-        Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
-        setDiscuss(warmupPracticeList, discuss, loginUser.getOpenId());
+        Map<Integer, List<WarmupComment>> discuss = practiceDiscussService.loadDiscuss(loginUser.getId(), questionIds, page);
+        setDiscuss(warmupPracticeList, discuss);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
