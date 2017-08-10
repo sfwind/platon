@@ -472,9 +472,6 @@ public class PracticeController {
         Integer commentId = evaluation.getCommentId();
         Integer useful = evaluation.getUseful();
         String reason = evaluation.getReason();
-        if (reason == null) {
-            reason = "";
-        }
         practiceService.updateEvaluation(commentId, useful, reason);
         return WebUtils.success();
     }

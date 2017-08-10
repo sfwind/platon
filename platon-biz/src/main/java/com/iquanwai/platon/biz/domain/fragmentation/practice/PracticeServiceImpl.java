@@ -723,7 +723,11 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public void updateEvaluation(Integer commentId, Integer useful, String reason) {
-        commentEvaluationDao.updateEvaluation(commentId, useful, reason);
+        if ("".equals(reason)) {
+            commentEvaluationDao.updateEvaluation(commentId, useful);
+        } else {
+            commentEvaluationDao.updateEvaluation(commentId, useful, reason);
+        }
     }
 
     @Override

@@ -40,6 +40,17 @@ public class CommentEvaluationDao extends PracticeDBUtil {
         }
     }
 
+    public void updateEvaluation(Integer commentId, Integer useful) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CommentEvaluation SET Useful = ?, Evaluated = 1 WHERE CommentId = ?";
+        try {
+            runner.update(sql, useful, commentId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+
     public CommentEvaluation loadByCommentId(Integer commentId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CommentEvaluation WHERE CommentId = ?";
