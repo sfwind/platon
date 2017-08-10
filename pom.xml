@@ -310,6 +310,12 @@
                 <artifactId>netty-all</artifactId>
                 <version>4.1.12.Final</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.springframework.amqp</groupId>
+                <artifactId>spring-rabbit</artifactId>
+                <version>1.7.3.RELEASE</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>

@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.AbstractComment;
 import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -55,10 +56,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
                 warmupPracticeDiscuss.setRepliedProfileId(repliedDiscuss.getProfileId());
                 warmupPracticeDiscuss.setRepliedDel(0);
+                warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
             }
         }
         warmupPracticeDiscuss.setPriority(0);
         Integer id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
+        if(warmupPracticeDiscuss.getOriginDiscussId() == null){
+            //如果没有回复其它评论,则originDiscussId=自身
+            warmupPracticeDiscussDao.updateOriginDiscussId(id, id);
+        }
 
         //发送回复通知
         if (repliedId != null && !profileId.equals(warmupPracticeDiscuss.getRepliedProfileId())) {
@@ -116,11 +122,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     @Override
-    public Integer deleteKnowledgeDiscussById(Integer id) {
+    public Integer deleteKnowledgeDiscussById(Integer discussId) {
         //标记回复该评论的评论
-        knowledgeDiscussDao.markRepliedCommentDelete(id);
+        knowledgeDiscussDao.markRepliedCommentDelete(discussId);
         // 删除KnowledgeDiscuss记录，将del字段置为1
-        return knowledgeDiscussDao.updateDelById(1, id);
+        return knowledgeDiscussDao.updateDelById(1, discussId);
     }
 
     @Override

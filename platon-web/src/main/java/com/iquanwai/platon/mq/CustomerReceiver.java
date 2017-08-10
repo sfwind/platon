@@ -1,7 +1,6 @@
 package com.iquanwai.platon.mq;
 
-import com.iquanwai.platon.biz.domain.common.message.MQService;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.function.Consumer;
 
 
 /**
@@ -17,32 +15,21 @@ import java.util.function.Consumer;
  */
 @Service
 public class CustomerReceiver {
-
-    public static final String TOPIC = "customer";
-
     private Logger logger = LoggerFactory.getLogger(getClass());
+    public static final String TOPIC = "customer";
 
     @Autowired
     private LoginUserService loginUserService;
-
     @Autowired
-    private MQService mqService;
+    private RabbitMQFactory rabbitMQFactory;
 
     @PostConstruct
     public void init() {
-        RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, TOPIC);
-        logger.info("通道建立：" + TOPIC);
-        receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
-
-        Consumer<Object> consumer = o -> {
-            String message = o.toString();
+        rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
+            String message = messageQueue.getMessage().toString();
             logger.info("receive message {}", message);
             loginUserService.logout(message);
-        };
-        receiver.listen(consumer);
-        logger.info("开启队列监听：" + TOPIC);
+        });
     }
-
 }
 

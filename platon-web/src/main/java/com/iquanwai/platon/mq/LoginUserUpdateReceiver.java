@@ -1,7 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.domain.common.message.MQService;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,26 +17,21 @@ import javax.annotation.PostConstruct;
 public class LoginUserUpdateReceiver {
     @Autowired
     private LoginUserService loginUserService;
+    @Autowired
+    private MQService mqService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String TOPIC = "login_user_reload";
 
     @Autowired
-    private MQService mqService;
+    private RabbitMQFactory rabbitMQFactory;
 
     @PostConstruct
-    public void init(){
-        RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, TOPIC);
-        logger.info("{} 通道建立",TOPIC);
-        receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
-        // 监听器
-        receiver.listen(msg -> {
-            String message = msg.toString();
-            logger.info("receive message {}", message);
-            loginUserService.updateWeixinUser(message);
+    public void init() {
+        rabbitMQFactory.initReceiver(null,TOPIC,(messageQueue)->{
+            logger.info("receive message {}", messageQueue.getMessage().toString());
+            loginUserService.updateWeixinUser(messageQueue.getMessage().toString());
         });
-        logger.info("{} 开启队列监听",TOPIC);
     }
 }
