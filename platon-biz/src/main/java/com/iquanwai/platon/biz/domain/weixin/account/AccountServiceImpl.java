@@ -196,26 +196,39 @@ public class AccountServiceImpl implements AccountService {
                 //未关注直接抛异常
                 throw new NotFollowingException();
             }
-            Account finalQuery = followUserDao.queryByOpenid(openid);
-            if (finalQuery == null) {
-                redisUtil.lock("lock:wx:user:insert", (lock) -> {
+            redisUtil.lock("lock:wx:user:insert", (lock) -> {
+                Account finalQuery = followUserDao.queryByOpenid(openid);
+                if (finalQuery == null) {
                     if (accountNew.getNickname() != null) {
                         logger.info("插入用户信息:{}", accountNew);
                         followUserDao.insert(accountNew);
-                        try {
-                            updateProfile(accountNew);
-                        } catch (Exception e) {
-                            logger.error(e.getLocalizedMessage(), e);
+                        // 插入profile表
+                        Profile profile = getProfileFromDB(accountNew.getOpenid());
+                        if (profile == null) {
+                            profile = new Profile();
+                            try {
+                                BeanUtils.copyProperties(profile, accountNew);
+                                logger.info("插入Profile表信息:{}", profile);
+                                profile.setRiseId(CommonUtils.randomString(7));
+                                profileDao.insertProfile(profile);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                logger.error("beanUtils copy props error", e);
+                            } catch (SQLException err) {
+                                profile.setRiseId(CommonUtils.randomString(7));
+                                try {
+                                    profileDao.insertProfile(profile);
+                                } catch (SQLException subErr) {
+                                    logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
+                                }
+                            }
                         }
                     }
-                });
-            } else {
-                logger.info("更新用户信息:{}", accountNew);
-                if (accountNew.getNickname() != null) {
-                    followUserDao.updateMeta(accountNew);
-                    updateProfile(accountNew);
+                } else {
+                    if (accountNew.getNickname() != null) {
+                        followUserDao.updateMeta(accountNew);
+                    }
                 }
-            }
+            });
         } catch (NotFollowingException e1) {
             throw new NotFollowingException();
         } catch (Exception e) {
@@ -366,28 +379,6 @@ public class AccountServiceImpl implements AccountService {
             return true;
         } else {
             return false;
-        }
-    }
-
-    private void updateProfile(Account accountNew) throws IllegalAccessException, InvocationTargetException {
-        Profile profile = getProfileFromDB(accountNew.getOpenid());
-        if (profile == null) {
-            profile = new Profile();
-            try {
-                BeanUtils.copyProperties(profile, accountNew);
-                logger.info("插入Profile表信息:{}", profile);
-                profile.setRiseId(CommonUtils.randomString(7));
-                profileDao.insertProfile(profile);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                logger.error("beanUtils copy props error", e);
-            } catch (SQLException err) {
-                profile.setRiseId(CommonUtils.randomString(7));
-                try {
-                    profileDao.insertProfile(profile);
-                } catch (SQLException subErr) {
-                    logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
-                }
-            }
         }
     }
 

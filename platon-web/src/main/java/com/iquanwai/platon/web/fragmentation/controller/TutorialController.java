@@ -1,11 +1,10 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import com.iquanwai.platon.mq.LoginUserUpdateReceiver;
 import com.iquanwai.platon.web.fragmentation.dto.OpenStatusDto;
@@ -31,11 +30,11 @@ import java.util.Map;
 @RequestMapping("/rise/open")
 public class TutorialController {
     @Autowired
-    private MQService mqService;
-    @Autowired
     private AccountService accountService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
 
     private RabbitMQPublisher rabbitMQPublisher;
 
@@ -43,9 +42,7 @@ public class TutorialController {
 
     @PostConstruct
     public void init(){
-        rabbitMQPublisher = new RabbitMQPublisher();
-        rabbitMQPublisher.init(LoginUserUpdateReceiver.TOPIC);
-        rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
+        rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(LoginUserUpdateReceiver.TOPIC);
     }
 
     private void sendMqMessage(String openid) {

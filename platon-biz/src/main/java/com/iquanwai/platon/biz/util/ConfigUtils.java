@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.util;
 
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.io.File;
+import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -305,6 +307,25 @@ public class ConfigUtils {
         return getBooleanValue("rise.course.pay.test");
     }
 
+    /**
+     * 获取训练营小课安排 json
+     */
+    public static String getRequiredClassSchedule() {
+        return getValue("requiredClass.schedule");
+    }
+
+    /**
+     * 获取应用练习得分列表
+     */
+    public static Map<Integer, Integer> getWorkScoreMap(){
+        String scores = getValue("work.difficulty.score");
+        String[] split = scores.split(",");
+        Map<Integer, Integer> scoreMap = Maps.newHashMap();
+        for (int i = 0; i < split.length; i++) {
+            scoreMap.put(i + 1, Integer.parseInt(split[i]));
+        }
+        return scoreMap;
+    }
 
 }
 

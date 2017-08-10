@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionUserDao;
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -19,6 +18,7 @@ import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
@@ -50,13 +51,13 @@ public class OperationServiceImpl implements OperationService {
     @Autowired
     private CouponDao couponDao;
     @Autowired
-    private MQService mqService;
-    @Autowired
     private CustomerMessageService customerMessageService;
     @Autowired
     private CardRepository cardRepository;
     @Autowired
     private UploadResourceService uploadResourceService;
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -73,9 +74,14 @@ public class OperationServiceImpl implements OperationService {
 
     @PostConstruct
     public void init() {
-        rabbitMQPublisher = new RabbitMQPublisher();
-        rabbitMQPublisher.init(cacheReloadTopic);
-        rabbitMQPublisher.setSendCallback(mqService::saveMQSendOperation);
+        rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(cacheReloadTopic);
+        // 创建图片保存目录
+        File file = new File(TEMP_IMAGE_PATH);
+        if(!file.exists()){
+            if(!file.mkdir()){
+                logger.error("创建活动图片临时保存目录失败!!!");
+            }
+        }
     }
 
     @Override
@@ -250,8 +256,8 @@ public class OperationServiceImpl implements OperationService {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        templateMessage.setData(data);
         data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
         data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -270,6 +276,7 @@ public class OperationServiceImpl implements OperationService {
         templateMessage.setTouser(targetOpenId);
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
+        templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/customer/account");
         templateMessage.setTemplate_id(ConfigUtils.getReceiveCouponMsg());
         data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给" + successNum + "位好友，成功get一张¥50代金券\n"));
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
