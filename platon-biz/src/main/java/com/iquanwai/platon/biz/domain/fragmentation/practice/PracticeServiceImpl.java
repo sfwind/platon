@@ -706,6 +706,8 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Boolean loadEvaluated(Integer commentId) {
         CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
+        // 数据库如果没有这条评论记录，默认为已评
+        if(evaluation == null) return true;
         Integer evaluated = evaluation.getEvaluated();
         if (evaluated != null) {
             switch (evaluated) {
