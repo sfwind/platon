@@ -92,7 +92,11 @@ public interface PracticeService {
      */
     Boolean challengeSubmit(Integer id, String content);
 
-    void initCommentEvaluation(Integer profileId, Integer commentId, Integer targetId);
+    void initCommentEvaluation(Integer commentId);
+
+    Boolean loadEvaluated(Integer commentId);
+
+    void updateEvaluation(Integer commentId, Integer useful, String reason);
 
     /**
      * 增加文章视图的记录数
@@ -164,6 +168,11 @@ public interface PracticeService {
      * @param device 设备，默认是移动提交
      */
     Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content,Integer device);
+
+    /**
+     * 获取回复应用练习的评论
+     */
+    Comment loadApplicationReplyComment(Integer commentId);
 
     /**
      * 回复评论
