@@ -8,7 +8,6 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.AppMsgCommentReplyDto;
@@ -153,8 +152,7 @@ public class MessageController {
             messageService.mark(loginUser.getId());
         }
         // TODO 暂时将类型改为手机方便测试
-        // List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), Constants.Device.MOBILE, page);
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
