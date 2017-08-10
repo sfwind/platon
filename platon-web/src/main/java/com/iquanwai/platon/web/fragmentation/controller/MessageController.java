@@ -8,7 +8,6 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.AppMsgCommentReplyDto;
@@ -99,14 +98,12 @@ public class MessageController {
 
     /**
      * 获取消息回复页面
-     *
-     * @return
      */
     private RiseWorkCommentDto getCommentDto(LoginUser loginUser, Integer commentId) {
         Comment comment = practiceService.loadComment(commentId);
         RiseWorkCommentDto commentDto = new RiseWorkCommentDto();
 
-        if(comment!=null){
+        if (comment != null) {
             Profile account = accountService.getProfile(comment.getCommentProfileId());
             if (account != null) {
                 commentDto.setId(comment.getId());
@@ -152,9 +149,8 @@ public class MessageController {
         if (page.getPage() == 1) {
             messageService.mark(loginUser.getId());
         }
-        // TODO 暂时将类型改为手机方便测试
-        // List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
-        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), Constants.Device.MOBILE, page);
+        // 修改 comment 提交设备类型
+        List<NotifyMessage> notifyMessage = messageService.getNotifyMessage(loginUser.getId(), loginUser.getDevice(), page);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("消息中心")
