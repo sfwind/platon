@@ -6,13 +6,13 @@ import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQReceiver;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.LoginUser;
-import com.iquanwai.platon.web.resolver.LoginUserResolver;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -33,19 +33,16 @@ public class CacheReloadReceiver {
     @Autowired
     private PictureService pictureService;
     @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
     private MQService mqService;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RabbitMQFactory rabbitMQFactory;
 
     @PostConstruct
-    public void init(){
-        RabbitMQReceiver receiver = new RabbitMQReceiver();
-        receiver.init(null, TOPIC);
-        logger.info("通道建立");
-        receiver.setAfterDealQueue(mqService::updateAfterDealOperation);
-        // 监听器
-        receiver.listen(msg -> {
-            String message = msg.toString();
+    public void init() {
+        rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
+            String message = messageQueue.getMessage().toString();
             logger.info("receive message {}", message);
             switch (message) {
                 case "region":
@@ -61,11 +58,10 @@ public class CacheReloadReceiver {
                     break;
             }
         });
-        logger.info("开启队列监听");
     }
 
     // 刷新缓存，返回当前登录人数
-    public Integer refreshStatus(){
+    public Integer refreshStatus() {
         Collection<LoginUser> allUsers = LoginUserService.getAllUsers();
         for (LoginUser user : allUsers) {
             try {
@@ -78,7 +74,7 @@ public class CacheReloadReceiver {
                         logger.info("openId:{},expired member", user.getOpenId());
                     }
                 }
-            } catch (Exception e){
+            } catch (Exception e) {
                 logger.error("会员过期检查失败", e);
             }
         }
