@@ -1,6 +1,6 @@
 package com.iquanwai.platon.mq;
 
-import com.iquanwai.platon.biz.domain.common.message.MQService;
+import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
 import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
@@ -26,18 +26,12 @@ public class PayResultReceiver {
     private OperationService operationService;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
-    @Autowired
-    private MQService mqService;
-
-    public static void main(String[] args) {
-
-    }
 
     @PostConstruct
     public void init(){
         rabbitMQFactory.initReceiver(QUEUE,TOPIC,(messageQueue)->{
             logger.info("receive message {}", messageQueue.getMessage().toString());
-            QuanwaiOrder quanwai = (QuanwaiOrder)messageQueue.getMessage();
+            QuanwaiOrder quanwai = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), QuanwaiOrder.class);
             logger.info("获取支付成功 message {}", quanwai);
             if (quanwai == null) {
                 logger.error("获取支付成功mq消息异常");
