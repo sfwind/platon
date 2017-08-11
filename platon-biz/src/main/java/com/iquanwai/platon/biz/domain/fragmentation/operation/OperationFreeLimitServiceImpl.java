@@ -110,34 +110,26 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
             Integer promotionProfileId = Integer.parseInt(sceneParams[1]);
             Profile promotionProfile = accountService.getProfile(promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
-            PromotionLevel promotionLevelObject = promotionLevelDao.loadByProfileId(promotionProfileId, activity); // 推广人层级表对象
             if (openId.equals(promotionOpenId)) {
                 logger.error("自己扫自己，不能入表");
                 return;
             }
-            if (promotionLevelObject != null) {
-                Integer level = promotionLevelObject.getLevel(); // 推广人所在推广层级
-                PromotionLevel promotionLevel = getDefaultPromotionLevel();
-                promotionLevel.setProfileId(profile.getId());
-                promotionLevel.setPromoterId(promotionProfileId);
-                promotionLevel.setLevel(level + 1);
-                promotionLevelDao.insertPromotionLevel(promotionLevel);
-            } else {
-                // 没有推广人，推广人没有扫码，或者已经是会员
-                PromotionLevel promotionLevel = getDefaultPromotionLevel();
-                promotionLevel.setProfileId(profile.getId());
-                promotionLevel.setLevel(2);
-                promotionLevelDao.insertPromotionLevel(promotionLevel);
+            PromotionLevel promotionLevelObject = promotionLevelDao.loadByProfileId(promotionProfileId, activity); // 推广人层级表对象
+            PromotionLevel promotionLevel = getDefaultPromotionLevel();
+            // 若没有推广人，推广人没有扫码，或者已经是会员，则默认 level 为2
+            promotionLevel.setLevel(promotionLevelObject == null ? 2 : promotionLevelObject.getLevel() + 1);
+            promotionLevel.setProfileId(profile.getId());
+            promotionLevel.setPromoterId(promotionProfileId);
+            promotionLevelDao.insertPromotionLevel(promotionLevel);
 
-                // 查看是否在user表里
-                List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), activity);
-                if (promotionActivities.size() == 0) {
-                    PromotionActivity promotionActivity = new PromotionActivity();
-                    promotionActivity.setProfileId(profile.getId());
-                    promotionActivity.setAction(PromotionConstants.FreeLimitAction.InitState);
-                    promotionActivity.setActivity(PromotionConstants.Activities.FreeLimit);
-                    promotionActivityDao.insertPromotionActivity(promotionActivity);
-                }
+            // 查看是否在user表里
+            List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), activity);
+            if (promotionActivities.size() == 0) {
+                PromotionActivity promotionActivity = new PromotionActivity();
+                promotionActivity.setProfileId(profile.getId());
+                promotionActivity.setAction(PromotionConstants.FreeLimitAction.InitState);
+                promotionActivity.setActivity(PromotionConstants.Activities.FreeLimit);
+                promotionActivityDao.insertPromotionActivity(promotionActivity);
             }
         }
     }
