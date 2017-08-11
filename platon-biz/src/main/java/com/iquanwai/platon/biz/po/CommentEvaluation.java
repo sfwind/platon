@@ -9,10 +9,8 @@ import lombok.Data;
 public class CommentEvaluation {
 
     private Integer id;
-    private Integer profileId;
     private Integer commentId;
-    private Integer targetId;
-    private Integer level;
+    private Integer useful;
     private String reason;
     private Integer evaluated;
 

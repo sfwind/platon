@@ -133,7 +133,8 @@ public class OperationServiceImpl implements OperationService {
         if (riseMember != null && riseMember != 1) {
             // 查询是否在level表里
             PromotionLevel promotionLevel = promotionLevelDao.loadByOpenId(openId);
-            if (promotionLevel == null) {
+            PromotionUser user = promotionUserDao.loadUserByOpenId(openId);
+            if (promotionLevel == null && user == null) {
                 // 没有在level表里
                 PromotionUser promotionUser = new PromotionUser();
                 promotionUser.setSource(naturePrefix);

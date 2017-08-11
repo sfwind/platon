@@ -262,9 +262,10 @@ public class PlanController {
         }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
         // 初始化第一层promotionUser
-        // TODO 活动结束后删除
-        operationService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
+
         if (problemId.equals(trialProblemId)) {
+            // TODO 活动结束后删除,如果是自然增长，就插入
+            operationService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
             // 限免小课
             operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
         }
