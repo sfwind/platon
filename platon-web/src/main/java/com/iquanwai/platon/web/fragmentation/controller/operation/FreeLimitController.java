@@ -1,6 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation;
 
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -24,7 +24,7 @@ public class FreeLimitController {
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
-    private OperationService operationService;
+    private OperationFreeLimitService operationFreeLimitService;
 
     /**
      * 发送自动选限免课的客服消息
@@ -32,7 +32,7 @@ public class FreeLimitController {
     @RequestMapping(value = "/choose/problem/msg", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendChooseProblemMsg(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        operationService.sendCustomerMsg(loginUser.getOpenId());
+        operationFreeLimitService.sendCustomerMsg(loginUser.getOpenId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("自动选课").action("发送微信客服消息");
         operationLogService.log(operationLog);
@@ -48,7 +48,7 @@ public class FreeLimitController {
         if(loginUser.getRiseMember() == 1) {
             return WebUtils.result(false);
         } else {
-            Boolean result = operationService.hasGetTheCoupon(loginUser.getId());
+            Boolean result = operationFreeLimitService.hasGetTheCoupon(loginUser.getId());
             return WebUtils.result(result);
         }
     }

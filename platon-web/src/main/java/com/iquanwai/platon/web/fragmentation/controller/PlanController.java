@@ -3,7 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -67,7 +67,7 @@ public class PlanController {
     @Autowired
     private ReportService reportService;
     @Autowired
-    private OperationService operationService;
+    private OperationFreeLimitService operationFreeLimitService;
     @Autowired
     private ProblemService problemService;
     @Autowired
@@ -238,7 +238,7 @@ public class PlanController {
                 // 解锁了
                 if (problemId.equals(trialProblemId)) {
                     // 限免小课
-                    operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+                    operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
                 }
                 OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                         .module("RISE")
@@ -265,9 +265,9 @@ public class PlanController {
 
         if (problemId.equals(trialProblemId)) {
             // TODO 活动结束后删除,如果是自然增长，就插入
-            operationService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
+            operationFreeLimitService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
             // 限免小课
-            operationService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+            operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
