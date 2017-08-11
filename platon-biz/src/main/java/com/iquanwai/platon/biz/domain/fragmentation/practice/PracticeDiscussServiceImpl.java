@@ -150,7 +150,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     logger.error(e.getLocalizedMessage(), e);
                 }
                 // 设置isPriority字段
-                if (warmupComment.getPriority() == 1) {
+                if (warmupComment.getPriority()!= null && warmupComment.getPriority() == 1) {
                     warmupComment.setPriorityComment(1);
                 } else {
                     warmupComment.setPriorityComment(0);
