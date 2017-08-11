@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.po;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupComment;
 import lombok.Data;
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -27,7 +28,7 @@ public class WarmupPractice implements Cloneable{
     private String practiceUid; //任务唯一编号
     private Integer score; //非db字段 分值
     private List<Choice> choiceList; //非db字段 所有选项
-    private List<WarmupPracticeDiscuss> discussList; //非db字段 巩固练习讨论
+    private List<WarmupComment> discussList; //非db字段 巩固练习讨论
     private List<Integer> choice; //非db字段 用户选择选项
     private Knowledge knowledge; //非db字段 知识点
 

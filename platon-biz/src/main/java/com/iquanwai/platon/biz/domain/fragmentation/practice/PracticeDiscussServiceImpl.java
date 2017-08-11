@@ -8,11 +8,11 @@ import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.AbstractComment;
 import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
-import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/2/8.
@@ -61,7 +62,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         }
         warmupPracticeDiscuss.setPriority(0);
         Integer id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);
-        if(warmupPracticeDiscuss.getOriginDiscussId() == null){
+        if (warmupPracticeDiscuss.getOriginDiscussId() == null) {
             //如果没有回复其它评论,则originDiscussId=自身
             warmupPracticeDiscussDao.updateOriginDiscussId(id, id);
         }
@@ -108,10 +109,86 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     @Override
-    public List<WarmupPracticeDiscuss> loadDiscuss(Integer warmupPracticeId, Page page) {
+    public List<WarmupComment> loadDiscuss(Integer profileId, Integer warmupPracticeId, Page page) {
         List<WarmupPracticeDiscuss> discussList = warmupPracticeDiscussDao.loadDiscuss(warmupPracticeId, page);
         fulfilDiscuss(discussList);
-        return discussList;
+
+        return buildWarmupComment(profileId, discussList);
+    }
+
+    private List<WarmupComment> buildWarmupComment(Integer profileId, List<WarmupPracticeDiscuss> discussList) {
+        List<WarmupComment> warmupComments = Lists.newArrayList();
+
+        Map<Integer, WarmupPracticeDiscuss> discussMap = Maps.newHashMap();
+        discussList.forEach(warmupPracticeDiscuss ->
+                discussMap.put(warmupPracticeDiscuss.getId(), warmupPracticeDiscuss));
+
+        // 过滤所有起始评论已删除的评论
+        discussList = discussList.stream().filter(warmupPracticeDiscuss ->
+                discussMap.get(warmupPracticeDiscuss.getId()) != null)
+                .collect(Collectors.toList());
+
+        //找到所有讨论的第一条
+        discussList.forEach(discuss -> {
+            // 设置isMine字段
+            if (discuss.getProfileId().equals(profileId)) {
+                discuss.setIsMine(true);
+            } else {
+                discuss.setIsMine(false);
+            }
+            // 清空用户id
+            discuss.setProfileId(null);
+            discuss.setRepliedProfileId(null);
+            discuss.setOpenid(null);
+            discuss.setRepliedOpenid(null);
+            //讨论的第一条
+            if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() == discuss.getId()) {
+                WarmupComment warmupComment = new WarmupComment();
+                try {
+                    BeanUtils.copyProperties(warmupComment, discuss);
+                } catch (Exception e) {
+                    logger.error(e.getLocalizedMessage(), e);
+                }
+                // 设置isPriority字段
+                if (warmupComment.getPriority() == 1) {
+                    warmupComment.setPriorityComment(1);
+                } else {
+                    warmupComment.setPriorityComment(0);
+                }
+                warmupComments.add(warmupComment);
+            }
+        });
+
+        discussList.forEach(discuss -> {
+            //不是讨论的第一条
+            if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() != discuss.getId()) {
+                warmupComments.forEach(warmupComment -> {
+                    if (warmupComment.getId() == discuss.getOriginDiscussId()) {
+                        warmupComment.getWarmupPracticeDiscussList().add(discuss);
+                        // 设置isPriority字段
+                        if (discuss.getPriority() == 1) {
+                            warmupComment.setPriorityComment(1);
+                        }
+                    }
+                });
+            }
+        });
+
+        // 第一条评论排序 优质答案排序优先,非优质答案按时间倒序
+        warmupComments.sort((o1, o2) -> {
+            if (!o1.getPriorityComment().equals(o2.getPriorityComment())) {
+                return o2.getPriorityComment() - o1.getPriorityComment();
+            }
+            return o2.getAddTime().compareTo(o1.getAddTime());
+        });
+
+        // 相关讨论的排序 按时间顺序
+        warmupComments.forEach(warmupComment -> {
+            List<WarmupPracticeDiscuss> warmupDiscussList = warmupComment.getWarmupPracticeDiscussList();
+            warmupDiscussList.sort((o1, o2) -> o1.getAddTime().compareTo(o2.getAddTime()));
+        });
+
+        return warmupComments;
     }
 
     @Override
@@ -130,8 +207,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     @Override
-    public Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page) {
-        Map<Integer, List<WarmupPracticeDiscuss>> result = Maps.newHashMap();
+    public Map<Integer, List<WarmupComment>> loadDiscuss(Integer profileId, List<Integer> warmupPracticeIds, Page page) {
+        Map<Integer, List<WarmupComment>> result = Maps.newHashMap();
 
         //并发获取评论提高效率
         warmupPracticeIds.forEach(warmupPracticeId -> {
@@ -140,7 +217,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             try {
                 List<WarmupPracticeDiscuss> discuss = (List<WarmupPracticeDiscuss>) futureTask.get();
                 fulfilDiscuss(discuss);
-                result.put(warmupPracticeId, discuss);
+                List<WarmupComment> warmupComments = buildWarmupComment(profileId, discuss);
+                result.put(warmupPracticeId, warmupComments);
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
@@ -194,7 +272,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         //设置名称、头像和时间
         discuss.stream().forEach(warmupPracticeDiscuss -> {
             accounts.stream().forEach(account -> {
-                if (warmupPracticeDiscuss.getProfileId()!=null &&
+                if (warmupPracticeDiscuss.getProfileId() != null &&
                         account.getId() == warmupPracticeDiscuss.getProfileId()) {
                     warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
                     warmupPracticeDiscuss.setName(account.getNickname());
@@ -213,7 +291,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private void fulfilDiscuss(AbstractComment warmupPracticeDiscuss) {
         Profile account = accountService.getProfile(warmupPracticeDiscuss.getProfileId());
         //设置名称、头像和时间
-        if (warmupPracticeDiscuss.getProfileId()!=null &&
+        if (warmupPracticeDiscuss.getProfileId() != null &&
                 account.getId() == warmupPracticeDiscuss.getProfileId()) {
             warmupPracticeDiscuss.setAvatar(account.getHeadimgurl());
             warmupPracticeDiscuss.setName(account.getNickname());

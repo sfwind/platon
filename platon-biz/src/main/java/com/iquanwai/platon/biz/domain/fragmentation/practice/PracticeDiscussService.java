@@ -36,14 +36,14 @@ public interface PracticeDiscussService {
      * @param warmupPracticeId 巩固练习id
      * @param page 分页信息
      * */
-    List<WarmupPracticeDiscuss> loadDiscuss(Integer warmupPracticeId, Page page);
+    List<WarmupComment> loadDiscuss(Integer profileId, Integer warmupPracticeId, Page page);
 
     /**
      * 获取多个问题的讨论内容
      * @param warmupPracticeIds 巩固练习id列表
      * @param page 分页信息
      * */
-    Map<Integer, List<WarmupPracticeDiscuss>> loadDiscuss(List<Integer> warmupPracticeIds, Page page);
+    Map<Integer, List<WarmupComment>> loadDiscuss(Integer profileId, List<Integer> warmupPracticeIds, Page page);
 
     /**
      * 获取讨论内容

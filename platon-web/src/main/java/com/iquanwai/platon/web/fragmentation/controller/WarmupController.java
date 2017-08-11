@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupComment;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.AnswerException;
@@ -118,8 +119,8 @@ public class WarmupController {
         Page page = new Page();
         page.setPage(1);
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
-        Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
-        setDiscuss(warmupPracticeList, discuss, loginUser.getOpenId());
+        Map<Integer, List<WarmupComment>> discuss = practiceDiscussService.loadDiscuss(loginUser.getId(), questionIds, page);
+        setDiscuss(warmupPracticeList, discuss);
 
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
@@ -132,18 +133,9 @@ public class WarmupController {
         return WebUtils.result(warmupPracticeDto);
     }
 
-    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupPracticeDiscuss>> discuss, String openid) {
+    private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupComment>> discuss) {
         warmupPracticeList.forEach(warmupPractice -> {
-            List<WarmupPracticeDiscuss> list = discuss.get(warmupPractice.getId());
-            list.forEach(warmupPracticeDiscuss -> {
-                //是否是学员本人的评论
-                if (warmupPracticeDiscuss.getOpenid().equals(openid)) {
-                    warmupPracticeDiscuss.setIsMine(true);
-                }
-                warmupPracticeDiscuss.setRepliedOpenid(null);
-                warmupPracticeDiscuss.setOpenid(null);
-                warmupPracticeDiscuss.setReferenceId(warmupPracticeDiscuss.getWarmupPracticeId());
-            });
+            List<WarmupComment> list = discuss.get(warmupPractice.getId());
             warmupPractice.setDiscussList(list);
         });
     }
@@ -191,8 +183,8 @@ public class WarmupController {
         Page page = new Page();
         page.setPage(1);
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
-        Map<Integer, List<WarmupPracticeDiscuss>> discuss = practiceDiscussService.loadDiscuss(questionIds, page);
-        setDiscuss(warmupPracticeList, discuss, loginUser.getOpenId());
+        Map<Integer, List<WarmupComment>> discuss = practiceDiscussService.loadDiscuss(loginUser.getId(), questionIds, page);
+        setDiscuss(warmupPracticeList, discuss);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -211,24 +203,15 @@ public class WarmupController {
         Page page = new Page();
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
         page.setPage(offset);
-        List<WarmupPracticeDiscuss> discusses = practiceDiscussService.loadDiscuss(warmupPracticeId, page);
+        List<WarmupComment> warmupComments = practiceDiscussService.loadDiscuss(loginUser.getId(), warmupPracticeId, page);
 
-        //清空openid
-        discusses.forEach(warmupPracticeDiscuss -> {
-            if (warmupPracticeDiscuss.getOpenid().equals(loginUser.getOpenId())) {
-                warmupPracticeDiscuss.setIsMine(true);
-            }
-            warmupPracticeDiscuss.setRepliedOpenid(null);
-            warmupPracticeDiscuss.setOpenid(null);
-            warmupPracticeDiscuss.setReferenceId(warmupPracticeDiscuss.getWarmupPracticeId());
-        });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("巩固练习")
                 .action("获取讨论")
                 .memo(warmupPracticeId.toString());
         operationLogService.log(operationLog);
-        return WebUtils.result(discusses);
+        return WebUtils.result(warmupComments);
     }
 
     @RequestMapping(value = "/discuss", method = RequestMethod.POST)
