@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.beanutils.BeanUtils;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,12 +144,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             discuss.setRepliedOpenid(null);
             //讨论的第一条
             if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() == discuss.getId()) {
-                WarmupComment warmupComment = new WarmupComment();
-                try {
-                    BeanUtils.copyProperties(warmupComment, discuss);
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                }
+                ModelMapper modelMapper = new ModelMapper();
+                WarmupComment warmupComment = modelMapper.map(discuss, WarmupComment.class);
                 // 设置isPriority字段
                 if (warmupComment.getPriority()!= null && warmupComment.getPriority() == 1) {
                     warmupComment.setPriorityComment(1);
