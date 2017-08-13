@@ -113,7 +113,7 @@ public class IndexController {
             loginMsg(loginUser);
         }
 
-        return courseView(request, account,showForum);
+        return courseView(request, loginUser,showForum);
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
@@ -184,7 +184,7 @@ public class IndexController {
         return !StringUtils.isEmpty(openid);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, Account account, Boolean showForum) {
+    private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum) {
         ModelAndView mav = new ModelAndView("course");
         String resourceUrl = ConfigUtils.staticResourceUrl();
         if (request.isSecure()) {
@@ -201,9 +201,9 @@ public class IndexController {
         }
 
         Map<String, String> userParam = Maps.newHashMap();
-        userParam.put("userName", account.getNickname());
-        if (account.getHeadimgurl() != null) {
-            userParam.put("headImage", account.getHeadimgurl().replace("http:", "https:"));
+        userParam.put("userName", account.getWeixinName());
+        if (account.getHeadimgUrl() != null) {
+            userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);
         mav.addObject("showForum", showForum);
