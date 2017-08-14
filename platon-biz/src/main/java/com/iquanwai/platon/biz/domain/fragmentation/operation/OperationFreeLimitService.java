@@ -3,7 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 /**
  * Created by xfduan on 2017/7/14.
  */
-public interface OperationService {
+public interface OperationFreeLimitService {
 
     /**
      * Promotion 记录新人 OpenId，以及所在推广 Level

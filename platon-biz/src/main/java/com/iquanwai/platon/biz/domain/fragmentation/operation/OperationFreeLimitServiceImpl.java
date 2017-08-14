@@ -2,8 +2,8 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PromotionUserDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -11,19 +11,17 @@ import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.*;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
@@ -32,20 +30,23 @@ import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
  * Created by xfduan on 2017/7/14.
  */
 @Service
-public class OperationServiceImpl implements OperationService {
+public class OperationFreeLimitServiceImpl implements OperationFreeLimitService {
 
     @Autowired
     private TemplateMessageService templateMessageService;
     @Autowired
-    private PromotionUserDao promotionUserDao;
-    @Autowired
     private PromotionLevelDao promotionLevelDao;
+    @Autowired
+    private PromotionActivityDao promotionActivityDao;
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -64,21 +65,20 @@ public class OperationServiceImpl implements OperationService {
     private RabbitMQPublisher rabbitMQPublisher;
 
     private final static String cacheReloadTopic = "confucius_resource_reload";
-    // 活动前缀
-    private final static String prefix = "freeLimit_";
-    private final static String naturePrefix = "natureRaise";
     // 推广的熊猫卡临时存放路径
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
     // 推广成功人数限额
     private final static Integer successNum = ConfigUtils.getFreeLimitSuccessCnt();
+    // 推广活动名称
+    private final static String activity = PromotionConstants.Activities.FreeLimit;
 
     @PostConstruct
     public void init() {
         rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(cacheReloadTopic);
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
-        if(!file.exists()){
-            if(!file.mkdir()){
+        if (!file.exists()) {
+            if (!file.mkdir()) {
                 logger.error("创建活动图片临时保存目录失败!!!");
             }
         }
@@ -86,43 +86,65 @@ public class OperationServiceImpl implements OperationService {
 
     @Override
     public void recordPromotionLevel(String openId, String scene) {
-        PromotionLevel tempPromotionLevel = promotionLevelDao.loadByOpenId(openId);
-        if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
-        String[] sceneParams = scene.split("_");
-        if (sceneParams.length != 3) return;
         Profile profile = accountService.getProfile(openId);
-        if (profile != null && profile.getRiseMember() == 1) {
-            // 会员扫码无效
-            logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{},profile:{}", openId, scene, profile);
+        Assert.notNull(profile, "扫码用户不能为空");
+
+        PromotionLevel tempPromotionLevel = promotionLevelDao.loadByProfileId(profile.getId(), activity);
+        if (tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
+
+        String[] sceneParams = scene.split("_");
+        if (profile.getRiseMember() == 1) {
+            // 如果是会员扫码，则入 level 表，valid = 0，level = 1
+            PromotionLevel promotionLevel = getDefaultPromotionLevel();
+            promotionLevel.setProfileId(profile.getId());
+            promotionLevel.setLevel(1);
+            promotionLevel.setValid(0);
+            promotionLevelDao.insertPromotionLevel(promotionLevel);
             return;
         }
+
         if ("RISE".equals(sceneParams[1])) {
-            promotionLevelDao.insertPromotionLevel(openId, 1);
+            PromotionLevel promotionLevel = getDefaultPromotionLevel();
+            promotionLevel.setProfileId(profile.getId());
+            promotionLevel.setLevel(1);
+            promotionLevelDao.insertPromotionLevel(promotionLevel);
         } else {
             Integer promotionProfileId = Integer.parseInt(sceneParams[1]);
             Profile promotionProfile = accountService.getProfile(promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
-            PromotionLevel promotionLevelObject = promotionLevelDao.loadByOpenId(promotionOpenId); // 推广人层级表对象
             if (openId.equals(promotionOpenId)) {
-                logger.error("自己扫自己，不能入表");
+                // 自己扫自己，并且表中不存在数据
+                PromotionLevel promotionLevel = getDefaultPromotionLevel();
+                promotionLevel.setProfileId(profile.getId());
+                promotionLevel.setLevel(1);
+                promotionLevelDao.insertPromotionLevel(promotionLevel);
                 return;
             }
-            if (promotionLevelObject != null) {
-                Integer promotionLevel = promotionLevelObject.getLevel(); // 推广人所在推广层级
-                promotionLevelDao.insertPromotionLevel(openId, promotionLevel + 1);
-            } else {
-                // 没有推广人，推广人没有扫码，或者已经是会员
-                promotionLevelDao.insertPromotionLevel(openId, 2);
-                // 查看是否在user表里
-                PromotionUser exist = promotionUserDao.loadUserByOpenId(openId);
-                if (exist == null) {
-                    PromotionUser promotionUser = new PromotionUser();
-                    promotionUser.setSource(naturePrefix);
-                    promotionUser.setOpenId(openId);
-                    promotionUser.setAction(0);
-                    promotionUser.setProfileId(null);
-                    promotionUserDao.insert(promotionUser);
-                }
+            PromotionLevel promotionLevelObject = promotionLevelDao.loadByProfileId(promotionProfileId, activity); // 推广人层级表对象
+
+            PromotionLevel promotionLevel = getDefaultPromotionLevel();
+            // 若没有推广人，推广人没有扫码，或者已经是会员，则默认 level 为2
+            promotionLevel.setProfileId(profile.getId());
+            promotionLevel.setLevel(promotionLevelObject == null ? 2 : promotionLevelObject.getLevel() + 1);
+            promotionLevel.setPromoterId(promotionProfileId);
+            promotionLevelDao.insertPromotionLevel(promotionLevel);
+
+            if (promotionLevelObject == null) {
+                // 如果该推广人表中不存在，则默认添加一条
+                PromotionLevel promoterLevel = getDefaultPromotionLevel();
+                promoterLevel.setProfileId(promotionProfileId);
+                promoterLevel.setLevel(1);
+                promoterLevel.setValid(promotionProfile.getRiseMember() == 1 ? 0 : 1);
+                promotionLevelDao.insertPromotionLevel(promoterLevel);
+            }
+
+            List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), activity);
+            if (promotionActivities.size() == 0) {
+                PromotionActivity promotionActivity = new PromotionActivity();
+                promotionActivity.setProfileId(profile.getId());
+                promotionActivity.setAction(PromotionConstants.FreeLimitAction.InitState);
+                promotionActivity.setActivity(PromotionConstants.Activities.FreeLimit);
+                promotionActivityDao.insertPromotionActivity(promotionActivity);
             }
         }
     }
@@ -131,50 +153,57 @@ public class OperationServiceImpl implements OperationService {
     public void initFirstPromotionLevel(String openId, Integer riseMember) {
         // 不是会员
         if (riseMember != null && riseMember != 1) {
-            // 查询是否在level表里
-            PromotionLevel promotionLevel = promotionLevelDao.loadByOpenId(openId);
-            PromotionUser user = promotionUserDao.loadUserByOpenId(openId);
-            if (promotionLevel == null && user == null) {
-                // 没有在level表里
-                PromotionUser promotionUser = new PromotionUser();
-                promotionUser.setSource(naturePrefix);
-                promotionUser.setOpenId(openId);
-                promotionUser.setAction(0);
-                promotionUser.setProfileId(null);
-                promotionLevelDao.insertPromotionLevel(openId, 1);
-                promotionUserDao.insert(promotionUser);
+            Profile profile = accountService.getProfile(openId);
+            List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), PromotionConstants.Activities.FreeLimit);
+            if (promotionActivities.size() == 0) {
+                // 用户行为
+                PromotionActivity promotionActivity = new PromotionActivity();
+                promotionActivity.setAction(PromotionConstants.FreeLimitAction.InitState);
+                promotionActivity.setProfileId(profile.getId());
+                promotionActivity.setActivity(PromotionConstants.Activities.FreeLimit);
+                promotionActivityDao.insertPromotionActivity(promotionActivity);
+
+                // promotionLevel 插入数据
+                PromotionLevel targetPromotionLevel = getDefaultPromotionLevel();
+                targetPromotionLevel.setProfileId(profile.getId());
+                targetPromotionLevel.setLevel(1);
+                promotionLevelDao.insertPromotionLevel(targetPromotionLevel);
             }
         }
     }
 
     @Override
     public void recordOrderAndSendMsg(String openId, Integer newAction) {
-        PromotionUser orderUser = promotionUserDao.loadUserByOpenId(openId); // 查询 PromotionUser 中是否存在该用户信息
-        if (orderUser != null && orderUser.getSource() != null && orderUser.getSource().contains(prefix)) {
-            // 该用户存在于新人表，并且是此次活动的用户
-            Integer oldAction = orderUser.getAction();
-            if (newAction > oldAction) { // 根据 action 类型，更新 action 信息
-                promotionUserDao.updateActionByOpenId(openId, newAction);
-            }
+        Profile profile = accountService.getProfile(openId);
+        List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), PromotionConstants.Activities.FreeLimit);
+
+        if (promotionActivities.size() != 0) {
+            // 该用户存在于新人表，并且是此次活动的用户，在活动行为表中记录此次行为
+            PromotionActivity insertActivity = new PromotionActivity();
+            insertActivity.setProfileId(profile.getId());
+            insertActivity.setActivity(PromotionConstants.Activities.FreeLimit);
+            insertActivity.setAction(newAction);
+            promotionActivityDao.insertPromotionActivity(insertActivity);
+
+            PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profile.getId(), activity);
+            Integer promoterId = promotionLevel.getPromoterId();
+
+            // 该用户是自己扫官方码进入，没有推广人
+            if (promoterId == null) return;
+
             // 必是成功推广，此时给推广人发送成功推送信息
-            List<PromotionUser> newUsers;
-            List<PromotionUser> successUsers;
-            Integer profileId = orderUser.getProfileId();
-            if (profileId != null) {
-                newUsers = promotionUserDao.loadUsersByProfileId(profileId);
-            } else {
-                String source = orderUser.getSource();
-                // 查看推广人当前所有推广的新人列表
-                newUsers = promotionUserDao.loadUsersBySource(source);
-            }
-            successUsers = newUsers.stream().filter(user -> user.getAction() > 0).collect(Collectors.toList());
+            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, activity);
+            List<Integer> profileIds = promotionLevels.stream().map(PromotionLevel::getProfileId).collect(Collectors.toList());
+            List<PromotionActivity> newUsers = promotionActivityDao.loadNewUsers(profileIds, activity);
+            List<PromotionActivity> successUsers = newUsers.stream()
+                    .filter(item -> PromotionConstants.FreeLimitAction.TrialCourse == item.getAction() ||
+                            PromotionConstants.FreeLimitAction.PayCourse == item.getAction())
+                    .filter(distinctByKey(PromotionActivity::getProfileId))
+                    .collect(Collectors.toList());
+
             logger.info("推广成功用户人数" + successUsers.size());
-            // 发送推广成功消息
-            // 获取的是来源的 profileId (推广人的 profileId)
-            Integer sourceProfileId = orderUser.getProfileId();
-            if (sourceProfileId == null) return;
-            Profile sourceProfile = accountService.getProfile(sourceProfileId); // 推广人 Profile
-            if (sourceProfile == null) return;
+
+            Profile sourceProfile = accountService.getProfile(promoterId);
             // 区分是否为会员
             if (sourceProfile.getRiseMember() == 1) {
                 logger.info("是会员");
@@ -292,6 +321,21 @@ public class OperationServiceImpl implements OperationService {
         List<Coupon> coupons = couponDao.loadByProfileId(profileId);
         Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50) && coupon.getDescription().equals("奖学金")).count();
         return operationCouponCount > 0;
+    }
+
+    /**
+     * 获取该活动的默认 level 值，默认为生效状态
+     */
+    private PromotionLevel getDefaultPromotionLevel() {
+        PromotionLevel promotionLevel = new PromotionLevel();
+        promotionLevel.setActivity(PromotionConstants.Activities.FreeLimit);
+        promotionLevel.setValid(1);
+        return promotionLevel;
+    }
+
+    private static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+        Map<Object, Boolean> map = new ConcurrentHashMap<>();
+        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
 }

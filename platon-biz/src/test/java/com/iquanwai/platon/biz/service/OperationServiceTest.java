@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.service;
 
 import com.iquanwai.platon.biz.TestBase;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OperationServiceTest extends TestBase {
     @Autowired
-    private OperationService operationService;
+    private OperationFreeLimitService operationFreeLimitService;
     @Autowired
     private CustomerMessageService customerMessageService;
 
     @Test
     public void testSendCustomerMsg(){
-        operationService.sendCustomerMsg("o-Es21RVF3WCFQMOtl07Di_O9NVo");
+        operationFreeLimitService.sendCustomerMsg("o-Es21RVF3WCFQMOtl07Di_O9NVo");
     }
 
     @Test
