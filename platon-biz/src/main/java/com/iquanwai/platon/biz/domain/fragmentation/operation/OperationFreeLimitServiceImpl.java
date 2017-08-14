@@ -65,8 +65,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     private RabbitMQPublisher rabbitMQPublisher;
 
     private final static String cacheReloadTopic = "confucius_resource_reload";
-    // 活动前缀
-    private final static String prefix = PromotionConstants.Activities.FreeLimit + "_";
     // 推广的熊猫卡临时存放路径
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
     // 推广成功人数限额
@@ -92,12 +90,16 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         Assert.notNull(profile, "扫码用户不能为空");
 
         PromotionLevel tempPromotionLevel = promotionLevelDao.loadByProfileId(profile.getId(), activity);
-        if (!scene.contains(prefix) || tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
+        if (tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
 
         String[] sceneParams = scene.split("_");
         if (profile.getRiseMember() == 1) {
-            // 会员扫码无效
-            logger.error("recordPromotionLevel error,no profile ,openid:{},scene:{},profile:{}", openId, scene, profile);
+            // 如果是会员扫码，则入 level 表，valid = 0，level = 1
+            PromotionLevel promotionLevel = getDefaultPromotionLevel();
+            promotionLevel.setProfileId(profile.getId());
+            promotionLevel.setLevel(1);
+            promotionLevel.setValid(0);
+            promotionLevelDao.insertPromotionLevel(promotionLevel);
             return;
         }
 
@@ -111,18 +113,31 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
             Profile promotionProfile = accountService.getProfile(promotionProfileId);
             String promotionOpenId = promotionProfile.getOpenid(); // 推广人的 OpenId
             if (openId.equals(promotionOpenId)) {
-                logger.error("自己扫自己，不能入表");
+                // 自己扫自己，并且表中不存在数据
+                PromotionLevel promotionLevel = getDefaultPromotionLevel();
+                promotionLevel.setProfileId(profile.getId());
+                promotionLevel.setLevel(1);
+                promotionLevelDao.insertPromotionLevel(promotionLevel);
                 return;
             }
             PromotionLevel promotionLevelObject = promotionLevelDao.loadByProfileId(promotionProfileId, activity); // 推广人层级表对象
+
             PromotionLevel promotionLevel = getDefaultPromotionLevel();
             // 若没有推广人，推广人没有扫码，或者已经是会员，则默认 level 为2
-            promotionLevel.setLevel(promotionLevelObject == null ? 2 : promotionLevelObject.getLevel() + 1);
             promotionLevel.setProfileId(profile.getId());
+            promotionLevel.setLevel(promotionLevelObject == null ? 2 : promotionLevelObject.getLevel() + 1);
             promotionLevel.setPromoterId(promotionProfileId);
             promotionLevelDao.insertPromotionLevel(promotionLevel);
 
-            // 查看是否在user表里
+            if (promotionLevelObject == null) {
+                // 如果该推广人表中不存在，则默认添加一条
+                PromotionLevel promoterLevel = getDefaultPromotionLevel();
+                promoterLevel.setProfileId(promotionProfileId);
+                promoterLevel.setLevel(1);
+                promoterLevel.setValid(promotionProfile.getRiseMember() == 1 ? 0 : 1);
+                promotionLevelDao.insertPromotionLevel(promoterLevel);
+            }
+
             List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), activity);
             if (promotionActivities.size() == 0) {
                 PromotionActivity promotionActivity = new PromotionActivity();

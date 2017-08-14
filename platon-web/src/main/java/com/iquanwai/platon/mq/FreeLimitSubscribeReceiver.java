@@ -1,7 +1,6 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -36,9 +35,6 @@ public class FreeLimitSubscribeReceiver {
     private CustomerMessageService customerMessageService;
     @Autowired
     private CacheService cacheService;
-
-    @Autowired
-    private MQService mqService;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
 
@@ -49,8 +45,7 @@ public class FreeLimitSubscribeReceiver {
         });
     }
 
-
-    public void activeAction(String message) {
+    private void activeAction(String message) {
         logger.info("receiver message {}", message);
         JSONObject json = JSONObject.parseObject(message);
         String scene = json.get("scene").toString();
