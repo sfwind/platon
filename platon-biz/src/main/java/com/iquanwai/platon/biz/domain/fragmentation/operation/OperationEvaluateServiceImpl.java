@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
@@ -39,6 +40,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Service
 public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     @Autowired
@@ -68,16 +70,16 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
     private static Map<Integer, String> evaResultTextMap = Maps.newHashMap(); // 预先加载好所有背景图
-    // 推广的熊猫卡临时存放路径
+
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl(""));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl(""));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl(""));
+        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
         evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。试着换一个姿势努力吧，点击查看“洞察力强化”包！让你的努力变得四两拨千斤，迅速走上加薪升职之路。");
         evaResultTextMap.put(2, "你的洞察力基因在身体中占比很高！但是有时候，你会觉得自己的努力和付出得不到应有的回报。试着换一个姿势努力吧，点击获取“洞察力强化包”，让你掌握职场努力的正确姿势，成为职场上的人生赢家！");
         evaResultTextMap.put(3, "你的洞察力基因在身体中的占比极高！一眼就能看透问题的本质。看来你已经不需要圈外同学的“洞察力强化包”了，千万别点开！");
@@ -156,7 +158,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        BufferedImage bufferedImage = generateResultPic(profileId, level);
 
         customerMessageService.sendCustomerMessage(
                 profile.getOpenid(),
@@ -164,12 +165,16 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT
         );
 
-//        customerMessageService.sendCustomerMessage(
-//                profile.getOpenid(),
-//                "第二条",
-//                Constants.WEIXIN_MESSAGE_TYPE.TEXT
-//        );
+        // customerMessageService.sendCustomerMessage(
+        //         profile.getOpenid(),
+        //         "第二条",
+        //         Constants.WEIXIN_MESSAGE_TYPE.TEXT
+        // );
 
+        BufferedImage bufferedImage = generateResultPic(profileId, level);
+        // String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
+        // File file = new File(path);
+        // ImageUtils.writeToFile(bufferedImage, "jpg", file);
         if (bufferedImage != null) {
             // 发送图片消息
             String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
@@ -179,9 +184,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     private Integer calcLevel(Integer score) {
-        if(score >= 8){
+        if (score >= 8) {
             return 3;
-        } else if(score>=3){
+        } else if (score >= 3) {
             return 2;
         } else {
             return 1;
