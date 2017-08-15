@@ -15,5 +15,5 @@ public interface OperationEvaluateService {
 
     void recordScan(Integer profileId, String source);
 
-    void sendPromotionResult(Integer profileId, Integer sequence);
+    void sendPromotionResult(Integer profileId, Integer score);
 }
