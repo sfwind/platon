@@ -213,16 +213,16 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         headImage = ImageUtils.scaleByPercentage(headImage, 100, 100);
         headImage = ImageUtils.convertCircular(headImage);
 
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 100, 1020);
-        targetImage = ImageUtils.overlapImage(targetImage, headImage, 92, 288);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 99, 1018);
+        targetImage = ImageUtils.overlapImage(targetImage, headImage, 93, 287);
 
         Profile profile = accountService.getProfile(profileId);
         String text1 = profile.getNickname() + "的洞察力基因";
         String text2 = "检测结果：";
         targetImage = ImageUtils.writeText(targetImage, 248, 296, text1,
-                font.deriveFont(24f), new Color(51, 51, 51));
+                font.deriveFont(32f), new Color(255, 255, 255));
         targetImage = ImageUtils.writeText(targetImage, 248, 350, text2,
-                font.deriveFont(24f), new Color(51, 51, 51));
+                font.deriveFont(32f), new Color(255, 255, 255));
         return targetImage;
     }
 
