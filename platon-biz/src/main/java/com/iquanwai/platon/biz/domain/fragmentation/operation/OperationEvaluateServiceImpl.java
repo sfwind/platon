@@ -194,8 +194,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 生成结果图片
-    private BufferedImage generateResultPic(Integer profileId, Integer sequence) {
-        BufferedImage targetImage = targetImageMap.get(sequence);
+    private BufferedImage generateResultPic(Integer profileId, Integer level) {
+        BufferedImage targetImage = targetImageMap.get(level);
         BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
         BufferedImage headImage = loadHeadImage(profileId);
 
@@ -218,7 +218,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Profile profile = accountService.getProfile(profileId);
         String text1 = profile.getNickname() + "的洞察力基因";
-        String text2 = "检测结果：";
+        String text2 = "检测结果：" + loadEvaluateText(level);
         targetImage = ImageUtils.writeText(targetImage, 248, 321, text1,
                 font.deriveFont(32f), new Color(255, 255, 255));
         targetImage = ImageUtils.writeText(targetImage, 248, 375, text2,
@@ -257,6 +257,19 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             headImg = ImageUtils.getBufferedImageByUrl(defaultImageUrl);
         }
         return headImg;
+    }
+
+    private String loadEvaluateText(Integer level) {
+        switch (level) {
+            case 1:
+                return "强大";
+            case 2:
+                return "爆表";
+            case 3:
+                return "逆天";
+            default:
+                return null;
+        }
     }
 
     // 查看获取当前已经获取的奖励，并且同时发送消息
