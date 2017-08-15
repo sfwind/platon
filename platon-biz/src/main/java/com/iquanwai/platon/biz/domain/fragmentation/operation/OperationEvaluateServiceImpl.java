@@ -219,9 +219,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Profile profile = accountService.getProfile(profileId);
         String text1 = profile.getNickname() + "的洞察力基因";
         String text2 = "检测结果：";
-        targetImage = ImageUtils.writeText(targetImage, 248, 296, text1,
+        targetImage = ImageUtils.writeText(targetImage, 248, 326, text1,
                 font.deriveFont(32f), new Color(255, 255, 255));
-        targetImage = ImageUtils.writeText(targetImage, 248, 350, text2,
+        targetImage = ImageUtils.writeText(targetImage, 248, 380, text2,
                 font.deriveFont(32f), new Color(255, 255, 255));
         return targetImage;
     }
