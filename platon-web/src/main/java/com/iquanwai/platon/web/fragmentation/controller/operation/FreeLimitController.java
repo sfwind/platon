@@ -63,6 +63,7 @@ public class FreeLimitController {
     @RequestMapping(value = "/submit/{score}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitEva(LoginUser loginUser, @PathVariable Integer score) {
         Assert.notNull(loginUser, "用户不能为空");
+        operationEvaluateService.completeEvaluate(loginUser.getId());
         operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -72,4 +73,18 @@ public class FreeLimitController {
         return WebUtils.success();
     }
 
+    /**
+     * 用户打开问卷
+     */
+    @RequestMapping(value = "/init", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> initEva(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        operationEvaluateService.clickHref(loginUser.getId());
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("限免推广").function("测评").action("打开测评");
+        operationLogService.log(operationLog);
+
+        return WebUtils.success();
+    }
 }
