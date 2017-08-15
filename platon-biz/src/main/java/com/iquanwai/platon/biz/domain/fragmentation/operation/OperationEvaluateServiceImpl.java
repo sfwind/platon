@@ -281,19 +281,19 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         if (promotionLevel == null || promotionLevel.getPromoterId() == null) return;
 
         Integer promoterId = promotionLevel.getPromoterId();
-        // -1：不发送 0：正常 >0：成功
+
         Pair<Integer, Integer> result = accessTrialAndCoupon(profileId);
-        int accessTrial = result.getLeft();
-        int accessCoupon = result.getRight();
-        if (accessTrial > 0) {
+        int remainTrial = result.getLeft();
+        int remainCoupon = result.getRight();
+        if (remainTrial == 0) {
             sendSuccessTrialMsg(profileId);
-        } else if (accessTrial == 0) {
-            sendNormalTrialMsg(promoterId, profileId);
+        } else if (remainTrial > 0) {
+            sendNormalTrialMsg(promoterId, profileId, remainTrial);
         }
-        if (accessCoupon > 0) {
+        if (remainCoupon == 0) {
             sendSuccessCouponMsg(profileId);
-        } else if (accessCoupon == 0) {
-            sendNormalCouponMsg(promoterId, profileId);
+        } else if (remainCoupon > 0) {
+            sendNormalCouponMsg(promoterId, profileId, remainCoupon);
         }
     }
 
@@ -307,15 +307,20 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                         || user.getAction() == PromotionConstants.EvaluateAction.BuyCourse
         ).filter(distinctByKey(PromotionActivity::getProfileId)).collect(Collectors.toList());
 
-        // -1：不发送 0：正常 >0：成功
-        Integer accessTrial = 0;
-        Integer accessCoupon = 0;
+        Integer remainTrial = -1;
+        Integer remainCoupon = -1;
+
 
         // 达到试用人数要求，获得试用权限
         if (successUsers.size() == trialNum) {
-            accessTrial = recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.AccessTrial);
+            int result = recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.AccessTrial);
+            if (result > 0) {
+                remainTrial = 0;
+            }
         } else if (successUsers.size() > trialNum) {
-            accessTrial = -1;
+            remainTrial = -1;
+        } else {
+            remainTrial = trialNum - successUsers.size();
         }
 
         // 校验是否得到奖学金领取资格
@@ -327,30 +332,63 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             coupon.setAmount(50);
             coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
             coupon.setDescription("奖学金");
-            accessCoupon = couponDao.insertCoupon(coupon);
+
+            int result = couponDao.insertCoupon(coupon);
+            if (result > 0) {
+                remainCoupon = 0;
+            }
         } else if (successUsers.size() > couponNum) {
-            accessCoupon = -1;
+            remainCoupon = -1;
+        } else {
+            remainCoupon = couponNum - successUsers.size();
         }
-        return new MutablePair<>(accessTrial, accessCoupon);
+        return new MutablePair<>(remainTrial, remainCoupon);
     }
 
     // 发送普通限免小课信息
-    private void sendNormalTrialMsg(Integer targetProfileId, Integer promotedUser) {
-        // TODO
-
+    private void sendNormalTrialMsg(Integer targetProfileId, Integer promotedUserId, Integer remainCount) {
+        Profile targetProfile = accountService.getProfile(targetProfileId);
+        Profile promoterProfile = accountService.getProfile(promotedUserId);
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(targetProfile.getOpenid());
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        templateMessage.setData(data);
+        data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
+                + remainCount + "个好友啦！你已获得免费领取洞察力小课资格啦！\n"));
+        data.put("keyword1", new TemplateMessage.Keyword("洞察力基因检测"));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+        data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+        templateMessageService.sendMessage(templateMessage);
     }
 
     // 发送成功获得限免小课试用信息
     private void sendSuccessTrialMsg(Integer profileId) {
-        // TODO
-        // 添加自动选课链接 https://www.confucius.mobi/rise/static/plan/view?id=9&free=true
+        // 发送模板消息
+        Profile profile = accountService.getProfile(profileId);
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(profile.getOpenid());
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true");
+        templateMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
+        data.put("first", new TemplateMessage.Keyword("恭喜！" + trialNum + "位好友完成测评，你已获得免费领取洞察力小课资格啦！\n"));
+        data.put("keyword1", new TemplateMessage.Keyword("找到本质问题，减少无效努力"));
+        data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));
+        data.put("remark", new TemplateMessage.Keyword("\n点击卡片领取！"));
+        templateMessageService.sendMessage(templateMessage);
 
+        // 发送客服消息
+        customerMessageService.sendCustomerMessage(profile.getOpenid(),
+                "点击免费领取洞察力小课：\n" +
+                        "<a href='" + ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true'>找到本质问题，减少无效努力</a>",
+                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
     // 发送一般优惠券信息
-    private void sendNormalCouponMsg(Integer targetProfileId, Integer promotedUser) {
-        Profile promotedProfile = accountService.getProfile(promotedUser);
+    private void sendNormalCouponMsg(Integer targetProfileId, Integer promotedUser, Integer remainCount) {
         Profile targetProfile = accountService.getProfile(targetProfileId);
+        Profile promotedProfile = accountService.getProfile(promotedUser);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(targetProfile.getOpenid());
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
@@ -360,7 +398,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-        data.put("remark", new TemplateMessage.Keyword("\n感谢你对优质内容传播做出的贡献！"));
+        data.put("remark", new TemplateMessage.Keyword("\n感谢你对优质内容传播做出的贡献，距离50元优惠券还有" + remainCount + "个好友啦！"));
         templateMessageService.sendMessage(templateMessage);
     }
 

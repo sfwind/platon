@@ -235,24 +235,25 @@ public class ConfigUtils {
     /**
      * 获取限免小课 ProblemId
      */
-	public static Integer getTrialProblemId(){
-		return getIntValue("rise.trial.problem.id");
-	}
-	public static Double getRiseCourseFee(){
-		return getDoubleValue("rise.course.fee");
-	}
+    public static Integer getTrialProblemId() {
+        return getIntValue("rise.trial.problem.id");
+    }
 
-	public static Double getDoubleValue(String key){
-		if (config.hasPath(key)) {
-			return config.getDouble(key);
-		} else {
-			Double value = zkConfigUtils.getDoubleValue(key);
-			if (value == null) {
-				value = zkConfigUtils.getDoubleValue(key);
-			}
-			return value;
-		}
-	}
+    public static Double getRiseCourseFee() {
+        return getDoubleValue("rise.course.fee");
+    }
+
+    public static Double getDoubleValue(String key) {
+        if (config.hasPath(key)) {
+            return config.getDouble(key);
+        } else {
+            Double value = zkConfigUtils.getDoubleValue(key);
+            if (value == null) {
+                value = zkConfigUtils.getDoubleValue(key);
+            }
+            return value;
+        }
+    }
 
     public static String getWelcomeMsg() {
         return getValue("login.welcome.msg");
@@ -301,9 +302,16 @@ public class ConfigUtils {
     }
 
     /**
+     * 成功报名模板消息
+     */
+    public static String getSignUpSuccessMsg() {
+        return getValue("signUp.success");
+    }
+
+    /**
      * rise小课测试状态
      */
-    public static Boolean getRiseCoursePayTestStatus(){
+    public static Boolean getRiseCoursePayTestStatus() {
         return getBooleanValue("rise.course.pay.test");
     }
 
@@ -317,7 +325,7 @@ public class ConfigUtils {
     /**
      * 获取应用练习得分列表
      */
-    public static Map<Integer, Integer> getWorkScoreMap(){
+    public static Map<Integer, Integer> getWorkScoreMap() {
         String scores = getValue("work.difficulty.score");
         String[] split = scores.split(",");
         Map<Integer, Integer> scoreMap = Maps.newHashMap();
