@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -48,6 +49,8 @@ public class PlanServiceImpl implements PlanService {
     private RiseCourseDao riseCourseDao;
     @Autowired
     private ProblemService problemService;
+    @Autowired
+    private OperationEvaluateService operationEvaluateService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -567,7 +570,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId,
+    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId,
                                                    ImprovementPlan plan, Boolean autoOpen) {
         Integer buttonStatus;
 
@@ -580,12 +583,13 @@ public class PlanServiceImpl implements PlanService {
             } else {
                 // 不是会员，查询一下这个小课是不是限免小课
                 if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-                    if(autoOpen!=null && autoOpen){
-                        // 限免小课自动开课，显示"下一步"
-                        buttonStatus = 7;
-                    }else{
-                        // 是限免小课，显示"限时免费"
+                    // 是限免小课
+                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
+                    if (hasTrialAuthority) {
+                        // 是限免小课，且此时有限免权限，显示"限时免费"
                         buttonStatus = 5;
+                    } else {
+                        buttonStatus = 1;
                     }
                 } else {
                     // 不是限免小课，显示"¥ {fee}，立即学习"

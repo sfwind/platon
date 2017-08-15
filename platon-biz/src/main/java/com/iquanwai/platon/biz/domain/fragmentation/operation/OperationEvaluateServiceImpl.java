@@ -172,9 +172,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         // );
 
         BufferedImage bufferedImage = generateResultPic(profileId, level);
+
         // String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
         // File file = new File(path);
         // ImageUtils.writeToFile(bufferedImage, "jpg", file);
+
         if (bufferedImage != null) {
             // 发送图片消息
             String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
@@ -335,11 +337,14 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     // 发送普通限免小课信息
     private void sendNormalTrialMsg(Integer targetProfileId, Integer promotedUser) {
         // TODO
+
     }
 
     // 发送成功获得限免小课试用信息
     private void sendSuccessTrialMsg(Integer profileId) {
         // TODO
+        // 添加自动选课链接 https://www.confucius.mobi/rise/static/plan/view?id=9&free=true
+
     }
 
     // 发送一般优惠券信息

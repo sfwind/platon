@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -63,7 +62,6 @@ public class EvaluateSubscribeReceiver {
         }
 
         String openId = json.getString("openid");
-        String event = json.getString("event");
 
         String[] sceneParams = scene.split("_");
         Assert.isTrue(sceneParams.length == 3, "场景值错误：" + scene);
@@ -71,7 +69,6 @@ public class EvaluateSubscribeReceiver {
 
         // 扫码上面，码上的数据
         String source = sceneParams[1];
-        Integer problemId = Integer.parseInt(sceneParams[2]);
 
         Profile profile = accountService.getProfile(openId);
         Assert.notNull(profile, "扫码用户不能为空");
@@ -79,46 +76,17 @@ public class EvaluateSubscribeReceiver {
         // 记录扫码事件
         operationEvaluateService.recordScan(profile.getId(), source);
 
-        // 显示限免数据
-        Integer freeProblemId = ConfigUtils.getTrialProblemId();
-
-        if (problemId.equals(freeProblemId)) {
-            // 限免
-            boolean isRiseMember = accountService.isRiseMember(profile.getId());
-
-            if (isRiseMember) {
-                sendMsgOne(profile.getOpenid());
-            } else {
-                ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), freeProblemId);
-                if (improvementPlan == null) {
-                    // 没有学习过
-                    sendMsgTwo(openId);
-                } else {
-                    // 已经学习过
-                    sendMsgOne(openId);
-                }
-            }
-        } else {
-            // 非限免
-            sendMsgThree(openId);
-        }
+        sendScanMsg(openId);
     }
 
-    private void sendMsgOne(String openId) {
-        logger.info("send msg one");
-        String message = "send msg one";
-        customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-    }
-
-    private void sendMsgTwo(String openId) {
-        logger.info("send msg two");
-        String message = "send msg two";
-        customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-    }
-
-    private void sendMsgThree(String openId) {
-        logger.info("send msg three");
-        String message = "send msg three";
+    private void sendScanMsg(String openId) {
+        String message = "欢迎来到【圈外职场研究所】\n\n" +
+                "职场中有一种基因，能让人：\n" +
+                "从不加班、还能不断升职\n" +
+                "秒懂他人心思、人缘爆表\n" +
+                "提案一次通关、从不修改\n\n" +
+                "你是否也拥有这种基因？\n" +
+                "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始洞察力基因检测</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
