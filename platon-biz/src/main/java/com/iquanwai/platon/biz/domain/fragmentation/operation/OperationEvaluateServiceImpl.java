@@ -213,8 +213,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         headImage = ImageUtils.scaleByPercentage(headImage, 100, 100);
         headImage = ImageUtils.convertCircular(headImage);
 
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 99, 1018);
-        targetImage = ImageUtils.overlapImage(targetImage, headImage, 93, 287);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1017);
+        targetImage = ImageUtils.overlapImage(targetImage, headImage, 93, 286);
 
         Profile profile = accountService.getProfile(profileId);
         String text1 = profile.getNickname() + "的洞察力基因";
