@@ -76,7 +76,7 @@ public class FreeLimitController {
     /**
      * 用户打开问卷
      */
-    @RequestMapping(value = "/init", method = RequestMethod.POST)
+    @RequestMapping(value = "/init", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> initEva(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         operationEvaluateService.clickHref(loginUser.getId());
