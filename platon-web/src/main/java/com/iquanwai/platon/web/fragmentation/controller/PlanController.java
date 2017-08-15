@@ -167,6 +167,7 @@ public class PlanController {
                         //ignore
                     }
                 }
+                break;
             }
             case 6: {
                 // 之前刷的历史数据，这些人是可以回复状态的
@@ -180,6 +181,7 @@ public class PlanController {
                         return WebUtils.error("数据异常，请联系管理员");
                     }
                 }
+                break;
             }
             case 7: {
                 // 限免小课试用
@@ -187,6 +189,7 @@ public class PlanController {
                     // 已经试用过了
                     return WebUtils.error(204, "小课正在进行中");
                 }
+                break;
             }
         }
 
