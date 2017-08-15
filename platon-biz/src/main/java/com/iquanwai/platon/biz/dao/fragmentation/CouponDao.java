@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +25,7 @@ public class CouponDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public Integer insertCoupon(Coupon coupon) {
+        coupon.setUsed(0);
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "INSERT INTO Coupon (OpenId, ProfileId, Amount, Used, ExpiredDate, Description) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
