@@ -105,6 +105,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.ClickHref);
     }
 
+    @Override
+    public void startEvaluate(Integer profileId) {
+        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.StartEvaluate);
+    }
+
     /**
      * 触发扫码时间，对应记录修改
      */

@@ -17,6 +17,7 @@ public interface PromotionConstants {
     }
 
     interface EvaluateAction {
+        int StartEvaluate = 10; // 点击开始测评
         int ScanCard = 11; // 扫测试卡，入 level 表
         int ClickHref = 12; // 点击链接，入 level 表
         int FinishEvaluate = 13; // 完成测评
