@@ -285,23 +285,23 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     // 查看获取当前已经获取的奖励，并且同时发送消息
     private void checkAwardAndSendMsg(Integer profileId) {
         // 某人完成测评，需要查看他的推广人信息
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
-        if (promotionLevel == null || promotionLevel.getPromoterId() == null) return;
+        PromotionLevel source = promotionLevelDao.loadByProfileId(profileId, activity);
+        if (source == null || source.getPromoterId() == null) return;
 
-        Integer promoterId = promotionLevel.getPromoterId();
+        Integer sourceId = source.getPromoterId();
 
-        Pair<Integer, Integer> result = accessTrialAndCoupon(profileId);
+        Pair<Integer, Integer> result = accessTrialAndCoupon(sourceId);
         int remainTrial = result.getLeft();
         int remainCoupon = result.getRight();
         if (remainTrial == 0) {
-            sendSuccessTrialMsg(profileId);
+            sendSuccessTrialMsg(sourceId);
         } else if (remainTrial > 0) {
-            sendNormalTrialMsg(promoterId, profileId, remainTrial);
+            sendNormalTrialMsg(sourceId, profileId, remainTrial);
         }
         if (remainCoupon == 0) {
-            sendSuccessCouponMsg(profileId);
+            sendSuccessCouponMsg(sourceId);
         } else if (remainCoupon > 0) {
-            sendNormalCouponMsg(promoterId, profileId, remainCoupon);
+            sendNormalCouponMsg(sourceId, profileId, remainCoupon);
         }
     }
 
@@ -310,6 +310,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(profileId, activity);
         List<Integer> profileIds = promotionLevels.stream().map(PromotionLevel::getProfileId).collect(Collectors.toList());
         List<PromotionActivity> newUsers = promotionActivityDao.loadNewUsers(profileIds, activity);
+
         List<PromotionActivity> successUsers = newUsers.stream().filter(
                 user -> user.getAction() == PromotionConstants.EvaluateAction.FinishEvaluate
                         || user.getAction() == PromotionConstants.EvaluateAction.BuyCourse
