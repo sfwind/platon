@@ -64,7 +64,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final int Source_SELF = 2; // 自己
     private static final int Source_Other = 3; // 他人
 
-    private static final Integer trialNum = 3;
+    private static final Integer trialNum = 2;
     private static final Integer couponNum = ConfigUtils.getFreeLimitSuccessCnt(); // 获得优惠券人员
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
