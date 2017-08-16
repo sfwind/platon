@@ -13,8 +13,6 @@ public interface OperationEvaluateService {
 
     void recordPayAction(Integer profileId);
 
-    void startEvaluate(Integer profileId);
-
     void recordScan(Integer profileId, String source);
 
     void sendPromotionResult(Integer profileId, Integer score);

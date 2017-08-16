@@ -88,16 +88,4 @@ public class FreeLimitController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/start/evaluate", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> startEvaluate(LoginUser loginUser) {
-        operationEvaluateService.startEvaluate(loginUser.getId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("限免推广").function("测评").action("开始测评");
-        operationLogService.log(operationLog);
-
-        return WebUtils.success();
-    }
-
-
 }
