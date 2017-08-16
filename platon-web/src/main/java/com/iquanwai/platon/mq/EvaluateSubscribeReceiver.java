@@ -81,11 +81,11 @@ public class EvaluateSubscribeReceiver {
 
     private void sendScanMsg(String openId) {
         String message = "欢迎来到【圈外职场研究所】\n\n" +
-                "职场中有一种基因，能让人：\n" +
+                "职场中有一种基因，能让人：\n\n" +
                 "从不加班、还能不断升职\n" +
                 "秒懂他人心思、人缘爆表\n" +
                 "提案一次通关、从不修改\n\n" +
-                "你是否也拥有这种基因？\n" +
+                "你是否也拥有这种基因？\n\n\n" +
                 "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始洞察力基因检测</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }

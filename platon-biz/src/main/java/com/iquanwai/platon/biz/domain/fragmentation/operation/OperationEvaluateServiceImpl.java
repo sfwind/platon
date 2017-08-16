@@ -80,7 +80,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
         evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。\n" +
                 "\n" +
-                "试着换一个姿势努力吧，点击获取“洞察力强化”包！让你的努力变得四两拨千斤，轻松走上加薪升职之路。");
+                "试着换一个姿势努力吧，下面是“洞察力强化”包！让你的努力变得四两拨千斤，轻松走上加薪升职之路。");
         evaResultTextMap.put(2, "你的洞察力基因在身体中占比很高！但是有时候，你会觉得自己的努力和付出得不到应有的回报。\n" +
                 "\n" +
                 "试着换一个姿势努力吧，<a href='" + freeProblemUrl + "'>点击获取“洞察力强化包”</a>，让你掌握职场努力的正确姿势，成为职场上的人生赢家！");
