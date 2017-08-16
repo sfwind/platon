@@ -589,7 +589,14 @@ public class PlanServiceImpl implements PlanService {
                         // 是限免小课，且此时有限免权限，显示"限时免费"
                         buttonStatus = 5;
                     } else {
-                        buttonStatus = 1;
+                        // 判断是否参加过测评活动
+                        boolean hasParticipateEvaluate = operationEvaluateService.hasParticipateEvaluate(profileId);
+                        if(hasParticipateEvaluate) {
+                            // 限免小课，左侧 ￥{fee}, 立即学习 | 免费获取
+                            buttonStatus = 8;
+                        } else {
+                            buttonStatus = 1;
+                        }
                     }
                 } else {
                     // 不是限免小课，显示"¥ {fee}，立即学习"

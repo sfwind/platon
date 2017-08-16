@@ -16,4 +16,6 @@ public interface OperationEvaluateService {
     void recordScan(Integer profileId, String source);
 
     void sendPromotionResult(Integer profileId, Integer score);
+
+    boolean hasParticipateEvaluate(Integer profileId);
 }

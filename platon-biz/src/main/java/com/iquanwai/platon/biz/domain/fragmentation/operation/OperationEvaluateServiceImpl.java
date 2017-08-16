@@ -185,6 +185,14 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         }
     }
 
+    // 是否参加过此活动
+    @Override
+    public boolean hasParticipateEvaluate(Integer profileId) {
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
+        return promotionLevel != null;
+    }
+
+    // 根据得分计算得分 level
     private Integer calcLevel(Integer score) {
         if (score >= 8) {
             return 3;
