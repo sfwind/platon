@@ -72,17 +72,25 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, String> evaResultTextMap = Maps.newHashMap(); // 预先加载好所有背景图
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
+    private static final String freeProblemUrl = ConfigUtils.domainName() + "/rise/static/plan/view?id=" + ConfigUtils.getTrialProblemId() + "&free=true";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
     public void init() {
+
         targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
         targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
         targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
-        evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。试着换一个姿势努力吧，点击查看“洞察力强化”包！让你的努力变得四两拨千斤，迅速走上加薪升职之路。");
-        evaResultTextMap.put(2, "你的洞察力基因在身体中占比很高！但是有时候，你会觉得自己的努力和付出得不到应有的回报。试着换一个姿势努力吧，点击获取“洞察力强化包”，让你掌握职场努力的正确姿势，成为职场上的人生赢家！");
-        evaResultTextMap.put(3, "你的洞察力基因在身体中的占比极高！一眼就能看透问题的本质。看来你已经不需要圈外同学的“洞察力强化包”了，千万别点开！");
+        evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。\n" +
+                "\n" +
+                "<a href='" + freeProblemUrl + "'>试着换一个姿势努力吧，点击获取“洞察力强化”包！让你的努力变得四两拨千斤，轻松走上加薪升职之路。</a>");
+        evaResultTextMap.put(2, "你的洞察力基因在身体中占比很高！但是有时候，你会觉得自己的努力和付出得不到应有的回报。\n" +
+                "\n" +
+                "<a href='" + freeProblemUrl + "'>试着换一个姿势努力吧，点击获取“洞察力强化包”，让你掌握职场努力的正确姿势，成为职场上的人生赢家！</a>");
+        evaResultTextMap.put(3, "你的洞察力基因在身体中的占比极高！一眼就能看透问题的本质。\n" +
+                "\n" +
+                "<a href='" + freeProblemUrl + "'>看来你已经不需要圈外同学的“洞察力强化包”了，千万别点开！</a>");
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
         if (!file.exists()) {
@@ -173,11 +181,15 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT
         );
 
-        // customerMessageService.sendCustomerMessage(
-        //         profile.getOpenid(),
-        //         "第二条",
-        //         Constants.WEIXIN_MESSAGE_TYPE.TEXT
-        // );
+        customerMessageService.sendCustomerMessage(
+                profile.getOpenid(),
+                "【土豪入口】\n" +
+                        "<a href='" + freeProblemUrl + "'>点击这里购买洞察力强化包（¥ 99）</aa>\n" +
+                        "\n" +
+                        "【免费领取】\n" +
+                        "分享下方图片，邀请" + trialNum + "人扫码并完成测试。即可免费领取7天的洞察力强化包",
+                Constants.WEIXIN_MESSAGE_TYPE.TEXT
+        );
 
         BufferedImage bufferedImage = generateResultPic(profileId, level);
 
