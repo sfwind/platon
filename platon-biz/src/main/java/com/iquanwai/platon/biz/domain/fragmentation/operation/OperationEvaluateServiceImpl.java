@@ -184,7 +184,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         customerMessageService.sendCustomerMessage(
                 profile.getOpenid(),
                 "【土豪入口】\n" +
-                        "<a href='" + freeProblemUrl + "'>点击这里购买洞察力强化包（¥ 99）</aa>\n" +
+                        "<a href='" + freeProblemUrl + "'>点击这里购买洞察力强化包（¥ 99）</a>\n" +
                         "\n" +
                         "【免费领取】\n" +
                         "分享下方图片，邀请" + trialNum + "人扫码并完成测试。即可免费领取7天的洞察力强化包",
