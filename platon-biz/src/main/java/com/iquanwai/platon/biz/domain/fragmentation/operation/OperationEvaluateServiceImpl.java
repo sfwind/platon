@@ -120,7 +120,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         if (promotionLevel == null) return;
 
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FinishEvaluate);
-        checkAwardAndSendMsg(profileId);
+
+        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId, PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+        if (activities.size() == 1) {
+            checkAwardAndSendMsg(profileId);
+        }
     }
 
     /**
@@ -133,7 +137,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         if (promotionLevel == null) return;
 
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BuyCourse);
-        checkAwardAndSendMsg(profileId);
+
+        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId, PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+        if (activities.size() == 1) {
+            checkAwardAndSendMsg(profileId);
+        }
     }
 
     /**
@@ -172,10 +180,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         // );
 
         BufferedImage bufferedImage = generateResultPic(profileId, level);
-
-        // String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
-        // File file = new File(path);
-        // ImageUtils.writeToFile(bufferedImage, "jpg", file);
 
         if (bufferedImage != null) {
             // 发送图片消息
@@ -318,7 +322,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Integer remainTrial = -1;
         Integer remainCoupon = -1;
-
 
         // 达到试用人数要求，获得试用权限
         if (successUsers.size() == trialNum) {

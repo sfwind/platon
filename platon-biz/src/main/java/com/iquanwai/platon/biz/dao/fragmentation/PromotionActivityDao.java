@@ -72,4 +72,15 @@ public class PromotionActivityDao extends DBUtil {
         return Lists.newArrayList();
     }
 
+    public List<PromotionActivity> loadDistinctActionCount(Integer profileId, Integer action, String activity) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM PromotionActivity WHERE ProfileId = ? AND Action = ? AND Activity = ?";
+        ResultSetHandler<List<PromotionActivity>> h = new BeanListHandler<>(PromotionActivity.class);
+        try {
+            return runner.query(sql, h, profileId, action, activity);
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
 }
