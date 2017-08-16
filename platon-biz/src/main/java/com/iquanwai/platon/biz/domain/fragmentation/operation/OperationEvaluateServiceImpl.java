@@ -363,7 +363,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
         templateMessage.setData(data);
         data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
-                + remainCount + "个好友啦！你已获得免费领取洞察力小课资格啦！\n"));
+                + remainCount + "个好友啦！\n"));
         data.put("keyword1", new TemplateMessage.Keyword("洞察力基因检测"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
