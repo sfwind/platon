@@ -12,14 +12,11 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.*;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +62,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final int Source_Other = 3; // 他人
 
     private static final Integer trialNum = 3;
-    private static final Integer couponNum = ConfigUtils.getFreeLimitSuccessCnt(); // 获得优惠券人员
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
@@ -306,23 +302,16 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Integer sourceId = source.getPromoterId();
 
-        Pair<Integer, Integer> result = accessTrialAndCoupon(sourceId);
-        int remainTrial = result.getLeft();
-        int remainCoupon = result.getRight();
+        Integer remainTrial = accessTrial(sourceId);
         if (remainTrial == 0) {
             sendSuccessTrialMsg(sourceId);
         } else if (remainTrial > 0) {
             sendNormalTrialMsg(sourceId, profileId, remainTrial);
         }
-        if (remainCoupon == 0) {
-            sendSuccessCouponMsg(sourceId);
-        } else if (remainCoupon > 0) {
-            sendNormalCouponMsg(sourceId, profileId, remainCoupon);
-        }
     }
 
-    // 常看当前此人是否有权限获得获得优惠券资格，如果有则给予优惠券
-    private Pair<Integer, Integer> accessTrialAndCoupon(Integer profileId) {
+    // 常看当前此人是否有权限获得获得限免试用资格
+    private Integer accessTrial(Integer profileId) {
         List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(profileId, activity);
         List<Integer> profileIds = promotionLevels.stream().map(PromotionLevel::getProfileId).collect(Collectors.toList());
         List<PromotionActivity> newUsers = promotionActivityDao.loadNewUsers(profileIds, activity);
@@ -333,7 +322,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         ).filter(distinctByKey(PromotionActivity::getProfileId)).collect(Collectors.toList());
 
         Integer remainTrial = -1;
-        Integer remainCoupon = -1;
 
         // 达到试用人数要求，获得试用权限
         if (successUsers.size() == trialNum) {
@@ -347,26 +335,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             remainTrial = trialNum - successUsers.size();
         }
 
-        // 校验是否得到奖学金领取资格
-        if (successUsers.size() == couponNum) {
-            Profile profile = accountService.getProfile(profileId);
-            Coupon coupon = new Coupon();
-            coupon.setOpenId(profile.getOpenid());
-            coupon.setProfileId(profileId);
-            coupon.setAmount(50);
-            coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
-            coupon.setDescription("奖学金");
-
-            int result = couponDao.insertCoupon(coupon);
-            if (result > 0) {
-                remainCoupon = 0;
-            }
-        } else if (successUsers.size() > couponNum) {
-            remainCoupon = -1;
-        } else {
-            remainCoupon = couponNum - successUsers.size();
-        }
-        return new MutablePair<>(remainTrial, remainCoupon);
+        return remainTrial;
     }
 
     // 发送普通限免小课信息
@@ -407,40 +376,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "点击免费领取洞察力小课：\n" +
                         "<a href='" + ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true'>找到本质问题，减少无效努力</a>",
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-    }
-
-    // 发送一般优惠券信息
-    private void sendNormalCouponMsg(Integer targetProfileId, Integer promotedUser, Integer remainCount) {
-        Profile targetProfile = accountService.getProfile(targetProfileId);
-        Profile promotedProfile = accountService.getProfile(promotedUser);
-        TemplateMessage templateMessage = new TemplateMessage();
-        templateMessage.setTouser(targetProfile.getOpenid());
-        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-        templateMessage.setData(data);
-        data.put("first", new TemplateMessage.Keyword("太棒了！" + promotedProfile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
-        data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
-        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-        data.put("remark", new TemplateMessage.Keyword("\n感谢你对优质内容传播做出的贡献，距离50元优惠券还有" + remainCount + "个好友啦！"));
-        templateMessageService.sendMessage(templateMessage);
-    }
-
-    // 发送获得优惠券信息
-    private void sendSuccessCouponMsg(Integer profileId) {
-        Profile profile = accountService.getProfile(profileId);
-        TemplateMessage templateMessage = new TemplateMessage();
-        templateMessage.setTouser(profile.getOpenid());
-        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setData(data);
-        templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/customer/account");
-        templateMessage.setTemplate_id(ConfigUtils.getReceiveCouponMsg());
-        data.put("first", new TemplateMessage.Keyword("恭喜！你已将优质内容传播给" + couponNum + "位好友，成功get一张¥50代金券\n"));
-        data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
-        data.put("keyword2", new TemplateMessage.Keyword("¥50代金券"));
-        data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("remark", new TemplateMessage.Keyword("\n点击下方“上课啦”并升级会员/报名小课，立即使用代金券，开学！"));
-        templateMessageService.sendMessage(templateMessage);
     }
 
     // 记录 PromotionLevel 层级关系
