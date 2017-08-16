@@ -68,7 +68,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, String> evaResultTextMap = Maps.newHashMap(); // 预先加载好所有背景图
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
-    private static final String freeProblemUrl = ConfigUtils.domainName() + "/rise/static/plan/view?id=" + ConfigUtils.getTrialProblemId() + "&free=true";
+    private static final String freeProblemUrl = ConfigUtils.domainName() + "/rise/static/plan/view?id=" + ConfigUtils.getTrialProblemId();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
