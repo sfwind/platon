@@ -8,25 +8,13 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
-import com.iquanwai.platon.biz.po.EssenceCard;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemActivity;
-import com.iquanwai.platon.biz.po.ProblemCatalog;
-import com.iquanwai.platon.biz.po.ProblemExtension;
-import com.iquanwai.platon.biz.po.ProblemScore;
-import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.web.fragmentation.dto.CardCollectionDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
-import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
-import com.iquanwai.platon.web.fragmentation.dto.RiseCourseDto;
+import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -153,8 +140,8 @@ public class ProblemController {
     private Integer problemSort(Problem left,Problem right){
         // 限免》首发》new》有用度排序
         // 1000 > 500 > 300 > usefulScore
-        Double leftScore = 0d;
-        Double rightScore = 0d;
+        Double leftScore;
+        Double rightScore;
         if (left.getId() == 9) {
             leftScore = 1000d;
         } else if (left.getTrial()) {
