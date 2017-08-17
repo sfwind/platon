@@ -124,8 +124,10 @@ public class ForumQuestionDao extends ForumDBUtil {
     public List<ForumQuestion> getQuestions(Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumQuestion>> h = new BeanListHandler<>(ForumQuestion.class);
+//        String sql = "SELECT * FROM ForumQuestion " +
+//                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         String sql = "SELECT * FROM ForumQuestion " +
-                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+                "order by AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ForumQuestion> forumQuestions = runner.query(sql, h);
             return forumQuestions;
