@@ -24,12 +24,12 @@ public class Problem {
     private String descPic; // 描述图片
     private String audio; //语音
     private String who; //适合人群
-    private String what; //学习内容
     private String how; //如何学习
     private String why; //为什么学习
     private Boolean del; //是否删除(0-否,1-是)
     private Boolean newProblem; // 是否是新课程
     private Boolean trial; //试用版（0-否,1-是）
+    private Boolean hot; // 热门课程（0-否,1-是）
     private String categoryPic; //分类图示
 
     private Boolean done; // 非db字段 用户是否做过
@@ -38,7 +38,6 @@ public class Problem {
     private List<Chapter> chapterList; // 非db字段 课程表
     private String subCatalog; // 非db字段 字类名
     private String catalog; // 非db字段 类名
-
 
     public Problem simple(){
         Problem problem = new Problem();
@@ -56,6 +55,7 @@ public class Problem {
         problem.setHasProblemScore(this.hasProblemScore);
         problem.setSubCatalog(this.subCatalog);
         problem.setCatalog(this.catalog);
+        problem.setHot(hot);
 
         return problem;
     }

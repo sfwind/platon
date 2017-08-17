@@ -236,7 +236,7 @@ public class QuestionServiceImpl implements QuestionService {
         // 查询多少人回答
         List<ForumAnswer> answers = forumAnswerDao.load(item.getId());
         // 初始化回答提示
-        String answerTips = "";
+        String answerTips;
         if (CollectionUtils.isNotEmpty(answers)) {
             List<Integer> distinctUsers = answers.stream().map(ForumAnswer::getProfileId).distinct().collect(Collectors.toList());
             List<String> answerNames = distinctUsers.stream().limit(2).map(profileId -> {

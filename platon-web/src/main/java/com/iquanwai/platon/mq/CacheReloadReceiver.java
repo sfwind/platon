@@ -2,7 +2,6 @@ package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -33,8 +32,6 @@ public class CacheReloadReceiver {
     private PictureService pictureService;
     @Autowired
     private RiseMemberDao riseMemberDao;
-    @Autowired
-    private MQService mqService;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
 
