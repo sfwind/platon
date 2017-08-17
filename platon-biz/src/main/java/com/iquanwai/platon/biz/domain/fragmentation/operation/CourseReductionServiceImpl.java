@@ -3,10 +3,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,6 +29,8 @@ public class CourseReductionServiceImpl implements CourseReductionService {
     private PromotionActivityDao promotionActivityDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
 
     @Override
     public void scanCourseReductionQR(SubscribeEvent subscribeEvent) {
@@ -41,6 +45,9 @@ public class CourseReductionServiceImpl implements CourseReductionService {
             logger.error("扫描推广课程的事件处理异常，没有该用户:{}", subscribeEvent.getOpenid());
             return;
         }
+        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), "Hi，" + profile.getNickname() + "，" +
+                        "你已领取减免课程\n\n如需继续学习，请点击下方按钮“上课啦”\n\n" ,
+                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.ScanCode);
