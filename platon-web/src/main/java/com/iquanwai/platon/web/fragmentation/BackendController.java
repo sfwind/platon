@@ -1,8 +1,10 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
+import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
+import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -28,7 +30,7 @@ public class BackendController {
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
-    private PracticeDiscussService practiceDiscussService;
+    private AnswerService answerService;
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -83,5 +85,21 @@ public class BackendController {
         LOGGER.info("openid:{},users:{}", openid, allUser.size());
         List<LoginUser> list = allUser.stream().filter(item -> item.getOpenId().equals(openid)).collect(Collectors.toList());
         return WebUtils.result(list);
+    }
+
+    @RequestMapping(value = "/reply", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> forumReply(@RequestParam(value = "profileId") Integer profileId,
+                                                          @RequestBody AnswerCommentDto answerCommentDto) {
+        answerService.commentAnswer(answerCommentDto.getAnswerId(), answerCommentDto.getRepliedCommentId(),
+                profileId, answerCommentDto.getComment());
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/answer", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "profileId") Integer profileId,
+                                                           @RequestBody AnswerDto answerDto) {
+        answerService.submitAnswer(answerDto.getAnswerId(), profileId,
+                answerDto.getAnswer(), answerDto.getQuestionId());
+        return WebUtils.success();
     }
 }
