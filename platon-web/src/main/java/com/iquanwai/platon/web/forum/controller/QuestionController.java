@@ -43,16 +43,16 @@ public class QuestionController {
     @RequestMapping("/load/list")
     public ResponseEntity<Map<String, Object>> getQuestionList(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPageSize(PAGE_SIZE);
         List<ForumQuestion> forumQuestions = questionService.loadQuestions(loginUser.getId(), page);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("论坛")
                 .function("首页")
                 .action("查询问题列表");
         operationLogService.log(operationLog);
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPageSize(PAGE_SIZE);
         RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
         result.setList(forumQuestions);
         result.setEnd(page.isLastPage());
