@@ -8,6 +8,7 @@ public interface PromotionConstants {
     interface Activities {
         String FreeLimit = "freeLimit";
         String Evaluate = "evaluate";
+        String CourseReduction = "courseReduction";
     }
 
     interface FreeLimitAction {
@@ -21,6 +22,10 @@ public interface PromotionConstants {
         int ScanCode = 11; // 扫码关注
         int FinishEvaluate = 12; // 完成测评
         int AccessTrial = 13; // 完成推广人数要求，获得学习限免小课资格
+    }
+
+    interface CourseReductionAction {
+        int ScanCode = 20; // 扫二维码
     }
 
 }

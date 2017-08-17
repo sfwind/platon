@@ -95,7 +95,7 @@ public class ImageUtils {
     * @param url 图片链接
     * */
     public static BufferedImage getBufferedImageByUrl(String url) {
-        if (StringUtils.isNotEmpty(url)) {
+        if (StringUtils.isNotEmpty(url) && false) {
             Request request = new Request.Builder()
                     .url(url)
                     .build();
