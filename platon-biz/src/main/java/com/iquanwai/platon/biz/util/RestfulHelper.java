@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by justin on 8/3/16.
@@ -19,7 +20,10 @@ public class RestfulHelper {
     @Autowired
     private AccessTokenService accessTokenService;
 
-    private static OkHttpClient client = new OkHttpClient();
+    private static OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(Constants.HTTP_TIMEOUT.CONNECTION_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(Constants.HTTP_TIMEOUT.READ_TIMEOUT, TimeUnit.SECONDS)
+            .build();
 
     private MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private MediaType XML = MediaType.parse("text/xml; charset=utf-8");

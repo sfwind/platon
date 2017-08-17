@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -132,6 +133,10 @@ public class ProblemController {
                     return dto;
                 }).collect(Collectors.toList());
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
+
+        List<Problem> hotList = problems.stream().filter(Problem::getHot).map(Problem::simple).collect(Collectors.toList());
+
+        result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember() != 0);

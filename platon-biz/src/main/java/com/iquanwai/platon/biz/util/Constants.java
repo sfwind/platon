@@ -84,5 +84,10 @@ public interface Constants {
         int COURSE_USER = 2;
     }
 
+    interface HTTP_TIMEOUT{
+        int CONNECTION_TIMEOUT = 3;
+        int READ_TIMEOUT = 60;
+    }
+
     int DISCUSS_PAGE_SIZE = 100;
 }
