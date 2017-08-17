@@ -225,6 +225,10 @@ public class QuestionServiceImpl implements QuestionService {
      */
     private void initQuestionList(ForumQuestion item, Integer loadProfileId) {
         Profile profile = accountService.getProfile(item.getProfileId());
+        if(profile == null){
+            logger.error("用户 {} 不存在", item.getProfileId());
+            return;
+        }
         // 设置昵称
         item.setAuthorUserName(profile.getNickname());
         // 设置头像
