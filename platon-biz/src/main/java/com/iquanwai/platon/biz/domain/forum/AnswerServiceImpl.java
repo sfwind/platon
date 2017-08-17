@@ -319,6 +319,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public List<ForumAnswer> loadSelfAnswers(Integer profileId, Page page) {
         List<ForumAnswer> forumAnswers = forumAnswerDao.loadUserAnswers(profileId, page);
+        page.setTotal(forumAnswerDao.loadUserAnswersCount(profileId));
         forumAnswers.forEach(item -> {
             ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, item.getQuestionId());
             item.setTopic(question.getTopic());
