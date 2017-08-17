@@ -30,8 +30,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
 
     @Override
     public void scanCourseReductionQR(SubscribeEvent subscribeEvent) {
-        final String activityName = PromotionConstants.Activities.CourseReduction;
-        if (!StringUtils.contains(subscribeEvent.getScene(), activityName)
+        if (!StringUtils.contains(subscribeEvent.getScene(), PromotionConstants.Activities.CourseReduction)
                 || subscribeEvent.getOpenid() == null) {
             logger.error("扫描优惠推广课程的事件处理异常,{}", subscribeEvent);
             return;
@@ -44,16 +43,16 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.ScanCode);
-        promotionActivity.setActivity(activityName);
+        promotionActivity.setActivity(subscribeEvent.getScene());
         promotionActivity.setProfileId(profile.getId());
         promotionActivityDao.insertPromotionActivity(promotionActivity);
         // 查看在不在level表
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profile.getId(), activityName);
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profile.getId(), subscribeEvent.getScene());
         if (promotionLevel == null) {
             // level表没有该数据
             PromotionLevel level = new PromotionLevel();
             level.setProfileId(profile.getId());
-            level.setActivity(activityName);
+            level.setActivity(subscribeEvent.getScene());
             level.setLevel(1);
             level.setPromoterId(null);
             level.setValid(1);
