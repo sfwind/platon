@@ -19,13 +19,15 @@ public class MessageDigestHelper {
         MessageDigest md5 = null;
         try {
             md5 = MessageDigest.getInstance(algorithm);
+            md5.update(s.getBytes());
+            byte[] codedBytes = md5.digest();
+            //将加密后的字节数组转换成字符串
+            return bytesToHexString(codedBytes);
         } catch (NoSuchAlgorithmException e) {
             //ignore
         }
-        md5.update(s.getBytes());
-        byte[] codedBytes = md5.digest();
-        //将加密后的字节数组转换成字符串
-        return bytesToHexString(codedBytes);
+
+        return s;
     }
 
     private static String bytesToHexString(byte[] src){
