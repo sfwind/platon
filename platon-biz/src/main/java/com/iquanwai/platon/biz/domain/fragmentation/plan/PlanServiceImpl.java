@@ -596,7 +596,7 @@ public class PlanServiceImpl implements PlanService {
                     Calendar cal = Calendar.getInstance();
                     if (month != null && month == cal.get(Calendar.MONTH)) {
                         // 是当月的限免小课
-                        buttonStatus = 9;
+                        buttonStatus = 8;
 
                     } else {
                         // 不是限免小课，显示"¥ {fee}，立即学习"
