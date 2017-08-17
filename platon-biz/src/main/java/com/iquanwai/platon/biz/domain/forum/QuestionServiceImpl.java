@@ -67,7 +67,6 @@ public class QuestionServiceImpl implements QuestionService {
             id = forumQuestionDao.insert(forumQuestion);
             if (id != -1) {
                 // 插入
-                ForumQuestion load = forumQuestionDao.load(ForumQuestion.class, id);
                 boolean insert = forumQuestionRepository.insert(id, topic, description, profileId);
                 logger.info("插入es结果:{}", insert);
 
