@@ -4,6 +4,7 @@ package com.iquanwai.platon.biz.exception;
  * Created by justin on 8/22/16.
  */
 public class WeixinException extends Exception {
+    private static final long serialVersionUID = 3838470826950637288L;
     private String errMsg;
     private int errcode;
 
