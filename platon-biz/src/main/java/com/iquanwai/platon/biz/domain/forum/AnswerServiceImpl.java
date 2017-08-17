@@ -64,7 +64,7 @@ public class AnswerServiceImpl implements AnswerService {
             }
         } else {
             ForumAnswer forumAnswer = forumAnswerDao.load(ForumAnswer.class, answerId);
-            if(forumAnswer == null) {
+            if (forumAnswer == null) {
                 return false;
             }
             // 新增
@@ -77,7 +77,6 @@ public class AnswerServiceImpl implements AnswerService {
             int id = answerApprovalDao.insert(answerApproval);
             if (id != -1) {
                 forumAnswerDao.approve(answerId);
-//                approveAnswerMsg(forumAnswer.getQuestionId(), answerId, forumAnswer.getProfileId(), profileId);
                 return true;
             } else {
                 // sql报错，返回false
@@ -172,16 +171,6 @@ public class AnswerServiceImpl implements AnswerService {
                             MessageService.SYSTEM_MESSAGE, answerUrl);
                 }
             });
-        }
-    }
-
-    private void approveAnswerMsg(Integer questionId, Integer answerId, Integer answerProfileId, Integer approveProfileId) {
-        //发送给回答者,自己给自己赞同,不发消息提醒
-        if (!answerProfileId.equals(approveProfileId)) {
-            String answerUrl = ANSWER_URL + "?questionId=" + questionId + "&answerId=" + answerId;
-            Profile profile = accountService.getProfile(approveProfileId);
-            messageService.sendMessage(profile.getNickname() + "很认可你的回答，并给你点了赞", answerProfileId.toString(),
-                    approveProfileId.toString(), answerUrl);
         }
     }
 
@@ -322,7 +311,9 @@ public class AnswerServiceImpl implements AnswerService {
         page.setTotal(forumAnswerDao.loadUserAnswersCount(profileId));
         forumAnswers.forEach(item -> {
             ForumQuestion question = forumQuestionDao.load(ForumQuestion.class, item.getQuestionId());
-            item.setTopic(question.getTopic());
+            if (question != null) {
+                item.setTopic(question.getTopic());
+            }
             // set null
             item.setProfileId(null);
         });
