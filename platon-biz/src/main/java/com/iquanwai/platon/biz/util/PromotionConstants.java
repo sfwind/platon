@@ -26,6 +26,8 @@ public interface PromotionConstants {
 
     interface CourseReductionAction {
         int ScanCode = 20; // 扫二维码
+        int PayCourse = 21; // 购买小课
+        int PayMember = 22; // 购买会员
     }
 
 }

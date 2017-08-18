@@ -85,4 +85,15 @@ public class PromotionLevelDao extends DBUtil {
         return Lists.newArrayList();
     }
 
+    public List<PromotionLevel> loadByRegex(String regex,Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from quanwai.PromotionLevel where profileId = ? and Valid = 1 and Activity like ?";
+        ResultSetHandler<List<PromotionLevel>> h = new BeanListHandler<PromotionLevel>(PromotionLevel.class);
+        try {
+            return runner.query(sql, h, profileId, regex + "%");
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }
