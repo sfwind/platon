@@ -69,13 +69,12 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, String> evaResultTextMap = Maps.newHashMap(); // 预先加载好所有背景图
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
-    private static final String freeProblemUrl = ConfigUtils.domainName() + "/rise/static/plan/view?id=" + ConfigUtils.getTrialProblemId();
+    private static final String problemUrl = ConfigUtils.domainName() + "/rise/static/plan/view?id=" + ConfigUtils.getTrialProblemId();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
     public void init() {
-
         targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1.jpg?imageslim"));
         targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2.jpg?imageslim"));
         targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3.jpg?imageslim"));
@@ -181,7 +180,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         customerMessageService.sendCustomerMessage(
                 profile.getOpenid(),
                 "【土豪入口】\n" +
-                        "<a href='" + freeProblemUrl + "'>点击这里购买洞察力强化包（¥ 99）</a>\n",
+                        "<a href='" + problemUrl + "'>点击这里购买洞察力强化包（¥ 99）</a>\n",
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT
         );
 
@@ -193,6 +192,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         );
 
         BufferedImage bufferedImage = generateResultPic(profileId, level);
+        if(bufferedImage == null) {
+            logger.info("image is null");
+        } else {
+            logger.info("image is not null");
+        }
 
         if (bufferedImage != null) {
             // 发送图片消息
