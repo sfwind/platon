@@ -605,7 +605,6 @@ public class PlanController {
         return WebUtils.result(planListDto);
     }
 
-
     // 查询推荐的小课
     private List<Problem> loadRecommendations(Integer porfileId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
         // 最后要返回的
@@ -675,7 +674,6 @@ public class PlanController {
         }
         return problems;
     }
-
 
     // 倒序排列
     private int sortPlans(PlanDto left,PlanDto right) {
