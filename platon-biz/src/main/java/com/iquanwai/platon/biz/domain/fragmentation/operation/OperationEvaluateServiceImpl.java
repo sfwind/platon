@@ -242,9 +242,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         String nickName1 = "三十文";
         String nickName2 = "小三十文";
 
-        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName1), 500, nickName1,
+        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName1), 470, nickName1,
                 font.deriveFont(48f), new Color(255, 255, 255));
-        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName2), 600, nickName2,
+        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName2), 520, nickName2,
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
@@ -290,7 +290,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             if(length % 2 == 0) {
                 xPosition = 750 / 2 - (length / 2 * 30);
             } else {
-                xPosition = 750 / 2 - (length / 2 * 30) + 30;
+                xPosition = 750 / 2 - (length / 2 * 30) + 35;
             }
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage(), e);
