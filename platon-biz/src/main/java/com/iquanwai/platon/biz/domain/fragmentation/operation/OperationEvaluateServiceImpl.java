@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -75,9 +76,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @PostConstruct
     public void init() {
 
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate.jpg?imageslim"));
+        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1.jpg?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2.jpg?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3.jpg?imageslim"));
         evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。\n" +
                 "\n" +
                 "试着换一个姿势努力吧，下面是“洞察力强化”包！让你的努力变得四两拨千斤，轻松走上加薪升职之路。");
@@ -240,15 +241,19 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         headImage = ImageUtils.convertCircular(headImage);
 
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1017);
-        targetImage = ImageUtils.overlapImage(targetImage, headImage, 93, 286);
+        targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
 
         Profile profile = accountService.getProfile(profileId);
-        String text1 = profile.getNickname() + "的洞察力基因";
-        String text2 = "检测结果：" + loadEvaluateText(level);
-        targetImage = ImageUtils.writeText(targetImage, 248, 321, text1,
-                font.deriveFont(32f), new Color(255, 255, 255));
-        targetImage = ImageUtils.writeText(targetImage, 248, 375, text2,
-                font.deriveFont(32f), new Color(255, 255, 255));
+        StringBuilder builder = new StringBuilder(profile.getNickname());
+        int xPosition = 0;
+        try {
+            int length = builder.toString().getBytes("gbk").length;
+            xPosition = 750 / 2 - (length / 2 * 30);
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        targetImage = ImageUtils.writeText(targetImage, xPosition, 360, profile.getNickname(),
+                font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
 
@@ -283,19 +288,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             headImg = ImageUtils.getBufferedImageByUrl(defaultImageUrl);
         }
         return headImg;
-    }
-
-    private String loadEvaluateText(Integer level) {
-        switch (level) {
-            case 1:
-                return "强大";
-            case 2:
-                return "爆表";
-            case 3:
-                return "逆天";
-            default:
-                return null;
-        }
     }
 
     // 查看获取当前已经获取的奖励，并且同时发送消息

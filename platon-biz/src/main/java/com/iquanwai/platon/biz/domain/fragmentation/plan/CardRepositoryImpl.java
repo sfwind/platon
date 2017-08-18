@@ -310,7 +310,6 @@ public class CardRepositoryImpl implements CardRepository {
             targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
-        // TODO:文字
         targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为洞察力爆表的人",
                 font.deriveFont(24f), new Color(51, 51, 51));
 
