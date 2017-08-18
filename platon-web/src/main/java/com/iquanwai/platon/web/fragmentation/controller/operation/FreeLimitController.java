@@ -35,11 +35,6 @@ public class FreeLimitController {
      */
     @RequestMapping(value = "/choose/problem/msg", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendChooseProblemMsg(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        operationFreeLimitService.sendCustomerMsg(loginUser.getOpenId());
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("限免推广").function("自动选课").action("发送微信客服消息");
-        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 
