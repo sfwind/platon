@@ -80,8 +80,9 @@ public class EvaluateSubscribeReceiver {
     }
 
     private void sendScanMsg(String openId) {
-        String message = "职场中有种能力，能让人：\n\n" +
-                "从不加班、还能不断升职\n" +
+        String message = "欢迎来到【圈外职场研究所】\n\n" +
+                "我们发现有种能力，能让人：\n\n" +
+                "从不加班，还能不断升职\n" +
                 "秒懂他人心思、人缘爆表\n" +
                 "提案一次通关、从不修改\n\n" +
                 "你是否也拥有这种能力?\n\n" +
