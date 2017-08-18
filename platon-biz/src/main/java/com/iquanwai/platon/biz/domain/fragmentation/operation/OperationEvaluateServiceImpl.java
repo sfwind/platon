@@ -168,6 +168,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Assert.notNull(profile, "用户不能为空");
 
+        // TODO 区分情况给文案
+
         customerMessageService.sendCustomerMessage(
                 profile.getOpenid(),
                 evaResultTextMap.get(level),

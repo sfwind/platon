@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -29,6 +30,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PlanServiceImpl implements PlanService {
+
+    @Autowired
+    private AccountService accountService;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired

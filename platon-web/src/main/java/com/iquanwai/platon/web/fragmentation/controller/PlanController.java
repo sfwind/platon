@@ -605,6 +605,7 @@ public class PlanController {
         return WebUtils.result(planListDto);
     }
 
+
     // 查询推荐的小课
     private List<Problem> loadRecommendations(Integer porfileId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
         // 最后要返回的
