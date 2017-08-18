@@ -235,7 +235,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         headImage = ImageUtils.scaleByPercentage(headImage, 100, 100);
         headImage = ImageUtils.convertCircular(headImage);
 
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1019);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1021);
         targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
 
         Profile profile = accountService.getProfile(profileId);
@@ -243,11 +243,15 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         int xPosition = 0;
         try {
             int length = builder.toString().getBytes("gbk").length;
-            xPosition = 750 / 2 - (length / 2 * 30);
+            if(length % 2 == 0) {
+                xPosition = 750 / 2 - (length / 2 * 30);
+            } else {
+                xPosition = 750 / 2 - (length / 2 * 30) + 15;
+            }
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        targetImage = ImageUtils.writeText(targetImage, xPosition, 440, profile.getNickname(),
+        targetImage = ImageUtils.writeText(targetImage, xPosition, 450, profile.getNickname(),
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
