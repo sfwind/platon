@@ -35,7 +35,7 @@ public class EventWallServiceImpl implements EventWallService {
 
         List<EventWall> eventWalls = eventWallDao
                 .loadAll(EventWall.class)
-                .stream().filter((item) -> this.visibleCheck(item, riseMember,plans))
+                .stream().filter((item) -> this.visibleCheck(item, riseMember, plans))
                 .collect(Collectors.toList());
         eventWalls.sort((o1, o2) -> {
             if (o1.getStartTime() == null) {
@@ -48,6 +48,21 @@ public class EventWallServiceImpl implements EventWallService {
         return eventWalls;
     }
 
+    private Boolean visibleCheck(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
+        // 删除的过滤掉
+        if (eventWall.getDel()) {
+            return false;
+        }
+
+        if (eventWall.getVisibility() == null) {
+            // 不对可见性做判断
+            return true;
+        } else {
+            // 对可见性做判断
+            List<Integer> visibilities = calculateVisible(eventWall, riseMember, plans);
+            return visibilities.contains(eventWall.getVisibility());
+        }
+    }
 
     private List<Integer> calculateVisible(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
         // 计算可见性
@@ -61,7 +76,7 @@ public class EventWallServiceImpl implements EventWallService {
             visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
             visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
             if (eventWall.getVisibleProblemId() != null && plan != null && eventWall.getVisibleProblemId().equals(plan.getProblemId())) {
-                // 对小课用户做特殊处理
+                // 对小课用户做特殊处理，训练营用户同样的逻辑
                 visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
                 if (eventWall.getType() == EventWall.OFFLINE) {
                     // 对于线下活动，权限等同于专业版
@@ -87,19 +102,5 @@ public class EventWallServiceImpl implements EventWallService {
         }
     }
 
-    private Boolean visibleCheck(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
-        // 删除的过滤掉
-        if (eventWall.getDel()) {
-            return false;
-        }
 
-        if (eventWall.getVisibility() == null) {
-            // 不对可见性做判断
-            return true;
-        } else {
-            // 对可见性做判断
-            List<Integer> visibilities = calculateVisible(eventWall, riseMember, plans);
-            return visibilities.contains(eventWall.getVisibility());
-        }
-    }
 }
