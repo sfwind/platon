@@ -73,8 +73,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @PostConstruct
     public void init() {
         targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1.png?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2.png?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3.png?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_1.png?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_1.png?imageslim"));
         evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。\n" +
                 "\n" +
                 "试着换一个姿势努力吧，下面是“洞察力强化”包！让你的努力变得四两拨千斤，轻松走上加薪升职之路。");
@@ -240,7 +240,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Profile profile = accountService.getProfile(profileId);
 
-        targetImage = ImageUtils.writeText(targetImage, getXposition(profile.getNickname()), 470, profile.getNickname(),
+        targetImage = ImageUtils.writeText(targetImage, getXPosition(profile.getNickname()), 470, profile.getNickname(),
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
@@ -278,7 +278,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return headImg;
     }
 
-    private int getXposition(String str) {
+    private int getXPosition(String str) {
         StringBuilder builder = new StringBuilder(str);
         int xPosition = 0;
         try {
