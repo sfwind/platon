@@ -102,17 +102,17 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
                 "试着换一个姿势努力吧，点击<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
                 "\n" +
-                "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去分享下方图片给他们吧");
+                "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去分享下方图片（保存到相册，再发朋友圈）给他们吧");
         memberShipTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]但是有时候，你可能会觉得自己的付出得不到应有的回报。\n" +
                 "\n" +
                 "试着换一个姿势努力吧，点击<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
                 "\n" +
-                "敢不敢分享下方图片，让你的朋友也来挑战一下[奸笑]");
+                "敢不敢分享下方图片（保存到相册，再发朋友圈），让你的朋友也来挑战一下[奸笑]");
         memberShipTextMap.put(3, "【测试结果】\n" +
                 "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。看来你一定是学过<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>小课了。\n" +
                 "\n" +
-                "你的朋友圈都和你一样机智吗？分享下方图片，让他们也来检测一下吧！");
+                "你的朋友都和你一样机智吗？分享下方图片，让他们也来检测一下吧！");
 
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
@@ -334,6 +334,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Integer remainTrial = accessTrial(sourceId);
         if (remainTrial == 0) {
+            sendNormalTrialMsg(sourceId, profileId, remainTrial);
             sendSuccessTrialMsg(sourceId);
         } else if (remainTrial > 0) {
             sendNormalTrialMsg(sourceId, profileId, remainTrial);
@@ -377,8 +378,13 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
         templateMessage.setData(data);
-        data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
-                + remainCount + "个好友啦！\n"));
+
+        if(remainCount == 0) {
+            data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
+                    + remainCount + "个好友啦！\n"));
+        } else {
+            data.put("first", new TemplateMessage.Keyword("你已获得免费领取洞察力小课资格啦！\n"));
+        }
         data.put("keyword1", new TemplateMessage.Keyword("洞察力基因检测"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
