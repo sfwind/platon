@@ -286,7 +286,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             if(length % 2 == 0) {
                 xPosition = 750 / 2 - (length / 2 * 24);
             } else {
-                xPosition = 750 / 2 - (length / 2 * 24) - 35;
+                xPosition = 750 / 2 - (length / 2 * 24) - 12;
             }
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage(), e);
