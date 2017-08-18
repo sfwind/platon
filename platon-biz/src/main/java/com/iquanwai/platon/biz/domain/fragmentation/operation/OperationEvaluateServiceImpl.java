@@ -235,7 +235,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
         headImage = ImageUtils.convertCircular(headImage);
 
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1021);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1023);
         targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
 
         Profile profile = accountService.getProfile(profileId);
