@@ -239,19 +239,12 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
 
         Profile profile = accountService.getProfile(profileId);
-        StringBuilder builder = new StringBuilder(profile.getNickname());
-        int xPosition = 0;
-        try {
-            int length = builder.toString().getBytes("gbk").length;
-            if(length % 2 == 0) {
-                xPosition = 750 / 2 - (length / 2 * 30);
-            } else {
-                xPosition = 750 / 2 - (length / 2 * 30) + 15;
-            }
-        } catch (UnsupportedEncodingException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        targetImage = ImageUtils.writeText(targetImage, xPosition, 450, profile.getNickname(),
+        String nickName1 = "三十文";
+        String nickName2 = "小三十文";
+
+        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName1), 500, nickName1,
+                font.deriveFont(48f), new Color(255, 255, 255));
+        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName2), 600, nickName2,
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
@@ -287,6 +280,22 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             headImg = ImageUtils.getBufferedImageByUrl(defaultImageUrl);
         }
         return headImg;
+    }
+
+    private int getXposition(String str) {
+        StringBuilder builder = new StringBuilder(str);
+        int xPosition = 0;
+        try {
+            int length = builder.toString().getBytes("gbk").length;
+            if(length % 2 == 0) {
+                xPosition = 750 / 2 - (length / 2 * 30);
+            } else {
+                xPosition = 750 / 2 - (length / 2 * 30) + 30;
+            }
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return xPosition;
     }
 
     // 查看获取当前已经获取的奖励，并且同时发送消息
