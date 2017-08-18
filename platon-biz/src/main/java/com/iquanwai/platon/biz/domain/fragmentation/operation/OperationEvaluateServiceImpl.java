@@ -75,9 +75,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1.jpg?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2.jpg?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3.jpg?imageslim"));
+        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1.png?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2.png?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3.png?imageslim"));
         evaResultTextMap.put(1, "你的洞察力基因在身体中占比较高！但是有时在工作中，你可能会觉得自己的辛苦努力，总是很难得到认可。\n" +
                 "\n" +
                 "试着换一个姿势努力吧，下面是“洞察力强化”包！让你的努力变得四两拨千斤，轻松走上加薪升职之路。");
@@ -186,24 +186,18 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         customerMessageService.sendCustomerMessage(
                 profile.getOpenid(),
-                        "【免费领取】\n" +
+                "【免费领取】\n" +
                         "分享下方图片，邀请" + trialNum + "人扫码并完成测试。即可免费领取7天的洞察力强化包",
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT
         );
 
         BufferedImage bufferedImage = generateResultPic(profileId, level);
-        if(bufferedImage == null) {
-            logger.info("image is null");
-        } else {
-            logger.info("image is not null");
-        }
+        Assert.notNull(bufferedImage, "生成图片不能为空");
 
-        if (bufferedImage != null) {
-            // 发送图片消息
-            String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
-            String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-        }
+        // 发送图片消息
+        String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
+        String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 
     // 是否参加过此活动
