@@ -197,7 +197,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        if(accountService.isRiseMember(profileId)) {
+        if(isRiseMember(profileId)) {
             // 会员
             customerMessageService.sendCustomerMessage(
                     profile.getOpenid(),
@@ -480,7 +480,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     // 扫码者是否是会员
     private boolean isRiseMember(Integer profileId) {
-        return accountService.isRiseMember(profileId);
+        Profile profile = accountService.getProfile(profileId);
+        return profile.getRiseMember() == 1;
     }
 
     // 扫码来源，区分为 1-官方， 2-自己， 3-他人
