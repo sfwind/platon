@@ -79,19 +79,19 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_1.png?imageslim"));
         targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_1.png?imageslim"));
         evaResultTextMap.put(1, "【测试结果】\n" +
-                "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]\n" +
-                "有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
-                "试着换一个姿势努力吧，使用<a href='"+problemUrl+"'>【职场洞察力强化包】（¥99，土豪请戳）</a>，让你的工作成果迅速提升，走上加薪升职之路。\n");
+                "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
+                "\n" +
+                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，<a href='"+problemUrl+"'>土豪请戳）</a>，让你的工作成果迅速提升，走上加薪升职之路。\n");
         freeAccessTextMap.put(1, "【免费领取】\n" +
-                "分享下方图片，邀请3人扫码并完成测试，即可免费领取<a href='"+problemUrl+"'>【职场洞察力强化包】</a>。");
+                "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】</a>。");
         evaResultTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]\n" +
                 "但是有时候，你还是会觉得自己的付出得不到应有的回报。\n" +
-                "试着换一个姿势努力吧，使用<a href='"+problemUrl+"'>【职场洞察力强化包】（¥99，土豪请戳）</a>，让你一眼识破职场难题假象，不用加班也能升职加薪。");
+                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，<a href='"+problemUrl+"'>土豪请戳）</a>，让你一眼识破职场难题假象，不用加班也能升职加薪。");
         freeAccessTextMap.put(2, "【免费领取】\n" +
-                "分享下方图片，邀请3人扫码并完成测试，即可免费领取<a href='"+problemUrl+"'>【职场洞察力强化包】</a>。");
+                "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
         evaResultTextMap.put(3, "【测试结果】\n" +
-                "你的职场洞察力逆天了[惊恐]一眼就能看透问题的本质，生活工作都游刃有余。\n" +
+                "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。\n" +
                 "看来你已经不需要圈外职场研究所价值¥99的<a href='"+problemUrl+"'>【职场洞察力强化包】</a>了，千万别点开！\n");
         freeAccessTextMap.put(3, "【免费领取】\n" +
                 "当然，如果你好奇强化包的内容，可以分享下方图片，邀请3人扫码并完成测试，即可免费领取。");
@@ -103,12 +103,12 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "\n" +
                 "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去分享下方图片给他们吧");
         memberShipTextMap.put(2, "【测试结果】\n" +
-                "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]但是有时候，你可能还会觉得自己的付出得不到应有的回报？\n" +
+                "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]但是有时候，你可能会觉得自己的付出得不到应有的回报。\n" +
                 "试着换一个姿势努力吧，点击<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
                 "\n" +
                 "敢不敢分享下方图片，让你的朋友也来挑战一下[奸笑]");
         memberShipTextMap.put(3, "【测试结果】\n" +
-                "你的职场洞察力逆天了[惊恐]一眼就能看透问题的本质，生活工作都游刃有余。看来你一定是学过<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>小课了。\n" +
+                "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。看来你一定是学过<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>小课了。\n" +
                 "\n" +
                 "你的朋友圈都和你一样机智吗？分享下方图片，让他们也来检测一下吧！");
 
