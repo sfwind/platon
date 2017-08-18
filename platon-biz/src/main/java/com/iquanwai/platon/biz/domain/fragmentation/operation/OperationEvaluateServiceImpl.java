@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -55,8 +54,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private PromotionLevelDao promotionLevelDao;
     @Autowired
     private PromotionActivityDao promotionActivityDao;
-    @Autowired
-    private CouponDao couponDao;
 
     private static final int Source_RISE = 1; // 官方
     private static final int Source_SELF = 2; // 自己
@@ -250,7 +247,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        targetImage = ImageUtils.writeText(targetImage, xPosition, 360, profile.getNickname(),
+        targetImage = ImageUtils.writeText(targetImage, xPosition, 440, profile.getNickname(),
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
