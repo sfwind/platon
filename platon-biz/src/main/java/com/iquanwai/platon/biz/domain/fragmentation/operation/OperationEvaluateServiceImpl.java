@@ -278,6 +278,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return headImg;
     }
 
+    // 计算出左侧偏移量
     private int getXPosition(String str) {
         StringBuilder builder = new StringBuilder(str);
         int xPosition = 0;
