@@ -83,7 +83,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "\n" +
                 "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，<a href='"+problemUrl+"'>土豪请戳</a>），让你的工作成果迅速提升，走上加薪升职之路。\n");
         freeAccessTextMap.put(1, "【免费领取】\n" +
-                "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】</a>。");
+                "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】>。");
         evaResultTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]\n" +
                 "但是有时候，你还是会觉得自己的付出得不到应有的回报。\n" +
@@ -269,7 +269,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Profile profile = accountService.getProfile(profileId);
 
-        targetImage = ImageUtils.writeText(targetImage, getXPosition(profile.getNickname()), 470, profile.getNickname(),
+        targetImage = ImageUtils.writeText(targetImage, getXPosition(CommonUtils.filterEmoji(profile.getNickname())), 470, profile.getNickname(),
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
