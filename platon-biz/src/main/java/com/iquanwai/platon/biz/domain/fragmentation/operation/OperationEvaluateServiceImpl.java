@@ -288,9 +288,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         try {
             int length = builder.toString().getBytes("gbk").length;
             if(length % 2 == 0) {
-                xPosition = 750 / 2 - (length / 2 * 35);
+                xPosition = 750 / 2 - (length / 2 * 25);
             } else {
-                xPosition = 750 / 2 - (length / 2 * 35) + 35;
+                xPosition = 750 / 2 - (length / 2 * 25) + 35;
             }
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage(), e);
