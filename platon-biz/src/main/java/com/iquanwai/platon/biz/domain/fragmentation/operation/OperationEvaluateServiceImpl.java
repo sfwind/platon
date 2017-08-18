@@ -232,7 +232,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 214, 214);
-        headImage = ImageUtils.scaleByPercentage(headImage, 100, 100);
+        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
         headImage = ImageUtils.convertCircular(headImage);
 
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1021);
@@ -288,9 +288,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         try {
             int length = builder.toString().getBytes("gbk").length;
             if(length % 2 == 0) {
-                xPosition = 750 / 2 - (length / 2 * 30);
+                xPosition = 750 / 2 - (length / 2 * 35);
             } else {
-                xPosition = 750 / 2 - (length / 2 * 30) + 35;
+                xPosition = 750 / 2 - (length / 2 * 35) + 35;
             }
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage(), e);
