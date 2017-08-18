@@ -87,6 +87,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         evaResultTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]\n" +
                 "但是有时候，你还是会觉得自己的付出得不到应有的回报。\n" +
+                "\n" +
                 "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，<a href='"+problemUrl+"'>土豪请戳</a>），让你一眼识破职场难题假象，不用加班也能升职加薪。");
         freeAccessTextMap.put(2, "【免费领取】\n" +
                 "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
@@ -104,6 +105,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去分享下方图片给他们吧");
         memberShipTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]但是有时候，你可能会觉得自己的付出得不到应有的回报。\n" +
+                "\n" +
                 "试着换一个姿势努力吧，点击<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
                 "\n" +
                 "敢不敢分享下方图片，让你的朋友也来挑战一下[奸笑]");
