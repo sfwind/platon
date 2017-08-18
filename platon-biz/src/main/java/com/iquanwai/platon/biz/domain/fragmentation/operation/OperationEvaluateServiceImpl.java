@@ -239,12 +239,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
 
         Profile profile = accountService.getProfile(profileId);
-        String nickName1 = "三十文";
-        String nickName2 = "小三十文";
 
-        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName1), 470, nickName1,
-                font.deriveFont(48f), new Color(255, 255, 255));
-        targetImage = ImageUtils.writeText(targetImage, getXposition(nickName2), 520, nickName2,
+        targetImage = ImageUtils.writeText(targetImage, getXposition(profile.getNickname()), 470, profile.getNickname(),
                 font.deriveFont(48f), new Color(255, 255, 255));
         return targetImage;
     }
