@@ -4,7 +4,6 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.common.*;
-import com.iquanwai.platon.biz.po.common.Role;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

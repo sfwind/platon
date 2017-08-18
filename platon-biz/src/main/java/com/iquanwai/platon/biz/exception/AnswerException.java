@@ -5,4 +5,5 @@ package com.iquanwai.platon.biz.exception;
  * 热身问题已回答的exception
  */
 public class AnswerException extends Exception {
+    private static final long serialVersionUID = 7309288674700213326L;
 }

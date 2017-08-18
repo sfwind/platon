@@ -56,7 +56,7 @@
                 setTimeout(function(){
                     sendTime();
                 }, 200);
-                return;
+
             } else {
                 mta('send', 'page');
             }

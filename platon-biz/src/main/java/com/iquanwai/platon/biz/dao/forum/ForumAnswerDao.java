@@ -59,7 +59,7 @@ public class ForumAnswerDao extends ForumDBUtil {
         }
     }
 
-    public void cancelApprove(Integer id){
+    public void cancelApprove(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ForumAnswer set ApprovalCount=ApprovalCount-1 where Id=?";
         try {
@@ -82,7 +82,7 @@ public class ForumAnswerDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<ForumAnswer> loadUserAnswers(Integer profileId, Page page){
+    public List<ForumAnswer> loadUserAnswers(Integer profileId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumAnswer>> h = new BeanListHandler<>(ForumAnswer.class);
         String sql = "SELECT * FROM ForumAnswer where ProfileId=? order by ApprovalCount desc, PublishTime desc limit  " + page.getOffset() + "," + page.getLimit();
@@ -95,11 +95,23 @@ public class ForumAnswerDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<ForumAnswer> loadUserQuestionAnswers(Integer questionId,Integer profileId){
+    public Integer loadUserAnswersCount(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "SELECT COUNT(*) FROM ForumAnswer where ProfileId=?";
+        try {
+            return runner.query(sql, h, profileId).intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public List<ForumAnswer> loadUserQuestionAnswers(Integer questionId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumAnswer>> h = new BeanListHandler<>(ForumAnswer.class);
         String sql = "select * from ForumAnswer where QuestionId = ? and ProfileId = ?";
-        try{
+        try {
             List<ForumAnswer> answers = run.query(sql, h, questionId, profileId);
             return answers;
         } catch (SQLException e) {

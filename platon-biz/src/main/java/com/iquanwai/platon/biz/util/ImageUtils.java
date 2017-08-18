@@ -15,12 +15,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by justin on 17/7/12.
  */
 public class ImageUtils {
-    private static OkHttpClient client = new OkHttpClient();
+    private static OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(Constants.HTTP_TIMEOUT.CONNECTION_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(Constants.HTTP_TIMEOUT.READ_TIMEOUT, TimeUnit.SECONDS)
+            .build();
     private static Logger logger = LoggerFactory.getLogger(ImageUtils.class);
 
     /*

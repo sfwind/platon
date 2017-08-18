@@ -67,7 +67,6 @@ public class QuestionServiceImpl implements QuestionService {
             id = forumQuestionDao.insert(forumQuestion);
             if (id != -1) {
                 // 插入
-                ForumQuestion load = forumQuestionDao.load(ForumQuestion.class, id);
                 boolean insert = forumQuestionRepository.insert(id, topic, description, profileId);
                 logger.info("插入es结果:{}", insert);
 
@@ -225,6 +224,10 @@ public class QuestionServiceImpl implements QuestionService {
      */
     private void initQuestionList(ForumQuestion item, Integer loadProfileId) {
         Profile profile = accountService.getProfile(item.getProfileId());
+        if(profile == null){
+            logger.error("用户 {} 不存在", item.getProfileId());
+            return;
+        }
         // 设置昵称
         item.setAuthorUserName(profile.getNickname());
         // 设置头像
@@ -232,7 +235,7 @@ public class QuestionServiceImpl implements QuestionService {
         // 查询多少人回答
         List<ForumAnswer> answers = forumAnswerDao.load(item.getId());
         // 初始化回答提示
-        String answerTips = "";
+        String answerTips;
         if (CollectionUtils.isNotEmpty(answers)) {
             List<Integer> distinctUsers = answers.stream().map(ForumAnswer::getProfileId).distinct().collect(Collectors.toList());
             List<String> answerNames = distinctUsers.stream().limit(2).map(profileId -> {
