@@ -203,7 +203,7 @@ public class IndexController {
         Map<String, String> userParam = Maps.newHashMap();
         userParam.put("userName", account.getWeixinName());
         if (account.getHeadimgUrl() != null) {
-            userParam.put("headImage", account.getHeadimgUrl() != null ? account.getHeadimgUrl().replace("http:", "https:") : "");
+            userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);
         mav.addObject("showForum", showForum);

@@ -50,12 +50,12 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public void follow(Integer id,Integer point) {
+    public void follow(Integer id, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         if (point == null) {
             point = 0;
         }
-        String sql = "update ForumQuestion set FollowCount=FollowCount+1,Weight=Weight+" + point +" where Id=?";
+        String sql = "update ForumQuestion set FollowCount=FollowCount+1,Weight=Weight+" + point + " where Id=?";
         try {
 
             runner.update(sql, id);
@@ -64,12 +64,12 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public void unfollow(Integer id,Integer point) {
+    public void unfollow(Integer id, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         if (point == null) {
             point = 0;
         }
-        String sql = "update ForumQuestion set FollowCount=FollowCount-1,Weight=Weight-"+ point +" where Id=? and FollowCount>0";
+        String sql = "update ForumQuestion set FollowCount=FollowCount-1,Weight=Weight-" + point + " where Id=? and FollowCount>0";
         try {
 
             runner.update(sql, id);
@@ -78,7 +78,7 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public void open(Integer id,Integer point) {
+    public void open(Integer id, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
         if (point == null) {
@@ -103,14 +103,14 @@ public class ForumQuestionDao extends ForumDBUtil {
         }
     }
 
-    public List<ForumQuestion> getQuestionsById(List<Integer> questionIds, Page page){
-        if(CollectionUtils.isEmpty(questionIds)){
+    public List<ForumQuestion> getQuestionsById(List<Integer> questionIds, Page page) {
+        if (CollectionUtils.isEmpty(questionIds)) {
             return Lists.newArrayList();
         }
         String questionMark = produceQuestionMark(questionIds.size());
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumQuestion>> h = new BeanListHandler<>(ForumQuestion.class);
-        String sql = "SELECT * FROM ForumQuestion where Id in ("+ questionMark +") "+
+        String sql = "SELECT * FROM ForumQuestion where Id in (" + questionMark + ") " +
                 "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ForumQuestion> forumQuestions = runner.query(sql, h, questionIds.toArray());
@@ -124,8 +124,10 @@ public class ForumQuestionDao extends ForumDBUtil {
     public List<ForumQuestion> getQuestions(Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumQuestion>> h = new BeanListHandler<>(ForumQuestion.class);
+//        String sql = "SELECT * FROM ForumQuestion " +
+//                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         String sql = "SELECT * FROM ForumQuestion " +
-                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+                "order by AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ForumQuestion> forumQuestions = runner.query(sql, h);
             return forumQuestions;
@@ -135,7 +137,7 @@ public class ForumQuestionDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<ForumQuestion> getQuestions(Integer profileId,Page page) {
+    public List<ForumQuestion> getQuestions(Integer profileId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<ForumQuestion>> h = new BeanListHandler<>(ForumQuestion.class);
         String sql = "SELECT * FROM ForumQuestion where ProfileId = ? " +
@@ -149,7 +151,7 @@ public class ForumQuestionDao extends ForumDBUtil {
         return Lists.newArrayList();
     }
 
-    public Integer getQuestionsCount(Integer profileId){
+    public Integer getQuestionsCount(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<>();
         String sql = "SELECT COUNT(*) FROM ForumQuestion where ProfileId=?";

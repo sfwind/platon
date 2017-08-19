@@ -7,5 +7,5 @@ import java.net.ConnectException;
  */
 public interface RabbitMQPublisher {
 
-    public <T> void publish(T message) throws ConnectException;
+    <T> void publish(T message) throws ConnectException;
 }

@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.po.Knowledge;
 import lombok.Data;
 
 import java.util.List;

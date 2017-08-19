@@ -145,11 +145,8 @@ public class Page implements Serializable {
         if (pageSize != other.pageSize){
             return false;
         }
-        if (total != other.total){
-            return false;
-        }
+        return total == other.total;
 
-        return true;
     }
 
     public String toString() {

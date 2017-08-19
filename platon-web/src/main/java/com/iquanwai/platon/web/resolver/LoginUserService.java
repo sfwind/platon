@@ -43,7 +43,7 @@ public class LoginUserService {
     public enum Platform{
         PC(1),Wechat(2);
         private int value;
-        private Platform(int value){
+        Platform(int value){
             this.value = value;
         }
         public int getValue(){

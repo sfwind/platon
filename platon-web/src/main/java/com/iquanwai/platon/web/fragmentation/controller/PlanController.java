@@ -79,7 +79,9 @@ public class PlanController {
      * 1.会员可以选两门<br/>
      */
     @RequestMapping(value = "/choose/problem/check/{problemId}/{type}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId, @PathVariable(value = "type") Integer type) {
+    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser,
+                                                               @PathVariable(value = "problemId") Integer problemId,
+                                                               @PathVariable(value = "type") Integer type) {
         Assert.notNull(loginUser, "用户不能为空");
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -164,9 +166,10 @@ public class PlanController {
                         return WebUtils.error("您已经试用过该小课，无法重复试用");
                     } else {
                         // 没有试用过
-                        //ignore
+                        LOGGER.error("数据异常，请联系管理员 {}", loginUser.getOpenId());
                     }
                 }
+                break;
             }
             case 6: {
                 // 之前刷的历史数据，这些人是可以回复状态的
@@ -180,6 +183,7 @@ public class PlanController {
                         return WebUtils.error("数据异常，请联系管理员");
                     }
                 }
+                break;
             }
             case 7: {
                 // 限免小课试用
@@ -187,6 +191,7 @@ public class PlanController {
                     // 已经试用过了
                     return WebUtils.error(204, "小课正在进行中");
                 }
+                break;
             }
         }
 
@@ -212,7 +217,8 @@ public class PlanController {
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
 
         // 获取正在学习的小课
-        List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
+        List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING
+                || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
         ImprovementPlan curPlan = improvementPlans.stream().
                 filter(plan -> plan.getProblemId().equals(problemId)
                         && (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE))
@@ -606,7 +612,8 @@ public class PlanController {
     }
 
     // 查询推荐的小课
-    private List<Problem> loadRecommendations(Integer porfileId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
+    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans,
+                                              List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
         // 最后要返回的
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
@@ -632,13 +639,13 @@ public class PlanController {
             problemIds = runningProblemId.stream().distinct().collect(Collectors.toList());
         }
         // 对这些小课设定分数，用于排序
-        Map<Integer,Integer> problemScores = Maps.newHashMap();
+        Map<Integer, Integer> problemScores = Maps.newHashMap();
         for (int i = 0; i < problemIds.size(); i++) {
             int score = problemIds.size() - i;
             problemScores.putIfAbsent(problemIds.get(i), score);
         }
         // 获取所有推荐，对这些推荐排序
-        List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left,right)->{
+        List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left, right) -> {
             Integer rightScore = problemScores.get(right.getProblemId());
             Integer leftScore = problemScores.get(left.getProblemId());
             if (leftScore == null) {
@@ -677,7 +684,7 @@ public class PlanController {
 
 
     // 倒序排列
-    private int sortPlans(PlanDto left,PlanDto right) {
+    private int sortPlans(PlanDto left, PlanDto right) {
         if (left.getCloseTime() == null) {
             return 1;
         } else if (right.getCloseTime() == null) {
@@ -688,7 +695,8 @@ public class PlanController {
 
 
     @RequestMapping(value = "/chapter/card/access/{problemId}/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId,
+                                                                 @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         Boolean authority = planService.loadChapterCardAccess(loginUser.getId(), problemId, practicePlanId);
         if (authority != null) {
@@ -702,7 +710,8 @@ public class PlanController {
      * 当用户做完某一章节的所有巩固练习后，后台回复章节卡片
      */
     @RequestMapping(value = "/chapter/card/{problemId}/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId,
+                                                               @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("小课学习").action("打开小课学习")
                 .function("加载章节卡片").memo(loginUser.getOpenId());
