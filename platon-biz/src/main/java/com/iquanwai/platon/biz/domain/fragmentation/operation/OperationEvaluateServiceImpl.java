@@ -75,20 +75,21 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1.png?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_1.png?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_1.png?imageslim"));
+        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_4.png?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_4.png?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_4.png?imageslim"));
+
         evaResultTextMap.put(1, "【测试结果】\n" +
                 "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
                 "\n" +
-                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，<a href='"+problemUrl+"'>土豪请戳</a>），让你的工作成果迅速提升，走上加薪升职之路。\n");
+                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='"+problemUrl+"'>戳这里</a>；要免费领取？见下方消息），让你的工作成果迅速提升，走上加薪升职之路。\n");
         freeAccessTextMap.put(1, "【免费领取】\n" +
                 "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
         evaResultTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]\n" +
                 "但是有时候，你还是会觉得自己的付出得不到应有的回报。\n" +
                 "\n" +
-                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，<a href='"+problemUrl+"'>土豪请戳</a>），让你一眼识破职场难题假象，不用加班也能升职加薪。");
+                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='"+problemUrl+"'>戳这里</a>；要免费领取？见下方消息），让你一眼识破职场难题假象，不用加班也能升职加薪。");
         freeAccessTextMap.put(2, "【免费领取】\n" +
                 "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
         evaResultTextMap.put(3, "【测试结果】\n" +
