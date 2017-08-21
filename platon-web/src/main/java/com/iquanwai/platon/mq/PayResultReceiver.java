@@ -1,10 +1,15 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
+<<<<<<< HEAD
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
+=======
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
+>>>>>>> a2caf520706e97895724878855055b66d57d38d7
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +40,12 @@ public class PayResultReceiver {
     public void init(){
         rabbitMQFactory.initReceiver(QUEUE,TOPIC,(messageQueue)->{
             logger.info("receive message {}", messageQueue.getMessage().toString());
-            QuanwaiOrder quanwai = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), QuanwaiOrder.class);
-            logger.info("获取支付成功 message {}", quanwai);
-            if (quanwai == null) {
+            QuanwaiOrder quanwaiOrder = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), QuanwaiOrder.class);
+            logger.info("获取支付成功 message {}", quanwaiOrder);
+            if (quanwaiOrder == null) {
                 logger.error("获取支付成功mq消息异常");
             } else {
-                Profile profile = accountService.getProfile(quanwai.getOpenid());
+                Profile profile = accountService.getProfile(quanwaiOrder.getOpenid());
                 Assert.notNull(profile, "付费用户不能为空");
                 operationEvaluateService.recordPayAction(profile.getId());
             }

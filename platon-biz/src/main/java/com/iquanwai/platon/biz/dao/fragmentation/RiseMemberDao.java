@@ -4,7 +4,6 @@ import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.RiseMember;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;

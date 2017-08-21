@@ -4,25 +4,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.PromotionUser;
-import com.iquanwai.platon.biz.po.Recommendation;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
@@ -36,11 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -79,7 +66,9 @@ public class PlanController {
      * 1.会员可以选两门<br/>
      */
     @RequestMapping(value = "/choose/problem/check/{problemId}/{type}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId, @PathVariable(value = "type") Integer type) {
+    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser,
+                                                               @PathVariable(value = "problemId") Integer problemId,
+                                                               @PathVariable(value = "type") Integer type) {
         Assert.notNull(loginUser, "用户不能为空");
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -164,7 +153,7 @@ public class PlanController {
                         return WebUtils.error("您已经试用过该小课，无法重复试用");
                     } else {
                         // 没有试用过
-                        //ignore
+                        LOGGER.error("数据异常，请联系管理员 {}", loginUser.getOpenId());
                     }
                 }
                 break;
@@ -215,7 +204,8 @@ public class PlanController {
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
 
         // 获取正在学习的小课
-        List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
+        List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING
+                || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
         ImprovementPlan curPlan = improvementPlans.stream().
                 filter(plan -> plan.getProblemId().equals(problemId)
                         && (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE))
@@ -241,7 +231,8 @@ public class PlanController {
                 // 解锁了
                 if (problemId.equals(trialProblemId)) {
                     // 限免小课
-                    operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+                    operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
+                            PromotionConstants.FreeLimitAction.TrialCourse);
                 }
                 OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                         .module("RISE")
@@ -270,7 +261,8 @@ public class PlanController {
             // TODO 活动结束后删除,如果是自然增长，就插入
             operationFreeLimitService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
             // 限免小课
-            operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+            operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
+                    PromotionConstants.FreeLimitAction.TrialCourse);
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
@@ -609,7 +601,8 @@ public class PlanController {
     }
 
     // 查询推荐的小课
-    private List<Problem> loadRecommendations(Integer porfileId,List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
+    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans,
+                                              List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
         // 最后要返回的
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
@@ -635,13 +628,13 @@ public class PlanController {
             problemIds = runningProblemId.stream().distinct().collect(Collectors.toList());
         }
         // 对这些小课设定分数，用于排序
-        Map<Integer,Integer> problemScores = Maps.newHashMap();
+        Map<Integer, Integer> problemScores = Maps.newHashMap();
         for (int i = 0; i < problemIds.size(); i++) {
             int score = problemIds.size() - i;
             problemScores.putIfAbsent(problemIds.get(i), score);
         }
         // 获取所有推荐，对这些推荐排序
-        List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left,right)->{
+        List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left, right) -> {
             Integer rightScore = problemScores.get(right.getProblemId());
             Integer leftScore = problemScores.get(left.getProblemId());
             if (leftScore == null) {
@@ -679,7 +672,7 @@ public class PlanController {
     }
 
     // 倒序排列
-    private int sortPlans(PlanDto left,PlanDto right) {
+    private int sortPlans(PlanDto left, PlanDto right) {
         if (left.getCloseTime() == null) {
             return 1;
         } else if (right.getCloseTime() == null) {
@@ -690,7 +683,8 @@ public class PlanController {
 
 
     @RequestMapping(value = "/chapter/card/access/{problemId}/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId,
+                                                                 @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         Boolean authority = planService.loadChapterCardAccess(loginUser.getId(), problemId, practicePlanId);
         if (authority != null) {
@@ -704,7 +698,8 @@ public class PlanController {
      * 当用户做完某一章节的所有巩固练习后，后台回复章节卡片
      */
     @RequestMapping(value = "/chapter/card/{problemId}/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId,
+                                                               @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("小课学习").action("打开小课学习")
                 .function("加载章节卡片").memo(loginUser.getOpenId());

@@ -67,9 +67,7 @@ public class QRCodeUtils {
             }
 
             try {
-                if (qrPic != null) {
-                    qrPic.close();
-                }
+                qrPic.close();
             } catch (IOException ex) {
                 logger.error("error occurs when close qr code inputStream", ex);
                 return null;
@@ -83,9 +81,7 @@ public class QRCodeUtils {
              */
             BufferedImage logo = ImageIO.read(logoPic);
             try {
-                if (logoPic != null) {
-                    logoPic.close();
-                }
+                logoPic.close();
             } catch (IOException ex) {
                 logger.error("error occurs when close logoPic inputStream", ex);
                 return null;
@@ -167,8 +163,7 @@ public class QRCodeUtils {
     public static BufferedImage genQRCodeWithLogo(String content, InputStream srcLogoImage) throws WriterException,
             IOException {
         // 读取源图像
-        BufferedImage scaleImage = scale(srcLogoImage, IMAGE_WIDTH,
-                IMAGE_HEIGHT, false);
+        BufferedImage scaleImage = scale(srcLogoImage, IMAGE_HEIGHT, IMAGE_WIDTH, false);
 
         int[][] srcPixels = new int[IMAGE_WIDTH][IMAGE_HEIGHT];
         for (int i = 0; i < scaleImage.getWidth(); i++) {
