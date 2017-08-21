@@ -165,8 +165,9 @@ public class AnswerServiceImpl implements AnswerService {
         List<QuestionFollow> questionFollows = questionFollowDao.load(questionId);
         if (CollectionUtils.isNotEmpty(questionFollows)) {
             questionFollows.forEach(questionFollow -> {
-                //自己关注自己的问题,不发消息提醒
-                if (!questionProfileId.equals(questionFollow.getProfileId())) {
+                //自己关注自己的问题,不发消息提醒 自己回答自己关注的问题,不发消息提醒
+                if (!questionProfileId.equals(questionFollow.getProfileId()) &&
+                        !answerProfileId.equals(questionFollow.getProfileId())) {
                     messageService.sendMessage("你关注的问题有新回答", questionFollow.getProfileId().toString(),
                             MessageService.SYSTEM_MESSAGE, answerUrl);
                 }
