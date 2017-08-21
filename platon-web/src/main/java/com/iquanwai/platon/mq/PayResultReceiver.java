@@ -3,8 +3,8 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.po.PromotionUser;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +34,15 @@ public class PayResultReceiver {
     public void init(){
         rabbitMQFactory.initReceiver(QUEUE,TOPIC,(messageQueue)->{
             logger.info("receive message {}", messageQueue.getMessage().toString());
-            QuanwaiOrder quanwai = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), QuanwaiOrder.class);
-            logger.info("获取支付成功 message {}", quanwai);
-            if (quanwai == null) {
+            QuanwaiOrder quanwaiOrder = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), QuanwaiOrder.class);
+            logger.info("获取支付成功 message {}", quanwaiOrder);
+            if (quanwaiOrder == null) {
                 logger.error("获取支付成功mq消息异常");
             } else {
                 // 限免推广活动
-                operationFreeLimitService.recordOrderAndSendMsg(quanwai.getOpenid(), PromotionUser.PAY);
+                operationFreeLimitService.recordOrderAndSendMsg(quanwaiOrder.getOpenid(), PromotionConstants.FreeLimitAction.PayCourse);
                 // 优惠推广活动
-                courseReductionService.saveCourseReductionPayedLog(quanwai);
+                courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
             }
         });
     }
