@@ -47,7 +47,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
     @Override
     public void scanCourseReductionQR(SubscribeEvent subscribeEvent) {
         logger.info("处理课程优惠mq;{}", subscribeEvent);
-        if (!StringUtils.contains(subscribeEvent.getScene(), PromotionConstants.Activities.CourseReduction)
+        if (!StringUtils.startsWith(subscribeEvent.getScene(), PromotionConstants.Activities.CourseReduction)
                 || subscribeEvent.getOpenid() == null) {
             logger.error("扫描优惠推广课程的事件处理异常,{}", subscribeEvent);
             return;

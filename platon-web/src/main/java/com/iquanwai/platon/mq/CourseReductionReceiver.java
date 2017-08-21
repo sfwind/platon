@@ -30,10 +30,10 @@ public class CourseReductionReceiver {
 
     @PostConstruct
     public void init() {
-        rabbitMQFactory.initReceiver(QUEUE,TOPIC,(mq)->{
+        rabbitMQFactory.initReceiver(QUEUE, TOPIC, (mq) -> {
             SubscribeEvent subscribeEvent = JSON.parseObject(JSON.toJSONString(mq.getMessage()), SubscribeEvent.class);
             logger.info("receive message {}", subscribeEvent);
-            if (StringUtils.contains(subscribeEvent.getScene(), PromotionConstants.Activities.CourseReduction)) {
+            if (StringUtils.startsWith(subscribeEvent.getScene(), PromotionConstants.Activities.CourseReduction)) {
                 // 是优惠课程推广
                 courseReductionService.scanCourseReductionQR(subscribeEvent);
             }
