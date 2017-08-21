@@ -15,8 +15,6 @@ import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.*;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,6 @@ import org.springframework.util.Assert;
 import javax.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -57,14 +54,9 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     private CardRepository cardRepository;
     @Autowired
     private UploadResourceService uploadResourceService;
-    @Autowired
-    private RabbitMQFactory rabbitMQFactory;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private RabbitMQPublisher rabbitMQPublisher;
-
-    private final static String cacheReloadTopic = "confucius_resource_reload";
     // 推广的熊猫卡临时存放路径
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
     // 推广成功人数限额
@@ -74,7 +66,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
 
     @PostConstruct
     public void init() {
-        rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(cacheReloadTopic);
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
         if (!file.exists()) {
@@ -232,12 +223,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
                         logger.info("准备塞优惠券");
                         // 礼品券数据保存成功，发送获得优惠券的模板消息
                         sendSuccessPromotionMsg(sourceProfile.getOpenid());
-                        // 刷新优惠券缓存
-                        try {
-                            rabbitMQPublisher.publish("class");
-                        } catch (ConnectException e) {
-                            logger.error(e.getLocalizedMessage());
-                        }
                     }
                 }
             }
