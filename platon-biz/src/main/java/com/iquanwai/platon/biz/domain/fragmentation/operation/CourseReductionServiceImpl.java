@@ -146,10 +146,10 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         promotionLevels.forEach(level -> {
             String activity = level.getActivity();
             String[] split = activity.split("_");
-            if (split.length < 2) {
+            if (split.length < 1) {
                 logger.error("异常，课程减免活动数据异常", level);
             } else {
-                String realActivity = split[0] + "_" + split[1];
+                String realActivity = split[0];
                 if (!activities.contains(realActivity)) {
                     activities.add(realActivity);
                 }
