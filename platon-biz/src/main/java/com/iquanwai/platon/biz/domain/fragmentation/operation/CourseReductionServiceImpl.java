@@ -4,14 +4,17 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseReductionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.CourseReductionActivity;
+import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
@@ -43,6 +46,8 @@ public class CourseReductionServiceImpl implements CourseReductionService {
     private CustomerMessageService customerMessageService;
     @Autowired
     private CourseReductionActivityDao courseReductionActivityDao;
+    @Autowired
+    private CacheService cacheService;
 
     @Override
     public void scanCourseReductionQR(SubscribeEvent subscribeEvent) {
@@ -57,6 +62,34 @@ public class CourseReductionServiceImpl implements CourseReductionService {
             logger.error("扫描推广课程的事件处理异常，没有该用户:{}", subscribeEvent.getOpenid());
             return;
         }
+        List<String> list = Lists.newArrayList();
+        list.add(subscribeEvent.getScene().split("_")[0]);
+        CourseReductionActivity activity = courseReductionActivityDao.loadReductions(list).stream().findFirst().orElse(null);
+        if (activity == null) {
+            logger.error("没有活动信息:{}", subscribeEvent);
+            return;
+        }
+        String sendMsg;
+        if (activity.getProblemId() != null) {
+            Problem problem = cacheService.getProblem(activity.getProblemId());
+            sendMsg = "你已经领取了粉丝优惠通道：\uD83D\uDC47\n" +
+                    "\n" +
+                    "<a href='" + ConfigUtils.adapterDomainName() +
+                    "/rise/static/plan/view?id=" +
+                    problem.getId() +
+                    "&free=true'>『" + problem.getProblem() + "』</a>\n" +
+                    "------------\n" +
+                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
+                    "\n" +
+                    "这里就是上课的教室，强烈建议点击右上角置顶哦~";
+        } else {
+            sendMsg = "你已经领取了多门课程的粉丝优惠通道：\uD83D\uDC47\n" +
+                    "\n" +
+                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
+                    "\n" +
+                    "这里就是上课的教室，强烈建议点击右上角置顶哦~";
+        }
+
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), "Hi，" + profile.getNickname() + "，" +
                         "你已领取减免课程\n\n如需继续学习，请点击下方按钮“上课啦”\n\n",
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
