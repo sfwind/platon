@@ -90,8 +90,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "这里就是上课的教室，强烈建议点击右上角置顶哦~";
         }
 
-        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), "Hi，" + profile.getNickname() + "，" +
-                        "你已领取减免课程\n\n如需继续学习，请点击下方按钮“上课啦”\n\n",
+        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
