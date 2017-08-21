@@ -1,15 +1,10 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
-<<<<<<< HEAD
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
-=======
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
->>>>>>> a2caf520706e97895724878855055b66d57d38d7
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
-import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
