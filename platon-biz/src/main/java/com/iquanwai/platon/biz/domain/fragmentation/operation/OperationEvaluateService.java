@@ -5,17 +5,33 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
  */
 public interface OperationEvaluateService {
 
+    /**
+     * 点击链接
+     */
     void clickHref(Integer profileId);
-
-    void completeEvaluate(Integer profileId);
-
+    /**
+     * 完成测评
+     */
+    Integer completeEvaluate(Integer profileId, Integer score);
+    /**
+     * 免费试用限免课权限校验
+     */
     boolean checkTrialAuthority(Integer profileId);
 
+    /**
+     * 记录付费购买操作
+     */
     void recordPayAction(Integer profileId);
-
+    /**
+     * 触发扫码时间，对应记录修改
+     */
     void recordScan(Integer profileId, String source);
-
+    /**
+     * 微信后台推送结果卡片
+     */
     void sendPromotionResult(Integer profileId, Integer score);
-
+    /**
+     * 是否参加过此活动
+     * */
     boolean hasParticipateEvaluate(Integer profileId);
 }

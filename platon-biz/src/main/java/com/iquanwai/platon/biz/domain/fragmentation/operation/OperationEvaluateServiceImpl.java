@@ -32,6 +32,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -82,36 +83,36 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         evaResultTextMap.put(1, "【测试结果】\n" +
                 "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
                 "\n" +
-                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='"+problemUrl+"'>戳这里</a>；要免费领取？见下方消息），让你的工作成果迅速提升，走上加薪升职之路。\n");
+                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='" + problemUrl + "'>戳这里</a>；要免费领取？见下方消息），让你的工作成果迅速提升，走上加薪升职之路。\n");
         freeAccessTextMap.put(1, "【免费领取】\n" +
                 "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
         evaResultTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]\n" +
                 "但是有时候，你还是会觉得自己的付出得不到应有的回报。\n" +
                 "\n" +
-                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='"+problemUrl+"'>戳这里</a>；要免费领取？见下方消息），让你一眼识破职场难题假象，不用加班也能升职加薪。");
+                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='" + problemUrl + "'>戳这里</a>；要免费领取？见下方消息），让你一眼识破职场难题假象，不用加班也能升职加薪。");
         freeAccessTextMap.put(2, "【免费领取】\n" +
                 "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
         evaResultTextMap.put(3, "【测试结果】\n" +
                 "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。\n" +
-                "看来你已经不需要圈外职场研究所价值¥99的<a href='"+problemUrl+"'>【职场洞察力强化包】</a>了，千万别点开！\n");
+                "看来你已经不需要圈外职场研究所价值¥99的<a href='" + problemUrl + "'>【职场洞察力强化包】</a>了，千万别点开！\n");
         freeAccessTextMap.put(3, "【免费领取】\n" +
                 "当然，如果你好奇强化包的内容，可以分享下方图片，邀请3人扫码并完成测试，即可免费领取。");
 
 
         memberShipTextMap.put(1, "【测试结果】\n" +
                 "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
-                "试着换一个姿势努力吧，点击<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
+                "试着换一个姿势努力吧，点击<a href='" + problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
                 "\n" +
                 "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去分享下方图片（保存到相册，再发朋友圈）给他们吧");
         memberShipTextMap.put(2, "【测试结果】\n" +
                 "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]但是有时候，你可能会觉得自己的付出得不到应有的回报。\n" +
                 "\n" +
-                "试着换一个姿势努力吧，点击<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
+                "试着换一个姿势努力吧，点击<a href='" + problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
                 "\n" +
                 "敢不敢分享下方图片（保存到相册，再发朋友圈），让你的朋友也来挑战一下[奸笑]");
         memberShipTextMap.put(3, "【测试结果】\n" +
-                "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。看来你一定是学过<a href='"+ problemUrl + "'>【找到本质问题，减少无效努力】</a>小课了。\n" +
+                "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。看来你一定是学过<a href='" + problemUrl + "'>【找到本质问题，减少无效努力】</a>小课了。\n" +
                 "\n" +
                 "你的朋友都和你一样机智吗？分享下方图片，让他们也来检测一下吧！");
 
@@ -146,17 +147,20 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 完成测评
      */
     @Override
-    public void completeEvaluate(Integer profileId) {
+    public Integer completeEvaluate(Integer profileId, Integer score) {
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
-        if (promotionLevel == null) return;
+        if (promotionLevel != null) {
+            recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FinishEvaluate);
 
-        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FinishEvaluate);
-
-        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId, PromotionConstants.EvaluateAction.FinishEvaluate, activity);
-        if (activities.size() == 1) {
-            checkAwardAndSendMsg(profileId);
+            List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
+                    PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+            if (activities.size() == 1) {
+                checkAwardAndSendMsg(profileId);
+            }
         }
+
+        return getDefeatPercent(score);
     }
 
     /**
@@ -170,7 +174,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BuyCourse);
 
-        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId, PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
+                PromotionConstants.EvaluateAction.FinishEvaluate, activity);
         if (activities.size() == 1) {
             checkAwardAndSendMsg(profileId);
         }
@@ -198,7 +203,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        if(isRiseMember(profileId)) {
+        if (isRiseMember(profileId)) {
             // 会员
             customerMessageService.sendCustomerMessage(
                     profile.getOpenid(),
@@ -227,7 +232,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 
-    // 是否参加过此活动
+    /**
+     * 是否参加过此活动
+     */
     @Override
     public boolean hasParticipateEvaluate(Integer profileId) {
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
@@ -314,7 +321,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         int xPosition = 0;
         try {
             int length = builder.toString().getBytes("gbk").length;
-            if(length % 2 == 0) {
+            if (length % 2 == 0) {
                 xPosition = 750 / 2 - (length / 2 * 24);
             } else {
                 xPosition = 750 / 2 - (length / 2 * 24) - 24;
@@ -380,7 +387,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
         templateMessage.setData(data);
 
-        if(remainCount == 0) {
+        if (remainCount == 0) {
             data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
                     + remainCount + "个好友啦！\n"));
         } else {
@@ -520,4 +527,29 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
+
+    private static Integer getDefeatPercent(Integer score) {
+        switch (score) {
+            case 0:
+                return new Random().nextInt(10) + 10;
+            case 1:
+                return new Random().nextInt(10) + 20;
+            case 2:
+                return new Random().nextInt(10) + 40;
+            case 3:
+                return new Random().nextInt(10) + 50;
+            case 4:
+                return new Random().nextInt(10) + 60;
+            case 5:
+                return new Random().nextInt(10) + 70;
+            case 6:
+                return new Random().nextInt(10) + 80;
+            case 7:
+                return new Random().nextInt(5) + 90;
+            case 8:
+                return new Random().nextInt(5) + 95;
+            default:
+                return new Random().nextInt(10) + 10;
+        }
+    }
 }

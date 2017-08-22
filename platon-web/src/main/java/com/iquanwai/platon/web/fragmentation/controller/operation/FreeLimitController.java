@@ -2,8 +2,10 @@ package com.iquanwai.platon.web.fragmentation.controller.operation;
 
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,8 @@ public class FreeLimitController {
     private OperationFreeLimitService operationFreeLimitService;
     @Autowired
     private OperationEvaluateService operationEvaluateService;
+    @Autowired
+    private PlanService planService;
 
     /**
      * 发送自动选限免课的客服消息
@@ -58,14 +62,17 @@ public class FreeLimitController {
     @RequestMapping(value = "/submit/{score}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitEva(LoginUser loginUser, @PathVariable Integer score) {
         Assert.notNull(loginUser, "用户不能为空");
-        operationEvaluateService.completeEvaluate(loginUser.getId());
-        operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
-
+        FreeLimitResult result = new FreeLimitResult();
+        Integer percent = operationEvaluateService.completeEvaluate(loginUser.getId(), score);
+        result.setPercent(percent);
+//        operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
+        Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
+        result.setLearnFreeLimit(learnBefore);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());
         operationLogService.log(operationLog);
 
-        return WebUtils.success();
+        return WebUtils.result(result);
     }
 
     /**
