@@ -54,13 +54,13 @@ public class FreeLimitController {
         FreeLimitResult result = new FreeLimitResult();
         Integer percent = operationEvaluateService.completeEvaluate(loginUser.getId(), score);
         result.setPercent(percent);
-//        operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
         Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
         if (learnBefore || loginUser.getRiseMember() == 1) {
             result.setLearnFreeLimit(true);
         } else {
             result.setLearnFreeLimit(false);
         }
+        operationEvaluateService.sendPromotionResult(loginUser.getId(), score, percent, result.getLearnFreeLimit());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());
@@ -88,13 +88,11 @@ public class FreeLimitController {
      * 用户提交问卷结果
      */
     @RequestMapping(value = "/share", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser, @RequestBody FreeLimitResult result) {
+    public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
 
-        operationEvaluateService.sendPromotionResult(loginUser.getId(), result.getScore(),
-                result.getPercent(), result.getLearnFreeLimit());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("限免推广").function("测评").action("领取推广卡片").memo(result.getScore().toString());
+                .module("限免推广").function("测评").action("领取推广卡片");
         operationLogService.log(operationLog);
 
         return WebUtils.success();

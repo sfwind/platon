@@ -91,12 +91,12 @@ public class FreeLimitSubscribeReceiver {
                     //     customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     // }
                     sendMsg = "欢迎来到【圈外职场研究所】\n\n" +
-                            "职场中有一种基因，能让人：\n" +
-                            "从不加班、还能不断升职\n" +
-                            "秒懂他人心思、人缘爆表\n" +
-                            "提案一次通关、从不修改\n\n" +
-                            "你是否也拥有这种基因？\n" +
-                            "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始洞察力基因检测</a>";
+                            "有一种职场天赋，能让人：\n\n" +
+                            "<li>从不加班，还能不断升职</li>\n" +
+                            "<li>秒懂他人心思、人缘爆表</li>\n" +
+                            "<li>提案一次通关、从不修改</li>\n\n" +
+                            "你是否也拥有这种天赋?\n\n" +
+                            "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场敏锐度检测</a>";
                 } else {
                     // 非限免
                     sendMsg = "你要的小课在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
