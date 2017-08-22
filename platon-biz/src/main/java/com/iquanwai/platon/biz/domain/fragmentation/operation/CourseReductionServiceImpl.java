@@ -107,7 +107,8 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送海报
-        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4", Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lP41cAv1K0XJlZxbGN3EQoQ" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
+        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.ScanCode);
@@ -154,7 +155,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     promotionActivityDao.insertPromotionActivity(temp);
                     TemplateMessage templateMessage = new TemplateMessage();
                     templateMessage.setTouser(profile.getOpenid());
-                    String msgId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "crZiCkNMCec7svHsHcKSxTTzPT5NWOA1To5HmhyaDeE" : "2n8N79pHw8tBHwTUdManihUnCrKl2FEpELtq-sDF0NU";
+                    String msgId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "2n8N79pHw8tBHwTUdManihUnCrKl2FEpELtq-sDF0NU" : "crZiCkNMCec7svHsHcKSxTTzPT5NWOA1To5HmhyaDeE";
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setTemplate_id(msgId);
                     templateMessage.setData(data);
