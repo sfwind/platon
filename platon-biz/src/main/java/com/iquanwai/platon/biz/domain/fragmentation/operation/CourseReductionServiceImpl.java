@@ -158,13 +158,13 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setTemplate_id(msgId);
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("[你有一份粉丝礼包已经到账！！]\n\n" +
+                    data.put("first", new TemplateMessage.Keyword(
                             "亲爱的Boy粉，我们很高兴你能加入我们，和数十万职场人一起提升自我。\n\n" +
-                            "我们为你准备了一个大礼包，内含价值99元的思考力课程一门以及一张粉丝团通行证。\n"));
+                                    "我们为你准备了一个大礼包，内含价值99元的思考力课程一门和一张粉丝团通行证。\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
                     data.put("keyword2", new TemplateMessage.Keyword("张鹏粉丝礼包"));
                     data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-                    data.put("remark", new TemplateMessage.Keyword("\n请及时拆开礼包哦↓↓↓"));
+                    data.put("remark", new TemplateMessage.Keyword("\n点击详情拆开礼包哦↓↓↓"));
                     templateMessage.setUrl("https://shimo.im/doc/Vc0qdZw0Qv8VIlqS?r=NPGKQE/");
                     templateMessageService.sendMessage(templateMessage);
                 }
