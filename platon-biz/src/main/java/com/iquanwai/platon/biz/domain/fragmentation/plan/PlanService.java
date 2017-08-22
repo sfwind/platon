@@ -29,7 +29,6 @@ public interface PlanService {
      * 检查是否能够选新课
      *
      * @param plans  用户的小课数据
-//     * @param riseMember 是否是会员
      * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans);
@@ -152,4 +151,10 @@ public interface PlanService {
      * @return
      */
     Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
+
+    /**
+     * 根据 OrderId 强开当前月的训练营小课
+     */
+    void forceOpenCampOrder(String orderId);
+
 }

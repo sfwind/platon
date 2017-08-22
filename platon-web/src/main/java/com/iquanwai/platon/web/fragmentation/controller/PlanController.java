@@ -240,7 +240,7 @@ public class PlanController {
             if (oldPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE || oldPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
                 // 老得是试用版
                 // 将它解锁
-                generatePlanService.reopenPlan(oldPlan);
+                generatePlanService.reopenTrialPlan(oldPlan);
                 // 解锁了
                 if (problemId.equals(trialProblemId)) {
                     // 限免小课

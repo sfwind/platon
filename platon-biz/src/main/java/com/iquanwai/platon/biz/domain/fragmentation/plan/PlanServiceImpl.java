@@ -3,11 +3,15 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -37,17 +41,25 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private GeneratePlanService generatePlanService;
+    @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
     @Autowired
     private TemplateMessageService templateMessageService;
     @Autowired
+    private AccountService accountService;
+    @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
     private RiseCourseDao riseCourseDao;
+    @Autowired
+    private MonthlyCampOrderDao monthlyCampOrderDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private ProblemService problemService;
 
@@ -641,6 +653,37 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return buttonStatus;
+    }
+
+    @Override
+    public void forceOpenCampOrder(String orderId) {
+        MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
+        Integer profileId = monthlyCampOrder.getProfileId();
+
+        Integer month = monthlyCampOrder.getMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
+        for (MonthlyCampSchedule schedule : schedules) {
+            Integer problemId = schedule.getProblemId();
+            forceOpenProblem(profileId, problemId);
+        }
+    }
+
+    /**
+     * 根据 profileId 和 problemId 强开当前小课
+     */
+    private void forceOpenProblem(Integer profileId, Integer problemId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Profile profile = accountService.getProfile(profileId);
+        if(improvementPlan == null) {
+            // 用户从来没有开过小课，新开小课
+            generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
+            // TODO 发个小课重开消息
+        } else {
+            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
+            generatePlanService.forceReopenPlan(improvementPlan.getId());
+            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
+            // TODO 发个解锁消息
+        }
     }
 
 }

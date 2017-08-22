@@ -31,8 +31,11 @@ public class QuanwaiOrder {
     public static final String FRAGMENT_MEMBER = "fragment_member";
     //小课单卖
     public static final String FRAGMENT_RISE_COURSE = "fragment_rise_course";
+    // 训练营小课
+    public static final String FRAGMENT_MONTHLY_CAMP = "fragment_monthly_camp";
 
     public static final int UNDER_PAY = 0;
     public static final int PAID = 1;
     public static final int CANCELLED = 2;
+
 }

@@ -10,7 +10,12 @@ public interface GeneratePlanService {
      * 将试用版的plan解锁
      * @param
      */
-    void reopenPlan(ImprovementPlan planId);
+    void reopenTrialPlan(ImprovementPlan planId);
+
+    /**
+     * 强制将该 ImprovementPlan 重开
+     */
+    void forceReopenPlan(Integer planId);
 
     /**
      * 为学员生成训练计划
