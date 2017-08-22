@@ -277,23 +277,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return headImg;
     }
 
-    // 计算出左侧偏移量
-    private int getXPosition(String str) {
-        StringBuilder builder = new StringBuilder(str);
-        int xPosition = 0;
-        try {
-            int length = builder.toString().getBytes("gbk").length;
-            if (length % 2 == 0) {
-                xPosition = 750 / 2 - (length / 2 * 24);
-            } else {
-                xPosition = 750 / 2 - (length / 2 * 24) - 24;
-            }
-        } catch (UnsupportedEncodingException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return xPosition;
-    }
-
     // 查看获取当前已经获取的奖励，并且同时发送消息
     private void checkAwardAndSendMsg(Integer profileId) {
         // 某人完成测评，需要查看他的推广人信息

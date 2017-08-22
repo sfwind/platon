@@ -91,7 +91,8 @@ public class FreeLimitController {
     public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser, @RequestBody FreeLimitResult result) {
         Assert.notNull(loginUser, "用户不能为空");
 
-        operationEvaluateService.sendPromotionResult(loginUser.getId(), result.getScore(), result.getPercent());
+        operationEvaluateService.sendPromotionResult(loginUser.getId(), result.getScore(),
+                result.getPercent(), result.getLearnFreeLimit());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("领取推广卡片").memo(result.getScore().toString());
         operationLogService.log(operationLog);
