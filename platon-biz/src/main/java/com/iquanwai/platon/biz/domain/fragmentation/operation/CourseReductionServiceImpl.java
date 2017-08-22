@@ -80,7 +80,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         String sendMsg;
         if (activity.getProblemId() != null) {
             Problem problem = cacheService.getProblem(activity.getProblemId());
-            sendMsg = profile.getNickname() + "（用户名称），果然只有机智的人才能成为张鹏的真爱粉[嘿哈]\n" +
+            sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张鹏的真爱粉[嘿哈]\n" +
                     "\n" +
                     "对于真爱粉，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
                     "\n" +
