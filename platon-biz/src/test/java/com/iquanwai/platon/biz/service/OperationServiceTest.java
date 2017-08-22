@@ -89,8 +89,4 @@ public class OperationServiceTest extends TestBase {
 
     }
 
-    @Test
-    public void generateImg() {
-        operationEvaluateService.sendPromotionResult(30, 30);
-    }
 }

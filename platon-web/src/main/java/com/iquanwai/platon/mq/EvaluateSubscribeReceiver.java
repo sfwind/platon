@@ -81,12 +81,12 @@ public class EvaluateSubscribeReceiver {
 
     private void sendScanMsg(String openId) {
         String message = "欢迎来到【圈外职场研究所】\n\n" +
-                "我们发现有种能力，能让人：\n\n" +
-                "从不加班，还能不断升职\n" +
-                "秒懂他人心思、人缘爆表\n" +
-                "提案一次通关、从不修改\n\n" +
-                "你是否也拥有这种能力?\n\n" +
-                "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场洞察力检测</a>";
+                "有一种职场天赋，能让人：\n\n" +
+                "<li>从不加班，还能不断升职</li>\n" +
+                "<li>秒懂他人心思、人缘爆表</li>\n" +
+                "<li>提案一次通关、从不修改</li>\n\n" +
+                "你是否也拥有这种天赋?\n\n" +
+                "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场敏锐度检测</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 

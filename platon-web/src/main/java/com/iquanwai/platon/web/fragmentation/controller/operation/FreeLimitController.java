@@ -11,10 +11,7 @@ import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -35,20 +32,12 @@ public class FreeLimitController {
     private PlanService planService;
 
     /**
-     * 发送自动选限免课的客服消息
-     */
-    @RequestMapping(value = "/choose/problem/msg", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendChooseProblemMsg(LoginUser loginUser) {
-        return WebUtils.success();
-    }
-
-    /**
      * 查看当前用户是否已经领取了此次活动的优惠券
      */
     @RequestMapping(value = "/coupon")
     public ResponseEntity<Map<String, Object>> hasGetTheCoupon(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        if(loginUser.getRiseMember() == 1) {
+        if (loginUser.getRiseMember() == 1) {
             return WebUtils.result(false);
         } else {
             Boolean result = operationFreeLimitService.hasGetTheCoupon(loginUser.getId());
@@ -67,7 +56,12 @@ public class FreeLimitController {
         result.setPercent(percent);
 //        operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
         Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
-        result.setLearnFreeLimit(learnBefore);
+        if (learnBefore || loginUser.getRiseMember() == 1) {
+            result.setLearnFreeLimit(true);
+        } else {
+            result.setLearnFreeLimit(false);
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());
         operationLogService.log(operationLog);
@@ -90,4 +84,18 @@ public class FreeLimitController {
         return WebUtils.success();
     }
 
+    /**
+     * 用户提交问卷结果
+     */
+    @RequestMapping(value = "/share", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser, @RequestBody FreeLimitResult result) {
+        Assert.notNull(loginUser, "用户不能为空");
+
+        operationEvaluateService.sendPromotionResult(loginUser.getId(), result.getScore(), result.getPercent());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("限免推广").function("测评").action("领取推广卡片").memo(result.getScore().toString());
+        operationLogService.log(operationLog);
+
+        return WebUtils.success();
+    }
 }

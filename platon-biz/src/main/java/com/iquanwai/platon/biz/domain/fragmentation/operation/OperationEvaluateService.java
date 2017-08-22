@@ -29,7 +29,7 @@ public interface OperationEvaluateService {
     /**
      * 微信后台推送结果卡片
      */
-    void sendPromotionResult(Integer profileId, Integer score);
+    void sendPromotionResult(Integer profileId, Integer score, Integer percent, Boolean learnFreeLimit);
     /**
      * 是否参加过此活动
      * */

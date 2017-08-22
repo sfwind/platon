@@ -64,57 +64,22 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
-    private static Map<Integer, String> evaResultTextMap = Maps.newHashMap(); // 测试结果
-    private static Map<Integer, String> freeAccessTextMap = Maps.newHashMap(); // 免费领取测评文案
-    private static Map<Integer, String> memberShipTextMap = Maps.newHashMap(); // 会员测评文案
-
+    // 免费领取测评文案
+    private static final String FREE_ACCESS_TEXT = "【免费领取】\n下方是你的测评结果海报，分享并邀请3人扫码并完成测试，即可免费领取【职场敏锐度强化包】";
+    // 已学过用户或会员
+    private static final String LEARNT_TEXT = "下方是你的测评结果海报。你的朋友们也和你一样机智吗？分享出来，让他们也检测一下吧！" +
+            "\n敢不敢分享到朋友圈，让你的朋友也挑战一下" +
+            "\n这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去保存并分享到朋友圈吧！";
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
-    private static final String problemUrl = ConfigUtils.domainName() + "/rise/static/plan/view?id=" + ConfigUtils.getTrialProblemId();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_4.png?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_4.png?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_4.png?imageslim"));
-
-        evaResultTextMap.put(1, "【测试结果】\n" +
-                "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
-                "\n" +
-                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='" + problemUrl + "'>戳这里</a>；要免费领取？见下方消息），让你的工作成果迅速提升，走上加薪升职之路。\n");
-        freeAccessTextMap.put(1, "【免费领取】\n" +
-                "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
-        evaResultTextMap.put(2, "【测试结果】\n" +
-                "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]\n" +
-                "但是有时候，你还是会觉得自己的付出得不到应有的回报。\n" +
-                "\n" +
-                "试着换一个姿势努力吧，使用【职场洞察力强化包】（¥99，真土豪，<a href='" + problemUrl + "'>戳这里</a>；要免费领取？见下方消息），让你一眼识破职场难题假象，不用加班也能升职加薪。");
-        freeAccessTextMap.put(2, "【免费领取】\n" +
-                "分享下方图片，邀请3人扫码并完成测试，即可免费领取【职场洞察力强化包】。");
-        evaResultTextMap.put(3, "【测试结果】\n" +
-                "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。\n" +
-                "看来你已经不需要圈外职场研究所价值¥99的<a href='" + problemUrl + "'>【职场洞察力强化包】</a>了，千万别点开！\n");
-        freeAccessTextMap.put(3, "【免费领取】\n" +
-                "当然，如果你好奇强化包的内容，可以分享下方图片，邀请3人扫码并完成测试，即可免费领取。");
-
-
-        memberShipTextMap.put(1, "【测试结果】\n" +
-                "你的职场洞察力不太稳定哦，平常大家都喜欢用“大智若愚”来形容你[嘿哈]有时候在工作中，你可能觉得自己的辛苦努力，总是很难得到认可？\n" +
-                "试着换一个姿势努力吧，点击<a href='" + problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
-                "\n" +
-                "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去分享下方图片（保存到相册，再发朋友圈）给他们吧");
-        memberShipTextMap.put(2, "【测试结果】\n" +
-                "你的职场洞察力打败了60%的人，你总能发现别人忽略的细节，大家都很认可你的意见[机智]但是有时候，你可能会觉得自己的付出得不到应有的回报。\n" +
-                "\n" +
-                "试着换一个姿势努力吧，点击<a href='" + problemUrl + "'>【找到本质问题，减少无效努力】</a>，给你的洞察力充个值。\n" +
-                "\n" +
-                "敢不敢分享下方图片（保存到相册，再发朋友圈），让你的朋友也来挑战一下[奸笑]");
-        memberShipTextMap.put(3, "【测试结果】\n" +
-                "你的职场洞察力逆天了！一眼就能看透问题的本质，生活工作都游刃有余。看来你一定是学过<a href='" + problemUrl + "'>【找到本质问题，减少无效努力】</a>小课了。\n" +
-                "\n" +
-                "你的朋友都和你一样机智吗？分享下方图片，让他们也来检测一下吧！");
+        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_5.png?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_5.png?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_5.png?imageslim"));
 
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
@@ -197,33 +162,28 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 微信后台推送结果卡片
      */
     @Override
-    public void sendPromotionResult(Integer profileId, Integer score) {
+    public void sendPromotionResult(Integer profileId, Integer score, Integer percent, Boolean learnFreeLimit) {
         Profile profile = accountService.getProfile(profileId);
         // 计算测评等级
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        if (isRiseMember(profileId)) {
-            // 会员
+        if (learnFreeLimit) {
+            // 已学过的用户或会员
             customerMessageService.sendCustomerMessage(
                     profile.getOpenid(),
-                    memberShipTextMap.get(level),
+                    LEARNT_TEXT,
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT
             );
         } else {
-            // 非会员
+            // 未学过的用户
             customerMessageService.sendCustomerMessage(
                     profile.getOpenid(),
-                    evaResultTextMap.get(level),
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    freeAccessTextMap.get(level),
+                    FREE_ACCESS_TEXT,
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT
             );
         }
-        BufferedImage bufferedImage = generateResultPic(profileId, level);
+        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
         Assert.notNull(bufferedImage, "生成图片不能为空");
 
         // 发送图片消息
@@ -253,7 +213,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 生成结果图片
-    private BufferedImage generateResultPic(Integer profileId, Integer level) {
+    private BufferedImage generateResultPic(Integer profileId, Integer level, Integer percent) {
         BufferedImage targetImage = targetImageMap.get(level);
         BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
         BufferedImage headImage = loadHeadImage(profileId);
@@ -277,8 +237,10 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Profile profile = accountService.getProfile(profileId);
 
-        targetImage = ImageUtils.writeText(targetImage, getXPosition(CommonUtils.filterEmoji(profile.getNickname())), 470, profile.getNickname(),
-                font.deriveFont(48f), new Color(255, 255, 255));
+        targetImage = ImageUtils.writeText(targetImage, 280, 320,profile.getNickname()+"的职场敏锐度",
+                font.deriveFont(30f), new Color(255, 255, 255));
+        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+percent+"%的人",
+                font.deriveFont(30f), new Color(255, 255, 255));
         return targetImage;
     }
 
@@ -552,4 +514,27 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 return new Random().nextInt(10) + 10;
         }
     }
+
+//    public static void main(String[] args) throws Exception{
+//        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_5.png?imageslim");
+////        BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
+////        BufferedImage headImage = loadHeadImage(profileId);
+////
+//        InputStream in = OperationEvaluateServiceImpl.class.getResourceAsStream("/fonts/pfmedium.ttf");
+//        Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+////
+////        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
+////        qrImage = ImageUtils.scaleByPercentage(qrImage, 214, 214);
+////        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
+////        headImage = ImageUtils.convertCircular(headImage);
+////
+////        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1025);
+////        targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
+//
+//        targetImage = ImageUtils.writeText(targetImage, 280, 320,profile.getNickname()+"的职场敏锐度",
+//                font.deriveFont(30f), new Color(255, 255, 255));
+//        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+percent+"%的人",
+//                font.deriveFont(30f), new Color(255, 255, 255));
+//        ImageIO.write(targetImage, "jpg", new File("/Users/justin/1.jpg"));
+//    }
 }
