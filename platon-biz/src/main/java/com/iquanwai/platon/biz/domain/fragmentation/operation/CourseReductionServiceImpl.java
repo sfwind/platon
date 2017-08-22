@@ -72,26 +72,34 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         String sendMsg;
         if (activity.getProblemId() != null) {
             Problem problem = cacheService.getProblem(activity.getProblemId());
-            sendMsg = "你已经领取了粉丝优惠通道：\uD83D\uDC47\n" +
+            sendMsg = profile.getNickname() + "（用户名称），果然只有机智的人才能成为张鹏的真爱粉[嘿哈]\n" +
                     "\n" +
+                    "对于真爱粉，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
+                    "\n" +
+                    "礼包内含：张鹏定制小课+圈圈定制思考力小课+粉丝群通行证\n" +
+                    "\n" +
+                    "点击下方链接即可购买\uD83D\uDC47\n\n" +
                     "<a href='" + ConfigUtils.adapterDomainName() +
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
                     "&free=true'>『" + problem.getProblem() + "』</a>\n" +
                     "------------\n" +
-                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
-                    "\n" +
-                    "这里就是上课的教室，强烈建议点击右上角置顶哦~";
+                    "P. S. 你也可以成为张鹏义务后援团，转发下方海报让更多人知道boy";
         } else {
-            sendMsg = "你已经领取了多门课程的粉丝优惠通道：\uD83D\uDC47\n" +
+            sendMsg = profile.getNickname() + "（用户名称），果然只有机智的人才能成为张鹏的真爱粉[嘿哈]\n" +
                     "\n" +
-                    "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
+                    "对于真爱粉，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
                     "\n" +
-                    "这里就是上课的教室，强烈建议点击右上角置顶哦~";
+                    "礼包内含：张鹏定制小课+圈圈定制思考力小课+粉丝群通行证\n" +
+                    "\n" +
+                    "点击\"上课啦\"开始上课" +
+                    "P. S. 你也可以成为张鹏义务后援团，转发下方海报让更多人知道boy";
         }
 
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        // 发送海报
+        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), "", Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.ScanCode);
@@ -118,7 +126,6 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         Pair<CourseReductionActivity, PromotionLevel> pair = this.loadRecentCourseReduction(profile.getId(), Integer.parseInt(quanwaiOrder.getGoodsId()));
         if (pair != null) {
             logger.info("记录优惠使用情况:{}", quanwaiOrder);
-            CourseReductionActivity courseReductionActivity = pair.getLeft();
             PromotionLevel promotionLevel = pair.getRight();
 
             PromotionActivity activity = new PromotionActivity();
@@ -130,9 +137,31 @@ public class CourseReductionServiceImpl implements CourseReductionService {
             } else if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_RISE_COURSE)) {
                 // 小课
                 activity.setAction(PromotionConstants.CourseReductionAction.PayCourse);
+                // TODO 8.31日0点删除
+                PromotionActivity temp = new PromotionActivity();
+                temp.setProfileId(profile.getId());
+                temp.setActivity(promotionLevel.getActivity());
+                temp.setAction(PromotionConstants.CourseReductionAction.PayZhangPeng);
+                promotionActivityDao.insertPromotionActivity(temp);
             }
             promotionActivityDao.insertPromotionActivity(activity);
         }
+    }
+
+    // TODO 8.31日0点删除
+    @Override
+    public Boolean isPayZhangPeng(Integer profileId){
+        List<PromotionLevel> promotionLevels = promotionLevelDao.loadByRegex(PromotionConstants.Activities.CourseReduction, profileId);
+        for (PromotionLevel promotionLevel : promotionLevels) {
+            List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profileId, promotionLevel.getActivity());
+            for (PromotionActivity activity : promotionActivities) {
+                if (activity.getAction() == PromotionConstants.CourseReductionAction.PayZhangPeng) {
+                    // 购买张鹏课程
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 

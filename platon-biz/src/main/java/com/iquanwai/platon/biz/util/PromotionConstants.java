@@ -28,6 +28,8 @@ public interface PromotionConstants {
         int ScanCode = 20; // 扫二维码
         int PayCourse = 21; // 购买小课
         int PayMember = 22; // 购买会员
+        // TODO 会删除
+        int PayZhangPeng = 23; // 购买张鹏小课
     }
 
 }
