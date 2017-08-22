@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -48,6 +49,8 @@ public class ProblemController {
     private WhiteListService whiteListService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private CourseReductionService courseReductionService;
 
 
     @RequestMapping("/load")
@@ -137,7 +140,7 @@ public class ProblemController {
         return WebUtils.result(result);
     }
 
-    private Integer problemSort(Problem left,Problem right){
+    private Integer problemSort(Problem left, Problem right) {
         // 限免》首发》new》有用度排序
         // 1000 > 500 > 300 > usefulScore
         Double leftScore;
@@ -282,6 +285,17 @@ public class ProblemController {
 
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
         Integer buttonStatus = planService.problemIntroductionButtonStatus(isMember, problemId, plan, autoOpen);
+        // TODO 8.31日0点删除掉
+        if (!isMember && problemId.equals(ConfigUtils.getTrialProblemId())) {
+            // 非会员，限免小课
+            // 查看是否做过张鹏的活动
+            Boolean isPayZhangpeng = courseReductionService.isPayZhangPeng(loginUser.getId());
+            if (isPayZhangpeng && plan == null) {
+                // 做过张鹏的活动,31号之前只有张鹏的活动.....
+                buttonStatus = 5;// 限免
+            }
+        }
+
         if (plan != null) {
             dto.setPlanId(plan.getId());
         }
