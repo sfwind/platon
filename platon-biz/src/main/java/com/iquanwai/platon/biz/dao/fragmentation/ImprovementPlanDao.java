@@ -127,6 +127,16 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
+    public void updateCloseTime(Integer planId, Date date) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE ImprovementPlan SET CloseTime = ? WHERE Id = ?";
+        try {
+            runner.update(sql, date, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public void updateProgress(Integer planId, Integer series){
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET CompleteSeries=? where Id=?";

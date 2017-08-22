@@ -10,10 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.io.File;
-import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 @Component
 public class ConfigUtils {
@@ -325,6 +322,10 @@ public class ConfigUtils {
             scoreMap.put(i + 1, Integer.parseInt(split[i]));
         }
         return scoreMap;
+    }
+
+    public static Date getMonthlyCampEndDate() {
+        return DateUtils.parseStringToDate(getValue("monthly.camp.end.date"));
     }
 
 }
