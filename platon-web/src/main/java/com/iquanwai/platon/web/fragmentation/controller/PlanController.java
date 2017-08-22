@@ -141,7 +141,7 @@ public class PlanController {
                 }
                 break;
             }
-            case 3: {
+            case 5: {
                 // 限免小课试用
                 if (!problemId.equals(freeProblemId)) {
                     // 不是限免小课
