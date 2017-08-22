@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -30,9 +29,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PlanServiceImpl implements PlanService {
-
-    @Autowired
-    private AccountService accountService;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
@@ -146,14 +142,6 @@ public class PlanServiceImpl implements PlanService {
         } else {
             // 未关闭 ,未关闭的都显示
             improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-//
-//            if (improvementPlan.getRiseMember()) {
-//                // 会员 显示关闭时间
-//                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-//            } else {
-//                // 非会员，不显示
-//                improvementPlan.setDeadline(-1);
-//            }
         }
     }
 
@@ -296,20 +284,10 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
-
-//        if (riseMember) {
         if (plans.size() >= 2) {
             // 会员已经有两门再学
             return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
         }
-//        }
-
-//        else {
-//            if (plans.size() >= 1) {
-//                // 非会员已经有一门了，则不可再选
-//                return new MutablePair<>(-2, "试用版是能试用一门小课哦");
-//            }
-//        }
 
         return new MutablePair<>(1, "");
     }

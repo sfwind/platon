@@ -141,7 +141,7 @@ public class PlanController {
                 }
                 break;
             }
-            case 3: {
+            case 5: {
                 // 限免小课试用
                 if (!problemId.equals(freeProblemId)) {
                     // 不是限免小课
@@ -151,9 +151,6 @@ public class PlanController {
                     if (plan != null) {
                         // 已经试用过了
                         return WebUtils.error("您已经试用过该小课，无法重复试用");
-                    } else {
-                        // 没有试用过
-                        LOGGER.error("数据异常，请联系管理员 {}", loginUser.getOpenId());
                     }
                 }
                 break;

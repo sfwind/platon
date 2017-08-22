@@ -8,6 +8,7 @@ public interface PromotionConstants {
     interface Activities {
         String FreeLimit = "freeLimit";
         String Evaluate = "evaluate";
+        String CourseReduction = "courseReduction";
     }
 
     interface FreeLimitAction {
@@ -22,6 +23,14 @@ public interface PromotionConstants {
         int FinishEvaluate = 13; // 完成测评
         int BuyCourse = 14; // 付费购买小课
         int AccessTrial = 15; // 完成推广人数要求，获得学习限免小课资格
+    }
+
+    interface CourseReductionAction {
+        int ScanCode = 20; // 扫二维码
+        int PayCourse = 21; // 购买小课
+        int PayMember = 22; // 购买会员
+        // TODO 会删除
+        int PayZhangPeng = 23; // 购买张鹏小课
     }
 
 }

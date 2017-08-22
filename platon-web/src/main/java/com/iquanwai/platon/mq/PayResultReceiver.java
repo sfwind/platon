@@ -1,6 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -30,6 +31,8 @@ public class PayResultReceiver {
     private AccountService accountService;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
+    @Autowired
+    private CourseReductionService courseReductionService;
 
     @PostConstruct
     public void init(){
@@ -43,6 +46,8 @@ public class PayResultReceiver {
                 Profile profile = accountService.getProfile(quanwaiOrder.getOpenid());
                 Assert.notNull(profile, "付费用户不能为空");
                 operationEvaluateService.recordPayAction(profile.getId());
+                // 优惠推广活动
+                courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
             }
         });
     }
