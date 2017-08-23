@@ -16,6 +16,8 @@ import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.*;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +66,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
+    private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 预先加载好所有背景图
+    private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 预先加载好所有背景图
     // 免费领取测评文案
     private static final String FREE_ACCESS_TEXT = "【免费领取】\n下方是你的测评结果海报，分享并邀请3人扫码并完成测试，即可免费领取【职场敏锐度强化包】";
     // 已学过用户或会员
@@ -80,6 +84,28 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_5.png?imageslim"));
         targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_5.png?imageslim"));
         targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_5.png?imageslim"));
+
+        evaluateResultMap.put(1, "你的职场洞察力还没有得到开发和施展。你努力地工作生活，但常常感到受压抑，因为面对问题时，你更多地采用个人的主观评判，可能忽视了问题的本质原因，从而不能很有效地解决问题。");
+        evaluateResultMap.put(2, "拥有敏锐度潜力的你，比较关注细节，能够准确地把握事实；但有时候，因为没有把潜力发挥出来，而做了一些无用功，觉得自己的付出得不到应有的回报，难免有点小失望。");
+        evaluateResultMap.put(3, "你的职场敏锐度天赋很高，很快就能洞悉问题本质，人际交往中，往往也能准确领会他人的意图。");
+
+        suggestionMap.put(1, "你需要在工作中充分运用你的敏锐度天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
+                "\n" +
+                "如果你想要挖掘、并在职场中运用自己的敏锐度天赋，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "\n" +
+                "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
+
+        suggestionMap.put(2, "建议你掌握更多的提问技巧，挖掘他人隐藏的真实需求；同时提升自己的分析能力，遇到难题时，先去找到根本原因，再根据关键程度和解决成本，定位最有价值的问题。当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
+                "\n" +
+                "如果你想要充分发挥自己的敏锐度潜力，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "\n" +
+                "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
+
+        suggestionMap.put(3, "你需要开始发力去增强自己的敏锐度并应用在职场中，在面对棘手问题时，有意识地使用一些技巧，例如提问的技巧、了解他人背景挖掘他人需求的技巧等，防止盲目的决策和行动。当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
+                "\n" +
+                "如果你想要充分开发和增强自己的敏锐度，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "\n" +
+                "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
 
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
@@ -112,7 +138,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 完成测评
      */
     @Override
-    public void completeEvaluate(Integer profileId, Integer score) {
+    public Pair<String, String> completeEvaluate(Integer profileId, Integer score) {
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel != null) {
@@ -124,6 +150,10 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 checkAwardAndSendMsg(profileId);
             }
         }
+
+        Integer level = calcLevel(score);
+
+        return new ImmutablePair<>(evaluateResultMap.get(level), suggestionMap.get(level));
     }
 
     /**
@@ -203,7 +233,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     // 根据得分计算得分 level
     private Integer calcLevel(Integer score) {
-        if (score >= 8) {
+        if (score >= 7) {
             return 3;
         } else if (score >= 3) {
             return 2;
@@ -476,25 +506,23 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Integer getDefeatPercent(Integer score) {
         switch (score) {
             case 0:
-                return new Random().nextInt(10) + 10;
+                return new Random().nextInt(20) + 10;
             case 1:
-                return new Random().nextInt(10) + 20;
+                return new Random().nextInt(20) + 30;
             case 2:
-                return new Random().nextInt(10) + 40;
-            case 3:
                 return new Random().nextInt(10) + 50;
-            case 4:
+            case 3:
                 return new Random().nextInt(10) + 60;
-            case 5:
+            case 4:
                 return new Random().nextInt(10) + 70;
-            case 6:
+            case 5:
                 return new Random().nextInt(10) + 80;
-            case 7:
+            case 6:
                 return new Random().nextInt(5) + 90;
-            case 8:
+            case 7:
                 return new Random().nextInt(5) + 95;
             default:
-                return new Random().nextInt(10) + 10;
+                return new Random().nextInt(10);
         }
     }
 

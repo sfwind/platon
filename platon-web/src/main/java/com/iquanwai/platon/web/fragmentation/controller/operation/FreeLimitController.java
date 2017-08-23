@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -52,13 +53,15 @@ public class FreeLimitController {
     public ResponseEntity<Map<String, Object>> submitEva(LoginUser loginUser, @PathVariable Integer score) {
         Assert.notNull(loginUser, "用户不能为空");
         FreeLimitResult result = new FreeLimitResult();
-        operationEvaluateService.completeEvaluate(loginUser.getId(), score);
+        Pair<String, String> pairs = operationEvaluateService.completeEvaluate(loginUser.getId(), score);
         Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
         if (learnBefore || loginUser.getRiseMember() == 1) {
             result.setLearnFreeLimit(true);
         } else {
             result.setLearnFreeLimit(false);
         }
+        result.setResult(pairs.getLeft());
+        result.setSuggestion(pairs.getRight());
         operationEvaluateService.sendPromotionResult(loginUser.getId(), score, result.getLearnFreeLimit());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

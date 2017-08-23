@@ -13,9 +13,7 @@ import com.iquanwai.platon.biz.po.EssenceCard;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
+import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -63,6 +61,8 @@ public class CardRepositoryImpl implements CardRepository {
     private Map<Integer, String> thumbnailMap = Maps.newHashMap();
 
     private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
+
+    private static final String CARD_ACTIVITY = PromotionConstants.Activities.Evaluate;
 
     @PostConstruct
     public void init() {
@@ -112,7 +112,7 @@ public class CardRepositoryImpl implements CardRepository {
         BufferedImage targetImage = loadTargetImageByChapterId(chapterId, totalSize);
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         // QrImage
-        BufferedImage qrImage = loadQrImage("freeLimit_" + profile.getId() + "_" + problemId);
+        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + problemId);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1092);
         // HeadImage
@@ -311,7 +311,7 @@ public class CardRepositoryImpl implements CardRepository {
         BufferedImage targetImage = pandaCard;
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         // QrImage
-        BufferedImage qrImage = loadQrImage("freeLimit_" + profile.getId() + "_" + ConfigUtils.getTrialProblemId());
+        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + ConfigUtils.getTrialProblemId());
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1092);
         // HeadImage

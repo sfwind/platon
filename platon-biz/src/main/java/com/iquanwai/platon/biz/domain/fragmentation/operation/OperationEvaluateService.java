@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 /**
  * Created by xfduan on 2017/8/14.
  */
@@ -12,7 +14,7 @@ public interface OperationEvaluateService {
     /**
      * 完成测评
      */
-    void completeEvaluate(Integer profileId, Integer score);
+    Pair<String, String> completeEvaluate(Integer profileId, Integer score);
     /**
      * 免费试用限免课权限校验
      */
