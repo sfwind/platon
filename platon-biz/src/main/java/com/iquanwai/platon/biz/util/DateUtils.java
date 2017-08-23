@@ -111,6 +111,14 @@ public class DateUtils {
         return isSameDate;
     }
 
+    public static Integer getYear(Date date) {
+        return new DateTime(date).getYear();
+    }
+
+    public static Integer getMonth(Date date) {
+        return new DateTime(date).getMonthOfYear();
+    }
+
     public static Date endDateOfMonth(Integer month) {
         DateTime date = new DateTime().monthOfYear().setCopy(month).dayOfMonth().withMaximumValue();
         return date.toDate();

@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
@@ -10,8 +9,8 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -592,7 +590,9 @@ public class PlanServiceImpl implements PlanService {
                 // 是会员，显示按钮"选择该小课"
                 buttonStatus = 2;
             } else {
+                // 不是会员
                 if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+                    // 当前课程正好是限免小课
                     if (autoOpen != null && autoOpen) {
                         // 限免小课自动开课，显示"下一步"
                         buttonStatus = 7;
@@ -601,17 +601,13 @@ public class PlanServiceImpl implements PlanService {
                         buttonStatus = 5;
                     }
                 } else {
-                    // 不是会员，查询一下这个小课是不是限免小课
-                    JSONObject json = JSONObject.parseObject(ConfigUtils.getRequiredClassSchedule());
-                    // 当前这门小课应该的月份，
-                    Integer month = json.getInteger("problem_" + problemId);
-                    Calendar cal = Calendar.getInstance();
-                    if (month != null && month == cal.get(Calendar.MONTH)) {
-                        // 是当月的限免小课
-                        buttonStatus = 8;
-
+                    // 当前课程不是限免小课
+                    MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
+                    if (schedule.getMonth().equals(DateUtils.getMonth(new Date()))) {
+                        // 是当月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
+                        buttonStatus = 9;
                     } else {
-                        // 不是限免小课，显示"¥ {fee}，立即学习"
+                        // 不是当月的训练营小课，显示"¥ {fee}，立即学习"
                         buttonStatus = 1;
                     }
                 }
@@ -674,17 +670,15 @@ public class PlanServiceImpl implements PlanService {
     private void forceOpenProblem(Integer profileId, Integer problemId) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
-        if(improvementPlan == null) {
+        if (improvementPlan == null) {
             // 用户从来没有开过小课，新开小课
             Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
             improvementPlanDao.updateCloseTime(planId, ConfigUtils.getMonthlyCampEndDate());
-            // TODO 发个小课重开消息
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
             improvementPlanDao.updateCloseTime(improvementPlan.getId(), ConfigUtils.getMonthlyCampEndDate());
-            // TODO 发个解锁消息
         }
     }
 
