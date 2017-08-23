@@ -88,9 +88,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         evaluateResultMap.put(2, "拥有敏锐度潜力的你，比较关注细节，能够准确地把握事实；但有时候，因为没有把潜力发挥出来，而做了一些无用功，觉得自己的付出得不到应有的回报，难免有点小失望。");
         evaluateResultMap.put(3, "你的职场敏锐度天赋很高，很快就能洞悉问题本质，人际交往中，往往也能准确领会他人的意图。");
 
-        suggestionMap.put(1, "你需要在工作中充分运用你的敏锐度天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
+        suggestionMap.put(1, "你需要开始发力去增强自己的敏锐度并应用在职场中，在面对棘手问题时，有意识地使用一些技巧，例如提问的技巧、了解他人背景挖掘他人需求的技巧等，防止盲目的决策和行动。当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
                 "\n" +
-                "如果你想要挖掘、并在职场中运用自己的敏锐度天赋，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "如果你想要充分开发和增强自己的敏锐度，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
                 "\n" +
                 "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
 
@@ -100,9 +100,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "\n" +
                 "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
 
-        suggestionMap.put(3, "你需要开始发力去增强自己的敏锐度并应用在职场中，在面对棘手问题时，有意识地使用一些技巧，例如提问的技巧、了解他人背景挖掘他人需求的技巧等，防止盲目的决策和行动。当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
+        suggestionMap.put(3, "你需要在工作中充分运用你的敏锐度天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
                 "\n" +
-                "如果你想要充分开发和增强自己的敏锐度，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "如果你想要挖掘、并在职场中运用自己的敏锐度天赋，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
                 "\n" +
                 "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
 
@@ -174,7 +174,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Integer level = calcLevel(score);
 
-        return new ImmutablePair<>(evaluateResultMap.get(level), suggestionMap.get(level));
+        if(freeLimit){
+            return new ImmutablePair<>(evaluateResultMap.get(level), freeSuggestionMap.get(level));
+        }else{
+            return new ImmutablePair<>(evaluateResultMap.get(level), suggestionMap.get(level));
+        }
     }
 
     /**
