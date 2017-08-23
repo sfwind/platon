@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class FreeLimitResult {
-    private Integer percent; // 打败多少用户
     private Boolean learnFreeLimit; //是否学过限免课程
-    private Integer score;
+    private String result; //测评结果
+    private String suggestion; //测评建议
 }

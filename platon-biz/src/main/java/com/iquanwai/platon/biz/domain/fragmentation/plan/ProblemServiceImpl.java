@@ -4,11 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,10 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.misc.BASE64Encoder;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,8 +32,6 @@ public class ProblemServiceImpl implements ProblemService {
     private ProblemExtensionDao problemExtensionDao;
     @Autowired
     private ProblemActivityDao problemActivityDao;
-    @Autowired
-    private AccountService accountService;
     @Autowired
     private ProblemDao problemDao;
     @Autowired
@@ -185,24 +177,7 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
-        Integer totalSize;
-        Problem problem = cacheService.getProblem(problemId);
-        if (problem != null) {
-            totalSize = problem.getChapterList().size();
-        } else {
-            return null;
-        }
-
-        // QrImage
-        Profile profile = accountService.getProfile(profileId);
-        BufferedImage targetImage = cardRepository.loadEssenceCardImg(profile, problemId, chapterId, totalSize);
-        if (targetImage == null) {
-            return null;
-        }
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
-        BASE64Encoder encoder = new BASE64Encoder();
-        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId);
     }
 
     @Override

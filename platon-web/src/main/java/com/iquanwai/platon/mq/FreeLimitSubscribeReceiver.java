@@ -66,30 +66,6 @@ public class FreeLimitSubscribeReceiver {
                 operationFreeLimitService.recordPromotionLevel(openId, scene);
                 String sendMsg;
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
-                    // 限免课
-                    // if (event.equalsIgnoreCase(SUBSCRIBE)) {
-                    //     sendMsg = "你要的限免课程在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
-                    //             "\n" +
-                    //             "<a href='" + ConfigUtils.adapterDomainName() +
-                    //             "/rise/static/plan/view?id=" +
-                    //             ConfigUtils.getTrialProblemId() +
-                    //             "&free=true'>『" + freeProblemName + "』</a>\n" +
-                    //             "------------\n" +
-                    //             "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n" +
-                    //             "\n" +
-                    //             "这里就是上课的教室，强烈建议点击右上角置顶哦~";
-                    //     customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    // } else if (event.equalsIgnoreCase(SCAN)) {
-                    //     sendMsg = "你要的限免课程在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
-                    //             "\n" +
-                    //             "<a href='" + ConfigUtils.adapterDomainName() +
-                    //             "/rise/static/plan/view?id=" +
-                    //             ConfigUtils.getTrialProblemId() +
-                    //             "&free=true'>『" + freeProblemName + "』</a>\n" +
-                    //             "------------\n" +
-                    //             "P. S. 完成小课章节有神秘卡片，注意收集[机智]\n";
-                    //     customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    // }
                     sendMsg = "欢迎来到【圈外职场研究所】\n\n" +
                             "有一种职场天赋，能让人：\n\n" +
                             "<li>从不加班，还能不断升职</li>\n" +
@@ -99,7 +75,7 @@ public class FreeLimitSubscribeReceiver {
                             "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场敏锐度检测</a>";
                 } else {
                     // 非限免
-                    sendMsg = "你要的小课在这里，名额有限，速速点击领取：\uD83D\uDC47\n" +
+                    sendMsg = "欢迎来到圈外，你刚才扫码的课程在这里，点击查看：\n" +
                             "\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
                             "/rise/static/plan/view?id=" +
@@ -108,12 +84,9 @@ public class FreeLimitSubscribeReceiver {
                             "\n" +
                             "完成限免小课章节有神秘卡片哦，注意收集[机智]\n" +
                             "------------\n" +
-                            "P. S. 正好有一门小课限免，感兴趣可以戳：\n" +
-                            "\n" +
+                            "P. S. 你是高敏锐度的职场人吗？\n\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
-                            "/rise/static/plan/view?id=" +
-                            ConfigUtils.getTrialProblemId() +
-                            "'>『" + freeProblemName + "』</a>";
+                            "/rise/static/eva/start'>『点击开始测试』</a>";
                 }
                 customerMessageService.sendCustomerMessage(openId, sendMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }

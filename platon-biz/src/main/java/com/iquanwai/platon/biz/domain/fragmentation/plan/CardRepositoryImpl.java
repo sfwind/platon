@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
@@ -20,10 +22,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -46,6 +50,8 @@ public class CardRepositoryImpl implements CardRepository {
     private AccountService accountService;
     @Autowired
     private QRCodeService qrCodeService;
+    @Autowired
+    private CacheService cacheService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -84,8 +90,17 @@ public class CardRepositoryImpl implements CardRepository {
     }
 
     @Override
-    public BufferedImage loadEssenceCardImg(Profile profile, Integer problemId, Integer chapterId, int totalSize) {
+    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
         InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
+        Integer totalSize;
+        Problem problem = cacheService.getProblem(problemId);
+        if (problem != null) {
+            totalSize = problem.getChapterList().size();
+        } else {
+            return null;
+        }
+
+        Profile profile = accountService.getProfile(profileId);
         Font font;
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
@@ -142,7 +157,10 @@ public class CardRepositoryImpl implements CardRepository {
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
 
-        return targetImage;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
+        BASE64Encoder encoder = new BASE64Encoder();
+        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
     }
 
     // 获取二维码，场景值变化

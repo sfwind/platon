@@ -111,7 +111,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 完成测评
      */
     @Override
-    public Integer completeEvaluate(Integer profileId, Integer score) {
+    public void completeEvaluate(Integer profileId, Integer score) {
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel != null) {
@@ -123,8 +123,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 checkAwardAndSendMsg(profileId);
             }
         }
-
-        return getDefeatPercent(score);
     }
 
     /**
@@ -161,7 +159,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 微信后台推送结果卡片
      */
     @Override
-    public void sendPromotionResult(Integer profileId, Integer score, Integer percent, Boolean learnFreeLimit) {
+    public void sendPromotionResult(Integer profileId, Integer score, Boolean learnFreeLimit) {
         Profile profile = accountService.getProfile(profileId);
         // 计算测评等级
         Integer level = calcLevel(score);
@@ -182,6 +180,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT
             );
         }
+
+        Integer percent = getDefeatPercent(score);
         BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
         Assert.notNull(bufferedImage, "生成图片不能为空");
 

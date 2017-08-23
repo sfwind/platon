@@ -12,7 +12,7 @@ public interface OperationEvaluateService {
     /**
      * 完成测评
      */
-    Integer completeEvaluate(Integer profileId, Integer score);
+    void completeEvaluate(Integer profileId, Integer score);
     /**
      * 免费试用限免课权限校验
      */
@@ -29,7 +29,7 @@ public interface OperationEvaluateService {
     /**
      * 微信后台推送结果卡片
      */
-    void sendPromotionResult(Integer profileId, Integer score, Integer percent, Boolean learnFreeLimit);
+    void sendPromotionResult(Integer profileId, Integer score, Boolean learnFreeLimit);
     /**
      * 是否参加过此活动
      * */

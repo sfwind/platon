@@ -52,15 +52,14 @@ public class FreeLimitController {
     public ResponseEntity<Map<String, Object>> submitEva(LoginUser loginUser, @PathVariable Integer score) {
         Assert.notNull(loginUser, "用户不能为空");
         FreeLimitResult result = new FreeLimitResult();
-        Integer percent = operationEvaluateService.completeEvaluate(loginUser.getId(), score);
-        result.setPercent(percent);
+        operationEvaluateService.completeEvaluate(loginUser.getId(), score);
         Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
         if (learnBefore || loginUser.getRiseMember() == 1) {
             result.setLearnFreeLimit(true);
         } else {
             result.setLearnFreeLimit(false);
         }
-        operationEvaluateService.sendPromotionResult(loginUser.getId(), score, percent, result.getLearnFreeLimit());
+        operationEvaluateService.sendPromotionResult(loginUser.getId(), score, result.getLearnFreeLimit());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());

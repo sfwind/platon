@@ -229,24 +229,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         }
     }
 
-    @Override
-    public void sendCustomerMsg(String openId) {
-        Profile profile = accountService.getProfile(openId);
-        //先发文字,后发图片
-        customerMessageService.sendCustomerMessage(openId, "Hi，" + profile.getNickname() + "，" +
-                        "你已领取限免课程：找到本质问题，减少无效努力\n\n如需继续学习，请点击下方按钮“上课啦”\n\n" +
-                        "\uD83D\uDC47送你一张专属知识卡+30个好友免费学习名额，立即分享出去吧！",
-                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        BufferedImage bufferedImage = cardRepository.loadDefaultCardImg(profile);
-        if (bufferedImage != null) {
-            // 发送图片消息
-            String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profile.getId() + ".jpg";
-            String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
-            customerMessageService.sendCustomerMessage(openId, mediaId,
-                    Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-        }
-    }
-
     /**
      * 发送成功推广信息
      * @param targetOpenId 目标用户 openId

@@ -48,9 +48,9 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private RiseCourseDao riseCourseDao;
     @Autowired
-    private ProblemService problemService;
-    @Autowired
     private OperationEvaluateService operationEvaluateService;
+    @Autowired
+    private CardRepository cardRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -59,10 +59,7 @@ public class PlanServiceImpl implements PlanService {
         //解锁检查
         Integer series = improvementPlan.getCompleteSeries();
         Integer planId = improvementPlan.getId();
-//        if ((!improvementPlan.getRiseMember() && series >= 3)) {
-//            improvementPlan.setLockedStatus(-2);
-//        } else
-//
+
         //已过期不能解锁
         if (improvementPlan.getStatus() == ImprovementPlan.CLOSE
                 || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE
@@ -545,7 +542,7 @@ public class PlanServiceImpl implements PlanService {
         }
         // 当前章节 和 完成章节相等
         if (isLearningSuccess) {
-            return problemService.loadEssenceCardImg(profileId, problemId, targetChapterId);
+            return cardRepository.loadEssenceCardImg(profileId, problemId, targetChapterId);
         } else {
             return null;
         }

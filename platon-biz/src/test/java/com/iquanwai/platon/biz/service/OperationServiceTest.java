@@ -19,11 +19,6 @@ public class OperationServiceTest extends TestBase {
     private CustomerMessageService customerMessageService;
 
     @Test
-    public void testSendCustomerMsg(){
-        operationFreeLimitService.sendCustomerMsg("o-Es21RVF3WCFQMOtl07Di_O9NVo");
-    }
-
-    @Test
     public void testSendInvitationMsg(){
 //        String[] list = {
 //                "oWo9HwvvQGd0MmdTNGEceP0UrzyU",
