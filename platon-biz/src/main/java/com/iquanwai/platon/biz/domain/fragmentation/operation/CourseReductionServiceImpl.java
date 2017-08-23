@@ -95,8 +95,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "<a href='" + ConfigUtils.adapterDomainName() +
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
-                    "&free=true'>『" + problem.getProblem() + "』</a>\n" +
-                    "------------\n";
+                    "&free=true'>『" + problem.getProblem() + "』</a>\n";
         } else {
             sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
                     "\n" +
