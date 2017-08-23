@@ -602,9 +602,10 @@ public class PlanServiceImpl implements PlanService {
                     }
                 } else {
                     // 当前课程不是限免小课
-                    MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
-                    if (schedule.getMonth().equals(DateUtils.getMonth(new Date()))) {
-                        // 是当月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
+                    List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
+                    List<Integer> scheduleProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+                    if (scheduleProblemIds.contains(problemId)) {
+                        // 是当前配置月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
                         buttonStatus = 9;
                     } else {
                         // 不是当月的训练营小课，显示"¥ {fee}，立即学习"

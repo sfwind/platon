@@ -232,24 +232,25 @@ public class ConfigUtils {
     /**
      * 获取限免小课 ProblemId
      */
-	public static Integer getTrialProblemId(){
-		return getIntValue("rise.trial.problem.id");
-	}
-	public static Double getRiseCourseFee(){
-		return getDoubleValue("rise.course.fee");
-	}
+    public static Integer getTrialProblemId() {
+        return getIntValue("rise.trial.problem.id");
+    }
 
-	public static Double getDoubleValue(String key){
-		if (config.hasPath(key)) {
-			return config.getDouble(key);
-		} else {
-			Double value = zkConfigUtils.getDoubleValue(key);
-			if (value == null) {
-				value = zkConfigUtils.getDoubleValue(key);
-			}
-			return value;
-		}
-	}
+    public static Double getRiseCourseFee() {
+        return getDoubleValue("rise.course.fee");
+    }
+
+    public static Double getDoubleValue(String key) {
+        if (config.hasPath(key)) {
+            return config.getDouble(key);
+        } else {
+            Double value = zkConfigUtils.getDoubleValue(key);
+            if (value == null) {
+                value = zkConfigUtils.getDoubleValue(key);
+            }
+            return value;
+        }
+    }
 
     public static String getWelcomeMsg() {
         return getValue("login.welcome.msg");
@@ -300,7 +301,7 @@ public class ConfigUtils {
     /**
      * rise小课测试状态
      */
-    public static Boolean getRiseCoursePayTestStatus(){
+    public static Boolean getRiseCoursePayTestStatus() {
         return getBooleanValue("rise.course.pay.test");
     }
 
@@ -314,7 +315,7 @@ public class ConfigUtils {
     /**
      * 获取应用练习得分列表
      */
-    public static Map<Integer, Integer> getWorkScoreMap(){
+    public static Map<Integer, Integer> getWorkScoreMap() {
         String scores = getValue("work.difficulty.score");
         String[] split = scores.split(",");
         Map<Integer, Integer> scoreMap = Maps.newHashMap();
@@ -322,6 +323,27 @@ public class ConfigUtils {
             scoreMap.put(i + 1, Integer.parseInt(split[i]));
         }
         return scoreMap;
+    }
+
+    /**
+     * 获取每月训练营小课对应生效月份
+     */
+    public static Integer getMonthlyCampMonth() {
+        return getIntValue("monthly.camp.month");
+    }
+
+    /**
+     * 获取每月训练营小课对应的金额
+     */
+    public static Double getMonthlyCampFee() {
+        return getDoubleValue("monthly.camp.fee");
+    }
+
+    /**
+     * 获取当前训练营小课生成的 ClassId
+     */
+    public static String getMonthlyCampClassId() {
+        return getValue("monthly.camp.classId");
     }
 
     public static Date getMonthlyCampEndDate() {
