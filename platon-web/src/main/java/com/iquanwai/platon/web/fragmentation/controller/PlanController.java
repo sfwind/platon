@@ -79,9 +79,7 @@ public class PlanController {
      * 1.会员可以选两门<br/>
      */
     @RequestMapping(value = "/choose/problem/check/{problemId}/{type}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser,
-                                                               @PathVariable(value = "problemId") Integer problemId,
-                                                               @PathVariable(value = "type") Integer type) {
+    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId, @PathVariable(value = "type") Integer type) {
         Assert.notNull(loginUser, "用户不能为空");
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -210,8 +208,7 @@ public class PlanController {
      * 这里不修改旧的学习计划的状态<br/>
      */
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser,
-                                                          @PathVariable Integer problemId) {
+    public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
         Integer trialProblemId = ConfigUtils.getTrialProblemId();
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
@@ -288,8 +285,7 @@ public class PlanController {
      * 加载学习计划，必须传planId
      */
     @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request,
-                                                         @RequestParam Integer planId) {
+    public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request, @RequestParam Integer planId) {
         LOGGER.info(request.getHeader("User-Agent") + ", openid:" + loginUser.getOpenId());
 
         Assert.notNull(loginUser, "用户不能为空");
@@ -318,8 +314,7 @@ public class PlanController {
     }
 
     @RequestMapping("/knowledge/load/{knowledgeId}")
-    public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser,
-                                                             @PathVariable Integer knowledgeId) {
+    public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser, @PathVariable Integer knowledgeId) {
 
         Assert.notNull(loginUser, "用户不能为空");
         Knowledge knowledge = planService.getKnowledge(knowledgeId);
@@ -334,8 +329,7 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser,
-                                                        @RequestParam Integer planId) {
+    public ResponseEntity<Map<String, Object>> complete(LoginUser loginUser, @RequestParam Integer planId) {
 
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
@@ -410,8 +404,7 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/close", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser,
-                                                     @RequestParam Integer planId) {
+    public ResponseEntity<Map<String, Object>> close(LoginUser loginUser, @RequestParam Integer planId) {
 
         Assert.notNull(loginUser, "用户不能为空");
 
@@ -475,9 +468,7 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/check/{series}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser,
-                                                             @PathVariable Integer series,
-                                                             @RequestParam Integer planId) {
+    public ResponseEntity<Map<String, Object>> practiceCheck(LoginUser loginUser, @PathVariable Integer series, @RequestParam Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
         if (improvementPlan == null) {
@@ -612,8 +603,7 @@ public class PlanController {
     }
 
     // 查询推荐的小课
-    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans,
-                                              List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
+    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
         // 最后要返回的
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
@@ -682,7 +672,6 @@ public class PlanController {
         return problems;
     }
 
-
     // 倒序排列
     private int sortPlans(PlanDto left, PlanDto right) {
         if (left.getCloseTime() == null) {
@@ -693,10 +682,8 @@ public class PlanController {
         return right.getCloseTime().compareTo(left.getCloseTime());
     }
 
-
     @RequestMapping(value = "/chapter/card/access/{problemId}/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId,
-                                                                 @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> loadChapterAccess(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         Boolean authority = planService.loadChapterCardAccess(loginUser.getId(), problemId, practicePlanId);
         if (authority != null) {
@@ -710,8 +697,7 @@ public class PlanController {
      * 当用户做完某一章节的所有巩固练习后，后台回复章节卡片
      */
     @RequestMapping(value = "/chapter/card/{problemId}/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId,
-                                                               @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("小课学习").action("打开小课学习")
                 .function("加载章节卡片").memo(loginUser.getOpenId());
@@ -722,12 +708,6 @@ public class PlanController {
         } else {
             return WebUtils.error("该卡片正在制作中，请期待~");
         }
-    }
-
-    @RequestMapping(value = "/test/{orderId}")
-    public ResponseEntity<Map<String, Object>> test(@PathVariable String orderId) {
-        planService.forceOpenCampOrder(orderId);
-        return WebUtils.success();
     }
 
 }
