@@ -80,34 +80,44 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         String sendMsg;
         if (activity.getProblemId() != null) {
             Problem problem = cacheService.getProblem(activity.getProblemId());
-            sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张鹏的真爱粉[嘿哈]\n" +
+            sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
                     "\n" +
-                    "对于真爱粉，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
+                    "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
                     "\n" +
-                    "礼包内含：张鹏定制小课+圈圈定制思考力小课+粉丝群通行证\n" +
+                    "礼包内含：\n" +
+                    "1）张良计Boy主讲小课《如何结识比自己牛的人》\n" +
+                    "2）圈圈定制思考力7天限时免费小课《发现本质问题，减少无效努力》\n" +
+                    "3）与Boy近距离互动的学习群服务\n" +
                     "\n" +
-                    "点击下方链接即可购买\uD83D\uDC47\n\n" +
+                    "心动啦？以上福利仅在23号~30号赠送哦\n" +
+                    "\n" +
+                    "赶紧点击下方链接购买\uD83D\uDC47\n" +
                     "<a href='" + ConfigUtils.adapterDomainName() +
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
                     "&free=true'>『" + problem.getProblem() + "』</a>\n" +
                     "------------\n" +
-                    "P. S. 你也可以成为张鹏义务后援团，转发下方海报让更多人知道boy";
+                    "P. S. 据说转发下图到朋友圈，任谁都会多看两眼，毕竟自带品味光环。\n";
         } else {
-            sendMsg = profile.getNickname() + "（用户名称），果然只有机智的人才能成为张鹏的真爱粉[嘿哈]\n" +
+            sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
                     "\n" +
-                    "对于真爱粉，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
+                    "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
                     "\n" +
-                    "礼包内含：张鹏定制小课+圈圈定制思考力小课+粉丝群通行证\n" +
+                    "礼包内含：\n" +
+                    "1）张良计Boy主讲小课《如何结识比自己牛的人》\n" +
+                    "2）圈圈定制思考力7天限时免费小课《发现本质问题，减少无效努力》\n" +
+                    "3）与Boy近距离互动的学习群服务\n" +
+                    "\n" +
+                    "心动啦？以上福利仅在23号~30号赠送哦\n" +
                     "\n" +
                     "点击\"上课啦\"开始上课" +
-                    "P. S. 你也可以成为张鹏义务后援团，转发下方海报让更多人知道boy";
+                    "P. S. 据说转发下图到朋友圈，任谁都会多看两眼，毕竟自带品味光环。\n";
         }
 
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送海报
-        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lP41cAv1K0XJlZxbGN3EQoQ" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
+        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lAW0ZEiyPSdzsbc-jFXR3dA" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
@@ -163,7 +173,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                             "亲爱的Boy粉，我们很高兴你能加入我们，和数十万职场人一起提升自我。\n\n" +
                                     "我们为你准备了一个大礼包，内含价值99元的思考力课程一门和一张粉丝团通行证。\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
-                    data.put("keyword2", new TemplateMessage.Keyword("张鹏粉丝礼包"));
+                    data.put("keyword2", new TemplateMessage.Keyword("张良计Boy粉丝礼包"));
                     data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                     data.put("remark", new TemplateMessage.Keyword("\n点击详情拆开礼包哦↓↓↓"));
                     templateMessage.setUrl("https://shimo.im/doc/Vc0qdZw0Qv8VIlqS?r=NPGKQE/");
