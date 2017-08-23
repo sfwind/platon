@@ -1,8 +1,6 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -25,19 +23,12 @@ public class EvaluateSubscribeReceiver {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private CacheService cacheService;
-    @Autowired
     private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CustomerMessageService customerMessageService;
-    @Autowired
-    private ImprovementPlanDao improvementPlanDao;
 
     private static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "EvaluateEvent_Queue";
-
-    private static String SUBSCRIBE = "subscribe";
-    private static String SCAN = "scan";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -82,9 +73,9 @@ public class EvaluateSubscribeReceiver {
     private void sendScanMsg(String openId) {
         String message = "欢迎来到【圈外职场研究所】\n\n" +
                 "有一种职场天赋，能让人：\n\n" +
-                "<li>从不加班，还能不断升职</li>\n" +
-                "<li>秒懂他人心思、人缘爆表</li>\n" +
-                "<li>提案一次通关、从不修改</li>\n\n" +
+                "从不加班，还能不断升职\n" +
+                "秒懂他人心思、人缘爆表\n" +
+                "提案一次通关、从不修改\n\n" +
                 "你是否也拥有这种天赋?\n\n" +
                 "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场敏锐度检测</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);

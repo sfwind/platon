@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -232,7 +233,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         headImage = ImageUtils.convertCircular(headImage);
 
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1025);
-        targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
+        targetImage = ImageUtils.overlapImage(targetImage, headImage, 129, 273);
 
         Profile profile = accountService.getProfile(profileId);
 
@@ -500,22 +501,22 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 //    public static void main(String[] args) throws Exception{
 //        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_5.png?imageslim");
 ////        BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
-////        BufferedImage headImage = loadHeadImage(profileId);
+//        BufferedImage headImage = ImageUtils.getBufferedImageByUrl("http://wx.qlogo.cn/mmopen/Q3auHgzwzM6LrkJRYApibxYsAEYm2CmS7JZwX09AmHsP0X2VJQSpibHyoHsQKNcvqf1hzFgJr6l40vyhH7KtGWupGmgKHwFibbiaOOS0qKuvjsQ/0");
 ////
 //        InputStream in = OperationEvaluateServiceImpl.class.getResourceAsStream("/fonts/pfmedium.ttf");
 //        Font font = Font.createFont(Font.TRUETYPE_FONT, in);
 ////
 ////        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
 ////        qrImage = ImageUtils.scaleByPercentage(qrImage, 214, 214);
-////        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
-////        headImage = ImageUtils.convertCircular(headImage);
+//        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
+//        headImage = ImageUtils.convertCircular(headImage);
 ////
 ////        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1025);
-////        targetImage = ImageUtils.overlapImage(targetImage, headImage, 319, 280);
+//        targetImage = ImageUtils.overlapImage(targetImage, headImage, 129, 273);
 //
-//        targetImage = ImageUtils.writeText(targetImage, 280, 320,profile.getNickname()+"的职场敏锐度",
+//        targetImage = ImageUtils.writeText(targetImage, 280, 320,"风之伤"+"的职场敏锐度",
 //                font.deriveFont(30f), new Color(255, 255, 255));
-//        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+percent+"%的人",
+//        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+80+"%的人",
 //                font.deriveFont(30f), new Color(255, 255, 255));
 //        ImageIO.write(targetImage, "jpg", new File("/Users/justin/1.jpg"));
 //    }

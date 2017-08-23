@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
@@ -23,9 +22,6 @@ public class FreeLimitSubscribeReceiver {
 
     public static final String TOPIC = "subscribe_quanwai";
     public static final String QUEUE = "FreeLimitEvent_Queue";
-
-    private static String SUBSCRIBE = "subscribe";
-    private static String SCAN = "SCAN";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -61,16 +57,14 @@ public class FreeLimitSubscribeReceiver {
         try {
             // 只记录限免小课活动
             if (sceneParams.length == 3) {
-                Problem freeProblem = cacheService.getProblem(ConfigUtils.getTrialProblemId());
-                String freeProblemName = freeProblem.getProblem();
                 operationFreeLimitService.recordPromotionLevel(openId, scene);
                 String sendMsg;
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                     sendMsg = "欢迎来到【圈外职场研究所】\n\n" +
                             "有一种职场天赋，能让人：\n\n" +
-                            "<li>从不加班，还能不断升职</li>\n" +
-                            "<li>秒懂他人心思、人缘爆表</li>\n" +
-                            "<li>提案一次通关、从不修改</li>\n\n" +
+                            "从不加班，还能不断升职\n" +
+                            "秒懂他人心思、人缘爆表\n" +
+                            "提案一次通关、从不修改\n\n" +
                             "你是否也拥有这种天赋?\n\n" +
                             "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场敏锐度检测</a>";
                 } else {
