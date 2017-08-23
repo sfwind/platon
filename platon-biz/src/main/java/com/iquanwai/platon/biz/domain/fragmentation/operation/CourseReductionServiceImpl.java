@@ -96,8 +96,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
                     "&free=true'>『" + problem.getProblem() + "』</a>\n" +
-                    "------------\n" +
-                    "P. S. 据说转发下图到朋友圈，任谁都会多看两眼，毕竟自带品味光环。\n";
+                    "------------\n";
         } else {
             sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
                     "\n" +
@@ -110,15 +109,14 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "\n" +
                     "心动啦？以上福利仅在23号~30号赠送哦\n" +
                     "\n" +
-                    "点击\"上课啦\"开始上课" +
-                    "P. S. 据说转发下图到朋友圈，任谁都会多看两眼，毕竟自带品味光环。\n";
+                    "点击\"上课啦\"开始上课";
         }
 
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送海报
-        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lK5OuF5bADXqYrx1wjyFWVE" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
-        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+//        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lK5OuF5bADXqYrx1wjyFWVE" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
+//        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.ScanCode);
