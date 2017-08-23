@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -68,12 +67,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
     private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 预先加载好所有背景图
     private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 预先加载好所有背景图
-    // 免费领取测评文案
-    private static final String FREE_ACCESS_TEXT = "【免费领取】\n下方是你的测评结果海报，分享并邀请3人扫码并完成测试，即可免费领取【职场敏锐度强化包】";
-    // 已学过用户或会员
-    private static final String LEARNT_TEXT = "下方是你的测评结果海报。你的朋友们也和你一样机智吗？分享出来，让他们也检测一下吧！" +
-            "\n敢不敢分享到朋友圈，让你的朋友也挑战一下" +
-            "\n这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去保存并分享到朋友圈吧！";
+    private static Map<Integer, String> resultTextMap = Maps.newHashMap(); // 发送测评结果
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
 
@@ -106,6 +100,10 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "如果你想要充分开发和增强自己的敏锐度，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
                 "\n" +
                 "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
+
+        resultTextMap.put(1, "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去保存并分享到朋友圈吧！");
+        resultTextMap.put(2, "敢不敢分享到朋友圈，让你的朋友也挑战一下！");
+        resultTextMap.put(3, "下方是你的测评结果海报。你的朋友们也和你一样机智吗？分享出来，让他们也检测一下吧！");
 
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
@@ -196,21 +194,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        if (learnFreeLimit) {
-            // 已学过的用户或会员
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    LEARNT_TEXT,
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-        } else {
-            // 未学过的用户
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    FREE_ACCESS_TEXT,
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-        }
+        customerMessageService.sendCustomerMessage(
+                profile.getOpenid(),
+                resultTextMap.get(level),
+                Constants.WEIXIN_MESSAGE_TYPE.TEXT
+        );
 
         Integer percent = getDefeatPercent(score);
         BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
