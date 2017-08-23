@@ -71,8 +71,8 @@ public class EventWallServiceImpl implements EventWallService {
                 .filter(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
                         && item.getProblemId().equals(eventWall.getVisibleProblemId())).findFirst().orElse(null);
 
-        if (riseMember == null) {
-            // 非会员
+        if(riseMember == null) {
+            // 非会员（小课购买用户）
             visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
             visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
             if (eventWall.getVisibleProblemId() != null && plan != null && eventWall.getVisibleProblemId().equals(plan.getProblemId())) {
@@ -86,21 +86,52 @@ public class EventWallServiceImpl implements EventWallService {
                     visibilities.add(EventWall.VisibleLevel.ELITE);
                 }
             }
-            return visibilities;
         } else {
-            // 会员
-            visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-            if (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
-                // 精英版
-                visibilities.add(EventWall.VisibleLevel.ELITE);
-            } else {
-                // 专业版
-                visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+            Integer memberTypeId = riseMember.getMemberTypeId();
+            switch (memberTypeId) {
+                case RiseMember.HALF:
+                    // 专业版半年
+                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
+                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+                    break;
+                case RiseMember.ANNUAL:
+                    // 专业版一年
+                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
+                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+                    break;
+                case RiseMember.ELITE:
+                    // 精英版一年
+                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                    visibilities.add(EventWall.VisibleLevel.ELITE);
+                    break;
+                case RiseMember.HALF_ELITE:
+                    // 精英版半年
+                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                    visibilities.add(EventWall.VisibleLevel.ELITE);
+                    break;
+                case RiseMember.CAMP:
+                    // 训练营小课购买用户
+                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
+                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+                    if (eventWall.getVisibleProblemId() != null && plan != null && eventWall.getVisibleProblemId().equals(plan.getProblemId())) {
+                        // 对小课用户做特殊处理，训练营用户同样的逻辑
+                        visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                        if (eventWall.getType() == EventWall.OFFLINE) {
+                            // 对于线下活动，权限等同于专业版
+                            visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
+                        } else {
+                            // 对于其他，权限等于精英版
+                            visibilities.add(EventWall.VisibleLevel.ELITE);
+                        }
+                    }
+                    break;
+                default:
+                    break;
             }
-            return visibilities;
         }
+        return visibilities;
     }
-
 
 }
