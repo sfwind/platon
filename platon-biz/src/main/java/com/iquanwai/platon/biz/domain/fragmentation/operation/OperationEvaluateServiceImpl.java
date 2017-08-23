@@ -60,7 +60,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final int Source_SELF = 2; // 自己
     private static final int Source_Other = 3; // 他人
 
-    private static final Integer trialNum = 1;
+    private static final Integer trialNum = 3;
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
