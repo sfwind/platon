@@ -724,4 +724,10 @@ public class PlanController {
         }
     }
 
+    @RequestMapping(value = "/test/{orderId}")
+    public ResponseEntity<Map<String, Object>> test(@PathVariable String orderId) {
+        planService.forceOpenCampOrder(orderId);
+        return WebUtils.success();
+    }
+
 }

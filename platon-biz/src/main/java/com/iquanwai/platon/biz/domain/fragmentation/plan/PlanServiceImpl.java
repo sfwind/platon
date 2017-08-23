@@ -673,12 +673,12 @@ public class PlanServiceImpl implements PlanService {
         if (improvementPlan == null) {
             // 用户从来没有开过小课，新开小课
             Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
-            improvementPlanDao.updateCloseTime(planId, ConfigUtils.getMonthlyCampEndDate());
+            improvementPlanDao.updateCloseDate(planId, ConfigUtils.getMonthlyCampEndDate());
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            improvementPlanDao.updateCloseTime(improvementPlan.getId(), ConfigUtils.getMonthlyCampEndDate());
+            improvementPlanDao.updateCloseDate(improvementPlan.getId(), ConfigUtils.getMonthlyCampEndDate());
         }
     }
 
