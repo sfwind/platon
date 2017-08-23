@@ -84,14 +84,14 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "\n" +
                     "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
                     "\n" +
-                    "礼包内含：\n" +
+                    "礼包内含：\n\n" +
                     "1）张良计Boy主讲小课《如何结识比自己牛的人》\n" +
                     "2）圈圈定制思考力7天限时免费小课《发现本质问题，减少无效努力》\n" +
                     "3）与Boy近距离互动的学习群服务\n" +
                     "\n" +
                     "心动啦？以上福利仅在23号~30号赠送哦\n" +
                     "\n" +
-                    "赶紧点击下方链接购买\uD83D\uDC47\n" +
+                    "赶紧点击下方链接购买\uD83D\uDC47\n\n" +
                     "<a href='" + ConfigUtils.adapterDomainName() +
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
@@ -117,7 +117,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送海报
-        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lAW0ZEiyPSdzsbc-jFXR3dA" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
+        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lK5OuF5bADXqYrx1wjyFWVE" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
