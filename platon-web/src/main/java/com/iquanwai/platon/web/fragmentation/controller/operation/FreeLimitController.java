@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,16 +54,22 @@ public class FreeLimitController {
     public ResponseEntity<Map<String, Object>> submitEva(LoginUser loginUser, @PathVariable Integer score) {
         Assert.notNull(loginUser, "用户不能为空");
         FreeLimitResult result = new FreeLimitResult();
-        Pair<String, String> pairs = operationEvaluateService.completeEvaluate(loginUser.getId(), score);
         Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
         if (learnBefore || loginUser.getRiseMember() == 1) {
             result.setLearnFreeLimit(true);
         } else {
             result.setLearnFreeLimit(false);
         }
+
+        // 发消息比较慢,异步发送
+        new Thread(() -> {
+            operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
+        }).start();
+
+        Pair<String, String> pairs = operationEvaluateService.completeEvaluate(loginUser.getId(), score,
+                result.getLearnFreeLimit());
         result.setResult(pairs.getLeft());
         result.setSuggestion(pairs.getRight());
-        operationEvaluateService.sendPromotionResult(loginUser.getId(), score, result.getLearnFreeLimit());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());

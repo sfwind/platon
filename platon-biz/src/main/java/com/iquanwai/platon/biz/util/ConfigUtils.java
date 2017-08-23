@@ -309,13 +309,6 @@ public class ConfigUtils {
     }
 
     /**
-     * rise小课测试状态
-     */
-    public static Boolean getRiseCoursePayTestStatus() {
-        return getBooleanValue("rise.course.pay.test");
-    }
-
-    /**
      * 获取训练营小课安排 json
      */
     public static String getRequiredClassSchedule() {

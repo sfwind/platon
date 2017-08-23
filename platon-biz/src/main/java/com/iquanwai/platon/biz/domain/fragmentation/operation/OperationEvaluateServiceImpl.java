@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -11,6 +12,7 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Account;
@@ -56,6 +58,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private PromotionLevelDao promotionLevelDao;
     @Autowired
     private PromotionActivityDao promotionActivityDao;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
 
     private static final int Source_RISE = 1; // 官方
     private static final int Source_SELF = 2; // 自己
@@ -65,8 +69,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
-    private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 预先加载好所有背景图
-    private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 预先加载好所有背景图
+    private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 测评结果
+    private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 测评建议
+    private static Map<Integer, String> freeSuggestionMap = Maps.newHashMap(); // 会员测评建议
     private static Map<Integer, String> resultTextMap = Maps.newHashMap(); // 发送测评结果
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
@@ -100,6 +105,24 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "如果你想要充分开发和增强自己的敏锐度，可以使用【职场敏锐度强化包】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
                 "\n" +
                 "【敏锐度强化包】将教会你四大技巧，内含12条语音、6套巩固练习、10套应用练习，3场吊打直播，1套知识卡片，1套牛人干货文章合集。");
+
+        freeSuggestionMap.put(1, "你需要开始发力去增强自己的敏锐度并应用在职场中，在面对棘手问题时，有意识地使用一些技巧，例如提问的技巧、了解他人背景挖掘他人需求的技巧等，防止盲目的决策和行动。当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
+                "\n" +
+                "如果你想要充分开发和增强自己的敏锐度，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "\n" +
+                "这么有趣有料的测试，确定不邀请你的朋友也来玩一下？点击下方按钮，领取你的测评结果海报，并分享到朋友圈吧!");
+
+        freeSuggestionMap.put(2, "建议你掌握更多的提问技巧，挖掘他人隐藏的真实需求；同时提升自己的分析能力，遇到难题时，先去找到根本原因，再根据关键程度和解决成本，定位最有价值的问题。当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
+                "\n" +
+                "如果你想要充分发挥自己的敏锐度潜力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "\n" +
+                "敢不敢让你的朋友也来挑战一下？点击下方按钮，领取你的测评结果海报，并分享到朋友圈吧!");
+
+        freeSuggestionMap.put(3, "你需要在工作中充分运用你的敏锐度天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
+                "\n" +
+                "如果你想要挖掘、并在职场中运用自己的敏锐度天赋，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说之前的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "\n" +
+                "你的朋友们也和你一样机智吗？点击下方按钮，领取你的测评结果海报，并分享到，让他们也检测一下吧!");
 
         resultTextMap.put(1, "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去保存并分享到朋友圈吧！");
         resultTextMap.put(2, "敢不敢分享到朋友圈，让你的朋友也挑战一下！");
@@ -136,7 +159,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 完成测评
      */
     @Override
-    public Pair<String, String> completeEvaluate(Integer profileId, Integer score) {
+    public Pair<String, String> completeEvaluate(Integer profileId, Integer score, Boolean freeLimit) {
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel != null) {
@@ -145,7 +168,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
                     PromotionConstants.EvaluateAction.FinishEvaluate, activity);
             if (activities.size() == 1) {
-                checkAwardAndSendMsg(profileId);
+                checkAwardAndSendMsg(profileId, freeLimit);
             }
         }
 
@@ -159,6 +182,16 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      */
     @Override
     public void recordPayAction(Integer profileId) {
+        boolean freeLimit = false;
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, ConfigUtils.getTrialProblemId());
+        if(improvementPlan!=null){
+            freeLimit = true;
+        } else {
+            Profile profile = accountService.getProfile(profileId);
+            if(profile.getRiseMember() == 1){
+                freeLimit = true;
+            }
+        }
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel == null) return;
@@ -168,7 +201,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
                 PromotionConstants.EvaluateAction.FinishEvaluate, activity);
         if (activities.size() == 1) {
-            checkAwardAndSendMsg(profileId);
+            checkAwardAndSendMsg(profileId, freeLimit);
         }
     }
 
@@ -188,7 +221,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 微信后台推送结果卡片
      */
     @Override
-    public void sendPromotionResult(Integer profileId, Integer score, Boolean learnFreeLimit) {
+    public void sendPromotionResult(Integer profileId, Integer score) {
         Profile profile = accountService.getProfile(profileId);
         // 计算测评等级
         Integer level = calcLevel(score);
@@ -296,7 +329,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 查看获取当前已经获取的奖励，并且同时发送消息
-    private void checkAwardAndSendMsg(Integer profileId) {
+    private void checkAwardAndSendMsg(Integer profileId, Boolean freeLimit) {
         // 某人完成测评，需要查看他的推广人信息
         PromotionLevel source = promotionLevelDao.loadByProfileId(profileId, activity);
         if (source == null || source.getPromoterId() == null) return;
@@ -305,10 +338,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Integer remainTrial = accessTrial(sourceId);
         if (remainTrial == 0) {
-            sendNormalTrialMsg(sourceId, profileId, remainTrial);
-            sendSuccessTrialMsg(sourceId);
+            if(!freeLimit){
+                sendSuccessTrialMsg(profileId, sourceId);
+            }
         } else if (remainTrial > 0) {
-            sendNormalTrialMsg(sourceId, profileId, remainTrial);
+            sendNormalTrialMsg(sourceId, profileId, remainTrial, freeLimit);
         }
     }
 
@@ -341,7 +375,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 发送普通限免小课信息
-    private void sendNormalTrialMsg(Integer targetProfileId, Integer promotedUserId, Integer remainCount) {
+    private void sendNormalTrialMsg(Integer targetProfileId, Integer promotedUserId, Integer remainCount, Boolean freeLimit) {
         Profile targetProfile = accountService.getProfile(targetProfileId);
         Profile promoterProfile = accountService.getProfile(promotedUserId);
         TemplateMessage templateMessage = new TemplateMessage();
@@ -350,21 +384,31 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
         templateMessage.setData(data);
 
-        if (remainCount == 0) {
-            data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
-                    + remainCount + "个好友啦！\n"));
-        } else {
-            data.put("first", new TemplateMessage.Keyword("你已获得免费领取洞察力小课资格啦！\n"));
+        if(!freeLimit){
+            if (remainCount != 0) {
+                data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
+                        + remainCount + "个好友啦！\n"));
+            } else {
+                data.put("first", new TemplateMessage.Keyword("你已获得免费领取洞察力小课资格啦！\n"));
+            }
+            data.put("keyword1", new TemplateMessage.Keyword("职场敏锐度检测"));
+            data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+            data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+        }else{
+            data.put("first", new TemplateMessage.Keyword("你的好友"+ promoterProfile.getNickname() + "扫码完成测试啦，ta一定很关注你！\n"));
+            data.put("keyword1", new TemplateMessage.Keyword("职场敏锐度检测"));
+            data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+            data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+            data.put("remark", new TemplateMessage.Keyword("\n为了不打扰到你，超过3位好友扫码就不再提醒啦~"));
         }
-        data.put("keyword1", new TemplateMessage.Keyword("洞察力基因检测"));
-        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+
         templateMessageService.sendMessage(templateMessage);
     }
 
     // 发送成功获得限免小课试用信息
-    private void sendSuccessTrialMsg(Integer profileId) {
+    private void sendSuccessTrialMsg(Integer promotedUserId, Integer profileId) {
         // 发送模板消息
+        Profile promoterProfile = accountService.getProfile(promotedUserId);
         Profile profile = accountService.getProfile(profileId);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(profile.getOpenid());
@@ -372,7 +416,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setData(data);
         templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true");
         templateMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
-        data.put("first", new TemplateMessage.Keyword("恭喜！" + trialNum + "位好友完成测评，你已获得免费领取洞察力小课资格啦！\n"));
+        data.put("first", new TemplateMessage.Keyword("恭喜！你的好友"+promoterProfile.getNickname() + "扫码完成测试，总计"+
+                trialNum + "位好友完成测评，你已获得免费领取洞察力小课资格啦！\n"));
         data.put("keyword1", new TemplateMessage.Keyword("找到本质问题，减少无效努力"));
         data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));
         data.put("remark", new TemplateMessage.Keyword("\n点击卡片领取！"));
@@ -513,27 +558,4 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 return new Random().nextInt(10);
         }
     }
-
-//    public static void main(String[] args) throws Exception{
-//        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_5.png?imageslim");
-////        BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
-//        BufferedImage headImage = ImageUtils.getBufferedImageByUrl("http://wx.qlogo.cn/mmopen/Q3auHgzwzM6LrkJRYApibxYsAEYm2CmS7JZwX09AmHsP0X2VJQSpibHyoHsQKNcvqf1hzFgJr6l40vyhH7KtGWupGmgKHwFibbiaOOS0qKuvjsQ/0");
-////
-//        InputStream in = OperationEvaluateServiceImpl.class.getResourceAsStream("/fonts/pfmedium.ttf");
-//        Font font = Font.createFont(Font.TRUETYPE_FONT, in);
-////
-////        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
-////        qrImage = ImageUtils.scaleByPercentage(qrImage, 214, 214);
-//        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
-//        headImage = ImageUtils.convertCircular(headImage);
-////
-////        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1025);
-//        targetImage = ImageUtils.overlapImage(targetImage, headImage, 129, 273);
-//
-//        targetImage = ImageUtils.writeText(targetImage, 280, 320,"风之伤"+"的职场敏锐度",
-//                font.deriveFont(30f), new Color(255, 255, 255));
-//        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+80+"%的人",
-//                font.deriveFont(30f), new Color(255, 255, 255));
-//        ImageIO.write(targetImage, "jpg", new File("/Users/justin/1.jpg"));
-//    }
 }

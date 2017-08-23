@@ -20,7 +20,6 @@ public class OperationServiceTest extends TestBase {
 
     @Test
     public void testSendInvitationMsg(){
-        operationEvaluateService.completeEvaluate(30, 1);
 
 
     }

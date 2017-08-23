@@ -14,7 +14,7 @@ public interface OperationEvaluateService {
     /**
      * 完成测评
      */
-    Pair<String, String> completeEvaluate(Integer profileId, Integer score);
+    Pair<String, String> completeEvaluate(Integer profileId, Integer score, Boolean freeLimit);
     /**
      * 免费试用限免课权限校验
      */
@@ -31,7 +31,7 @@ public interface OperationEvaluateService {
     /**
      * 微信后台推送结果卡片
      */
-    void sendPromotionResult(Integer profileId, Integer score, Boolean learnFreeLimit);
+    void sendPromotionResult(Integer profileId, Integer score);
     /**
      * 是否参加过此活动
      * */
