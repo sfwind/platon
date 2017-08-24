@@ -80,34 +80,29 @@ public class CourseReductionServiceImpl implements CourseReductionService {
         String sendMsg;
         if (activity.getProblemId() != null) {
             Problem problem = cacheService.getProblem(activity.getProblemId());
+
             sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
                     "\n" +
-                    "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
+                    "赶紧点击下方链接购买\uD83D\uDC47\n" +
                     "\n" +
-                    "礼包内含：\n\n" +
-                    "1）张良计Boy主讲小课《如何结识比自己牛的人》\n" +
-                    "2）圈圈定制思考力7天限时免费小课《发现本质问题，减少无效努力》\n" +
-                    "3）与Boy近距离互动的学习群服务\n" +
-                    "\n" +
-                    "心动啦？以上福利仅在23号~30号赠送哦\n" +
-                    "\n" +
-                    "赶紧点击下方链接购买\uD83D\uDC47\n\n" +
                     "<a href='" + ConfigUtils.adapterDomainName() +
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
-                    "&free=true'>『" + problem.getProblem() + "』</a>\n";
+                    "&free=true'>『" + problem.getProblem() + "』</a>\n" +
+                    "\n" +
+                    "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
+                    "\n" +
+                    "礼包内含：张良计主讲小课+思考力小课+课程群服务\n" +
+                    "\n" +
+                    "心动啦？以上福利仅在23号~30号赠送哦~赶快购买吧！";
         } else {
             sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
                     "\n" +
                     "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
                     "\n" +
-                    "礼包内含：\n" +
-                    "1）张良计Boy主讲小课《如何结识比自己牛的人》\n" +
-                    "2）圈圈定制思考力7天限时免费小课《发现本质问题，减少无效努力》\n" +
-                    "3）与Boy近距离互动的学习群服务\n" +
+                    "礼包内含：张良计主讲小课+思考力小课+课程群服务\n" +
                     "\n" +
-                    "心动啦？以上福利仅在23号~30号赠送哦\n" +
-                    "\n" +
+                    "心动啦？以上福利仅在23号~30号赠送哦~赶快购买吧！\n" +
                     "点击\"上课啦\"开始上课";
         }
 
