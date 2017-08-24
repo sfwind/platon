@@ -148,7 +148,7 @@ public class CardRepositoryImpl implements CardRepository {
         // 限免 非限免 图片区分
         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
             targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
-            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1114);
+            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1101);
         } else {
             targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
             targetImage = ImageUtils.writeText(targetImage, 306, 1133, "长按识别二维码",
