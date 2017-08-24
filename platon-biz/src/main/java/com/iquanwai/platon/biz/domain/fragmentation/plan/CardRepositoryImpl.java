@@ -4,26 +4,28 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
+import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -46,6 +48,8 @@ public class CardRepositoryImpl implements CardRepository {
     private AccountService accountService;
     @Autowired
     private QRCodeService qrCodeService;
+    @Autowired
+    private CacheService cacheService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,6 +61,8 @@ public class CardRepositoryImpl implements CardRepository {
     private Map<Integer, String> thumbnailMap = Maps.newHashMap();
 
     private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
+
+    private static final String CARD_ACTIVITY = PromotionConstants.Activities.Evaluate;
 
     @PostConstruct
     public void init() {
@@ -77,15 +83,24 @@ public class CardRepositoryImpl implements CardRepository {
             thumbnailLockMap.put(i + 1, thumbnailLock);
         }
         essenceFreeTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_top.png?imageslim");
-        essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_2.png?imageslim");
+        essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_4.png?imageslim");
         essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
         pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
         logger.info("图片加载完毕");
     }
 
     @Override
-    public BufferedImage loadEssenceCardImg(Profile profile, Integer problemId, Integer chapterId, int totalSize) {
+    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
         InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
+        Integer totalSize;
+        Problem problem = cacheService.getProblem(problemId);
+        if (problem != null) {
+            totalSize = problem.getChapterList().size();
+        } else {
+            return null;
+        }
+
+        Profile profile = accountService.getProfile(profileId);
         Font font;
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
@@ -97,7 +112,7 @@ public class CardRepositoryImpl implements CardRepository {
         BufferedImage targetImage = loadTargetImageByChapterId(chapterId, totalSize);
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         // QrImage
-        BufferedImage qrImage = loadQrImage("freeLimit_" + profile.getId() + "_" + problemId);
+        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + problemId);
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1092);
         // HeadImage
@@ -133,7 +148,7 @@ public class CardRepositoryImpl implements CardRepository {
         // 限免 非限免 图片区分
         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
             targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
-            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1114);
+            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1101);
         } else {
             targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
             targetImage = ImageUtils.writeText(targetImage, 306, 1133, "长按识别二维码",
@@ -142,7 +157,10 @@ public class CardRepositoryImpl implements CardRepository {
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
 
-        return targetImage;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
+        BASE64Encoder encoder = new BASE64Encoder();
+        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
     }
 
     // 获取二维码，场景值变化
@@ -293,7 +311,7 @@ public class CardRepositoryImpl implements CardRepository {
         BufferedImage targetImage = pandaCard;
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
         // QrImage
-        BufferedImage qrImage = loadQrImage("freeLimit_" + profile.getId() + "_" + ConfigUtils.getTrialProblemId());
+        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + ConfigUtils.getTrialProblemId());
         qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1092);
         // HeadImage
@@ -310,7 +328,6 @@ public class CardRepositoryImpl implements CardRepository {
             targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
                     font.deriveFont(24f), new Color(51, 51, 51));
         }
-        // TODO:文字
         targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为洞察力爆表的人",
                 font.deriveFont(24f), new Color(51, 51, 51));
 

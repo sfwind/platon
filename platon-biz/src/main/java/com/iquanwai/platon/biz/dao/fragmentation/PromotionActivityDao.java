@@ -24,17 +24,19 @@ public class PromotionActivityDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void insertPromotionActivity(PromotionActivity promotionActivity) {
+    public Integer insertPromotionActivity(PromotionActivity promotionActivity) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "INSERT INTO PromotionActivity (ProfileId, Activity, Action) VALUES ( ?, ?, ?)";
         try {
-            runner.insert(sql, new ScalarHandler<>(),
+            Long result = runner.insert(sql, new ScalarHandler<>(),
                     promotionActivity.getProfileId(),
                     promotionActivity.getActivity(),
                     promotionActivity.getAction());
+            return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+        return -1;
     }
 
     /**
@@ -72,6 +74,17 @@ public class PromotionActivityDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public List<PromotionActivity> loadDistinctActionCount(Integer profileId, Integer action, String activity) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM PromotionActivity WHERE ProfileId = ? AND Action = ? AND Activity = ?";
+        ResultSetHandler<List<PromotionActivity>> h = new BeanListHandler<>(PromotionActivity.class);
+        try {
+            return runner.query(sql, h, profileId, action, activity);
+        } catch (SQLException e) {
+            return null;
+        }
     }
 
 }

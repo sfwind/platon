@@ -42,22 +42,6 @@ public class PromotionLevelDao extends DBUtil {
     }
 
     /**
-     * 根据 OpenId 获取 PromotionLevel
-     */
-    @Deprecated
-    public PromotionLevel loadByOpenId(String openId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM PromotionLevel WHERE OpenId = ?";
-        ResultSetHandler<PromotionLevel> h = new BeanHandler<>(PromotionLevel.class);
-        try {
-            return runner.query(sql, h, openId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage());
-        }
-        return null;
-    }
-
-    /**
      * 根据 ProfileId 获取 PromotionLevel
      */
     public PromotionLevel loadByProfileId(Integer profileId, String activity) {

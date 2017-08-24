@@ -668,7 +668,6 @@ public class PlanController {
         return problems;
     }
 
-
     // 倒序排列
     private int sortPlans(PlanDto left, PlanDto right) {
         if (left.getCloseTime() == null) {

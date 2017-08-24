@@ -18,10 +18,11 @@ public interface PromotionConstants {
     }
 
     interface EvaluateAction {
-        int InitState = 10; // 初始状态
-        int ScanCode = 11; // 扫码关注
-        int FinishEvaluate = 12; // 完成测评
-        int AccessTrial = 13; // 完成推广人数要求，获得学习限免小课资格
+        int ScanCard = 11; // 扫测试卡，入 level 表
+        int ClickHref = 12; // 点击链接，入 level 表
+        int FinishEvaluate = 13; // 完成测评
+        int BuyCourse = 14; // 付费购买小课
+        int AccessTrial = 15; // 完成推广人数要求，获得学习限免小课资格
     }
 
     interface CourseReductionAction {

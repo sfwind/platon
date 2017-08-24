@@ -151,5 +151,5 @@ public interface PlanService {
      * 小课介绍页的按钮状态
      * @return
      */
-    Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
+    Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 }

@@ -4,17 +4,16 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.*;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -48,12 +46,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     private AccountService accountService;
     @Autowired
     private CouponDao couponDao;
-    @Autowired
-    private CustomerMessageService customerMessageService;
-    @Autowired
-    private CardRepository cardRepository;
-    @Autowired
-    private UploadResourceService uploadResourceService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -226,24 +218,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void sendCustomerMsg(String openId) {
-        Profile profile = accountService.getProfile(openId);
-        //先发文字,后发图片
-        customerMessageService.sendCustomerMessage(openId, "Hi，" + profile.getNickname() + "，" +
-                        "你已领取限免课程：找到本质问题，减少无效努力\n\n如需继续学习，请点击下方按钮“上课啦”\n\n" +
-                        "\uD83D\uDC47送你一张专属知识卡+30个好友免费学习名额，立即分享出去吧！",
-                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        BufferedImage bufferedImage = cardRepository.loadDefaultCardImg(profile);
-        if (bufferedImage != null) {
-            // 发送图片消息
-            String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profile.getId() + ".jpg";
-            String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
-            customerMessageService.sendCustomerMessage(openId, mediaId,
-                    Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         }
     }
 

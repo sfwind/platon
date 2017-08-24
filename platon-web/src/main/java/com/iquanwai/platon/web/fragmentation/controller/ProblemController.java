@@ -284,7 +284,8 @@ public class ProblemController {
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
 
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
-        Integer buttonStatus = planService.problemIntroductionButtonStatus(isMember, problemId, plan, autoOpen);
+
+        Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), isMember, problemId, plan, autoOpen);
         // TODO 8.31日0点删除掉
         if (!isMember && problemId.equals(ConfigUtils.getTrialProblemId())) {
             // 非会员，限免小课
