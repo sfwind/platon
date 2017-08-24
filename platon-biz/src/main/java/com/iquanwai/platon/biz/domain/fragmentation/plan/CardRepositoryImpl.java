@@ -83,7 +83,7 @@ public class CardRepositoryImpl implements CardRepository {
             thumbnailLockMap.put(i + 1, thumbnailLock);
         }
         essenceFreeTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_top.png?imageslim");
-        essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_3.png?imageslim");
+        essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_4.png?imageslim");
         essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
         pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
         logger.info("图片加载完毕");

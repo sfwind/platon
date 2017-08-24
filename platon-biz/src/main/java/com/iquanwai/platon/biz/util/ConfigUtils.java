@@ -18,11 +18,8 @@ import java.util.TimerTask;
 @Component
 public class ConfigUtils {
     private static Config config;
-    private static Config localconfig;
     private static Config fileconfig;
     private static ZKConfigUtils zkConfigUtils;
-
-//	private static boolean zk_switch = false;
 
     private static Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
 
@@ -42,12 +39,8 @@ public class ConfigUtils {
 
     private static void loadConfig() {
         config = ConfigFactory.load("localconfig");
-//		localconfig = ConfigFactory.load("localconfig");
-//		config = ConfigFactory.load("platon");
         fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
-//		config = localconfig.withFallback(config);
         config = fileconfig.withFallback(config);
-//		zk_switch = config.getBoolean("zk.open");
     }
 
     public static String getValue(String key) {
@@ -172,32 +165,12 @@ public class ConfigUtils {
         return getValue("qiniu.picture.prefix");
     }
 
-    public static Integer preStudySerials() {
-        return 3;
-    }
-
     public static String getIntegratedPracticeIndex() {
         return getValue("integrated.practice.index");
     }
 
     public static Boolean prePublish() {
         return getBooleanValue("rise.pre.publish");
-    }
-
-    public static String getRabbitMQIp() {
-        return getValue("rabbitmq.ip");
-    }
-
-    public static String getRabbitMQUser() {
-        return getValue("rabbitmq.user");
-    }
-
-    public static String getRabbitMQPasswd() {
-        return getValue("rabbitmq.password");
-    }
-
-    public static int getRabbitMQPort() {
-        return getIntValue("rabbitmq.port");
     }
 
     public static Boolean isDevelopment() {
