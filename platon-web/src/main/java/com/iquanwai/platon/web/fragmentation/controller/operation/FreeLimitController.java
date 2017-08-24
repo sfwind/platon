@@ -65,6 +65,7 @@ public class FreeLimitController {
         }
 
         Integer percent = getDefeatPercent(score);
+        result.setPercent(percent);
 
         // 发消息比较慢,异步发送
         new Thread(() -> {
