@@ -234,7 +234,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        if(freeLimit){
+        if(!freeLimit){
             customerMessageService.sendCustomerMessage(
                     profile.getOpenid(),
                     FREE_GET_TEXT,
