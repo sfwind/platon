@@ -66,7 +66,7 @@ public class FreeLimitSubscribeReceiver {
                             "秒懂他人心思、人缘爆表\n" +
                             "提案一次通关、从不修改\n\n" +
                             "你是否也拥有这种天赋?\n\n" +
-                            "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场敏锐度检测</a>";
+                            "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始洞察力天赋检测</a>";
                 } else {
                     // 非限免
                     sendMsg = "欢迎来到圈外，你刚才扫码的课程在这里，点击查看：\n" +
@@ -78,7 +78,7 @@ public class FreeLimitSubscribeReceiver {
                             "\n" +
                             "完成限免小课章节有神秘卡片哦，注意收集[机智]\n" +
                             "------------\n" +
-                            "P. S. 你是高敏锐度的职场人吗？\n\n" +
+                            "P. S. 你是高洞察力的职场人吗？\n\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
                             "/rise/static/eva/start'>『点击开始测试』</a>";
                 }
