@@ -81,9 +81,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_5.png?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_5.png?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_5.png?imageslim"));
+        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_6.png?imageslim"));
+        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_6.png?imageslim"));
+        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_6.png?imageslim"));
 
         evaluateResultMap.put(1, "你的这方面潜力还没有得到开发和施展。你努力地工作生活，但常常感到受压抑，因为面对问题时，你可能忽视了本质原因，从而不能很有效地解决问题。");
         evaluateResultMap.put(2, "拥有洞察力潜力的你，比较关注细节，能够准确地把握事实；但有时候，因为没有把潜力发挥出来，而做了一些无用功，觉得自己的付出得不到应有的回报。");
