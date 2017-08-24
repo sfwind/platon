@@ -12,10 +12,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 限免推广
@@ -61,13 +64,15 @@ public class FreeLimitController {
             result.setLearnFreeLimit(false);
         }
 
+        Integer percent = getDefeatPercent(score);
+
         // 发消息比较慢,异步发送
         new Thread(() -> {
-            operationEvaluateService.sendPromotionResult(loginUser.getId(), score);
+            operationEvaluateService.sendPromotionResult(loginUser.getId(), score, result.getLearnFreeLimit(), percent);
         }).start();
 
         Pair<String, String> pairs = operationEvaluateService.completeEvaluate(loginUser.getId(), score,
-                result.getLearnFreeLimit());
+                result.getLearnFreeLimit(), percent);
         result.setResult(pairs.getLeft());
         result.setSuggestion(pairs.getRight());
 
@@ -105,5 +110,28 @@ public class FreeLimitController {
         operationLogService.log(operationLog);
 
         return WebUtils.success();
+    }
+
+    private static Integer getDefeatPercent(Integer score) {
+        switch (score) {
+            case 0:
+                return new Random().nextInt(20) + 10;
+            case 1:
+                return new Random().nextInt(20) + 30;
+            case 2:
+                return new Random().nextInt(10) + 50;
+            case 3:
+                return new Random().nextInt(10) + 60;
+            case 4:
+                return new Random().nextInt(10) + 70;
+            case 5:
+                return new Random().nextInt(10) + 80;
+            case 6:
+                return new Random().nextInt(5) + 90;
+            case 7:
+                return new Random().nextInt(5) + 95;
+            default:
+                return new Random().nextInt(10);
+        }
     }
 }
