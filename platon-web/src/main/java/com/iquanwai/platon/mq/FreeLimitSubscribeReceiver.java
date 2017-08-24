@@ -76,7 +76,6 @@ public class FreeLimitSubscribeReceiver {
                             sceneParams[2] +
                             "'>『" + cacheService.getProblem(Integer.parseInt(sceneParams[2])).getProblem() + "』</a>\n" +
                             "\n" +
-                            "完成限免小课章节有神秘卡片哦，注意收集[机智]\n" +
                             "------------\n" +
                             "P. S. 你是高洞察力的职场人吗？\n\n" +
                             "<a href='" + ConfigUtils.adapterDomainName() +
