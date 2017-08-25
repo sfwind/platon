@@ -358,6 +358,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         if (remainTrial == 0) {
             if(!freeLimit){
                 sendSuccessTrialMsg(profileId, sourceProfileId);
+            } else {
+                sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, freeLimit);
             }
         } else if (remainTrial > 0) {
             sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, freeLimit);
