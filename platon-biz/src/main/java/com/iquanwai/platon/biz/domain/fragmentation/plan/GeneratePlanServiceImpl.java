@@ -51,7 +51,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private static final String INDEX_URL = "/rise/static/plan/main";
 
     @Override
-    public void reopenTrialPlan(ImprovementPlan plan){
+    public void reopenTrialPlan(ImprovementPlan plan) {
         if (plan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE || plan.getStatus() == ImprovementPlan.TRIALCLOSE) {
             improvementPlanDao.reOpenPlan(plan.getId(), DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         } else {
@@ -69,7 +69,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Assert.notNull(openid, "openid不能为空");
         Assert.notNull(profileId, "profileId不能为空");
         Problem problem = cacheService.getProblem(problemId);
-        if(problem == null){
+        if (problem == null) {
             logger.error("problemId {} is invalid", problemId);
         }
         //生成训练计划
@@ -95,8 +95,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlans.addAll(createChallengePractice(problem, planId));
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
-        //发送欢迎通知
-        sendWelcomeMsg(openid, problem);
 
         return planId;
     }
@@ -104,7 +102,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private List<PracticePlan> createKnowledge(int planId, List<ProblemSchedule> problemScheduleList) {
         List<PracticePlan> selected = Lists.newArrayList();
 
-        for(int sequence=1;sequence<=problemScheduleList.size();sequence++){
+        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             PracticePlan practicePlan = new PracticePlan();
             Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
             //第一节内容自动解锁
@@ -114,9 +112,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setUnlocked(false);
             }
             boolean review = Knowledge.isReview(knowledgeId);
-            if(!review) {
+            if (!review) {
                 practicePlan.setType(PracticePlan.KNOWLEDGE);
-            }else{
+            } else {
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
             }
             practicePlan.setPlanId(planId);
@@ -132,7 +130,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selected;
     }
 
-    private void sendWelcomeMsg(String openid, Problem problem) {
+    @Override
+    public void sendWelcomeMsg(String openid, Integer problemId) {
+        Problem problem = cacheService.getProblem(problemId);
+        if (problem == null) {
+            logger.error("problemId {} is invalid", problemId);
+        }
         Assert.notNull(openid, "openid不能为空");
         Assert.notNull(problem, "problem不能为空");
         TemplateMessage templateMessage = new TemplateMessage();
@@ -140,18 +143,18 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
-        templateMessage.setUrl(ConfigUtils.domainName()+ INDEX_URL);
+        templateMessage.setUrl(ConfigUtils.domainName() + INDEX_URL);
         Profile profile = accountService.getProfile(openid);
-        String first = "Hi，"+profile.getNickname()+"，你刚才选择了圈外小课：\n";
+        String first = "Hi，" + profile.getNickname() + "，你刚才选择了圈外小课：\n";
         int length = problem.getLength();
 
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
         String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.beforeDays(improvementPlan.getCloseDate(), 1));
 
-        data.put("first",new TemplateMessage.Keyword(first));
-        data.put("keyword1",new TemplateMessage.Keyword(problem.getProblem()));
-        data.put("keyword2",new TemplateMessage.Keyword("今天——"+closeDate));
-        data.put("remark",new TemplateMessage.Keyword("\n小tip：该小课共"+length+"节，建议每节至少做1道应用练习题，帮助你内化知识\n" +
+        data.put("first", new TemplateMessage.Keyword(first));
+        data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
+        data.put("keyword2", new TemplateMessage.Keyword("今天——" + closeDate));
+        data.put("remark", new TemplateMessage.Keyword("\n小tip：该小课共" + length + "节，建议每节至少做1道应用练习题，帮助你内化知识\n" +
                 "\n如有疑问请在下方对话框留言，后台小哥哥会在24小时内回复你~"));
         templateMessageService.sendMessage(templateMessage);
     }
@@ -164,11 +167,11 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlan.setUnlocked(true);
         practicePlan.setPlanId(planId);
         practicePlan.setType(PracticePlan.CHALLENGE);
-        practicePlan.setPracticeId(problem.getId()+"");
+        practicePlan.setPracticeId(problem.getId() + "");
         practicePlan.setStatus(0);
-        practicePlan.setSequence(WARMUP_SEQUENCE+APPLICATION_TASK_NUMBER+1);
+        practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
         practicePlan.setSeries(0);
-//            practicePlan.setSummary(false);
+        // practicePlan.setSummary(false);
         selected.add(practicePlan);
 
         return selected;
@@ -188,7 +191,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selectedPractice = Lists.newArrayList();
 
-        for(int sequence=1;sequence<=problemScheduleList.size();sequence++) {
+        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
@@ -198,7 +201,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用练习
-            for(int i=0; i<practices.size();i++){
+            for (int i = 0; i < practices.size(); i++) {
                 PracticePlan practicePlan = new PracticePlan();
                 //第一节内容自动解锁
                 if (sequence == 1) {
@@ -212,12 +215,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 } else {
                     practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
                 }
-                practicePlan.setSequence(WARMUP_SEQUENCE+1+i);
+                practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
                 practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
                 //设置节序号
                 practicePlan.setSeries(sequence);
                 practicePlan.setStatus(0);
-                practicePlan.setPracticeId(practices.get(i).getId()+"");
+                practicePlan.setPracticeId(practices.get(i).getId() + "");
                 selectedPractice.add(practicePlan);
             }
         }
@@ -231,7 +234,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> selectedPractice = Lists.newArrayList();
 
         //构建选择题
-        for(int sequence=1;sequence<=problemScheduleList.size();sequence++) {
+        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             PracticePlan practicePlan = new PracticePlan();
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
@@ -303,7 +306,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         } else {
             improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         }
-        improvementPlan.setRiseMember(profile.getRiseMember()!=0);
+        improvementPlan.setRiseMember(profile.getRiseMember() != 0);
         return improvementPlanDao.insert(improvementPlan);
 
     }

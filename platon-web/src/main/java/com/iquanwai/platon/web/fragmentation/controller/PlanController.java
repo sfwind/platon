@@ -249,6 +249,8 @@ public class PlanController {
             return WebUtils.error("非rise会员需要单独购买小课哦");
         }
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
+        // 生成小课之后发送选课成功通知
+        generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), problemId);
         // 初始化第一层promotionUser
 
         if (problemId.equals(trialProblemId)) {

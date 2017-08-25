@@ -664,6 +664,7 @@ public class PlanServiceImpl implements PlanService {
             // 用户从来没有开过小课，新开小课
             Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
             improvementPlanDao.updateCloseDate(planId, ConfigUtils.getMonthlyCampEndDate());
+            generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
