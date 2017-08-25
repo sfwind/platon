@@ -150,11 +150,10 @@ public interface PlanService {
      * 小课介绍页的按钮状态
      * @return
      */
-    Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
+    Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
     /**
      * 根据 OrderId 强开当前月的训练营小课
      */
     void forceOpenCampOrder(String orderId);
-
 }

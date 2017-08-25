@@ -19,6 +19,9 @@ public interface CourseReductionService {
 
     void saveCourseReductionPayedLog(QuanwaiOrder quanwaiOrder);
 
+    // TODO 8.31日0点删除
+    Boolean isPayZhangPeng(Integer profileId);
+
     /**
      * 获取用户最近参加的推广活动
      * @param profileId 用户id

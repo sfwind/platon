@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.systematism.CourseProgressService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
@@ -13,7 +12,6 @@ import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
-import com.iquanwai.platon.biz.po.systematism.ClassMember;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,8 +60,6 @@ public class LoginUserService {
     private OAuthService oAuthService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private CourseProgressService courseProgressService;
     @Autowired
     private PlanService planService;
     @Autowired
@@ -274,10 +270,8 @@ public class LoginUserService {
         Role role = accountService.getRole(profileId);
         if (role == null) {
             // 获得用户的openid，根据openid查询用户的学号
-            //如果报名了训练营或者开启了RISE,返回学生角色,反之返回陌生人
-            List<ClassMember> classMembers = courseProgressService.loadActiveCourse(profileId);
             List<ImprovementPlan> plans = planService.loadUserPlans(profileId);
-            if (classMembers.isEmpty() && plans.isEmpty()) {
+            if (plans.isEmpty()) {
                 role = Role.stranger();
             } else {
                 role = Role.student();

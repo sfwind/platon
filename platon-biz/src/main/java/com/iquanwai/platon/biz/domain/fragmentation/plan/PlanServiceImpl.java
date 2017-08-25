@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -59,7 +60,9 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
-    private ProblemService problemService;
+    private OperationEvaluateService operationEvaluateService;
+    @Autowired
+    private CardRepository cardRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -68,10 +71,7 @@ public class PlanServiceImpl implements PlanService {
         //解锁检查
         Integer series = improvementPlan.getCompleteSeries();
         Integer planId = improvementPlan.getId();
-//        if ((!improvementPlan.getRiseMember() && series >= 3)) {
-//            improvementPlan.setLockedStatus(-2);
-//        } else
-//
+
         //已过期不能解锁
         if (improvementPlan.getStatus() == ImprovementPlan.CLOSE
                 || improvementPlan.getStatus() == ImprovementPlan.TRIALCLOSE
@@ -151,14 +151,6 @@ public class PlanServiceImpl implements PlanService {
         } else {
             // 未关闭 ,未关闭的都显示
             improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-//
-//            if (improvementPlan.getRiseMember()) {
-//                // 会员 显示关闭时间
-//                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()) + 1);
-//            } else {
-//                // 非会员，不显示
-//                improvementPlan.setDeadline(-1);
-//            }
         }
     }
 
@@ -301,20 +293,10 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
-
-//        if (riseMember) {
         if (plans.size() >= 2) {
             // 会员已经有两门再学
             return new MutablePair<>(-1, "为了更专注的学习，同时最多进行两门小课。先完成进行中的一门，再选新课哦");
         }
-//        }
-
-//        else {
-//            if (plans.size() >= 1) {
-//                // 非会员已经有一门了，则不可再选
-//                return new MutablePair<>(-2, "试用版是能试用一门小课哦");
-//            }
-//        }
 
         return new MutablePair<>(1, "");
     }
@@ -572,14 +554,14 @@ public class PlanServiceImpl implements PlanService {
         }
         // 当前章节 和 完成章节相等
         if (isLearningSuccess) {
-            return problemService.loadEssenceCardImg(profileId, problemId, targetChapterId);
+            return cardRepository.loadEssenceCardImg(profileId, problemId, targetChapterId);
         } else {
             return null;
         }
     }
 
     @Override
-    public Integer problemIntroductionButtonStatus(Boolean isMember, Integer problemId,
+    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId,
                                                    ImprovementPlan plan, Boolean autoOpen) {
         Integer buttonStatus;
 
@@ -592,13 +574,20 @@ public class PlanServiceImpl implements PlanService {
             } else {
                 // 不是会员
                 if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-                    // 当前课程正好是限免小课
-                    if (autoOpen != null && autoOpen) {
-                        // 限免小课自动开课，显示"下一步"
-                        buttonStatus = 7;
-                    } else {
-                        // 是限免小课，显示"限时免费"
+                    // 是限免小课
+                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
+                    if (hasTrialAuthority) {
+                        // 是限免小课，且此时有限免权限，显示"限时免费"
                         buttonStatus = 5;
+                    } else {
+                        // 判断是否参加过测评活动
+                        boolean hasParticipateEvaluate = operationEvaluateService.hasParticipateEvaluate(profileId);
+                        if(hasParticipateEvaluate) {
+                            // 限免小课，左侧 ￥{fee}, 立即学习 | 免费获取
+                            buttonStatus = 8;
+                        } else {
+                            buttonStatus = 1;
+                        }
                     }
                 } else {
                     // 当前课程不是限免小课

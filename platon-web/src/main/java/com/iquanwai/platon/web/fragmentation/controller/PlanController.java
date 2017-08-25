@@ -4,25 +4,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.PromotionUser;
-import com.iquanwai.platon.biz.po.Recommendation;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
@@ -36,11 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -152,7 +139,7 @@ public class PlanController {
                 }
                 break;
             }
-            case 3: {
+            case 5: {
                 // 限免小课试用
                 if (!problemId.equals(freeProblemId)) {
                     // 不是限免小课
@@ -162,9 +149,6 @@ public class PlanController {
                     if (plan != null) {
                         // 已经试用过了
                         return WebUtils.error("您已经试用过该小课，无法重复试用");
-                    } else {
-                        // 没有试用过
-                        LOGGER.error("数据异常，请联系管理员 {}", loginUser.getOpenId());
                     }
                 }
                 break;
@@ -241,7 +225,8 @@ public class PlanController {
                 // 解锁了
                 if (problemId.equals(trialProblemId)) {
                     // 限免小课
-                    operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+                    operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
+                            PromotionConstants.FreeLimitAction.TrialCourse);
                 }
                 OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                         .module("RISE")
@@ -270,7 +255,8 @@ public class PlanController {
             // TODO 活动结束后删除,如果是自然增长，就插入
             operationFreeLimitService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
             // 限免小课
-            operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(), PromotionUser.TRIAL);
+            operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
+                    PromotionConstants.FreeLimitAction.TrialCourse);
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")

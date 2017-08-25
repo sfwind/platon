@@ -11,8 +11,9 @@ public interface CardRepository {
 
     /**
      * 获取精华卡
+     * 返回base64
      * */
-    BufferedImage loadEssenceCardImg(Profile profile, Integer problemId, Integer chapterId, int totalSize);
+    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
     /**
      * 获取缩略图url

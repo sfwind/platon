@@ -25,9 +25,7 @@ public interface OperationFreeLimitService {
     void recordOrderAndSendMsg(String openId, Integer newAction);
 
     /**
-     * 自动选课后,发送开课消息
+     * 是否获得推广优惠券
      */
-    void sendCustomerMsg(String openId);
-
     Boolean hasGetTheCoupon(Integer profileId);
 }
