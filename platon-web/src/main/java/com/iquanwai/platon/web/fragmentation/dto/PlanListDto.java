@@ -17,4 +17,5 @@ public class PlanListDto {
     private List<Problem> recommendations;
     private Boolean riseMember;
     private Boolean openNavigator;
+    private Boolean openWelcome;
 }

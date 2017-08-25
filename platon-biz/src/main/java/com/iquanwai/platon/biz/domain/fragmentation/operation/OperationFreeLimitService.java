@@ -11,13 +11,6 @@ public interface OperationFreeLimitService {
     void recordPromotionLevel(String openId, String scene);
 
     /**
-     * 初始化第一层用户
-     * @param openId 用户OpenId
-     * @param riseMember 是否会员
-     */
-    void initFirstPromotionLevel(String openId, Integer riseMember);
-
-    /**
      * 1、非新人报名成功，不做任何处理
      * 2、新人报名成功，记录报名信息，给其推广人发送推广成功信息
      * 3、若当前推广人成功推广人数超过 n 个，则发送优惠券信息

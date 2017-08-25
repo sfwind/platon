@@ -133,29 +133,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     }
 
     @Override
-    public void initFirstPromotionLevel(String openId, Integer riseMember) {
-        // 不是会员
-        if (riseMember != null && riseMember != 1) {
-            Profile profile = accountService.getProfile(openId);
-            List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), PromotionConstants.Activities.FreeLimit);
-            if (promotionActivities.size() == 0) {
-                // 用户行为
-                PromotionActivity promotionActivity = new PromotionActivity();
-                promotionActivity.setAction(PromotionConstants.FreeLimitAction.InitState);
-                promotionActivity.setProfileId(profile.getId());
-                promotionActivity.setActivity(PromotionConstants.Activities.FreeLimit);
-                promotionActivityDao.insertPromotionActivity(promotionActivity);
-
-                // promotionLevel 插入数据
-                PromotionLevel targetPromotionLevel = getDefaultPromotionLevel();
-                targetPromotionLevel.setProfileId(profile.getId());
-                targetPromotionLevel.setLevel(1);
-                promotionLevelDao.insertPromotionLevel(targetPromotionLevel);
-            }
-        }
-    }
-
-    @Override
     public void recordOrderAndSendMsg(String openId, Integer newAction) {
         Profile profile = accountService.getProfile(openId);
         List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profile.getId(), PromotionConstants.Activities.FreeLimit);

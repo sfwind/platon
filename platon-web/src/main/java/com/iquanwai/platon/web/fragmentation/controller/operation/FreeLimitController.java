@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -58,7 +59,7 @@ public class FreeLimitController {
         Assert.notNull(loginUser, "用户不能为空");
         FreeLimitResult result = new FreeLimitResult();
         Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
-        if (learnBefore || loginUser.getRiseMember() == 1) {
+        if (learnBefore || loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
             result.setLearnFreeLimit(true);
         } else {
             result.setLearnFreeLimit(false);

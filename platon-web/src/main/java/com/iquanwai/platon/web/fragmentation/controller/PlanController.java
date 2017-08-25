@@ -255,8 +255,6 @@ public class PlanController {
         // 初始化第一层promotionUser
 
         if (problemId.equals(trialProblemId)) {
-            // TODO 活动结束后删除,如果是自然增长，就插入
-            operationFreeLimitService.initFirstPromotionLevel(loginUser.getOpenId(), loginUser.getRiseMember());
             // 限免小课
             operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
                     PromotionConstants.FreeLimitAction.TrialCourse);
@@ -436,6 +434,7 @@ public class PlanController {
         return WebUtils.success();
     }
 
+    @Deprecated
     @RequestMapping("/welcome")
     public ResponseEntity<Map<String, Object>> welcome(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -581,6 +580,7 @@ public class PlanController {
 
         PlanListDto planListDto = new PlanListDto();
         planListDto.setOpenNavigator(loginUser.getOpenNavigator());
+        planListDto.setOpenWelcome(loginUser.getOpenWelcome());
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setTrialClosedPlans(trialClosedPlans);

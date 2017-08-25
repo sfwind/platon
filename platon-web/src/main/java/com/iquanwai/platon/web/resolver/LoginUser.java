@@ -26,10 +26,11 @@ public class LoginUser {
     private Boolean openApplication; // 是否打开过应用练习
     private Boolean openConsolidation; // 是否打开过巩固练习
     private Integer Device; // 1-pc 2-mobile
+    private Boolean openWelcome; //是否打开过欢迎页
 
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(), "风之伤",
-                Profile.DEFAULT_AVATAR, null, 5, null, true, true, 0, true, true, 1);
+                Profile.DEFAULT_AVATAR, null, 5, null, true, true, 0, true, true, 1, true);
     }
 
 }
