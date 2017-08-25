@@ -99,7 +99,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         suggestionMap.put(2, "根据测评结果，我们建议你:\n\n" +
                 "  1. 掌握更多的提问技巧，挖掘他人隐藏的真实需求\n" +
-                "  2. 提升自己的分析能力，遇到难题时，先找到根本原因" +
+                "  2. 提升自己的分析能力，遇到难题时，先找到根本原因\n" +
                 "  3. 找到根本原因后，根据关键程度和解决成本，定位最有价值的问题\n\n" +
                 "当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
                 "\n" +
