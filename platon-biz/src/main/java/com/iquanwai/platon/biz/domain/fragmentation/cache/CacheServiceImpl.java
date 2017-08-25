@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.AudioDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
@@ -11,6 +12,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.ProblemSubCatalogDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
+import com.iquanwai.platon.biz.po.Audio;
 import com.iquanwai.platon.biz.po.Choice;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.Problem;
@@ -52,6 +54,8 @@ public class CacheServiceImpl implements CacheService {
     private ProblemCatalogDao problemCatalogDao;
     @Autowired
     private ProblemSubCatalogDao problemSubCatalogDao;
+    @Autowired
+    private AudioDao audioDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -74,9 +78,10 @@ public class CacheServiceImpl implements CacheService {
         knowledgeList.forEach(knowledge -> {
             knowledgeMap.put(knowledge.getId(), knowledge);
             if (ConfigUtils.isHttps()) {
-                knowledge.setAudio(StringUtils.replace(knowledge.getAudio(), "http:", "https:"));
                 knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
             }
+            // 设置音频字段
+            initAudio(knowledge);
         });
         logger.info("knowledge init complete");
 
@@ -86,7 +91,11 @@ public class CacheServiceImpl implements CacheService {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
             problem.setChapterList(chapterList);
             if (ConfigUtils.isHttps()) {
-                problem.setAudio(StringUtils.replace(problem.getAudio(), "http:", "https:"));
+                if (problem.getAudioId() != null) {
+                    Audio audio = audioDao.load(Audio.class, problem.getAudioId());
+                    problem.setAudio(audio.getUrl());
+                    problem.setAudioWords(audio.getWords());
+                }
                 problem.setPic(StringUtils.replace(problem.getPic(), "http:", "https:"));
                 problem.setDescPic(StringUtils.replace(problem.getDescPic(), "http:", "https:"));
                 problem.setAuthorPic(StringUtils.replace(problem.getAuthorPic(), "http:", "https:"));
@@ -147,6 +156,37 @@ public class CacheServiceImpl implements CacheService {
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
 
+    }
+
+    private void initAudio(Knowledge knowledge){
+        if (knowledge.getAudioId() != null) {
+            Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
+            if (audio != null) {
+                knowledge.setAudioWords(audio.getWords());
+                knowledge.setAudio(audio.getUrl());
+            }
+        }
+        if (knowledge.getKeynoteAudioId() != null) {
+            Audio audio = audioDao.load(Audio.class, knowledge.getKeynoteAudioId());
+            if (audio != null) {
+                knowledge.setKeynoteAudioWords(audio.getWords());
+                knowledge.setKeynoteAudio(audio.getUrl());
+            }
+        }
+        if (knowledge.getMeansAudioId() != null) {
+            Audio audio = audioDao.load(Audio.class, knowledge.getMeansAudioId());
+            if (audio != null) {
+                knowledge.setMeansAudioWords(audio.getWords());
+                knowledge.setMeansAudio(audio.getUrl());
+            }
+        }
+        if (knowledge.getAnalysisAudioId() != null) {
+            Audio audio = audioDao.load(Audio.class, knowledge.getAnalysisAudioId());
+            if (audio != null) {
+                knowledge.setAnalysisAudioWords(audio.getWords());
+                knowledge.setAnalysisAudio(audio.getUrl());
+            }
+        }
     }
 
     @Override
