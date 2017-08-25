@@ -169,7 +169,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
                     PromotionConstants.EvaluateAction.FinishEvaluate, activity);
             if (activities.size() == 1) {
-                checkAwardAndSendMsg(profileId, freeLimit);
+                checkAwardAndSendMsg(profileId);
             }
         }
 
@@ -189,16 +189,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      */
     @Override
     public void recordPayAction(Integer profileId) {
-        boolean freeLimit = false;
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, ConfigUtils.getTrialProblemId());
-        if(improvementPlan!=null){
-            freeLimit = true;
-        } else {
-            Profile profile = accountService.getProfile(profileId);
-            if(profile.getRiseMember() == 1){
-                freeLimit = true;
-            }
-        }
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel == null) return;
@@ -208,7 +198,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
                 PromotionConstants.EvaluateAction.FinishEvaluate, activity);
         if (activities.size() == 1) {
-            checkAwardAndSendMsg(profileId, freeLimit);
+            checkAwardAndSendMsg(profileId);
         }
     }
 
@@ -343,20 +333,34 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 查看获取当前已经获取的奖励，并且同时发送消息
-    private void checkAwardAndSendMsg(Integer profileId, Boolean freeLimit) {
+    private void checkAwardAndSendMsg(Integer profileId) {
         // 某人完成测评，需要查看他的推广人信息
         PromotionLevel source = promotionLevelDao.loadByProfileId(profileId, activity);
         if (source == null || source.getPromoterId() == null) return;
 
-        Integer sourceId = source.getPromoterId();
+        // 推广人id
+        Integer sourceProfileId = source.getPromoterId();
 
-        Integer remainTrial = accessTrial(sourceId);
+        boolean freeLimit = false;
+        ImprovementPlan improvementPlan = improvementPlanDao.
+                loadPlanByProblemId(sourceProfileId, ConfigUtils.getTrialProblemId());
+        if(improvementPlan!=null){
+            freeLimit = true;
+        } else {
+            Profile sourceProfile = accountService.getProfile(sourceProfileId);
+            if(sourceProfile.getRiseMember() == 1){
+                freeLimit = true;
+            }
+        }
+
+        Integer remainTrial = accessTrial(sourceProfileId);
+        // 发送给推广人的消息
         if (remainTrial == 0) {
             if(!freeLimit){
-                sendSuccessTrialMsg(profileId, sourceId);
+                sendSuccessTrialMsg(profileId, sourceProfileId);
             }
         } else if (remainTrial > 0) {
-            sendNormalTrialMsg(sourceId, profileId, remainTrial, freeLimit);
+            sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, freeLimit);
         }
     }
 
@@ -389,7 +393,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 发送普通限免小课信息
-    private void sendNormalTrialMsg(Integer targetProfileId, Integer promotedUserId, Integer remainCount, Boolean freeLimit) {
+    private void sendNormalTrialMsg(Integer promotedUserId, Integer targetProfileId, Integer remainCount, Boolean freeLimit) {
         Profile targetProfile = accountService.getProfile(targetProfileId);
         Profile promoterProfile = accountService.getProfile(promotedUserId);
         TemplateMessage templateMessage = new TemplateMessage();
@@ -420,10 +424,12 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     // 发送成功获得限免小课试用信息
-    private void sendSuccessTrialMsg(Integer promotedUserId, Integer profileId) {
+    private void sendSuccessTrialMsg(Integer promotedUserId, Integer targetProfileId) {
         // 发送模板消息
+        // 被推荐人
         Profile promoterProfile = accountService.getProfile(promotedUserId);
-        Profile profile = accountService.getProfile(profileId);
+        // 推荐人
+        Profile profile = accountService.getProfile(targetProfileId);
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTouser(profile.getOpenid());
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
@@ -491,6 +497,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                     otherLevel.setValid(0);
                     promotionLevelDao.insertPromotionLevel(otherLevel);
 
+                    selfLevel.setPromoterId(sourceId);
                     selfLevel.setLevel(2);
                     promotionLevelDao.insertPromotionLevel(selfLevel);
                 }

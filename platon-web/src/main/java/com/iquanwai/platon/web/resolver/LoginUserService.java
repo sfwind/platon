@@ -318,36 +318,37 @@ public class LoginUserService {
     }
 
     public LoginUser getLoginUser(String openId, Platform platform) {
-        Profile account = null;
+        Profile profile = null;
         try {
             Account temp = accountService.getAccount(openId, false);
             if (temp != null) {
-                account = accountService.getProfile(openId);
+                profile = accountService.getProfile(openId);
             }
         } catch (NotFollowingException e) {
             logger.error("异常，openid:{}，没有查到", openId);
         }
 
-        if(account==null){
+        if(profile==null){
             logger.error("openId {} is not found in db", openId);
             return null;
         }
 
-        Role role = this.getUserRole(account.getId());
+        Role role = this.getUserRole(profile.getId());
         LoginUser loginUser = new LoginUser();
-        loginUser.setId(account.getId());
-        loginUser.setOpenId(account.getOpenid());
-        loginUser.setWeixinName(account.getNickname());
-        loginUser.setHeadimgUrl(account.getHeadimgurl());
-        loginUser.setRealName(account.getRealName());
+        loginUser.setId(profile.getId());
+        loginUser.setOpenId(profile.getOpenid());
+        loginUser.setWeixinName(profile.getNickname());
+        loginUser.setHeadimgUrl(profile.getHeadimgurl());
+        loginUser.setRealName(profile.getRealName());
         loginUser.setRole(role.getId());
-        loginUser.setSignature(account.getSignature());
-        loginUser.setOpenRise(account.getOpenRise());
-        loginUser.setOpenConsolidation(account.getOpenConsolidation());
-        loginUser.setOpenApplication(account.getOpenApplication());
-        loginUser.setOpenNavigator(account.getOpenNavigator());
+        loginUser.setSignature(profile.getSignature());
+        loginUser.setOpenRise(profile.getOpenRise());
+        loginUser.setOpenConsolidation(profile.getOpenConsolidation());
+        loginUser.setOpenApplication(profile.getOpenApplication());
+        loginUser.setOpenNavigator(profile.getOpenNavigator());
+        loginUser.setOpenWelcome(profile.getOpenWelcome());
         loginUser.setDevice(platform.getValue());
-        loginUser.setRiseMember(account.getRiseMember());
+        loginUser.setRiseMember(profile.getRiseMember());
         return loginUser;
     }
 

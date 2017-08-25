@@ -61,6 +61,10 @@ public interface AccountService {
      * 更新是否打开rise巩固练习
      */
     int updateOpenConsolidation(Integer id);
+    /**
+     * 更新是否打开rise巩固练习
+     */
+    int updateOpenWelcome(Integer id);
 
     /**
      * 在个人中心里提交用户信息
