@@ -274,6 +274,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public int updateOpenWelcome(Integer id) {
+        return profileDao.updateOpenWelcome(id);
+    }
+
+    @Override
     public void submitPersonalCenterProfile(Profile profile) {
         Assert.notNull(profile.getId(), "profileId 不能为空");
         Profile oldProfile = profileDao.load(Profile.class, profile.getId());
