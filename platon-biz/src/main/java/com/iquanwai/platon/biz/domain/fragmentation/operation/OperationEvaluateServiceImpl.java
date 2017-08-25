@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
@@ -165,9 +166,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel != null) {
             recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FinishEvaluate);
-
-            List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
-                    PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+            List<Integer> actions = Lists.newArrayList();
+            actions.add(PromotionConstants.EvaluateAction.FinishEvaluate);
+            actions.add(PromotionConstants.EvaluateAction.BuyCourse);
+            List<PromotionActivity> activities = promotionActivityDao.loadActionList(profileId,
+                    actions, activity);
             if (activities.size() == 1) {
                 checkAwardAndSendMsg(profileId);
             }
@@ -195,8 +198,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BuyCourse);
 
-        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
-                PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+        List<Integer> actions = Lists.newArrayList();
+        actions.add(PromotionConstants.EvaluateAction.FinishEvaluate);
+        actions.add(PromotionConstants.EvaluateAction.BuyCourse);
+        List<PromotionActivity> activities = promotionActivityDao.loadActionList(profileId,
+                actions, activity);
         if (activities.size() == 1) {
             checkAwardAndSendMsg(profileId);
         }

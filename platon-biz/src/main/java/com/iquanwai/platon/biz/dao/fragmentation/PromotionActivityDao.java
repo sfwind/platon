@@ -76,15 +76,41 @@ public class PromotionActivityDao extends DBUtil {
         return Lists.newArrayList();
     }
 
-    public List<PromotionActivity> loadDistinctActionCount(Integer profileId, Integer action, String activity) {
+    public List<PromotionActivity> loadDistinctAction(Integer profileId, Integer action, String activity) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM PromotionActivity WHERE ProfileId = ? AND Action = ? AND Activity = ?";
         ResultSetHandler<List<PromotionActivity>> h = new BeanListHandler<>(PromotionActivity.class);
         try {
             return runner.query(sql, h, profileId, action, activity);
         } catch (SQLException e) {
-            return null;
+            logger.error(e.getLocalizedMessage(), e);
         }
+
+        return Lists.newArrayList();
+    }
+
+    public List<PromotionActivity> loadActionList(Integer profileId, List<Integer> actions, String activity) {
+        if(CollectionUtils.isEmpty(actions)){
+            return Lists.newArrayList();
+        }
+
+        String questionMarks = produceQuestionMark(actions.size());
+        ResultSetHandler<List<PromotionActivity>> h = new BeanListHandler<>(PromotionActivity.class);
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM PromotionActivity WHERE ProfileId = ? AND Action IN (" + questionMarks + ") " +
+                "AND Activity = ?";
+        List<Object> objects = Lists.newArrayList();
+        objects.add(profileId);
+        objects.addAll(actions);
+        objects.add(activity);
+
+        try {
+            return runner.query(sql, h, profileId, objects.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return Lists.newArrayList();
     }
 
 }
