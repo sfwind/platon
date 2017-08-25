@@ -312,22 +312,8 @@ public class ConfigUtils {
         return getIntValue("monthly.camp.month");
     }
 
-    /**
-     * 获取每月训练营小课对应的金额
-     */
-    public static Double getMonthlyCampFee() {
-        return getDoubleValue("monthly.camp.fee");
-    }
-
-    /**
-     * 获取当前训练营小课生成的 ClassId
-     */
-    public static String getMonthlyCampClassId() {
-        return getValue("monthly.camp.classId");
-    }
-
-    public static Date getMonthlyCampEndDate() {
-        return DateUtils.parseStringToDate(getValue("monthly.camp.end.date"));
+    public static Date getMonthlyCampCloseDate() {
+        return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
     }
 
 }
