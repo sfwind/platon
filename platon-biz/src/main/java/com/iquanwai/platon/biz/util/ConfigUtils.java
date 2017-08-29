@@ -286,13 +286,6 @@ public class ConfigUtils {
     }
 
     /**
-     * 获取训练营小课安排 json
-     */
-    public static String getRequiredClassSchedule() {
-        return getValue("requiredClass.schedule");
-    }
-
-    /**
      * 获取应用练习得分列表
      */
     public static Map<Integer, Integer> getWorkScoreMap() {
