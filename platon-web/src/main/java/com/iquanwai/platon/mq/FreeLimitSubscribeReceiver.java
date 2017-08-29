@@ -2,8 +2,11 @@ package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
@@ -28,11 +31,15 @@ public class FreeLimitSubscribeReceiver {
     @Autowired
     private OperationFreeLimitService operationFreeLimitService;
     @Autowired
+    private OperationEvaluateService operationEvaluateService;
+    @Autowired
     private CustomerMessageService customerMessageService;
     @Autowired
     private CacheService cacheService;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
+    @Autowired
+    private AccountService accountService;
 
     @PostConstruct
     public void init() {
@@ -58,6 +65,10 @@ public class FreeLimitSubscribeReceiver {
             // 只记录限免小课活动
             if (sceneParams.length == 3) {
                 operationFreeLimitService.recordPromotionLevel(openId, scene);
+                // TODO 测评活动结束后删除
+                Profile profile = accountService.getProfile(openId);
+                operationEvaluateService.recordScan(profile.getId(), sceneParams[1]);
+
                 String sendMsg;
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                     sendMsg = "欢迎来到【圈外职场研究所】\n\n" +

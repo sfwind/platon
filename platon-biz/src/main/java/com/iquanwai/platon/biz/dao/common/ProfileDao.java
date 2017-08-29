@@ -116,9 +116,14 @@ public class ProfileDao extends DBUtil {
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
             return result.get();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
+        } catch (InterruptedException e) {
+            // ignore
+        } catch (ExecutionException e) {
+            logger.error(e.getMessage(), e);
         }
+
         return -1;
     }
 
@@ -129,8 +134,12 @@ public class ProfileDao extends DBUtil {
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
             return result.get();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
+        } catch (InterruptedException e) {
+            // ignore
+        } catch (ExecutionException e) {
+            logger.error(e.getMessage(), e);
         }
         return -1;
     }
@@ -200,5 +209,22 @@ public class ProfileDao extends DBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    public int updateOpenWelcome(Integer id) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        String updateSql = "Update Profile Set OpenWelcome=1 where Id=?";
+        try {
+            Future<Integer> result = asyncRun.update(updateSql, id);
+            return result.get();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        } catch (InterruptedException e) {
+            // ignore
+        } catch (ExecutionException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return -1;
     }
 }

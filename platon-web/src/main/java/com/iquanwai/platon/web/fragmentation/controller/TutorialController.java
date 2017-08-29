@@ -93,6 +93,16 @@ public class TutorialController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/welcome", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> openWelcome(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        int count = accountService.updateOpenWelcome(loginUser.getId());
+        if (count > 0) {
+            sendMqMessage(loginUser.getOpenId());
+        }
+        return WebUtils.result(loginUser.getRiseMember());
+    }
+
     @RequestMapping("/status")
     public ResponseEntity<Map<String, Object>> getOpenStatus(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
