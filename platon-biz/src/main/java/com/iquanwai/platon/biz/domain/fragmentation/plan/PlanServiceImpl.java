@@ -2,12 +2,16 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -36,17 +40,25 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private GeneratePlanService generatePlanService;
+    @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
     @Autowired
     private TemplateMessageService templateMessageService;
     @Autowired
+    private AccountService accountService;
+    @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
     private RiseCourseDao riseCourseDao;
+    @Autowired
+    private MonthlyCampOrderDao monthlyCampOrderDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private OperationEvaluateService operationEvaluateService;
     @Autowired
@@ -560,7 +572,7 @@ public class PlanServiceImpl implements PlanService {
                 // 是会员，显示按钮"选择该小课"
                 buttonStatus = 2;
             } else {
-                // 不是会员，查询一下这个小课是不是限免小课
+                // 不是会员
                 if (problemId.equals(ConfigUtils.getTrialProblemId())) {
                     // 是限免小课
                     boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
@@ -578,8 +590,16 @@ public class PlanServiceImpl implements PlanService {
                         }
                     }
                 } else {
-                    // 不是限免小课，显示"¥ {fee}，立即学习"
-                    buttonStatus = 1;
+                    // 当前课程不是限免小课
+                    List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
+                    List<Integer> scheduleProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+                    if (scheduleProblemIds.contains(problemId)) {
+                        // 是当前配置月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
+                        buttonStatus = 9;
+                    } else {
+                        // 不是当月的训练营小课，显示"¥ {fee}，立即学习"
+                        buttonStatus = 1;
+                    }
                 }
             }
         } else {
@@ -619,6 +639,38 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return buttonStatus;
+    }
+
+    @Override
+    public void forceOpenCampOrder(String orderId) {
+        MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
+        Integer profileId = monthlyCampOrder.getProfileId();
+
+        Integer month = monthlyCampOrder.getMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
+        for (MonthlyCampSchedule schedule : schedules) {
+            Integer problemId = schedule.getProblemId();
+            forceOpenProblem(profileId, problemId);
+        }
+    }
+
+    /**
+     * 根据 profileId 和 problemId 强开当前小课
+     */
+    private void forceOpenProblem(Integer profileId, Integer problemId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Profile profile = accountService.getProfile(profileId);
+        if (improvementPlan == null) {
+            // 用户从来没有开过小课，新开小课
+            Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
+            improvementPlanDao.updateCloseDate(planId, ConfigUtils.getMonthlyCampCloseDate());
+            generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
+        } else {
+            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
+            generatePlanService.forceReopenPlan(improvementPlan.getId());
+            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
+            improvementPlanDao.updateCloseDate(improvementPlan.getId(), ConfigUtils.getMonthlyCampCloseDate());
+        }
     }
 
 }

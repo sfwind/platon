@@ -111,6 +111,19 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
     }
 
+    /**
+     * 将某个 plan 下的所有节数全部解锁
+     */
+    public void batchUnlockByPlanId(Integer planId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE PracticePlan SET UnLocked = 1 WHERE PlanId = ?";
+        try {
+            runner.update(sql, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public List<PracticePlan> loadBySeries(Integer planId, Integer series){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);

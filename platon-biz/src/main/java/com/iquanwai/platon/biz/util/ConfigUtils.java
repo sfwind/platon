@@ -10,10 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.io.File;
-import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 @Component
 public class ConfigUtils {
@@ -282,10 +279,10 @@ public class ConfigUtils {
     }
 
     /**
-     * 获取训练营小课安排 json
+     * rise小课测试状态
      */
-    public static String getRequiredClassSchedule() {
-        return getValue("requiredClass.schedule");
+    public static Boolean getRiseCoursePayTestStatus() {
+        return getBooleanValue("rise.course.pay.test");
     }
 
     /**
@@ -299,6 +296,17 @@ public class ConfigUtils {
             scoreMap.put(i + 1, Integer.parseInt(split[i]));
         }
         return scoreMap;
+    }
+
+    /**
+     * 获取每月训练营小课对应生效月份
+     */
+    public static Integer getMonthlyCampMonth() {
+        return getIntValue("monthly.camp.month");
+    }
+
+    public static Date getMonthlyCampCloseDate() {
+        return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
     }
 
 }

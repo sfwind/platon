@@ -145,7 +145,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
             if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_MEMBER)) {
                 // 会员
                 activity.setAction(PromotionConstants.CourseReductionAction.PayMember);
-            } else if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_RISE_COURSE)) {
+            } else if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_COURSE)) {
                 // 小课
                 activity.setAction(PromotionConstants.CourseReductionAction.PayCourse);
                 // TODO 8.31日0点删除
