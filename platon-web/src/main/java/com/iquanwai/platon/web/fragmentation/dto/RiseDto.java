@@ -14,6 +14,7 @@ public class RiseDto {
     private String memberType;
     private String mobile;
     private Boolean isRiseMember;
+    private String nickName;
 
 
     // 优惠券信息
