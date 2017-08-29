@@ -88,22 +88,10 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "<a href='" + ConfigUtils.adapterDomainName() +
                     "/rise/static/plan/view?id=" +
                     problem.getId() +
-                    "&free=true'>『" + problem.getProblem() + "』</a>\n" +
-                    "\n" +
-                    "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
-                    "\n" +
-                    "礼包内含：张良计主讲小课+思考力小课+课程群服务\n" +
-                    "\n" +
-                    "心动啦？以上福利仅在23号~30号赠送哦~赶快购买吧！";
+                    "&free=true'>『" + problem.getProblem() + "』</a>\n";
         } else {
             sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
-                    "\n" +
-                    "凡是购买Boy小课的真爱粉丝，我们为你准备了一个粉丝大礼包\uD83C\uDF81\n" +
-                    "\n" +
-                    "礼包内含：张良计主讲小课+思考力小课+课程群服务\n" +
-                    "\n" +
-                    "心动啦？以上福利仅在23号~30号赠送哦~赶快购买吧！\n" +
-                    "点击\"上课啦\"开始上课";
+                    "点击\"上课啦\" 进入发现页面购买小课吧！";
         }
 
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
