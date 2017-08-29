@@ -1,14 +1,12 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseReductionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.CourseReductionActivity;
 import com.iquanwai.platon.biz.po.Problem;
@@ -19,7 +17,6 @@ import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,9 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -136,50 +131,11 @@ public class CourseReductionServiceImpl implements CourseReductionService {
             } else if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_COURSE)) {
                 // 小课
                 activity.setAction(PromotionConstants.CourseReductionAction.PayCourse);
-                // TODO 8.31日0点删除
-                if ("19".equals(quanwaiOrder.getGoodsId())) {
-//                    PromotionActivity temp = new PromotionActivity();
-//                    temp.setProfileId(profile.getId());
-//                    temp.setActivity(promotionLevel.getActivity());
-//                    temp.setAction(PromotionContants.CourseReductionAction.PayZhangPeng);
-//                    promotionActivityDao.insertPromotionActivity(temp);
-                    TemplateMessage templateMessage = new TemplateMessage();
-                    templateMessage.setTouser(profile.getOpenid());
-                    String msgId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "2n8N79pHw8tBHwTUdManihUnCrKl2FEpELtq-sDF0NU" : "crZiCkNMCec7svHsHcKSxTTzPT5NWOA1To5HmhyaDeE";
-                    Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-                    templateMessage.setTemplate_id(msgId);
-                    templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword(
-                            "亲爱的Boy粉，我们很高兴你能加入我们，和数十万职场人一起提升自我。\n\n" +
-                                    "我们为你准备了一个大礼包，内含价值99元的思考力课程一门和一张粉丝团通行证。\n"));
-                    data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
-                    data.put("keyword2", new TemplateMessage.Keyword("张良计Boy粉丝礼包"));
-                    data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-                    data.put("remark", new TemplateMessage.Keyword("\n点击详情拆开礼包哦↓↓↓"));
-                    templateMessage.setUrl("https://shimo.im/doc/Vc0qdZw0Qv8VIlqS?r=NPGKQE/");
-                    templateMessageService.sendMessage(templateMessage);
-                }
             }
             promotionActivityDao.insertPromotionActivity(activity);
         }
     }
 
-
-    // TODO 8.31日0点删除
-    @Override
-    public Boolean isPayZhangPeng(Integer profileId){
-        List<PromotionLevel> promotionLevels = promotionLevelDao.loadByRegex(PromotionConstants.Activities.CourseReduction, profileId);
-        for (PromotionLevel promotionLevel : promotionLevels) {
-            List<PromotionActivity> promotionActivities = promotionActivityDao.loadPromotionActivities(profileId, promotionLevel.getActivity());
-            for (PromotionActivity activity : promotionActivities) {
-                if (activity.getAction() == PromotionConstants.CourseReductionAction.PayZhangPeng) {
-                    // 购买张鹏课程
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
 
     @Override
