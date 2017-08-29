@@ -82,6 +82,7 @@ public interface Constants {
         int FREE = 0;
         int MEMBERSHIP = 1;
         int COURSE_USER = 2;
+        int MONTHLY_CAMP = 3;
     }
 
     interface HTTP_TIMEOUT{
