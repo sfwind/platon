@@ -100,6 +100,7 @@ public class CustomerController {
         riseDto.setRiseId(profile.getRiseId());
         riseDto.setMobile(profile.getMobileNo());
         riseDto.setIsRiseMember(profile.getRiseMember() == 1);
+        riseDto.setNickName(profile.getNickname());
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
