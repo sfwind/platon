@@ -293,6 +293,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public void submitCertificateProfile(Profile profile) {
+        profileDao.submitCertificateProfile(profile);
+    }
+
+    @Override
     public void reloadRegion() {
         provinceList = regionDao.loadAllProvinces();
         cityList = regionDao.loadAllCities();

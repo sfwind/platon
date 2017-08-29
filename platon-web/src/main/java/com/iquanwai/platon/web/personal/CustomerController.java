@@ -6,12 +6,14 @@ import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -37,11 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -72,6 +70,8 @@ public class CustomerController {
     private QuestionService questionService;
     @Autowired
     private AnswerService answerService;
+    @Autowired
+    private CertificateService certificateService;
 
 
     @RequestMapping("/event/list")
@@ -153,6 +153,38 @@ public class CustomerController {
         profile.setId(loginUser.getId());
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/profile/certificate", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitCertificateProfile(LoginUser loginUser, @RequestBody ProfileDto profileDto) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("提交个人信息");
+        operationLogService.log(operationLog);
+        Profile profile = new Profile();
+        try {
+            BeanUtils.copyProperties(profile, profileDto);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("beanUtils copy props error", e);
+            return WebUtils.error("提交个人信息失败");
+        }
+        profile.setId(loginUser.getId());
+        accountService.submitCertificateProfile(profile);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> getCertificate(LoginUser loginUser, @PathVariable String certificateNo) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("获取证书");
+        operationLogService.log(operationLog);
+        RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
+        return WebUtils.result(riseCertificate);
     }
 
     @RequestMapping("/region")
