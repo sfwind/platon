@@ -183,7 +183,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public String loadProblemSchedule(Integer problemId) {
         MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
-        if (schedule.getMonth() != null) {
+        if (schedule != null && schedule.getMonth() != null) {
             return Integer.toString(schedule.getMonth());
         } else {
             return null;
