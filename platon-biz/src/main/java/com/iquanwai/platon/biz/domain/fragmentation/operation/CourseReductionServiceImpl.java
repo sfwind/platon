@@ -150,11 +150,11 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                 activity.setAction(PromotionConstants.CourseReductionAction.PayCourse);
                 // TODO 8.31日0点删除
                 if ("19".equals(quanwaiOrder.getGoodsId())) {
-                    PromotionActivity temp = new PromotionActivity();
-                    temp.setProfileId(profile.getId());
-                    temp.setActivity(promotionLevel.getActivity());
-                    temp.setAction(PromotionConstants.CourseReductionAction.PayZhangPeng);
-                    promotionActivityDao.insertPromotionActivity(temp);
+//                    PromotionActivity temp = new PromotionActivity();
+//                    temp.setProfileId(profile.getId());
+//                    temp.setActivity(promotionLevel.getActivity());
+//                    temp.setAction(PromotionContants.CourseReductionAction.PayZhangPeng);
+//                    promotionActivityDao.insertPromotionActivity(temp);
                     TemplateMessage templateMessage = new TemplateMessage();
                     templateMessage.setTouser(profile.getOpenid());
                     String msgId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "2n8N79pHw8tBHwTUdManihUnCrKl2FEpELtq-sDF0NU" : "crZiCkNMCec7svHsHcKSxTTzPT5NWOA1To5HmhyaDeE";
