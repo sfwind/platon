@@ -31,7 +31,7 @@ public interface OperationEvaluateService {
     /**
      * 微信后台推送结果卡片
      */
-    void sendPromotionResult(Integer profileId, Integer score, Boolean freeLimit, Integer percent);
+    String getResult(Integer profileId, Integer score, Integer percent);
     /**
      * 是否参加过此活动
      * */

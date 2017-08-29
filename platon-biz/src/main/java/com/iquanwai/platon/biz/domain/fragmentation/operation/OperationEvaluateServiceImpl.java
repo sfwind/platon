@@ -26,10 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -224,33 +226,20 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 微信后台推送结果卡片
      */
     @Override
-    public void sendPromotionResult(Integer profileId, Integer score, Boolean freeLimit, Integer percent) {
+    public String getResult(Integer profileId, Integer score, Integer percent) {
         Profile profile = accountService.getProfile(profileId);
         // 计算测评等级
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
-        if(!freeLimit){
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    FREE_GET_TEXT,
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-        }else{
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    resultTextMap.get(level),
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-        }
 
         BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
         Assert.notNull(bufferedImage, "生成图片不能为空");
 
-        // 发送图片消息
-        String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
-        String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
-        customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageUtils.writeToOutputStream(bufferedImage, "jpg", outputStream);
+        BASE64Encoder encoder = new BASE64Encoder();
+        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
     }
 
     /**

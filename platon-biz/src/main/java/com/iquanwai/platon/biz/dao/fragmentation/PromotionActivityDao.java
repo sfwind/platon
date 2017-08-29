@@ -105,7 +105,7 @@ public class PromotionActivityDao extends DBUtil {
         objects.add(activity);
 
         try {
-            return runner.query(sql, h, profileId, objects.toArray());
+            return runner.query(sql, h, objects.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
