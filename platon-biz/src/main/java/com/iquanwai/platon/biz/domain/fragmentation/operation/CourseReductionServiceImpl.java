@@ -7,7 +7,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.CourseReductionActivity;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.PromotionActivity;
@@ -49,8 +48,6 @@ public class CourseReductionServiceImpl implements CourseReductionService {
     private CourseReductionActivityDao courseReductionActivityDao;
     @Autowired
     private CacheService cacheService;
-    @Autowired
-    private TemplateMessageService templateMessageService;
 
     @Override
     public void scanCourseReductionQR(SubscribeEvent subscribeEvent) {
