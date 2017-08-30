@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
@@ -15,6 +16,7 @@ import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -56,6 +58,8 @@ public class AccountServiceImpl implements AccountService {
     private RedisUtil redisUtil;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
 
     private List<Region> provinceList;
 
@@ -414,6 +418,11 @@ public class AccountServiceImpl implements AccountService {
             coupon.setUsed(0);
             couponDao.insertCoupon(coupon);
         }
+    }
+
+    @Override
+    public RiseClassMember loadLatestRiseClassMember(Integer profileId) {
+        return riseClassMemberDao.loadLatestRiseClassMember(profileId);
     }
 
 }
