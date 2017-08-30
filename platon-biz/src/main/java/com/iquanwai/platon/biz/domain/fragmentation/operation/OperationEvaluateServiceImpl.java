@@ -257,6 +257,36 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return promotionLevel != null;
     }
 
+    @Override
+    public void sendShareMessage(Integer profileId, Integer score, Integer percent, Boolean freeLimit) {
+        Profile profile = accountService.getProfile(profileId);
+        // 计算测评等级
+        Integer level = calcLevel(score);
+
+        Assert.notNull(profile, "用户不能为空");
+
+        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
+        Assert.notNull(bufferedImage, "生成图片不能为空");
+
+        String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
+        String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
+
+        if(!freeLimit){
+            customerMessageService.sendCustomerMessage(
+                    profile.getOpenid(),
+                    FREE_GET_TEXT,
+                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
+            );
+        }else{
+            customerMessageService.sendCustomerMessage(
+                    profile.getOpenid(),
+                    resultTextMap.get(level),
+                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
+            );
+        }
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+    }
+
     // 根据得分计算得分 level
     private Integer calcLevel(Integer score) {
         if (score >= 7) {
