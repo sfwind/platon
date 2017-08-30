@@ -97,14 +97,18 @@ public class CustomerController {
         operationLogService.log(operationLog);
 
         Profile profile = accountService.getProfile(loginUser.getId());
-        RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
 
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         riseDto.setMobile(profile.getMobileNo());
         riseDto.setIsRiseMember(profile.getRiseMember() == 1);
         riseDto.setNickName(profile.getNickname());
-        riseDto.setMemberId(riseClassMember.getMemberId());
+
+        RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
+        if(riseClassMember != null) {
+            riseDto.setMemberId(riseClassMember.getMemberId());
+        }
+
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
