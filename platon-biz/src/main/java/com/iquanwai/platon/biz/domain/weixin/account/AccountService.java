@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.common.*;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -108,4 +109,6 @@ public interface AccountService {
     List<Coupon> loadCoupons(Integer profileId);
 
     void insertCoupon(Coupon coupon);
+
+    RiseClassMember loadLatestRiseClassMember(Integer profileId);
 }
