@@ -77,7 +77,7 @@ public class EvaluateSubscribeReceiver {
                 "秒懂他人心思、人缘爆表\n" +
                 "提案一次通关、从不修改\n\n" +
                 "你是否也具有这种能力?\n\n" +
-                "<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场洞察力检测</a>";
+                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场洞察力检测</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
