@@ -73,9 +73,9 @@ public class FreeLimitSubscribeReceiver {
                 if (Integer.parseInt(sceneParams[2]) == ConfigUtils.getTrialProblemId()) {
                     sendMsg = "欢迎来到【圈外职场研究所】\n\n" +
                             "职场中有一种能力，能让人：\n\n" +
-                            "不用加班，也能升职加薪\n" +
-                            "秒懂他人心思、人缘爆表\n" +
-                            "提案一次通关、从不修改\n\n" +
+                            "- 不用加班，也能升职加薪\n" +
+                            "- 秒懂他人心思、人缘爆表\n" +
+                            "- 提案一次通关、从不修改\n\n" +
                             "你是否也具有这种能力?\n\n" +
                             "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场洞察力检测</a>";
                 } else {
