@@ -34,9 +34,12 @@ public class TheatreServiceImpl implements TheatreService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String CURRENT_GAME = PromotionConstants.Activities.CaitongLive;
-    public interface CURRENT_ACTION extends PromotionConstants.CaitongLiveAction {}
-    private static final String PACKAGE = "背包";
-    public static final String LOCK_KEY = CURRENT_GAME+":"+"Theatre";
+
+    public interface CURRENT_ACTION extends PromotionConstants.CaitongLiveAction {
+    }
+
+    private static final String BACKPACK = "背包";
+    public static final String LOCK_KEY = CURRENT_GAME + ":" + "Theatre";
 
     private TheatreScript theatreScript;
 
@@ -188,7 +191,12 @@ public class TheatreServiceImpl implements TheatreService {
 
     }
 
-    private void handleBackpackMessage(Profile profile){
+    /**
+     * 处理背包信息
+     *
+     * @param profile 用户信息
+     */
+    private void handleBackpackMessage(Profile profile) {
         // 查看他的直播优惠码
         LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadLiveRedeemCode(CURRENT_GAME, profile.getId());
         if (liveRedeemCode == null) {
@@ -201,9 +209,10 @@ public class TheatreServiceImpl implements TheatreService {
 
     /**
      * 处理重玩逻辑
-     * @param profile 用户信息
+     *
+     * @param profile  用户信息
      * @param question 当前在做的question
-     * @param key 输入的key
+     * @param key      输入的key
      */
     private void handleReplay(Profile profile, Question question, Integer key) {
         // 输入的应该是Question
@@ -240,9 +249,10 @@ public class TheatreServiceImpl implements TheatreService {
 
     /**
      * 处理答题逻辑
+     *
      * @param profile  用户信息
      * @param question 题目信息
-     * @param answer 答案信息
+     * @param answer   答案信息
      */
     private void handleAnswer(Profile profile, Question question, Answer answer) {
         if (answer.getBadEnding()) {
@@ -275,7 +285,8 @@ public class TheatreServiceImpl implements TheatreService {
 
     /**
      * 向用户发送题目
-     * @param profile 用户
+     *
+     * @param profile  用户
      * @param question 题目
      */
     private void sendQuestionToUsr(Profile profile, Question question) {
@@ -289,6 +300,7 @@ public class TheatreServiceImpl implements TheatreService {
 
     /**
      * 送礼物
+     *
      * @param profile 用户信息
      */
     private void sharePresent(Profile profile) {
@@ -296,7 +308,7 @@ public class TheatreServiceImpl implements TheatreService {
         LiveRedeemCode existCode = liveRedeemCodeDao.loadLiveRedeemCode(CURRENT_GAME, profile.getId());
         if (existCode == null) {
             // 送礼物
-            redisUtil.lock(LOCK_KEY,lock -> {
+            redisUtil.lock(LOCK_KEY, lock -> {
                 LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadValidLiveRedeemCode(CURRENT_GAME);
                 if (liveRedeemCode == null) {
                     logger.error("异常：live的兑换码耗尽");
@@ -317,7 +329,7 @@ public class TheatreServiceImpl implements TheatreService {
         // 用户正在进行的操作
         Integer currentAction = activity.getAction();
         Question question = theatreScript.searchQuestionByAction(currentAction);
-        if (message.equals("背包")) {
+        if (message.equals(BACKPACK)) {
             // 处理背包逻辑
             this.handleBackpackMessage(profile);
         } else if (StringUtils.isNumeric(message)) {
@@ -325,7 +337,7 @@ public class TheatreServiceImpl implements TheatreService {
             Answer answer = question.searchAnswerByKey(key);
             if (answer == null) {
                 // 处理重玩逻辑
-                this.handleReplay(profile,question,key);
+                this.handleReplay(profile, question, key);
             } else {
                 // 处理答题逻辑
                 this.handleAnswer(profile, question, answer);
@@ -358,6 +370,7 @@ class TheatreScript {
 
     /**
      * 查看是否是最后一个question
+     *
      * @param question 问题
      * @return 是否最后一个
      */
@@ -411,10 +424,11 @@ class TheatreScript {
 
     /**
      * 根据关键词查询key
+     *
      * @param key 关键词
      * @return Question
      */
-    public Question searchQuestionByKey(Integer key){
+    public Question searchQuestionByKey(Integer key) {
         if (questionList == null) {
             return null;
         }
@@ -423,6 +437,7 @@ class TheatreScript {
 
     /**
      * 获取下一道题
+     *
      * @param question 本题
      * @return 下一题
      */
@@ -432,6 +447,7 @@ class TheatreScript {
 
     /**
      * 获取第一道题
+     *
      * @return 题目
      */
     public Question firstQuestion() {
