@@ -77,8 +77,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, String> resultTextMap = Maps.newHashMap(); // 发送测评结果
 
     private static final String FREE_GET_TEXT = "【免费领取】\n分享下方你的专属海报，邀请3\n" +
-            "人扫码测试。即可免费领取原价99，带你职场开挂的洞察力课程。\n" +
-            "\uD83D\uDC49<a href='"+ConfigUtils.domainName()+"/rise/static/plan/view?id=9'>戳此了解更多</a>";
+            "人扫码测试，即可免费领取原价99，带你职场开挂的<a href='"+ConfigUtils.domainName()+"/rise/static/plan/view?id=9'>洞察力课程</a>";
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
 
