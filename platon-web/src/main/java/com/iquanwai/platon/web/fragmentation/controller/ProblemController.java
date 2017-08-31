@@ -193,6 +193,7 @@ public class ProblemController {
             List<ProblemExploreDto> list = problems
                     .stream().map(item -> {
                         ProblemExploreDto dto = new ProblemExploreDto();
+                        dto.setCatalogId(problemCatalog.getId());
                         dto.setCatalog(problemCatalog.getName());
                         dto.setCatalogDescribe(problemCatalog.getDescription());
                         if (item.getSubCatalogId() != null) {

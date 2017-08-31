@@ -305,7 +305,12 @@ public class ReportServiceImpl implements ReportService {
             // 根据 ProblemId 列表获取所有的相关 Problem 信息
             List<Problem> problems = Lists.newArrayList();
             problemIdList.forEach(id -> {
-                problems.add(problemDao.load(Problem.class, Integer.parseInt(id)));
+                Problem problem = problemDao.load(Problem.class, Integer.parseInt(id));
+                ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(problem.getSubCatalogId());
+                if(subCatalog != null) {
+                    problem.setSubCatalog(subCatalog.getName());
+                }
+                problems.add(problem);
             });
             recommendation.setRecommendProblems(problems);
         }

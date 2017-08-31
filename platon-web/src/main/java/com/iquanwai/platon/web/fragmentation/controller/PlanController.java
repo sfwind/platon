@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -59,6 +60,8 @@ public class PlanController {
     private ProblemService problemService;
     @Autowired
     private WhiteListService whiteListService;
+    @Autowired
+    private CacheService cacheService;
 
     /**
      * 检查是否能选课<br/>
@@ -567,6 +570,7 @@ public class PlanController {
             plan.setStartDate(item.getStartDate());
             plan.setProblemId(item.getProblemId());
             plan.setCloseTime(item.getCloseTime());
+            plan.setProblem(cacheService.getProblem(item.getProblemId()).simple());
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(plan);
             } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE || item.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
@@ -644,6 +648,16 @@ public class PlanController {
         for (Recommendation recommendation : recommendationLists) {
             // 开始过滤,这个推荐里的小课
             List<Problem> recommendProblems = recommendation.getRecommendProblems();
+
+            // 额外添加业务场景下所需要的字段值
+            recommendProblems.stream().forEach(problem -> {
+                Integer subCatalogId = problem.getSubCatalogId();
+                if(subCatalogId != null) {
+                    ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);
+                    problem.setSubCatalog(subCatalog.getName());
+                }
+            });
+
             for (Problem problem : recommendProblems) {
                 //非天使用户去除试用版小课
                 if (!inWhiteList) {
@@ -663,6 +677,7 @@ public class PlanController {
                 }
             }
         }
+
         return problems;
     }
 
