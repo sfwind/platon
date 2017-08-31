@@ -286,16 +286,6 @@ public class ProblemController {
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
 
         Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), isMember, problemId, plan, autoOpen);
-        // TODO 8.31日0点删除掉
-        if (!isMember && problemId.equals(ConfigUtils.getTrialProblemId())) {
-            // 非会员，限免小课
-            // 查看是否做过张鹏的活动
-            Boolean isPayZhangpeng = courseReductionService.isPayZhangPeng(loginUser.getId());
-            if (isPayZhangpeng && plan == null) {
-                // 做过张鹏的活动,31号之前只有张鹏的活动.....
-                buttonStatus = 5;// 限免
-            }
-        }
 
         if (plan != null) {
             dto.setPlanId(plan.getId());
