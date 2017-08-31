@@ -14,6 +14,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseCertificate;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -73,7 +74,6 @@ public class CustomerController {
     @Autowired
     private CertificateService certificateService;
 
-
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -95,17 +95,27 @@ public class CustomerController {
                 .function("RISE")
                 .action("查询帐号信息");
         operationLogService.log(operationLog);
+
         Profile profile = accountService.getProfile(loginUser.getId());
+
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         riseDto.setMobile(profile.getMobileNo());
         riseDto.setIsRiseMember(profile.getRiseMember() == 1);
+        riseDto.setNickName(profile.getNickname());
+
+        RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
+        if(riseClassMember != null) {
+            riseDto.setMemberId(riseClassMember.getMemberId());
+        }
+
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
         }
         List<Coupon> coupons = accountService.loadCoupons(profile.getId());
         riseDto.setCoupons(coupons);
+
         return WebUtils.result(riseDto);
     }
 

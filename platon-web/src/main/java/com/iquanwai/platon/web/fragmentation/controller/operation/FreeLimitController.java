@@ -68,11 +68,6 @@ public class FreeLimitController {
         Integer percent = getDefeatPercent(score);
         result.setPercent(percent);
 
-        // 发消息比较慢,异步发送
-        new Thread(() -> {
-            operationEvaluateService.sendPromotionResult(loginUser.getId(), score, result.getLearnFreeLimit(), percent);
-        }).start();
-
         Pair<String, String> pairs = operationEvaluateService.completeEvaluate(loginUser.getId(), score,
                 result.getLearnFreeLimit(), percent);
         result.setResult(pairs.getLeft());
@@ -103,15 +98,24 @@ public class FreeLimitController {
     /**
      * 用户提交问卷结果
      */
-    @RequestMapping(value = "/share", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser) {
+    @RequestMapping(value = "/share/{score}/{percent}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser,
+                                                           @PathVariable Integer score,
+                                                           @PathVariable Integer percent) {
         Assert.notNull(loginUser, "用户不能为空");
 
+        String pic = operationEvaluateService.getResult(loginUser.getId(), score, percent);
+        Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
+        final Boolean learnFreeLimit = learnBefore || loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
+        // 发消息比较慢,异步发送
+        new Thread(() -> {
+            operationEvaluateService.sendShareMessage(loginUser.getId(), score, percent, learnFreeLimit);
+        }).start();
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("领取推广卡片");
         operationLogService.log(operationLog);
 
-        return WebUtils.success();
+        return WebUtils.result(pic);
     }
 
     private static Integer getDefeatPercent(Integer score) {

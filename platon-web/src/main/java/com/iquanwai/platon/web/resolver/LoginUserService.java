@@ -305,7 +305,7 @@ public class LoginUserService {
                 // 如果数据待更新,则读取数据库
                 if(loginUser!=null){
                     String openid2 = loginUser.getOpenId();
-                    if(waitPCRefreshOpenids.contains(openid2)){
+                    if(waitWechatRefreshOpenids.contains(openid2)){
                         logger.info("更新用户{}", openid2);
                         loginUser = getLoginUser(openid2, platform);
                         wechatLoginUserMap.put(accessToken, new SoftReference<>(loginUser));

@@ -23,6 +23,8 @@ public class Problem {
     private Double usefulScore; // 实用度
     private String descPic; // 描述图片
     private String audio; //语音
+    private Integer audioId;
+    private String audioWords;
     private String who; //适合人群
     private String how; //如何学习
     private String why; //为什么学习

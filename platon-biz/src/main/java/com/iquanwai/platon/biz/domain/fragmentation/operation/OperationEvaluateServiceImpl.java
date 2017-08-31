@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
@@ -25,10 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +76,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, String> freeSuggestionMap = Maps.newHashMap(); // 会员测评建议
     private static Map<Integer, String> resultTextMap = Maps.newHashMap(); // 发送测评结果
 
-    private static final String FREE_GET_TEXT = "【免费领取】分享下方测试结果海报，邀请3人扫码测试，即可免费领取洞察力强化包。";
+    private static final String FREE_GET_TEXT = "【免费领取】\n分享下方测试结果海报，邀请3人扫码测试，即可免费领取洞察力强化课程。";
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
 
@@ -95,7 +98,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "  3. 防止盲目的决策和行动\n\n" +
                 "当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
                 "\n" +
-                "如果你想要充分开发和增强自己的洞察力，可以使用【洞察力强化包】(原价99，戳下方按钮免费领取)。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。");
+                "如果你想要充分开发和增强自己的洞察力，可以领取【洞察力强化课程】（原价99，戳下方按钮免费领取）。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！");
 
         suggestionMap.put(2, "根据测评结果，我们建议你:\n\n" +
                 "  1. 掌握更多的提问技巧，挖掘他人隐藏的真实需求\n" +
@@ -103,31 +106,31 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "  3. 找到根本原因后，根据关键程度和解决成本，定位最有价值的问题\n\n" +
                 "当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
                 "\n" +
-                "如果你想要充分发挥自己的洞察力潜力，可以使用【洞察力强化包】(原价99，戳下方按钮免费领取))。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。");
+                "如果你想要充分发挥自己的洞察力潜力，可以领取【洞察力强化课程】（原价99，戳下方按钮免费领取）。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！");
 
         suggestionMap.put(3, "你需要在工作中充分运用你的洞察力天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。\n\n" +
                 "当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
                 "\n" +
-                "如果你想要挖掘、并在职场中运用自己的洞察力天赋，可以使用【洞察力强化包】(原价99，戳下方按钮免费领取)。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。");
+                "如果你想要挖掘、并在职场中运用自己的洞察力天赋，可以领取【洞察力强化课程】（原价99，戳下方按钮免费领取）。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！");
 
         freeSuggestionMap.put(1, "你需要开始发力去增强自己的洞察力并应用在职场中，在面对棘手问题时，有意识地使用一些技巧，例如提问的技巧、了解他人背景挖掘他人需求的技巧等，防止盲目的决策和行动。\n\n" +
                 "当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
                 "\n" +
-                "如果你想要充分开发和增强自己的洞察力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "如果你想要充分开发和增强自己的洞察力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！\n" +
                 "\n" +
                 "这么有趣有料的测试，确定不邀请你的朋友也来玩一下？点击下方按钮，领取你的测评结果海报，并分享到朋友圈吧!");
 
         freeSuggestionMap.put(2, "建议你掌握更多的提问技巧，挖掘他人隐藏的真实需求；同时提升自己的分析能力，遇到难题时，先去找到根本原因，再根据关键程度和解决成本，定位最有价值的问题。\n\n" +
                 "当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
                 "\n" +
-                "如果你想要充分发挥自己的洞察力潜力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "如果你想要充分发挥自己的洞察力潜力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！\n" +
                 "\n" +
                 "敢不敢让你的朋友也来挑战一下？点击下方按钮，领取你的测评结果海报，并分享到朋友圈吧!");
 
         freeSuggestionMap.put(3, "你需要在工作中充分运用你的洞察力天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。\n\n" +
                 "当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
                 "\n" +
-                "如果你想要挖掘、并在职场中运用自己的洞察力天赋，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。\n" +
+                "如果你想要挖掘、并在职场中运用自己的洞察力天赋，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！\n" +
                 "\n" +
                 "你的朋友们也和你一样机智吗？点击下方按钮，领取你的测评结果海报，并分享到朋友圈，让他们也检测一下吧!");
 
@@ -171,9 +174,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
         if (promotionLevel != null) {
             recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FinishEvaluate);
-
-            List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
-                    PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+            List<Integer> actions = Lists.newArrayList();
+            actions.add(PromotionConstants.EvaluateAction.FinishEvaluate);
+            actions.add(PromotionConstants.EvaluateAction.BuyCourse);
+            List<PromotionActivity> activities = promotionActivityDao.loadActionList(profileId,
+                    actions, activity);
             if (activities.size() == 1) {
                 checkAwardAndSendMsg(profileId);
             }
@@ -201,8 +206,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BuyCourse);
 
-        List<PromotionActivity> activities = promotionActivityDao.loadDistinctActionCount(profileId,
-                PromotionConstants.EvaluateAction.FinishEvaluate, activity);
+        List<Integer> actions = Lists.newArrayList();
+        actions.add(PromotionConstants.EvaluateAction.FinishEvaluate);
+        actions.add(PromotionConstants.EvaluateAction.BuyCourse);
+        List<PromotionActivity> activities = promotionActivityDao.loadActionList(profileId,
+                actions, activity);
         if (activities.size() == 1) {
             checkAwardAndSendMsg(profileId);
         }
@@ -224,12 +232,45 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      * 微信后台推送结果卡片
      */
     @Override
-    public void sendPromotionResult(Integer profileId, Integer score, Boolean freeLimit, Integer percent) {
+    public String getResult(Integer profileId, Integer score, Integer percent) {
         Profile profile = accountService.getProfile(profileId);
         // 计算测评等级
         Integer level = calcLevel(score);
 
         Assert.notNull(profile, "用户不能为空");
+
+        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
+        Assert.notNull(bufferedImage, "生成图片不能为空");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageUtils.writeToOutputStream(bufferedImage, "jpg", outputStream);
+        BASE64Encoder encoder = new BASE64Encoder();
+        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+    }
+
+    /**
+     * 是否参加过此活动
+     */
+    @Override
+    public boolean hasParticipateEvaluate(Integer profileId) {
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
+        return promotionLevel != null;
+    }
+
+    @Override
+    public void sendShareMessage(Integer profileId, Integer score, Integer percent, Boolean freeLimit) {
+        Profile profile = accountService.getProfile(profileId);
+        // 计算测评等级
+        Integer level = calcLevel(score);
+
+        Assert.notNull(profile, "用户不能为空");
+
+        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
+        Assert.notNull(bufferedImage, "生成图片不能为空");
+
+        String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
+        String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
+
         if(!freeLimit){
             customerMessageService.sendCustomerMessage(
                     profile.getOpenid(),
@@ -243,23 +284,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT
             );
         }
-
-        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
-        Assert.notNull(bufferedImage, "生成图片不能为空");
-
-        // 发送图片消息
-        String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
-        String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
         customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-    }
-
-    /**
-     * 是否参加过此活动
-     */
-    @Override
-    public boolean hasParticipateEvaluate(Integer profileId) {
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
-        return promotionLevel != null;
     }
 
     // 根据得分计算得分 level
@@ -365,7 +390,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             if(!freeLimit){
                 sendSuccessTrialMsg(profileId, sourceProfileId);
             } else {
-                sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, freeLimit);
+                sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, true);
             }
         } else if (remainTrial > 0) {
             sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, freeLimit);

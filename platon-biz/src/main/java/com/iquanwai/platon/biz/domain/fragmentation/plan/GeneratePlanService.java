@@ -10,7 +10,12 @@ public interface GeneratePlanService {
      * 将试用版的plan解锁
      * @param
      */
-    void reopenPlan(ImprovementPlan planId);
+    void reopenTrialPlan(ImprovementPlan planId);
+
+    /**
+     * 强制将该 ImprovementPlan 重开
+     */
+    void forceReopenPlan(Integer planId);
 
     /**
      * 为学员生成训练计划
@@ -28,4 +33,6 @@ public interface GeneratePlanService {
 
     int PROBLEM_MAX_LENGTH = 30; //小课最长开放时间
     int TRIAL_PROBLEM_MAX_LENGTH = 7; //试用小课最长开放7天
+
+    void sendWelcomeMsg(String openid, Integer problemId);
 }

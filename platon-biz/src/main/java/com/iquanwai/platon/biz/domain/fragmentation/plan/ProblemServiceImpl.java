@@ -1,11 +1,9 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,6 +26,8 @@ public class ProblemServiceImpl implements ProblemService {
     private CacheService cacheService;
     @Autowired
     private ProblemScoreDao problemScoreDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private ProblemExtensionDao problemExtensionDao;
     @Autowired
@@ -182,15 +182,12 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public String loadProblemSchedule(Integer problemId) {
-        String schedules = ConfigUtils.getRequiredClassSchedule();
-        if (schedules != null) {
-            JSONObject json = JSONObject.parseObject(schedules);
-            String monthStr = json.getString("problem_" + problemId);
-            if (monthStr != null && monthStr.trim().length() > 0) {
-                return monthStr;
-            }
+        MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
+        if (schedule != null && schedule.getMonth() != null) {
+            return Integer.toString(schedule.getMonth());
+        } else {
+            return null;
         }
-        return null;
     }
 
 }
