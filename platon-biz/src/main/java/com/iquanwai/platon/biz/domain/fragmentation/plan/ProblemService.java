@@ -105,4 +105,5 @@ public interface ProblemService {
     int collectProblem(Integer profileId, Integer problemId);
 
     int disCollectProblem(Integer profileId, Integer problemId);
+
 }
