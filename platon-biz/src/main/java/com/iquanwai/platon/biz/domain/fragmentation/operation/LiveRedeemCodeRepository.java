@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 /**
  * Created by nethunder on 2017/8/31.
@@ -20,11 +21,13 @@ public class LiveRedeemCodeRepository {
     @Autowired
     private LiveRedeemCodeDao liveRedeemCodeDao;
 
-    public LiveRedeemCode useLiveRedeemCode(String lockKey, String live, Integer profileId) {
+    public LiveRedeemCode useLiveRedeemCode(String live, Integer profileId) {
+        Assert.notNull(live, "活动不能为空");
+        Assert.notNull(profileId, "用户id不能为空");
         // 先查询是否有优惠券
         LiveRedeemCode existCode = liveRedeemCodeDao.loadLiveRedeemCode(live, profileId);
         if (existCode == null) {
-            return redisUtil.lock(lockKey, () -> {
+            return redisUtil.lock("lock:live:code:" + live, () -> {
                 LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadValidLiveRedeemCode(live);
                 if (liveRedeemCode == null) {
                     logger.error("异常：live的兑换码耗尽");

@@ -281,7 +281,7 @@ public class TheatreServiceImpl implements TheatreService {
             }
             // 第一题会送一个兑换码
             if (theatreScript.isFirstQuestion(question)) {
-                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(LOCK_KEY, CURRENT_GAME, profile.getId());
+                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(CURRENT_GAME, profile.getId());
                 logger.info("送出兑换码:{}", liveRedeemCode);
             }
 
