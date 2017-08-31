@@ -9,12 +9,13 @@ public interface PromotionConstants {
         String FreeLimit = "freeLimit";
         String Evaluate = "evaluate";
         String CourseReduction = "courseReduction";
+        String CaitongLive = "caitongLive";
     }
 
     interface FreeLimitAction {
         int InitState = 0; // 初始状态
         int TrialCourse = 1; // 限免试用
-        int PayCourse = 2; // 付费购买
+        int PayCourse = 2; // 付费购买h
     }
 
     interface EvaluateAction {
@@ -31,6 +32,23 @@ public interface PromotionConstants {
         int PayMember = 22; // 购买会员
         // TODO 会删除
         int PayZhangPeng = 23; // 购买张鹏小课
+    }
+
+    interface CaitongLiveAction {
+        int ScanCode = 30; // 扫采铜二维码
+        int Question1 = 31; // 开始做第一题
+        int Question2 = 32;
+        int Question3 = 33;
+        int Question4 = 34;
+        int Question5 = 35;
+        int Question6 = 36;
+        int Question7 = 37;
+        int Question8 = 38;
+        int Question9 = 39;
+        int Question10 = 40; // 开始做第十题
+
+        int Backpack = 44; // 背包
+        int Complete = 45; // 完成所有题目
     }
 
 }

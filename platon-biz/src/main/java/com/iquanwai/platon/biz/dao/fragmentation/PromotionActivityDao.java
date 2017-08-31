@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.PromotionActivity;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -112,5 +113,29 @@ public class PromotionActivityDao extends DBUtil {
 
         return Lists.newArrayList();
     }
+
+    public PromotionActivity loadRecentPromotionActivity(Integer profileId, String activity,Integer notValidAction) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from quanwai.PromotionActivity where ProfileId = ? and Activity = ? and Action < ? ORDER BY Id desc limit 1";
+        try {
+            return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, notValidAction);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    public PromotionActivity loadMaxPlayQustion(Integer profileId, String activity,Integer notValidAction) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from quanwai.PromotionActivity where ProfileId = ? and Activity = ? and Action < ? ORDER BY Action desc limit 1";
+        try {
+            return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, notValidAction);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+
 
 }
