@@ -232,7 +232,7 @@ public class ProblemController {
                 .memo("");
         operationLogService.log(operationLog);
 
-        List<ProblemCatalog> problemCatalog = problemService.getProblemCatalogs();
+        List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
         //非天使用户去除试用版小课
@@ -241,13 +241,14 @@ public class ProblemController {
         }
 
         Map<Integer, ProblemCatalog> catalogMap = Maps.newHashMap();
-        problemCatalog.forEach((item) -> catalogMap.put(item.getId(), item));
+        problemCatalogs.forEach((item) -> catalogMap.put(item.getId(), item));
 
 
         List<ProblemExploreDto> list = problems.stream()
                 .map(item -> {
                     ProblemExploreDto dto = new ProblemExploreDto();
                     dto.setCatalog(catalogMap.get(item.getCatalogId()).getName());
+                    dto.setCatalogId(item.getCatalogId());
                     if (item.getSubCatalogId() != null) {
                         ProblemSubCatalog problemSubCatalog = problemService.getProblemSubCatalog(item.getSubCatalogId());
                         dto.setSubCatalog(problemSubCatalog.getName());
