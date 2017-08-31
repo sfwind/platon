@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Created by nethunder on 2017/4/26.
@@ -104,6 +105,29 @@ public class RedisUtil {
         logger.info("Thread {} will release the lock", Thread.currentThread().getId());
         lock.unlock();
         logger.info("Thread {} don't have the lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
+    }
+
+    /**
+     * 同步锁
+     * @param key 锁
+     * @param supplier 回调函数
+     * @param <T> 返回类型
+     * @return 回调函数的处理结果
+     */
+    public <T> T lock(String key, Supplier<T> supplier){
+        RLock lock = redissonClient.getLock(key);
+        logger.info("Thread {} want the lock", Thread.currentThread().getId());
+        try {
+            lock.tryLock(60, 10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        logger.info("Thread {} has lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
+        T result = supplier.get();
+        logger.info("Thread {} will release the lock", Thread.currentThread().getId());
+        lock.unlock();
+        logger.info("Thread {} don't have the lock :{}", Thread.currentThread().getId(), lock.isHeldByCurrentThread());
+        return result;
     }
 
     /**

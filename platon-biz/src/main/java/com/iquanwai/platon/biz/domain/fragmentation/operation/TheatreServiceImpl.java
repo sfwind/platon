@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.LiveRedeemCodeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
@@ -53,9 +52,9 @@ public class TheatreServiceImpl implements TheatreService {
     @Autowired
     private CustomerMessageService customerMessageService;
     @Autowired
-    private RedisUtil redisUtil;
-    @Autowired
     private LiveRedeemCodeDao liveRedeemCodeDao;
+    @Autowired
+    private LiveRedeemCodeRepository liveRedeemCodeRepository;
 
     @PostConstruct
     public void initScript() {
@@ -267,8 +266,8 @@ public class TheatreServiceImpl implements TheatreService {
                 completeAction.setActivity(CURRENT_GAME);
                 completeAction.setProfileId(profile.getId());
                 promotionActivityDao.insertPromotionActivity(completeAction);
-                // 送出礼物
-                this.sharePresent(profile);
+                // 送出礼物，延后到发背包的时候
+//                this.sharePresent(profile);
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getEndingWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             } else {
                 // 不是最后一题，推送下一题
@@ -280,6 +279,12 @@ public class TheatreServiceImpl implements TheatreService {
                     this.sendQuestionToUsr(profile, nextQuestion);
                 }
             }
+            // 第一题会送一个兑换码
+            if (theatreScript.isFirstQuestion(question)) {
+                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(LOCK_KEY, CURRENT_GAME, profile.getId());
+                logger.info("送出兑换码:{}", liveRedeemCode);
+            }
+
         }
     }
 
@@ -298,26 +303,6 @@ public class TheatreServiceImpl implements TheatreService {
         customerMessageService.sendCustomerMessage(profile.getOpenid(), question.getWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
-    /**
-     * 送礼物
-     *
-     * @param profile 用户信息
-     */
-    private void sharePresent(Profile profile) {
-        // 先查询是否有优惠券
-        LiveRedeemCode existCode = liveRedeemCodeDao.loadLiveRedeemCode(CURRENT_GAME, profile.getId());
-        if (existCode == null) {
-            // 送礼物
-            redisUtil.lock(LOCK_KEY, lock -> {
-                LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadValidLiveRedeemCode(CURRENT_GAME);
-                if (liveRedeemCode == null) {
-                    logger.error("异常：live的兑换码耗尽");
-                } else {
-                    liveRedeemCodeDao.useRedeemCode(liveRedeemCode.getId(), profile.getId());
-                }
-            });
-        }
-    }
 
     @Override
     public void handleTheatreMessage(WechatMessage wechatMessage) {
@@ -382,6 +367,18 @@ class TheatreScript {
     }
 
     /**
+     * 查看是否第一个问题
+     * @param question 问题
+     * @return 是否第一个
+     */
+    public Boolean isFirstQuestion(Question question){
+        if (CollectionUtils.isEmpty(this.questionList)) {
+            return false;
+        }
+        return this.questionList.get(0) == question;
+    }
+
+    /**
      * 添加问题
      *
      * @param words  文本
@@ -421,6 +418,8 @@ class TheatreScript {
         }
         return questionList.stream().filter(item -> item.getAction().equals(action)).findFirst().orElse(null);
     }
+
+
 
     /**
      * 根据关键词查询key
