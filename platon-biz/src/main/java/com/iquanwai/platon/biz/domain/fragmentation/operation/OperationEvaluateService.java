@@ -36,4 +36,9 @@ public interface OperationEvaluateService {
      * 是否参加过此活动
      * */
     boolean hasParticipateEvaluate(Integer profileId);
+
+    /**
+     * 发送分享海报
+     * */
+    void sendShareMessage(Integer profileId, Integer score, Integer percent, Boolean freeLimit);
 }
