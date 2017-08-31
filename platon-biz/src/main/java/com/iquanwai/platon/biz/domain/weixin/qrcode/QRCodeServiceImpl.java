@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.weixin.qrcode;
 
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 
 /**
@@ -27,6 +29,14 @@ public class QRCodeServiceImpl implements QRCodeService {
         QRTemporaryRequest qrRequest = new QRTemporaryRequest(scene, expire_seconds);
         String json = new Gson().toJson(qrRequest);
         return generate(json);
+    }
+
+    @Override
+    public BufferedImage loadQrImage(String scene) {
+        // 绘图数据
+        QRResponse response = generateTemporaryQRCode(scene, null);
+        InputStream inputStream = showQRCode(response.getTicket());
+        return ImageUtils.getBufferedImageByInputStream(inputStream);
     }
 
     @Override

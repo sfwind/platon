@@ -9,7 +9,7 @@ public interface PromotionConstants {
         String FreeLimit = "freeLimit";
         String Evaluate = "evaluate";
         String CourseReduction = "courseReduction";
-        String CaitongLive = "caitongLive";
+        String CaitongLive = "caitonglive";
     }
 
     interface FreeLimitAction {

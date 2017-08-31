@@ -6,6 +6,14 @@ import java.awt.image.BufferedImage;
  * Created by justin on 17/8/2.
  */
 public interface UploadResourceService {
+
+    /**
+     * 在缓存目录生成图片
+     * @param bufferedImage 图片缓存
+     * @return mediaId
+     */
+    String uploadResource(BufferedImage bufferedImage);
+
     /**
      * @param bufferedImage 图片
      * @param path 图片保存路径

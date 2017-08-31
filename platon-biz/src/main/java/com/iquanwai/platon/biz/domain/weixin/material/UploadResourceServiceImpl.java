@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,6 +21,15 @@ public class UploadResourceServiceImpl implements UploadResourceService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private RestfulHelper restfulHelper;
+
+
+    @Override
+    public String uploadResource(BufferedImage bufferedImage) {
+        //生成临时图片
+        String path = System.getProperty("java.io.tmpdir");
+        Assert.notNull(path, "java.io.tmpdir 不能为空");
+        return this.uploadResource(bufferedImage, path);
+    }
 
     @Override
     public String uploadResource(BufferedImage bufferedImage, String path) {

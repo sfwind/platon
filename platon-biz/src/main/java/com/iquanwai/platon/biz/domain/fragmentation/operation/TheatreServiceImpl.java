@@ -6,6 +6,8 @@ import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -38,7 +41,6 @@ public class TheatreServiceImpl implements TheatreService {
     }
 
     private static final String BACKPACK = "背包";
-    public static final String LOCK_KEY = CURRENT_GAME + ":" + "Theatre";
 
     private TheatreScript theatreScript;
 
@@ -55,6 +57,11 @@ public class TheatreServiceImpl implements TheatreService {
     private LiveRedeemCodeDao liveRedeemCodeDao;
     @Autowired
     private LiveRedeemCodeRepository liveRedeemCodeRepository;
+    @Autowired
+    private QRCodeService qrCodeService;
+    @Autowired
+    private UploadResourceService uploadResourceService;
+
 
     @PostConstruct
     public void initScript() {
@@ -191,7 +198,7 @@ public class TheatreServiceImpl implements TheatreService {
     }
 
     /**
-     * 处理背包信息
+     * 处理背包信息,计算礼物等级
      *
      * @param profile 用户信息
      */
@@ -201,9 +208,29 @@ public class TheatreServiceImpl implements TheatreService {
         if (liveRedeemCode == null) {
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "您回复了背包,不过暂时还没有兑换码", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
+            // 查看做的题目
+            Question maxPlayQustion = this.loadMaxPlayQuestion(profile.getId());
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "你的兑换码是:" + liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            if (maxPlayQustion != null && maxPlayQustion.getAction() > CURRENT_ACTION.Question3) {
+                // 做到第四题才会有邀请券,发海报
+                String mediaId = generateSharePage(profile);
+                customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+            }
         }
+    }
 
+    /**
+     * 完成到最后的题目
+     *
+     * @param profileId 用户id
+     * @return 题目
+     */
+    private Question loadMaxPlayQuestion(Integer profileId) {
+        PromotionActivity activity = promotionActivityDao.loadMaxPlayQustion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
+        if (activity == null) {
+            return null;
+        }
+        return theatreScript.searchQuestionByAction(activity.getAction());
     }
 
     /**
@@ -220,27 +247,19 @@ public class TheatreServiceImpl implements TheatreService {
             // TODO error
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "输入的不是想要重做的题目序号", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
+            Question lastQuestion = this.loadMaxPlayQuestion(profile.getId());
             // 检查有没有做到这一题
-            PromotionActivity activity = promotionActivityDao.loadMaxPlayQustion(profile.getId(), CURRENT_GAME, CURRENT_ACTION.Backpack);
-            if (activity == null) {
-                // TODO 没有做过的那道题，推送第一题
+            if (lastQuestion == null) {
                 // 之前没有做过题,推送第一道题目
                 Question firstQuestion = theatreScript.firstQuestion();
                 this.sendQuestionToUsr(profile, firstQuestion);
             } else {
-                Question lastQuestion = theatreScript.searchQuestionByAction(activity.getAction());
-                if (lastQuestion == null) {
-                    // 之前没有做过题,推送第一道题目
-                    Question firstQuestion = theatreScript.firstQuestion();
-                    this.sendQuestionToUsr(profile, firstQuestion);
+                if (lastQuestion.getAction() >= wannaQuestion.getAction()) {
+                    // 之前做的题目比这个靠后，可以重做,推送题目
+                    this.sendQuestionToUsr(profile, wannaQuestion);
                 } else {
-                    if (lastQuestion.getAction() >= wannaQuestion.getAction()) {
-                        // 之前做的题目比这个靠后，可以重做,推送题目
-                        this.sendQuestionToUsr(profile, wannaQuestion);
-                    } else {
-                        // 之前做的题目比这个靠前，不可以重做
-                        this.sendQuestionToUsr(profile, lastQuestion);
-                    }
+                    // 之前做的题目比这个靠前，不可以重做
+                    this.sendQuestionToUsr(profile, lastQuestion);
                 }
             }
         }
@@ -267,7 +286,6 @@ public class TheatreServiceImpl implements TheatreService {
                 completeAction.setProfileId(profile.getId());
                 promotionActivityDao.insertPromotionActivity(completeAction);
                 // 送出礼物，延后到发背包的时候
-//                this.sharePresent(profile);
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getEndingWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             } else {
                 // 不是最后一题，推送下一题
@@ -284,7 +302,6 @@ public class TheatreServiceImpl implements TheatreService {
                 LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(CURRENT_GAME, profile.getId());
                 logger.info("送出兑换码:{}", liveRedeemCode);
             }
-
         }
     }
 
@@ -300,7 +317,15 @@ public class TheatreServiceImpl implements TheatreService {
         completeAction.setActivity(CURRENT_GAME);
         completeAction.setProfileId(profile.getId());
         promotionActivityDao.insertPromotionActivity(completeAction);
-        customerMessageService.sendCustomerMessage(profile.getOpenid(), question.getWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        StringBuilder message = new StringBuilder(question.getWords());
+        List<Answer> answers = question.getAnswerList();
+        answers.forEach(answer -> {
+            message.append("\n").
+                    append(answer.getKey()).append(" ").append(answer.getWords());
+        });
+        message.append("\n")
+                .append("请回复题目编号进行闯关\n");
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), message.toString(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
 
@@ -338,7 +363,31 @@ public class TheatreServiceImpl implements TheatreService {
         PromotionLevel liveLevel = promotionLevelDao.loadByProfileId(profile.getId(), CURRENT_GAME);
         return liveLevel != null;
     }
+
+    @Override
+    public void startGame(Profile profile) {
+        // 由mq发起，那里会插入level，所以不检查了
+        PromotionActivity startAction = new PromotionActivity();
+        startAction.setAction(CURRENT_ACTION.Question1);
+        startAction.setActivity(CURRENT_GAME);
+        startAction.setProfileId(profile.getId());
+        promotionActivityDao.insertPromotionActivity(startAction);
+        // 发送开场白以及第一题文案:
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getPrologue(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        // 发送第一题文案
+        Question firstQuestion = theatreScript.firstQuestion();
+        this.sendQuestionToUsr(profile, firstQuestion);
+    }
+
+    private String generateSharePage(Profile profile) {
+        String scene = CURRENT_GAME + "_" + profile.getId();
+        BufferedImage qrBuffer = qrCodeService.loadQrImage(scene);
+        return uploadResourceService.uploadResource(qrBuffer);
+    }
+
+
 }
+
 
 /**
  * 剧本
@@ -349,7 +398,7 @@ class TheatreScript {
     private String endingWords;
     private List<Question> questionList;
 
-    public TheatreScript() {
+    TheatreScript() {
         this.questionList = Lists.newArrayList();
     }
 
@@ -359,7 +408,7 @@ class TheatreScript {
      * @param question 问题
      * @return 是否最后一个
      */
-    public Boolean isLastQuestion(Question question) {
+    Boolean isLastQuestion(Question question) {
         if (CollectionUtils.isEmpty(this.questionList)) {
             return false;
         }
@@ -368,10 +417,11 @@ class TheatreScript {
 
     /**
      * 查看是否第一个问题
+     *
      * @param question 问题
      * @return 是否第一个
      */
-    public Boolean isFirstQuestion(Question question){
+    Boolean isFirstQuestion(Question question) {
         if (CollectionUtils.isEmpty(this.questionList)) {
             return false;
         }
@@ -385,7 +435,7 @@ class TheatreScript {
      * @param action Activity表的actionn
      * @return 问题对象
      */
-    public Question addQuestion(String words, Integer action) {
+    Question addQuestion(String words, Integer action) {
         Question question = Question.init();
         question.words(words).action(action);
         this.questionList.add(question);
@@ -395,7 +445,7 @@ class TheatreScript {
     /**
      * 初始化重新做题的key
      */
-    public void initReplayKey() {
+    void initReplayKey() {
         this.questionList.forEach(question -> {
             question.initReplayKey();
             question.getAnswerList().forEach(answer -> {
@@ -412,13 +462,12 @@ class TheatreScript {
      * @param action action
      * @return Question
      */
-    public Question searchQuestionByAction(Integer action) {
+    Question searchQuestionByAction(Integer action) {
         if (questionList == null) {
             return null;
         }
         return questionList.stream().filter(item -> item.getAction().equals(action)).findFirst().orElse(null);
     }
-
 
 
     /**
@@ -427,7 +476,7 @@ class TheatreScript {
      * @param key 关键词
      * @return Question
      */
-    public Question searchQuestionByKey(Integer key) {
+    Question searchQuestionByKey(Integer key) {
         if (questionList == null) {
             return null;
         }
@@ -440,7 +489,7 @@ class TheatreScript {
      * @param question 本题
      * @return 下一题
      */
-    public Question nextQuestion(Question question) {
+    Question nextQuestion(Question question) {
         return this.questionList.stream().filter(item -> item.getReplayKey() > question.getReplayKey()).findFirst().orElse(null);
     }
 
@@ -449,9 +498,10 @@ class TheatreScript {
      *
      * @return 题目
      */
-    public Question firstQuestion() {
+    Question firstQuestion() {
         return this.questionList.stream().findFirst().orElse(null);
     }
+
 }
 
 /**
@@ -476,7 +526,7 @@ class Question {
         return new Question();
     }
 
-    public Question words(String words) {
+    Question words(String words) {
         this.words = words;
         return this;
     }
@@ -490,7 +540,7 @@ class Question {
      * 初始化重做选择题的回复数字
      * 规则：最后一个答案选项的数字+1
      */
-    public Question initReplayKey() {
+    Question initReplayKey() {
         if (this.answerList != null && !CollectionUtils.isEmpty(this.answerList)) {
             this.replayKey = this.answerList.get(this.answerList.size() - 1).getKey() + 1;
         }
@@ -504,7 +554,7 @@ class Question {
      * @param words     文本
      * @param deadWords 遗言
      */
-    public Question addAnswer(Integer key, String words, String deadWords) {
+    Question addAnswer(Integer key, String words, String deadWords) {
         Answer answer = new Answer();
         answer.setKey(key);
         answer.setWords(words);
@@ -520,7 +570,7 @@ class Question {
      * @param key 用户输入的关键字
      * @return 答案
      */
-    public Answer searchAnswerByKey(Integer key) {
+    Answer searchAnswerByKey(Integer key) {
         return this.answerList.stream().filter(item -> item.getKey().equals(key)).findFirst().orElse(null);
     }
 }
