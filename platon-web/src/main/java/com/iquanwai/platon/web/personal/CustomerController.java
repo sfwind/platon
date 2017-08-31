@@ -185,7 +185,7 @@ public class CustomerController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.POST)
+    @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getCertificate(LoginUser loginUser, @PathVariable String certificateNo) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
