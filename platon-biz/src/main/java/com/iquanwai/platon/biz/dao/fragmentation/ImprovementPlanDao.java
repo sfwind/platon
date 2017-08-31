@@ -268,7 +268,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "SELECT COUNT(DISTINCT(ProfileId)) FROM ImprovementPlan WHERE ProblemId = ?";
         ResultSetHandler<Long> h = new ScalarHandler<>();
         try {
-            Long result = runner.query(sql, h, problemId);
+            Long result =  runner.query(sql, h, problemId);
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
