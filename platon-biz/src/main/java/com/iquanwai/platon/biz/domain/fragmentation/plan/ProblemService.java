@@ -97,4 +97,6 @@ public interface ProblemService {
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
     String loadProblemSchedule(Integer problemId);
+
+    int loadChosenPersonCount(Integer problemId);
 }

@@ -40,6 +40,7 @@ public class Problem {
     private List<Chapter> chapterList; // 非db字段 课程表
     private String subCatalog; // 非db字段 字类名
     private String catalog; // 非db字段 类名
+    private Integer chosenPersonCount; // 该门小课学习的人数
 
     public Problem simple(){
         Problem problem = new Problem();
@@ -58,7 +59,7 @@ public class Problem {
         problem.setSubCatalog(this.subCatalog);
         problem.setCatalog(this.catalog);
         problem.setHot(hot);
-
+        problem.setChosenPersonCount(this.chosenPersonCount);
         return problem;
     }
 

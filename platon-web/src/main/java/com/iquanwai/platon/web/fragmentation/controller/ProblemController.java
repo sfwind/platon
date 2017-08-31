@@ -79,6 +79,12 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
+
+        // 获取每门小课已经选择的人数
+        for (Problem problem : problems) {
+            problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
+        }
+
         //非天使用户去除试用版小课
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
