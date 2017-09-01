@@ -87,13 +87,10 @@ public class TheatreServiceImpl implements TheatreService {
                 .addAnswer(13, "能打各类游戏的小霸王游戏机", null);
         theatreScript.addQuestion(
                 "你成功地舍弃了你最爱的小霸王学习机，为了鼓励你，我们决定免费送你一次圈外博物馆的直播分享。（兑换码已经放入你的背包里了，你可以随时回复背包查看兑换码）\n" +
-                        "\n" +
                         "现在请你继续往下走，后面还有价值528元的宝藏等着你拿呢。\n" +
-                        "\n" +
                         "刚进入了博物馆的大门，前面有一个老大爷，站在博物馆楼前，他看着你说：“找到圈外博物馆首任馆长，ta才能给你你想要的东西，快去吧年轻人，要相信你自己。”你推开门，前方是一个看不见尽头的走廊，走廊的左手边挂着一排人物画像。你要在这里找到首任馆长的画像，于是你走向了：\n",
                 CURRENT_ACTION.Question2)
                 .addAnswer(21, "孙圈圈的画像", "圈圈开始给你讲解结构化思维，一开口就再也没有停下\n" +
-                        "\n" +
                         "你听着圈圈的声音昏昏欲睡，不过你可以回复{replayKey}摆脱圈圈的控制")
                 .addAnswer(22, "马徐骏的画像", null)
                 .addAnswer(23, "特朗普的画像", "特朗普睁开了眼睛，并骂了你一句：“I'll build a wall between us and let you pay for it！“\n" +
@@ -321,7 +318,7 @@ public class TheatreServiceImpl implements TheatreService {
         completeAction.setActivity(CURRENT_GAME);
         completeAction.setProfileId(profile.getId());
         promotionActivityDao.insertPromotionActivity(completeAction);
-        StringBuilder message = new StringBuilder(question.getWords());
+        StringBuilder message = new StringBuilder(question.getWords()).append("\n");
         List<Answer> answers = question.getAnswerList();
         answers.forEach(answer -> {
             message.append("\n").
