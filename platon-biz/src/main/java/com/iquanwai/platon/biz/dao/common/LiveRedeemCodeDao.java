@@ -19,7 +19,7 @@ public class LiveRedeemCodeDao extends DBUtil {
 
     public LiveRedeemCode loadValidLiveRedeemCode(String live) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from quanwai.LiveRedeemCode where Live = ? and Used = 0 and Del = 0 ";
+        String sql = "select * from LiveRedeemCode where Live = ? and Used = 0 and Del = 0 ";
         try {
             return runner.query(sql, new BeanHandler<LiveRedeemCode>(LiveRedeemCode.class), live);
         } catch (SQLException e) {
@@ -30,7 +30,7 @@ public class LiveRedeemCodeDao extends DBUtil {
 
     public LiveRedeemCode loadLiveRedeemCode(String live, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from quanwai.LiveRedeemCode where Live = ? and ProfileId = ? Del = 0 order by Id desc limit 1";
+        String sql = "select * from LiveRedeemCode where Live = ? and ProfileId = ? Del = 0 order by Id desc limit 1";
         try {
             return runner.query(sql, new BeanHandler<LiveRedeemCode>(LiveRedeemCode.class), live, profileId);
         } catch (SQLException e) {
