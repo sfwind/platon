@@ -74,7 +74,9 @@ public class TheatreServiceImpl implements TheatreService {
                 "恭喜你，你已经完成了本次探险，如果之前没有领取到兑换码和邀请券的勇士可以回复【背包】查看你的兑换码和邀请券。通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。\n");
 
         theatreScript.addQuestion(
-                "你决定一探究竟，背着行囊来到了圈外博物馆。博物馆大门敞开着，里面黑洞洞的一片。在你打算直接跨入大门之时，两个守卫突然现身、拦住了你，声称你带了某件【圈外博物馆】的违禁品。你说：“我去，竟然不让带…… ”",
+                "你决定一探究竟，背着行囊来到了圈外博物馆。博物馆大门敞开着，里面黑洞洞的一片。\n" +
+                        "在你打算直接跨入大门之时，两个守卫突然现身、拦住了你，声称你带了某件【圈外博物馆】的违禁品。\n" +
+                        "你说：“我去，竟然不让带…… ”",
                 CURRENT_ACTION.Question1)
                 .addAnswer(11, "圈圈写的《请停止无效努力》一书", "守卫立马对小黄书鞠了一躬，毕竟小黄书是逆袭圣经啊！" +
                         "\n" +
@@ -252,14 +254,14 @@ public class TheatreServiceImpl implements TheatreService {
             if (lastQuestion == null) {
                 // 之前没有做过题,推送第一道题目
                 Question firstQuestion = theatreScript.firstQuestion();
-                this.sendQuestionToUsr(profile, firstQuestion);
+                this.sendQuestionToUser(profile, firstQuestion);
             } else {
                 if (lastQuestion.getAction() >= wannaQuestion.getAction()) {
                     // 之前做的题目比这个靠后，可以重做,推送题目
-                    this.sendQuestionToUsr(profile, wannaQuestion);
+                    this.sendQuestionToUser(profile, wannaQuestion);
                 } else {
                     // 之前做的题目比这个靠前，不可以重做
-                    this.sendQuestionToUsr(profile, lastQuestion);
+                    this.sendQuestionToUser(profile, lastQuestion);
                 }
             }
         }
@@ -294,7 +296,7 @@ public class TheatreServiceImpl implements TheatreService {
                     // TODO ERROR
                     logger.error("异常，没有下一题了,{}", question);
                 } else {
-                    this.sendQuestionToUsr(profile, nextQuestion);
+                    this.sendQuestionToUser(profile, nextQuestion);
                 }
             }
             // 第一题会送一个兑换码
@@ -311,7 +313,7 @@ public class TheatreServiceImpl implements TheatreService {
      * @param profile  用户
      * @param question 题目
      */
-    private void sendQuestionToUsr(Profile profile, Question question) {
+    private void sendQuestionToUser(Profile profile, Question question) {
         PromotionActivity completeAction = new PromotionActivity();
         completeAction.setAction(question.getAction());
         completeAction.setActivity(CURRENT_GAME);
@@ -321,9 +323,9 @@ public class TheatreServiceImpl implements TheatreService {
         List<Answer> answers = question.getAnswerList();
         answers.forEach(answer -> {
             message.append("\n").
-                    append(answer.getKey()).append(" ").append(answer.getWords());
+                    append(answer.getKey()).append(" : ").append(answer.getWords());
         });
-        message.append("\n")
+        message.append("\n\n")
                 .append("请回复题目编号进行闯关\n");
         customerMessageService.sendCustomerMessage(profile.getOpenid(), message.toString(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
@@ -376,7 +378,7 @@ public class TheatreServiceImpl implements TheatreService {
         customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getPrologue(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送第一题文案
         Question firstQuestion = theatreScript.firstQuestion();
-        this.sendQuestionToUsr(profile, firstQuestion);
+        this.sendQuestionToUser(profile, firstQuestion);
     }
 
     private String generateSharePage(Profile profile) {
