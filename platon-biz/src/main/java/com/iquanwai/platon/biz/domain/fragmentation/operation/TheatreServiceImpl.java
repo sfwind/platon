@@ -277,7 +277,7 @@ public class TheatreServiceImpl implements TheatreService {
     private void handleAnswer(Profile profile, Question question, Answer answer) {
         if (answer.getBadEnding()) {
             // go die
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), answer.getWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            customerMessageService.sendCustomerMessage(profile.getOpenid(), answer.getDeadWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             // go live 回答正确
             if (theatreScript.isLastQuestion(question)) {
