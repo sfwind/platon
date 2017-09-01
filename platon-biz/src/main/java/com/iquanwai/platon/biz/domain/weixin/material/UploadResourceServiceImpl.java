@@ -1,13 +1,14 @@
 package com.iquanwai.platon.biz.domain.weixin.material;
 
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,8 +27,7 @@ public class UploadResourceServiceImpl implements UploadResourceService {
     @Override
     public String uploadResource(BufferedImage bufferedImage) {
         //生成临时图片
-        String path = System.getProperty("java.io.tmpdir");
-        Assert.notNull(path, "java.io.tmpdir 不能为空");
+        String path = Constants.TEMP_IMAGE_PATH + CommonUtils.randomString(10) + ".jpg";
         return this.uploadResource(bufferedImage, path);
     }
 
