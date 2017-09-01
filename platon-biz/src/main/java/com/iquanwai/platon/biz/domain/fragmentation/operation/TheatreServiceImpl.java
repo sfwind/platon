@@ -346,7 +346,7 @@ public class TheatreServiceImpl implements TheatreService {
             this.handleBackpackMessage(profile);
         } else if (StringUtils.isNumeric(message)) {
             Integer key = Integer.parseInt(message);
-            Answer answer = question.searchAnswerByKey(key);
+            Answer answer = question != null ? question.searchAnswerByKey(key) : null;
             if (answer == null) {
                 // 处理重玩逻辑
                 this.handleReplay(profile, question, key);
