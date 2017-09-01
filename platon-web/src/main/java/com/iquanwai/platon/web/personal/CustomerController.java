@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -63,6 +64,8 @@ public class CustomerController {
     private PlanService planService;
     @Autowired
     private ProblemService problemService;
+    @Autowired
+    private CacheService cacheService;
     @Autowired
     private RiseMemberService riseMemberService;
     @Autowired
@@ -245,6 +248,7 @@ public class CustomerController {
             } else if (item.getStatus() == ImprovementPlan.CLOSE) {
                 donePlans.add(planDto);
             }
+            planDto.setProblem(cacheService.getProblem(item.getProblemId()).simple());
         });
         list.setRunningPlans(runningPlans);
         list.setDonePlans(donePlans);
