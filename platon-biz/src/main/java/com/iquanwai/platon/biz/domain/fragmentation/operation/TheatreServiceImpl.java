@@ -19,6 +19,8 @@ import lombok.Data;
 import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +103,6 @@ public class TheatreServiceImpl implements TheatreService {
                 "你对着马徐骏的画像念了一段咒语：“马馆长好帅！阿哩啊哩！”画像逐渐变亮。。。\n" +
                         "\n" +
                         "马馆长被你成功唤醒了，作为奖励，你得到了一个价值88元的免费邀请券，能够让你的一位小伙伴免费收听本次直播分享。（邀请券已经放入你的背包里了，你可以随时回复背包查看你的邀请券）\n" +
-                        "\n" +
                         "\n" +
                         "马徐骏馆长缓缓睁开眼睛，张口来了一段freestyle，你一边听着他的freestyle，一边想着怎么找到下一步的线索。你应该怎么说：",
                 CURRENT_ACTION.Question3)
@@ -210,9 +211,10 @@ public class TheatreServiceImpl implements TheatreService {
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "您回复了背包,不过暂时还没有兑换码", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             // 查看做的题目
-            Question maxPlayQustion = this.loadMaxPlayQuestion(profile.getId());
+            Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
+            Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "你的兑换码是:" + liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-            if (maxPlayQustion != null && maxPlayQustion.getAction() > CURRENT_ACTION.Question3) {
+            if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
                 // 做到第四题才会有邀请券,发海报
                 String mediaId = generateSharePage(profile);
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
@@ -222,16 +224,20 @@ public class TheatreServiceImpl implements TheatreService {
 
     /**
      * 完成到最后的题目
-     *
      * @param profileId 用户id
-     * @return 题目
+     * @return left-是否goDie  right-问题
      */
-    private Question loadMaxPlayQuestion(Integer profileId) {
-        PromotionActivity activity = promotionActivityDao.loadMaxPlayQustion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
+    private Pair<Boolean, Question> loadMaxPlayQuestion(Integer profileId) {
+
+        PromotionActivity activity = promotionActivityDao.loadMaxPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
         if (activity == null) {
             return null;
         }
-        return theatreScript.searchQuestionByAction(activity.getAction());
+
+        PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GoDie);
+        Boolean isDead = deadAction != null && deadAction.getAddTime().after(activity.getAddTime());
+        Question question = theatreScript.searchQuestionByAction(activity.getAction());
+        return new MutablePair<>(isDead, question);
     }
 
     /**
@@ -248,7 +254,8 @@ public class TheatreServiceImpl implements TheatreService {
             // TODO error
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "输入的不是想要重做的题目序号", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
-            Question lastQuestion = this.loadMaxPlayQuestion(profile.getId());
+            Pair<Boolean,Question> lastQuestionPair = this.loadMaxPlayQuestion(profile.getId());
+            Question lastQuestion = lastQuestionPair != null ? lastQuestionPair.getRight() : null;
             // 检查有没有做到这一题
             if (lastQuestion == null) {
                 // 之前没有做过题,推送第一道题目
@@ -276,6 +283,11 @@ public class TheatreServiceImpl implements TheatreService {
     private void handleAnswer(Profile profile, Question question, Answer answer) {
         if (answer.getBadEnding()) {
             // go die
+            PromotionActivity completeAction = new PromotionActivity();
+            completeAction.setAction(CURRENT_ACTION.GoDie);
+            completeAction.setActivity(CURRENT_GAME);
+            completeAction.setProfileId(profile.getId());
+            promotionActivityDao.insertPromotionActivity(completeAction);
             customerMessageService.sendCustomerMessage(profile.getOpenid(), answer.getDeadWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             // go live 回答正确
@@ -335,24 +347,23 @@ public class TheatreServiceImpl implements TheatreService {
         logger.info("handleTheatreMessage");
         String message = wechatMessage.getMessage();
         Profile profile = accountService.getProfile(wechatMessage.getOpenid());
-        // 查询该用户正在做的题
-        PromotionActivity activity = promotionActivityDao.loadRecentPromotionActivity(profile.getId(), CURRENT_GAME, CURRENT_ACTION.Backpack);
-        // 用户正在进行的操作
-        Integer currentAction = activity.getAction();
-        Question question = theatreScript.searchQuestionByAction(currentAction);
         if (message.equals(BACKPACK)) {
             // 处理背包逻辑
             this.handleBackpackMessage(profile);
         } else if (StringUtils.isNumeric(message)) {
+            Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
             Integer key = Integer.parseInt(message);
+            Question question = questionPair != null ? questionPair.getRight() : null;
+            Boolean isDead = questionPair != null ? questionPair.getLeft() : null;
             Answer answer = question != null ? question.searchAnswerByKey(key) : null;
             if (answer == null) {
                 // 处理重玩逻辑
                 this.handleReplay(profile, question, key);
-            } else {
-                // 处理答题逻辑
+            } else if (!isDead) {
+                // 处理答题逻辑,这道题没有死
                 this.handleAnswer(profile, question, answer);
             }
+            // badEnding必须回复题目，而不是答案
         }
         // 输入的不是背包，也不是数字，ignore
     }

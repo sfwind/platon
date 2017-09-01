@@ -114,9 +114,10 @@ public class PromotionActivityDao extends DBUtil {
         return Lists.newArrayList();
     }
 
-    public PromotionActivity loadRecentPromotionActivity(Integer profileId, String activity,Integer notValidAction) {
+
+    public PromotionActivity loadMaxPlayQuestion(Integer profileId, String activity, Integer notValidAction) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from quanwai.PromotionActivity where ProfileId = ? and Activity = ? and Action < ? ORDER BY Id desc limit 1";
+        String sql = "select * from PromotionActivity where ProfileId = ? and Activity = ? and Action < ? ORDER BY Action desc limit 1";
         try {
             return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, notValidAction);
         } catch (SQLException e) {
@@ -125,17 +126,16 @@ public class PromotionActivityDao extends DBUtil {
         return null;
     }
 
-    public PromotionActivity loadMaxPlayQustion(Integer profileId, String activity,Integer notValidAction) {
+    public PromotionActivity loadDeadQuestion(Integer profileId, String activity,Integer deadAction) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from quanwai.PromotionActivity where ProfileId = ? and Activity = ? and Action < ? ORDER BY Action desc limit 1";
+        String sql = "select * from PromotionActivity where ProfileId = ? and Activity = ? and Action = ? ORDER BY Action desc limit 1";
         try {
-            return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, notValidAction);
+            return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, deadAction);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
     }
-
 
 
 }
