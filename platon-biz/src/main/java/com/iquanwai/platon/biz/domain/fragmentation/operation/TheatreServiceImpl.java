@@ -322,7 +322,7 @@ public class TheatreServiceImpl implements TheatreService {
         List<Answer> answers = question.getAnswerList();
         answers.forEach(answer -> {
             message.append("\n")
-                    .append("<span style='color:red'>").append(answer.getKey()).append("</span>").append(" : ").append(answer.getWords());
+            .append(answer.getKey()).append(" : ").append(answer.getWords());
         });
         message.append("\n\n")
                 .append("请回复题目编号进行闯关\n");
