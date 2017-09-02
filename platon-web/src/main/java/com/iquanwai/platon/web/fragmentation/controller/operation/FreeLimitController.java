@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -73,6 +74,11 @@ public class FreeLimitController {
         result.setResult(pairs.getLeft());
         result.setSuggestion(pairs.getRight());
 
+        // 发消息比较慢,异步发送
+        ThreadPool.execute(new Thread(() -> {
+            operationEvaluateService.sendShareMessage(loginUser.getId(), score, percent, result.getLearnFreeLimit());
+        }), "thread-send-shareMsg");
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());
         operationLogService.log(operationLog);
@@ -105,12 +111,7 @@ public class FreeLimitController {
         Assert.notNull(loginUser, "用户不能为空");
 
         String pic = operationEvaluateService.getResult(loginUser.getId(), score, percent);
-        Boolean learnBefore = planService.hasProblemPlan(loginUser.getId(), ConfigUtils.getTrialProblemId());
-        final Boolean learnFreeLimit = learnBefore || loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
-        // 发消息比较慢,异步发送
-        new Thread(() -> {
-            operationEvaluateService.sendShareMessage(loginUser.getId(), score, percent, learnFreeLimit);
-        }).start();
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("领取推广卡片");
         operationLogService.log(operationLog);

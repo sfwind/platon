@@ -177,15 +177,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selected;
     }
 
-    private List<ChallengePractice> selectChallenge(List<ChallengePractice> practices) {
-        Assert.notNull(practices, "小目标不能为空");
-        List<ChallengePractice> challengePractices = Lists.newArrayList();
-
-        challengePractices.add(practices.get(0));
-
-        return challengePractices;
-    }
-
     private List<PracticePlan> createApplicationPractice(Problem problem, int planId,
                                                          List<ProblemSchedule> problemScheduleList) {
         Assert.notNull(problem, "problem不能为空");
