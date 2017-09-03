@@ -13,4 +13,6 @@ public interface CertificateService {
      * @param certificateNo 证书号
      * */
     RiseCertificate getCertificate(String certificateNo);
+
+    void sendCertificate(Integer year, Integer month);
 }

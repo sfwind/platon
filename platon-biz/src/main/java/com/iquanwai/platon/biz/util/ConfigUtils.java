@@ -91,7 +91,7 @@ public class ConfigUtils {
     }
 
     public static boolean isDebug() {
-        return getBooleanValue("debug") || getBooleanValue("press.test");
+        return getBooleanValue("debug");
     }
 
     public static boolean isFrontDebug() {
@@ -156,6 +156,10 @@ public class ConfigUtils {
 
     public static String courseCloseMsg() {
         return getValue("course.pass.msg");
+    }
+
+    public static String incompleteTaskMsg() {
+        return getValue("incomplete.task.msg");
     }
 
     public static String getPicturePrefix() {
