@@ -135,7 +135,7 @@ public class CertificateServiceImpl implements CertificateService {
                     data.put("keyword2", new TemplateMessage.Keyword("点击详情，领取优秀班长荣誉证书"));
                     data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
                     data.put("remark", new TemplateMessage.Keyword("\n被评为优秀班长的同学，除了荣誉证书外，还将获得圈外200元优惠券（领取及使用方式，我们在以下给您发了另一条通知，专门介绍啦）" +
-                            "\n" +
+                            "\n\n" +
                             "此外，如果您在本次会员期内，\n" +
                             "累计3次荣膺优秀班长：额外获得圈外周边礼物+圈圈签名书\n" +
                             "累计6次荣膺优秀班长：额外获得优秀班长礼包+圈圈1V1咨询半小时"));
@@ -152,8 +152,7 @@ public class CertificateServiceImpl implements CertificateService {
                     data.put("keyword2", new TemplateMessage.Keyword("点击详情，领取优秀组长荣誉证书"));
                     data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
                     data.put("remark", new TemplateMessage.Keyword("\n被评为优秀组长的同学，除了荣誉证书外，还将获得圈外100元优惠券（领取及使用方式，我们在以下给您发了另一条通知，专门介绍啦）" +
-                            "\n" +
-                            "\n" +
+                            "\n\n" +
                             "此外，如果您在本次会员期内，\n" +
                             "累计3次荣膺优秀组长：额外获得圈外周边礼物\n" +
                             "累计6次荣膺优秀组长：额外获得优秀组长礼包+圈圈1V1咨询半小时"));
@@ -170,8 +169,7 @@ public class CertificateServiceImpl implements CertificateService {
                     data.put("keyword2", new TemplateMessage.Keyword("点击详情，领取优秀学员荣誉证书"));
                     data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
                     data.put("remark", new TemplateMessage.Keyword("\n被评为优秀学员的同学，除了荣誉证书外，您还将额外获得200个积分（积分已存入您的［圈外同学］－［我的］－［我的小课］－［总积分］）" +
-                            "\n" +
-                            "\n" +
+                            "\n\n" +
                             "此外，如果您在本次会员期内，\n" +
                             "累计3次荣膺优秀学员：成为助教资格＋圈外同学奖学金\n" +
                             "累计6次荣膺优秀学员：圈圈1V1半小时咨询"));
