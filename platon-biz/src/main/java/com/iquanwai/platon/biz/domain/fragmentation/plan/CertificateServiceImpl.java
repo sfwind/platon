@@ -44,7 +44,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     //优秀班长优惠券
     private static final int PRIZE_COUPON_CLASS_LEADER = 200;
-
     //优秀组长优惠券
     private static final int PRIZE_COUPON_GROUP_LEADER = 100;
 
@@ -216,7 +215,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中担任组长一职，表现优异，荣膺\"优秀班长\"称号" +
+                        riseCertificate.getMonth() + "月小课训练营中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.GROUP_LEADER);
