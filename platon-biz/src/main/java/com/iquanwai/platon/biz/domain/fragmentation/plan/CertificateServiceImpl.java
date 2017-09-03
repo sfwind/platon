@@ -69,7 +69,7 @@ public class CertificateServiceImpl implements CertificateService {
             templateMessage.setTouser(profile.getOpenid());
             templateMessage.setTemplate_id(ConfigUtils.incompleteTaskMsg());
             templateMessage.setUrl(
-                    ConfigUtils.domainName() + "/rise/static/certificate/profile?certificateNo="
+                    ConfigUtils.domainName() + "/rise/static/customer/certificate/profile?certificateNo="
                             + riseCertificate.getCertificateNo());
             buildGraduateMessage(riseCertificate, type, templateMessage, profile);
             //发送毕业消息
