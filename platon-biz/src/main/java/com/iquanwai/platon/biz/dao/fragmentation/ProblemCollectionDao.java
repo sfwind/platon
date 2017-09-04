@@ -1,8 +1,9 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ProblemCollection;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ProblemCollection;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -16,10 +17,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 @Repository
-public class ProblemCollectionDao extends DBUtil {
+public class ProblemCollectionDao extends PracticeDBUtil {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
