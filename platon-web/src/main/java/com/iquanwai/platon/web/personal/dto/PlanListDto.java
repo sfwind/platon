@@ -17,7 +17,6 @@ public class PlanListDto {
     private List<PlanDto> donePlans;
     private List<Problem> problemCollections;
     private List<RiseCertificate> riseCertificates;
-//    private Integer riseMember;
     private MemberType memberType;
     private Integer point;
 }
