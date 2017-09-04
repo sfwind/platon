@@ -35,6 +35,8 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ProblemDao problemDao;
     @Autowired
+    private ProblemCollectionDao problemCollectionDao;
+    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private CardRepository cardRepository;
@@ -193,6 +195,43 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public int loadChosenPersonCount(Integer problemId) {
         return improvementPlanDao.loadChosenPersonCount(problemId);
+    }
+
+    @Override
+    public boolean hasCollectedProblem(Integer profileId, Integer problemId) {
+        ProblemCollection collection = problemCollectionDao.loadUsefulCollection(profileId, problemId);
+        return collection != null;
+    }
+
+    @Override
+    public int collectProblem(Integer profileId, Integer problemId) {
+        int result = -1;
+        // 判断以前是否收藏过这门小课
+        ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
+        if(collection != null) {
+            // 已经存在过这门课，如果 Del 字段为 1，将其置为 0
+            if(collection.getDel() == 1) {
+                result = problemCollectionDao.restoreCollection(collection.getId());
+            }
+        } else {
+            // 收藏名单不存在这门课，直接新增记录
+            result = problemCollectionDao.insert(profileId, problemId);
+        }
+        return result;
+    }
+
+    @Override
+    public int disCollectProblem(Integer profileId, Integer problemId) {
+        int result = -1;
+        // 判断以前是否收藏过这门小课
+        ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
+        if(collection != null) {
+            // 已经存在过这门课，如果 Del 字段为 0，将其置为 1
+            if(collection.getDel() == 0) {
+                result = problemCollectionDao.delete(collection.getId());
+            }
+        }
+        return result;
     }
 
 }

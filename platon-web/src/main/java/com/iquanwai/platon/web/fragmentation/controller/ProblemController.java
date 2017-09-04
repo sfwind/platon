@@ -52,7 +52,6 @@ public class ProblemController {
     @Autowired
     private CourseReductionService courseReductionService;
 
-
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -282,10 +281,11 @@ public class ProblemController {
     }
 
     @RequestMapping("/open/{problemId}")
-    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
-                                                                       @RequestParam(required = false) Boolean autoOpen) {
+    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblem(problemId);
+        // 设置当前小课已学习人数
+        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
@@ -446,5 +446,36 @@ public class ProblemController {
         }
     }
 
+    @RequestMapping(value = "/collect/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> collectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemId, "小课不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课学习").function("小课收藏").action("点击收藏").memo(Integer.toString(problemId));
+        operationLogService.log(operationLog);
+
+        int result = problemService.collectProblem(loginUser.getId(), problemId);
+        if (result > 0) {
+            return WebUtils.result("收藏成功");
+        } else {
+            return WebUtils.error("收藏失败");
+        }
+    }
+
+    @RequestMapping(value = "/discollect/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> disCollectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser,"登录用户不能为空");
+        Assert.notNull(problemId, "小课不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课学习").function("小课取消收藏").action("取消收藏").memo(Integer.toString(problemId));
+        operationLogService.log(operationLog);
+
+        int result = problemService.disCollectProblem(loginUser.getId(), problemId);
+        if(result > 0) {
+            return WebUtils.result("取消收藏成功");
+        } else {
+            return WebUtils.error("取消收藏失败");
+        }
+    }
 
 }

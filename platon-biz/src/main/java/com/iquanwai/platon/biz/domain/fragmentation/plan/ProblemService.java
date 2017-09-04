@@ -99,4 +99,10 @@ public interface ProblemService {
     String loadProblemSchedule(Integer problemId);
 
     int loadChosenPersonCount(Integer problemId);
+
+    boolean hasCollectedProblem(Integer profileId, Integer problemId);
+
+    int collectProblem(Integer profileId, Integer problemId);
+
+    int disCollectProblem(Integer profileId, Integer problemId);
 }
