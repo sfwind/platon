@@ -299,6 +299,7 @@ public class PlanController {
             improvementPlan.setOpenRise(profile.getOpenRise());
         }
         improvementPlan.setOpenRise(loginUser.getOpenRise());
+        improvementPlan.setProblemCollected(problemService.hasCollectedProblem(loginUser.getId(), improvementPlan.getProblemId()));
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")

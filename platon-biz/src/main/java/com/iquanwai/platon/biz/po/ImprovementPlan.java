@@ -46,6 +46,8 @@ public class ImprovementPlan {
     private Boolean hasProblemScore; //是否已打分
     private Boolean doneAllIntegrated; //是否做完所有综合练习
     private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
+    private Boolean problemCollected; //当前用户是否已经收藏该小课
+
 
     /**
      * -1：课程结束，report不能点击 plan的status=3 and 没有完成练习<br/>
