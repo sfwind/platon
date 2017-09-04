@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ProblemCollection;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-public class ProblemCollectionDao extends DBUtil {
+public class ProblemCollectionDao extends PracticeDBUtil {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -43,17 +43,36 @@ public class ProblemCollectionDao extends DBUtil {
     /**
      * 删除收藏
      */
-    public void delete(Integer id) {
+    public Integer delete(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ProblemCollection SET Del = 1 WHERE Id = ?";
         try {
-            runner.update(sql, id);
+            return runner.update(sql, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+        return -1;
     }
 
-    public ProblemCollection loadSingleProblemCollection(Integer profileId, Integer problemId) {
+    /**
+     * 获取单条无限制记录，del 可能为 1
+     */
+    public ProblemCollection loadSingleCollection(Integer profileId, Integer problemId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ProblemCollection WHERE ProfileId = ? AND ProblemId = ?";
+        ResultSetHandler<ProblemCollection> h = new BeanHandler<>(ProblemCollection.class);
+        try {
+            return runner.query(sql, h, profileId, problemId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    /**
+     * 获取未被删除的记录 del 为 0
+     */
+    public ProblemCollection loadUsefulCollection(Integer profileId, Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ProblemCollection WHERE ProfileId = ? AND ProblemId = ? AND Del = 0";
         ResultSetHandler<ProblemCollection> h = new BeanHandler<>(ProblemCollection.class);
