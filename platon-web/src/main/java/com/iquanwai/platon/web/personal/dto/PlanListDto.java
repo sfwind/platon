@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.personal.dto;
 
+import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class PlanListDto {
     private String riseId;
     private List<PlanDto> runningPlans;
     private List<PlanDto> donePlans;
+    private List<RiseCertificate> riseCertificates;
 //    private Integer riseMember;
     private MemberType memberType;
     private Integer point;

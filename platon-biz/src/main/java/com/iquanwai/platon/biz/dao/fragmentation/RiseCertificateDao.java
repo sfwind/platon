@@ -48,4 +48,16 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<RiseCertificate> loadByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from RiseCertificate where ProfileId = ?";
+        ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return Lists.newArrayList();
+    }
+
 }
