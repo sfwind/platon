@@ -234,4 +234,18 @@ public class ProblemServiceImpl implements ProblemService {
         return result;
     }
 
+    @Override
+    public List<Problem> loadProblemCollections(Integer profileId) {
+        List<ProblemCollection> collections = problemCollectionDao.loadCollectionsByProfileId(profileId);
+
+        List<Problem> problemCollections = Lists.newArrayList();
+        for (ProblemCollection collection : collections) {
+            Problem problem = cacheService.getProblem(collection.getProblemId());
+            if(problem != null) {
+                problemCollections.add(problem);
+            }
+        }
+        return problemCollections;
+    }
+
 }

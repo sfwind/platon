@@ -174,7 +174,6 @@ public class ProblemController {
 
     @RequestMapping("/list/{catalog}")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
-
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "小课分类不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -211,6 +210,7 @@ public class ProblemController {
                         dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                         dto.setName(item.getProblem());
                         dto.setId(item.getId());
+                        dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
                         return dto;
                     })
                     .collect(Collectors.toList());
@@ -222,7 +222,6 @@ public class ProblemController {
 
     @RequestMapping("/list/all")
     public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
-
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
@@ -258,6 +257,7 @@ public class ProblemController {
                     dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                     dto.setName(item.getProblem());
                     dto.setId(item.getId());
+                    dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
                     return dto;
                 })
                 .collect(Collectors.toList());

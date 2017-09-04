@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseCertificate;
@@ -108,7 +109,7 @@ public class CustomerController {
         riseDto.setNickName(profile.getNickname());
 
         RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
-        if(riseClassMember != null) {
+        if (riseClassMember != null) {
             riseDto.setMemberId(riseClassMember.getMemberId());
         }
 
@@ -256,8 +257,10 @@ public class CustomerController {
         // 查询riseId
         Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
-//        list.setRiseMember(profile.getRiseMember());
         list.setPoint(profile.getPoint());
+        // 当前已收藏小课
+        List<Problem> problemCollections = problemService.loadProblemCollections(loginUser.getId());
+        list.setProblemCollections(problemCollections);
         return WebUtils.result(list);
     }
 
