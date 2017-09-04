@@ -68,7 +68,7 @@ public class CertificateServiceImpl implements CertificateService {
             templateMessage.setTouser(profile.getOpenid());
             templateMessage.setTemplate_id(ConfigUtils.incompleteTaskMsg());
             templateMessage.setUrl(
-                    ConfigUtils.domainName() + "/rise/static/customer/certificate/profile?certificateNo="
+                    ConfigUtils.domainName() + "/rise/static/customer/certificate?certificateNo="
                             + riseCertificate.getCertificateNo());
             buildGraduateMessage(riseCertificate, type, templateMessage, profile);
             //发送毕业消息
@@ -81,6 +81,11 @@ public class CertificateServiceImpl implements CertificateService {
             //发送优惠券信息
             sendCouponMessage(riseCertificate, type, templateMessage, profile);
         });
+    }
+
+    @Override
+    public List<RiseCertificate> getCertificates(Integer profileId) {
+        return riseCertificateDao.loadByProfileId(profileId);
     }
 
     private void sendCouponMessage(RiseCertificate riseCertificate, Integer type, TemplateMessage templateMessage, Profile profile) {

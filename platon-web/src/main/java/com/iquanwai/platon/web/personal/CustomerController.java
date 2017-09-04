@@ -224,6 +224,11 @@ public class CustomerController {
                 .function("RISE")
                 .action("查询小课信息");
         operationLogService.log(operationLog);
+        List<RiseCertificate> riseCertificates = certificateService.getCertificates(loginUser.getId());
+        //清空profileId
+        riseCertificates.forEach(riseCertificate -> {
+            riseCertificate.setProfileId(null);
+        });
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         PlanListDto list = new PlanListDto();
         List<PlanDto> runningPlans = Lists.newArrayList();
@@ -243,6 +248,7 @@ public class CustomerController {
         });
         list.setRunningPlans(runningPlans);
         list.setDonePlans(donePlans);
+        list.setRiseCertificates(riseCertificates);
         // 查询riseId
         Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
