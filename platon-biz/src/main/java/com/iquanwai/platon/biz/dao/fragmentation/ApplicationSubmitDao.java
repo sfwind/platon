@@ -48,7 +48,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
     public ApplicationSubmit load(Integer applicationId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=? and PlanId=?";
+        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=? and PlanId=? and Del=0";
         try {
             return run.query(sql, h, profileId, applicationId, planId);
         } catch (SQLException e) {
@@ -60,7 +60,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
     public ApplicationSubmit load(Integer applicationId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ApplicationSubmit> h = new BeanHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=?";
+        String sql = "SELECT * FROM ApplicationSubmit where ProfileId=? and ApplicationId=? and Del=0";
         try {
             return run.query(sql, h, profileId, applicationId);
         } catch (SQLException e) {
@@ -119,8 +119,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
     public List<ApplicationSubmit> load(Integer applicationId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
-        // TODO: 写死了大小
-        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15";
+        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0";
         try {
             List<ApplicationSubmit> submits = run.query(sql, h, applicationId);
             return submits;
@@ -159,10 +158,10 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         List<Object> params = Lists.newArrayList();
         params.add(problemId);
         params.addAll(refers);
-        String sql = "select * from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ")";
+        String sql = "select * from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ") and Del=0";
 
         try{
-            return runner.query(sql, new BeanListHandler<ApplicationSubmit>(ApplicationSubmit.class), params.toArray());
+            return runner.query(sql, new BeanListHandler<>(ApplicationSubmit.class), params.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

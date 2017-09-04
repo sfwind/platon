@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
@@ -31,8 +32,8 @@ public class BackendController {
     private OperationLogService operationLogService;
     @Autowired
     private AnswerService answerService;
-
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    @Autowired
+    private CertificateService certificateService;
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser) {
@@ -79,14 +80,6 @@ public class BackendController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/login/users", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loginUsersList(@RequestParam(value = "openid") String openid) {
-        List<LoginUser> allUser = LoginUserService.getAllUsers();
-        LOGGER.info("openid:{},users:{}", openid, allUser.size());
-        List<LoginUser> list = allUser.stream().filter(item -> item.getOpenId().equals(openid)).collect(Collectors.toList());
-        return WebUtils.result(list);
-    }
-
     @RequestMapping(value = "/reply", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> forumReply(@RequestParam(value = "profileId") Integer profileId,
                                                           @RequestBody AnswerCommentDto answerCommentDto) {
@@ -101,5 +94,14 @@ public class BackendController {
         answerService.submitAnswer(answerDto.getAnswerId(), profileId,
                 answerDto.getAnswer(), answerDto.getQuestionId());
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "year") Integer year,
+                                                           @RequestParam(value = "month") Integer month) {
+        new Thread(()->{
+            certificateService.sendCertificate(year, month);
+        }).start();
+        return WebUtils.result("正在进行中");
     }
 }

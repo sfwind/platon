@@ -179,6 +179,25 @@ public class ProfileDao extends DBUtil {
         return true;
     }
 
+    public boolean submitCertificateProfile(Profile profile) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=?, RealName=? where id=?";
+        try {
+            run.update(updateSql,
+                    profile.getIndustry(),
+                    profile.getFunction(),
+                    profile.getWorkingLife(),
+                    profile.getCity(),
+                    profile.getProvince(),
+                    profile.getRealName(),
+                    profile.getId());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
     public void completeProfile(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE Profile SET IsFull = 1 where Id = ?";

@@ -72,6 +72,11 @@ public interface AccountService {
      */
     void submitPersonalCenterProfile(Profile profile);
 
+    /**
+     * 查看证书时提交用户信息
+     */
+    void submitCertificateProfile(Profile profile);
+
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
