@@ -313,6 +313,8 @@ public class ProblemController {
             }
         }
 
+        dto.setProblemCollected(problemService.hasCollectedProblem(loginUser.getId(), problemId));
+
         // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
