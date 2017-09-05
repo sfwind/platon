@@ -70,7 +70,7 @@ public class PlanServiceImpl implements PlanService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
-    private static final int MAX_HALFELTITE_PROBLEM_LIMIT = 18;
+    private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
@@ -711,7 +711,7 @@ public class PlanServiceImpl implements PlanService {
                     Date startTime4 = riseMember.getAddTime(); // 会员开始时间
                     List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
                     Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                    if(countLong4.intValue() >= MAX_HALFELTITE_PROBLEM_LIMIT) {
+                    if(countLong4.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
                         access = false;
                         message = "亲爱的精英版会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                     }
