@@ -69,7 +69,9 @@ public class PlanServiceImpl implements PlanService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    // 精英会员年费版最大选课数
     private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
+    // 精英会员半年版最大选课数
     private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
 
     @Override
