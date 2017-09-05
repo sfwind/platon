@@ -205,7 +205,6 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-
     /**
      * 得分打败了多少人
      * */
@@ -262,4 +261,20 @@ public class ImprovementPlanDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage());
         }
     }
+
+    /**
+     * 当前会员期间内购买的小课
+     */
+    public List<ImprovementPlan> loadRiseMemberPlans(Integer profileId, Date startDate) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ? AND StartDate > ? AND Del = 0";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+        try {
+            return runner.query(sql, h, profileId, startDate);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
 }

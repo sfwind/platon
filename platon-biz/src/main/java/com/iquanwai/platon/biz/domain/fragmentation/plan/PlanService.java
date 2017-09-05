@@ -156,4 +156,6 @@ public interface PlanService {
      * 根据 OrderId 强开当前月的训练营小课
      */
     void forceOpenCampOrder(String orderId);
+
+    Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
 }

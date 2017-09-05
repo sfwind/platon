@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -56,6 +57,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private RiseCourseDao riseCourseDao;
     @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
@@ -65,6 +68,11 @@ public class PlanServiceImpl implements PlanService {
     private CardRepository cardRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    // 精英会员年费版最大选课数
+    private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
+    // 精英会员半年版最大选课数
+    private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
@@ -671,6 +679,50 @@ public class PlanServiceImpl implements PlanService {
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
             improvementPlanDao.updateCloseDate(improvementPlan.getId(), ConfigUtils.getMonthlyCampCloseDate());
         }
+    }
+
+    /**
+     * 对于精英版会员，是否有权限继续选课
+     */
+    @Override
+    public Pair<Boolean, String> loadProblemChooseAccess(Integer profileId) {
+        Boolean access = true;
+        String message = "";
+        Profile profile = accountService.getProfile(profileId);
+        if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
+            // 是精英会员用户才会有选课上限分析，专业版后期没有继续招募
+            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+            Integer memberTypeId = riseMember.getMemberTypeId();
+            switch (memberTypeId) {
+                case RiseMember.ELITE:
+                    //精英版一年，按照加入时间
+                    Date startTime3 = riseMember.getAddTime(); // 会员开始时间
+                    if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
+                        access = true;
+                    } else {
+                        List<ImprovementPlan> plans3 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime3);
+                        Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                        if(countLong3.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
+                            access = false;
+                            message = "亲爱的精英版会员，你的选课数量已达36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                        }
+                    }
+                    break;
+                case RiseMember.HALF_ELITE:
+                    //精英版半年，限制18门
+                    Date startTime4 = riseMember.getAddTime(); // 会员开始时间
+                    List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
+                    Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                    if(countLong4.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
+                        access = false;
+                        message = "亲爱的精英版会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return new MutablePair<>(access, message);
     }
 
 }

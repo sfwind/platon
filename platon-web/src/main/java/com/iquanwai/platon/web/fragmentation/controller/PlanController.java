@@ -76,6 +76,12 @@ public class PlanController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
 
+        // 检查小课选择是否达到会员类型所应该有的上限
+        Pair<Boolean, String> accessResult = planService.loadProblemChooseAccess(loginUser.getId());
+        if (!accessResult.getLeft() && !problemId.equals(ConfigUtils.getTrialProblemId())) {
+            return WebUtils.error(accessResult.getRight());
+        }
+
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
 
         List<ImprovementPlan> runningPlans = improvementPlans.stream()
