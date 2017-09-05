@@ -700,8 +700,8 @@ public class PlanServiceImpl implements PlanService {
                         List<ImprovementPlan> plans3 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime3);
                         Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         logger.info("过滤后数量 {}", countLong3.intValue());
-                        if(countLong3.intValue() < 2) {
-                            access = true;
+                        if(countLong3.intValue() >= 2) {
+                            access = false;
                             message = "亲爱的精英版会员，你的选课数量已达到36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                         }
                     }
@@ -714,8 +714,8 @@ public class PlanServiceImpl implements PlanService {
                     Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                     logger.info("过滤后数量 {}", countLong4.intValue());
                     access = countLong4.intValue() < 1;
-                    if(countLong4.intValue() < 1) {
-                        access = true;
+                    if(countLong4.intValue() >= 1) {
+                        access = false;
                         message = "亲爱的精英版会员，你的选课数量已达到18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                     }
                     break;
