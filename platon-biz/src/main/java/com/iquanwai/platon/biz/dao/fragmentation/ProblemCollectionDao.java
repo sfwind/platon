@@ -74,7 +74,7 @@ public class ProblemCollectionDao extends PracticeDBUtil {
      */
     public ProblemCollection loadUsefulCollection(Integer profileId, Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ProblemCollection WHERE ProfileId = ? AND ProblemId = ?";
+        String sql = "SELECT * FROM ProblemCollection WHERE ProfileId = ? AND ProblemId = ? AND Del = 0";
         ResultSetHandler<ProblemCollection> h = new BeanHandler<>(ProblemCollection.class);
         try {
             return runner.query(sql, h, profileId, problemId);
