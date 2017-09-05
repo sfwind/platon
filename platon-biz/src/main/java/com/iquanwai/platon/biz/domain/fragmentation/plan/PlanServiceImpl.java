@@ -702,7 +702,7 @@ public class PlanServiceImpl implements PlanService {
                         logger.info("过滤后数量 {}", countLong3.intValue());
                         if(countLong3.intValue() >= 2) {
                             access = false;
-                            message = "亲爱的精英版会员，你的选课数量已达到36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                            message = "亲爱的精英版会员，你的选课数量已达36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                         }
                     }
                     break;
@@ -716,7 +716,7 @@ public class PlanServiceImpl implements PlanService {
                     access = countLong4.intValue() < 1;
                     if(countLong4.intValue() >= 1) {
                         access = false;
-                        message = "亲爱的精英版会员，你的选课数量已达到18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                        message = "亲爱的精英版会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                     }
                     break;
                 default:
