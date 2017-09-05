@@ -77,9 +77,9 @@ public class PlanController {
         operationLogService.log(operationLog);
 
         // 检查小课选择是否达到会员类型所应该有的上限
-        boolean access = planService.loadProblemChooseAccess(loginUser.getId());
-        if (!access && !problemId.equals(ConfigUtils.getTrialProblemId())) {
-            return WebUtils.error("亲爱的精英版会员，你的选课数量已达到36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系");
+        Pair<Boolean, String> accessResult = planService.loadProblemChooseAccess(loginUser.getId());
+        if (!accessResult.getLeft() && !problemId.equals(ConfigUtils.getTrialProblemId())) {
+            return WebUtils.error(accessResult.getRight());
         }
 
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());

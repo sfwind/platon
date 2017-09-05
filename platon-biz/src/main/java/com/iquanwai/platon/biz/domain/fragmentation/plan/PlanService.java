@@ -157,5 +157,5 @@ public interface PlanService {
      */
     void forceOpenCampOrder(String orderId);
 
-    Boolean loadProblemChooseAccess(Integer profileId);
+    Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
 }
