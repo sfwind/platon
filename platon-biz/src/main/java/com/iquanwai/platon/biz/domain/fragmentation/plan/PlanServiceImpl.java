@@ -699,7 +699,7 @@ public class PlanServiceImpl implements PlanService {
                         List<ImprovementPlan> plans3 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime3);
                         Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         logger.info("过滤后数量 {}", countLong3.intValue());
-                        access = countLong3.intValue() < 36;
+                        access = countLong3.intValue() < 2;
                     }
                     break;
                 case 4:
@@ -709,7 +709,7 @@ public class PlanServiceImpl implements PlanService {
                     List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
                     Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                     logger.info("过滤后数量 {}", countLong4.intValue());
-                    access = countLong4.intValue() < 18;
+                    access = countLong4.intValue() < 1;
                     break;
                 default:
                     break;
