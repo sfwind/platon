@@ -332,6 +332,5 @@ public class ConfigUtils {
         String splitDateStr = getValue("risemember.elite.splitdate");
         return DateUtils.parseStringToDate(splitDateStr);
     }
-
 }
 
