@@ -246,4 +246,16 @@ public class ProfileDao extends DBUtil {
         }
         return -1;
     }
+
+    public Boolean updateLearningNotifyStatus(Integer profileId, Integer status) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile set LearningNotify = ? where Id = ?";
+        try {
+            int update = runner.update(updateSql, status, profileId);
+            return update > 0;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return false;
+    }
 }

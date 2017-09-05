@@ -430,5 +430,15 @@ public class AccountServiceImpl implements AccountService {
         return riseClassMemberDao.loadLatestRiseClassMember(profileId);
     }
 
+    @Override
+    public Boolean openLearningNotify(Integer profileId) {
+        return profileDao.updateLearningNotifyStatus(profileId, 1);
+    }
+
+    @Override
+    public Boolean closeLearningNotify(Integer profileId) {
+        return profileDao.updateLearningNotifyStatus(profileId, 0);
+    }
+
 }
 
