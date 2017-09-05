@@ -56,6 +56,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private RiseCourseDao riseCourseDao;
     @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
@@ -671,6 +673,50 @@ public class PlanServiceImpl implements PlanService {
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
             improvementPlanDao.updateCloseDate(improvementPlan.getId(), ConfigUtils.getMonthlyCampCloseDate());
         }
+    }
+
+    /**
+     * 对于精英版会员，是否有权限继续选课
+     */
+    @Override
+    public Boolean loadProblemChooseAccess(Integer profileId) {
+        Boolean access = true;
+        Profile profile = accountService.getProfile(profileId);
+        logger.info("用户RiseMember: {}", profile.getRiseMember());
+        if (profile.getRiseMember() == 1) {
+            // 是精英会员用户才会有选课上限分析，专业版后期没有继续招募
+            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+            Integer memberTypeId = riseMember.getMemberTypeId();
+            logger.info("用户 MemberTypeId: {}", memberTypeId);
+            switch (memberTypeId) {
+                case 3:
+                    //精英版一年，按照加入时间
+                    Date startTime3 = riseMember.getAddTime(); // 会员开始时间
+                    logger.info("会员开始时间 {}", startTime3);
+                    if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
+                        access = true;
+                    } else {
+                        List<ImprovementPlan> plans3 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime3);
+                        Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                        logger.info("过滤后数量 {}", countLong3.intValue());
+                        access = countLong3.intValue() < 2;
+                    }
+                    break;
+                case 4:
+                    //精英版半年，限制18门
+                    Date startTime4 = riseMember.getAddTime(); // 会员开始时间
+                    logger.info("会员开始时间 {}", startTime4);
+                    List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
+                    Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                    logger.info("过滤后数量 {}", countLong4.intValue());
+                    access = countLong4.intValue() < 1;
+                    break;
+                default:
+                    break;
+            }
+        }
+        logger.info("access, {}", access);
+        return access;
     }
 
 }

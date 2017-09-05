@@ -313,5 +313,10 @@ public class ConfigUtils {
         return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
     }
 
+    public static Date getRiseMemberSplitDate() {
+        String splitDateStr = getValue("risemember.elite.splitdate");
+        return DateUtils.parseStringToDate(splitDateStr);
+    }
+
 }
 
