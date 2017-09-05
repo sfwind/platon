@@ -129,7 +129,7 @@ public class ProblemController {
                 }).collect(Collectors.toList());
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
 
-        List<Problem> hotList = problems.stream().filter(Problem::getHot).map(Problem::simple).collect(Collectors.toList());
+        List<Problem> hotList = problemService.loadHotProblems(ConfigUtils.loadHotProblemList());
 
         result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
@@ -466,14 +466,14 @@ public class ProblemController {
 
     @RequestMapping(value = "/discollect/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> disCollectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
-        Assert.notNull(loginUser,"登录用户不能为空");
+        Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(problemId, "小课不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("小课学习").function("小课取消收藏").action("取消收藏").memo(Integer.toString(problemId));
         operationLogService.log(operationLog);
 
         int result = problemService.disCollectProblem(loginUser.getId(), problemId);
-        if(result > 0) {
+        if (result > 0) {
             return WebUtils.result("取消收藏成功");
         } else {
             return WebUtils.error("取消收藏失败");

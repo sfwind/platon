@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.util;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.typesafe.config.Config;
@@ -105,7 +106,6 @@ public class ConfigUtils {
     public static String adapterDomainName() {
         return getValue("adapter.domain");
     }
-
 
     public static String realDomainName() {
         return getValue("app.domainname");
@@ -311,6 +311,21 @@ public class ConfigUtils {
 
     public static Date getMonthlyCampCloseDate() {
         return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
+    }
+
+    /**
+     * 读取热门小课配置
+     */
+    public static List<Integer> loadHotProblemList() {
+        String idStr = getValue("problem.hot.list");
+        String[] idStrs = idStr.replace(" ", "").split("、");
+
+        List<Integer> problemIds = Lists.newArrayList();
+        for (int i = 0; i < idStrs.length; i++) {
+            Integer id = Integer.parseInt(idStrs[i]);
+            problemIds.add(id);
+        }
+        return problemIds;
     }
 
     public static Date getRiseMemberSplitDate() {

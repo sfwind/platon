@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -208,9 +209,9 @@ public class ProblemServiceImpl implements ProblemService {
         int result = -1;
         // 判断以前是否收藏过这门小课
         ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
-        if(collection != null) {
+        if (collection != null) {
             // 已经存在过这门课，如果 Del 字段为 1，将其置为 0
-            if(collection.getDel() == 1) {
+            if (collection.getDel() == 1) {
                 result = problemCollectionDao.restoreCollection(collection.getId());
             }
         } else {
@@ -225,9 +226,9 @@ public class ProblemServiceImpl implements ProblemService {
         int result = -1;
         // 判断以前是否收藏过这门小课
         ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
-        if(collection != null) {
+        if (collection != null) {
             // 已经存在过这门课，如果 Del 字段为 0，将其置为 1
-            if(collection.getDel() == 0) {
+            if (collection.getDel() == 0) {
                 result = problemCollectionDao.delete(collection.getId());
             }
         }
@@ -241,11 +242,23 @@ public class ProblemServiceImpl implements ProblemService {
         List<Problem> problemCollections = Lists.newArrayList();
         for (ProblemCollection collection : collections) {
             Problem problem = cacheService.getProblem(collection.getProblemId());
-            if(problem != null) {
+            if (problem != null) {
                 problemCollections.add(problem);
             }
         }
         return problemCollections;
+    }
+
+    @Override
+    public List<Problem> loadHotProblems(List<Integer> problemIds) {
+        List<Problem> problems = Lists.newArrayList();
+        for (Integer problemId : problemIds) {
+            Problem problem = cacheService.getProblem(problemId);
+            Assert.notNull(problem, "配置的小课不能为空");
+            problem.setChosenPersonCount(loadChosenPersonCount(problemId));
+            problems.add(problem);
+        }
+        return problems;
     }
 
 }

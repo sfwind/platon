@@ -107,4 +107,6 @@ public interface ProblemService {
     int disCollectProblem(Integer profileId, Integer problemId);
 
     List<Problem> loadProblemCollections(Integer profileId);
+
+    List<Problem> loadHotProblems(List<Integer> problemIds);
 }
