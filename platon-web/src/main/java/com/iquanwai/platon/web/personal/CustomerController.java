@@ -312,7 +312,7 @@ public class CustomerController {
         page.setPageSize(100);
         List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
         // 设置刷新列表
-//        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+//        BibleRefreshListDto<ForumQuestion> result = new BibleRefreshListDto<>();
 //        result.setList(forumQuestions);
 //        result.setEnd(page.isLastPage());
         return WebUtils.result(forumQuestions);
