@@ -38,7 +38,7 @@ public class BibleController {
     private SubscribeArticleService subscribeArticleService;
 
 
-    @RequestMapping("/load/article/{pageId}")
+    @RequestMapping(value = "/load/article/{pageId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @PathVariable Integer pageId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -53,10 +53,11 @@ public class BibleController {
         result.setList(subscribeArticles);
         result.setEnd(page.isLastPage());
         // 查看是否firstOpen
+        result.setFirstOpen(subscribeArticleService.isFirstOpenBible(loginUser.getId()));
         return WebUtils.result(result);
     }
 
-    @RequestMapping("/load/article")
+    @RequestMapping(value = "/load/article", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -75,7 +76,7 @@ public class BibleController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping("/favor/{articleId}")
+    @RequestMapping(value = "/favor/article/{articleId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> favorArticle(LoginUser loginUser, @PathVariable Integer articleId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -88,7 +89,7 @@ public class BibleController {
     }
 
 
-    @RequestMapping("/disfavor/{articleId}")
+    @RequestMapping(value = "/disfavor/article/{articleId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> disfavorArticle(LoginUser loginUser, @PathVariable Integer articleId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -100,7 +101,7 @@ public class BibleController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping("/open/{articleId}")
+    @RequestMapping(value = "/open/article/{articleId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> openArticle(LoginUser loginUser, @PathVariable Integer articleId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -114,6 +115,7 @@ public class BibleController {
 
     @RequestMapping(value = "/load/score", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadScore(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
                 .function("分数")
@@ -121,5 +123,16 @@ public class BibleController {
         operationLogService.log(operationLog);
         List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(loginUser.getId());
         return WebUtils.result(compareList);
+    }
+
+    @RequestMapping(value = "/open/bible", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> openBible(LoginUser loginUser) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("学习工具")
+                .function("状态")
+                .action("第一次打开bible");
+        operationLogService.log(operationLog);
+        Boolean result = subscribeArticleService.openBible(loginUser.getId());
+        return WebUtils.result(result);
     }
 }

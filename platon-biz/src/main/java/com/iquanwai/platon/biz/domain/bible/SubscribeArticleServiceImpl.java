@@ -7,12 +7,14 @@ import com.iquanwai.platon.biz.dao.bible.SubscribeArticleDao;
 import com.iquanwai.platon.biz.dao.bible.SubscribeArticleTagDao;
 import com.iquanwai.platon.biz.dao.bible.SubscribeArticleViewDao;
 import com.iquanwai.platon.biz.dao.bible.SubscribeViewPointDao;
+import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.po.bible.ArticleFavor;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticleView;
 import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import com.iquanwai.platon.biz.po.bible.SubscribeViewPoint;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +46,21 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private SubscribeArticleTagDao subscribeArticleTagDao;
     @Autowired
     private SubscribeViewPointDao subscribeViewPointDao;
+    @Autowired
+    private CustomerStatusDao customerStatusDao;
+
+    @Override
+    public Boolean isFirstOpenBible(Integer profileId) {
+        return customerStatusDao.load(profileId, CustomerStatus.OPEN_BIBLE) == null;
+    }
+
+    @Override
+    public Boolean openBible(Integer profileId) {
+        if (customerStatusDao.load(profileId, CustomerStatus.OPEN_BIBLE) == null) {
+            return customerStatusDao.insert(profileId, CustomerStatus.OPEN_BIBLE) > 0;
+        }
+        return true;
+    }
 
     @Override
     public List<SubscribeArticle> loadSubscribeArticleList(Integer profileId, Page page) {
@@ -82,6 +99,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
 
     @Override
     public Boolean favorArticle(Integer profileId, Integer articleId) {
+        Assert.notNull(subscribeArticleDao.load(SubscribeArticle.class, articleId), "文章不能为空");
         ArticleFavor articleFavor = articleFavorDao.load(profileId, articleId);
         if (articleFavor == null) {
             articleFavor = new ArticleFavor();
@@ -102,6 +120,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
 
     @Override
     public Boolean disfavorArticle(Integer profileId, Integer articleId) {
+        Assert.notNull(subscribeArticleDao.load(SubscribeArticle.class, articleId), "文章不能为空");
         ArticleFavor articleFavor = articleFavorDao.load(profileId, articleId);
         if (articleFavor == null) {
             articleFavor = new ArticleFavor();

@@ -11,6 +11,18 @@ import java.util.List;
  */
 public interface SubscribeArticleService {
     /**
+     * 是否第一次打开bible
+     * @param profileId 用户id
+     */
+    Boolean isFirstOpenBible(Integer profileId);
+
+    /**
+     * 打开bible
+     * @param profileId 用户id
+     */
+    Boolean openBible(Integer profileId);
+
+    /**
      * 加载文章列表
      *
      * @param profileId 用户id
