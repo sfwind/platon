@@ -87,6 +87,19 @@ public class BibleController {
         return WebUtils.result(result);
     }
 
+
+    @RequestMapping("/disfavor/{articleId}")
+    public ResponseEntity<Map<String, Object>> disfavorArticle(LoginUser loginUser, @PathVariable Integer articleId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("学习工具")
+                .function("文章")
+                .action("喜欢");
+        operationLogService.log(operationLog);
+        Boolean result = subscribeArticleService.disfavorArticle(loginUser.getId(), articleId);
+        return WebUtils.result(result);
+    }
+
     @RequestMapping("/open/{articleId}")
     public ResponseEntity<Map<String, Object>> openArticle(LoginUser loginUser, @PathVariable Integer articleId) {
         Assert.notNull(loginUser, "用户不能为空");
