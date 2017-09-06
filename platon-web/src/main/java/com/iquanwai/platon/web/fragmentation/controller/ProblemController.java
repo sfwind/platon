@@ -211,6 +211,7 @@ public class ProblemController {
                         dto.setName(item.getProblem());
                         dto.setId(item.getId());
                         dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+                        dto.setAbbreviation(item.getAbbreviation());
                         return dto;
                     })
                     .collect(Collectors.toList());
@@ -258,6 +259,7 @@ public class ProblemController {
                     dto.setName(item.getProblem());
                     dto.setId(item.getId());
                     dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+                    dto.setAbbreviation(item.getAbbreviation());
                     return dto;
                 })
                 .collect(Collectors.toList());

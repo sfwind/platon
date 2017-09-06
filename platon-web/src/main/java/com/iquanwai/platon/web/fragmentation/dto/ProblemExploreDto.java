@@ -18,4 +18,5 @@ public class ProblemExploreDto {
     private String pic;
     private String name;
     private Integer chosenPersonCount; // 该门小课学习的人数
+    private String abbreviation; // 缩略名
 }

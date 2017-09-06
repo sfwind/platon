@@ -31,13 +31,13 @@ public class Problem {
     private Boolean del; //是否删除(0-否,1-是)
     private Boolean newProblem; // 是否是新课程
     private Boolean trial; //试用版（0-否,1-是）
-
     /**
      * 已废弃，采用 zk 配置排序，problem.hot.list，中文顿号分隔
      */
     @Deprecated
     private Boolean hot; // 热门课程（0-否,1-是）
     private String categoryPic; //分类图示
+    private String abbreviation; // 缩略名
 
     private Boolean done; // 非db字段 用户是否做过
     private Integer status; // 非db字段 用户选过小课（0-未选过,1-正在进行,2-已完成）
@@ -47,7 +47,7 @@ public class Problem {
     private String catalog; // 非db字段 类名
     private Integer chosenPersonCount; // 该门小课学习的人数
 
-    public Problem simple(){
+    public Problem simple() {
         Problem problem = new Problem();
         problem.setId(this.id);
         problem.setProblem(this.problem);
@@ -65,6 +65,7 @@ public class Problem {
         problem.setCatalog(this.catalog);
         problem.setHot(hot);
         problem.setChosenPersonCount(this.chosenPersonCount);
+        problem.setAbbreviation(this.abbreviation);
         return problem;
     }
 
