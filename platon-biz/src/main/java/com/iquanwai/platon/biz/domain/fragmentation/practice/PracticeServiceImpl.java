@@ -233,11 +233,22 @@ public class PracticeServiceImpl implements PracticeService {
         applicationPractice.setApplicationScore(scoreMap.get(applicationPractice.getDifficulty()));
 
         // 未提交过内容，查询草稿表 ApplicationSubmitDraft
+        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, id, planId);
         if (submit == null) {
-            ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, id, planId);
             if (applicationSubmitDraft != null) {
                 applicationPractice.setDraftId(applicationSubmitDraft.getId());
                 applicationPractice.setDraft(applicationSubmitDraft.getContent());
+            }
+            // 用户还未提交，必然未同步
+            applicationPractice.setIsSynchronized(false);
+        } else {
+            if (applicationSubmitDraft != null) {
+                applicationPractice.setDraftId(applicationSubmitDraft.getId());
+                applicationPractice.setDraft(applicationSubmitDraft.getContent());
+                applicationPractice.setIsSynchronized(submit.getContent().equals(applicationSubmitDraft.getContent())
+                        || submit.getLastModifiedTime().compareTo(applicationSubmitDraft.getUpdateTime()) >= 0);
+            } else {
+                applicationPractice.setIsSynchronized(true);
             }
         }
 
@@ -325,23 +336,34 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Integer insertApplicationSubmitDraft(String openId, Integer profileId, Integer applicationId, Integer planId) {
-        ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, applicationId, planId);
-        if (applicationSubmitDraft != null) {
-            return applicationSubmitDraft.getId();
+    public Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content) {
+        ApplicationSubmitDraft submitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(applicationId, planId);
+        if (submitDraft == null) {
+            // 用户第一次提交，或者历史数据，没有草稿存储，新建 draft，并且初始化数据
+            ApplicationSubmitDraft tempDraft = new ApplicationSubmitDraft();
+            Profile profile = accountService.getProfile(profileId);
+            tempDraft.setOpenid(profile.getOpenid());
+            tempDraft.setProfileId(profileId);
+            tempDraft.setApplicationId(applicationId);
+            tempDraft.setPlanId(planId);
+            tempDraft.setContent(content);
+            tempDraft.setLength(content != null ? content.length() : null);
+            return applicationSubmitDraftDao.insertSubmitDraft(tempDraft);
         } else {
-            ApplicationSubmitDraft draft = new ApplicationSubmitDraft();
-            draft.setOpenid(openId);
-            draft.setProfileId(profileId);
-            draft.setApplicationId(applicationId);
-            draft.setPlanId(planId);
-            return applicationSubmitDraftDao.insertSubmitDraft(draft);
+            // 用户存在历史草稿，直接更新
+            return applicationSubmitDraftDao.updateApplicationSubmitDraft(submitDraft.getId(), content);
         }
-    }
-
-    @Override
-    public Integer updateApplicationSubmitDraft(Integer draftId, String content) {
-        return applicationSubmitDraftDao.updateApplicationSubmitDraft(draftId, content);
+        // ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, applicationId, planId);
+        // if (applicationSubmitDraft != null) {
+        //     return applicationSubmitDraft.getId();
+        // } else {
+        //     ApplicationSubmitDraft draft = new ApplicationSubmitDraft();
+        //     draft.setOpenid(openId);
+        //     draft.setProfileId(profileId);
+        //     draft.setApplicationId(applicationId);
+        //     draft.setPlanId(planId);
+        //     return applicationSubmitDraftDao.insertSubmitDraft(draft);
+        // }
     }
 
     @Override
@@ -707,7 +729,7 @@ public class PracticeServiceImpl implements PracticeService {
     public Boolean loadEvaluated(Integer commentId) {
         CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
         // 数据库如果没有这条评论记录，默认为已评
-        if(evaluation == null) return true;
+        if (evaluation == null) return true;
         Integer evaluated = evaluation.getEvaluated();
         if (evaluated != null) {
             switch (evaluated) {
