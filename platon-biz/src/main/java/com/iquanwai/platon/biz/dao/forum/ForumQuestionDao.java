@@ -127,7 +127,7 @@ public class ForumQuestionDao extends ForumDBUtil {
 //        String sql = "SELECT * FROM ForumQuestion " +
 //                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         String sql = "SELECT * FROM ForumQuestion " +
-                "order by HumanSequence desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+                "order by Stick desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ForumQuestion> forumQuestions = runner.query(sql, h);
             return forumQuestions;
