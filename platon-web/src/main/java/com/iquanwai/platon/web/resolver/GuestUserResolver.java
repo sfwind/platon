@@ -42,7 +42,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         String value = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
-
+        logger.info("resolver:{}", value);
         Callback callback = callbackDao.queryByAccessToken(value);
         String openid = callback.getOpenid();
         Account account = accountService.getAccount(openid, false);
