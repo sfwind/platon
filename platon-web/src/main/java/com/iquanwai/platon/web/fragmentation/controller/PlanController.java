@@ -571,7 +571,12 @@ public class PlanController {
             plan.setStartDate(item.getStartDate());
             plan.setProblemId(item.getProblemId());
             plan.setCloseTime(item.getCloseTime());
-            plan.setProblem(cacheService.getProblem(item.getProblemId()).simple());
+
+            // 设置 Problem 对象
+            Problem itemProblem = cacheService.getProblem(item.getProblemId());
+            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+            plan.setProblem(itemProblem.simple());
+
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(plan);
             } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE || item.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
@@ -617,6 +622,7 @@ public class PlanController {
         List<Integer> usefulProblems = problemService.loadProblems().stream()
                 .sorted((left, right) -> right.getUsefulScore() > left.getUsefulScore() ? 1 : -1)
                 .map(Problem::getId).collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(runningPlans)) {
             // 没有进行中的练习,根据实用度排序
             problemIds = usefulProblems;
@@ -657,6 +663,8 @@ public class PlanController {
                     ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);
                     problem.setSubCatalog(subCatalog.getName());
                 }
+                // 设置每个 problem 当前完成的人数
+                problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
             });
 
             for (Problem problem : recommendProblems) {
