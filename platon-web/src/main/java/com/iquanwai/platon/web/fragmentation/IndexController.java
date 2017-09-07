@@ -90,6 +90,40 @@ public class IndexController {
         return guestView(request, guestUser, false);
     }
 
+    @RequestMapping(value = {"/rise/static/bible/**" }, method = RequestMethod.GET)
+    public ModelAndView getBibleIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                // 未关注
+                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                return null;
+            }
+        }
+
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+
+        //如果不在白名单中,直接403报错
+        boolean result = whiteListService.isInBibleWhiteList(loginUser.getId());
+        if (!result) {
+            response.sendRedirect("/403.jsp");
+            return null;
+        }
+
+        return courseView(request, loginUser, false);
+    }
+
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**" }, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {

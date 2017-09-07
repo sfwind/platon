@@ -8,6 +8,9 @@ import com.iquanwai.platon.biz.dao.bible.SubscribeArticleTagDao;
 import com.iquanwai.platon.biz.dao.bible.SubscribeArticleViewDao;
 import com.iquanwai.platon.biz.dao.bible.SubscribeViewPointDao;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
+import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.bible.ArticleFavor;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
@@ -16,6 +19,7 @@ import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import com.iquanwai.platon.biz.po.bible.SubscribeViewPoint;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -48,6 +52,10 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private SubscribeViewPointDao subscribeViewPointDao;
     @Autowired
     private CustomerStatusDao customerStatusDao;
+    @Autowired
+    private PromotionLevelDao promotionLevelDao;
+    @Autowired
+    private QRCodeService qrCodeService;
 
     @Override
     public Boolean isFirstOpenBible(Integer profileId) {
@@ -65,7 +73,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     @Override
     public Boolean isLastArticleDate(String date) {
         Date maxDate = subscribeArticleDao.loadMaxDate();
-        return !DateUtils.parseStringToDate(date).before(maxDate);
+        return !DateUtils.parseStringToDate7(date).before(maxDate);
     }
 
     @Override
@@ -99,7 +107,8 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
             SubscribeArticleView acknowledged = subscribeArticleViewDao.load(profileId, article.getId());
             article.setAcknowledged(acknowledged != null);
             ArticleFavor articleFavor = articleFavorDao.load(profileId, article.getId());
-            article.setFavor(articleFavor != null ? articleFavor.getFavor() : null);
+            // 找不到，或者设置为喜欢，都是0
+            article.setDisfavor(articleFavor == null || articleFavor.getFavor() ? 0 : 1);
             // 处理标签数据
             article.setTagNames(Lists.newArrayList());
             if (StringUtils.isNotEmpty(article.getTag())) {
@@ -249,5 +258,13 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         List<Integer> articleIds = subscribeArticleViews.stream().map(SubscribeArticleView::getArticleId).distinct().collect(Collectors.toList());
         // 文字累加
         return subscribeArticleDao.loadArticles(articleIds).stream().mapToInt(SubscribeArticle::getWordCount).sum();
+    }
+
+    @Override
+    public String loadUserQrCode(Integer profileId) {
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, PromotionConstants.Activities.Bible);
+        Integer level = promotionLevel.getLevel();
+        String scene = PromotionConstants.Activities.Bible + "_" + profileId + "_" + level + 1;
+        return qrCodeService.loadQrBase64(scene);
     }
 }

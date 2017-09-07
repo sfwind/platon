@@ -25,7 +25,7 @@ public class SubscribeArticleDao extends PracticeDBUtil {
 
     public List<SubscribeArticle> loadCertainDateArticles(Page page, String date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeArticle where LearnDate = ? LIMIT " + page.getOffset() + "," + page.getLimit();
+        String sql = "SELECT * FROM SubscribeArticle where UpTime = ? LIMIT " + page.getOffset() + "," + page.getLimit();
         try {
             return runner.query(sql, new BeanListHandler<>(SubscribeArticle.class), date);
         } catch (SQLException e) {
@@ -36,7 +36,7 @@ public class SubscribeArticleDao extends PracticeDBUtil {
 
     public List<SubscribeArticle> loadToCertainDateArticles(String date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeArticle where LearnDate <= ?";
+        String sql = "SELECT * FROM SubscribeArticle where UpTime >= ? order by UpTime desc";
         try {
             return runner.query(sql, new BeanListHandler<>(SubscribeArticle.class), date);
         } catch (SQLException e) {
@@ -50,7 +50,7 @@ public class SubscribeArticleDao extends PracticeDBUtil {
         ScalarHandler<Long> h = new ScalarHandler<Long>();
 
         try {
-            return run.query("SELECT count(*) FROM SubscribeArticle where LearnDate = ?", h, date).intValue();
+            return run.query("SELECT count(*) FROM SubscribeArticle where UpTime = ?", h, date).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -62,7 +62,7 @@ public class SubscribeArticleDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Date> h = new ScalarHandler<Date>();
         try {
-            return run.query("SELECT MAX(LearnDate) FROM SubscribeArticle", h);
+            return run.query("SELECT MAX(UpTime) FROM SubscribeArticle", h);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

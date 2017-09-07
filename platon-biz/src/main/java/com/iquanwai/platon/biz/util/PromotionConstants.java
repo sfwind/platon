@@ -9,6 +9,7 @@ public interface PromotionConstants {
         String FreeLimit = "freeLimit";
         String Evaluate = "evaluate";
         String CourseReduction = "courseReduction";
+        String Bible = "bible";
     }
 
     interface FreeLimitAction {
@@ -31,6 +32,10 @@ public interface PromotionConstants {
         int PayMember = 22; // 购买会员
         // TODO 会删除
         int PayZhangPeng = 23; // 购买张鹏小课
+    }
+
+    interface BibleAction {
+        int ScanCode = 31; // 扫二维码
     }
 
 }

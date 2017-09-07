@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller.bible;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.bible.SubscribeArticleService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by nethunder on 2017/9/6.
@@ -56,15 +58,23 @@ public class BibleController {
         operationLogService.log(operationLog);
         Page page = new Page();
         page.setPageSize(PAGE_SIZE * pageId);
-        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page, dateStr);
-        BibleRefreshListDto<SubscribeArticle> result = new BibleRefreshListDto<>();
-        result.setList(subscribeArticles);
-        result.setEnd(page.isLastPage());
+        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleListToCertainDate(loginUser.getId(), page, dateStr);
+        // 分天
+        List<DailyArticleDto> dailyArticleGroup = Lists.newArrayList();
+        Map<Date, List<SubscribeArticle>> dateListMap = subscribeArticles.stream().collect(Collectors.groupingBy(SubscribeArticle::getUpTime));
+        dateListMap.forEach((date, subscribeArticleList) -> {
+            DailyArticleDto dto = new DailyArticleDto();
+            dto.setIsPageEnd(true);
+            dto.setDate(DateUtils.getSpecialDateFormat(date));
+            dto.setArticleList(subscribeArticleList);
+            dailyArticleGroup.add(dto);
+        });
+
+        BibleRefreshListDto<DailyArticleDto> result = new BibleRefreshListDto<>();
+        result.setList(dailyArticleGroup);
         // 查看是否firstOpen
         result.setFirstOpen(subscribeArticleService.isFirstOpenBible(loginUser.getId()));
-        result.setDateEnd(subscribeArticleService.isLastArticleDate(dateStr));
-        Profile profile = accountService.getProfile(loginUser.getId());
-        result.setRiseId(profile.getRiseId());
+        result.setIsDateEnd(subscribeArticleService.isLastArticleDate(dateStr));
         return WebUtils.result(result);
     }
 
@@ -81,10 +91,15 @@ public class BibleController {
         }
         page.setPageSize(PAGE_SIZE);
         List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page, date);
-        BibleRefreshListDto<SubscribeArticle> result = new BibleRefreshListDto<>();
-        result.setList(subscribeArticles);
-        result.setEnd(page.isLastPage());
-        result.setDateEnd(subscribeArticleService.isLastArticleDate(date));
+        List<DailyArticleDto> dailyArticleGroup = Lists.newArrayList();
+        DailyArticleDto dto = new DailyArticleDto();
+        dailyArticleGroup.add(dto);
+        dto.setArticleList(subscribeArticles);
+        dto.setDate(DateUtils.getSpecialDateFormat(DateUtils.parseStringToDate7(date)));
+        dto.setIsPageEnd(page.isLastPage());
+        BibleRefreshListDto<DailyArticleDto> result = new BibleRefreshListDto<>();
+        result.setList(dailyArticleGroup);
+        result.setIsDateEnd(subscribeArticleService.isLastArticleDate(date));
         return WebUtils.result(result);
     }
 
@@ -141,6 +156,7 @@ public class BibleController {
         bibleScore.setNickName(profile.getNickname());
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), new Date()));
+        bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(loginUser.getId()));
         return WebUtils.result(bibleScore);
     }
 
@@ -162,6 +178,7 @@ public class BibleController {
         bibleScore.setNickName(profile.getNickname());
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(profileByRiseId.getId(), date));
+        bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(profileByRiseId.getId()));
         return WebUtils.result(bibleScore);
     }
 

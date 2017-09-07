@@ -74,4 +74,6 @@ public interface SubscribeArticleService {
     List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId);
 
     Integer loadCertainDayReadWords(Integer profileId, Date date);
+
+    String loadUserQrCode(Integer profileId);
 }

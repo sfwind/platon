@@ -13,6 +13,7 @@ public class BibleScore {
     private List<SubscribePointCompare> compareGroup;
     private String riseId;
     private Integer totalWords;
+    private String qrCode;
     private String nickName;
     private String headImage;
 }

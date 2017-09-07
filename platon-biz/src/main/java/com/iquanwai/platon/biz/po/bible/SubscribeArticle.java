@@ -29,11 +29,10 @@ public class SubscribeArticle {
     private Boolean acknowledged;
     /**
      * 是否喜欢<br/>
-     * null - 没有设置过<br/>
-     * true - 喜欢<br/>
-     * false - 不喜欢<br/>
+     * 0 - 未知<br/>
+     * 1 - 不喜欢<br/>
      */
-    private Boolean favor;
+    private Integer disfavor;
     /** 标签名字 */
     private List<String> tagNames;
 
