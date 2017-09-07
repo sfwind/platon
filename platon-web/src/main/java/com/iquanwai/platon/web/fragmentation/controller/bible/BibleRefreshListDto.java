@@ -9,4 +9,6 @@ import lombok.Data;
 @Data
 public class BibleRefreshListDto<T> extends RefreshListDto<T> {
     private Boolean firstOpen;
+    private boolean dateEnd;
+    private String riseId;
 }

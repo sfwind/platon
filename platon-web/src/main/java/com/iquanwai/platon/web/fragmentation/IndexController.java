@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -56,13 +57,38 @@ public class IndexController {
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
 
     @PostConstruct
-    public void init(){
-        logger.info("---------load es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
+    public void init() {
+        logger.info("---------loadCertainDateArticles es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
+    }
+
+    @RequestMapping(value = "/rise/static/guest/*", method = RequestMethod.GET)
+    public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response, GuestUser guestUser) throws Exception {
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                logger.info("未关注");
+                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                return null;
+            }
+        }
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+        return guestView(request, guestUser, false);
     }
 
 
-    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"},method = RequestMethod.GET)
-    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception{
+    @RequestMapping(value = {"/rise/static/**", "/forum/static/**" }, method = RequestMethod.GET)
+    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -113,7 +139,7 @@ public class IndexController {
             loginMsg(loginUser);
         }
 
-        return courseView(request, loginUser,showForum);
+        return courseView(request, loginUser, showForum);
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
@@ -182,6 +208,33 @@ public class IndexController {
         }
 
         return !StringUtils.isEmpty(openid);
+    }
+
+    private ModelAndView guestView(HttpServletRequest request, GuestUser account, Boolean showForum) {
+        ModelAndView mav = new ModelAndView("course");
+        String resourceUrl = ConfigUtils.staticResourceUrl();
+        if (request.isSecure()) {
+            resourceUrl = resourceUrl.replace("http:", "https:");
+        }
+        if (request.getParameter("debug") != null) {
+            if (ConfigUtils.isFrontDebug()) {
+                mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
+            } else {
+                mav.addObject("resource", resourceUrl);
+            }
+        } else {
+            mav.addObject("resource", resourceUrl);
+        }
+
+        Map<String, String> userParam = Maps.newHashMap();
+        userParam.put("userName", account.getWeixinName());
+        if (account.getHeadimgUrl() != null) {
+            userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
+        }
+        mav.addAllObjects(userParam);
+        mav.addObject("showForum", showForum);
+
+        return mav;
     }
 
     private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum) {

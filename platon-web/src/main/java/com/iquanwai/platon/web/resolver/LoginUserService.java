@@ -37,6 +37,8 @@ public class LoginUserService {
 
     public static final String PC_TOKEN_COOKIE_NAME = "_qt";
     public static final String WECHAT_TOKEN_COOKIE_NAME = "_act";
+    public static final String ACCESS_ASK_TOKEN_COOKIE_NAME = "_ask";
+
 
     public enum Platform{
         PC(1),Wechat(2);

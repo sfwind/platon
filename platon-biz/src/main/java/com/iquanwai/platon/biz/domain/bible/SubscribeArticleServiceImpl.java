@@ -63,9 +63,32 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public List<SubscribeArticle> loadSubscribeArticleList(Integer profileId, Page page) {
+    public Boolean isLastArticleDate(String date) {
+        Date maxDate = subscribeArticleDao.loadMaxDate();
+        return !DateUtils.parseStringToDate(date).before(maxDate);
+    }
+
+    @Override
+    public List<SubscribeArticle> loadSubscribeArticleListToCertainDate(Integer profileId, Page page, String date) {
         // 查询
-        List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.load(page);
+        List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.loadToCertainDateArticles(date);
+        this.initArticleList(profileId, subscribeArticleGroup);
+        // 查看是否当前时间的最后一个
+        page.setTotal(subscribeArticleDao.count(date));
+        return subscribeArticleGroup;
+    }
+
+    @Override
+    public List<SubscribeArticle> loadSubscribeArticleList(Integer profileId, Page page, String date) {
+        // 查询
+        List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.loadCertainDateArticles(page, date);
+        this.initArticleList(profileId, subscribeArticleGroup);
+        // 查看是否当前时间的最后一个
+        page.setTotal(subscribeArticleDao.count(date));
+        return subscribeArticleGroup;
+    }
+
+    private void initArticleList(Integer profileId, List<SubscribeArticle> subscribeArticleGroup) {
         // 标签数据
         Map<Integer, SubscribeArticleTag> tagGroup = Maps.newHashMap();
         subscribeArticleTagDao.loadAll(SubscribeArticleTag.class).stream().filter(item -> !item.getDel()).forEach(tag -> {
@@ -91,10 +114,6 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                 }
             }
         });
-        // 查看是否最后一个
-        Long totalCount = subscribeArticleDao.count(SubscribeArticle.class);
-        page.setTotal(totalCount.intValue());
-        return subscribeArticleGroup;
     }
 
     @Override
@@ -220,5 +239,15 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         // 增长积分多的纬度排前面
         compareList.sort(((o1, o2) -> o1.getTodayPoint() > o2.getTodayPoint() ? -1 : 1));
         return compareList;
+    }
+
+    @Override
+    public Integer loadCertainDayReadWords(Integer profileId, Date date) {
+        // 就获取某一天读过的文章id
+        List<SubscribeArticleView> subscribeArticleViews = subscribeArticleViewDao.loadCertainReads(profileId, date);
+        // 文章id去重
+        List<Integer> articleIds = subscribeArticleViews.stream().map(SubscribeArticleView::getArticleId).distinct().collect(Collectors.toList());
+        // 文字累加
+        return subscribeArticleDao.loadArticles(articleIds).stream().mapToInt(SubscribeArticle::getWordCount).sum();
     }
 }

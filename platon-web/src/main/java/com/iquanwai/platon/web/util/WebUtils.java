@@ -69,4 +69,12 @@ public class WebUtils {
         }
         response.sendRedirect(ConfigUtils.adapterDomainName()+"/wx/oauth/auth?callbackUrl="+url);
     }
+
+    public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception{
+        String url = ConfigUtils.adapterDomainName()+request.getRequestURI();
+        if(!StringUtils.isEmpty(request.getQueryString())){
+            url = url +"?"+request.getQueryString();
+        }
+        response.sendRedirect(ConfigUtils.adapterDomainName()+"/wx/oauth/auth/ask?callbackUrl="+url);
+    }
 }

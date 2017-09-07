@@ -2,9 +2,11 @@ package com.iquanwai.platon.web.fragmentation.controller.bible;
 
 import com.iquanwai.platon.biz.domain.bible.SubscribeArticleService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -17,8 +19,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -36,10 +40,12 @@ public class BibleController {
     private OperationLogService operationLogService;
     @Autowired
     private SubscribeArticleService subscribeArticleService;
+    @Autowired
+    private AccountService accountService;
 
 
-    @RequestMapping(value = "/load/article/{pageId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @PathVariable Integer pageId) {
+    @RequestMapping(value = "/load/article/{date}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @PathVariable(value = "date") String dateStr, @RequestParam("page") Integer pageId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
@@ -48,17 +54,20 @@ public class BibleController {
         operationLogService.log(operationLog);
         Page page = new Page();
         page.setPageSize(PAGE_SIZE * pageId);
-        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page);
+        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page, dateStr);
         BibleRefreshListDto<SubscribeArticle> result = new BibleRefreshListDto<>();
         result.setList(subscribeArticles);
         result.setEnd(page.isLastPage());
         // 查看是否firstOpen
         result.setFirstOpen(subscribeArticleService.isFirstOpenBible(loginUser.getId()));
+        result.setDateEnd(subscribeArticleService.isLastArticleDate(dateStr));
+        Profile profile = accountService.getProfile(loginUser.getId());
+        result.setRiseId(profile.getRiseId());
         return WebUtils.result(result);
     }
 
-    @RequestMapping(value = "/load/article", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @ModelAttribute Page page) {
+    @RequestMapping(value = "/load/article/certain/{date}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @ModelAttribute Page page, @PathVariable String date) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
@@ -69,10 +78,11 @@ public class BibleController {
             page = new Page();
         }
         page.setPageSize(PAGE_SIZE);
-        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page);
+        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page, date);
         BibleRefreshListDto<SubscribeArticle> result = new BibleRefreshListDto<>();
         result.setList(subscribeArticles);
         result.setEnd(page.isLastPage());
+        result.setDateEnd(subscribeArticleService.isLastArticleDate(date));
         return WebUtils.result(result);
     }
 
@@ -122,7 +132,14 @@ public class BibleController {
                 .action("获取");
         operationLogService.log(operationLog);
         List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(loginUser.getId());
-        return WebUtils.result(compareList);
+        BibleScore bibleScore = new BibleScore();
+        Profile profile = accountService.getProfile(loginUser.getId());
+        bibleScore.setRiseId(profile.getRiseId());
+        bibleScore.setCompareGroup(compareList);
+        bibleScore.setNickName(profile.getNickname());
+        bibleScore.setHeadImage(profile.getHeadimgurl());
+        bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), new Date()));
+        return WebUtils.result(bibleScore);
     }
 
     @RequestMapping(value = "/open/bible", method = RequestMethod.POST)
