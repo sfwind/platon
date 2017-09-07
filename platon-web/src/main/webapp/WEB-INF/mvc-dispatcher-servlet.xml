@@ -70,11 +70,11 @@
             <mvc:exclude-mapping path="/js/**"/>
             <mvc:exclude-mapping path="/rise/cache/**"/>
             <mvc:exclude-mapping path="/rise/b/**"/>
-            <mvc:exclude-mapping path="/rise/bible/guest/*"/>
+            <mvc:exclude-mapping path="/rise/bible/guest/**"/>
             <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
         </mvc:interceptor>
         <mvc:interceptor>
-            <mvc:mapping path="/rise/bible/guest/*"/>
+            <mvc:mapping path="/rise/bible/guest/**"/>
             <bean class="com.iquanwai.platon.web.interceptor.WeixinAskHandleInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>
