@@ -6,6 +6,8 @@ import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.util.CookieUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
  * Created by nethunder on 2017/9/7.
  */
 public class GuestUserResolver implements HandlerMethodArgumentResolver {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     private CallbackDao callbackDao;
     @Autowired
