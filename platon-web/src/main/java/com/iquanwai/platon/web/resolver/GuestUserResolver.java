@@ -45,7 +45,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         logger.info("resolver:{}", value);
         Callback callback = callbackDao.queryByAccessToken(value);
         String openid = callback.getOpenid();
-        Account account = accountService.getAccount(openid, false);
+        Account account = accountService.getGuestFromWeixin(openid, value);
         if (account == null) {
             return null;
         } else {
