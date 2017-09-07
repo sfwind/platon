@@ -7,7 +7,9 @@ import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -139,6 +141,27 @@ public class BibleController {
         bibleScore.setNickName(profile.getNickname());
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), new Date()));
+        return WebUtils.result(bibleScore);
+    }
+
+    @RequestMapping(value = "/guest/load/score", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadScoreForGuest(GuestUser guestUser, @RequestParam(value = "riseId") String riseId, @RequestParam(value = "date") String dateStr) {
+        Assert.notNull(guestUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
+                .module("学习工具")
+                .function("分数")
+                .action("游客获取");
+        operationLogService.log(operationLog);
+        Profile profileByRiseId = accountService.getProfileByRiseId(riseId);
+        Date date = DateUtils.parseStringToDate7(dateStr);
+        List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(profileByRiseId.getId());
+        BibleScore bibleScore = new BibleScore();
+        Profile profile = accountService.getProfile(profileByRiseId.getId());
+        bibleScore.setRiseId(profile.getRiseId());
+        bibleScore.setCompareGroup(compareList);
+        bibleScore.setNickName(profile.getNickname());
+        bibleScore.setHeadImage(profile.getHeadimgurl());
+        bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(profileByRiseId.getId(), date));
         return WebUtils.result(bibleScore);
     }
 

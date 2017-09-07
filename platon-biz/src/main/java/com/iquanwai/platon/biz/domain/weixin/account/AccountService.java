@@ -28,6 +28,8 @@ public interface AccountService {
      */
     Profile getProfile(String openid);
 
+    Profile getProfileByRiseId(String riseId);
+
     /**
      * 根据id获取用户详情
      */

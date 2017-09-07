@@ -42,6 +42,19 @@ public class ProfileDao extends DBUtil {
         return null;
     }
 
+    public Profile queryByRiseId(String riseId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<Profile> h = new BeanHandler<>(Profile.class);
+
+        try {
+            return run.query("SELECT * FROM Profile where RiseId=?", h, riseId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
     public void updatePoint(Integer id, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);

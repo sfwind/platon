@@ -115,6 +115,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Profile getProfileByRiseId(String riseId) {
+        Profile profile = profileDao.queryByRiseId(riseId);
+
+        if (profile != null) {
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
+            }
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if (role == null) {
+                profile.setRole(0);
+            } else {
+                profile.setRole(role);
+            }
+        }
+
+        return profile;
+    }
+
+    @Override
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
 

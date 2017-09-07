@@ -24,7 +24,7 @@
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     <context:annotation-config/>
 
-    <context:component-scan base-package="com.iquanwai.platon.web,com.iquanwai.platon.mq" />
+    <context:component-scan base-package="com.iquanwai.platon.web,com.iquanwai.platon.mq"/>
 
     <mvc:resources location="/image/" mapping="/image/**"/>
     <mvc:resources location="/js/" mapping="/js/**"/>
@@ -32,7 +32,8 @@
     <mvc:annotation-driven>
         <mvc:message-converters register-defaults="false">
             <!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
-            <bean id="fastJsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+            <bean id="fastJsonHttpMessageConverter"
+                  class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
                 <property name="supportedMediaTypes">
                     <list>
                         <value>text/html;charset=UTF-8</value>
@@ -40,7 +41,8 @@
                     </list>
                 </property>
             </bean>
-            <bean id="jaxbHttpMessageConverter" class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter">
+            <bean id="jaxbHttpMessageConverter"
+                  class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter">
                 <property name="supportedMediaTypes">
                     <list>
                         <value>text/xml;charset=UTF-8</value>
@@ -51,6 +53,7 @@
         </mvc:message-converters>
         <mvc:argument-resolvers>
             <bean class="com.iquanwai.platon.web.resolver.LoginUserResolver"/>
+            <bean class="com.iquanwai.platon.web.resolver.GuestUserResolver"/>
         </mvc:argument-resolvers>
     </mvc:annotation-driven>
 
@@ -60,14 +63,18 @@
 
     <mvc:interceptors>
         <mvc:interceptor>
-            <mvc:mapping path="/**" />
+            <mvc:mapping path="/**"/>
             <mvc:exclude-mapping path="/rise/customer/pc/plans"/>
             <mvc:exclude-mapping path="/rise/customer/certificate/**"/>
-            <mvc:exclude-mapping path="/image/**" />
-            <mvc:exclude-mapping path="/js/**" />
-            <mvc:exclude-mapping path="/rise/cache/**" />
-            <mvc:exclude-mapping path="/rise/b/**" />
-            <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"></bean>
+            <mvc:exclude-mapping path="/image/**"/>
+            <mvc:exclude-mapping path="/js/**"/>
+            <mvc:exclude-mapping path="/rise/cache/**"/>
+            <mvc:exclude-mapping path="/rise/b/**"/>
+            <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/rise/bible/guest/*"/>
+            <bean class="com.iquanwai.platon.web.interceptor.WeixinAskHandleInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>
 </beans>

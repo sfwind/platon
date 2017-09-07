@@ -62,7 +62,7 @@ public class IndexController {
     }
 
     @RequestMapping(value = "/rise/static/guest/*", method = RequestMethod.GET)
-    public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response, GuestUser guestUser) throws Exception {
+    public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -83,6 +83,7 @@ public class IndexController {
             return null;
         }
 
+        GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
         return guestView(request, guestUser, false);
     }
 
