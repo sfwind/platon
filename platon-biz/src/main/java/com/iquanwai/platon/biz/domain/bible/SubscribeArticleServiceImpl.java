@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -110,14 +111,14 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
             // 找不到，或者设置为喜欢，都是0
             article.setDisfavor(articleFavor == null || articleFavor.getFavor() ? 0 : 1);
             // 处理标签数据
-            article.setTagNames(Lists.newArrayList());
+            article.setTagName(Lists.newArrayList());
             if (StringUtils.isNotEmpty(article.getTag())) {
                 String[] tagsId = article.getTag().split(",");
                 for (String tagsIdStr : tagsId) {
                     if (StringUtils.isNumeric(tagsIdStr)) {
                         Integer tagId = Integer.parseInt(tagsIdStr);
                         if (tagGroup.get(tagId) != null) {
-                            article.getTagNames().add(tagGroup.get(tagId).getName());
+                            article.getTagName().add(tagGroup.get(tagId).getName());
                         }
                     }
                 }
@@ -172,8 +173,8 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
         Assert.notNull("文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
-        //TODO 文章积分计算
-        Double viewPoint = 0.3;
+        BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.2);
+        Double viewPoint = bigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
         if (view == null) {
             // 还没有打开过，此时才会计算
             subscribeArticleViewDao.insert(profileId, articleId);

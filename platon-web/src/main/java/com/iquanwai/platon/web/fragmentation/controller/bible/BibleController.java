@@ -10,7 +10,6 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
-import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -49,7 +48,7 @@ public class BibleController {
 
 
     @RequestMapping(value = "/load/article/{date}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @PathVariable(value = "date") String dateStr, @RequestParam("page") Integer pageId) {
+    public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @PathVariable(value = "date") String dateStr, @RequestParam("pageId") Integer pageId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
@@ -160,14 +159,11 @@ public class BibleController {
         return WebUtils.result(bibleScore);
     }
 
+    /**
+     * 游客浏览，不校验个人信息
+     */
     @RequestMapping(value = "/guest/load/score", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadScoreForGuest(GuestUser guestUser, @RequestParam(value = "riseId") String riseId, @RequestParam(value = "date") String dateStr) {
-        Assert.notNull(guestUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
-                .module("学习工具")
-                .function("分数")
-                .action("游客获取");
-        operationLogService.log(operationLog);
+    public ResponseEntity<Map<String, Object>> loadScoreForGuest(@RequestParam(value = "riseId") String riseId, @RequestParam(value = "date") String dateStr) {
         Profile profileByRiseId = accountService.getProfileByRiseId(riseId);
         Date date = DateUtils.parseStringToDate7(dateStr);
         List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(profileByRiseId.getId());

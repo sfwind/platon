@@ -34,6 +34,6 @@ public class SubscribeArticle {
      */
     private Integer disfavor;
     /** 标签名字 */
-    private List<String> tagNames;
+    private List<String> tagName;
 
 }

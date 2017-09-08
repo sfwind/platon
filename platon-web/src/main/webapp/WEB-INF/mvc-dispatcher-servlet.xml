@@ -73,9 +73,9 @@
             <mvc:exclude-mapping path="/rise/bible/guest/**"/>
             <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
         </mvc:interceptor>
-        <mvc:interceptor>
-            <mvc:mapping path="/rise/bible/guest/**"/>
-            <bean class="com.iquanwai.platon.web.interceptor.WeixinAskHandleInterceptor"/>
-        </mvc:interceptor>
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/rise/bible/guest/**"/>-->
+            <!--<bean class="com.iquanwai.platon.web.interceptor.WeixinAskHandleInterceptor"/>-->
+        <!--</mvc:interceptor>-->
     </mvc:interceptors>
 </beans>
