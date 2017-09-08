@@ -5,17 +5,15 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.RiseCertificate;
-import com.iquanwai.platon.biz.po.RiseClassMember;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -64,6 +62,8 @@ public class CustomerController {
     @Autowired
     private ProblemService problemService;
     @Autowired
+    private CacheService cacheService;
+    @Autowired
     private RiseMemberService riseMemberService;
     @Autowired
     private EventWallService eventWallService;
@@ -105,7 +105,7 @@ public class CustomerController {
         riseDto.setNickName(profile.getNickname());
 
         RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
-        if(riseClassMember != null) {
+        if (riseClassMember != null) {
             riseDto.setMemberId(riseClassMember.getMemberId());
         }
 
@@ -245,6 +245,7 @@ public class CustomerController {
             } else if (item.getStatus() == ImprovementPlan.CLOSE) {
                 donePlans.add(planDto);
             }
+            planDto.setProblem(cacheService.getProblem(item.getProblemId()).simple());
         });
         list.setRunningPlans(runningPlans);
         list.setDonePlans(donePlans);
@@ -252,8 +253,10 @@ public class CustomerController {
         // 查询riseId
         Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
-//        list.setRiseMember(profile.getRiseMember());
         list.setPoint(profile.getPoint());
+        // 当前已收藏小课
+        List<Problem> problemCollections = problemService.loadProblemCollections(loginUser.getId());
+        list.setProblemCollections(problemCollections);
         return WebUtils.result(list);
     }
 

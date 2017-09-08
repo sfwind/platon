@@ -38,4 +38,9 @@ public class  ApplicationPractice {
     private String draft; // 草稿内容
     private Integer draftId; // 草稿 id
 
+    /**
+     * 草稿内容和提交内容是否相等
+     */
+    private Boolean isSynchronized;
+
 }

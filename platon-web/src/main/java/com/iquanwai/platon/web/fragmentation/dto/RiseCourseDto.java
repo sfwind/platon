@@ -16,4 +16,6 @@ public class RiseCourseDto {
     private Boolean bindMobile; // 是否已经绑定过电话
     private Boolean isFull; // 是否填写全部用户信息
     private String togetherClassMonth; // 训练营学习月份
+
+    private Boolean problemCollected; // 当前用户是否已经收藏该小课
 }
