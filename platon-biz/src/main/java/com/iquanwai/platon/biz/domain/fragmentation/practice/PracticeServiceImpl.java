@@ -641,7 +641,7 @@ public class PracticeServiceImpl implements PracticeService {
             String msg = "";
             StringBuilder url = new StringBuilder("/rise/static/message/comment/reply");
             if (moduleId == 2) {
-                msg = "评论了我的应用练习";
+                msg = "评论了我的应用题";
             } else if (moduleId == 3) {
                 msg = "评论了我的小课分享";
             }
@@ -687,7 +687,7 @@ public class PracticeServiceImpl implements PracticeService {
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
                 String url = "/rise/static/message/application/reply?submitId=" + referId + "&commentId=" + id;
-                messageService.sendMessage("评论了我的应用练习", load.getProfileId().toString(), profileId.toString(), url);
+                messageService.sendMessage("评论了我的应用题", load.getProfileId().toString(), profileId.toString(), url);
             }
         } else if (moduleId == Constants.CommentModule.SUBJECT) {
             SubjectArticle load = subjectArticleDao.load(SubjectArticle.class, referId);
