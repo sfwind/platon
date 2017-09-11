@@ -270,7 +270,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public Double totalScores(Integer profileId) {
+    public Double totalScores(Integer profileId,Date date) {
         return subscribeViewPointDao.loadAll(profileId).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
     }
 

@@ -156,7 +156,7 @@ public class BibleController {
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), new Date()));
         bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(loginUser.getId()));
-        bibleScore.setTotalScore(subscribeArticleService.totalScores(loginUser.getId()));
+        bibleScore.setTotalScore(subscribeArticleService.totalScores(loginUser.getId(), new Date()));
         return WebUtils.result(bibleScore);
     }
 
@@ -176,7 +176,7 @@ public class BibleController {
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(profileByRiseId.getId(), date));
         bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(profileByRiseId.getId()));
-        bibleScore.setTotalScore(subscribeArticleService.totalScores(profileByRiseId.getId()));
+        bibleScore.setTotalScore(subscribeArticleService.totalScores(profileByRiseId.getId(), date));
         return WebUtils.result(bibleScore);
     }
 

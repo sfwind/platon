@@ -77,5 +77,5 @@ public interface SubscribeArticleService {
 
     String loadUserQrCode(Integer profileId);
 
-    Double totalScores(Integer profileId);
+    Double totalScores(Integer profileId, Date date);
 }

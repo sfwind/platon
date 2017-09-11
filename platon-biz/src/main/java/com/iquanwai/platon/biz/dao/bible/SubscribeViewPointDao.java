@@ -22,11 +22,11 @@ import java.util.List;
 public class SubscribeViewPointDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public List<SubscribeViewPoint> loadAll(Integer profileId) {
+    public List<SubscribeViewPoint> loadAll(Integer profileId, Date date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeViewPoint WHERE ProfileId = ?";
+        String sql = "SELECT * FROM SubscribeViewPoint WHERE ProfileId = ? and LearnDate = ?";
         try {
-            return runner.query(sql, new BeanListHandler<SubscribeViewPoint>(SubscribeViewPoint.class), profileId);
+            return runner.query(sql, new BeanListHandler<SubscribeViewPoint>(SubscribeViewPoint.class), profileId, DateUtils.parseDateToString(date));
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
