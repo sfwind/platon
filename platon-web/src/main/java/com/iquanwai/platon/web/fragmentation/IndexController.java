@@ -56,6 +56,8 @@ public class IndexController {
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
+    private static final String RISE_VIEW = "course";
+    private static final String NOTE_VIEW = "note";
 
     @PostConstruct
     public void init() {
@@ -87,7 +89,7 @@ public class IndexController {
             return null;
         }
         GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
-        return guestView(request, guestUser, false);
+        return courseView(request, null, false, RISE_VIEW);
     }
 
     @RequestMapping(value = {"/rise/static/bible/**" }, method = RequestMethod.GET)
@@ -102,7 +104,8 @@ public class IndexController {
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
                 // 未关注
-                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+//                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                logger.error("用户未关注");
                 return null;
             }
         }
@@ -121,7 +124,7 @@ public class IndexController {
             return null;
         }
 
-        return courseView(request, loginUser, false);
+        return courseView(request, loginUser, false, NOTE_VIEW);
     }
 
 
@@ -177,7 +180,7 @@ public class IndexController {
             loginMsg(loginUser);
         }
 
-        return courseView(request, loginUser, showForum);
+        return courseView(request, loginUser, showForum, RISE_VIEW);
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
@@ -248,52 +251,37 @@ public class IndexController {
         return !StringUtils.isEmpty(openid);
     }
 
-    private ModelAndView guestView(HttpServletRequest request, GuestUser account, Boolean showForum) {
-        ModelAndView mav = new ModelAndView("course");
-        String resourceUrl = ConfigUtils.staticResourceUrl();
+    private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum, String viewName) {
+        ModelAndView mav = new ModelAndView(viewName);
+        String resourceUrl = null;
+        switch (viewName) {
+            case RISE_VIEW:
+                resourceUrl = ConfigUtils.staticResourceUrl();
+                break;
+            case NOTE_VIEW:
+                resourceUrl = ConfigUtils.staticNoteResourceUrl();
+                break;
+        }
+        String vendorUrl = ConfigUtils.vendorResourceUrl();
         if (request.isSecure()) {
             resourceUrl = resourceUrl.replace("http:", "https:");
         }
         if (request.getParameter("debug") != null) {
             if (ConfigUtils.isFrontDebug()) {
                 mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
+                mav.addObject("vendorResource", "http://0.0.0.0:4000/vendor.js");
             } else {
                 mav.addObject("resource", resourceUrl);
+                mav.addObject("vendorResource", vendorUrl);
             }
         } else {
             mav.addObject("resource", resourceUrl);
+            mav.addObject("vendorResource", vendorUrl);
         }
 
         Map<String, String> userParam = Maps.newHashMap();
-        userParam.put("userName", account.getWeixinName());
-        if (account.getHeadimgUrl() != null) {
-            userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
-        }
-        mav.addAllObjects(userParam);
-        mav.addObject("showForum", showForum);
-
-        return mav;
-    }
-
-    private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum) {
-        ModelAndView mav = new ModelAndView("course");
-        String resourceUrl = ConfigUtils.staticResourceUrl();
-        if (request.isSecure()) {
-            resourceUrl = resourceUrl.replace("http:", "https:");
-        }
-        if (request.getParameter("debug") != null) {
-            if (ConfigUtils.isFrontDebug()) {
-                mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
-            } else {
-                mav.addObject("resource", resourceUrl);
-            }
-        } else {
-            mav.addObject("resource", resourceUrl);
-        }
-
-        Map<String, String> userParam = Maps.newHashMap();
-        userParam.put("userName", account.getWeixinName());
-        if (account.getHeadimgUrl() != null) {
+        userParam.put("userName", account != null ? account.getWeixinName() : "");
+        if (account != null && account.getHeadimgUrl() != null) {
             userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);

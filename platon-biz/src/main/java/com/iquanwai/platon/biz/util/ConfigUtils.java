@@ -121,6 +121,27 @@ public class ConfigUtils {
         return url;
     }
 
+    public static String staticNoteResourceUrl() {
+        String url = getValue("static.note.resource.url");
+        //测试环境防浏览器缓存，添加随机参数
+        if (url.endsWith("?")) {
+            url = url.concat("_t=").concat(new Random().nextInt() + "");
+        }
+
+        return url;
+    }
+
+    public static String vendorResourceUrl() {
+        String url = getValue("static.vendor.resource.url");
+        //测试环境防浏览器缓存，添加随机参数
+        if (url.endsWith("?")) {
+            url = url.concat("_t=").concat(new Random().nextInt() + "");
+        }
+
+        return url;
+    }
+
+
     public static Integer getChallengeScore() {
         return getIntValue("challenge.score");
     }

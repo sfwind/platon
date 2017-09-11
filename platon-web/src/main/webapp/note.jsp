@@ -44,8 +44,8 @@
     (function(window, mta) {
         window.MeituanAnalyticsObject = mta;
         window[mta] = window[mta] || function() {
-                    (window[mta].q = window[mta].q || []).push(arguments);
-                };
+                (window[mta].q = window[mta].q || []).push(arguments);
+            };
     }(window, 'mta'));
     window.onload = function () {
         window.ENV.configUrl=window.location.href;
