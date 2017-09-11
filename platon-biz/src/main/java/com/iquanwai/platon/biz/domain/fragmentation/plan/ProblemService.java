@@ -97,4 +97,16 @@ public interface ProblemService {
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
     String loadProblemSchedule(Integer problemId);
+
+    int loadChosenPersonCount(Integer problemId);
+
+    boolean hasCollectedProblem(Integer profileId, Integer problemId);
+
+    int collectProblem(Integer profileId, Integer problemId);
+
+    int disCollectProblem(Integer profileId, Integer problemId);
+
+    List<Problem> loadProblemCollections(Integer profileId);
+
+    List<Problem> loadHotProblems(List<Integer> problemIds);
 }

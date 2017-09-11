@@ -15,6 +15,7 @@ public class ImprovementPlan {
     private String openid; //openid
     private Integer problemId; //问题id
     private Date startDate; //开始日期
+    @Deprecated
     private Date endDate; //结束日期(当日开始复习)
     private Date closeDate; //课程关闭时间（课程关闭日期）
     private Date completeTime; // 完成时间

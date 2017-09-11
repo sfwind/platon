@@ -165,7 +165,11 @@ public class PracticeController {
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
         }
+
+        // 当用户提交答案时，将 draft 草稿表一起更新
+        practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getAnswer());
         Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
+
 
         if (result) {
             // 提升提交数
@@ -214,24 +218,14 @@ public class PracticeController {
     @RequestMapping(value = "/application/autosave/{planId}/{applicationId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> autoSaveApplication(LoginUser loginUser,
                                                                    @PathVariable("planId") Integer planId,
-                                                                   @PathVariable("applicationId") Integer applicationId) {
+                                                                   @PathVariable("applicationId") Integer applicationId,
+                                                                   @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
-        Profile profile = accountService.getProfile(loginUser.getId());
-        Integer profileId = profile.getId();
-        Integer draftId = practiceService.insertApplicationSubmitDraft(loginUser.getOpenId(), profileId, applicationId, planId);
-        return WebUtils.result(draftId);
-    }
-
-    @RequestMapping(value = "/application/autoupdate/{draftId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> autoUpdateApplication(LoginUser loginUser, @PathVariable("draftId") Integer id,
-                                                                     @RequestBody SubmitDto submitDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(submitDto.getDraft(), "内容不能为空");
-        Integer result = practiceService.updateApplicationSubmitDraft(id, submitDto.getDraft());
-        if (result > 0) {
+        Integer result = practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getDraft());
+        if(result > 0) {
             return WebUtils.success();
         } else {
-            return WebUtils.error("自动保存失败");
+            return WebUtils.error("自动存储失败");
         }
     }
 
