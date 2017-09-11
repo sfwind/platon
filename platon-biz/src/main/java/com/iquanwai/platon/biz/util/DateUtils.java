@@ -7,6 +7,7 @@ import org.joda.time.format.DateTimeFormatter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class DateUtils {
     private static DateTimeFormatter format1 = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -143,7 +144,7 @@ public class DateUtils {
 
     public static String getSpecialDateFormat(Date date) {
         String time = format8.print(new DateTime(date));
-        SimpleDateFormat dateFm = new SimpleDateFormat("EEEE");
+        SimpleDateFormat dateFm = new SimpleDateFormat("EEEE", Locale.CHINA);
         time += "  " + dateFm.format(date);
         return time;
     }
