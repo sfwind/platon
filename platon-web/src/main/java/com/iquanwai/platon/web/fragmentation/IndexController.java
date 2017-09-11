@@ -13,9 +13,7 @@ import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
-import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -64,36 +62,37 @@ public class IndexController {
         logger.info("---------loadCertainDateArticles es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
     }
 
-    @RequestMapping(value = "/rise/static/guest/*", method = RequestMethod.GET)
+    @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String accessToken = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
-        String openid = null;
-        Account account = null;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
-            try {
-                account = accountService.getGuestFromWeixin(openid, accessToken);
-                logger.info("account:{}", account);
-            } catch (Exception e) {
-                logger.info("请求失败");
-                CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
-                WebUtils.askAuth(request, response);
-                return null;
-            }
-        }
+//        String accessToken = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
+//        String openid = null;
+//        Account account = null;
+//        if (accessToken != null) {
+//            openid = oAuthService.openId(accessToken);
+//            try {
+//                account = accountService.getGuestFromWeixin(openid, accessToken);
+//                logger.info("account:{}", account);
+//            } catch (Exception e) {
+//                logger.info("请求失败");
+//                CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
+//                WebUtils.askAuth(request, response);
+//                return null;
+//            }
+//        }
 
-        if (account == null) {
-            logger.info("用户为空:{}", accessToken);
-            CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
-            WebUtils.askAuth(request, response);
-            return null;
-        }
-        GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
-        return courseView(request, null, false, RISE_VIEW);
+//        if (account == null) {
+//            logger.info("用户为空:{}", accessToken);
+//            CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
+//            WebUtils.askAuth(request, response);
+//            return null;
+//        }
+//        GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
+        return courseView(request, null, false, NOTE_VIEW);
     }
 
-    @RequestMapping(value = {"/rise/static/note/**" }, method = RequestMethod.GET)
+    @RequestMapping(value = {"/rise/static/note/**"}, method = RequestMethod.GET)
     public ModelAndView getBibleIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("note jsp");
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -128,8 +127,9 @@ public class IndexController {
     }
 
 
-    @RequestMapping(value = {"/rise/static/**", "/forum/static/**" }, method = RequestMethod.GET)
+    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("course jsp");
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
