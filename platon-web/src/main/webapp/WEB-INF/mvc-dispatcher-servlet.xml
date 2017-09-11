@@ -71,6 +71,7 @@
             <mvc:exclude-mapping path="/rise/cache/**"/>
             <mvc:exclude-mapping path="/rise/b/**"/>
             <mvc:exclude-mapping path="/rise/static/guest/note/**"/>
+            <mvc:exclude-mapping path="/rise/bible/guest/**"/>
             <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
         </mvc:interceptor>
         <!--<mvc:interceptor>-->
