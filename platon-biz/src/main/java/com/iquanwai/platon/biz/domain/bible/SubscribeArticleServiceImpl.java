@@ -221,7 +221,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         List<SubscribeViewPoint> todayPointList = subscribeViewPointDao.load(profileId, today)
                 .stream()
                 .sorted((o1, o2) -> o1.getPoint() > o2.getPoint() ? -1 : 1)
-                .limit(7)
+                .limit(5)
                 .collect(Collectors.toList());
 
         List<SubscribePointCompare> compareList = Lists.newArrayList();
