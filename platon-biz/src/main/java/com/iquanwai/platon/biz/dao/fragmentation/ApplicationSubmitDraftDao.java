@@ -48,7 +48,7 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
      */
     public Integer updateApplicationSubmitDraft(Integer draftId, String content) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmitDraft set Content = ?, length = ? where id = ?";
+        String sql = "update ApplicationSubmitDraft set Content = ?, Length = ?, Priority = 0 where id = ?";
         try {
             return runner.update(sql, content, content.length(), draftId);
         } catch (SQLException e) {
