@@ -103,7 +103,7 @@ public class IndexController {
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
                 // 未关注
-//                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
                 logger.error("用户未关注");
                 return null;
             }
