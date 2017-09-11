@@ -267,7 +267,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     public String loadUserQrCode(Integer profileId) {
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, PromotionConstants.Activities.Bible);
         Integer level = promotionLevel.getLevel();
-        String scene = PromotionConstants.Activities.Bible + "_" + profileId + "_" + level + 1;
+        String scene = PromotionConstants.Activities.Bible + "_" + profileId + "_" + (level + 1);
         return qrCodeService.loadQrBase64(scene);
     }
 
