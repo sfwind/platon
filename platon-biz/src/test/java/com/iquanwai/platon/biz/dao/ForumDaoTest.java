@@ -22,7 +22,7 @@ public class ForumDaoTest extends TestBase {
 
     @Test
     public void testfff(){
-        System.out.println(subscribeArticleDao.loadMaxDate());
+        System.out.println(subscribeArticleDao.loadMinDate());
     }
 
     @Test

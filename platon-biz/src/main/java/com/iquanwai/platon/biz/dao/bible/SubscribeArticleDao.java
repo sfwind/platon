@@ -58,11 +58,11 @@ public class SubscribeArticleDao extends PracticeDBUtil {
         return -1;
     }
 
-    public Date loadMaxDate() {
+    public Date loadMinDate() {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Date> h = new ScalarHandler<Date>();
         try {
-            return run.query("SELECT MAX(UpTime) FROM SubscribeArticle", h);
+            return run.query("SELECT MIN(UpTime) FROM SubscribeArticle", h);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
