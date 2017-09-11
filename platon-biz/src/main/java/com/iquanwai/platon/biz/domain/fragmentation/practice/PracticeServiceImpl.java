@@ -251,6 +251,7 @@ public class PracticeServiceImpl implements PracticeService {
                     applicationPractice.setIsSynchronized(submit.getContent().equals(applicationSubmitDraft.getContent())
                             || submit.getLastModifiedTime().compareTo(applicationSubmitDraft.getUpdateTime()) >= 0);
                 }
+                applicationPractice.setOverrideLocalStorage(applicationSubmitDraft.getPriority() > 0);
             } else {
                 applicationPractice.setIsSynchronized(true);
             }

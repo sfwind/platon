@@ -353,5 +353,13 @@ public class ConfigUtils {
         String splitDateStr = getValue("risemember.elite.splitdate");
         return DateUtils.parseStringToDate(splitDateStr);
     }
+
+    /**
+     * 获取发现页面 Banner 配置
+     */
+    public static String getExploreBannerString() {
+        return getValue("explore.banner");
+    }
+
 }
 

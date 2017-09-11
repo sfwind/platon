@@ -37,6 +37,7 @@ public class  ApplicationPractice {
 
     private String draft; // 草稿内容
     private Integer draftId; // 草稿 id
+    private Boolean overrideLocalStorage; // 是否覆盖本地 localStorage
 
     /**
      * 草稿内容和提交内容是否相等
