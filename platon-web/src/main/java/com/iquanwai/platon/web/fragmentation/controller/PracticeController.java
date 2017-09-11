@@ -287,8 +287,8 @@ public class PracticeController {
         operationLogService.log(operationLog);
 
         // TODO 后期如果数据量增加，容易出现效率问题
-        RefreshListDto<RiseWorkInfoDto> refreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
-        return WebUtils.result(refreshListDto);
+        RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
+        return WebUtils.result(riseRefreshListDto);
     }
 
     /**
@@ -311,11 +311,11 @@ public class PracticeController {
                 .memo(applicationId.toString());
         operationLogService.log(operationLog);
 
-        RefreshListDto<RiseWorkInfoDto> refreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
-        return WebUtils.result(refreshListDto);
+        RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
+        return WebUtils.result(riseRefreshListDto);
     }
 
-    private RefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
+    private RiseRefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
         List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId);
         List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
                 .map(item -> {
@@ -350,10 +350,10 @@ public class PracticeController {
         page.setTotal(applicationSubmits.size());
         riseWorkInfoDtos = riseWorkInfoDtos.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
 
-        RefreshListDto<RiseWorkInfoDto> refreshListDto = new RefreshListDto<>();
-        refreshListDto.setList(riseWorkInfoDtos);
-        refreshListDto.setEnd(page.isLastPage());
-        return refreshListDto;
+        RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = new RiseRefreshListDto<>();
+        riseRefreshListDto.setList(riseWorkInfoDtos);
+        riseRefreshListDto.setEnd(page.isLastPage());
+        return riseRefreshListDto;
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
@@ -371,14 +371,14 @@ public class PracticeController {
         operationLogService.log(operationLog);
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
 
-        RefreshListDto<RiseWorkCommentDto> refreshListDto = new RefreshListDto<>();
+        RiseRefreshListDto<RiseWorkCommentDto> riseRefreshListDto = new RiseRefreshListDto<>();
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
             if (moduleId == Constants.CommentModule.APPLICATION) {
                 boolean isModified = practiceService.isModifiedAfterFeedback(submitId,
                         item.getCommentProfileId(), item.getAddTime());
-                refreshListDto.setIsModifiedAfterFeedback(isModified);
+                riseRefreshListDto.setIsModifiedAfterFeedback(isModified);
             }
             RiseWorkCommentDto dto = new RiseWorkCommentDto();
             if (account != null) {
@@ -402,9 +402,9 @@ public class PracticeController {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
-        refreshListDto.setList(commentDtos);
-        refreshListDto.setEnd(page.isLastPage());
-        return WebUtils.result(refreshListDto);
+        riseRefreshListDto.setList(commentDtos);
+        riseRefreshListDto.setEnd(page.isLastPage());
+        return WebUtils.result(riseRefreshListDto);
     }
 
     @RequestMapping(value = "/comment/message/{submitId}/{commentId}", method = RequestMethod.GET)
@@ -420,16 +420,16 @@ public class PracticeController {
                 .memo(submitId + ":" + submitId);
         operationLogService.log(operationLog);
 
-        RefreshListDto<RiseWorkCommentDto> refreshListDto = new RefreshListDto<>();
+        RiseRefreshListDto<RiseWorkCommentDto> riseRefreshListDto = new RiseRefreshListDto<>();
 
         Comment comment = practiceService.loadApplicationReplyComment(commentId);
 
         // 在评论之后是否被修改
         boolean isModified = practiceService.isModifiedAfterFeedback(submitId, comment.getCommentProfileId(), comment.getAddTime());
-        refreshListDto.setIsModifiedAfterFeedback(isModified);
+        riseRefreshListDto.setIsModifiedAfterFeedback(isModified);
 
         // 查看当前评论是否已经被评价
-        refreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
+        riseRefreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
 
         RiseWorkCommentDto dto = new RiseWorkCommentDto();
         Profile account = accountService.getProfile(comment.getCommentProfileId());
@@ -455,8 +455,8 @@ public class PracticeController {
 
         List<RiseWorkCommentDto> commentDtos = Lists.newArrayList();
         commentDtos.add(dto);
-        refreshListDto.setList(commentDtos);
-        return WebUtils.result(refreshListDto);
+        riseRefreshListDto.setList(commentDtos);
+        return WebUtils.result(riseRefreshListDto);
     }
 
     @RequestMapping(value = "/evaluate/application", method = RequestMethod.POST)
@@ -673,7 +673,7 @@ public class PracticeController {
 //        list.forEach(item -> {
 //            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
 //        });
-        RefreshListDto<RiseWorkInfoDto> result = new RefreshListDto<>();
+        RiseRefreshListDto<RiseWorkInfoDto> result = new RiseRefreshListDto<>();
         result.setList(list);
         result.setEnd(page.isLastPage());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

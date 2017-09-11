@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.forum.dto;
+package com.iquanwai.platon.biz.util;
 
 import lombok.Data;
 

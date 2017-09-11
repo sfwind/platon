@@ -54,15 +54,82 @@ public class IndexController {
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
+    private static final String RISE_VIEW = "course";
+    private static final String NOTE_VIEW = "note";
 
     @PostConstruct
-    public void init(){
-        logger.info("---------load es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
+    public void init() {
+        logger.info("---------loadCertainDateArticles es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
+    }
+
+    @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
+    public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//        String accessToken = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
+//        String openid = null;
+//        Account account = null;
+//        if (accessToken != null) {
+//            openid = oAuthService.openId(accessToken);
+//            try {
+//                account = accountService.getGuestFromWeixin(openid, accessToken);
+//                logger.info("account:{}", account);
+//            } catch (Exception e) {
+//                logger.info("请求失败");
+//                CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
+//                WebUtils.askAuth(request, response);
+//                return null;
+//            }
+//        }
+
+//        if (account == null) {
+//            logger.info("用户为空:{}", accessToken);
+//            CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
+//            WebUtils.askAuth(request, response);
+//            return null;
+//        }
+//        GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
+        return courseView(request, null, false, NOTE_VIEW);
+    }
+
+    @RequestMapping(value = {"/rise/static/note/**"}, method = RequestMethod.GET)
+    public ModelAndView getBibleIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("note jsp");
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                // 未关注
+                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                logger.error("用户未关注");
+                return null;
+            }
+        }
+
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+
+        //如果不在白名单中,直接403报错
+        boolean result = whiteListService.isInBibleWhiteList(loginUser.getId());
+        if (!result) {
+            response.sendRedirect("/403.jsp");
+            return null;
+        }
+
+        return courseView(request, loginUser, false, NOTE_VIEW);
     }
 
 
-    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"},method = RequestMethod.GET)
-    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception{
+    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
+    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("course jsp");
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -113,11 +180,15 @@ public class IndexController {
             loginMsg(loginUser);
         }
 
-        return courseView(request, loginUser,showForum);
+        return courseView(request, loginUser, showForum, RISE_VIEW);
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getIndexMsg(LoginUser loginUser) {
+        if (loginUser == null) {
+            logger.info("游客访问");
+            return WebUtils.error(202, "游客访问");
+        }
         String msg = redisUtil.get(WELCOME_MSG_REDIS_KEY + loginUser.getId());
         ActivityMsg activityMsg = null;
         if (msg != null) {
@@ -184,25 +255,39 @@ public class IndexController {
         return !StringUtils.isEmpty(openid);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum) {
-        ModelAndView mav = new ModelAndView("course");
-        String resourceUrl = ConfigUtils.staticResourceUrl();
+    private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum, String viewName) {
+        ModelAndView mav = new ModelAndView(viewName);
+        String resourceUrl = null;
+        switch (viewName) {
+            case RISE_VIEW:
+                resourceUrl = ConfigUtils.staticResourceUrl();
+                break;
+            case NOTE_VIEW:
+                resourceUrl = ConfigUtils.staticNoteResourceUrl();
+                break;
+            default:
+                resourceUrl = ConfigUtils.staticResourceUrl();
+        }
+        String vendorUrl = ConfigUtils.vendorResourceUrl();
         if (request.isSecure()) {
             resourceUrl = resourceUrl.replace("http:", "https:");
         }
         if (request.getParameter("debug") != null) {
             if (ConfigUtils.isFrontDebug()) {
                 mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
+                mav.addObject("vendorResource", "http://0.0.0.0:4000/vendor.js");
             } else {
                 mav.addObject("resource", resourceUrl);
+                mav.addObject("vendorResource", vendorUrl);
             }
         } else {
             mav.addObject("resource", resourceUrl);
+            mav.addObject("vendorResource", vendorUrl);
         }
 
         Map<String, String> userParam = Maps.newHashMap();
-        userParam.put("userName", account.getWeixinName());
-        if (account.getHeadimgUrl() != null) {
+        userParam.put("userName", account != null ? account.getWeixinName() : "");
+        if (account != null && account.getHeadimgUrl() != null) {
             userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);

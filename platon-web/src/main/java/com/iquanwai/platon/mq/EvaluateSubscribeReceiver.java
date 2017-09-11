@@ -58,7 +58,7 @@ public class EvaluateSubscribeReceiver {
         Assert.isTrue(sceneParams.length == 3, "场景值错误：" + scene);
         if (!sceneParams[0].equalsIgnoreCase(PromotionConstants.Activities.Evaluate)) return;
 
-        // 扫码上面，码上的数据
+        // 扫码事件，码上的数据
         String source = sceneParams[1];
 
         Profile profile = accountService.getProfile(openId);

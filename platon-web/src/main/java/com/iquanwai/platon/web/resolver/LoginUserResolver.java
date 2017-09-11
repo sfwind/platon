@@ -48,7 +48,6 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return loginUserService.getLoginUser(request).getRight();
         }
 
-
         LoginUserService.Platform platform = loginUserService.checkPlatform(request);
 
 

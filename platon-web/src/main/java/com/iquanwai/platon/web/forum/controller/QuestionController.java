@@ -7,7 +7,7 @@ import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.forum.dto.QuestionDto;
-import com.iquanwai.platon.web.forum.dto.RefreshListDto;
+import com.iquanwai.platon.biz.util.RefreshListDto;
 import com.iquanwai.platon.web.forum.dto.SearchDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
