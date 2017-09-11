@@ -25,7 +25,7 @@ public class SubscribeArticleDao extends PracticeDBUtil {
 
     public List<SubscribeArticle> loadCertainDateArticles(Page page, String date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeArticle where UpTime = ? LIMIT " + page.getOffset() + "," + page.getLimit();
+        String sql = "SELECT * FROM SubscribeArticle where UpTime = ? and UpTime <= CURRENT_TIMESTAMP  LIMIT " + page.getOffset() + "," + page.getLimit();
         try {
             return runner.query(sql, new BeanListHandler<>(SubscribeArticle.class), date);
         } catch (SQLException e) {
@@ -36,7 +36,7 @@ public class SubscribeArticleDao extends PracticeDBUtil {
 
     public List<SubscribeArticle> loadToCertainDateArticles(String date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeArticle where UpTime >= ? order by UpTime desc";
+        String sql = "SELECT * FROM SubscribeArticle where UpTime >= ? and UpTime <= CURRENT_TIMESTAMP order by UpTime desc";
         try {
             return runner.query(sql, new BeanListHandler<>(SubscribeArticle.class), date);
         } catch (SQLException e) {

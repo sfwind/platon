@@ -175,7 +175,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
         Assert.notNull("文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
-        BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.2);
+        BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.25);
         Double viewPoint = bigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
         if (view == null) {
             // 还没有打开过，此时才会计算
