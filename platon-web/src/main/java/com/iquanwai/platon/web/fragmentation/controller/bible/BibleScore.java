@@ -16,4 +16,5 @@ public class BibleScore {
     private String qrCode;
     private String nickName;
     private String headImage;
+    private Double totalScore;
 }

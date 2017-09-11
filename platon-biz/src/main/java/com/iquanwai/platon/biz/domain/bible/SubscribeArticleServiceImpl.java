@@ -268,4 +268,10 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         String scene = PromotionConstants.Activities.Bible + "_" + profileId + "_" + level + 1;
         return qrCodeService.loadQrBase64(scene);
     }
+
+    @Override
+    public Double totalScores(Integer profileId) {
+        return subscribeViewPointDao.loadAll(profileId).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
+    }
+
 }

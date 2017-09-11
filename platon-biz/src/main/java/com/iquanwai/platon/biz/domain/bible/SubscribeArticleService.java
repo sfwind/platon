@@ -76,4 +76,6 @@ public interface SubscribeArticleService {
     Integer loadCertainDayReadWords(Integer profileId, Date date);
 
     String loadUserQrCode(Integer profileId);
+
+    Double totalScores(Integer profileId);
 }
