@@ -72,9 +72,10 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public Boolean isLastArticleDate(String date) {
-        Date maxDate = subscribeArticleDao.loadMaxDate();
-        return !DateUtils.parseStringToDate7(date).before(maxDate);
+    public Boolean isLastArticleDate(String dateStr) {
+        Date maxDate = subscribeArticleDao.loadMinDate();
+        Date date = DateUtils.parseStringToDate7(dateStr);
+        return date.getTime() <= maxDate.getTime();
     }
 
     @Override
@@ -271,7 +272,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public Double totalScores(Integer profileId,Date date) {
+    public Double totalScores(Integer profileId, Date date) {
         return subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
     }
 

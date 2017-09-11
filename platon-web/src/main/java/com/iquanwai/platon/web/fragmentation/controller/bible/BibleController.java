@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class BibleController {
     private Logger Logger = LoggerFactory.getLogger(this.getClass());
 
-    public static Integer PAGE_SIZE = 20;
+    public static Integer PAGE_SIZE = 100;
 
     @Autowired
     private OperationLogService operationLogService;
@@ -68,6 +68,7 @@ public class BibleController {
             dto.setArticleList(subscribeArticleList);
             dailyArticleGroup.add(dto);
         });
+        dailyArticleGroup.sort((o1, o2) -> o1.getArticleList().get(0).getUpTime().before(o2.getArticleList().get(0).getUpTime()) ? 1 : -1);
 
         BibleRefreshListDto<DailyArticleDto> result = new BibleRefreshListDto<>();
         result.setList(dailyArticleGroup);
