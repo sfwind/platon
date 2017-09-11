@@ -35,9 +35,9 @@ public class SubscribeViewPointDao extends PracticeDBUtil {
 
     public List<SubscribeViewPoint> load(Integer profileId, Date date, String tagsId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeViewPoint WHERE ProfileId = ? AND LearnDate = ? AND TagId in (?)";
+        String sql = "SELECT * FROM SubscribeViewPoint WHERE ProfileId = ? AND LearnDate = ? AND TagId in (" + tagsId + ")";
         try {
-            return runner.query(sql, new BeanListHandler<SubscribeViewPoint>(SubscribeViewPoint.class), profileId, DateUtils.parseDateToString(date), tagsId);
+            return runner.query(sql, new BeanListHandler<SubscribeViewPoint>(SubscribeViewPoint.class), profileId, DateUtils.parseDateToString(date));
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

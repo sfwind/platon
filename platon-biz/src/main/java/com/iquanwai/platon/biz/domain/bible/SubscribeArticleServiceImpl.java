@@ -168,6 +168,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         }
     }
 
+
     @Override
     public Boolean viewArticle(Integer profileId, Integer articleId) {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
