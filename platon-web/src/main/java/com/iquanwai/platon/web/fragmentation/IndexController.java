@@ -261,6 +261,8 @@ public class IndexController {
             case NOTE_VIEW:
                 resourceUrl = ConfigUtils.staticNoteResourceUrl();
                 break;
+            default:
+                resourceUrl = ConfigUtils.staticResourceUrl();
         }
         String vendorUrl = ConfigUtils.vendorResourceUrl();
         if (request.isSecure()) {
