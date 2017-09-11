@@ -272,8 +272,8 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public Double totalScores(Integer profileId, Date date) {
+    public String totalScores(Integer profileId, Date date) {
         Double score = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
-        return new BigDecimal(score).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return new BigDecimal(score).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
     }
 }
