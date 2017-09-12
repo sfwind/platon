@@ -261,4 +261,13 @@ public class ProblemServiceImpl implements ProblemService {
         return problems;
     }
 
+    @Override
+    public Integer loadMonthlyCampMonth(Integer problemId) {
+        MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
+        if (schedule != null) {
+            return schedule.getMonth();
+        }
+        return null;
+    }
+
 }
