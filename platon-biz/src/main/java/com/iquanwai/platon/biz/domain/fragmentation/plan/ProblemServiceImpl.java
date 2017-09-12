@@ -195,7 +195,8 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public int loadChosenPersonCount(Integer problemId) {
-        return improvementPlanDao.loadChosenPersonCount(problemId);
+        // return improvementPlanDao.loadChosenPersonCount(problemId);
+        return 0;
     }
 
     @Override
