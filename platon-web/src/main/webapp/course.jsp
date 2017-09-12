@@ -23,7 +23,6 @@
 <!-- 业务代码-->
 <script src="${vendorResource}"></script>
 <script src="${resource}" onload="document.getElementById('loading').style.display = 'none'"></script>
-<%--<script src="${resource}"></script>--%>
 
 <script>
     var display = '<%=ConfigUtils.domainName()%>'
