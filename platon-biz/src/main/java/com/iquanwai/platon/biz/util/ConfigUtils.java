@@ -339,12 +339,16 @@ public class ConfigUtils {
      */
     public static List<Integer> loadHotProblemList() {
         String idStr = getValue("problem.hot.list");
-        String[] idStrs = idStr.replace(" ", "").split("、");
+        String[] idStrs = idStr.split(",");
 
         List<Integer> problemIds = Lists.newArrayList();
         for (int i = 0; i < idStrs.length; i++) {
-            Integer id = Integer.parseInt(idStrs[i]);
-            problemIds.add(id);
+            try {
+                Integer id = Integer.parseInt(idStrs[i]);
+                problemIds.add(id);
+            } catch (NumberFormatException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
         }
         return problemIds;
     }
