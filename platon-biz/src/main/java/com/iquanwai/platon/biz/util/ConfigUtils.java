@@ -342,12 +342,12 @@ public class ConfigUtils {
         String[] idStrs = idStr.split(",");
 
         List<Integer> problemIds = Lists.newArrayList();
-        for (int i = 0; i < idStrs.length; i++) {
+        for (String idStr1 : idStrs) {
             try {
-                Integer id = Integer.parseInt(idStrs[i]);
+                Integer id = Integer.parseInt(idStr1);
                 problemIds.add(id);
             } catch (NumberFormatException e) {
-                logger.error(e.getLocalizedMessage(), e);
+                logger.error("错误的数字:" + idStr1, e);
             }
         }
         return problemIds;

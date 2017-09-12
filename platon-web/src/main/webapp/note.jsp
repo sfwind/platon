@@ -21,9 +21,8 @@
 <div id="loading"><img src="//static.iqycamp.com/images/loading_page2.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
 <div id="react-app"></div>
 <!-- 业务代码-->
-<script src="${vendorResource}" onload="document.getElementById('loading').style.display = 'none'"></script>
+<script src="${vendorResource}"></script>
 <script src="${resource}" onload="document.getElementById('loading').style.display = 'none'"></script>
-<%--<script src="${resource}"></script>--%>
 
 <script>
     var display = '<%=ConfigUtils.domainName()%>'
