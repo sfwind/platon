@@ -111,4 +111,6 @@ public interface ProblemService {
     List<Problem> loadHotProblems(List<Integer> problemIds);
 
     Integer loadMonthlyCampMonth(Integer problemId);
+
+    List<ExploreBanner> loadExploreBanner();
 }
