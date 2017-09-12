@@ -135,6 +135,7 @@ public class ProblemController {
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember() != 0);
+        result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("小课列表")
@@ -288,6 +289,8 @@ public class ProblemController {
         Problem problem = problemService.getProblem(problemId);
         // 设置当前小课已学习人数
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
+        problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
+
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));

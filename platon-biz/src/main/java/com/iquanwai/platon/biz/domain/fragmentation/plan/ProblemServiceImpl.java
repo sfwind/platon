@@ -1,9 +1,12 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -262,4 +265,27 @@ public class ProblemServiceImpl implements ProblemService {
         return problems;
     }
 
+    @Override
+    public Integer loadMonthlyCampMonth(Integer problemId) {
+        MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
+        if (schedule != null) {
+            return schedule.getMonth();
+        }
+        return null;
+    }
+
+    @Override
+    public List<ExploreBanner> loadExploreBanner() {
+        JSONArray bannerArray = JSONArray.parseArray(ConfigUtils.getExploreBannerString());
+        List<ExploreBanner> banners = Lists.newArrayList();
+        for (int i = 0; i < bannerArray.size(); i++) {
+            JSONObject json = bannerArray.getJSONObject(i);
+            ExploreBanner banner = new ExploreBanner();
+            banner.setImageUrl(json.getString("imageUrl"));
+            banner.setLinkUrl(json.getString("linkUrl"));
+            banners.add(banner);
+        }
+        return banners;
+    }
+  
 }

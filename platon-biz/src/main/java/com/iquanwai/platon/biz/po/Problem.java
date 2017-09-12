@@ -32,7 +32,7 @@ public class Problem {
     private Boolean newProblem; // 是否是新课程
     private Boolean trial; //试用版（0-否,1-是）
     /**
-     * 已废弃，采用 zk 配置排序，problem.hot.list，中文顿号分隔
+     * 已废弃，采用 zk 配置排序，problem.hot.list，逗号分隔
      */
     @Deprecated
     private Boolean hot; // 热门课程（0-否,1-是）
@@ -46,6 +46,8 @@ public class Problem {
     private String subCatalog; // 非db字段 字类名
     private String catalog; // 非db字段 类名
     private Integer chosenPersonCount; // 该门小课学习的人数
+    private Integer monthlyCampMonth; // 小课对应训练营月份
+
 
     public Problem simple() {
         Problem problem = new Problem();
