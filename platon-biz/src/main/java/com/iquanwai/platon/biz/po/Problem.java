@@ -46,6 +46,8 @@ public class Problem {
     private String subCatalog; // 非db字段 字类名
     private String catalog; // 非db字段 类名
     private Integer chosenPersonCount; // 该门小课学习的人数
+    private Integer monthlyCampMonth; // 小课对应训练营月份
+
 
     public Problem simple() {
         Problem problem = new Problem();

@@ -288,6 +288,8 @@ public class ProblemController {
         Problem problem = problemService.getProblem(problemId);
         // 设置当前小课已学习人数
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
+        problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
+
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
