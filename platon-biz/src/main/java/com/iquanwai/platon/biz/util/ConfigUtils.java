@@ -339,12 +339,16 @@ public class ConfigUtils {
      */
     public static List<Integer> loadHotProblemList() {
         String idStr = getValue("problem.hot.list");
-        String[] idStrs = idStr.replace(" ", "").split("、");
+        String[] idStrs = idStr.split(",");
 
         List<Integer> problemIds = Lists.newArrayList();
-        for (int i = 0; i < idStrs.length; i++) {
-            Integer id = Integer.parseInt(idStrs[i]);
-            problemIds.add(id);
+        for (String idStr1 : idStrs) {
+            try {
+                Integer id = Integer.parseInt(idStr1);
+                problemIds.add(id);
+            } catch (NumberFormatException e) {
+                logger.error("错误的数字:"+idStr1, e);
+            }
         }
         return problemIds;
     }
