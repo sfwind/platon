@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller.bible;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.bible.SubscribeArticleService;
+import com.iquanwai.platon.biz.domain.bible.SubscribeTagService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
@@ -10,6 +11,10 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleRefreshListDto;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleScore;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.DailyArticleDto;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.TagDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -17,12 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -45,7 +45,8 @@ public class BibleController {
     private SubscribeArticleService subscribeArticleService;
     @Autowired
     private AccountService accountService;
-
+    @Autowired
+    private SubscribeTagService subscribeTagService;
 
     @RequestMapping(value = "/load/article/{date}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadArticleGroup(LoginUser loginUser, @PathVariable(value = "date") String dateStr, @RequestParam("pageId") Integer pageId) {
@@ -183,6 +184,7 @@ public class BibleController {
 
     @RequestMapping(value = "/open/bible", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> openBible(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
                 .function("状态")
@@ -190,5 +192,29 @@ public class BibleController {
         operationLogService.log(operationLog);
         Boolean result = subscribeArticleService.openBible(loginUser.getId());
         return WebUtils.result(result);
+    }
+
+    @RequestMapping(value = "/load/tag", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadTag(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("学习工具")
+                .function("选择标签")
+                .action("获取喜欢的标签");
+        operationLogService.log(operationLog);
+        return WebUtils.result(subscribeTagService.loadTag(loginUser.getId()));
+    }
+
+    @RequestMapping(value = "/change/tag", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitTag(LoginUser loginUser,
+                                                         @RequestBody TagDto tags) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("学习工具")
+                .function("选择标签")
+                .action("选择喜欢的标签");
+        operationLogService.log(operationLog);
+        subscribeTagService.submit(tags.getSubscribeArticleTags(), loginUser.getId());
+        return WebUtils.success();
     }
 }

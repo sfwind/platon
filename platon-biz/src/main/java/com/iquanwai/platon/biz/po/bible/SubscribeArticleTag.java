@@ -7,7 +7,9 @@ import lombok.Data;
  */
 @Data
 public class SubscribeArticleTag {
-    private Integer id;
-    private String name;
-    private Boolean del;
+    private int id;
+    private String name; // 标签名
+    private Boolean del; //是否删除
+    private Integer catalog; //标签类别
+    private Boolean chosen; //非db字段 是否选择
 }
