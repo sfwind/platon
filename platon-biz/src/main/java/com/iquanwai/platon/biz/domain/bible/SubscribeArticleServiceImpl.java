@@ -122,7 +122,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                             article.getTagName().add(tagGroup.get(tagId).getName());
                         }
                     }
-                }
+                }   
             }
             if (acknowledged != null) {
                 article.setPointStatus(acknowledged.getPointStatus());
