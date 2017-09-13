@@ -110,7 +110,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
             article.setAcknowledged(acknowledged != null);
             ArticleFavor articleFavor = articleFavorDao.load(profileId, article.getId());
             // 找不到，或者设置为喜欢，都是0
-            article.setDisfavor(articleFavor == null || articleFavor.getFavor() ? 0 : 1);
+            article.setDisfavor((articleFavor == null || articleFavor.getFavor()) ? ArticleFavor.NOT_DISFAVOR : ArticleFavor.DISFAVOR);
             // 处理标签数据
             article.setTagName(Lists.newArrayList());
             if (StringUtils.isNotEmpty(article.getTag())) {
@@ -122,7 +122,16 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                             article.getTagName().add(tagGroup.get(tagId).getName());
                         }
                     }
-                }
+                }   
+            }
+            if (acknowledged != null) {
+                article.setPointStatus(acknowledged.getPointStatus());
+                // 没有打过分，并且不是不喜欢，则可以打分
+                Boolean showOpsButtons = !article.getPointStatus() && article.getDisfavor() == ArticleFavor.NOT_DISFAVOR;
+                article.setShowOpsButtons(showOpsButtons);
+            } else {
+                article.setShowOpsButtons(false);
+                article.setPointStatus(false);
             }
         });
     }
@@ -169,47 +178,57 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         }
     }
 
+    @Override
+    public Boolean risePoint(Integer profileId, Integer articleId) {
+        SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
+        Assert.notNull("文章不能为空");
+        SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
+        BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.25);
+        Double viewPoint = bigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        Assert.notNull(view, "阅读记录不能为空");
+        String tagsId = article.getTag();
+        // 已经有的标签分数
+        List<SubscribeViewPoint> userViewPointGroup = subscribeViewPointDao.load(profileId, new Date(), tagsId);
+        // 过滤出可用的标签
+        List<Integer> tagIdGroup = Lists.newArrayList(tagsId.split(","))
+                .stream()
+                .filter(StringUtils::isNumeric)
+                .map(Integer::parseInt)
+                .filter(tagId -> {
+                    SubscribeArticleTag subscribeArticleTag = subscribeArticleTagDao.load(SubscribeArticleTag.class, tagId);
+                    return subscribeArticleTag != null && !subscribeArticleTag.getDel();
+                })
+                .collect(Collectors.toList());
+        for (Integer tagId : tagIdGroup) {
+            // 如果tag内容不是数字，则不会计算
+            // tag存在，并且没有被删除，对当天的tag进行加分
+            SubscribeViewPoint subscribeViewPoint = userViewPointGroup.stream().filter(point -> tagId.equals(point.getTagId())).findFirst().orElse(null);
+            if (subscribeViewPoint == null) {
+                // 当天还没加分，先插入一条
+                SubscribeViewPoint insertTemp = new SubscribeViewPoint();
+                insertTemp.setProfileId(profileId);
+                insertTemp.setLearnDate(new Date());
+                insertTemp.setPoint(viewPoint);
+                insertTemp.setTagId(tagId);
+                subscribeViewPointDao.insert(insertTemp);
+            } else {
+                Double finalPoint = subscribeViewPoint.getPoint() + viewPoint;
+                subscribeViewPointDao.update(finalPoint, tagId);
+            }
+        }
+        subscribeArticleViewDao.updatePointStatus(view.getId());
+        return true;
+    }
+
 
     @Override
     public Boolean viewArticle(Integer profileId, Integer articleId) {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
         Assert.notNull("文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
-        BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.25);
-        Double viewPoint = bigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
         if (view == null) {
             // 还没有打开过，此时才会计算
             subscribeArticleViewDao.insert(profileId, articleId);
-            String tagsId = article.getTag();
-            // 已经有的标签分数
-            List<SubscribeViewPoint> userViewPointGroup = subscribeViewPointDao.load(profileId, new Date(), tagsId);
-            // 过滤出可用的标签
-            List<Integer> tagIdGroup = Lists.newArrayList(tagsId.split(","))
-                    .stream()
-                    .filter(StringUtils::isNumeric)
-                    .map(Integer::parseInt)
-                    .filter(tagId -> {
-                        SubscribeArticleTag subscribeArticleTag = subscribeArticleTagDao.load(SubscribeArticleTag.class, tagId);
-                        return subscribeArticleTag != null && !subscribeArticleTag.getDel();
-                    })
-                    .collect(Collectors.toList());
-            for (Integer tagId : tagIdGroup) {
-                // 如果tag内容不是数字，则不会计算
-                // tag存在，并且没有被删除，对当天的tag进行加分
-                SubscribeViewPoint subscribeViewPoint = userViewPointGroup.stream().filter(point -> tagId.equals(point.getTagId())).findFirst().orElse(null);
-                if (subscribeViewPoint == null) {
-                    // 当天还没加分，先插入一条
-                    SubscribeViewPoint insertTemp = new SubscribeViewPoint();
-                    insertTemp.setProfileId(profileId);
-                    insertTemp.setLearnDate(new Date());
-                    insertTemp.setPoint(viewPoint);
-                    insertTemp.setTagId(tagId);
-                    subscribeViewPointDao.insert(insertTemp);
-                } else {
-                    Double finalPoint = subscribeViewPoint.getPoint() + viewPoint;
-                    subscribeViewPointDao.update(finalPoint, tagId);
-                }
-            }
         }
         return true;
     }

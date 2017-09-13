@@ -12,4 +12,7 @@ public class ArticleFavor {
     private Integer articleId;
     /** 是否喜欢 */
     private Boolean favor;
+
+    public static final int DISFAVOR = 1;
+    public static final int NOT_DISFAVOR = 0;
 }

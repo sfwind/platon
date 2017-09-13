@@ -56,6 +56,8 @@ public interface SubscribeArticleService {
      */
     Boolean disfavorArticle(Integer profileId, Integer articleId);
 
+    Boolean risePoint(Integer profileId, Integer articleId);
+
     /**
      * 打开某篇文章
      *

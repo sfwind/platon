@@ -35,5 +35,8 @@ public class SubscribeArticle {
     private Integer disfavor;
     /** 标签名字 */
     private List<String> tagName;
-
+    /** 是否显示操作按钮 */
+    private Boolean showOpsButtons;
+    /** 是否加过分 */
+    private Boolean pointStatus;
 }

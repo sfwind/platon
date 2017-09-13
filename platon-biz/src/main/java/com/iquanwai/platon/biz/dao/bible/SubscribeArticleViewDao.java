@@ -34,6 +34,17 @@ public class SubscribeArticleViewDao extends PracticeDBUtil {
         return -1;
     }
 
+    public Integer updatePointStatus(Integer id) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE SubscribeArticleView SET PointStatus = 1 WHERE Id = ?";
+        try {
+            return runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public SubscribeArticleView load(Integer profileId, Integer articleId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM SubscribeArticleView WHERE ProfileId = ? and ArticleId = ?";
