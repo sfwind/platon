@@ -213,7 +213,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                 subscribeViewPointDao.insert(insertTemp);
             } else {
                 Double finalPoint = subscribeViewPoint.getPoint() + viewPoint;
-                subscribeViewPointDao.update(finalPoint, tagId);
+                subscribeViewPointDao.update(finalPoint, subscribeViewPoint.getId());
             }
         }
         subscribeArticleViewDao.updatePointStatus(view.getId());
