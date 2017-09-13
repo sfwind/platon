@@ -10,4 +10,5 @@ public class SubscribeArticleView {
     private Integer id;
     private Integer profileId;
     private Integer articleId;
+    private Boolean pointStatus;
 }
