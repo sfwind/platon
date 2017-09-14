@@ -35,7 +35,7 @@ public class SubscribeUserTagDao extends PracticeDBUtil {
 
     public List<SubscribeUserTag> loadAllUserFavorTags(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeUserTag WHERE ProfileId = ?";
+        String sql = "SELECT * FROM SubscribeUserTag WHERE ProfileId = ? and Del=0";
         try {
             return runner.query(sql, new BeanListHandler<SubscribeUserTag>(SubscribeUserTag.class), profileId);
         } catch (SQLException e) {

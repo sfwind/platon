@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,8 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribeUserTagDao subscribeUserTagDao;
+    @Autowired
+    private RelevantTagDao relevantTagDao;
     //每天推荐文章数量
     private static final Integer RECOMMEND_ARTICLE = 5;
 
@@ -180,7 +183,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     @Override
     public Boolean risePoint(Integer profileId, Integer articleId) {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
-        Assert.notNull("文章不能为空");
+        Assert.notNull(article, "文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
         BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.25);
         Double viewPoint = bigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -223,7 +226,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     @Override
     public Boolean viewArticle(Integer profileId, Integer articleId) {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
-        Assert.notNull("文章不能为空");
+        Assert.notNull(article, "文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
         if (view == null) {
             // 还没有打开过，此时才会计算
@@ -304,36 +307,51 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                     List<SubscribeArticle> list = dateSubscribeArticleMap.getOrDefault(subscribeArticle.getUpTime(),
                             Lists.newArrayList());
                     list.add(subscribeArticle);
+                    dateSubscribeArticleMap.put(subscribeArticle.getUpTime(), list);
                 }
         );
 
-        dateSubscribeArticleMap.entrySet().forEach(entry-> entry.getValue().stream().forEach(subscribeArticle -> {
-            // 按天计算每天文章和用户喜好的匹配度
-            String tags[] = subscribeArticle.getTag().split(",");
-            int[] userFavorTags = subscribeUserTagDao.loadAllUserFavorTags(profileId).stream()
-                    .mapToInt(SubscribeUserTag::getTagId).toArray();
-            int count = 0;
-            for (String tagId : tags) {
-                try {
-                    int tag = Integer.parseInt(tagId);
-                    for (int userTag : userFavorTags) {
-                        if (userTag == tag) {
-                            count++;
-                            break;
+        dateSubscribeArticleMap.entrySet().forEach(entry-> {
+            //根据命中的tag数量,取前5篇文章
+            List<SubscribeArticle> onedayArticles = entry.getValue().stream().map(subscribeArticle -> {
+                // 按天计算每天文章和用户喜好的匹配度
+                String tags[] = subscribeArticle.getTag().split(",");
+                // 用户选择的标签
+                int[] userFavorTags = subscribeUserTagDao.loadAllUserFavorTags(profileId).stream()
+                        .mapToInt(SubscribeUserTag::getTagId).toArray();
+                // 与用户选择的标签相关的标签
+                int[] relevantTags = relevantTagDao.load(userFavorTags).stream()
+                        .mapToInt(RelevantTag::getRelevantTagId).distinct().toArray();
+
+                int count = 0;
+                for (String tagId : tags) {
+                    try {
+                        int tag = Integer.parseInt(tagId);
+                        for (int userTag : userFavorTags) {
+                            if (userTag == tag) {
+                                count = count + 4;
+                                break;
+                            }
                         }
+                        for (int relevantTag : relevantTags) {
+                            if (relevantTag == tag) {
+                                count = count + 1;
+                                break;
+                            }
+                        }
+
+                    } catch (NumberFormatException e) {
+                        logger.error("{} is not a tagId", tagId);
                     }
-                } catch (NumberFormatException e) {
-                    logger.error("{} is not a tagId", tagId);
                 }
-            }
-            subscribeArticle.setFavorTagCount(count);
-        }));
+                subscribeArticle.setFavorTagCount(count);
 
-        //根据命中的tag数量,取前10篇文章
-        List<SubscribeArticle> onedayArticles = subscribeArticles.stream().sorted((o1, o2) -> o2.getFavorTagCount() - o1.getFavorTagCount())
-                .limit(RECOMMEND_ARTICLE).collect(Collectors.toList());
+                return subscribeArticle;
+            }).sorted((o1, o2) -> o2.getFavorTagCount() - o1.getFavorTagCount())
+                    .limit(RECOMMEND_ARTICLE).collect(Collectors.toList());
 
-        subscribeArticleList.addAll(onedayArticles);
+            subscribeArticleList.addAll(onedayArticles);
+        });
 
         return subscribeArticleList;
     }
