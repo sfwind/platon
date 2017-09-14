@@ -11,5 +11,6 @@ public class CustomerStatus {
     private Integer statusId;
     private Boolean Del;
 
-    public static final Integer OPEN_BIBLE = 1;
+    public static final Integer OPEN_BIBLE = 1; //开bible
+    public static final Integer EDIT_TAG = 2; //选择tag
 }
