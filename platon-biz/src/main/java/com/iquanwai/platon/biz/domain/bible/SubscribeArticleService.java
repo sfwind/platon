@@ -27,6 +27,13 @@ public interface SubscribeArticleService {
 
     Boolean isLastArticleDate(String date);
 
+    /**
+     * 加载文章列表
+     *
+     * @param profileId 用户id
+     * @param page      页数
+     * @return 文章list
+     */
     List<SubscribeArticle> loadSubscribeArticleListToCertainDate(Integer profileId, Page page, String date);
 
     /**
@@ -36,7 +43,7 @@ public interface SubscribeArticleService {
      * @param page      页数
      * @return 文章list
      */
-    List<SubscribeArticle> loadSubscribeArticleList(Integer profileId, Page page, String date);
+    List<SubscribeArticle> loadSubscribeArticleListOnCertainDate(Integer profileId, Page page, String date);
 
     /**
      * 喜欢某篇文章

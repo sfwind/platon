@@ -35,5 +35,7 @@ public class SubscribeArticle {
     private Integer disfavor;
     /** 标签名字 */
     private List<String> tagName;
+    // 用户喜欢的tag和文章的tag匹配数
+    private int favorTagCount = 0;
 
 }

@@ -11,5 +11,6 @@ import java.util.List;
 public class BibleRefreshListDto<T>{
     private List<T> list;
     private Boolean firstOpen;
+    private Boolean editTag;
     private Boolean isDateEnd;
 }

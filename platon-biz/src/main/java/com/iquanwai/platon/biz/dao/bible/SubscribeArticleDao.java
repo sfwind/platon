@@ -23,9 +23,20 @@ import java.util.List;
 public class SubscribeArticleDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    public List<SubscribeArticle> loadLastArticles(Page page) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM SubscribeArticle Order by UpTime DESC LIMIT " + page.getOffset() + "," + page.getLimit();
+        try {
+            return runner.query(sql, new BeanListHandler<>(SubscribeArticle.class));
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public List<SubscribeArticle> loadCertainDateArticles(Page page, String date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeArticle where UpTime = ? and UpTime <= CURRENT_TIMESTAMP  LIMIT " + page.getOffset() + "," + page.getLimit();
+        String sql = "SELECT * FROM SubscribeArticle where UpTime = ?  LIMIT " + page.getOffset() + "," + page.getLimit();
         try {
             return runner.query(sql, new BeanListHandler<>(SubscribeArticle.class), date);
         } catch (SQLException e) {

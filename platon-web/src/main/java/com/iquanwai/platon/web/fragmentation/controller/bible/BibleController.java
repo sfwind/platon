@@ -53,7 +53,7 @@ public class BibleController {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
-                .function("文章列表")
+                .function("加载某天起的文章列表")
                 .action("加载");
         operationLogService.log(operationLog);
         Page page = new Page();
@@ -75,6 +75,7 @@ public class BibleController {
         result.setList(dailyArticleGroup);
         // 查看是否firstOpen
         result.setFirstOpen(subscribeArticleService.isFirstOpenBible(loginUser.getId()));
+        result.setEditTag(subscribeTagService.isEditTag(loginUser.getId()));
         result.setIsDateEnd(subscribeArticleService.isLastArticleDate(dateStr));
         return WebUtils.result(result);
     }
@@ -84,14 +85,14 @@ public class BibleController {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
-                .function("文章列表")
+                .function("加载某天的文章")
                 .action("加载");
         operationLogService.log(operationLog);
         if (page == null) {
             page = new Page();
         }
         page.setPageSize(PAGE_SIZE);
-        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleList(loginUser.getId(), page, date);
+        List<SubscribeArticle> subscribeArticles = subscribeArticleService.loadSubscribeArticleListOnCertainDate(loginUser.getId(), page, date);
         List<DailyArticleDto> dailyArticleGroup = Lists.newArrayList();
         DailyArticleDto dto = new DailyArticleDto();
         dailyArticleGroup.add(dto);

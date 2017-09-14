@@ -21,4 +21,12 @@ public interface SubscribeTagService {
      * @param profileId 用户id
      */
     void submit(List<SubscribeArticleTag> tags, Integer profileId);
+
+
+    /**
+     * 是否选择过标签
+     *
+     * @param profileId 用户id
+     */
+    Boolean isEditTag(Integer profileId);
 }

@@ -2,25 +2,17 @@ package com.iquanwai.platon.biz.domain.bible;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.bible.ArticleFavorDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeArticleDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeArticleTagDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeArticleViewDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeViewPointDao;
+import com.iquanwai.platon.biz.dao.bible.*;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.bible.ArticleFavor;
-import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
-import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
-import com.iquanwai.platon.biz.po.bible.SubscribeArticleView;
-import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
-import com.iquanwai.platon.biz.po.bible.SubscribeViewPoint;
+import com.iquanwai.platon.biz.po.bible.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +32,6 @@ import java.util.stream.Collectors;
 @Service
 public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private SubscribeArticleDao subscribeArticleDao;
     @Autowired
@@ -57,6 +48,10 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private PromotionLevelDao promotionLevelDao;
     @Autowired
     private QRCodeService qrCodeService;
+    @Autowired
+    private SubscribeUserTagDao subscribeUserTagDao;
+    //每天推荐文章数量
+    private static final Integer RECOMMEND_ARTICLE = 5;
 
     @Override
     public Boolean isFirstOpenBible(Integer profileId) {
@@ -82,23 +77,25 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     public List<SubscribeArticle> loadSubscribeArticleListToCertainDate(Integer profileId, Page page, String date) {
         // 查询
         List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.loadToCertainDateArticles(date);
-        this.initArticleList(profileId, subscribeArticleGroup);
+        if (CollectionUtils.isEmpty(subscribeArticleGroup)) {
+            subscribeArticleGroup = subscribeArticleDao.loadLastArticles(page);
+        }
+        return this.initArticleList(profileId, subscribeArticleGroup);
+
         // 查看是否当前时间的最后一个
-        page.setTotal(subscribeArticleDao.count(date));
-        return subscribeArticleGroup;
+//        page.setTotal(subscribeArticleDao.count(date));
     }
 
     @Override
-    public List<SubscribeArticle> loadSubscribeArticleList(Integer profileId, Page page, String date) {
+    public List<SubscribeArticle> loadSubscribeArticleListOnCertainDate(Integer profileId, Page page, String date) {
         // 查询
         List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.loadCertainDateArticles(page, date);
-        this.initArticleList(profileId, subscribeArticleGroup);
+        return this.initArticleList(profileId, subscribeArticleGroup);
         // 查看是否当前时间的最后一个
-        page.setTotal(subscribeArticleDao.count(date));
-        return subscribeArticleGroup;
+//        page.setTotal(subscribeArticleDao.count(date));
     }
 
-    private void initArticleList(Integer profileId, List<SubscribeArticle> subscribeArticleGroup) {
+    private List<SubscribeArticle> initArticleList(Integer profileId, List<SubscribeArticle> subscribeArticleGroup) {
         // 标签数据
         Map<Integer, SubscribeArticleTag> tagGroup = Maps.newHashMap();
         subscribeArticleTagDao.loadAll(SubscribeArticleTag.class).stream().filter(item -> !item.getDel()).forEach(tag -> {
@@ -125,6 +122,8 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                 }
             }
         });
+        // 挑选前10篇
+        return filterArticle(subscribeArticleGroup, profileId);
     }
 
     @Override
@@ -275,5 +274,48 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     public String totalScores(Integer profileId, Date date) {
         Double score = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
         return new BigDecimal(score).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+    }
+
+    private List<SubscribeArticle> filterArticle(List<SubscribeArticle> subscribeArticles, Integer profileId) {
+        List<SubscribeArticle> subscribeArticleList = Lists.newArrayList();
+        Map<Date, List<SubscribeArticle>> dateSubscribeArticleMap = Maps.newHashMap();
+
+        subscribeArticles.forEach(
+                subscribeArticle -> {
+                    List<SubscribeArticle> list = dateSubscribeArticleMap.getOrDefault(subscribeArticle.getUpTime(),
+                            Lists.newArrayList());
+                    list.add(subscribeArticle);
+                }
+        );
+
+        dateSubscribeArticleMap.entrySet().forEach(entry-> entry.getValue().stream().forEach(subscribeArticle -> {
+            // 按天计算每天文章和用户喜好的匹配度
+            String tags[] = subscribeArticle.getTag().split(",");
+            int[] userFavorTags = subscribeUserTagDao.loadAllUserFavorTags(profileId).stream()
+                    .mapToInt(SubscribeUserTag::getTagId).toArray();
+            int count = 0;
+            for (String tagId : tags) {
+                try {
+                    int tag = Integer.parseInt(tagId);
+                    for (int userTag : userFavorTags) {
+                        if (userTag == tag) {
+                            count++;
+                            break;
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    logger.error("{} is not a tagId", tagId);
+                }
+            }
+            subscribeArticle.setFavorTagCount(count);
+        }));
+
+        //根据命中的tag数量,取前10篇文章
+        List<SubscribeArticle> onedayArticles = subscribeArticles.stream().sorted((o1, o2) -> o2.getFavorTagCount() - o1.getFavorTagCount())
+                .limit(RECOMMEND_ARTICLE).collect(Collectors.toList());
+
+        subscribeArticleList.addAll(onedayArticles);
+
+        return subscribeArticleList;
     }
 }

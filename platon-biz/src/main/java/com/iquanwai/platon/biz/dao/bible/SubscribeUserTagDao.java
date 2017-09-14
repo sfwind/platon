@@ -1,15 +1,19 @@
 package com.iquanwai.platon.biz.dao.bible;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.bible.SubscribeUserTag;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
+import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by justin on 2017/9/13.
@@ -22,11 +26,22 @@ public class SubscribeUserTagDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM SubscribeUserTag WHERE ProfileId = ? and TagId = ?";
         try {
-            return runner.query(sql, new BeanHandler<>(SubscribeUserTag.class), profileId, tagId);
+            return runner.query(sql, new BeanHandler<SubscribeUserTag>(SubscribeUserTag.class), profileId, tagId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
+    }
+
+    public List<SubscribeUserTag> loadAllUserFavorTags(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM SubscribeUserTag WHERE ProfileId = ?";
+        try {
+            return runner.query(sql, new BeanListHandler<SubscribeUserTag>(SubscribeUserTag.class), profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 
     public Integer insert(Integer profileId, Integer tagId) {
