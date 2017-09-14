@@ -135,6 +135,7 @@ public class ProblemController {
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember() != 0);
+        result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("小课列表")

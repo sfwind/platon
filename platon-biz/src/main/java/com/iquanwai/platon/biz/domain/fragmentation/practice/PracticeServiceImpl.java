@@ -245,8 +245,10 @@ public class PracticeServiceImpl implements PracticeService {
             if (applicationSubmitDraft != null) {
                 applicationPractice.setDraftId(applicationSubmitDraft.getId());
                 applicationPractice.setDraft(applicationSubmitDraft.getContent());
-                if(submit.getContent() == null || submit.getLastModifiedTime() == null) {
+                if (submit.getContent() == null) {
                     applicationPractice.setIsSynchronized(false);
+                } else if (submit.getLastModifiedTime() == null) {
+                    applicationPractice.setIsSynchronized(true);
                 } else {
                     applicationPractice.setIsSynchronized(submit.getContent().equals(applicationSubmitDraft.getContent())
                             || submit.getLastModifiedTime().compareTo(applicationSubmitDraft.getUpdateTime()) >= 0);

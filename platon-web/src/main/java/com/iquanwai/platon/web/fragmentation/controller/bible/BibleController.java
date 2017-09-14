@@ -111,7 +111,8 @@ public class BibleController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
                 .function("文章")
-                .action("喜欢");
+                .action("喜欢")
+                .memo(articleId + "");
         operationLogService.log(operationLog);
         Boolean result = subscribeArticleService.favorArticle(loginUser.getId(), articleId);
         return WebUtils.result(result);
@@ -124,7 +125,8 @@ public class BibleController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
                 .function("文章")
-                .action("喜欢");
+                .action("不喜欢")
+                .memo(articleId + "");
         operationLogService.log(operationLog);
         Boolean result = subscribeArticleService.disfavorArticle(loginUser.getId(), articleId);
         return WebUtils.result(result);
@@ -136,9 +138,23 @@ public class BibleController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("学习工具")
                 .function("文章")
-                .action("浏览");
+                .action("浏览")
+                .memo(articleId + "");
         operationLogService.log(operationLog);
         Boolean result = subscribeArticleService.viewArticle(loginUser.getId(), articleId);
+        return WebUtils.result(result);
+    }
+
+    @RequestMapping(value = "/complete/article/{articleId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> readCompleteArticle(LoginUser loginUser, @PathVariable Integer articleId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("学习工具")
+                .function("文章")
+                .action("阅读完成")
+                .memo(articleId + "");
+        operationLogService.log(operationLog);
+        Boolean result = subscribeArticleService.risePoint(loginUser.getId(), articleId);
         return WebUtils.result(result);
     }
 

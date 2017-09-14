@@ -83,7 +83,7 @@ public class BibleSubscribeReceiver {
             promotionActivityDao.insertPromotionActivity(promotionActivity);
 
             customerMessageService.sendCustomerMessage(profile.getOpenid(),
-                    "迎来到圈外同学！点击下方按钮【学札】，体验终身学习管理工具，和知识焦虑说拜拜~\n" +
+                    "欢迎来到圈外同学！点击下方按钮【学札】，体验终身学习管理工具，和知识焦虑说拜拜~\n" +
                             "\n" +
                             "------------------\n" +
                             "关于圈外同学：\n" +

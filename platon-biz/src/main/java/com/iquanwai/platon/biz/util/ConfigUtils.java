@@ -347,7 +347,7 @@ public class ConfigUtils {
                 Integer id = Integer.parseInt(idStr1);
                 problemIds.add(id);
             } catch (NumberFormatException e) {
-                logger.error("错误的数字:"+idStr1, e);
+                logger.error("错误的数字:" + idStr1, e);
             }
         }
         return problemIds;
