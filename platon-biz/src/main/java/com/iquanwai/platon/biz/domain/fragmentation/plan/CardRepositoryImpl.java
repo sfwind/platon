@@ -53,9 +53,6 @@ public class CardRepositoryImpl implements CardRepository {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    // 课程小结卡的序号
-    private static final Integer REVIEW_IMAGE_INDEX = 6;
-
     private Map<Integer, BufferedImage> bufferedImageMap = Maps.newHashMap();
 
     private Map<Integer, String> thumbnailMap = Maps.newHashMap();
@@ -270,7 +267,7 @@ public class CardRepositoryImpl implements CardRepository {
     // 获取绘图底层背景
     private BufferedImage loadTargetImageByChapterId(int chapterId, int totalSize) {
         if (chapterId == totalSize) {
-            return bufferedImageMap.get(REVIEW_IMAGE_INDEX);
+            return bufferedImageMap.get(bufferedImageMap.size());
         } else {
             chapterId = chapterId % bufferedImageMap.size() == 0 ? bufferedImageMap.size() : chapterId % bufferedImageMap.size();
             return bufferedImageMap.get(chapterId);
@@ -280,7 +277,7 @@ public class CardRepositoryImpl implements CardRepository {
     @Override
     public String loadTargetThumbnailByChapterId(int chapterId, int totalSize) {
         if (chapterId == totalSize) {
-            return thumbnailMap.get(REVIEW_IMAGE_INDEX);
+            return thumbnailMap.get(thumbnailMap.size());
         } else {
             chapterId = chapterId % thumbnailMap.size() == 0 ? thumbnailMap.size() : chapterId % thumbnailMap.size();
             return thumbnailMap.get(chapterId);

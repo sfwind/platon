@@ -8,6 +8,7 @@ import java.io.InputStream;
  */
 public interface QRCodeService {
 
+    String loadQrBase64(String scene);
     /**
      * 生成永久二维码，永久二维码数量有限制
      * @param scene 场景值
@@ -41,5 +42,5 @@ public interface QRCodeService {
 
     String SHOW_QRCODE_URL = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket={ticket}";
 
-    int DEFAULT_EXPIRED_TIME = 60*60*24*30;
+    int DEFAULT_EXPIRED_TIME = 60 * 60 * 24 * 30;
 }

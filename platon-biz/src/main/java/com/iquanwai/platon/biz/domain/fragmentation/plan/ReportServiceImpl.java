@@ -37,6 +37,8 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private ProblemService problemService;
+    @Autowired
     private WarmupSubmitDao warmupSubmitDao;
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
@@ -305,7 +307,17 @@ public class ReportServiceImpl implements ReportService {
             // 根据 ProblemId 列表获取所有的相关 Problem 信息
             List<Problem> problems = Lists.newArrayList();
             problemIdList.forEach(id -> {
-                problems.add(problemDao.load(Problem.class, Integer.parseInt(id)));
+                Problem problem = problemDao.load(Problem.class, Integer.parseInt(id));
+                ProblemCatalog catalog = cacheService.getProblemCatalog(problem.getCatalogId());
+                if(catalog != null) {
+                    problem.setCatalog(catalog.getName());
+                }
+                ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(problem.getSubCatalogId());
+                if(subCatalog != null) {
+                    problem.setSubCatalog(subCatalog.getName());
+                }
+                problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
+                problems.add(problem);
             });
             recommendation.setRecommendProblems(problems);
         }

@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -152,8 +153,9 @@ public interface PlanService {
      */
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
-    /**
-     * 根据 OrderId 强开当前月的训练营小课
-     */
     void forceOpenCampOrder(String orderId);
+
+    Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate);
+
+    Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
 }

@@ -90,6 +90,21 @@ public interface Constants {
         int READ_TIMEOUT = 60;
     }
 
+    interface CERTIFICATE{
+        interface TYPE{
+            int CLASS_LEADER = 1;
+            int GROUP_LEADER = 2;
+            int SUPERB_MEMBER = 3;
+            int SUPERB_GROUP = 4;
+        }
+        interface NAME{
+            String CLASS_LEADER = "优秀班长";
+            String GROUP_LEADER = "优秀组长";
+            String SUPERB_MEMBER = "优秀学员";
+            String SUPERB_GROUP = "优秀团队";
+        }
+    }
+
     int DISCUSS_PAGE_SIZE = 100;
 
     String TEMP_IMAGE_PATH = "/data/static/images/";

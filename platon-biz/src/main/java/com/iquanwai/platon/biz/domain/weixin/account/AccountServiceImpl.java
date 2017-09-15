@@ -115,6 +115,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Profile getProfileByRiseId(String riseId) {
+        Profile profile = profileDao.queryByRiseId(riseId);
+
+        if (profile != null) {
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
+            }
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if (role == null) {
+                profile.setRole(0);
+            } else {
+                profile.setRole(role);
+            }
+        }
+
+        return profile;
+    }
+
+    @Override
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
 
@@ -167,6 +186,27 @@ public class AccountServiceImpl implements AccountService {
         });
 
         return profiles;
+    }
+
+    @Override
+    public Account getGuestFromWeixin(String openId, String accessToken) {
+        String url = GUEST_INFO_URL;
+        Map<String, String> map = Maps.newHashMap();
+        map.put("openid", openId);
+        map.put("access_token", accessToken);
+        logger.info("请求游客信息:{}", openId);
+        url = CommonUtils.placeholderReplace(url, map);
+
+        String body = restfulHelper.get(url);
+        logger.info("请求游客信息结果:{}", body);
+        Map<String, Object> result = CommonUtils.jsonToMap(body);
+        Account account = new Account();
+        try {
+            BeanUtils.populate(account, result);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return account;
     }
 
     private Account getAccountFromWeixin(String openid) throws NotFollowingException {
@@ -297,6 +337,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public void submitCertificateProfile(Profile profile) {
+        profileDao.submitCertificateProfile(profile);
+    }
+
+    @Override
     public void reloadRegion() {
         provinceList = regionDao.loadAllProvinces();
         cityList = regionDao.loadAllCities();
@@ -423,6 +468,16 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public RiseClassMember loadLatestRiseClassMember(Integer profileId) {
         return riseClassMemberDao.loadLatestRiseClassMember(profileId);
+    }
+
+    @Override
+    public Boolean openLearningNotify(Integer profileId) {
+        return profileDao.updateLearningNotifyStatus(profileId, 1);
+    }
+
+    @Override
+    public Boolean closeLearningNotify(Integer profileId) {
+        return profileDao.updateLearningNotifyStatus(profileId, 0);
     }
 
 }

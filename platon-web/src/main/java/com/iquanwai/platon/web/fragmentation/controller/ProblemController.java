@@ -52,7 +52,6 @@ public class ProblemController {
     @Autowired
     private CourseReductionService courseReductionService;
 
-
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -79,6 +78,12 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
+
+        // 获取每门小课已经选择的人数
+        for (Problem problem : problems) {
+            problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
+        }
+
         //非天使用户去除试用版小课
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
@@ -124,12 +129,13 @@ public class ProblemController {
                 }).collect(Collectors.toList());
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
 
-        List<Problem> hotList = problems.stream().filter(Problem::getHot).map(Problem::simple).collect(Collectors.toList());
+        List<Problem> hotList = problemService.loadHotProblems(ConfigUtils.loadHotProblemList());
 
         result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
         result.setRiseMember(loginUser.getRiseMember() != 0);
+        result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("小课列表")
@@ -169,7 +175,6 @@ public class ProblemController {
 
     @RequestMapping("/list/{catalog}")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
-
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "小课分类不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -193,6 +198,7 @@ public class ProblemController {
             List<ProblemExploreDto> list = problems
                     .stream().map(item -> {
                         ProblemExploreDto dto = new ProblemExploreDto();
+                        dto.setCatalogId(problemCatalog.getId());
                         dto.setCatalog(problemCatalog.getName());
                         dto.setCatalogDescribe(problemCatalog.getDescription());
                         if (item.getSubCatalogId() != null) {
@@ -205,6 +211,8 @@ public class ProblemController {
                         dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                         dto.setName(item.getProblem());
                         dto.setId(item.getId());
+                        dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+                        dto.setAbbreviation(item.getAbbreviation());
                         return dto;
                     })
                     .collect(Collectors.toList());
@@ -216,7 +224,6 @@ public class ProblemController {
 
     @RequestMapping("/list/all")
     public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
-
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
@@ -225,7 +232,7 @@ public class ProblemController {
                 .memo("");
         operationLogService.log(operationLog);
 
-        List<ProblemCatalog> problemCatalog = problemService.getProblemCatalogs();
+        List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
         //非天使用户去除试用版小课
@@ -234,13 +241,14 @@ public class ProblemController {
         }
 
         Map<Integer, ProblemCatalog> catalogMap = Maps.newHashMap();
-        problemCatalog.forEach((item) -> catalogMap.put(item.getId(), item));
+        problemCatalogs.forEach((item) -> catalogMap.put(item.getId(), item));
 
 
         List<ProblemExploreDto> list = problems.stream()
                 .map(item -> {
                     ProblemExploreDto dto = new ProblemExploreDto();
                     dto.setCatalog(catalogMap.get(item.getCatalogId()).getName());
+                    dto.setCatalogId(item.getCatalogId());
                     if (item.getSubCatalogId() != null) {
                         ProblemSubCatalog problemSubCatalog = problemService.getProblemSubCatalog(item.getSubCatalogId());
                         dto.setSubCatalog(problemSubCatalog.getName());
@@ -251,6 +259,8 @@ public class ProblemController {
                     dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                     dto.setName(item.getProblem());
                     dto.setId(item.getId());
+                    dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+                    dto.setAbbreviation(item.getAbbreviation());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -274,10 +284,13 @@ public class ProblemController {
     }
 
     @RequestMapping("/open/{problemId}")
-    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
-                                                                       @RequestParam(required = false) Boolean autoOpen) {
+    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblem(problemId);
+        // 设置当前小课已学习人数
+        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
+        problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
+
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
@@ -304,6 +317,8 @@ public class ProblemController {
                 dto.setTogetherClassMonth(monthStr);
             }
         }
+
+        dto.setProblemCollected(problemService.hasCollectedProblem(loginUser.getId(), problemId));
 
         // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -438,5 +453,36 @@ public class ProblemController {
         }
     }
 
+    @RequestMapping(value = "/collect/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> collectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(problemId, "小课不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课学习").function("小课收藏").action("点击收藏").memo(Integer.toString(problemId));
+        operationLogService.log(operationLog);
+
+        int result = problemService.collectProblem(loginUser.getId(), problemId);
+        if (result > 0) {
+            return WebUtils.result("收藏成功");
+        } else {
+            return WebUtils.error("收藏失败");
+        }
+    }
+
+    @RequestMapping(value = "/discollect/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> disCollectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(problemId, "小课不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课学习").function("小课取消收藏").action("取消收藏").memo(Integer.toString(problemId));
+        operationLogService.log(operationLog);
+
+        int result = problemService.disCollectProblem(loginUser.getId(), problemId);
+        if (result > 0) {
+            return WebUtils.result("取消收藏成功");
+        } else {
+            return WebUtils.error("取消收藏失败");
+        }
+    }
 
 }

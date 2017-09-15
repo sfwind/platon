@@ -26,7 +26,7 @@ import java.util.List;
 public class ImprovementPlanDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public int insert(ImprovementPlan plan){
+    public int insert(ImprovementPlan plan) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into ImprovementPlan(Openid, WarmupComplete, Status, EndDate, " +
                 "StartDate, CloseDate, Point, Total, ApplicationComplete, ProblemId, Keycnt, " +
@@ -41,7 +41,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
                     plan.getCurrentSeries(), plan.getTotalSeries(), plan.getRiseMember(),
                     plan.getRequestCommentCount(), plan.getProfileId());
             return insertRs.intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
@@ -61,7 +61,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<ImprovementPlan> loadAllPlans(Integer profileId){
+    public List<ImprovementPlan> loadAllPlans(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId=? and Del=0";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
@@ -73,7 +73,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public ImprovementPlan loadPlanByProblemId(Integer profileId, Integer problemId){
+    public ImprovementPlan loadPlanByProblemId(Integer profileId, Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId=? and ProblemId=? and Del=0";
         ResultSetHandler<ImprovementPlan> h = new BeanHandler<>(ImprovementPlan.class);
@@ -85,7 +85,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public ImprovementPlan getLastPlan(Integer profileId){
+    public ImprovementPlan getLastPlan(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId=? and Del=0 order by id desc";
         ResultSetHandler<ImprovementPlan> h = new BeanHandler<>(ImprovementPlan.class);
@@ -97,7 +97,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public void updateStatus(Integer planId, Integer status){
+    public void updateStatus(Integer planId, Integer status) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET Status =? where Id=?";
         try {
@@ -107,7 +107,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateCompleteTime(Integer planId){
+    public void updateCompleteTime(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET CompleteTime = CURRENT_TIMESTAMP where Id=? and CompleteTime is null";
         try {
@@ -117,7 +117,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateCloseTime(Integer planId){
+    public void updateCloseTime(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET CloseTime = CURRENT_TIMESTAMP where Id=? and CloseTime is null";
         try {
@@ -129,8 +129,6 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     /**
      * 更新课程 job 关闭的时间
-     * @param planId
-     * @param date
      */
     public void updateCloseTime(Integer planId, Date date) {
         QueryRunner runner = new QueryRunner(getDataSource());
@@ -155,7 +153,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateProgress(Integer planId, Integer series){
+    public void updateProgress(Integer planId, Integer series) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET CompleteSeries=? where Id=?";
         try {
@@ -165,7 +163,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateCurrentSeries(Integer planId, Integer series){
+    public void updateCurrentSeries(Integer planId, Integer series) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET CurrentSeries=? where Id=?";
         try {
@@ -175,7 +173,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updatePoint(Integer planId, Integer point){
+    public void updatePoint(Integer planId, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET Point =? where Id=?";
         try {
@@ -185,7 +183,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateWarmupComplete(Integer planId){
+    public void updateWarmupComplete(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET WarmupComplete = WarmupComplete+1 where Id=?";
         try {
@@ -195,7 +193,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-    public void updateApplicationComplete(Integer planId){
+    public void updateApplicationComplete(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET ApplicationComplete = ApplicationComplete+1 where Id=?";
         try {
@@ -205,19 +203,18 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
-
     /**
      * 得分打败了多少人
-     * */
-    public Integer defeatOthers(Integer problemId, Integer point){
+     */
+    public Integer defeatOthers(Integer problemId, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select  my_cnt*100/all_cnt from\n" +
                 "(select count(1) as all_cnt from ImprovementPlan where ProblemId = ?) t1,\n" +
                 " (select count(1) as my_cnt from ImprovementPlan where ProblemId = ? and Point>?) t2";
         ResultSetHandler<List<BigDecimal>> h = new ColumnListHandler<>();
         try {
-            List<BigDecimal> list =runner.query(sql, h, problemId, problemId, point);
-            return 100-list.get(0).intValue();
+            List<BigDecimal> list = runner.query(sql, h, problemId, problemId, point);
+            return 100 - list.get(0).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -225,7 +222,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return -1;
     }
 
-    public void updateRequestComment(Integer planId, Integer count){
+    public void updateRequestComment(Integer planId, Integer count) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan SET RequestCommentCount = ? where Id=?";
         try {
@@ -236,7 +233,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     }
 
     // 查询该用户付过费的plan
-    public List<ImprovementPlan> loadUserPlans(Integer profileId){
+    public List<ImprovementPlan> loadUserPlans(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ?";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
@@ -256,10 +253,41 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     public void reOpenPlan(Integer planId, Date closeDate) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan set RiseMember = 1,Status = 1,CloseDate =? WHERE Id = ?";
-        try{
+        try {
             runner.update(sql, closeDate, planId);
-        } catch (SQLException e){
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }
+    }
+
+    /**
+     * 获取当前小课此时已经学习过的人数
+     */
+    public int loadChosenPersonCount(Integer problemId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT COUNT(DISTINCT(ProfileId)) FROM ImprovementPlan WHERE ProblemId = ?";
+        ResultSetHandler<Long> h = new ScalarHandler<>();
+        try {
+            Long result = runner.query(sql, h, problemId);
+            return result.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
+    }
+
+    /**
+     * 当前会员期间内购买的小课
+     */
+    public List<ImprovementPlan> loadRiseMemberPlans(Integer profileId, Date startDate) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ? AND StartDate > ? AND Del = 0";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+        try {
+            return runner.query(sql, h, profileId, startDate);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 }

@@ -21,19 +21,23 @@
 <div id="loading"><img src="//static.iqycamp.com/images/loading_page2.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
 <div id="react-app"></div>
 <!-- 业务代码-->
+<script src="${vendorResource}"></script>
 <script src="${resource}" onload="document.getElementById('loading').style.display = 'none'"></script>
-<%--<script src="${resource}"></script>--%>
 
-<%--<script>--%>
-    <%--(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){--%>
-                <%--(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),--%>
-            <%--m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)--%>
-    <%--})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');--%>
+<script>
+    var display = '<%=ConfigUtils.domainName()%>'
+    if(display === 'http://www.iquanwai.com' || display === 'https://www.iquanwai.com') {
+        var _hmt = _hmt || [];
+        (function () {
 
-    <%--ga('create', '<%=ConfigUtils.gaId()%>', 'auto');--%>
-    <%--ga('send', 'pageview');--%>
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?64c8a6d40ec075c726072cd243d008a3";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    }
 
-<%--</script>--%>
+</script>
 <%--性能数据收集脚本--%>
 <script>
     (function(window, mta) {

@@ -1,9 +1,12 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +38,8 @@ public class ProblemServiceImpl implements ProblemService {
     private ProblemActivityDao problemActivityDao;
     @Autowired
     private ProblemDao problemDao;
+    @Autowired
+    private ProblemCollectionDao problemCollectionDao;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
@@ -190,4 +196,96 @@ public class ProblemServiceImpl implements ProblemService {
         }
     }
 
+    @Override
+    public int loadChosenPersonCount(Integer problemId) {
+        // return improvementPlanDao.loadChosenPersonCount(problemId);
+        return 0;
+    }
+
+    @Override
+    public boolean hasCollectedProblem(Integer profileId, Integer problemId) {
+        ProblemCollection collection = problemCollectionDao.loadUsefulCollection(profileId, problemId);
+        return collection != null;
+    }
+
+    @Override
+    public int collectProblem(Integer profileId, Integer problemId) {
+        int result = -1;
+        // 判断以前是否收藏过这门小课
+        ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
+        if (collection != null) {
+            // 已经存在过这门课，如果 Del 字段为 1，将其置为 0
+            if (collection.getDel() == 1) {
+                result = problemCollectionDao.restoreCollection(collection.getId());
+            }
+        } else {
+            // 收藏名单不存在这门课，直接新增记录
+            result = problemCollectionDao.insert(profileId, problemId);
+        }
+        return result;
+    }
+
+    @Override
+    public int disCollectProblem(Integer profileId, Integer problemId) {
+        int result = -1;
+        // 判断以前是否收藏过这门小课
+        ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
+        if (collection != null) {
+            // 已经存在过这门课，如果 Del 字段为 0，将其置为 1
+            if (collection.getDel() == 0) {
+                result = problemCollectionDao.delete(collection.getId());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public List<Problem> loadProblemCollections(Integer profileId) {
+        List<ProblemCollection> collections = problemCollectionDao.loadCollectionsByProfileId(profileId);
+
+        List<Problem> problemCollections = Lists.newArrayList();
+        for (ProblemCollection collection : collections) {
+            Problem problem = cacheService.getProblem(collection.getProblemId());
+            if (problem != null) {
+                problemCollections.add(problem);
+            }
+        }
+        return problemCollections;
+    }
+
+    @Override
+    public List<Problem> loadHotProblems(List<Integer> problemIds) {
+        List<Problem> problems = Lists.newArrayList();
+        for (Integer problemId : problemIds) {
+            Problem problem = cacheService.getProblem(problemId);
+            Assert.notNull(problem, "配置的小课不能为空");
+            problem.setChosenPersonCount(loadChosenPersonCount(problemId));
+            problems.add(problem);
+        }
+        return problems;
+    }
+
+    @Override
+    public Integer loadMonthlyCampMonth(Integer problemId) {
+        MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
+        if (schedule != null) {
+            return schedule.getMonth();
+        }
+        return null;
+    }
+
+    @Override
+    public List<ExploreBanner> loadExploreBanner() {
+        JSONArray bannerArray = JSONArray.parseArray(ConfigUtils.getExploreBannerString());
+        List<ExploreBanner> banners = Lists.newArrayList();
+        for (int i = 0; i < bannerArray.size(); i++) {
+            JSONObject json = bannerArray.getJSONObject(i);
+            ExploreBanner banner = new ExploreBanner();
+            banner.setImageUrl(json.getString("imageUrl"));
+            banner.setLinkUrl(json.getString("linkUrl"));
+            banners.add(banner);
+        }
+        return banners;
+    }
+  
 }

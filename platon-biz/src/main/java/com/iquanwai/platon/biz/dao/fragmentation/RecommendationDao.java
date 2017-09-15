@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public class RecommendationDao extends PracticeDBUtil {
 
-    Logger logger = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 根据 ProblemId 获取所有相关推荐小课

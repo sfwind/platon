@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.dao;
 
 import com.iquanwai.platon.biz.TestBase;
+import com.iquanwai.platon.biz.dao.bible.SubscribeArticleDao;
 import com.iquanwai.platon.biz.dao.forum.QuestionTagDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
 import com.iquanwai.platon.biz.po.RiseCourseOrder;
@@ -16,6 +17,13 @@ public class ForumDaoTest extends TestBase {
     private QuestionTagDao questionTagDao;
     @Autowired
     private RiseCourseDao riseCourseDao;
+    @Autowired
+    private SubscribeArticleDao subscribeArticleDao;
+
+    @Test
+    public void testfff(){
+        System.out.println(subscribeArticleDao.loadMinDate());
+    }
 
     @Test
     public void testRiseCourse() {

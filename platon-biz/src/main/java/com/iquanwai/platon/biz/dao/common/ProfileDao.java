@@ -42,6 +42,19 @@ public class ProfileDao extends DBUtil {
         return null;
     }
 
+    public Profile queryByRiseId(String riseId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<Profile> h = new BeanHandler<>(Profile.class);
+
+        try {
+            return run.query("SELECT * FROM Profile where RiseId=?", h, riseId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
     public void updatePoint(Integer id, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
@@ -179,6 +192,25 @@ public class ProfileDao extends DBUtil {
         return true;
     }
 
+    public boolean submitCertificateProfile(Profile profile) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=?, RealName=? where id=?";
+        try {
+            run.update(updateSql,
+                    profile.getIndustry(),
+                    profile.getFunction(),
+                    profile.getWorkingLife(),
+                    profile.getCity(),
+                    profile.getProvince(),
+                    profile.getRealName(),
+                    profile.getId());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
     public void completeProfile(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE Profile SET IsFull = 1 where Id = ?";
@@ -226,5 +258,17 @@ public class ProfileDao extends DBUtil {
             logger.error(e.getMessage(), e);
         }
         return -1;
+    }
+
+    public Boolean updateLearningNotifyStatus(Integer profileId, Integer status) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile set LearningNotify = ? where Id = ?";
+        try {
+            int update = runner.update(updateSql, status, profileId);
+            return update > 0;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return false;
     }
 }

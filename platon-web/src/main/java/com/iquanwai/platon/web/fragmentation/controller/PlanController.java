@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -59,6 +60,8 @@ public class PlanController {
     private ProblemService problemService;
     @Autowired
     private WhiteListService whiteListService;
+    @Autowired
+    private CacheService cacheService;
 
     /**
      * 检查是否能选课<br/>
@@ -75,6 +78,12 @@ public class PlanController {
                 .action("检查是否能够重新选择")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
+
+        // 检查小课选择是否达到会员类型所应该有的上限
+        Pair<Boolean, String> accessResult = planService.loadProblemChooseAccess(loginUser.getId());
+        if (!accessResult.getLeft() && !problemId.equals(ConfigUtils.getTrialProblemId())) {
+            return WebUtils.error(accessResult.getRight());
+        }
 
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
 
@@ -290,6 +299,7 @@ public class PlanController {
             improvementPlan.setOpenRise(profile.getOpenRise());
         }
         improvementPlan.setOpenRise(loginUser.getOpenRise());
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
                 .function("开始训练")
@@ -561,6 +571,12 @@ public class PlanController {
             plan.setStartDate(item.getStartDate());
             plan.setProblemId(item.getProblemId());
             plan.setCloseTime(item.getCloseTime());
+
+            // 设置 Problem 对象
+            Problem itemProblem = cacheService.getProblem(item.getProblemId());
+            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+            plan.setProblem(itemProblem.simple());
+
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(plan);
             } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE || item.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
@@ -606,6 +622,7 @@ public class PlanController {
         List<Integer> usefulProblems = problemService.loadProblems().stream()
                 .sorted((left, right) -> right.getUsefulScore() > left.getUsefulScore() ? 1 : -1)
                 .map(Problem::getId).collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(runningPlans)) {
             // 没有进行中的练习,根据实用度排序
             problemIds = usefulProblems;
@@ -638,6 +655,18 @@ public class PlanController {
         for (Recommendation recommendation : recommendationLists) {
             // 开始过滤,这个推荐里的小课
             List<Problem> recommendProblems = recommendation.getRecommendProblems();
+
+            // 额外添加业务场景下所需要的字段值
+            recommendProblems.stream().forEach(problem -> {
+                Integer subCatalogId = problem.getSubCatalogId();
+                if(subCatalogId != null) {
+                    ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);
+                    problem.setSubCatalog(subCatalog.getName());
+                }
+                // 设置每个 problem 当前完成的人数
+                problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
+            });
+
             for (Problem problem : recommendProblems) {
                 //非天使用户去除试用版小课
                 if (!inWhiteList) {
@@ -657,6 +686,7 @@ public class PlanController {
                 }
             }
         }
+
         return problems;
     }
 

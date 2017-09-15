@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -56,6 +57,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private RiseCourseDao riseCourseDao;
     @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
@@ -65,6 +68,11 @@ public class PlanServiceImpl implements PlanService {
     private CardRepository cardRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    // 精英会员年费版最大选课数
+    private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
+    // 精英会员半年版最大选课数
+    private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
@@ -582,7 +590,7 @@ public class PlanServiceImpl implements PlanService {
                     } else {
                         // 判断是否参加过测评活动
                         boolean hasParticipateEvaluate = operationEvaluateService.hasParticipateEvaluate(profileId);
-                        if(hasParticipateEvaluate) {
+                        if (hasParticipateEvaluate) {
                             // 限免小课，左侧 ￥{fee}, 立即学习 | 免费获取
                             buttonStatus = 8;
                         } else {
@@ -650,27 +658,88 @@ public class PlanServiceImpl implements PlanService {
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
-            forceOpenProblem(profileId, problemId);
+            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampCloseDate());
+            // 强开后要加求点评次数
+            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+            improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount() + 1);
         }
     }
 
     /**
      * 根据 profileId 和 problemId 强开当前小课
      */
-    private void forceOpenProblem(Integer profileId, Integer problemId) {
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate) {
+        Integer resultPlanId;
+        if (closeDate == null) {
+            closeDate = DateUtils.afterDays(new Date(), 30);
+        }
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
         if (improvementPlan == null) {
             // 用户从来没有开过小课，新开小课
             Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
-            improvementPlanDao.updateCloseDate(planId, ConfigUtils.getMonthlyCampCloseDate());
+            improvementPlanDao.updateCloseDate(planId, closeDate);
             generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
+
+            resultPlanId = planId;
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            improvementPlanDao.updateCloseDate(improvementPlan.getId(), ConfigUtils.getMonthlyCampCloseDate());
+            improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+
+            resultPlanId = improvementPlan.getId();
         }
+        return resultPlanId;
+    }
+
+    /**
+     * 对于精英版会员，是否有权限继续选课
+     */
+    @Override
+    public Pair<Boolean, String> loadProblemChooseAccess(Integer profileId) {
+        Boolean access = true;
+        String message = "";
+        Profile profile = accountService.getProfile(profileId);
+        if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
+            // 是精英会员用户才会有选课上限分析，专业版后期没有继续招募
+            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+            Integer memberTypeId = riseMember.getMemberTypeId();
+            Date startTime3 = riseMember.getAddTime(); // 会员开始时间
+            switch (memberTypeId) {
+                case RiseMember.ELITE:
+                    //精英版一年，按照加入时间
+                    if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
+                        access = true;
+                    } else {
+                        List<ImprovementPlan> plans3 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime3);
+                        Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                        if (countLong3.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
+                            access = false;
+                            message = "亲爱的精英版会员，你的选课数量已达36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                        }
+                    }
+                    break;
+                case RiseMember.HALF_ELITE:
+                    //精英版半年，限制18门
+                    if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
+                        access = true;
+                    } else {
+                        Date startTime4 = riseMember.getAddTime(); // 会员开始时间
+                        List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
+                        Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                        if (countLong4.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
+                            access = false;
+                            message = "亲爱的精英版会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return new MutablePair<>(access, message);
     }
 
 }

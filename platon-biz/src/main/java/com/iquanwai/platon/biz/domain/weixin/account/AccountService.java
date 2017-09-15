@@ -15,7 +15,7 @@ import java.util.List;
 public interface AccountService {
     /**
      * 根据openid获取用户的详细信息
-     * */
+     */
     Account getAccount(String openid, boolean realTime) throws NotFollowingException;
 
     /**
@@ -28,6 +28,8 @@ public interface AccountService {
      */
     Profile getProfile(String openid);
 
+    Profile getProfileByRiseId(String riseId);
+
     /**
      * 根据id获取用户详情
      */
@@ -37,31 +39,39 @@ public interface AccountService {
      * 根据openid批量获取用户详情
      */
     List<Profile> getProfiles(List<Integer> profileIds);
+
+    Account getGuestFromWeixin(String openId, String accessToken);
+
     /**
      * 获取所有的省份信息
-     * */
+     */
     List<Region> loadAllProvinces();
 
     /**
      * 获取某省份的城市信息
-     * */
+     */
     List<Region> loadCities();
+
     /**
      * 更新是否打开导航栏
      */
     int updateOpenNavigator(Integer id);
+
     /**
      * 更新是否打开rise
      */
     int updateOpenRise(Integer id);
+
     /**
      * 更新是否打开rise应用练习
      */
     int updateOpenApplication(Integer id);
+
     /**
      * 更新是否打开rise巩固练习
      */
     int updateOpenConsolidation(Integer id);
+
     /**
      * 更新是否打开rise巩固练习
      */
@@ -72,7 +82,13 @@ public interface AccountService {
      */
     void submitPersonalCenterProfile(Profile profile);
 
+    /**
+     * 查看证书时提交用户信息
+     */
+    void submitCertificateProfile(Profile profile);
+
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
 
@@ -84,21 +100,24 @@ public interface AccountService {
 
     /**
      * 发送验证码
-     * @param phone 手机号码
+     *
+     * @param phone     手机号码
      * @param profileId 用户id
-     * @param areaCode 区号
+     * @param areaCode  区号
      */
     Pair<Boolean, String> sendValidCode(String phone, Integer profileId, String areaCode);
 
     /**
      * 验证验证码
+     *
      * @param profileId 用户id
-     * @param code 用户输入的验证码
+     * @param code      用户输入的验证码
      */
     boolean validCode(String code, Integer profileId);
 
     /**
      * 是否是rise会员
+     *
      * @param profileId profileId
      */
     Boolean isRiseMember(Integer profileId);
@@ -111,4 +130,8 @@ public interface AccountService {
     void insertCoupon(Coupon coupon);
 
     RiseClassMember loadLatestRiseClassMember(Integer profileId);
+
+    Boolean openLearningNotify(Integer profileId);
+
+    Boolean closeLearningNotify(Integer profileId);
 }

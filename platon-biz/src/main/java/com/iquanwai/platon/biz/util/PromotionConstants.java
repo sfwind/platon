@@ -10,12 +10,13 @@ public interface PromotionConstants {
         String Evaluate = "evaluate";
         String CourseReduction = "courseReduction";
         String CaitongLive = "caitonglive";
+        String Bible = "bible";
     }
 
     interface FreeLimitAction {
         int InitState = 0; // 初始状态
         int TrialCourse = 1; // 限免试用
-        int PayCourse = 2; // 付费购买h
+        int PayCourse = 2; // 付费购买
     }
 
     interface EvaluateAction {
@@ -50,6 +51,10 @@ public interface PromotionConstants {
         int Backpack = 44; // 背包
         int Complete = 45; // 完成所有题目
         int GoDie = 46; // 当前进行的题做错了
+    }
+
+    interface BibleAction {
+        int ScanCode = 31; // 扫二维码
     }
 
 }

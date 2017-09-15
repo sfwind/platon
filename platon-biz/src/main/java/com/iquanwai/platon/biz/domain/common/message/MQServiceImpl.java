@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.common.message;
 
 import com.iquanwai.platon.biz.dao.common.MQDealLogDao;
 import com.iquanwai.platon.biz.dao.common.MQSendLogDao;
-import com.iquanwai.platon.biz.dao.common.MessageQueueDao;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,47 +17,47 @@ import java.net.UnknownHostException;
 @Service
 public class MQServiceImpl implements MQService {
     @Autowired
-    private MessageQueueDao messageQueueDao;
-    @Autowired
     private MQSendLogDao mqSendLogDao;
     @Autowired
     private MQDealLogDao mqDealLogDao;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private String ipAddress;
 
     @Override
-    public void saveMQSendOperation(MQSendLog mqSendLog){
+    public void saveMQSendOperation(MQSendLog mqSendLog) {
         // 插入mqSendOperation
-        new Thread(() -> {
-            String ip = null;
+        if (ipAddress == null) {
             try {
                 InetAddress localHost = InetAddress.getLocalHost();
-                ip = localHost.getHostAddress();
+                ipAddress = localHost.getHostAddress();
             } catch (UnknownHostException e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
-            mqSendLog.setPublisherIp(ip);
-            mqSendLogDao.insert(mqSendLog);
-        }).start();
+        }
+
+        mqSendLog.setPublisherIp(ipAddress);
+        mqSendLogDao.insert(mqSendLog);
     }
 
 
     @Override
     public void updateAfterDealOperation(RabbitMQDto dto) {
         String msgId = dto.getMsgId();
-        String ip = null;
-        try {
-            InetAddress localHost = InetAddress.getLocalHost();
-            ip = localHost.getHostAddress();
-        } catch (UnknownHostException e) {
-            logger.error(e.getLocalizedMessage(), e);
+        if (ipAddress == null) {
+            try {
+                InetAddress localHost = InetAddress.getLocalHost();
+                ipAddress = localHost.getHostAddress();
+            } catch (UnknownHostException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
         }
         MQDealLog mqDealLog = new MQDealLog();
         mqDealLog.setMsgId(msgId);
         mqDealLog.setTopic(dto.getTopic());
         mqDealLog.setQueue(dto.getQueue());
-        mqDealLog.setConsumerIp(ip);
+        mqDealLog.setConsumerIp(ipAddress);
         mqDealLogDao.insert(mqDealLog);
     }
 

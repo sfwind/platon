@@ -202,4 +202,42 @@ public class MessageController {
         operationLogService.log(operationLog);
         return WebUtils.success();
     }
+
+    @RequestMapping(value = "/open/learning/notify", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> openLearningNotifyStatus(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        accountService.openLearningNotify(loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("学习消息提醒")
+                .action("打开");
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/close/learning/notify", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> closeLearningNotifyStatus(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        accountService.closeLearningNotify(loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("学习消息提醒")
+                .action("关闭");
+        operationLogService.log(operationLog);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/status/learning/notify", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getLearningNotifyStatus(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Profile profile = accountService.getProfile(loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("学习消息提醒")
+                .action("查看");
+        operationLogService.log(operationLog);
+        return WebUtils.result(profile != null && profile.getLearningNotify());
+    }
+
 }
+

@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.util;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import com.typesafe.config.Config;
@@ -91,7 +92,7 @@ public class ConfigUtils {
     }
 
     public static boolean isDebug() {
-        return getBooleanValue("debug") || getBooleanValue("press.test");
+        return getBooleanValue("debug");
     }
 
     public static boolean isFrontDebug() {
@@ -106,7 +107,6 @@ public class ConfigUtils {
         return getValue("adapter.domain");
     }
 
-
     public static String realDomainName() {
         return getValue("app.domainname");
     }
@@ -120,6 +120,27 @@ public class ConfigUtils {
 
         return url;
     }
+
+    public static String staticNoteResourceUrl() {
+        String url = getValue("static.note.resource.url");
+        //测试环境防浏览器缓存，添加随机参数
+        if (url.endsWith("?")) {
+            url = url.concat("_t=").concat(new Random().nextInt() + "");
+        }
+
+        return url;
+    }
+
+    public static String vendorResourceUrl() {
+        String url = getValue("static.vendor.resource.url");
+        //测试环境防浏览器缓存，添加随机参数
+        if (url.endsWith("?")) {
+            url = url.concat("_t=").concat(new Random().nextInt() + "");
+        }
+
+        return url;
+    }
+
 
     public static Integer getChallengeScore() {
         return getIntValue("challenge.score");
@@ -156,6 +177,10 @@ public class ConfigUtils {
 
     public static String courseCloseMsg() {
         return getValue("course.pass.msg");
+    }
+
+    public static String incompleteTaskMsg() {
+        return getValue("incomplete.task.msg");
     }
 
     public static String getPicturePrefix() {
@@ -307,6 +332,37 @@ public class ConfigUtils {
 
     public static Date getMonthlyCampCloseDate() {
         return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
+    }
+
+    /**
+     * 读取热门小课配置
+     */
+    public static List<Integer> loadHotProblemList() {
+        String idStr = getValue("problem.hot.list");
+        String[] idStrs = idStr.split(",");
+
+        List<Integer> problemIds = Lists.newArrayList();
+        for (String idStr1 : idStrs) {
+            try {
+                Integer id = Integer.parseInt(idStr1);
+                problemIds.add(id);
+            } catch (NumberFormatException e) {
+                logger.error("错误的数字:" + idStr1, e);
+            }
+        }
+        return problemIds;
+    }
+
+    public static Date getRiseMemberSplitDate() {
+        String splitDateStr = getValue("risemember.elite.splitdate");
+        return DateUtils.parseStringToDate(splitDateStr);
+    }
+
+    /**
+     * 获取发现页面 Banner 配置
+     */
+    public static String getExploreBannerString() {
+        return getValue("explore.banner");
     }
 
 }

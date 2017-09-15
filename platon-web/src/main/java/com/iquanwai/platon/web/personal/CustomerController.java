@@ -5,15 +5,15 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.RiseClassMember;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -38,11 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -66,6 +62,8 @@ public class CustomerController {
     @Autowired
     private ProblemService problemService;
     @Autowired
+    private CacheService cacheService;
+    @Autowired
     private RiseMemberService riseMemberService;
     @Autowired
     private EventWallService eventWallService;
@@ -73,6 +71,8 @@ public class CustomerController {
     private QuestionService questionService;
     @Autowired
     private AnswerService answerService;
+    @Autowired
+    private CertificateService certificateService;
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
@@ -105,7 +105,7 @@ public class CustomerController {
         riseDto.setNickName(profile.getNickname());
 
         RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
-        if(riseClassMember != null) {
+        if (riseClassMember != null) {
             riseDto.setMemberId(riseClassMember.getMemberId());
         }
 
@@ -165,6 +165,38 @@ public class CustomerController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/profile/certificate", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitCertificateProfile(LoginUser loginUser, @RequestBody ProfileDto profileDto) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("提交个人信息");
+        operationLogService.log(operationLog);
+        Profile profile = new Profile();
+        try {
+            BeanUtils.copyProperties(profile, profileDto);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("beanUtils copy props error", e);
+            return WebUtils.error("提交个人信息失败");
+        }
+        profile.setId(loginUser.getId());
+        accountService.submitCertificateProfile(profile);
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getCertificate(LoginUser loginUser, @PathVariable String certificateNo) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("获取证书");
+        operationLogService.log(operationLog);
+        RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
+        return WebUtils.result(riseCertificate);
+    }
+
     @RequestMapping("/region")
     public ResponseEntity<Map<String, Object>> loadRegion(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -192,6 +224,11 @@ public class CustomerController {
                 .function("RISE")
                 .action("查询小课信息");
         operationLogService.log(operationLog);
+        List<RiseCertificate> riseCertificates = certificateService.getCertificates(loginUser.getId());
+        //清空profileId
+        riseCertificates.forEach(riseCertificate -> {
+            riseCertificate.setProfileId(null);
+        });
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         PlanListDto list = new PlanListDto();
         List<PlanDto> runningPlans = Lists.newArrayList();
@@ -208,14 +245,18 @@ public class CustomerController {
             } else if (item.getStatus() == ImprovementPlan.CLOSE) {
                 donePlans.add(planDto);
             }
+            planDto.setProblem(cacheService.getProblem(item.getProblemId()).simple());
         });
         list.setRunningPlans(runningPlans);
         list.setDonePlans(donePlans);
+        list.setRiseCertificates(riseCertificates);
         // 查询riseId
         Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
-//        list.setRiseMember(profile.getRiseMember());
         list.setPoint(profile.getPoint());
+        // 当前已收藏小课
+        List<Problem> problemCollections = problemService.loadProblemCollections(loginUser.getId());
+        list.setProblemCollections(problemCollections);
         return WebUtils.result(list);
     }
 
@@ -274,7 +315,7 @@ public class CustomerController {
         page.setPageSize(100);
         List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
         // 设置刷新列表
-//        RefreshListDto<ForumQuestion> result = new RefreshListDto<>();
+//        BibleRefreshListDto<ForumQuestion> result = new BibleRefreshListDto<>();
 //        result.setList(forumQuestions);
 //        result.setEnd(page.isLastPage());
         return WebUtils.result(forumQuestions);
