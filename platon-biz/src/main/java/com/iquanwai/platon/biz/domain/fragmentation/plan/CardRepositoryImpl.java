@@ -85,7 +85,7 @@ public class CardRepositoryImpl implements CardRepository {
         essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_4.png?imageslim");
         essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
         pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
-        caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.png?imageslim");
+        caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.png");
         logger.info("图片加载完毕");
     }
 
