@@ -336,7 +336,7 @@ public class CardRepositoryImpl implements CardRepository {
 
     @Override
     public BufferedImage loadCaitongBgImage(){
-        return caitongBGImage;
+        return pandaCard;
     }
 
 }
