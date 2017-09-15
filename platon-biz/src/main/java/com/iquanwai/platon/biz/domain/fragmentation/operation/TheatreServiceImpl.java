@@ -205,7 +205,7 @@ public class TheatreServiceImpl implements TheatreService {
     }
 
     /**
-     * 完成到最后的题目
+     * 完成到最大的题目
      *
      * @param profileId 用户id
      * @return left-是否goDie  right-问题
@@ -213,6 +213,25 @@ public class TheatreServiceImpl implements TheatreService {
     private Pair<Boolean, Question> loadMaxPlayQuestion(Integer profileId) {
 
         PromotionActivity activity = promotionActivityDao.loadMaxPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
+        if (activity == null) {
+            return null;
+        }
+
+        PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GoDie);
+        Boolean isDead = deadAction != null && deadAction.getAddTime().after(activity.getAddTime());
+        Question question = theatreScript.searchQuestionByAction(activity.getAction());
+        return new MutablePair<>(isDead, question);
+    }
+
+    /**
+     * 进行中的最后的的题目
+     *
+     * @param profileId 用户id
+     * @return left-是否goDie  right-问题
+     */
+    private Pair<Boolean, Question> loadLastPlayQuestion(Integer profileId) {
+
+        PromotionActivity activity = promotionActivityDao.loadLastPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
         if (activity == null) {
             return null;
         }
@@ -372,7 +391,7 @@ public class TheatreServiceImpl implements TheatreService {
             this.handleBackpackMessage(profile);
         } else if (StringUtils.isNumeric(message)) {
             // 获取最后一进行的一个题目
-            Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
+            Pair<Boolean, Question> questionPair = this.loadLastPlayQuestion(profile.getId());
             Integer key = Integer.parseInt(message);
             // 玩过的最后一题
             Question question = questionPair != null ? questionPair.getRight() : null;
