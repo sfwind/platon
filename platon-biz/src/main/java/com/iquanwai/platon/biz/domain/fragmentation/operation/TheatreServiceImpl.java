@@ -460,7 +460,7 @@ public class TheatreServiceImpl implements TheatreService {
         BufferedImage newCodeBuffer = ImageUtils.scaleByPercentage(qrBuffer, 174, 174);
         BufferedImage caitongBG = cardRepository.loadCaitongBgImage();
         BufferedImage result = ImageUtils.overlapImage(caitongBG, newCodeBuffer, 38, 1124);
-        return uploadResourceService.uploadResource(result);
+        return uploadResourceService.uploadResource(caitongBG);
     }
 
 
