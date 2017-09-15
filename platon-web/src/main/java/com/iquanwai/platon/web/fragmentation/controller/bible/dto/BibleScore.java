@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.fragmentation.controller.bible;
+package com.iquanwai.platon.web.fragmentation.controller.bible.dto;
 
 import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import lombok.Data;

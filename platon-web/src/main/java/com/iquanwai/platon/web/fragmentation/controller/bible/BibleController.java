@@ -10,6 +10,9 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleRefreshListDto;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleScore;
+import com.iquanwai.platon.web.fragmentation.controller.bible.dto.DailyArticleDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -207,4 +210,5 @@ public class BibleController {
         Boolean result = subscribeArticleService.openBible(loginUser.getId());
         return WebUtils.result(result);
     }
+
 }
