@@ -63,7 +63,9 @@ public class CaitongLiveReceiver {
                 // 采铜直播
                 logger.info("采铜直播二维码扫描:{}", mq);
                 Profile profile = accountService.getProfile(subscribeEvent.getOpenid());
-                boolean notExistLevel = null == promotionLevelDao.loadByProfileId(profile.getId(), PromotionConstants.Activities.CaitongLive);
+                PromotionLevel existLevel = promotionLevelDao.loadByProfileId(profile.getId(), PromotionConstants.Activities.CaitongLive);
+                boolean notExistLevel = null == existLevel;
+                Integer level = null;
                 if (notExistLevel) {
                     // 第一次参加活动,加入level表
                     PromotionLevel tempLevelToSave = new PromotionLevel();
@@ -72,7 +74,6 @@ public class CaitongLiveReceiver {
                     tempLevelToSave.setProfileId(profile.getId());
                     // 查看是第几层
                     Integer promoterId = null;
-                    Integer level = null;
                     if (StringUtils.isNumeric(sceneWords[1])) {
                         promoterId = Integer.parseInt(sceneWords[1]);
                         if (promoterId == profile.getId()) {
@@ -87,16 +88,18 @@ public class CaitongLiveReceiver {
                                 LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
                                 if (liveRedeemCode == null) {
                                     //TODO 兑换码耗尽
-
+                                    logger.error("兑换码耗尽");
                                 } else {
-                                    //TODO 成功送出
-                                    StringBuilder message1 = new StringBuilder("你好啊，勇士的朋友，你可以免费得到一枚直播兑换码\n")
-                                            .append("兑换码：").append(liveRedeemCode.getCode()).append("\n")
-                                            .append("直播地址：").append(TheatreServiceImpl.Live_URL).append("\n")
-                                            .append("兑换码使用说明：").append(TheatreServiceImpl.CODE_DESCRIBE_URL).append("\n");
-                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), message1.toString(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做下方的题目开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                                    String message1 = "你好啊，勇士的朋友，你可以免费得到一枚直播兑换码\n" +
+                                            "兑换码：" + liveRedeemCode.getCode() + "\n" +
+                                            "直播地址：" + TheatreServiceImpl.Live_URL + "\n" +
+                                            "兑换码使用说明：" + TheatreServiceImpl.CODE_DESCRIBE_URL + "\n";
+                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), message1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                                 }
+                            } else {
+                                String message = "很抱歉，你朋友的奖励已经被大家抢光了。但是你可以选择回复【48】自己当勇士找到神秘宝藏。";
+                                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                             }
                         }
                     } else {
@@ -106,7 +109,10 @@ public class CaitongLiveReceiver {
                     tempLevelToSave.setPromoterId(promoterId);
                     tempLevelToSave.setLevel(level);
                     promotionLevelDao.insertPromotionLevel(tempLevelToSave);
+                } else {
+                    level = existLevel.getLevel();
                 }
+
 
                 // 扫码action
                 PromotionActivity promotionActivity = new PromotionActivity();
@@ -114,9 +120,11 @@ public class CaitongLiveReceiver {
                 promotionActivity.setActivity(PromotionConstants.Activities.CaitongLive);
                 promotionActivity.setAction(PromotionConstants.CaitongLiveAction.ScanCode);
                 promotionActivityDao.insertPromotionActivity(promotionActivity);
-
                 // 开始玩游戏
-                theatreService.startGame(profile);
+                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.ManualStart);
+                if (level == 1 || manualStart != null) {
+                    theatreService.startGame(profile);
+                }
             }
         });
     }

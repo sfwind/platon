@@ -52,6 +52,7 @@ public interface PromotionConstants {
         int Complete = 45; // 完成所有题目
         int GoDie = 46; // 当前进行的题做错了
         int CloseGame = 47; // 结束游戏
+        int ManualStart = 48; // 二层用户手动开始游戏
     }
 
     interface BibleAction {

@@ -318,6 +318,10 @@ public class TheatreServiceImpl implements TheatreService {
                     // TODO ERROR
                     logger.error("异常，没有下一题了,{}", question);
                 } else {
+                    if (CURRENT_ACTION.Question5 == question.getAction()) {
+                        // 第五题回答正确，推送采铜图片
+                        this.sendCaitongHeadToUser(profile);
+                    }
                     this.sendQuestionToUser(profile, nextQuestion);
                 }
             }
@@ -420,7 +424,19 @@ public class TheatreServiceImpl implements TheatreService {
         if (liveLevel != null) {
             // 扫码，但是要判断是否结束了游戏
             PromotionActivity closeAction = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.CloseGame);
-            return closeAction == null;
+            if (closeAction == null) {
+                // 没有结束，检查是第几层
+                if (liveLevel.getLevel() == 1) {
+                    // 第一层可以直接开始
+                    return true;
+                } else {
+                    // 有没有手动输入开始
+                    PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.ManualStart);
+                    return manualStart != null;
+                }
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -461,6 +477,12 @@ public class TheatreServiceImpl implements TheatreService {
         BufferedImage caitongBG = cardRepository.loadCaitongBgImage();
         BufferedImage result = ImageUtils.overlapImage(caitongBG, newCodeBuffer, 38, 1124);
         return uploadResourceService.uploadResource(result);
+    }
+
+    private void sendCaitongHeadToUser(Profile profile) {
+        BufferedImage bufferedImage = cardRepository.loadCaitongHead();
+        String mediaId = uploadResourceService.uploadResource(bufferedImage);
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 
 
