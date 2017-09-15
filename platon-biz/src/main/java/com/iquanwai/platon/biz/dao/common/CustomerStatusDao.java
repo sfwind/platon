@@ -22,7 +22,7 @@ public class CustomerStatusDao extends DBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CustomerStatus WHERE ProfileId = ? and StatusId = ? and Del = 0";
         try {
-            return runner.query(sql, new BeanHandler<CustomerStatus>(CustomerStatus.class), profileId, statusId);
+            return runner.query(sql, new BeanHandler<>(CustomerStatus.class), profileId, statusId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

@@ -2,25 +2,17 @@ package com.iquanwai.platon.biz.domain.bible;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.bible.ArticleFavorDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeArticleDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeArticleTagDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeArticleViewDao;
-import com.iquanwai.platon.biz.dao.bible.SubscribeViewPointDao;
+import com.iquanwai.platon.biz.dao.bible.*;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.bible.ArticleFavor;
-import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
-import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
-import com.iquanwai.platon.biz.po.bible.SubscribeArticleView;
-import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
-import com.iquanwai.platon.biz.po.bible.SubscribeViewPoint;
+import com.iquanwai.platon.biz.po.bible.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +33,6 @@ import java.util.stream.Collectors;
 @Service
 public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private SubscribeArticleDao subscribeArticleDao;
     @Autowired
@@ -57,6 +49,12 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private PromotionLevelDao promotionLevelDao;
     @Autowired
     private QRCodeService qrCodeService;
+    @Autowired
+    private SubscribeUserTagDao subscribeUserTagDao;
+    @Autowired
+    private RelevantTagDao relevantTagDao;
+    //每天推荐文章数量
+    private static final Integer RECOMMEND_ARTICLE = 5;
 
     @Override
     public Boolean isFirstOpenBible(Integer profileId) {
@@ -82,23 +80,25 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     public List<SubscribeArticle> loadSubscribeArticleListToCertainDate(Integer profileId, Page page, String date) {
         // 查询
         List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.loadToCertainDateArticles(date);
-        this.initArticleList(profileId, subscribeArticleGroup);
+        if (CollectionUtils.isEmpty(subscribeArticleGroup)) {
+            subscribeArticleGroup = subscribeArticleDao.loadLastArticles(page);
+        }
+        return this.initArticleList(profileId, subscribeArticleGroup);
+
         // 查看是否当前时间的最后一个
-        page.setTotal(subscribeArticleDao.count(date));
-        return subscribeArticleGroup;
+//        page.setTotal(subscribeArticleDao.count(date));
     }
 
     @Override
-    public List<SubscribeArticle> loadSubscribeArticleList(Integer profileId, Page page, String date) {
+    public List<SubscribeArticle> loadSubscribeArticleListOnCertainDate(Integer profileId, Page page, String date) {
         // 查询
         List<SubscribeArticle> subscribeArticleGroup = subscribeArticleDao.loadCertainDateArticles(page, date);
-        this.initArticleList(profileId, subscribeArticleGroup);
+        return this.initArticleList(profileId, subscribeArticleGroup);
         // 查看是否当前时间的最后一个
-        page.setTotal(subscribeArticleDao.count(date));
-        return subscribeArticleGroup;
+//        page.setTotal(subscribeArticleDao.count(date));
     }
 
-    private void initArticleList(Integer profileId, List<SubscribeArticle> subscribeArticleGroup) {
+    private List<SubscribeArticle> initArticleList(Integer profileId, List<SubscribeArticle> subscribeArticleGroup) {
         // 标签数据
         Map<Integer, SubscribeArticleTag> tagGroup = Maps.newHashMap();
         subscribeArticleTagDao.loadAll(SubscribeArticleTag.class).stream().filter(item -> !item.getDel()).forEach(tag -> {
@@ -134,6 +134,8 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                 article.setPointStatus(false);
             }
         });
+        // 挑选前10篇
+        return filterArticle(subscribeArticleGroup, profileId);
     }
 
     @Override
@@ -181,7 +183,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     @Override
     public Boolean risePoint(Integer profileId, Integer articleId) {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
-        Assert.notNull("文章不能为空");
+        Assert.notNull(article, "文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
         BigDecimal bigDecimal = new BigDecimal((article.getWordCount() / 1000d) * 0.25);
         Double viewPoint = bigDecimal.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -224,7 +226,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     @Override
     public Boolean viewArticle(Integer profileId, Integer articleId) {
         SubscribeArticle article = subscribeArticleDao.load(SubscribeArticle.class, articleId);
-        Assert.notNull("文章不能为空");
+        Assert.notNull(article, "文章不能为空");
         SubscribeArticleView view = subscribeArticleViewDao.load(profileId, articleId);
         if (view == null) {
             // 还没有打开过，此时才会计算
@@ -294,5 +296,63 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     public String totalScores(Integer profileId, Date date) {
         Double score = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
         return new BigDecimal(score).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+    }
+
+    private List<SubscribeArticle> filterArticle(List<SubscribeArticle> subscribeArticles, Integer profileId) {
+        List<SubscribeArticle> subscribeArticleList = Lists.newArrayList();
+        Map<Date, List<SubscribeArticle>> dateSubscribeArticleMap = Maps.newHashMap();
+
+        subscribeArticles.forEach(
+                subscribeArticle -> {
+                    List<SubscribeArticle> list = dateSubscribeArticleMap.getOrDefault(subscribeArticle.getUpTime(),
+                            Lists.newArrayList());
+                    list.add(subscribeArticle);
+                    dateSubscribeArticleMap.put(subscribeArticle.getUpTime(), list);
+                }
+        );
+
+        dateSubscribeArticleMap.entrySet().forEach(entry-> {
+            //根据命中的tag数量,取前5篇文章
+            List<SubscribeArticle> onedayArticles = entry.getValue().stream().map(subscribeArticle -> {
+                // 按天计算每天文章和用户喜好的匹配度
+                String tags[] = subscribeArticle.getTag().split(",");
+                // 用户选择的标签
+                int[] userFavorTags = subscribeUserTagDao.loadAllUserFavorTags(profileId).stream()
+                        .mapToInt(SubscribeUserTag::getTagId).toArray();
+                // 与用户选择的标签相关的标签
+                int[] relevantTags = relevantTagDao.load(userFavorTags).stream()
+                        .mapToInt(RelevantTag::getRelevantTagId).distinct().toArray();
+
+                int count = 0;
+                for (String tagId : tags) {
+                    try {
+                        int tag = Integer.parseInt(tagId);
+                        for (int userTag : userFavorTags) {
+                            if (userTag == tag) {
+                                count = count + 4;
+                                break;
+                            }
+                        }
+                        for (int relevantTag : relevantTags) {
+                            if (relevantTag == tag) {
+                                count = count + 1;
+                                break;
+                            }
+                        }
+
+                    } catch (NumberFormatException e) {
+                        logger.error("{} is not a tagId", tagId);
+                    }
+                }
+                subscribeArticle.setFavorTagCount(count);
+
+                return subscribeArticle;
+            }).sorted((o1, o2) -> o2.getFavorTagCount() - o1.getFavorTagCount())
+                    .limit(RECOMMEND_ARTICLE).collect(Collectors.toList());
+
+            subscribeArticleList.addAll(onedayArticles);
+        });
+
+        return subscribeArticleList;
     }
 }
