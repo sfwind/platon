@@ -51,6 +51,7 @@ public interface PromotionConstants {
         int Backpack = 44; // 背包
         int Complete = 45; // 完成所有题目
         int GoDie = 46; // 当前进行的题做错了
+        int CloseGame = 47; // 结束游戏
     }
 
     interface BibleAction {

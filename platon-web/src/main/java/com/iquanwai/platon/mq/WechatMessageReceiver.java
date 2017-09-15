@@ -32,7 +32,7 @@ public class WechatMessageReceiver {
         rabbitMQFactory.initReceiver(null, WECHAT_MESSAGE_TOPIC, (messageQueue) -> {
             WechatMessage wechatMessage = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), WechatMessage.class);
             logger.info("receive message :{}", wechatMessage);
-            // 处理微信消息
+            // 扫过二维码，并且没有结束游戏
             Boolean isPlaying = theatreService.isPlayingTheatre(wechatMessage);
             if (isPlaying) {
                 theatreService.handleTheatreMessage(wechatMessage);

@@ -115,6 +115,13 @@ public class PromotionActivityDao extends DBUtil {
     }
 
 
+    /**
+     * 活动专用接口，获取做到的最后一道题目
+     * @param profileId 用户id
+     * @param activity 活动
+     * @param notValidAction 无效action
+     * @return 做到的最后一道题
+     */
     public PromotionActivity loadMaxPlayQuestion(Integer profileId, String activity, Integer notValidAction) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from PromotionActivity where ProfileId = ? and Activity = ? and Action < ? ORDER BY Action desc limit 1";
@@ -126,11 +133,29 @@ public class PromotionActivityDao extends DBUtil {
         return null;
     }
 
+    /**
+     * 活动专用接口，获得最后一次死亡记录
+     * @param profileId 用户id
+     * @param activity 活动名
+     * @param deadAction 死亡action
+     * @return 最后一次死亡记录
+     */
     public PromotionActivity loadDeadQuestion(Integer profileId, String activity,Integer deadAction) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from PromotionActivity where ProfileId = ? and Activity = ? and Action = ? ORDER BY Action desc limit 1";
         try {
             return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, deadAction);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    public PromotionActivity loadAction(Integer profileId, String activity,Integer action) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PromotionActivity where ProfileId = ? and Activity = ? and Action = ? ORDER BY Action desc limit 1";
+        try {
+            return runner.query(sql, new BeanHandler<PromotionActivity>(PromotionActivity.class), profileId, activity, action);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
