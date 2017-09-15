@@ -432,7 +432,22 @@ public class TheatreServiceImpl implements TheatreService {
                 } else {
                     // 有没有手动输入开始
                     PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.ManualStart);
-                    return manualStart != null;
+                    if (manualStart == null) {
+                        // 没有输入手动开始
+                        String message = wechatMessage.getMessage();
+                        if (message.equals("48")) {
+                            PromotionActivity manualStartAction = new PromotionActivity();
+                            manualStartAction.setProfileId(profile.getId());
+                            manualStartAction.setAction(CURRENT_ACTION.ManualStart);
+                            manualStartAction.setActivity(CURRENT_GAME);
+                            promotionActivityDao.insertPromotionActivity(manualStartAction);
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
                 }
             } else {
                 return false;
