@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -89,7 +90,12 @@ public class CaitongLiveReceiver {
 
                                 } else {
                                     //TODO 成功送出
-
+                                    StringBuilder message1 = new StringBuilder("你好啊，勇士的朋友，你可以免费得到一枚直播兑换码\n")
+                                            .append("兑换码：").append(liveRedeemCode.getCode()).append("\n")
+                                            .append("直播地址：").append(TheatreServiceImpl.Live_URL).append("\n")
+                                            .append("兑换码使用说明：").append(TheatreServiceImpl.CODE_DESCRIBE_URL).append("\n");
+                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), message1.toString(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做下方的题目开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                                 }
                             }
                         }
