@@ -41,8 +41,8 @@ public class TheatreServiceImpl implements TheatreService {
 
     public static final String CURRENT_GAME = PromotionConstants.Activities.CaitongLive;
 
-    public static final String Live_URL = "<a href='https://www.baidu.com'>直播地址</a>";
-    public static final String CODE_DESCRIBE_URL = "<a href='https://www.baidu.com'>石墨文档</a>";
+    public static final String Live_URL = "<a href='http://study.163.com/course/introduction.htm?courseId=1004290001'>直播地址</a>";
+    public static final String CODE_DESCRIBE_URL = "<a href='https://shimo.im/doc/lOBVOFcT2z40qI3Q?r=NPGKQE/'>石墨文档</a>";
 
     public interface CURRENT_ACTION extends PromotionConstants.CaitongLiveAction {
     }
