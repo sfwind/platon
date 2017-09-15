@@ -29,4 +29,6 @@ public interface CardRepository {
      * 获取限免小课熊猫卡
      * */
     BufferedImage loadDefaultCardImg(Profile profile);
+
+    BufferedImage loadCaitongBgImage();
 }

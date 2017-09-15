@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.LiveRedeemCodeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
@@ -14,6 +15,7 @@ import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WechatMessage;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import lombok.Data;
 import lombok.Getter;
@@ -66,6 +68,8 @@ public class TheatreServiceImpl implements TheatreService {
     private QRCodeService qrCodeService;
     @Autowired
     private UploadResourceService uploadResourceService;
+    @Autowired
+    private CardRepository cardRepository;
 
 
     @PostConstruct
@@ -75,9 +79,11 @@ public class TheatreServiceImpl implements TheatreService {
                 "这天你刚刚从圈外图书馆走出来，就发现有三个人站在图书馆门口偷偷策划着什么不为人知的大事情。");
         theatreScript.setEndingWords("你念出了正确的咒语，霸王龙的骨架慢慢停止了前进，又恢复成了一个展览品。采铜馆长拍拍你的肩膀，指了指前面的宝箱，示意你过去拿。\n" +
                 "\n" +
-                "你跑到宝箱面前，颤抖地打开了箱子，发现里面竟然是一张价值264元的邀请证，你可以用这个邀请券免费让你的3个小伙伴听课。（邀请券已经累计放入你的背包里了，你可以回复背包查看你的邀请券）\n" +
+                "你跑到宝箱面前，颤抖地打开了箱子，发现里面有一张纸条：只有真正的勇士才配得上我的直播，下个月我等你来——傅踢踢。\n" +
                 "\n" +
-                "恭喜你，你已经完成了本次探险，如果之前没有领取到兑换码和邀请券的勇士可以回复【背包】查看你的兑换码和邀请券。通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。\n");
+                "你已被系统记录为【真正的勇士】，10月还将继续获邀出席踢踢馆长的情感大课，请记得关注【圈外同学】服务号收取通知。\n" +
+                "\n" +
+                "恭喜你完成了本次探险，成为真正的勇士。你回复【背包】查看你的直播兑换码和邀请券。通过你的邀请券可以邀请三位最有求知欲的朋友共赴知识盛宴，免费听本次直播哦。\n");
 
         theatreScript.addQuestion(
                 "圈圈还在闭关中，这三个人就在这里偷偷搞事情！你决定一探究竟，一路跟着他们来到了圈外博物馆。博物馆大门敞开着，里面黑洞洞的一片。在你打算直接跨入大门之时，两个守卫突然现身、拦住了你，声称你带了某件【圈外博物馆】的违禁品。你说：“我去，竟然不让带…… ”\n\n",
@@ -401,6 +407,7 @@ public class TheatreServiceImpl implements TheatreService {
         }
     }
 
+
     @Override
     public void startGame(Profile profile) {
         // 检查用户是否结束了游戏
@@ -431,6 +438,9 @@ public class TheatreServiceImpl implements TheatreService {
     private String generateSharePage(Profile profile) {
         String scene = CURRENT_GAME + "_" + profile.getId();
         BufferedImage qrBuffer = qrCodeService.loadQrImage(scene);
+        BufferedImage newCodeBuffer = ImageUtils.scaleByPercentage(qrBuffer, 174, 174);
+        BufferedImage caitongBG = cardRepository.loadCaitongBgImage();
+        ImageUtils.overlapImage(caitongBG, newCodeBuffer, 38, 1124);
         return uploadResourceService.uploadResource(qrBuffer);
     }
 

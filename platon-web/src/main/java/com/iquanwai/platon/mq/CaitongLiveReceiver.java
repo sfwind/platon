@@ -3,11 +3,14 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.LiveRedeemCodeRepository;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreService;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreServiceImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
+import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
 import com.iquanwai.platon.biz.util.PromotionConstants;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 /**
  * Created by nethunder on 2017/8/31.
@@ -40,6 +44,8 @@ public class CaitongLiveReceiver {
     private AccountService accountService;
     @Autowired
     private TheatreService theatreService;
+    @Autowired
+    private LiveRedeemCodeRepository liveRedeemCodeRepository;
 
     @PostConstruct
     public void init() {
@@ -74,8 +80,19 @@ public class CaitongLiveReceiver {
                         } else {
                             PromotionLevel promoterLevel = promotionLevelDao.loadByProfileId(promoterId, PromotionConstants.Activities.CaitongLive);
                             level = promoterLevel.getLevel() + 1;
-                        }
+                            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, TheatreServiceImpl.CURRENT_GAME);
+                            if (promotionLevels.size() < 3) {
+                                // 可以送
+                                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
+                                if (liveRedeemCode == null) {
+                                    //TODO 兑换码耗尽
 
+                                } else {
+                                    //TODO 成功送出
+
+                                }
+                            }
+                        }
                     } else {
                         // 第一层
                         level = 1;

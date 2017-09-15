@@ -28,13 +28,19 @@ public class LiveRedeemCodeRepository {
         LiveRedeemCode existCode = liveRedeemCodeDao.loadLiveRedeemCode(live, profileId);
         if (existCode == null) {
             return redisUtil.lock("lock:live:code:" + live, () -> {
-                LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadValidLiveRedeemCode(live);
-                if (liveRedeemCode == null) {
-                    logger.error("异常：live的兑换码耗尽");
-                    return null;
+                // 这里重新查询，外面会过滤一层，这里再查一层
+                LiveRedeemCode recheckExistCode = liveRedeemCodeDao.loadLiveRedeemCode(live, profileId);
+                if (recheckExistCode == null) {
+                    LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadValidLiveRedeemCode(live);
+                    if (liveRedeemCode == null) {
+                        logger.error("异常：live的兑换码耗尽");
+                        return null;
+                    } else {
+                        liveRedeemCodeDao.useRedeemCode(liveRedeemCode.getId(), profileId);
+                        return liveRedeemCode;
+                    }
                 } else {
-                    liveRedeemCodeDao.useRedeemCode(liveRedeemCode.getId(), profileId);
-                    return liveRedeemCode;
+                    return recheckExistCode;
                 }
             });
         } else {
