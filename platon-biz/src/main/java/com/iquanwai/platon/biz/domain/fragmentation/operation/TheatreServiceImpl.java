@@ -452,8 +452,16 @@ public class TheatreServiceImpl implements TheatreService {
             LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadLiveRedeemCode(CURRENT_GAME, profile.getId());
             if (liveRedeemCode == null) {
                 // 没有获得
+                String message = "你已经挑战过了圈外博物馆啦，但很可惜你失败了。\n" +
+                        "快点学一些圈外小课提升自己的战斗力吧！";
+                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             } else {
                 // 获得过直播券
+                String message = "你已经挑战过圈外博物馆啦，采铜馆长在9月21日晚8点半等着你哦。\n" +
+                        "你的兑换码：" + liveRedeemCode.getCode() + "\n" +
+                        "直播地址：" + Live_URL + "\n" +
+                        "兑换码使用说明：" + CODE_DESCRIBE_URL + "\n";
+                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
         } else {
             // 由mq发起，那里会插入level，所以不检查了
