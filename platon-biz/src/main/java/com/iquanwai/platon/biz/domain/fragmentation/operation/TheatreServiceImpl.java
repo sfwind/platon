@@ -80,9 +80,10 @@ public class TheatreServiceImpl implements TheatreService {
         theatreScript.setEndingWords("你念出了正确的咒语，霸王龙的骨架慢慢停止了前进，又恢复成了一个展览品。采铜馆长拍拍你的肩膀，指了指前面的宝箱，示意你过去拿。{split}" +
                 "你跑到宝箱面前，颤抖地打开了箱子，发现里面有一张纸条：只有真正的勇士才配得上我的直播，下个月我等你来——傅踢踢。\n" +
                 "----------------------\n" +
-                "你已被系统记录为【真正的勇士】，10月还将继续获邀出席踢踢馆长的情感大课，请记得关注【圈外同学】服务号收取通知。\n" +
-                "\n" +
-                "恭喜你完成了本次探险，成为真正的勇士。你回复【背包】查看你的直播兑换码和邀请券。通过你的邀请券可以邀请三位最有求知欲的朋友共赴知识盛宴，免费听本次直播哦。\n");
+                "你已被系统记录为【真正的勇士】，下个月的博物馆奇妙夜你将被踢踢邀请出席，请记得关注【圈外同学】服务号收取通知。{split}" +
+                "你拿到了宝藏，但是你猛地回头，发现采铜已经消失在出口的尽头。\n" +
+                "----------------------\n" +
+                "恭喜你，你已经完成了本次探险，如果之前没有领取到兑换码和邀请券的勇士可以回复【背包】查看你的兑换码和邀请券。");
 
         theatreScript.addQuestion("圈圈还在闭关中，这三个人就在这里偷偷搞事情！你决定一探究竟，一路跟着他们来到了圈外博物馆。\n\n" +
                         "在你打算直接跨入大门之时，两个守卫突然现身、拦住了你，声称你带了某件【圈外博物馆】的违禁品。你说：“我去，竟然不让带…… ” \n" +
@@ -263,9 +264,14 @@ public class TheatreServiceImpl implements TheatreService {
             // 查看做的题目
             Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
             Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), "你的兑换码是:" + liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            String message = "下方是你的兑换码，可以在网易云课堂观看采铜馆长的直播\n\n" +
+                    "兑换码：" + liveRedeemCode.getCode() + "\n" +
+                    "直播地址：" + Live_URL + "\n" +
+                    "兑换说明：" + CODE_DESCRIBE_URL;
+            customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
                 // 做到第四题才会有邀请券,发海报
+                customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 String mediaId = generateSharePage(profile);
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
             }
@@ -372,7 +378,10 @@ public class TheatreServiceImpl implements TheatreService {
                 completeAction.setProfileId(profile.getId());
                 promotionActivityDao.insertPromotionActivity(closeAction);
                 // 送出礼物，延后到发背包的时候
-                customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getEndingWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                String[] split = theatreScript.getEndingWords().split("\\{split\\}");
+                for (String str : split) {
+                    customerMessageService.sendCustomerMessage(profile.getOpenid(), str, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                }
             } else {
                 // 不是最后一题，推送下一题
                 Question nextQuestion = theatreScript.nextQuestion(question);
