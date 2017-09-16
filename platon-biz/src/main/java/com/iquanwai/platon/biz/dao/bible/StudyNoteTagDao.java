@@ -91,7 +91,7 @@ public class StudyNoteTagDao extends PracticeDBUtil {
 
     public Integer updateNotePoint(Integer noteId, Double point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE StudyNoteTag Point = ? WHERE StudyNoteId = ?";
+        String sql = "UPDATE StudyNoteTag SET Point = ? WHERE StudyNoteId = ?";
         try {
             return runner.update(sql, point, noteId);
         } catch (SQLException e) {
