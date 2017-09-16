@@ -26,4 +26,14 @@ public class StudyNote {
     // 非DB字段
     private List<Integer> tagIds;
     private List<SubscribeArticleTag> tags;
+
+
+    public static final int BOOK = 1;
+    public static final int COURSE = 2;
+    public static final int VIDEO = 3;
+    public static final int AUDIO = 4;
+    public static final int CHAIR = 5;
+    public static final int PROJECT = 6;
+
+
 }

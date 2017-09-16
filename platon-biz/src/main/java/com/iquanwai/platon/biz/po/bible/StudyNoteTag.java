@@ -10,6 +10,7 @@ public class StudyNoteTag {
     private Integer id;
     private Integer profileId;
     private Integer studyNoteId;
+    private Double point;
     private Integer tagId;
     private Boolean del;
 }

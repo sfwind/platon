@@ -78,9 +78,10 @@ public interface SubscribeArticleService {
      * 获取不同纬度的得分对比情况
      *
      * @param profileId 用户id
+     * @param today     计算得分的那天
      * @return 得分对比情况
      */
-    List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId);
+    List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId, Date today);
 
     Integer loadCertainDayReadWords(Integer profileId, Date date);
 

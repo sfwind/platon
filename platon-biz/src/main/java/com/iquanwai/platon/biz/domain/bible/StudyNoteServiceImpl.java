@@ -47,10 +47,39 @@ public class StudyNoteServiceImpl implements StudyNoteService {
         return studyNote;
     }
 
+    private Double calculateTagPoint(StudyNote note) {
+        switch (note.getCatalogId()) {
+            case StudyNote.BOOK: {
+                Integer page = note.getPage();
+                Double pagePoint = page == null ? 20d : page * 0.15d;
+                return pagePoint / note.getTagIds().size();
+            }
+            case StudyNote.COURSE: {
+                return 20d / note.getTagIds().size();
+            }
+            case StudyNote.VIDEO:
+            case StudyNote.AUDIO: {
+                Integer minute = note.getMinute();
+                Double minutePoint = minute == null ? 20d : minute * 0.05d;
+                return minutePoint / note.getTagIds().size();
+            }
+            case StudyNote.CHAIR: {
+                Integer minute = note.getMinute();
+                Double minutePoint = minute == null ? 120d : minute * 0.05d;
+                return minutePoint / note.getTagIds().size();
+            }
+            case StudyNote.PROJECT: {
+                return 30d / note.getTagIds().size();
+            }
+            default:
+                return 0d;
+        }
+    }
 
     @Override
     public Integer createOrUpdateStudyNote(Integer profileId, StudyNote studyNote) {
         Integer noteId;
+        Double tagPoint = this.calculateTagPoint(studyNote);
         if (studyNote.getId() == null) {
             // 新增
             studyNote.setProfileId(profileId);
@@ -63,6 +92,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
                     StudyNoteTag studyNoteTag = new StudyNoteTag();
                     studyNoteTag.setProfileId(profileId);
                     studyNoteTag.setStudyNoteId(noteId);
+                    studyNoteTag.setPoint(tagPoint);
                     studyNoteTag.setTagId(item);
                     studyNoteTagDao.insertStudyNoteTag(studyNoteTag);
                 });
@@ -94,6 +124,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
                     // 需要新插入
                     StudyNoteTag tag = new StudyNoteTag();
                     tag.setTagId(item);
+                    tag.setPoint(tagPoint);
                     tag.setProfileId(profileId);
                     tag.setStudyNoteId(noteId);
                     insertTags.add(tag);
@@ -111,7 +142,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
             });
             // 处理标签
             insertTags.forEach(studyNoteTagDao::insertStudyNoteTag);
-            reChooseTags.forEach(studyNoteTagDao::reChooseStudyNoteTag);
+            reChooseTags.forEach((item) -> studyNoteTagDao.reChooseStudyNoteTag(item, tagPoint));
             delTags.forEach(studyNoteTagDao::delStudyNoteTag);
         }
         return noteId;

@@ -15,9 +15,6 @@ import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleRefreshLi
 import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleScore;
 import com.iquanwai.platon.web.fragmentation.controller.bible.dto.DailyArticleDto;
 import com.iquanwai.platon.web.fragmentation.controller.bible.dto.TagDto;
-import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleRefreshListDto;
-import com.iquanwai.platon.web.fragmentation.controller.bible.dto.BibleScore;
-import com.iquanwai.platon.web.fragmentation.controller.bible.dto.DailyArticleDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -25,7 +22,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -169,16 +172,17 @@ public class BibleController {
                 .function("分数")
                 .action("获取");
         operationLogService.log(operationLog);
-        List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(loginUser.getId());
+        Date today = new Date();
+        List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(loginUser.getId(), today);
         BibleScore bibleScore = new BibleScore();
         Profile profile = accountService.getProfile(loginUser.getId());
         bibleScore.setRiseId(profile.getRiseId());
         bibleScore.setCompareGroup(compareList);
         bibleScore.setNickName(profile.getNickname());
         bibleScore.setHeadImage(profile.getHeadimgurl());
-        bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), new Date()));
+        bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), today));
         bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(loginUser.getId()));
-        bibleScore.setTotalScore(subscribeArticleService.totalScores(loginUser.getId(), new Date()));
+        bibleScore.setTotalScore(subscribeArticleService.totalScores(loginUser.getId(), today));
         return WebUtils.result(bibleScore);
     }
 
@@ -189,7 +193,7 @@ public class BibleController {
     public ResponseEntity<Map<String, Object>> loadScoreForGuest(@RequestParam(value = "riseId") String riseId, @RequestParam(value = "date") String dateStr) {
         Profile profileByRiseId = accountService.getProfileByRiseId(riseId);
         Date date = DateUtils.parseStringToDate7(dateStr);
-        List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(profileByRiseId.getId());
+        List<SubscribePointCompare> compareList = subscribeArticleService.loadSubscribeViewPointList(profileByRiseId.getId(), date);
         BibleScore bibleScore = new BibleScore();
         Profile profile = accountService.getProfile(profileByRiseId.getId());
         bibleScore.setRiseId(profile.getRiseId());

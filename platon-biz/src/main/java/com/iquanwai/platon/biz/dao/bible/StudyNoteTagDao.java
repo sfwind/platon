@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.bible;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.bible.StudyNoteTag;
+import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,9 +24,10 @@ public class StudyNoteTagDao extends PracticeDBUtil {
 
     public Integer insertStudyNoteTag(StudyNoteTag studyNoteTag) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO StudyNoteTag(StudyNoteId,ProfileId, TagId) VALUES(?,?,?)";
+        String sql = "INSERT INTO StudyNoteTag(StudyNoteId,ProfileId,Point, TagId) VALUES(?,?,?,?)";
         try {
-            return runner.insert(sql, new ScalarHandler<Long>(), studyNoteTag.getStudyNoteId(), studyNoteTag.getProfileId(), studyNoteTag.getTagId()).intValue();
+            return runner.insert(sql, new ScalarHandler<Long>(), studyNoteTag.getStudyNoteId(), studyNoteTag.getProfileId(),
+                    studyNoteTag.getPoint(), studyNoteTag.getTagId()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -64,14 +67,25 @@ public class StudyNoteTagDao extends PracticeDBUtil {
         return -1;
     }
 
-    public Integer reChooseStudyNoteTag(Integer id) {
+    public Integer reChooseStudyNoteTag(Integer id, Double point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE StudyNoteTag SET Del = 0 WHERE Id = ?";
+        String sql = "UPDATE StudyNoteTag SET Del = 0,Point = ? WHERE Id = ?";
         try {
             return runner.update(sql, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
+    }
+
+    public List<StudyNoteTag> loadCertainDayNote(Integer profileId, Date date) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM StudyNoteTag WHERE ProfileId = ? and DATE(AddTime) = ?";
+        try {
+            return runner.query(sql, new BeanListHandler<StudyNoteTag>(StudyNoteTag.class), profileId, DateUtils.parseDateToString(date));
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 }
