@@ -77,10 +77,9 @@ public class TheatreServiceImpl implements TheatreService {
         theatreScript = new TheatreScript();
         theatreScript.setPrologue("圈圈闭关两周一直没有更文，你只好每天去阅览室里翻找圈外的精华文章。\n" +
                 "这天你刚刚从圈外图书馆走出来，就发现有三个人站在图书馆门口偷偷策划着什么不为人知的大事情。");
-        theatreScript.setEndingWords("你念出了正确的咒语，霸王龙的骨架慢慢停止了前进，又恢复成了一个展览品。采铜馆长拍拍你的肩膀，指了指前面的宝箱，示意你过去拿。\n" +
-                "\n" +
+        theatreScript.setEndingWords("你念出了正确的咒语，霸王龙的骨架慢慢停止了前进，又恢复成了一个展览品。采铜馆长拍拍你的肩膀，指了指前面的宝箱，示意你过去拿。{split}" +
                 "你跑到宝箱面前，颤抖地打开了箱子，发现里面有一张纸条：只有真正的勇士才配得上我的直播，下个月我等你来——傅踢踢。\n" +
-                "\n" +
+                "----------------------\n" +
                 "你已被系统记录为【真正的勇士】，10月还将继续获邀出席踢踢馆长的情感大课，请记得关注【圈外同学】服务号收取通知。\n" +
                 "\n" +
                 "恭喜你完成了本次探险，成为真正的勇士。你回复【背包】查看你的直播兑换码和邀请券。通过你的邀请券可以邀请三位最有求知欲的朋友共赴知识盛宴，免费听本次直播哦。\n");
@@ -409,7 +408,7 @@ public class TheatreServiceImpl implements TheatreService {
         completeAction.setActivity(CURRENT_GAME);
         completeAction.setProfileId(profile.getId());
         promotionActivityDao.insertPromotionActivity(completeAction);
-        String str = "【第" + question.getAction().toString().charAt(0) + "/10关】\n\n";
+        String str = "【第" + (question.getAction() - 30) + "/10关】\n\n";
         StringBuilder message = new StringBuilder(str).append(question.getWords()).append("\n")
                 .append("请回复【数字编号】继续闯关，赢取神秘宝藏\n\n");
         List<Answer> answers = question.getAnswerList();
