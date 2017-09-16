@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,7 +80,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
     @Override
     public Integer createOrUpdateStudyNote(Integer profileId, StudyNote studyNote) {
         Integer noteId;
-        Double tagPoint = this.calculateTagPoint(studyNote);
+        Double tagPoint = new BigDecimal(this.calculateTagPoint(studyNote)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
         if (studyNote.getId() == null) {
             // 新增
             studyNote.setProfileId(profileId);
