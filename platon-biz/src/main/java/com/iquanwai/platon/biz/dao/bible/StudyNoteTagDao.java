@@ -22,9 +22,9 @@ public class StudyNoteTagDao extends PracticeDBUtil {
 
     public Integer insertStudyNoteTag(StudyNoteTag studyNoteTag) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO StudyNoteTag(StudyNoteId,ProfileId, TagId, Del) VALUES(?,?,?,?)";
+        String sql = "INSERT INTO StudyNoteTag(StudyNoteId,ProfileId, TagId) VALUES(?,?,?)";
         try {
-            return runner.insert(sql, new ScalarHandler<Long>(), studyNoteTag.getStudyNoteId(), studyNoteTag.getProfileId(), studyNoteTag.getTagId(), studyNoteTag.getDel()).intValue();
+            return runner.insert(sql, new ScalarHandler<Long>(), studyNoteTag.getStudyNoteId(), studyNoteTag.getProfileId(), studyNoteTag.getTagId()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -32,6 +32,17 @@ public class StudyNoteTagDao extends PracticeDBUtil {
     }
 
     public List<StudyNoteTag> loadArticleTagList(Integer studyNoteId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM StudyNoteTag WHERE StudyNoteId = ? and Del = 0";
+        try {
+            return runner.query(sql, new BeanListHandler<StudyNoteTag>(StudyNoteTag.class), studyNoteId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<StudyNoteTag> loadArticleExistTagList(Integer studyNoteId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM StudyNoteTag WHERE StudyNoteId = ?";
         try {
@@ -44,7 +55,7 @@ public class StudyNoteTagDao extends PracticeDBUtil {
 
     public Integer delStudyNoteTag(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE StudyNoteTag SET Del = 0 WHERE Id = ?";
+        String sql = "UPDATE StudyNoteTag SET Del = 1 WHERE Id = ?";
         try {
             return runner.update(sql, id);
         } catch (SQLException e) {
@@ -55,7 +66,7 @@ public class StudyNoteTagDao extends PracticeDBUtil {
 
     public Integer reChooseStudyNoteTag(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE StudyNoteTag SET Del = 1 WHERE Id = ?";
+        String sql = "UPDATE StudyNoteTag SET Del = 0 WHERE Id = ?";
         try {
             return runner.update(sql, id);
         } catch (SQLException e) {

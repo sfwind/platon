@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.dao.bible.SubscribeArticleTagDao;
 import com.iquanwai.platon.biz.po.bible.StudyNote;
 import com.iquanwai.platon.biz.po.bible.StudyNoteTag;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,13 @@ public class StudyNoteServiceImpl implements StudyNoteService {
     private SubscribeArticleTagDao subscribeArticleTagDao;
 
     @Override
+    public List<StudyNote> loadStudyNoteList(Integer profileId, Page page) {
+        List<StudyNote> noteList = studyNoteDao.loadNoteList(page);
+        page.setTotal(studyNoteDao.count());
+        return noteList;
+    }
+
+    @Override
     public StudyNote loadStudyNote(Integer profileId, Integer studyNoteId) {
         StudyNote studyNote = studyNoteDao.load(StudyNote.class, studyNoteId);
         List<StudyNoteTag> noteTags = studyNoteTagDao.loadArticleTagList(studyNoteId);
@@ -45,6 +53,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
         Integer noteId;
         if (studyNote.getId() == null) {
             // 新增
+            studyNote.setProfileId(profileId);
             noteId = studyNoteDao.insert(studyNote);
             List<Integer> tagIds = studyNote.getTagIds();
             if (CollectionUtils.isNotEmpty(tagIds)) {
@@ -68,7 +77,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
             // 更新内容
             studyNoteDao.update(studyNote);
             // 老标签
-            List<StudyNoteTag> existTags = studyNoteTagDao.loadArticleTagList(studyNote.getId());
+            List<StudyNoteTag> existTags = studyNoteTagDao.loadArticleExistTagList(studyNote.getId());
             // 新选的标签
             List<Integer> newTagIds = studyNote.getTagIds() != null ? studyNote.getTagIds().stream().filter(tags::contains).collect(Collectors.toList()) : Lists.newArrayList();
 

@@ -12,11 +12,13 @@ import java.util.List;
 public class StudyNote {
     private Integer id;
     private Integer profileId;
+    private String source;
+    private Integer catalogId;
     private String name;
     private Integer page;
     private String url;
     private String note;
-    private Integer Minute;
+    private Integer minute;
     private Date publishTime;
     private Date lastModifiedTime;
     private Boolean del;
