@@ -93,13 +93,13 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "很抱歉，你连博物馆的门都没进去就失败了，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】重新挑战\n" +
-                        "【{closeKey}】结束挑战\n")
+                        "【{closeKey}】结束挑战\n", 1)
                 .addAnswer(12, "能上【圈外同学】课程的手机", "守卫掏出了自己的课程手机上起了【圈外同学】小课，说：“哥们，一起来！”\n" +
                         "----------------------\n" +
                         "很抱歉，你连博物馆的门都没进去就失败了，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】重新挑战\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(13, "能打各类游戏的小霸王游戏机", null);
+                        "【{closeKey}】结束挑战\n", 2)
+                .addAnswer(13, "能打各类游戏的小霸王游戏机", null, null);
         theatreScript.addQuestion(
                 "你成功为了圈圈舍弃了你最爱的小霸王学习机，这种精神值得被鼓励，我们决定免费送你一次【圈外博物馆的直播分享】。（兑换码已经放入你的背包里了，在游戏结束时可以回复【背包】查看领取）\n\n" +
                         "现在请你继续往下走，还有两个神秘宝藏等着你。\n\n" +
@@ -111,13 +111,13 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "你听着圈圈的声音昏昏欲睡，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】摆脱圈圈的控制\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(22, "马徐骏的画像", null)
+                        "【{closeKey}】结束挑战\n", 3)
+                .addAnswer(22, "马徐骏的画像", null, null)
                 .addAnswer(23, "特朗普的画像", "特朗普睁开了眼睛，并骂了你一句：“I will build a wall between us and let you pay for it！”\n" +
                         "----------------------\n" +
                         "你高声喊道：Hail QuanQuan！，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】就可以重新挑战\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 4);
         theatreScript.addQuestion(
                 "你对着马徐骏的画像念了一段咒语：“马馆长好帅！阿哩啊哩！”画像逐渐变亮。。。\n\n" +
                         "马馆长被你成功唤醒了，作为奖励，你得到了一个价值264元的免费邀请券，能够让你的三位小伙伴免费收听本次直播分享。（邀请券已经放入你的背包里了，游戏结束时可以回复【背包】查看领取）\n\n" +
@@ -128,30 +128,30 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "你迷失在这个走廊中，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
+                        "【{closeKey}】结束挑战\n", 5)
                 .addAnswer(32, "马老师给我签个名！", "马徐骏告诉你藏有他签名照的柜子在哪里，但是你还是不知道怎么走出这个房间\n" +
                         "----------------------\n" +
                         "你迷失在这个走廊中，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(33, "马老师你有没有看到有三个可疑的人走进博物馆？", null);
+                        "【{closeKey}】结束挑战\n", 6)
+                .addAnswer(33, "马老师你有没有看到有三个可疑的人走进博物馆？", null, null);
         theatreScript.addQuestion(
                 "马徐骏馆长用眼神示意你了一个方向，并帮你打开了通往下一个房间的大门。原来大门就藏在画像背后。\n\n" +
                         "得到马徐骏馆长的指点，你推开第一扇门，发现这里竟然放着泰坦尼克号的模型。\n\n" +
                         "当你从旁边经过的时候，Jack从水里冒了出来：年轻人，想要过去，先回答我一个问题，我已经在水下思考几百年了，你知道什么是冰山模型吗？\n" +
                         "--------------------",
                 CURRENT_ACTION.Question4)
-                .addAnswer(41, "我在圈外同学小课里看到过：冰山模型全面地描述了一个人所有的内在价值要素", null)
+                .addAnswer(41, "我在圈外同学小课里看到过：冰山模型全面地描述了一个人所有的内在价值要素", null, null)
                 .addAnswer(42, "冰山模型和泰坦尼克号的模型原本是一对", "原来你也不知道啊，那你下来陪我一起想吧（你被拉入了水中）\n" +
                         "----------------------\n" +
                         "你被Jack拖入水中，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
+                        "【{closeKey}】结束挑战\n", 7)
                 .addAnswer(43, "不理他，直接往前走", "你发现越走越冷，回过神来发现自己竟然已经走到了水中。。。\n" +
                         "----------------------\n" +
                         "你被Jack拖入水中，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 8);
         theatreScript.addQuestion(
                 "“啊！原来学过圈外小课的人都知道”，Jack长叹一口气，慢慢地沉了下去。。。你继续往前走\n\n" +
                         "摆脱了Jack的你继续往前走，几分钟后发现前面有一扇长满青苔的石门。\n\n" +
@@ -162,13 +162,13 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "你失败了，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
+                        "【{closeKey}】结束挑战\n", 9)
                 .addAnswer(52, "圈外出版社", "你大声喊出：圈外出版社，门丝毫未动，无论你怎么敲打都打不开\n" +
                         "----------------------\n" +
                         "你失败了，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(53, "圈外商学院", null);
+                        "【{closeKey}】结束挑战\n", 10)
+                .addAnswer(53, "圈外商学院", null, null);
         theatreScript.addQuestion("石门上的字慢慢消退，你听到了石锁转动发出沉闷的声音。门开了，你走了进去。正当你走过石门的时候，石门缓缓地说道：我偷偷告诉你一个秘密吧，注意关注最近几天的圈外信息，圈圈院长好像在搞什么大事情。。。 \n\n" +
                         "你听了感觉非常疑惑，但是你已经没时间思考这些了。你急匆匆的跑上前去，你只在前面看到了一位穿着斗篷的男子，那个女子已经不见踪影。\n\n" +
                         "你上前询问，得知这位男子就是采铜。这时，那男子问你：“你知道我的江湖名号吗？”\n" +
@@ -178,13 +178,13 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "没办法，谁叫你说错话了呢？回复\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(62, "知乎心理大v，畅销书《精进》作者", null)
+                        "【{closeKey}】结束挑战\n", 11)
+                .addAnswer(62, "知乎心理大v，畅销书《精进》作者", null, null)
                 .addAnswer(63, "音乐大神，刚在网易云音乐发布了新的音乐专辑", "小伙子，很有想法嘛，和我学Freestyle吧。\n" +
                         "----------------------\n" +
                         "于是，你和采铜老师在Freestyle的路上越走越远，回复\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 12);
         theatreScript.addQuestion(
                 "这位神秘男子向你走来，嘴角露出了神秘的微笑\n\n" +
                         "你好不容易答对前一个问题，那个叫采铜的男子又问了你一个问题：“你知道为什么我们叫圈外博物馆吗？”你该怎么回答？\n" +
@@ -194,29 +194,29 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "别说了，回复\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(72, "你们希望通过12次大咖分享直播提升职场人的学习能力和视野", null)
+                        "【{closeKey}】结束挑战\n", 13)
+                .addAnswer(72, "你们希望通过12次大咖分享直播提升职场人的学习能力和视野", null, null)
                 .addAnswer(73, "因为博物馆一听就很有文化", "采铜馆长对这个回答并不满意，长叹一声消失在走廊的尽头\n" +
                         "----------------------\n" +
                         "别说了，回复\n\n" +
                         "【{replayKey}】再次挑战\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 14);
         theatreScript.addQuestion(
                 "嗯，看来你准备的很充分啊，跟我走吧，采铜向你挥挥手。\n\n" +
                         "你这才知道采铜就是圈外博物馆的特邀馆长。采铜馆长一边走一遍和你说关于这次圈圈搞得大事情。\n\n" +
                         "突然这个时候，在阴暗角落冲出了一只怒吼中的霸王龙，在强大的恐龙面前，你的战斗力太弱了，这时你想：\n" +
                         "--------------------",
                 CURRENT_ACTION.Question8)
-                .addAnswer(81, "果然不上圈外同学小课，战斗力跟不上啊", null)
+                .addAnswer(81, "果然不上圈外同学小课，战斗力跟不上啊", null, null)
                 .addAnswer(82, "你后退一步，把采铜馆长推了出去", "霸王龙就像没看到采铜馆长一般，直向你奔来，一尾巴把你甩飞到墙上，抠都抠不下来\n" +
                         "----------------------\n" +
                         "回复\n\n" +
                         "【{replayKey}】可以召唤蓝翔挖掘机把你从墙上挖下来\n" +
-                        "【{closeKey}】结束挑战\n")
+                        "【{closeKey}】结束挑战\n", 15)
                 .addAnswer(83, "你转头撒腿就跑，留给采铜馆长一个潇洒的背影", "你永远失去了得到珍宝的机会！\n" +
                         "----------------------\n" +
                         "【{replayKey}】重新挑战\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 16);
         theatreScript.addQuestion("你意识到了自己因为没上圈外同学小课而战斗力不足，懊恼不已。\n\n" +
                         "采铜馆长好像看穿了你的想法并用意念对你说：“去那边3本书里挑一本我编写的秘法宝典，这个可以大幅度增加你的战斗力。”\n\n" +
                         "你听完以后火速地跑过去，选出了这本书：\n" +
@@ -226,26 +226,26 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "回复\n\n" +
                         "【{replayKey}】原地复活\n" +
-                        "【{closeKey}】结束挑战\n")
-                .addAnswer(92, "《精进：如何成为一个厉害的人》", null)
+                        "【{closeKey}】结束挑战\n", 17)
+                .addAnswer(92, "《精进：如何成为一个厉害的人》", null, null)
                 .addAnswer(93, "《毛泽东思想和中国特色社会主义理论体系概论》", "这个时候拿到了这本书，你的心里仿佛有几百万只草泥马呼啸而过。。\n" +
                         "----------------------\n" +
                         "你被自己心里的草泥马踩死了。。回复 \n\n" +
                         "【{replayKey}】原地复活\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 18);
         theatreScript.addQuestion("拿起书的一瞬间，封面上的乌鸦通体发亮，吓得霸王龙倒退了几步。你知道自己选对了！\n\n" +
                         "你翻开书，发现里面一共有三条咒语，你选对了以后真的战斗力提升了一大截。\n" +
                         "--------------------",
                 CURRENT_ACTION.Question10)
-                .addAnswer(101, "用持续精确的努力，撬动更大的可能，这便是精进", null)
+                .addAnswer(101, "用持续精确的努力，撬动更大的可能，这便是精进", null, null)
                 .addAnswer(102, "稳住，我们能赢！", "你找错了咒语，你被霸王龙一脚踢出了博物馆，你口中大喊：我还会回来的。。\n" +
                         "----------------------\n" +
                         "【{replayKey}】原地复活\n" +
-                        "【{closeKey}】结束挑战\n")
+                        "【{closeKey}】结束挑战\n", 19)
                 .addAnswer(103, "发现本质问题，减少无效努力", "这个咒语看上去很正确，但是只对霸王龙造成了一点伤害，你被霸王龙一口吃了下去。\n" +
                         "----------------------\n" +
                         "【{replayKey}】原地复活\n" +
-                        "【{closeKey}】结束挑战\n");
+                        "【{closeKey}】结束挑战\n", 20);
         theatreScript.initReplayKey();
 
     }
@@ -307,6 +307,7 @@ public class TheatreServiceImpl implements TheatreService {
 
         PromotionActivity activity = promotionActivityDao.loadLastPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
         if (activity == null) {
+            logger.error("用户:{} 还未开始答题");
             return null;
         }
 
@@ -361,7 +362,7 @@ public class TheatreServiceImpl implements TheatreService {
             completeAction.setActivity(CURRENT_GAME);
             completeAction.setProfileId(profile.getId());
             promotionActivityDao.insertPromotionActivity(completeAction);
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), answer.getDeadWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            customerMessageService.sendCustomerMessage(profile.getOpenid(), "【Bad Ending " + answer.getBadEndingSequence() + "】\n\n" + answer.getDeadWords(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             // go live 回答正确
             if (theatreScript.isLastQuestion(question)) {
@@ -419,7 +420,7 @@ public class TheatreServiceImpl implements TheatreService {
         promotionActivityDao.insertPromotionActivity(completeAction);
         String str = "【第" + (question.getAction() - 30) + "/10关】\n\n";
         StringBuilder message = new StringBuilder(str).append(question.getWords()).append("\n")
-                .append("请回复【数字编号】继续闯关，赢取神秘宝藏\n\n");
+                .append("请回复【数字编号】继续闯关，赢取神秘宝藏\n");
         List<Answer> answers = question.getAnswerList();
         answers.forEach(answer -> {
             message.append("\n")
@@ -503,7 +504,7 @@ public class TheatreServiceImpl implements TheatreService {
             if (question != null && isDead) {
                 this.sendGameOverToUser(profile, question, message);
             } else {
-                logger.error("没有结束，但是输入了【00】");
+                logger.error("用户：{},没有结束，但是输入了【00/结束 】", profile.getId());
             }
         } else {
             if (StringUtils.isNumeric(message)) {
@@ -792,13 +793,14 @@ class Question {
      * @param words     文本
      * @param deadWords 遗言
      */
-    Question addAnswer(Integer key, String words, String deadWords) {
+    Question addAnswer(Integer key, String words, String deadWords, Integer sequence) {
         Answer answer = new Answer();
         answer.setKey(key);
         answer.setWords(words);
         answer.setBadEnding(deadWords != null);
         this.answerList.add(answer);
         answer.setDeadWords(deadWords);
+        answer.setBadEndingSequence(sequence);
         return this;
     }
 
@@ -822,4 +824,5 @@ class Answer {
     private String words; // 内容
     private Boolean badEnding; // 是否badEnding
     private String deadWords; // 遗言,badEnding触发的回复
+    private Integer badEndingSequence;
 }
