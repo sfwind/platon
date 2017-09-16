@@ -71,7 +71,7 @@ public class StudyNoteTagDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE StudyNoteTag SET Del = 0,Point = ? WHERE Id = ?";
         try {
-            return runner.update(sql, id);
+            return runner.update(sql, point, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -88,4 +88,16 @@ public class StudyNoteTagDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public Integer updateNotePoint(Integer noteId, Double point) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE StudyNoteTag Point = ? WHERE StudyNoteId = ?";
+        try {
+            return runner.update(sql, point, noteId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
 }

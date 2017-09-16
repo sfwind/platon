@@ -144,6 +144,8 @@ public class StudyNoteServiceImpl implements StudyNoteService {
             insertTags.forEach(studyNoteTagDao::insertStudyNoteTag);
             reChooseTags.forEach((item) -> studyNoteTagDao.reChooseStudyNoteTag(item, tagPoint));
             delTags.forEach(studyNoteTagDao::delStudyNoteTag);
+            // 加分
+            studyNoteTagDao.updateNotePoint(noteId, tagPoint);
         }
         return noteId;
     }
