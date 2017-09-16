@@ -34,7 +34,7 @@ public class StudyNoteServiceImpl implements StudyNoteService {
     @Override
     public List<StudyNote> loadStudyNoteList(Integer profileId, Page page) {
         List<StudyNote> noteList = studyNoteDao.loadNoteList(profileId, page);
-        page.setTotal(studyNoteDao.count());
+        page.setTotal(studyNoteDao.count(profileId));
         return noteList;
     }
 

@@ -62,12 +62,12 @@ public class StudyNoteDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public int count() {
+    public int count(Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<Long>();
 
         try {
-            return run.query("SELECT count(*) FROM StudyNote where Del = 0", h).intValue();
+            return run.query("SELECT count(*) FROM StudyNote where Del = 0 and ProfileId = ?", h, profileId).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
