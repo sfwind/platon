@@ -306,7 +306,7 @@ public class TheatreServiceImpl implements TheatreService {
         }
 
         PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GoDie);
-        Boolean isDead = deadAction != null && deadAction.getAddTime().after(activity.getAddTime());
+        Boolean isDead = deadAction != null && deadAction.getAddTime().getTime() >= activity.getAddTime().getTime();
         Question question = theatreScript.searchQuestionByAction(activity.getAction());
         return new MutablePair<>(isDead, question);
     }
@@ -485,7 +485,7 @@ public class TheatreServiceImpl implements TheatreService {
         // 玩过的最后一题
         Question question = questionPair != null ? questionPair.getRight() : null;
         // 是否game over
-        Boolean isDead = questionPair != null ? questionPair.getLeft() : null;
+        Boolean isDead = questionPair != null ? questionPair.getLeft() : false;
 
         if (message.equals(BACKPACK)) {
             // 处理背包逻辑
