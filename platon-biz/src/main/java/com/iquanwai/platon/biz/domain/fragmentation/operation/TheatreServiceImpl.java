@@ -396,6 +396,7 @@ public class TheatreServiceImpl implements TheatreService {
         }
     }
 
+
     /**
      * 向用户发送题目
      *
@@ -408,14 +409,14 @@ public class TheatreServiceImpl implements TheatreService {
         completeAction.setActivity(CURRENT_GAME);
         completeAction.setProfileId(profile.getId());
         promotionActivityDao.insertPromotionActivity(completeAction);
-        StringBuilder message = new StringBuilder(question.getWords()).append("\n");
+        String str = "【第" + question.getAction().toString().charAt(0) + "/10关】\n\n";
+        StringBuilder message = new StringBuilder(str).append(question.getWords()).append("\n")
+                .append("请回复【数字编号】继续闯关，赢取神秘宝藏\n\n");
         List<Answer> answers = question.getAnswerList();
         answers.forEach(answer -> {
             message.append("\n")
-                    .append(answer.getKey()).append(" : ").append(answer.getWords());
+                    .append("【").append(answer.getKey()).append("】").append(" ").append(answer.getWords());
         });
-        message.append("\n\n")
-                .append("请回复题目编号进行闯关\n");
 
         if (question.getAction().equals(CURRENT_ACTION.Question1)) {
             // 第一题先推送开场白
