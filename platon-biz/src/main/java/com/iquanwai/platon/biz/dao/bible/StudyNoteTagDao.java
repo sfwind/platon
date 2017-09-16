@@ -80,7 +80,7 @@ public class StudyNoteTagDao extends PracticeDBUtil {
 
     public List<StudyNoteTag> loadCertainDayNote(Integer profileId, Date date) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM StudyNoteTag WHERE ProfileId = ? and DEL = 0 and DATE(AddTime) = ?";
+        String sql = "SELECT * FROM StudyNoteTag WHERE ProfileId = ? and Del = 0 and DATE(AddTime) = ?";
         try {
             return runner.query(sql, new BeanListHandler<StudyNoteTag>(StudyNoteTag.class), profileId, DateUtils.parseDateToString(date));
         } catch (SQLException e) {
