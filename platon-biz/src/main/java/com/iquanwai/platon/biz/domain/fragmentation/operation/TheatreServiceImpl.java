@@ -75,7 +75,7 @@ public class TheatreServiceImpl implements TheatreService {
     @PostConstruct
     public void initScript() {
         theatreScript = new TheatreScript();
-        theatreScript.setPrologue("圈圈闭关两周一直没有更文，你只好每天去阅览室里翻找圈外的精华文章。\n" +
+        theatreScript.setPrologue("圈圈闭关两周一直没有更文，你只好每天去阅览室里翻找圈外的精华文章。\n\n" +
                 "这天你刚刚从圈外图书馆走出来，就发现有三个人站在图书馆门口偷偷策划着什么不为人知的大事情。");
         theatreScript.setEndingWords("你念出了正确的咒语，霸王龙的骨架慢慢停止了前进，又恢复成了一个展览品。采铜馆长拍拍你的肩膀，指了指前面的宝箱，示意你过去拿。{split}" +
                 "你跑到宝箱面前，颤抖地打开了箱子，发现里面有一张纸条：只有真正的勇士才配得上我的直播，下个月我等你来——傅踢踢。\n" +
@@ -140,7 +140,7 @@ public class TheatreServiceImpl implements TheatreService {
         theatreScript.addQuestion(
                 "马徐骏馆长用眼神示意你了一个方向，并帮你打开了通往下一个房间的大门。原来大门就藏在画像背后。\n\n" +
                         "得到马徐骏馆长的指点，你推开第一扇门，发现这里竟然放着泰坦尼克号的模型。\n\n" +
-                        "当你从旁边经过的时候，Jack从水里冒了出来：年轻人，想要过去，先回答我一个问题，我已经在水下思考几百年了，你知道什么是冰山模型吗？\n" +
+                        "当你从旁边经过的时候，Jack从水里冒了出来：年轻人，想要过去，先回答我一个问题，我已经在水下思考几百年了，你知道什么是\"冰山模型\"吗？\n" +
                         "--------------------",
                 CURRENT_ACTION.Question4)
                 .addAnswer(41, "我在圈外同学小课里看到过：冰山模型全面地描述了一个人所有的内在价值要素", null, null)
@@ -188,8 +188,8 @@ public class TheatreServiceImpl implements TheatreService {
                         "【{replayKey}】再次挑战\n" +
                         "【{closeKey}】结束挑战\n", 12);
         theatreScript.addQuestion(
-                "这位神秘男子向你走来，嘴角露出了神秘的微笑\n\n" +
-                        "你好不容易答对前一个问题，那个叫采铜的男子又问了你一个问题：“你知道为什么我们叫圈外博物馆吗？”你该怎么回答？\n" +
+                "这位神秘男子向你走来，嘴角露出了神秘的微笑：D\n\n" +
+                        "你好不容易答对前一个问题，那个叫采铜的男子又问了你一个问题：“你知道为什么我们叫圈外博物馆吗？”你该怎么回答？：D      \n" +
                         "--------------------",
                 CURRENT_ACTION.Question7)
                 .addAnswer(71, "你们收藏了很多历史文物", "采铜馆长对这个回答并不满意，长叹一声消失在走廊的尽头\n" +
@@ -229,7 +229,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "回复\n\n" +
                         "【{replayKey}】原地复活\n" +
                         "【{closeKey}】结束挑战\n", 17)
-                .addAnswer(92, "《精进：如何成为一个厉害的人》", null, null)
+                .addAnswer(92, "《精进:如何成为一个很厉害的人》", null, null)
                 .addAnswer(93, "《毛泽东思想和中国特色社会主义理论体系概论》", "这个时候拿到了这本书，你的心里仿佛有几百万只草泥马呼啸而过。。\n" +
                         "----------------------\n" +
                         "你被自己心里的草泥马踩死了。。回复 \n\n" +
@@ -239,7 +239,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "你翻开书，发现里面一共有三条咒语，你选对了以后真的战斗力提升了一大截。\n" +
                         "--------------------",
                 CURRENT_ACTION.Question10)
-                .addAnswer(101, "用持续精确的努力，撬动更大的可能，这便是精进", null, null)
+                .addAnswer(101, "用持续精确的努力，撬动更大的可能，这便是精进！", null, null)
                 .addAnswer(102, "稳住，我们能赢！", "你找错了咒语，你被霸王龙一脚踢出了博物馆，你口中大喊：我还会回来的。。\n" +
                         "----------------------\n" +
                         "【{replayKey}】原地复活\n" +
