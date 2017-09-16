@@ -51,11 +51,11 @@ public class StudyNoteDao extends PracticeDBUtil {
         return -1;
     }
 
-    public List<StudyNote> loadNoteList(Page page) {
+    public List<StudyNote> loadNoteList(Integer profileId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM StudyNote WHERE Del = 0 limit " + page.getOffset() + "," + page.getLimit();
+        String sql = "SELECT * FROM StudyNote WHERE Del = 0 and ProfileId = ? limit " + page.getOffset() + "," + page.getLimit();
         try {
-            return runner.query(sql, new BeanListHandler<>(StudyNote.class));
+            return runner.query(sql, new BeanListHandler<>(StudyNote.class), profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
