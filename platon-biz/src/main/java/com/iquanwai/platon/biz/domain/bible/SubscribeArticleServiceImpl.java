@@ -299,7 +299,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
             compare.setTagId(tagId);
             compare.setToday(DateUtils.parseDateToString(today));
             compare.setTagName(tag.getName());
-            compare.setTodayPoint(todayPointNumber);
+            compare.setTodayPoint(new BigDecimal(todayPointNumber).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             compare.setYesterdayPoint(yesterdayPointNumber);
             compare.setTotalPoint(totalPoint);
             compareList.add(compare);
