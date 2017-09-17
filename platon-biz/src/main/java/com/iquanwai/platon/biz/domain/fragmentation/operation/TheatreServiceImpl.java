@@ -266,9 +266,9 @@ public class TheatreServiceImpl implements TheatreService {
             customerMessageService.sendCustomerMessage(profile.getOpenid(), "您回复了背包,不过暂时还没有兑换码", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             // 查看做的题目
+            this.sendCodeToUser(profile, liveRedeemCode);
             Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
             Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-            this.sendCodeToUser(profile, liveRedeemCode);
             if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
                 // 做到第四题才会有邀请券,发海报
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
@@ -462,6 +462,14 @@ public class TheatreServiceImpl implements TheatreService {
 
                 } else {
                     this.sendCodeToUser(profile, liveRedeemCode);
+                    Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
+                    Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
+                    if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
+                        // 做到第四题才会有邀请券,发海报
+                        customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                        String mediaId = generateSharePage(profile);
+                        customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+                    }
                 }
             }
         } else {
