@@ -269,7 +269,7 @@ public class TheatreServiceImpl implements TheatreService {
             this.sendCodeToUser(profile, liveRedeemCode);
             Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
             Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-            if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
+            if (maxPlayQuestion != null && maxPlayQuestion.getAction() >= CURRENT_ACTION.Question3) {
                 // 做到第四题才会有邀请券,发海报
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 String mediaId = generateSharePage(profile);
@@ -464,7 +464,7 @@ public class TheatreServiceImpl implements TheatreService {
                     this.sendCodeToUser(profile, liveRedeemCode);
                     Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
                     Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-                    if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
+                    if (maxPlayQuestion != null && maxPlayQuestion.getAction() >= CURRENT_ACTION.Question3) {
                         // 做到第四题才会有邀请券,发海报
                         customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         String mediaId = generateSharePage(profile);
