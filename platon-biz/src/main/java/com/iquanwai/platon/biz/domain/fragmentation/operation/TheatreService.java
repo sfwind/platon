@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WechatMessage;
 
@@ -26,4 +27,6 @@ public interface TheatreService {
      * @param profile 用户
      */
     void startGame(Profile profile);
+
+    void sendCodeToUser(Profile profile, LiveRedeemCode liveRedeemCode);
 }

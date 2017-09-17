@@ -90,11 +90,7 @@ public class CaitongLiveReceiver {
                                     //TODO 兑换码耗尽
                                     logger.error("兑换码耗尽");
                                 } else {
-                                    String message1 = "你好啊，勇士的朋友，你可以免费得到一枚直播兑换码\n" +
-                                            "兑换码：" + liveRedeemCode.getCode() + "\n" +
-                                            "直播地址：" + TheatreServiceImpl.Live_URL + "\n" +
-                                            "兑换码使用说明：" + TheatreServiceImpl.CODE_DESCRIBE_URL + "\n";
-                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), message1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                                    theatreService.sendCodeToUser(profile, liveRedeemCode);
                                     customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                                 }
                             } else {

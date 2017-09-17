@@ -43,6 +43,8 @@ public class TheatreServiceImpl implements TheatreService {
 
     public static final String Live_URL = "<a href='http://study.163.com/course/introduction.htm?courseId=1004290001'>直播地址</a>";
     public static final String CODE_DESCRIBE_URL = "<a href='https://shimo.im/doc/lOBVOFcT2z40qI3Q?r=NPGKQE/'>石墨文档</a>";
+    public static final String CODE_CHANGE_URL = "<a href='http://m.study.163.com/myCoupon'>兑换地址</a>";
+
 
     public interface CURRENT_ACTION extends PromotionConstants.CaitongLiveAction {
     }
@@ -266,11 +268,7 @@ public class TheatreServiceImpl implements TheatreService {
             // 查看做的题目
             Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
             Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-            String message = "下方是你的兑换码，可以在网易云课堂观看采铜馆长的直播\n\n" +
-                    "兑换码：" + liveRedeemCode.getCode() + "\n" +
-                    "直播地址：" + Live_URL + "\n" +
-                    "兑换说明：" + CODE_DESCRIBE_URL;
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            this.sendCodeToUser(profile, liveRedeemCode);
             if (maxPlayQuestion != null && maxPlayQuestion.getAction() > CURRENT_ACTION.Question3) {
                 // 做到第四题才会有邀请券,发海报
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
@@ -456,18 +454,15 @@ public class TheatreServiceImpl implements TheatreService {
                 promotionActivityDao.insertPromotionActivity(closeAction);
                 // 查询兑换码
                 LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadLiveRedeemCode(CURRENT_GAME, profile.getId());
-                StringBuilder stringBuilder = new StringBuilder();
                 if (liveRedeemCode == null) {
                     logger.info("用户未获得兑换码就结束游戏:{}", profile.getId());
-                    stringBuilder.append("你已经挑战过了圈外博物馆啦，但很可惜你失败了。\n")
-                            .append("快点学一些圈外小课提升自己的战斗力吧！");
+                    String stringBuilder = "你已经挑战过了圈外博物馆啦，但很可惜你失败了。\n" +
+                            "快点学一些圈外小课提升自己的战斗力吧！";
+                    customerMessageService.sendCustomerMessage(profile.getOpenid(), stringBuilder, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+
                 } else {
-                    stringBuilder.append("你已经挑战过圈外博物馆啦，采铜馆长在9月21日晚8点半等着你哦。\n")
-                            .append("你的兑换码：").append(liveRedeemCode.getCode()).append("\n")
-                            .append("直播地址：").append(Live_URL).append("\n")
-                            .append("兑换码使用说明：").append(CODE_DESCRIBE_URL).append("\n");
+                    this.sendCodeToUser(profile, liveRedeemCode);
                 }
-                customerMessageService.sendCustomerMessage(profile.getOpenid(), stringBuilder.toString(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
         } else {
             // 插入询问
@@ -582,11 +577,7 @@ public class TheatreServiceImpl implements TheatreService {
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             } else {
                 // 获得过直播券
-                String message = "你已经挑战过圈外博物馆啦，采铜馆长在9月21日晚8点半等着你哦。\n" +
-                        "你的兑换码：" + liveRedeemCode.getCode() + "\n" +
-                        "直播地址：" + Live_URL + "\n" +
-                        "兑换码使用说明：" + CODE_DESCRIBE_URL + "\n";
-                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                this.sendCodeToUser(profile, liveRedeemCode);
             }
         } else {
             // 由mq发起，那里会插入level，所以不检查了
@@ -617,6 +608,21 @@ public class TheatreServiceImpl implements TheatreService {
         BufferedImage bufferedImage = cardRepository.loadCaitongHead();
         String mediaId = uploadResourceService.uploadResource(bufferedImage);
         customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+    }
+
+
+    @Override
+    public void sendCodeToUser(Profile profile, LiveRedeemCode liveRedeemCode) {
+        String message1 = "下方是你的兑换码，可以免费兑换，报名参加采铜馆长的直播课（售价88元）\n\n" +
+                "↓兑换码↓（长按复制）";
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), message1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        String message2 = "【直播兑换码使用说明】\n\n" +
+                "直播时间：9月21日20：30\n" +
+                "直播价格：88元（使用兑换码免费）\n" +
+                "兑换地址：" + CODE_CHANGE_URL + "\n" +
+                "兑换说明：" + CODE_DESCRIBE_URL;
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), message2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
 
