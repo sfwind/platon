@@ -106,4 +106,7 @@ public interface Constants {
     }
 
     int DISCUSS_PAGE_SIZE = 100;
+
+    String TEMP_IMAGE_PATH = "/data/static/images/";
+
 }
