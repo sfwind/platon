@@ -205,7 +205,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "【{closeKey}】结束挑战\n", 14);
         theatreScript.addQuestion(
                 "嗯，看来你准备的很充分啊，跟我走吧，采铜向你挥挥手。\n\n" +
-                        "你这才知道采铜就是圈外博物馆的特邀馆长。采铜馆长一边走一遍和你说关于这次圈圈搞得大事情。\n\n" +
+                        "你这才知道采铜就是圈外博物馆的特邀馆长。采铜馆长一边走一边和你说关于这次圈圈搞得大事情。\n\n" +
                         "突然这个时候，在阴暗角落冲出了一只怒吼中的霸王龙，在强大的恐龙面前，你的战斗力太弱了，这时你想：\n" +
                         "--------------------",
                 CURRENT_ACTION.Question8)
@@ -336,7 +336,7 @@ public class TheatreServiceImpl implements TheatreService {
         // 输入的应该是Question
         Question wannaQuestion = theatreScript.searchQuestionByKey(key);
         if (wannaQuestion == null) {
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), "输入的不是想要重做的题目序号", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            customerMessageService.sendCustomerMessage(profile.getOpenid(), "你输入编号和你正在做的题目不对应哦", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             if (lastQuestion.getAction() >= wannaQuestion.getAction()) {
                 // 之前做的题目比这个靠后，可以重做,推送题目
