@@ -336,7 +336,7 @@ public class TheatreServiceImpl implements TheatreService {
         // 输入的应该是Question
         Question wannaQuestion = theatreScript.searchQuestionByKey(key);
         if (wannaQuestion == null) {
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), "你输入编号和你正在做的题目不对应哦", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            customerMessageService.sendCustomerMessage(profile.getOpenid(), "你输入的编号和你正在做的题目不对应哦", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
             if (lastQuestion.getAction() >= wannaQuestion.getAction()) {
                 // 之前做的题目比这个靠后，可以重做,推送题目
