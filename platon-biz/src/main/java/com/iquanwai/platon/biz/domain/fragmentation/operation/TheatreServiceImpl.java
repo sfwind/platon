@@ -372,12 +372,6 @@ public class TheatreServiceImpl implements TheatreService {
                 completeAction.setActivity(CURRENT_GAME);
                 completeAction.setProfileId(profile.getId());
                 promotionActivityDao.insertPromotionActivity(completeAction);
-                // 结束游戏
-                PromotionActivity closeAction = new PromotionActivity();
-                completeAction.setAction(CURRENT_ACTION.CloseGame);
-                completeAction.setActivity(CURRENT_GAME);
-                completeAction.setProfileId(profile.getId());
-                promotionActivityDao.insertPromotionActivity(closeAction);
                 // 送出礼物，延后到发背包的时候
                 String[] split = theatreScript.getEndingWords().split("\\{split\\}");
                 for (String str : split) {
