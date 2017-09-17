@@ -62,6 +62,11 @@ public class IndexController {
         logger.info("---------loadCertainDateArticles es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
     }
 
+    @RequestMapping(value = "/heartbeat",method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> heartbeat() throws Exception{
+        return WebUtils.success();
+    }
+
     @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
 //        String accessToken = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);

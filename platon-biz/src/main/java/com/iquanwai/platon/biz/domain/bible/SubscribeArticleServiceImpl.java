@@ -336,16 +336,9 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
 
     private List<SubscribeArticle> filterArticle(List<SubscribeArticle> subscribeArticles, Integer profileId) {
         List<SubscribeArticle> subscribeArticleList = Lists.newArrayList();
-        Map<Date, List<SubscribeArticle>> dateSubscribeArticleMap = Maps.newHashMap();
 
-        subscribeArticles.forEach(
-                subscribeArticle -> {
-                    List<SubscribeArticle> list = dateSubscribeArticleMap.getOrDefault(subscribeArticle.getUpTime(),
-                            Lists.newArrayList());
-                    list.add(subscribeArticle);
-                    dateSubscribeArticleMap.put(subscribeArticle.getUpTime(), list);
-                }
-        );
+        Map<Date, List<SubscribeArticle>> dateSubscribeArticleMap = subscribeArticles.stream()
+                .collect(Collectors.groupingBy(SubscribeArticle::getUpTime));
 
         dateSubscribeArticleMap.entrySet().forEach(entry -> {
             //根据命中的tag数量,取前5篇文章

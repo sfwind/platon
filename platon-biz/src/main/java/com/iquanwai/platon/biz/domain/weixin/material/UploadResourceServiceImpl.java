@@ -1,6 +1,8 @@
 package com.iquanwai.platon.biz.domain.weixin.material;
 
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.slf4j.Logger;
@@ -20,6 +22,14 @@ public class UploadResourceServiceImpl implements UploadResourceService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private RestfulHelper restfulHelper;
+
+
+    @Override
+    public String uploadResource(BufferedImage bufferedImage) {
+        //生成临时图片
+        String path = Constants.TEMP_IMAGE_PATH + CommonUtils.randomString(10) + ".jpg";
+        return this.uploadResource(bufferedImage, path);
+    }
 
     @Override
     public String uploadResource(BufferedImage bufferedImage, String path) {

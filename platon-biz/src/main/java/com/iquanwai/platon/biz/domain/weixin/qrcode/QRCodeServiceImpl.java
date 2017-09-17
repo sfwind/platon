@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import sun.misc.BASE64Encoder;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
@@ -32,6 +33,14 @@ public class QRCodeServiceImpl implements QRCodeService {
         QRTemporaryRequest qrRequest = new QRTemporaryRequest(scene, expire_seconds);
         String json = new Gson().toJson(qrRequest);
         return generate(json);
+    }
+
+    @Override
+    public BufferedImage loadQrImage(String scene) {
+        // 绘图数据
+        QRResponse response = generateTemporaryQRCode(scene, null);
+        InputStream inputStream = showQRCode(response.getTicket());
+        return ImageUtils.getBufferedImageByInputStream(inputStream);
     }
 
     @Override
