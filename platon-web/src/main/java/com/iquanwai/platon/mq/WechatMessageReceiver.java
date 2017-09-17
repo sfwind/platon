@@ -20,6 +20,8 @@ public class WechatMessageReceiver {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String WECHAT_MESSAGE_TOPIC = "wechat_message_reply";
+    private static final String QUEUE = "caitong_game_queue";
+
 
     @Autowired
     private TheatreService theatreService;
@@ -29,7 +31,7 @@ public class WechatMessageReceiver {
 
     @PostConstruct
     public void init() {
-        rabbitMQFactory.initReceiver(null, WECHAT_MESSAGE_TOPIC, (messageQueue) -> {
+        rabbitMQFactory.initReceiver(QUEUE, WECHAT_MESSAGE_TOPIC, (messageQueue) -> {
             WechatMessage wechatMessage = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), WechatMessage.class);
             logger.info("receive message :{}", wechatMessage);
             // 扫过二维码，并且没有结束游戏
