@@ -189,7 +189,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "【{closeKey}】结束挑战\n", 12);
         theatreScript.addQuestion(
                 "这位神秘男子向你走来，嘴角露出了神秘的微笑：D\n\n" +
-                        "你好不容易答对前一个问题，那个叫采铜的男子又问了你一个问题：“你知道为什么我们叫圈外博物馆吗？”你该怎么回答？：D      \n" +
+                        "你好不容易答对前一个问题，那个叫采铜的男子又问了你一个问题：“你知道为什么我们叫圈外博物馆吗？”你该怎么回答？     \n" +
                         "--------------------",
                 CURRENT_ACTION.Question7)
                 .addAnswer(71, "你们收藏了很多历史文物", "采铜馆长对这个回答并不满意，长叹一声消失在走廊的尽头\n" +
