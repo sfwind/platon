@@ -16,6 +16,7 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.bible.ArticleFavor;
 import com.iquanwai.platon.biz.po.bible.RelevantTag;
+import com.iquanwai.platon.biz.po.bible.StudyNoteTag;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticleView;
@@ -29,6 +30,8 @@ import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -329,9 +332,15 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public String totalScores(Integer profileId, Date date) {
-        Double score = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
-        return new BigDecimal(score).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+    public Pair<String, String> totalScores(Integer profileId, Date date) {
+        // 阅读文章加分
+        Double readScore = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
+        //  学习笔记加分
+        Double noteScore = studyNoteTagDao.loadCertainDayNote(profileId, date).stream().mapToDouble(StudyNoteTag::getPoint).sum();
+        Double score = new BigDecimal(readScore + noteScore).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        String readTime = new BigDecimal(score / 0.125).setScale(2, BigDecimal.ROUND_HALF_UP).intValue() + "";
+        String totalScore = score.toString();
+        return new MutablePair<String, String>(readTime, totalScore);
     }
 
     private List<SubscribeArticle> filterArticle(List<SubscribeArticle> subscribeArticles, Integer profileId) {

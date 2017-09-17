@@ -17,6 +17,7 @@ import com.iquanwai.platon.web.fragmentation.controller.bible.dto.DailyArticleDt
 import com.iquanwai.platon.web.fragmentation.controller.bible.dto.TagDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,7 +183,9 @@ public class BibleController {
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(loginUser.getId(), today));
         bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(loginUser.getId()));
-        bibleScore.setTotalScore(subscribeArticleService.totalScores(loginUser.getId(), today));
+        Pair<String, String> score = subscribeArticleService.totalScores(loginUser.getId(), today);
+        bibleScore.setTotalScore(score.getRight());
+        bibleScore.setReadTime(score.getLeft());
         return WebUtils.result(bibleScore);
     }
 
@@ -202,7 +205,9 @@ public class BibleController {
         bibleScore.setHeadImage(profile.getHeadimgurl());
         bibleScore.setTotalWords(subscribeArticleService.loadCertainDayReadWords(profileByRiseId.getId(), date));
         bibleScore.setQrCode(subscribeArticleService.loadUserQrCode(profileByRiseId.getId()));
-        bibleScore.setTotalScore(subscribeArticleService.totalScores(profileByRiseId.getId(), date));
+        Pair<String, String> score = subscribeArticleService.totalScores(profileByRiseId.getId(), date);
+        bibleScore.setTotalScore(score.getRight());
+        bibleScore.setReadTime(score.getLeft());
         return WebUtils.result(bibleScore);
     }
 

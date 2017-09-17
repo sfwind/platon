@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.bible;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Date;
 import java.util.List;
@@ -87,5 +88,5 @@ public interface SubscribeArticleService {
 
     String loadUserQrCode(Integer profileId);
 
-    String totalScores(Integer profileId, Date date);
+    Pair<String,String> totalScores(Integer profileId, Date date);
 }

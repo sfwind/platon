@@ -17,4 +17,5 @@ public class BibleScore {
     private String nickName;
     private String headImage;
     private String totalScore;
+    private String readTime;
 }
