@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 /**
  * Created by nethunder on 2017/8/31.
@@ -82,21 +81,21 @@ public class CaitongLiveReceiver {
                         } else {
                             PromotionLevel promoterLevel = promotionLevelDao.loadByProfileId(promoterId, PromotionConstants.Activities.CaitongLive);
                             level = promoterLevel.getLevel() + 1;
-                            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, TheatreServiceImpl.CURRENT_GAME);
-                            if (promotionLevels.size() < 3) {
-                                // 可以送
-                                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
-                                if (liveRedeemCode == null) {
-                                    //TODO 兑换码耗尽
-                                    logger.error("兑换码耗尽");
-                                } else {
-                                    theatreService.sendCodeToUser(profile, liveRedeemCode);
-                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                                }
-                            } else {
-                                String message = "很抱歉，你朋友的奖励已经被大家抢光了。但是你可以选择回复【48】自己当勇士找到神秘宝藏。";
-                                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                            }
+//                            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, TheatreServiceImpl.CURRENT_GAME);
+//                            if (promotionLevels.size() < 3) {
+//                                // 可以送
+//                                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
+//                                if (liveRedeemCode == null) {
+//                                    //TODO 兑换码耗尽
+//                                    logger.error("兑换码耗尽");
+//                                } else {
+//                                    theatreService.sendCodeToUser(profile, liveRedeemCode);
+//                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                                }
+//                            } else {
+//                                String message = "很抱歉，你朋友的奖励已经被大家抢光了。但是你可以选择回复【48】自己当勇士找到神秘宝藏。";
+//                                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                            }
                         }
                     } else {
                         // 第一层
@@ -109,6 +108,28 @@ public class CaitongLiveReceiver {
                     level = existLevel.getLevel();
                 }
 
+                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
+                if (liveRedeemCode == null) {
+                    //TODO 兑换码耗尽
+                    logger.error("兑换码耗尽");
+                } else {
+                    theatreService.sendCodeToUser(profile, liveRedeemCode);
+                    String msg1 = "昨天很多同学已经猜到那个神秘的男子是采铜老师啦。没错，我们邀请到了畅销书《精进》作者采铜老师来为大家做直播分享，直播原价88元，使用下方二维码可以免费兑换本次直播。\n" +
+                            "\n" +
+                            "下方是你的兑换码，可以免费兑换，报名参加采铜馆长的直播课（售价88元）\n" +
+                            "\n" +
+                            "↓兑换码↓（长按复制）";
+                    customerMessageService.sendCustomerMessage(profile.getOpenid(), msg1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    String msg2 = "【直播兑换码使用说明】\n\n" +
+                            "直播时间：9月21日20：30\n" +
+                            "直播价格：88元（使用兑换码免费）\n" +
+                            "兑换地址：" + TheatreServiceImpl.CODE_CHANGE_URL + "\n" +
+                            "兑换说明：" + TheatreServiceImpl.CODE_DESCRIBE_URL;
+                    customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                }
+
 
                 // 扫码action
                 PromotionActivity promotionActivity = new PromotionActivity();
@@ -117,10 +138,11 @@ public class CaitongLiveReceiver {
                 promotionActivity.setAction(PromotionConstants.CaitongLiveAction.ScanCode);
                 promotionActivityDao.insertPromotionActivity(promotionActivity);
                 // 开始玩游戏
-                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.ManualStart);
-                if (level == 1 || manualStart != null) {
-                    theatreService.startGame(profile);
-                }
+                // TODO 暂时停止游戏
+//                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.ManualStart);
+//                if (level == 1 || manualStart != null) {
+//                    theatreService.startGame(profile);
+//                }
             }
         });
     }
