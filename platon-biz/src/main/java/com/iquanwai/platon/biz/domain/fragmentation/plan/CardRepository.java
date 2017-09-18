@@ -33,4 +33,6 @@ public interface CardRepository {
     BufferedImage loadCaitongBgImage();
 
     BufferedImage loadCaitongHead();
+
+    BufferedImage loadCaitongActivity();
 }

@@ -6,8 +6,10 @@ import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.LiveRedeemCodeRepository;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreServiceImpl;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.awt.image.BufferedImage;
 
 /**
  * Created by nethunder on 2017/8/31.
@@ -46,6 +49,10 @@ public class CaitongLiveReceiver {
     private TheatreService theatreService;
     @Autowired
     private LiveRedeemCodeRepository liveRedeemCodeRepository;
+    @Autowired
+    private CardRepository cardRepository;
+    @Autowired
+    private UploadResourceService uploadResourceService;
 
     @PostConstruct
     public void init() {
@@ -134,6 +141,10 @@ public class CaitongLiveReceiver {
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     String msg2 = "<a href='http://m.study.163.com/myCoupon'>长按复制上方兑换码，点我兑换</a>";
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+
+                    BufferedImage bufferedImage = cardRepository.loadCaitongActivity();
+                    String mediaId = uploadResourceService.uploadResource(bufferedImage);
+                    customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
                 }
 
 
@@ -149,6 +160,7 @@ public class CaitongLiveReceiver {
 //                if (level == 1 || manualStart != null) {
 //                    theatreService.startGame(profile);
 //                }
+
             }
         });
     }
