@@ -108,26 +108,32 @@ public class CaitongLiveReceiver {
                     level = existLevel.getLevel();
                 }
 
+                // 直接送兑换码
                 LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
                 if (liveRedeemCode == null) {
                     //TODO 兑换码耗尽
                     logger.error("兑换码耗尽");
                 } else {
-//                    theatreService.sendCodeToUser(profile, liveRedeemCode);
-                    String msg1 = "昨天很多同学已经猜到那个神秘的男子是采铜老师啦。没错，我们邀请到了畅销书《精进》作者采铜老师来为大家做直播分享，直播原价88元，使用下方二维码可以免费兑换本次直播。\n" +
+                    String msg1 = "【大咖直播限时免费】\n" +
                             "\n" +
-                            "下方是你的兑换码，可以免费兑换，报名参加采铜馆长的直播课（售价88元）\n" +
+                            "昨天很多同学已经猜到那个神秘的男子是采铜老师啦。没错，我们邀请到了畅销书《精进》作者、浙大心理学博士采铜老师来为大家做直播分享。\n" +
+                            "\n" +
+                            "直播原价88元，出关期间限免，使用下方兑换码，可以免费报名。\n" +
+                            "-------------------\n" +
+                            "报名步骤：\n" +
+                            "1. 长按复制下方兑换码\n" +
+                            "2. 点击链接\n" +
+                            "3. 选择用微信登录（无需下载APP）\n" +
+                            "4. 输入兑换码\n" +
+                            "5. 访问查看课程\n" +
+                            "-------------------\n" +
+                            "如需帮助，可以回复【兑换码】查看兑换说明。\n" +
                             "\n" +
                             "↓兑换码↓（长按复制）";
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), msg1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    String msg2 = "【直播兑换码使用说明】\n\n" +
-                            "直播时间：9月21日20：30\n" +
-                            "直播价格：88元（使用兑换码免费）\n" +
-                            "兑换地址：" + TheatreServiceImpl.CODE_CHANGE_URL + "\n" +
-                            "兑换说明：" + TheatreServiceImpl.CODE_DESCRIBE_URL;
+                    String msg2 = "< a href='http://m.study.163.com/myCoupon'>长按复制上方兑换码，点我兑换</ a>";
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-//                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
 
 
