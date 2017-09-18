@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.bible;
 import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
 import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Date;
 import java.util.List;
@@ -78,13 +79,14 @@ public interface SubscribeArticleService {
      * 获取不同纬度的得分对比情况
      *
      * @param profileId 用户id
+     * @param today     计算得分的那天
      * @return 得分对比情况
      */
-    List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId);
+    List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId, Date today);
 
     Integer loadCertainDayReadWords(Integer profileId, Date date);
 
     String loadUserQrCode(Integer profileId);
 
-    String totalScores(Integer profileId, Date date);
+    Pair<String,String> totalScores(Integer profileId, Date date);
 }

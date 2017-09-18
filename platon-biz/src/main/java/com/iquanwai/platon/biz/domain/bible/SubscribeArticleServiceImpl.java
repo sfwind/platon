@@ -2,18 +2,36 @@ package com.iquanwai.platon.biz.domain.bible;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.bible.*;
+import com.iquanwai.platon.biz.dao.bible.ArticleFavorDao;
+import com.iquanwai.platon.biz.dao.bible.RelevantTagDao;
+import com.iquanwai.platon.biz.dao.bible.StudyNoteTagDao;
+import com.iquanwai.platon.biz.dao.bible.SubscribeArticleDao;
+import com.iquanwai.platon.biz.dao.bible.SubscribeArticleTagDao;
+import com.iquanwai.platon.biz.dao.bible.SubscribeArticleViewDao;
+import com.iquanwai.platon.biz.dao.bible.SubscribeUserTagDao;
+import com.iquanwai.platon.biz.dao.bible.SubscribeViewPointDao;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.bible.*;
+import com.iquanwai.platon.biz.po.bible.ArticleFavor;
+import com.iquanwai.platon.biz.po.bible.RelevantTag;
+import com.iquanwai.platon.biz.po.bible.StudyNoteTag;
+import com.iquanwai.platon.biz.po.bible.SubscribeArticle;
+import com.iquanwai.platon.biz.po.bible.SubscribeArticleTag;
+import com.iquanwai.platon.biz.po.bible.SubscribeArticleView;
+import com.iquanwai.platon.biz.po.bible.SubscribePointCompare;
+import com.iquanwai.platon.biz.po.bible.SubscribeUserTag;
+import com.iquanwai.platon.biz.po.bible.SubscribeViewPoint;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.page.Page;
+import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +70,9 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     private SubscribeUserTagDao subscribeUserTagDao;
     @Autowired
     private RelevantTagDao relevantTagDao;
+    @Autowired
+    private StudyNoteTagDao studyNoteTagDao;
+
     //每天推荐文章数量
     private static final Integer RECOMMEND_ARTICLE = 5;
 
@@ -122,7 +142,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
                             article.getTagName().add(tagGroup.get(tagId).getName());
                         }
                     }
-                }   
+                }
             }
             if (acknowledged != null) {
                 article.setPointStatus(acknowledged.getPointStatus());
@@ -235,22 +255,40 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         return true;
     }
 
-    @Override
-    public List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId) {
-        Date yesterday = DateUtils.beforeDays(new Date(), 1);
-        Date today = new Date();
+    private void mergePointList(TagView item, List<TagView> tagViews) {
+        TagView tagPoint = tagViews.stream().filter(tag -> tag.getTagId().equals(item.getTagId())).findFirst().orElse(null);
+        if (tagPoint == null) {
+            tagPoint = new TagView().init(item.getTagId(), item.getPoint());
+            tagViews.add(tagPoint);
+        } else {
+            tagPoint.setPoint(tagPoint.getPoint() + item.getPoint());
+        }
+    }
 
-        List<SubscribeViewPoint> yesterdayPointList = subscribeViewPointDao.load(profileId, yesterday);
-        List<SubscribeViewPoint> todayPointList = subscribeViewPointDao.load(profileId, today)
-                .stream()
-                .sorted((o1, o2) -> o1.getPoint() > o2.getPoint() ? -1 : 1)
-                .limit(5)
-                .collect(Collectors.toList());
+    @Override
+    public List<SubscribePointCompare> loadSubscribeViewPointList(Integer profileId, Date today) {
+        Date yesterday = DateUtils.beforeDays(today, 1);
+
+        List<TagView> yesterdayPointList = subscribeViewPointDao.load(profileId, yesterday).stream().map(item -> {
+            TagView tagView = new TagView();
+            tagView.setTagId(item.getTagId());
+            tagView.setPoint(item.getPoint());
+            return tagView;
+        }).collect(Collectors.toList());
+        studyNoteTagDao.loadCertainDayNote(profileId, yesterday)
+                .stream().map(item -> new TagView().init(item.getTagId(), item.getPoint()))
+                .forEach(item -> this.mergePointList(item, yesterdayPointList));
+
+        List<TagView> tempTodayPointList = subscribeViewPointDao.load(profileId, today).stream().map(item -> new TagView().init(item.getTagId(), item.getPoint())).collect(Collectors.toList());
+        studyNoteTagDao.loadCertainDayNote(profileId, today)
+                .stream().map(item -> new TagView().init(item.getTagId(), item.getPoint()))
+                .forEach(item -> this.mergePointList(item, tempTodayPointList));
+        List<TagView> todayPointList = tempTodayPointList.stream().sorted((o1, o2) -> o1.getPoint() > o2.getPoint() ? -1 : 1).limit(5).collect(Collectors.toList());
 
         List<SubscribePointCompare> compareList = Lists.newArrayList();
         todayPointList.forEach(todayPoint -> {
             Integer tagId = todayPoint.getTagId();
-            SubscribeViewPoint yesterdayPoint = yesterdayPointList.stream().filter(item -> tagId.equals(item.getTagId())).findFirst().orElse(null);
+            TagView yesterdayPoint = yesterdayPointList.stream().filter(item -> tagId.equals(item.getTagId())).findFirst().orElse(null);
             SubscribePointCompare compare = new SubscribePointCompare();
             // 标签
             SubscribeArticleTag tag = subscribeArticleTagDao.load(SubscribeArticleTag.class, tagId);
@@ -264,11 +302,12 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
             compare.setTagId(tagId);
             compare.setToday(DateUtils.parseDateToString(today));
             compare.setTagName(tag.getName());
-            compare.setTodayPoint(todayPointNumber);
+            compare.setTodayPoint(new BigDecimal(todayPointNumber).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             compare.setYesterdayPoint(yesterdayPointNumber);
             compare.setTotalPoint(totalPoint);
             compareList.add(compare);
         });
+
         // 增长积分多的纬度排前面
         compareList.sort(((o1, o2) -> o1.getTodayPoint() > o2.getTodayPoint() ? -1 : 1));
         return compareList;
@@ -293,9 +332,15 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
     }
 
     @Override
-    public String totalScores(Integer profileId, Date date) {
-        Double score = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
-        return new BigDecimal(score).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+    public Pair<String, String> totalScores(Integer profileId, Date date) {
+        // 阅读文章加分
+        Double readScore = subscribeViewPointDao.loadAll(profileId, date).stream().mapToDouble(SubscribeViewPoint::getPoint).sum();
+        //  学习笔记加分
+        Double noteScore = studyNoteTagDao.loadCertainDayNote(profileId, date).stream().mapToDouble(StudyNoteTag::getPoint).sum();
+        Double score = new BigDecimal(readScore + noteScore).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        String readTime = new BigDecimal(score / 0.125).setScale(2, BigDecimal.ROUND_HALF_UP).intValue() + "";
+        String totalScore = score.toString();
+        return new MutablePair<String, String>(readTime, totalScore);
     }
 
     private List<SubscribeArticle> filterArticle(List<SubscribeArticle> subscribeArticles, Integer profileId) {
@@ -304,7 +349,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
         Map<Date, List<SubscribeArticle>> dateSubscribeArticleMap = subscribeArticles.stream()
                 .collect(Collectors.groupingBy(SubscribeArticle::getUpTime));
 
-        dateSubscribeArticleMap.entrySet().forEach(entry-> {
+        dateSubscribeArticleMap.entrySet().forEach(entry -> {
             //根据命中的tag数量,取前5篇文章
             List<SubscribeArticle> onedayArticles = entry.getValue().stream().map(subscribeArticle -> {
                 // 按天计算每天文章和用户喜好的匹配度
@@ -348,4 +393,16 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
 
         return subscribeArticleList;
     }
+}
+
+@Data
+class TagView {
+    public TagView init(Integer tagId, Double point) {
+        this.setPoint(point);
+        this.setTagId(tagId);
+        return this;
+    }
+
+    private Integer tagId;
+    private Double point;
 }
