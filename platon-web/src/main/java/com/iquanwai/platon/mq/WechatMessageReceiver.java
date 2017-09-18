@@ -2,6 +2,7 @@ package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.common.WechatMessage;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
@@ -28,16 +29,22 @@ public class WechatMessageReceiver {
 
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
+    @Autowired
+    private CustomerMessageService customerMessageService;
+
 
     @PostConstruct
     public void init() {
+        // TODO 暂时关闭游戏
         rabbitMQFactory.initReceiver(QUEUE, WECHAT_MESSAGE_TOPIC, (messageQueue) -> {
             WechatMessage wechatMessage = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), WechatMessage.class);
             logger.info("receive message :{}", wechatMessage);
             // 扫过二维码，并且没有结束游戏
             Boolean isPlaying = theatreService.isPlayingTheatre(wechatMessage);
             if (isPlaying) {
-                theatreService.handleTheatreMessage(wechatMessage);
+//                theatreService.handleTheatreMessage(wechatMessage);
+                // 发送直播链接
+                theatreService.sendLiveCode(wechatMessage.getOpenid());
             }
         });
     }

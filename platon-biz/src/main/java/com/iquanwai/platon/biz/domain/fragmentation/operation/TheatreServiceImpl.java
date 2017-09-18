@@ -627,7 +627,20 @@ public class TheatreServiceImpl implements TheatreService {
         customerMessageService.sendCustomerMessage(profile.getOpenid(), message2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
-
+    @Override
+    public void sendLiveCode(String openId) {
+        Profile profile = accountService.getProfile(openId);
+        String msg1 = "【大咖直播限时免费】\n" +
+                "\n" +
+                "昨天很多同学已经猜到那个神秘的男子是采铜老师啦。没错，我们邀请到了畅销书《精进》作者采铜老师来为大家做直播分享\n" +
+                "------------------\n" +
+                "但是，兑换码小哥哥已经发光了，我又特地申请圈圈给大家弄了一个限时免费页面【9月20日截止】\n" +
+                "------------------\n" +
+                "直接点击下面的链接就可以报名了（直接使用微信登录，无需下载App）";
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), msg1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        String msg2 = "<a href='http://study.163.com/topics/quanwaicaitong/?from=singlemessage&isappinstalled=0'>点我报名</a>";
+        customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+    }
 }
 
 

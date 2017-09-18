@@ -342,8 +342,7 @@ public class CardRepositoryImpl implements CardRepository {
     }
 
     @Override
-    public BufferedImage loadCaitongHead(){
+    public BufferedImage loadCaitongHead() {
         return caitongHead;
     }
-
 }

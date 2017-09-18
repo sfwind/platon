@@ -5,15 +5,14 @@ import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.LiveRedeemCodeRepository;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreServiceImpl;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 /**
  * Created by nethunder on 2017/8/31.
@@ -47,6 +45,10 @@ public class CaitongLiveReceiver {
     private TheatreService theatreService;
     @Autowired
     private LiveRedeemCodeRepository liveRedeemCodeRepository;
+    @Autowired
+    private CardRepository cardRepository;
+    @Autowired
+    private UploadResourceService uploadResourceService;
 
     @PostConstruct
     public void init() {
@@ -82,21 +84,21 @@ public class CaitongLiveReceiver {
                         } else {
                             PromotionLevel promoterLevel = promotionLevelDao.loadByProfileId(promoterId, PromotionConstants.Activities.CaitongLive);
                             level = promoterLevel.getLevel() + 1;
-                            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, TheatreServiceImpl.CURRENT_GAME);
-                            if (promotionLevels.size() < 3) {
-                                // 可以送
-                                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
-                                if (liveRedeemCode == null) {
-                                    //TODO 兑换码耗尽
-                                    logger.error("兑换码耗尽");
-                                } else {
-                                    theatreService.sendCodeToUser(profile, liveRedeemCode);
-                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                                }
-                            } else {
-                                String message = "很抱歉，你朋友的奖励已经被大家抢光了。但是你可以选择回复【48】自己当勇士找到神秘宝藏。";
-                                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                            }
+//                            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, TheatreServiceImpl.CURRENT_GAME);
+//                            if (promotionLevels.size() < 3) {
+//                                // 可以送
+//                                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
+//                                if (liveRedeemCode == null) {
+//                                    //TODO 兑换码耗尽
+//                                    logger.error("兑换码耗尽");
+//                                } else {
+//                                    theatreService.sendCodeToUser(profile, liveRedeemCode);
+//                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                                }
+//                            } else {
+//                                String message = "很抱歉，你朋友的奖励已经被大家抢光了。但是你可以选择回复【48】自己当勇士找到神秘宝藏。";
+//                                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                            }
                         }
                     } else {
                         // 第一层
@@ -109,6 +111,9 @@ public class CaitongLiveReceiver {
                     level = existLevel.getLevel();
                 }
 
+                // 发送直播链接
+                theatreService.sendLiveCode(profile.getOpenid());
+
 
                 // 扫码action
                 PromotionActivity promotionActivity = new PromotionActivity();
@@ -117,10 +122,12 @@ public class CaitongLiveReceiver {
                 promotionActivity.setAction(PromotionConstants.CaitongLiveAction.ScanCode);
                 promotionActivityDao.insertPromotionActivity(promotionActivity);
                 // 开始玩游戏
-                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.ManualStart);
-                if (level == 1 || manualStart != null) {
-                    theatreService.startGame(profile);
-                }
+                // TODO 暂时停止游戏
+//                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.ManualStart);
+//                if (level == 1 || manualStart != null) {
+//                    theatreService.startGame(profile);
+//                }
+
             }
         });
     }
