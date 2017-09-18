@@ -113,7 +113,7 @@ public class CaitongLiveReceiver {
                     //TODO 兑换码耗尽
                     logger.error("兑换码耗尽");
                 } else {
-                    theatreService.sendCodeToUser(profile, liveRedeemCode);
+//                    theatreService.sendCodeToUser(profile, liveRedeemCode);
                     String msg1 = "昨天很多同学已经猜到那个神秘的男子是采铜老师啦。没错，我们邀请到了畅销书《精进》作者采铜老师来为大家做直播分享，直播原价88元，使用下方二维码可以免费兑换本次直播。\n" +
                             "\n" +
                             "下方是你的兑换码，可以免费兑换，报名参加采铜馆长的直播课（售价88元）\n" +
