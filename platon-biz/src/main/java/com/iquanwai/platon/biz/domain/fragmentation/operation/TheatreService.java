@@ -29,4 +29,6 @@ public interface TheatreService {
     void startGame(Profile profile);
 
     void sendCodeToUser(Profile profile, LiveRedeemCode liveRedeemCode);
+
+    void sendLiveCode(String openId);
 }

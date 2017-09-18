@@ -5,17 +5,14 @@ import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.LiveRedeemCodeRepository;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreServiceImpl;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.common.LiveRedeemCode;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.awt.image.BufferedImage;
 
 /**
  * Created by nethunder on 2017/8/31.
@@ -115,37 +111,8 @@ public class CaitongLiveReceiver {
                     level = existLevel.getLevel();
                 }
 
-                // 直接送兑换码
-                LiveRedeemCode liveRedeemCode = liveRedeemCodeRepository.useLiveRedeemCode(TheatreServiceImpl.CURRENT_GAME, profile.getId());
-                if (liveRedeemCode == null) {
-                    //TODO 兑换码耗尽
-                    logger.error("兑换码耗尽");
-                } else {
-                    String msg1 = "【大咖直播限时免费】\n" +
-                            "\n" +
-                            "昨天很多同学已经猜到那个神秘的男子是采铜老师啦。没错，我们邀请到了畅销书《精进》作者、浙大心理学博士采铜老师来为大家做直播分享。\n" +
-                            "\n" +
-                            "直播原价88元，出关期间限免，使用下方兑换码，可以免费报名。\n" +
-                            "-------------------\n" +
-                            "报名步骤：\n" +
-                            "1. 长按复制下方兑换码\n" +
-                            "2. 点击链接\n" +
-                            "3. 选择用微信登录（无需下载APP）\n" +
-                            "4. 输入兑换码\n" +
-                            "5. 访问查看课程\n" +
-                            "-------------------\n" +
-                            "如需帮助，可以回复【兑换码】查看兑换说明。\n" +
-                            "\n" +
-                            "↓兑换码↓（长按复制）";
-                    customerMessageService.sendCustomerMessage(profile.getOpenid(), msg1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    String msg2 = "<a href='http://m.study.163.com/myCoupon'>长按复制上方兑换码，点我兑换</a>";
-                    customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-
-                    BufferedImage bufferedImage = cardRepository.loadCaitongActivity();
-                    String mediaId = uploadResourceService.uploadResource(bufferedImage);
-                    customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-                }
+                // 发送直播链接
+                theatreService.sendLiveCode(profile.getOpenid());
 
 
                 // 扫码action
