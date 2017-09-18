@@ -648,10 +648,6 @@ public class TheatreServiceImpl implements TheatreService {
             customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             String msg2 = "<a href='http://study.163.com/topics/quanwaicaitong/?from=singlemessage&isappinstalled=0'>点我报名</a>";
             customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-
-            BufferedImage bufferedImage = cardRepository.loadCaitongActivity();
-            String mediaId = uploadResourceService.uploadResource(bufferedImage);
-            customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         }
     }
 

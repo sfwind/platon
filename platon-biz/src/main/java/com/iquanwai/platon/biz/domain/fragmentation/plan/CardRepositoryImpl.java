@@ -42,7 +42,6 @@ public class CardRepositoryImpl implements CardRepository {
     private BufferedImage essenceNormalTop;
     private BufferedImage pandaCard;
     private BufferedImage caitongHead;
-    private BufferedImage caitongActivity;
     /** 采铜直播背景图 */
     private BufferedImage caitongBGImage;
 
@@ -89,7 +88,6 @@ public class CardRepositoryImpl implements CardRepository {
         pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
         caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.jpg?imageslim");
         caitongHead = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_head_image.jpg?imageslim");
-        caitongActivity = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/rise_caitong_wall_0918.png?imageslim");
         logger.info("图片加载完毕");
     }
 
@@ -346,10 +344,5 @@ public class CardRepositoryImpl implements CardRepository {
     @Override
     public BufferedImage loadCaitongHead() {
         return caitongHead;
-    }
-
-    @Override
-    public BufferedImage loadCaitongActivity() {
-        return caitongActivity;
     }
 }
