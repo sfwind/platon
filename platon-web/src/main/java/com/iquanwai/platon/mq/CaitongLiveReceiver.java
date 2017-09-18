@@ -132,7 +132,7 @@ public class CaitongLiveReceiver {
                             "↓兑换码↓（长按复制）";
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), msg1, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), liveRedeemCode.getCode(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                    String msg2 = "< a href='http://m.study.163.com/myCoupon'>长按复制上方兑换码，点我兑换</ a>";
+                    String msg2 = "<a href='http://m.study.163.com/myCoupon'>长按复制上方兑换码，点我兑换</a>";
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), msg2, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
 
