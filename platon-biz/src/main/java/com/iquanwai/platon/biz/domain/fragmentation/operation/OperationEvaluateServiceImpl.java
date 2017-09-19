@@ -496,7 +496,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             tempMessage.setData(tempDate);
             tempMessage.setUrl("https://shimo.im/doc/892xxjNdSRA3UTSG?r=L8QE82/");
             tempMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
-            tempDate.put("first", new TemplateMessage.Keyword("这么赞的训练营，我们真的只能免费这一次！【圈外同学】开放迷你训练营，你要不要来？\n\n"));
+            tempDate.put("first", new TemplateMessage.Keyword("这么赞的训练营，我们真的只能免费这一次！【圈外同学】开放迷你训练营，你要不要来？\n"));
             tempDate.put("keyword1", new TemplateMessage.Keyword("【圈外同学】迷你训练营"));
             tempDate.put("keyword2", new TemplateMessage.Keyword("点击“详情”，按照步骤操作入群"));
             tempDate.put("keyword3", new TemplateMessage.Keyword("2017年9月19日-2017年9月20日"));
