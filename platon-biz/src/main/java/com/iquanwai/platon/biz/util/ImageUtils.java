@@ -110,6 +110,7 @@ public class ImageUtils {
                 if (xErrorNo != null && xErrorNo.equalsIgnoreCase("-6101")) {
                     return null;
                 }
+                ImageIO.setUseCache(false);
                 return ImageIO.read(response.body().byteStream());
             } catch (Exception e) {
                 logger.error("execute " + url + " error", e);
@@ -128,6 +129,7 @@ public class ImageUtils {
     * */
     public static BufferedImage getBufferedImageByInputStream(InputStream inputStream) {
         try {
+            ImageIO.setUseCache(false);
             return ImageIO.read(inputStream);
         } catch (IOException e) {
             logger.error("read inputStream error", e);
