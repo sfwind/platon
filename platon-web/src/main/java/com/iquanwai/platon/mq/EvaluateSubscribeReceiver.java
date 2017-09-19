@@ -73,8 +73,8 @@ public class EvaluateSubscribeReceiver {
     private void sendScanMsg(String openId) {
         String message = "欢迎来到【圈外职场研究所】\n\n" +
                 "想了解自己的职场洞察力，点击下方链接\n\n" +
-                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场洞察力检测</a>\n\n" +
-                "如需免费领取课程，请点击下方链接完成测试，并分享自己的测评海报给三位好友，邀请他们完成测试";
+                "如需免费领取课程，请点击下方链接完成测试，并分享自己的测评海报给三位好友，邀请他们完成测试\n\n" +
+                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/rise/static/eva/start'>点击开始职场洞察力检测</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
