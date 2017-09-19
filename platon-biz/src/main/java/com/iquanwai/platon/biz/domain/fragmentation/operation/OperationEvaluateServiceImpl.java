@@ -480,13 +480,14 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessageService.sendMessage(templateMessage);
 
         // 发送客服消息
-        customerMessageService.sendCustomerMessage(profile.getOpenid(),
-                "点击免费领取洞察力小课：\n" +
-                        "<a href='" + ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true'>找到本质问题，减少无效努力</a>",
-                Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        // TODO
+        // customerMessageService.sendCustomerMessage(profile.getOpenid(),
+        //         "点击免费领取洞察力小课：\n" +
+        //                 "<a href='" + ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true'>找到本质问题，减少无效努力</a>",
+        //         Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
 
-        // 非会员，限免小课
+        // 非会员，限免小课 TODO  删除这边时候，记得开放上面 TODO
         // 发送我的消息，发送图片
         if (!profile.getRiseMember().equals(Constants.RISE_MEMBER.MEMBERSHIP)) {
             TemplateMessage tempMessage = new TemplateMessage();

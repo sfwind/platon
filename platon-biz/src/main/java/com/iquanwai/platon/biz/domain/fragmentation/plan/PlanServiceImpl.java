@@ -569,180 +569,82 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isRiseMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen) {
-        int buttonStatus = 0;
+    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId,
+                                                   ImprovementPlan plan, Boolean autoOpen) {
+        Integer buttonStatus;
 
-        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
-        List<Integer> campProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
-        boolean isCampProblem = campProblemIds.contains(problemId); // 当前小课介绍是否是当前训练营小课
-
-        if (isRiseMember) {
-            // 会员
-            if (isCampProblem) {
-                // 训练营
-                if (plan == null) {
-                    buttonStatus = 10;
-                } else {
-                    switch (plan.getStatus()) {
-                        case ImprovementPlan.TEMP_TRIALCLOSE:
-                            break;
-                        case ImprovementPlan.RUNNING:
-                            buttonStatus = 11;
-                            break;
-                        case ImprovementPlan.COMPLETE:
-                            buttonStatus = 12;
-                            break;
-                        case ImprovementPlan.CLOSE:
-                            buttonStatus = 4;
-                            break;
-                        case ImprovementPlan.TRIALCLOSE:
-                            break;
-                    }
-                }
+        if (plan == null) {
+            // 没学过这个小课
+            // 是否会员
+            if (isMember) {
+                // 是会员，显示按钮"选择该小课"
+                buttonStatus = 2;
             } else {
-                // 非训练营
-                if (plan == null) {
-                    buttonStatus = 10;
+                // 不是会员
+                if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+                    // 是限免小课
+                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
+                    if (hasTrialAuthority) {
+                        // 是限免小课，且此时有限免权限，显示"限时免费"
+                        buttonStatus = 5;
+                    } else {
+                        // 判断是否参加过测评活动
+                        boolean hasParticipateEvaluate = operationEvaluateService.hasParticipateEvaluate(profileId);
+                        if (hasParticipateEvaluate) {
+                            // 限免小课，左侧 ￥{fee}, 立即学习 | 免费获取
+                            buttonStatus = 8;
+                        } else {
+                            buttonStatus = 1;
+                        }
+                    }
                 } else {
-                    switch (plan.getStatus()) {
-                        case ImprovementPlan.TEMP_TRIALCLOSE:
-                            break;
-                        case ImprovementPlan.RUNNING:
-                            break;
-                        case ImprovementPlan.COMPLETE:
-                            break;
-                        case ImprovementPlan.CLOSE:
-                            break;
-                        case ImprovementPlan.TRIALCLOSE:
-                            break;
+                    // 当前课程不是限免小课
+                    List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
+                    List<Integer> scheduleProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+                    if (scheduleProblemIds.contains(problemId)) {
+                        // 是当前配置月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
+                        buttonStatus = 9;
+                    } else {
+                        // 不是当月的训练营小课，显示"¥ {fee}，立即学习"
+                        buttonStatus = 1;
                     }
                 }
             }
         } else {
-            // 非会员
-            if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-                // 限免小课
-                boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
-                if (hasTrialAuthority) {
-                    // 已经获得限免小课使用资格
-
-                } else {
-                    // 未获得限免小课使用资格
-
+            // 学过这个小课
+            switch (plan.getStatus()) {
+                case ImprovementPlan.RUNNING: {
+                    // 小课进行中，显示按钮"小课已开始，去上课"
+                    buttonStatus = 3;
+                    break;
                 }
-            } else if (isCampProblem) {
-                // 训练营
-                if (plan == null) {
-                    buttonStatus = 10;
-                } else {
-                    switch (plan.getStatus()) {
-                        case ImprovementPlan.TEMP_TRIALCLOSE:
-                            break;
-                        case ImprovementPlan.RUNNING:
-                            break;
-                        case ImprovementPlan.COMPLETE:
-                            break;
-                        case ImprovementPlan.CLOSE:
-                            break;
-                        case ImprovementPlan.TRIALCLOSE:
-                            break;
+                case ImprovementPlan.COMPLETE:
+                case ImprovementPlan.CLOSE: {
+                    // 小课已完成，显示按钮"小课已完成，去复习"
+                    buttonStatus = 4;
+                    break;
+                }
+                case ImprovementPlan.TRIALCLOSE: {
+                    if (isMember) {
+                        // 是会员，显示按钮"选择该小课"
+                        buttonStatus = 2;
+                    } else {
+                        // 不是会员，显示"¥ {fee}，立即学习"
+                        buttonStatus = 1;
                     }
+                    break;
                 }
-
-            } else {
-                // 非训练营
-                if (plan == null) {
-                    buttonStatus = 10;
-                } else {
-                    switch (plan.getStatus()) {
-                        case ImprovementPlan.TEMP_TRIALCLOSE:
-                            break;
-                        case ImprovementPlan.RUNNING:
-                            break;
-                        case ImprovementPlan.COMPLETE:
-                            break;
-                        case ImprovementPlan.CLOSE:
-                            break;
-                        case ImprovementPlan.TRIALCLOSE:
-                            break;
-                    }
+                case ImprovementPlan.TEMP_TRIALCLOSE: {
+                    // 老状态，临时关闭，显示"限时免费，立即开始学习"
+                    buttonStatus = 6;
+                    break;
                 }
+                default:
+                    // 按钮状态有问题
+                    buttonStatus = -1;
+                    break;
             }
         }
-
-
-        // if (plan == null) {
-        //     // 没学过这个小课
-        //     // 是否会员
-        //     if (isMember) {
-        //         // 是会员，显示按钮"选择该小课"
-        //         buttonStatus = 2;
-        //     } else {
-        //         // 不是会员
-        //         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-        //             // 是限免小课
-        //             boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
-        //             if (hasTrialAuthority) {
-        //                 // 是限免小课，且此时有限免权限，显示"限时免费"
-        //                 buttonStatus = 5;
-        //             } else {
-        //                 // 判断是否参加过测评活动
-        //                 boolean hasParticipateEvaluate = operationEvaluateService.hasParticipateEvaluate(profileId);
-        //                 if (hasParticipateEvaluate) {
-        //                     // 限免小课，左侧 ￥{fee}, 立即学习 | 免费获取
-        //                     buttonStatus = 8;
-        //                 } else {
-        //                     buttonStatus = 1;
-        //                 }
-        //             }
-        //         } else {
-        //             // 当前课程不是限免小课
-        //             List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
-        //             List<Integer> scheduleProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
-        //             if (scheduleProblemIds.contains(problemId)) {
-        //                 // 是当前配置月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
-        //                 buttonStatus = 9;
-        //             } else {
-        //                 // 不是当月的训练营小课，显示"¥ {fee}，立即学习"
-        //                 buttonStatus = 1;
-        //             }
-        //         }
-        //     }
-        // } else {
-        //     // 学过这个小课
-        //     switch (plan.getStatus()) {
-        //         case ImprovementPlan.RUNNING: {
-        //             // 小课进行中，显示按钮"小课已开始，去上课"
-        //             buttonStatus = 3;
-        //             break;
-        //         }
-        //         case ImprovementPlan.COMPLETE:
-        //         case ImprovementPlan.CLOSE: {
-        //             // 小课已完成，显示按钮"小课已完成，去复习"
-        //             buttonStatus = 4;
-        //             break;
-        //         }
-        //         case ImprovementPlan.TRIALCLOSE: {
-        //             if (isMember) {
-        //                 // 是会员，显示按钮"选择该小课"
-        //                 buttonStatus = 2;
-        //             } else {
-        //                 // 不是会员，显示"¥ {fee}，立即学习"
-        //                 buttonStatus = 1;
-        //             }
-        //             break;
-        //         }
-        //         case ImprovementPlan.TEMP_TRIALCLOSE: {
-        //             // 老状态，临时关闭，显示"限时免费，立即开始学习"
-        //             buttonStatus = 6;
-        //             break;
-        //         }
-        //         default:
-        //             // 按钮状态有问题
-        //             buttonStatus = -1;
-        //             break;
-        //     }
-        // }
 
         return buttonStatus;
     }
