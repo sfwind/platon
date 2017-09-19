@@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -45,6 +47,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
+    @Autowired
+    private MessageService messageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -289,14 +295,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         // 查询是否是riseMember
         Profile profile = accountService.getProfile(profileId);
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
-        // 限免小课开放7天，其他小课30天
-        Integer trialProblemId = ConfigUtils.getTrialProblemId();
-        if (Integer.valueOf(problem.getId()).equals(trialProblemId) && profile.getRiseMember() != 1) {
-            // 这个小课是试用版，并且会员状态不是1(年费会员)
-            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), TRIAL_PROBLEM_MAX_LENGTH));
-        } else {
-            improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
-        }
+        improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         improvementPlan.setRiseMember(profile.getRiseMember() != 0);
         return improvementPlanDao.insert(improvementPlan);
 
