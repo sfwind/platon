@@ -248,7 +248,15 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageUtils.writeToOutputStream(bufferedImage, "jpg", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
-        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+        try {
+            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+        }finally {
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                logger.error("os close failed", e);
+            }
+        }
     }
 
     /**
