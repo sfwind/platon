@@ -11,16 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 
-/**
- * Created by nethunder on 2017/4/13.
- */
 @Repository
 public class RiseMemberDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public RiseMember validRiseMember(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseMember where ProfileId = ? and expired = 0";
+        String sql = "select * from RiseMember where ProfileId = ? and Expired = 0";
 
         try {
             BeanHandler<RiseMember> handler = new BeanHandler<>(RiseMember.class);
@@ -33,7 +30,7 @@ public class RiseMemberDao extends DBUtil {
 
     public RiseMember loadValidRiseMember(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseMember where ProfileId = ? and expired = 0";
+        String sql = "select * from RiseMember where ProfileId = ? and Expired = 0";
 
         try {
             ResultSetHandler<RiseMember> handler = new BeanHandler<>(RiseMember.class);
