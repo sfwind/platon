@@ -556,7 +556,6 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
-        List<PlanDto> trialClosedPlans = Lists.newArrayList();
         List<PlanDto> runningPlans = Lists.newArrayList();
         List<PlanDto> completedPlans = Lists.newArrayList();
         plans.forEach(item -> {
@@ -579,24 +578,19 @@ public class PlanController {
 
             if (item.getStatus() == ImprovementPlan.CLOSE) {
                 completedPlans.add(plan);
-            } else if (item.getStatus() == ImprovementPlan.TRIALCLOSE || item.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE) {
-                trialClosedPlans.add(plan);
             } else {
                 runningPlans.add(plan);
             }
         });
-        List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, trialClosedPlans, completedPlans);
+        List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, completedPlans);
 
         PlanListDto planListDto = new PlanListDto();
-        planListDto.setOpenNavigator(loginUser.getOpenNavigator());
-        planListDto.setOpenWelcome(loginUser.getOpenWelcome());
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
-        planListDto.setTrialClosedPlans(trialClosedPlans);
         planListDto.setRecommendations(recommends);
+        planListDto.setRiseMember(loginUser.getRiseMember());
         runningPlans.sort(Comparator.comparing(PlanDto::getStartDate));
         completedPlans.sort(this::sortPlans);
-        trialClosedPlans.sort(this::sortPlans);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -607,14 +601,13 @@ public class PlanController {
     }
 
     // 查询推荐的小课
-    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans, List<PlanDto> trialClosePlans, List<PlanDto> completedPlans) {
+    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans, List<PlanDto> completedPlans) {
         // 最后要返回的
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
         List<Integer> userProblems = Lists.newArrayList();
         List<Integer> runningProblemId = runningPlans.stream().map(PlanDto::getProblemId).collect(Collectors.toList());
         runningPlans.forEach(item -> userProblems.add(item.getProblemId()));
-        trialClosePlans.forEach(item -> userProblems.add(item.getProblemId()));
         completedPlans.forEach(item -> userProblems.add(item.getProblemId()));
         List<Integer> problemIds;
 

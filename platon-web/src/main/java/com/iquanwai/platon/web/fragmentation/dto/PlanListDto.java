@@ -13,9 +13,6 @@ import java.util.List;
 public class PlanListDto {
     private List<PlanDto> runningPlans;
     private List<PlanDto> completedPlans;
-    private List<PlanDto> trialClosedPlans;
     private List<Problem> recommendations;
-    private Boolean riseMember;
-    private Boolean openNavigator;
-    private Boolean openWelcome;
+    private Integer riseMember;
 }
