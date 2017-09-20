@@ -571,7 +571,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isRiseMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen) {
         // 不显示按钮
-        int buttonStatus = 0;
+        int buttonStatus = -1;
 
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
         List<Integer> campProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
