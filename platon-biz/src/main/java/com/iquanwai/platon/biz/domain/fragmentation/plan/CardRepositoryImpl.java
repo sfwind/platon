@@ -178,7 +178,15 @@ public class CardRepositoryImpl implements CardRepository {
         // 绘图数据
         QRResponse response = qrCodeService.generateTemporaryQRCode(scene, null);
         InputStream inputStream = qrCodeService.showQRCode(response.getTicket());
-        return ImageUtils.getBufferedImageByInputStream(inputStream);
+        try {
+            return ImageUtils.getBufferedImageByInputStream(inputStream);
+        }finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.error("is close failed", e);
+            }
+        }
     }
 
     // 获取用户头像
