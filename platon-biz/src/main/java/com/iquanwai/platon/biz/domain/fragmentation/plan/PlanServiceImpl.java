@@ -569,83 +569,39 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId,
-                                                   ImprovementPlan plan, Boolean autoOpen) {
-        Integer buttonStatus;
+    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isRiseMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen) {
+        // 不显示按钮
+        int buttonStatus = -1;
 
-        if (plan == null) {
-            // 没学过这个小课
-            // 是否会员
-            if (isMember) {
-                // 是会员，显示按钮"选择该小课"
-                buttonStatus = 2;
-            } else {
-                // 不是会员
-                if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-                    // 是限免小课
-                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
-                    if (hasTrialAuthority) {
-                        // 是限免小课，且此时有限免权限，显示"限时免费"
-                        buttonStatus = 5;
-                    } else {
-                        // 判断是否参加过测评活动
-                        boolean hasParticipateEvaluate = operationEvaluateService.hasParticipateEvaluate(profileId);
-                        if (hasParticipateEvaluate) {
-                            // 限免小课，左侧 ￥{fee}, 立即学习 | 免费获取
-                            buttonStatus = 8;
-                        } else {
-                            buttonStatus = 1;
-                        }
-                    }
+        if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+            if (plan == null) {
+                if (isRiseMember) {
+                    // 选择该小课
+                    buttonStatus = 2;
                 } else {
-                    // 当前课程不是限免小课
-                    List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
-                    List<Integer> scheduleProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
-                    if (scheduleProblemIds.contains(problemId)) {
-                        // 是当前配置月的训练营小课，显示"¥ {fee}，立即学习|获取训练营小课"
-                        buttonStatus = 9;
-                    } else {
-                        // 不是当月的训练营小课，显示"¥ {fee}，立即学习"
-                        buttonStatus = 1;
-                    }
+                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
+                    // 7 - 下一步 8 - 免费获取 | 加入商学院
+                    buttonStatus = hasTrialAuthority ? 7 : 8;
                 }
+            } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
+                // 小课已开始，去上课
+                buttonStatus = 3;
+            } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
+                // 小课已完成，去复习
+                buttonStatus = 4;
             }
         } else {
-            // 学过这个小课
-            switch (plan.getStatus()) {
-                case ImprovementPlan.RUNNING: {
-                    // 小课进行中，显示按钮"小课已开始，去上课"
-                    buttonStatus = 3;
-                    break;
-                }
-                case ImprovementPlan.COMPLETE:
-                case ImprovementPlan.CLOSE: {
-                    // 小课已完成，显示按钮"小课已完成，去复习"
-                    buttonStatus = 4;
-                    break;
-                }
-                case ImprovementPlan.TRIALCLOSE: {
-                    if (isMember) {
-                        // 是会员，显示按钮"选择该小课"
-                        buttonStatus = 2;
-                    } else {
-                        // 不是会员，显示"¥ {fee}，立即学习"
-                        buttonStatus = 1;
-                    }
-                    break;
-                }
-                case ImprovementPlan.TEMP_TRIALCLOSE: {
-                    // 老状态，临时关闭，显示"限时免费，立即开始学习"
-                    buttonStatus = 6;
-                    break;
-                }
-                default:
-                    // 按钮状态有问题
-                    buttonStatus = -1;
-                    break;
+            if (plan == null) {
+                // 2 - 选择该小课 1 - 加入商学院
+                buttonStatus = isRiseMember ? 2 : 1;
+            } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
+                // 小课已开始，去上课
+                buttonStatus = 3;
+            } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
+                // 小课已开始，去复习
+                buttonStatus = 4;
             }
         }
-
         return buttonStatus;
     }
 

@@ -166,30 +166,25 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
             Profile sourceProfile = accountService.getProfile(promoterId);
             // 区分是否为会员
             if (sourceProfile.getRiseMember() == 1) {
-                logger.info("是会员");
                 // 是会员
                 if (successUsers.size() <= successNum) {
                     sendNormalSuccessOrderMsg(sourceProfile.getOpenid(), openId);
                 }
             } else {
-                logger.info("不是会员");
                 // 非会员
                 if (successUsers.size() < successNum) {
-                    logger.info("正常推广");
                     sendSuccessOrderMsg(sourceProfile.getOpenid(), openId, successNum - successUsers.size());
                 } else if (successUsers.size() == successNum) {
-                    logger.info("准备拿优惠券");
                     // 发送优惠券，Coupon 表新增数据
                     Coupon coupon = new Coupon();
                     coupon.setOpenId(sourceProfile.getOpenid());
                     coupon.setProfileId(sourceProfile.getId());
                     coupon.setAmount(50);
                     coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
-                    coupon.setDescription("奖学金");
+                    coupon.setDescription("推广奖学金");
                     coupon.setUsed(0);
                     Integer insertResult = couponDao.insertCoupon(coupon);
                     if (insertResult > 0) {
-                        logger.info("准备塞优惠券");
                         // 礼品券数据保存成功，发送获得优惠券的模板消息
                         sendSuccessPromotionMsg(sourceProfile.getOpenid());
                     }
@@ -255,7 +250,8 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     @Override
     public Boolean hasGetTheCoupon(Integer profileId) {
         List<Coupon> coupons = couponDao.loadByProfileId(profileId);
-        Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50) && coupon.getDescription().equals("奖学金")).count();
+        Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50) &&
+                coupon.getDescription().equals("推广奖学金")).count();
         return operationCouponCount > 0;
     }
 
