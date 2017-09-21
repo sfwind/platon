@@ -573,10 +573,6 @@ public class PlanServiceImpl implements PlanService {
         // 不显示按钮
         int buttonStatus = -1;
 
-        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(ConfigUtils.getMonthlyCampMonth());
-        List<Integer> campProblemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
-        boolean isCampProblem = campProblemIds.contains(problemId); // 当前小课介绍是否是当前训练营小课
-
         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
             if (plan == null) {
                 if (isRiseMember) {
@@ -594,7 +590,7 @@ public class PlanServiceImpl implements PlanService {
                 // 小课已完成，去复习
                 buttonStatus = 4;
             }
-        } else if (isCampProblem) {
+        } else {
             if (plan == null) {
                 // 2 - 选择该小课 1 - 加入商学院
                 buttonStatus = isRiseMember ? 2 : 1;
