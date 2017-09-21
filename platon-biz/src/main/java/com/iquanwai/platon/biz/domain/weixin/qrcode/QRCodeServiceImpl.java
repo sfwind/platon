@@ -14,6 +14,7 @@ import sun.misc.BASE64Encoder;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -40,7 +41,15 @@ public class QRCodeServiceImpl implements QRCodeService {
         // 绘图数据
         QRResponse response = generateTemporaryQRCode(scene, null);
         InputStream inputStream = showQRCode(response.getTicket());
-        return ImageUtils.getBufferedImageByInputStream(inputStream);
+        try {
+            return ImageUtils.getBufferedImageByInputStream(inputStream);
+        }finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.error("is close failed", e);
+            }
+        }
     }
 
     @Override
@@ -63,7 +72,16 @@ public class QRCodeServiceImpl implements QRCodeService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageUtils.writeToOutputStream(bufferedImage, "jpg", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
-        return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+        try {
+            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+        }finally {
+            try {
+                inputStream.close();
+                outputStream.close();
+            } catch (IOException e) {
+                logger.error("os close failed", e);
+            }
+        }
     }
 
     public QRResponse generatePermanentQRCode(String scene) {

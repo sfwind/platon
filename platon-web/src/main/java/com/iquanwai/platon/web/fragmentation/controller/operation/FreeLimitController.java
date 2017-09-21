@@ -44,7 +44,7 @@ public class FreeLimitController {
     @RequestMapping(value = "/coupon")
     public ResponseEntity<Map<String, Object>> hasGetTheCoupon(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        if (loginUser.getRiseMember() == 1) {
+        if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
             return WebUtils.result(false);
         } else {
             Boolean result = operationFreeLimitService.hasGetTheCoupon(loginUser.getId());
