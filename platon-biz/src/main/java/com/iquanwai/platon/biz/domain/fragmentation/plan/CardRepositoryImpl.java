@@ -42,7 +42,9 @@ public class CardRepositoryImpl implements CardRepository {
     private BufferedImage essenceNormalTop;
     private BufferedImage pandaCard;
     private BufferedImage caitongHead;
-    /** 采铜直播背景图 */
+    /**
+     * 采铜直播背景图
+     */
     private BufferedImage caitongBGImage;
 
     @Autowired
@@ -109,6 +111,12 @@ public class CardRepositoryImpl implements CardRepository {
         } catch (FontFormatException | IOException e) {
             logger.error(e.getLocalizedMessage());
             return null;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                logger.error("is closed error", e);
+            }
         }
         // TargetImage
         BufferedImage targetImage = loadTargetImageByChapterId(chapterId, totalSize);
@@ -164,7 +172,7 @@ public class CardRepositoryImpl implements CardRepository {
         BASE64Encoder encoder = new BASE64Encoder();
         try {
             return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
-        }finally {
+        } finally {
             try {
                 outputStream.close();
             } catch (IOException e) {
@@ -180,7 +188,7 @@ public class CardRepositoryImpl implements CardRepository {
         InputStream inputStream = qrCodeService.showQRCode(response.getTicket());
         try {
             return ImageUtils.getBufferedImageByInputStream(inputStream);
-        }finally {
+        } finally {
             try {
                 inputStream.close();
             } catch (IOException e) {
@@ -236,6 +244,12 @@ public class CardRepositoryImpl implements CardRepository {
         } catch (FontFormatException | IOException e) {
             logger.error(e.getLocalizedMessage());
             return null;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                logger.error("is closed error", e);
+            }
         }
         java.util.List<String> textArr = splitLinesByBytes(text, 24);
         for (int i = 0; i < textArr.size(); i++) {

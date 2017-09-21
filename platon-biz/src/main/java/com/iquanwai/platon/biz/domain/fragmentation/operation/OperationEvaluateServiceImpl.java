@@ -322,6 +322,12 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         } catch (FontFormatException | IOException e) {
             logger.error(e.getLocalizedMessage());
             return null;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                logger.error("is closed error", e);
+            }
         }
 
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
