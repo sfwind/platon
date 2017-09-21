@@ -50,9 +50,18 @@ public class IndexController {
     private RedisUtil redisUtil;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    //商学院按钮url
     private static final String INDEX_BUSINESS_SCHOOL_URL = "/rise/static/rise";
+    //训练营按钮url
     private static final String INDEX_CAMP_URL = "/rise/static/camp";
+    //关注页面
+    private static final String SUBSCRIBE_URL = "/static/subscribe";
+    //内测页面
+    private static final String FORBID_URL = "/403.jsp";
+    //训练营售卖页
+    private static final String CAMP_SALE_URL = "/pay/camp";
+    //商学院售卖页
+    private static final String BUSINESS_SCHOOL_SALE_URL = "/pay/rise";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
@@ -110,7 +119,7 @@ public class IndexController {
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
                 // 未关注
-                response.sendRedirect("/static/subscribe");
+                response.sendRedirect(SUBSCRIBE_URL);
                 logger.error("用户{}未关注", openid);
                 return null;
             }
@@ -126,7 +135,7 @@ public class IndexController {
         //如果不在白名单中,直接403报错
         boolean result = whiteListService.isInBibleWhiteList(loginUser.getId());
         if (!result) {
-            response.sendRedirect("/403.jsp");
+            response.sendRedirect(FORBID_URL);
             return null;
         }
 
@@ -146,7 +155,7 @@ public class IndexController {
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
                 // 未关注
-                response.sendRedirect("/static/subscribe");
+                response.sendRedirect(SUBSCRIBE_URL);
                 return null;
             }
         }
@@ -168,7 +177,7 @@ public class IndexController {
             //如果不在白名单中,直接403报错
             boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
             if (!result) {
-                response.sendRedirect("/403.jsp");
+                response.sendRedirect(FORBID_URL);
                 return null;
             }
         }
@@ -179,7 +188,7 @@ public class IndexController {
                     loginUser.getRiseMember() == Constants.RISE_MEMBER.COURSE_USER){
                 loginMsg(loginUser);
             } else{
-                response.sendRedirect("/403.jsp");
+                response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
                 return null;
             }
         }
@@ -189,7 +198,7 @@ public class IndexController {
             if(loginUser.getRiseMember() == Constants.RISE_MEMBER.MONTHLY_CAMP){
                 loginMsg(loginUser);
             } else{
-                response.sendRedirect("/403.jsp");
+                response.sendRedirect(CAMP_SALE_URL);
                 return null;
             }
         }
@@ -271,7 +280,7 @@ public class IndexController {
 
     private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum, String viewName) {
         ModelAndView mav = new ModelAndView(viewName);
-        String resourceUrl = null;
+        String resourceUrl;
         switch (viewName) {
             case RISE_VIEW:
                 resourceUrl = ConfigUtils.staticResourceUrl();
