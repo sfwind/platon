@@ -4,9 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -47,14 +45,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private CustomerMessageService customerMessageService;
-    @Autowired
-    private MessageService messageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String INDEX_URL = "/rise/static/plan/main";
+    private static final String INDEX_URL = "/rise/static/learn";
 
     @Override
     public void reopenTrialPlan(ImprovementPlan plan) {

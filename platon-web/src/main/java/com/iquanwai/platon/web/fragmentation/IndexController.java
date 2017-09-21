@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
@@ -50,7 +51,8 @@ public class IndexController {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String INDEX_URL = "/rise/static/plan/main";
+    private static final String INDEX_BUSINESS_SCHOOL_URL = "/rise/static/rise";
+    private static final String INDEX_CAMP_URL = "/rise/static/camp";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
@@ -108,8 +110,8 @@ public class IndexController {
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
                 // 未关注
-                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
-                logger.error("用户未关注");
+                response.sendRedirect("/static/subscribe");
+                logger.error("用户{}未关注", openid);
                 return null;
             }
         }
@@ -134,7 +136,6 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
-        logger.info("course jsp");
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -145,7 +146,7 @@ public class IndexController {
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
                 // 未关注
-                response.sendRedirect(ConfigUtils.adapterDomainName() + "/static/subscribe");
+                response.sendRedirect("/static/subscribe");
                 return null;
             }
         }
@@ -154,15 +155,6 @@ public class IndexController {
             CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
-        }
-
-        if (ConfigUtils.prePublish()) {
-            // 是否预发布
-            boolean inWhite = whiteListService.isInWhiteList(WhiteList.FRAG_PRACTICE, loginUser.getId());
-            if (!inWhite) {
-                response.sendRedirect("/403.jsp");
-                return null;
-            }
         }
 
         // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
@@ -181,8 +173,25 @@ public class IndexController {
             }
         }
 
-        if (request.getRequestURI().startsWith(INDEX_URL)) {
-            loginMsg(loginUser);
+        //点击商学院,非年费用户和小课单买用户跳转售卖页
+        if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)){
+            if(loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP ||
+                    loginUser.getRiseMember() == Constants.RISE_MEMBER.COURSE_USER){
+                loginMsg(loginUser);
+            } else{
+                response.sendRedirect("/403.jsp");
+                return null;
+            }
+        }
+
+        //点击训练营,非小课训练营用户跳转售卖页
+        if (request.getRequestURI().startsWith(INDEX_CAMP_URL)){
+            if(loginUser.getRiseMember() == Constants.RISE_MEMBER.MONTHLY_CAMP){
+                loginMsg(loginUser);
+            } else{
+                response.sendRedirect("/403.jsp");
+                return null;
+            }
         }
 
         return courseView(request, loginUser, showForum, RISE_VIEW);
