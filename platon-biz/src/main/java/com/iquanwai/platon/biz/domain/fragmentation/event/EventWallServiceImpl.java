@@ -66,66 +66,47 @@ public class EventWallServiceImpl implements EventWallService {
 
     private List<Integer> calculateVisible(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
         // 计算可见性
-        List<Integer> visibilities = Lists.newArrayList();
-        ImprovementPlan plan = plans.stream()
-                .filter(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
-                        && item.getProblemId().equals(eventWall.getVisibleProblemId())).findFirst().orElse(null);
 
-        if(riseMember == null) {
-            // 非会员（小课购买用户）
-            visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
-            visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
-            if (eventWall.getVisibleProblemId() != null && plan != null && eventWall.getVisibleProblemId().equals(plan.getProblemId())) {
-                // 对小课用户做特殊处理，训练营用户同样的逻辑
+        int NO_RESTRICT = 0; //不作限制
+        int NOT_RISE_MEMBER = 1; //非付费
+        int NOT_RISE_MEMBER_AND_PROFESSIONAL = 2; // 非精英
+        int ELITE = 3; // 精英版
+        int PROFESSIONAL = 4; // 非精英
+        int RISE_MEMBER = 5; // 付费用户
+        List<Integer> visibilities = Lists.newArrayList();
+        Boolean hasRunningPlan = plans.stream()
+                .anyMatch(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE));
+        // 不做限制的
+        visibilities.add(EventWall.VisibleLevel.NO_RESTRICT);
+        if (riseMember == null) {
+            // 非精英
+            visibilities.add(EventWall.VisibleLevel.NOT_ELITE);
+            if (hasRunningPlan) {
+                // 有正在进行的，当作付费
                 visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-                if (eventWall.getType() == EventWall.OFFLINE) {
-                    // 对于线下活动，权限等同于专业版
-                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                } else {
-                    // 对于其他，权限等于精英版
-                    visibilities.add(EventWall.VisibleLevel.ELITE);
-                }
+            } else {
+                // 没有则非付费
+                visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
             }
         } else {
+            // 付费用户
+            visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
             Integer memberTypeId = riseMember.getMemberTypeId();
             switch (memberTypeId) {
                 case RiseMember.HALF:
-                    // 专业版半年
-                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
-                    break;
                 case RiseMember.ANNUAL:
-                    // 专业版一年
-                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                    // 专业版
                     visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
+                    visibilities.add(EventWall.VisibleLevel.NOT_ELITE);
                     break;
                 case RiseMember.ELITE:
-                    // 精英版一年
-                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-                    visibilities.add(EventWall.VisibleLevel.ELITE);
-                    break;
                 case RiseMember.HALF_ELITE:
-                    // 精英版半年
-                    visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
+                    // 精英版
                     visibilities.add(EventWall.VisibleLevel.ELITE);
                     break;
                 case RiseMember.CAMP:
-                    // 训练营小课购买用户
-                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
-                    visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER_AND_PROFESSIONAL);
-                    if (eventWall.getVisibleProblemId() != null && plan != null && eventWall.getVisibleProblemId().equals(plan.getProblemId())) {
-                        // 对小课用户做特殊处理，训练营用户同样的逻辑
-                        visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-                        if (eventWall.getType() == EventWall.OFFLINE) {
-                            // 对于线下活动，权限等同于专业版
-                            visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                        } else {
-                            // 对于其他，权限等于精英版
-                            visibilities.add(EventWall.VisibleLevel.ELITE);
-                        }
-                    }
+                    visibilities.add(EventWall.VisibleLevel.NOT_ELITE);
+                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
                     break;
                 default:
                     break;

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -25,18 +26,19 @@ public class MQServiceImpl implements MQService {
 
     private String ipAddress;
 
+    @PostConstruct
+    public void init() {
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            ipAddress = localHost.getHostAddress();
+        } catch (UnknownHostException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+
     @Override
     public void saveMQSendOperation(MQSendLog mqSendLog) {
-        // 插入mqSendOperation
-        if (ipAddress == null) {
-            try {
-                InetAddress localHost = InetAddress.getLocalHost();
-                ipAddress = localHost.getHostAddress();
-            } catch (UnknownHostException e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
-
         mqSendLog.setPublisherIp(ipAddress);
         mqSendLogDao.insert(mqSendLog);
     }
@@ -45,14 +47,6 @@ public class MQServiceImpl implements MQService {
     @Override
     public void updateAfterDealOperation(RabbitMQDto dto) {
         String msgId = dto.getMsgId();
-        if (ipAddress == null) {
-            try {
-                InetAddress localHost = InetAddress.getLocalHost();
-                ipAddress = localHost.getHostAddress();
-            } catch (UnknownHostException e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
         MQDealLog mqDealLog = new MQDealLog();
         mqDealLog.setMsgId(msgId);
         mqDealLog.setTopic(dto.getTopic());

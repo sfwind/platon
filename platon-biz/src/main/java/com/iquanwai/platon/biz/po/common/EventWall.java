@@ -35,10 +35,10 @@ public class EventWall {
 
     public interface VisibleLevel {
         int NO_RESTRICT = 0; //不作限制
-        int NOT_RISE_MEMBER = 1; // 非会员
-        int NOT_RISE_MEMBER_AND_PROFESSIONAL = 2; // 非会员与专业版
+        int NOT_RISE_MEMBER = 1; //非付费
+        int NOT_ELITE = 2; // 非精英
         int ELITE = 3; // 精英版
-        int PROFESSIONAL = 4; // 专业版
-        int RISE_MEMBER = 5; // 会员版
+        int PROFESSIONAL = 4; // 非精英
+        int RISE_MEMBER = 5; // 付费用户
     }
 }
