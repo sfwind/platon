@@ -38,7 +38,7 @@ public class EventWall {
         int NOT_RISE_MEMBER = 1; //非付费
         int NOT_ELITE = 2; // 非精英
         int ELITE = 3; // 精英版
-        int PROFESSIONAL = 4; // 非精英
+        int PROFESSIONAL = 4; // 非精英付费用户
         int RISE_MEMBER = 5; // 付费用户
     }
 }

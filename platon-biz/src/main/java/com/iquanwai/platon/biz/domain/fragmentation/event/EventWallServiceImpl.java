@@ -54,7 +54,7 @@ public class EventWallServiceImpl implements EventWallService {
             return false;
         }
 
-        if (eventWall.getVisibility() == null) {
+        if (eventWall.getVisibility() == null || eventWall.getVisibility() == EventWall.VisibleLevel.NO_RESTRICT) {
             // 不对可见性做判断
             return true;
         } else {
@@ -66,13 +66,6 @@ public class EventWallServiceImpl implements EventWallService {
 
     private List<Integer> calculateVisible(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
         // 计算可见性
-
-        int NO_RESTRICT = 0; //不作限制
-        int NOT_RISE_MEMBER = 1; //非付费
-        int NOT_RISE_MEMBER_AND_PROFESSIONAL = 2; // 非精英
-        int ELITE = 3; // 精英版
-        int PROFESSIONAL = 4; // 非精英
-        int RISE_MEMBER = 5; // 付费用户
         List<Integer> visibilities = Lists.newArrayList();
         Boolean hasRunningPlan = plans.stream()
                 .anyMatch(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE));
