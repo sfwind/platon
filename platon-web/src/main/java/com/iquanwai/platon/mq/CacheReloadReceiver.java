@@ -2,6 +2,7 @@ package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
+import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -34,6 +35,8 @@ public class CacheReloadReceiver {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
+    @Autowired
+    private MQService mqService;
 
     @PostConstruct
     public void init() {
@@ -52,6 +55,11 @@ public class CacheReloadReceiver {
                     Integer memberSize = refreshStatus();
                     logger.info("当前登录人数:{}", memberSize);
                     break;
+                case "mqip": {
+                    mqService.reload();
+                    logger.info("刷新ip");
+                    break;
+                }
             }
         });
     }

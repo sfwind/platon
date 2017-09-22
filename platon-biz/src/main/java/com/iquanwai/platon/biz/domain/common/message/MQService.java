@@ -7,6 +7,8 @@ import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQDto;
  */
 public interface MQService {
 
+    void reload();
+
     void saveMQSendOperation(MQSendLog queue);
 
     void updateAfterDealOperation(RabbitMQDto msgId);

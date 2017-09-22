@@ -36,6 +36,11 @@ public class MQServiceImpl implements MQService {
         }
     }
 
+    @Override
+    public void reload(){
+        init();
+    }
+
 
     @Override
     public void saveMQSendOperation(MQSendLog mqSendLog) {
