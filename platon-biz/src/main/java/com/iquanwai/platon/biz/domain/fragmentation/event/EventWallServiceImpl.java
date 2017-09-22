@@ -7,12 +7,16 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +32,26 @@ public class EventWallServiceImpl implements EventWallService {
     private ImprovementPlanDao improvementPlanDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private List<EventWallVisible> visibleList = Lists.newArrayList();
+
+    @PostConstruct
+    public void init() {
+        visibleList.clear();
+        visibleList.add(new EventWallVisible(EventWall.VisibleLevel.NO_RESTRICT, info -> true));
+        visibleList.add(new EventWallVisible(EventWall.VisibleLevel.NO_PAY_NO_PLAN, info -> info.getRiseMember() == null && !info.getHasPlan()));
+        visibleList.add(new EventWallVisible(EventWall.VisibleLevel.NOT_ELITE,
+                info -> info.getRiseMember() == null ||
+                        !(RiseMember.ELITE == info.getRiseMember().getMemberTypeId()
+                                || RiseMember.HALF_ELITE == info.getRiseMember().getMemberTypeId())));
+        visibleList.add(new EventWallVisible(EventWall.VisibleLevel.ELITE,
+                info -> info.getRiseMember() != null &&
+                        (RiseMember.ELITE == info.getRiseMember().getMemberTypeId()
+                                || RiseMember.HALF_ELITE == info.getRiseMember().getMemberTypeId())));
+        visibleList.add(new EventWallVisible(EventWall.VisibleLevel.CAMP,
+                info -> info.getRiseMember() != null && info.getRiseMember().getMemberTypeId() == RiseMember.CAMP));
+        visibleList.add(new EventWallVisible(EventWall.VisibleLevel.RISE_MEMBER,
+                info -> info.getRiseMember() != null || info.getHasPlan()));
+    }
 
     public List<EventWall> getEventWall(Integer profileId) {
         RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
@@ -53,59 +77,32 @@ public class EventWallServiceImpl implements EventWallService {
         if (eventWall.getDel()) {
             return false;
         }
-
         if (eventWall.getVisibility() == null || eventWall.getVisibility() == EventWall.VisibleLevel.NO_RESTRICT) {
             // 不对可见性做判断
             return true;
         } else {
+            Boolean hasRunningPlan = plans.stream()
+                    .anyMatch(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE));
+            UserInfo info = new UserInfo();
+            info.setRiseMember(riseMember);
+            info.setHasPlan(hasRunningPlan);
             // 对可见性做判断
-            List<Integer> visibilities = calculateVisible(eventWall, riseMember, plans);
+            List<Integer> visibilities = visibleList.stream().filter(item -> item.getPredicate().test(info)).map(EventWallVisible::getVisible).collect(Collectors.toList());
             return visibilities.contains(eventWall.getVisibility());
         }
     }
+}
 
-    private List<Integer> calculateVisible(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {
-        // 计算可见性
-        List<Integer> visibilities = Lists.newArrayList();
-        Boolean hasRunningPlan = plans.stream()
-                .anyMatch(item -> (item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE));
-        // 不做限制的
-        visibilities.add(EventWall.VisibleLevel.NO_RESTRICT);
-        if (riseMember == null) {
-            // 非精英
-            visibilities.add(EventWall.VisibleLevel.NOT_ELITE);
-            if (hasRunningPlan) {
-                // 有正在进行的，当作付费
-                visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-            } else {
-                // 没有则非付费
-                visibilities.add(EventWall.VisibleLevel.NOT_RISE_MEMBER);
-            }
-        } else {
-            // 付费用户
-            visibilities.add(EventWall.VisibleLevel.RISE_MEMBER);
-            Integer memberTypeId = riseMember.getMemberTypeId();
-            switch (memberTypeId) {
-                case RiseMember.HALF:
-                case RiseMember.ANNUAL:
-                    // 专业版
-                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                    visibilities.add(EventWall.VisibleLevel.NOT_ELITE);
-                    break;
-                case RiseMember.ELITE:
-                case RiseMember.HALF_ELITE:
-                    // 精英版
-                    visibilities.add(EventWall.VisibleLevel.ELITE);
-                    break;
-                case RiseMember.CAMP:
-                    visibilities.add(EventWall.VisibleLevel.NOT_ELITE);
-                    visibilities.add(EventWall.VisibleLevel.PROFESSIONAL);
-                    break;
-                default:
-                    break;
-            }
-        }
-        return visibilities;
-    }
+@Data
+class UserInfo {
+    private RiseMember riseMember;
+    private Boolean hasPlan;
+}
+
+@Data
+@AllArgsConstructor
+class EventWallVisible {
+    private int visible;
+    private Predicate<UserInfo> predicate;
 
 }

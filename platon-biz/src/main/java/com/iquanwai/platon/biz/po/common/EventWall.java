@@ -35,9 +35,10 @@ public class EventWall {
 
     public interface VisibleLevel {
         int NO_RESTRICT = 0; //不作限制
-        int NOT_RISE_MEMBER = 1; //非付费
+        int NO_PAY_NO_PLAN = 1; //非付费
         int NOT_ELITE = 2; // 非精英
         int ELITE = 3; // 精英版
+        int CAMP = 4; // 小课训练营
         int PROFESSIONAL = 4; // 非精英付费用户
         int RISE_MEMBER = 5; // 付费用户
     }
