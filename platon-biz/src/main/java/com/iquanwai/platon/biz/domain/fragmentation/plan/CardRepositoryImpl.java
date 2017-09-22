@@ -56,7 +56,7 @@ public class CardRepositoryImpl implements CardRepository {
     @Autowired
     private CacheService cacheService;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Logger logger = LoggerFactory.getLogger(CardRepositoryImpl.class);
 
     private Map<Integer, BufferedImage> bufferedImageMap = Maps.newHashMap();
 
@@ -210,7 +210,7 @@ public class CardRepositoryImpl implements CardRepository {
                 headImgUrl = realProfile.getHeadimgurl();
                 headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
             } catch (NotFollowingException e) {
-                // ignore
+                logger.error("not following", e);
             }
         }
         // 修复两次都没有头像的用户，使用默认头像
@@ -293,7 +293,7 @@ public class CardRepositoryImpl implements CardRepository {
                     return str.equals(targetStr) ? targetStr : targetStr + "...";
                 }
             } catch (UnsupportedEncodingException e) {
-//                logger.error(e.getLocalizedMessage());
+                logger.error(e.getLocalizedMessage());
             }
         }
         return builder.toString();
