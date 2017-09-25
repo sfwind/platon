@@ -35,9 +35,9 @@ public class RiseClassMemberDao extends PracticeDBUtil {
         return -1;
     }
 
-    public RiseClassMember loadLatestRiseClassMember(Integer profileId) {
+    public RiseClassMember loadActiveRiseClassMember(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM RiseClassMember WHERE ProfileId = ? AND Del = 0 ORDER BY AddTime DESC";
+        String sql = "SELECT * FROM RiseClassMember WHERE ProfileId = ? AND Active = 1 AND Del = 0 ORDER BY AddTime DESC";
         ResultSetHandler<RiseClassMember> h = new BeanHandler<>(RiseClassMember.class);
         try {
             return runner.query(sql, h, profileId);

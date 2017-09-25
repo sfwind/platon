@@ -13,7 +13,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -104,7 +103,7 @@ public class CustomerController {
         riseDto.setIsRiseMember(profile.getRiseMember() == 1);
         riseDto.setNickName(profile.getNickname());
 
-        RiseClassMember riseClassMember = accountService.loadLatestRiseClassMember(loginUser.getId());
+        RiseClassMember riseClassMember = accountService.loadActiveRiseClassMember(loginUser.getId());
         if (riseClassMember != null) {
             riseDto.setMemberId(riseClassMember.getMemberId());
         }
