@@ -466,8 +466,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public RiseClassMember loadLatestRiseClassMember(Integer profileId) {
-        return riseClassMemberDao.loadLatestRiseClassMember(profileId);
+    public RiseClassMember loadActiveRiseClassMember(Integer profileId) {
+        return riseClassMemberDao.loadActiveRiseClassMember(profileId);
     }
 
     @Override
