@@ -130,6 +130,17 @@ public class ProblemController {
         catalogListDtos.sort((o1, o2) -> o2.getSequence() - o1.getSequence());
 
         List<Problem> hotList = problemService.loadHotProblems(ConfigUtils.loadHotProblemList());
+        hotList = hotList.stream().map(problem -> {
+            if (doneProblemIds.contains(problem.getId())) {
+                problem.setStatus(2);
+            } else if (doingProblemIds.contains(problem.getId())) {
+                problem.setStatus(1);
+            } else {
+                problem.setStatus(0);
+            }
+            return problem;
+        }).collect(Collectors.toList());
+
 
         result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
