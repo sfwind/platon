@@ -622,9 +622,12 @@ public class PlanServiceImpl implements PlanService {
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
             Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampStartStudyDate(), ConfigUtils.getMonthlyCampCloseDate());
-            // 强开后要加求点评次数
-            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
-            improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount() + 1);
+
+            // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
+            Profile profile = accountService.getProfile(profileId);
+            if (profile.getRequestCommentCount() == 0) {
+                improvementPlanDao.updateRequestComment(planId, 1);
+            }
         }
     }
 
