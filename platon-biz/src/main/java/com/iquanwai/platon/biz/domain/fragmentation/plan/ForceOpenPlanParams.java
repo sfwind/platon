@@ -12,6 +12,7 @@ public class ForceOpenPlanParams {
 
     private Integer profileId;
     private Integer problemId;
+    private Date startDate;
     private Date closeDate;
 
 }

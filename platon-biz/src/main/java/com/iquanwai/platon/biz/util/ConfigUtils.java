@@ -334,6 +334,10 @@ public class ConfigUtils {
         return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
     }
 
+    public static Date getMonthlyCampStartStudyDate() {
+        return DateUtils.parseStringToDate(getValue("monthly.camp.start.study.date"));
+    }
+
     /**
      * 读取热门小课配置
      */

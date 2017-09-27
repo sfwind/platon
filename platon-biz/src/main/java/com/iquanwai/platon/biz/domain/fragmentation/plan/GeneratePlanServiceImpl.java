@@ -82,9 +82,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             if (!o1.getChapter().equals(o2.getChapter())) {
                 return o1.getChapter() - o2.getChapter();
             }
-
             return o1.getSection() - o2.getSection();
         });
+
         //生成知识点
         practicePlans.addAll(createKnowledge(planId, problemSchedules));
         //生成巩固练习

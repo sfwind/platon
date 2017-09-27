@@ -39,9 +39,10 @@ public class ForceOpenCourseReceiver {
         JSONObject json = JSONObject.parseObject(message);
         Integer profileId = json.getInteger("profileId");
         Integer problemId = json.getInteger("problemId");
+        Date startDate = json.getDate("startDate");
         Date closeDate = json.getDate("closeDate");
 
-        planService.forceOpenProblem(profileId, problemId, closeDate);
+        planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
     }
 
 }
