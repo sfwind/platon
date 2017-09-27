@@ -645,19 +645,25 @@ public class PlanServiceImpl implements PlanService {
         if (improvementPlan == null) {
             // 用户从来没有开过小课，新开小课
             Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(planId, startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(planId, closeDate);
+            }
             generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
             resultPlanId = planId;
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            }
             resultPlanId = improvementPlan.getId();
-        }
-        if (startDate != null) {
-            improvementPlanDao.updateStartDate(resultPlanId, startDate);
-        }
-        if (closeDate != null) {
-            improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
         }
         return resultPlanId;
     }
