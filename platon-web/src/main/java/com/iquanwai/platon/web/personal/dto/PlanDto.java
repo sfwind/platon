@@ -21,7 +21,8 @@ public class PlanDto {
     private Integer deadline; //非db字段 离截止日期天数
     private Date startDate; //开始日期
     private Date closeTime; // 关闭时间
+    private Boolean learnable;// 是否可以学习
 
-    private Problem problem; // 改训练计划对应的小课
+    private Problem problem; // 该训练计划对应的小课
 
 }

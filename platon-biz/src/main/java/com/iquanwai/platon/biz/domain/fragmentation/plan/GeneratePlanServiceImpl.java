@@ -285,7 +285,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setTotalSeries(length);
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(new Date());
-        improvementPlan.setEndDate(DateUtils.afterDays(new Date(), length));
+        improvementPlan.setEndDate(null);
         // 查询是否是riseMember
         Profile profile = accountService.getProfile(profileId);
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
