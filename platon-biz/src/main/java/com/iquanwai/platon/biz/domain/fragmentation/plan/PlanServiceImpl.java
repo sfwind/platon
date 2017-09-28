@@ -621,10 +621,13 @@ public class PlanServiceImpl implements PlanService {
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
-            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampCloseDate());
-            // 强开后要加求点评次数
-            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
-            improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount() + 1);
+            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampStartStudyDate(), ConfigUtils.getMonthlyCampCloseDate());
+
+            // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
+            Profile profile = accountService.getProfile(profileId);
+            if (profile.getRequestCommentCount() == 0) {
+                improvementPlanDao.updateRequestComment(planId, 1);
+            }
         }
     }
 
@@ -633,25 +636,36 @@ public class PlanServiceImpl implements PlanService {
      */
     @Override
     public Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate) {
+        return forceOpenProblem(profileId, problemId, null, closeDate);
+    }
+
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
         Integer resultPlanId;
-        if (closeDate == null) {
-            closeDate = DateUtils.afterDays(new Date(), 30);
-        }
+
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
         if (improvementPlan == null) {
             // 用户从来没有开过小课，新开小课
             Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
-            improvementPlanDao.updateCloseDate(planId, closeDate);
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(planId, startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(planId, closeDate);
+            }
             generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
-
             resultPlanId = planId;
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
-
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            }
             resultPlanId = improvementPlan.getId();
         }
         return resultPlanId;

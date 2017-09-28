@@ -140,6 +140,16 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
     }
 
+    public void updateStartDate(Integer planId, Date startDate) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE ImprovementPlan SET StartDate = ? WHERE Id = ?";
+        try {
+            runner.update(sql, startDate, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     /**
      * 更新课程结束时间
      */

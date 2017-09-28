@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -570,6 +571,7 @@ public class PlanController {
             plan.setStartDate(item.getStartDate());
             plan.setProblemId(item.getProblemId());
             plan.setCloseTime(item.getCloseTime());
+            plan.setLearnable(item.getStartDate().compareTo(new Date()) <= 0);
 
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(item.getProblemId());
@@ -652,7 +654,7 @@ public class PlanController {
             // 额外添加业务场景下所需要的字段值
             recommendProblems.stream().forEach(problem -> {
                 Integer subCatalogId = problem.getSubCatalogId();
-                if(subCatalogId != null) {
+                if (subCatalogId != null) {
                     ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);
                     problem.setSubCatalog(subCatalog.getName());
                 }

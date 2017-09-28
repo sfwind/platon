@@ -157,5 +157,12 @@ public interface PlanService {
 
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate);
 
+    /**
+     * 小课强开
+     * startDate 小课开始日期
+     * closeDate 小课关闭日期
+     */
+    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
+
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
 }

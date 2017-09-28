@@ -114,9 +114,11 @@ public class BackendController {
         operationLogService.log(operationLog);
         Integer profileId = params.getProfileId();
         Integer problemId = params.getProblemId();
+        Date startDate = params.getStartDate();
         Date closeDate = params.getCloseDate();
-        Integer result = planService.forceOpenProblem(profileId, problemId, closeDate);
-        if(result > 0) {
+
+        Integer result = planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+        if (result > 0) {
             return WebUtils.result("接口调用成功，生成 PlanId：" + result);
         } else {
             return WebUtils.result("接口调用失败，返回 PlanId：" + result);
