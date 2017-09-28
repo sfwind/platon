@@ -19,8 +19,8 @@
         <property name="minPoolSize" value="5" />
         <!--连接池中保留的最大连接数。Default: 15 -->
         <property name="maxPoolSize" value="15" />
-        <!--数据源内加载的PreparedStatements数量-->
-        <property name="maxStatements" value="1000" />
+        <!--每个连接加载的PreparedStatements数量-->
+        <property name="maxStatementsPerConnection" value="30" />
     </bean>
 
     <bean id="dao.fragment.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
@@ -38,8 +38,8 @@
         <property name="minPoolSize" value="5" />
         <!--连接池中保留的最大连接数。Default: 15 -->
         <property name="maxPoolSize" value="15" />
-        <!--数据源内加载的PreparedStatements数量-->
-        <property name="maxStatements" value="1000" />
+        <!--每个连接加载的PreparedStatements数量-->
+        <property name="maxStatementsPerConnection" value="30" />
     </bean>
 
     <bean id="dao.forum.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
@@ -57,8 +57,8 @@
         <property name="minPoolSize" value="5" />
         <!--连接池中保留的最大连接数。Default: 15 -->
         <property name="maxPoolSize" value="15" />
-        <!--数据源内加载的PreparedStatements数量-->
-        <property name="maxStatements" value="1000" />
+        <!--每个连接加载的PreparedStatements数量-->
+        <property name="maxStatementsPerConnection" value="30" />
     </bean>
 
     <!-- transaction domain, use JtaTransactionManager for global tx -->

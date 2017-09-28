@@ -711,7 +711,7 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> loadChapterCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("小课学习").action("打开小课学习")
-                .function("加载章节卡片").memo(loginUser.getOpenId());
+                .function("加载章节卡片").memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         String chapterCardData = planService.loadChapterCard(loginUser.getId(), problemId, practicePlanId);
         if (chapterCardData != null) {
