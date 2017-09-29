@@ -183,16 +183,6 @@ public class PracticeController {
         Integer completedApplication = 0;
         if (isNewApplication) {
             completedApplication = practiceService.loadCompletedApplicationCnt(planId);
-            if (completedApplication == 3 && loginUser.getRiseMember() != 1) {
-                Coupon coupon = new Coupon();
-                coupon.setOpenId(loginUser.getOpenId());
-                coupon.setProfileId(loginUser.getId());
-                coupon.setAmount(20);
-                coupon.setUsed(0);
-                coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));
-                coupon.setDescription("奖学金");
-                accountService.insertCoupon(coupon);
-            }
         }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -222,7 +212,7 @@ public class PracticeController {
                                                                    @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Integer result = practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getDraft());
-        if(result > 0) {
+        if (result > 0) {
             return WebUtils.success();
         } else {
             return WebUtils.error("自动存储失败");
