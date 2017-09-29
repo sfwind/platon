@@ -105,6 +105,15 @@ public class BackendController {
         return WebUtils.result("正在进行中");
     }
 
+    @RequestMapping(value = "/send/camp/offer", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year,
+                                                               @RequestParam(value = "month") Integer month) {
+        new Thread(() -> {
+            certificateService.sendOfferMsg(year, month);
+        }).start();
+        return WebUtils.result("正在进行中");
+    }
+
     @RequestMapping(value = "/open/course", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> forceOpen(@RequestBody ForceOpenPlanParams params) {
         OperationLog operationLog = OperationLog.create().openid("后台小课强开")

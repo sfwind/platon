@@ -18,14 +18,21 @@ public interface CertificateService {
 
     /**
      * 发送训练营证书通知
-     * @year 开营年份
-     * @month 开营月份
+     * @param year 开营年份
+     * @param month 开营月份
      * */
     void sendCertificate(Integer year, Integer month);
 
     /**
      * 获取我的证书
-     * @profileId 用户id
+     * @param profileId 用户id
      * */
     List<RiseCertificate> getCertificates(Integer profileId);
+
+    /**
+     * 发送小课训练营毕业用户的商学院录取消息
+     * @param year 开营年份
+     * @param month 开营月份
+     * */
+    void sendOfferMsg(Integer year, Integer month);
 }
