@@ -97,7 +97,7 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "year") Integer year,
+    public ResponseEntity<Map<String, Object>> sendCertificate(@RequestParam(value = "year") Integer year,
                                                            @RequestParam(value = "month") Integer month) {
         new Thread(() -> {
             certificateService.sendCertificate(year, month);

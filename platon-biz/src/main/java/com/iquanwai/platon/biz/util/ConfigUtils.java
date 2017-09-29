@@ -369,5 +369,13 @@ public class ConfigUtils {
         return getValue("explore.banner");
     }
 
+    public static String sendCertificateMsg() {
+        return getValue("send.certificate.msg");
+    }
+
+    public static String productChangeMsg() {
+        return getValue("product.change.msg");
+    }
+
 }
 
