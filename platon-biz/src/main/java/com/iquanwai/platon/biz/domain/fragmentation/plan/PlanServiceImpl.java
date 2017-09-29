@@ -694,7 +694,7 @@ public class PlanServiceImpl implements PlanService {
                         Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         if (countLong3.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
                             access = false;
-                            message = "亲爱的精英版会员，你的选课数量已达36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                            message = "亲爱的商学院会员，你的选课数量已达36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                         }
                     }
                     break;
@@ -708,7 +708,7 @@ public class PlanServiceImpl implements PlanService {
                         Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         if (countLong4.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
                             access = false;
-                            message = "亲爱的精英版会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
+                            message = "亲爱的商学院会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
                         }
                     }
                     break;
