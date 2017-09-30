@@ -80,8 +80,8 @@ public class CommentDao extends PracticeDBUtil {
         }
     }
 
-    public List<Comment> loadAllCommentsByIds(List<Integer> referencedIds) {
-        if(CollectionUtils.isEmpty(referencedIds)) {
+    public List<Comment> loadAllCommentsByReferenceIds(List<Integer> referencedIds) {
+        if (CollectionUtils.isEmpty(referencedIds)) {
             return Lists.newArrayList();
         }
         QueryRunner runner = new QueryRunner(getDataSource());
@@ -89,6 +89,21 @@ public class CommentDao extends PracticeDBUtil {
         String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ")";
         try {
             return runner.query(sql, h, referencedIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<Comment> loadAllCommentsByIds(List<Integer> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Comment WHERE Id in (" + produceQuestionMark(ids.size()) + ")";
+        ResultSetHandler<List<Comment>> h = new BeanListHandler<Comment>(Comment.class);
+        try {
+            return runner.query(sql, h, ids.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

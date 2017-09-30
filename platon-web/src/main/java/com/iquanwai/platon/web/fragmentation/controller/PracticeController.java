@@ -222,7 +222,7 @@ public class PracticeController {
                                                                    @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Integer result = practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getDraft());
-        if(result > 0) {
+        if (result > 0) {
             return WebUtils.success();
         } else {
             return WebUtils.error("自动存储失败");
@@ -372,6 +372,7 @@ public class PracticeController {
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
 
         RiseRefreshListDto<RiseWorkCommentDto> riseRefreshListDto = new RiseRefreshListDto<>();
+
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
@@ -403,6 +404,9 @@ public class PracticeController {
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
         riseRefreshListDto.setList(commentDtos);
+        // 获取尚未被评价的应用题评论
+        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(submitId));
+
         riseRefreshListDto.setEnd(page.isLastPage());
         return WebUtils.result(riseRefreshListDto);
     }
@@ -460,8 +464,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/evaluate/application", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitApplicationEvaluation(LoginUser loginUser,
-                                                                           @RequestBody CommentEvaluation evaluation) {
+    public ResponseEntity<Map<String, Object>> submitApplicationEvaluation(LoginUser loginUser, @RequestBody CommentEvaluation evaluation) {
         Assert.notNull(loginUser, "用户不能为空");
         Integer commentId = evaluation.getCommentId();
         Integer useful = evaluation.getUseful();

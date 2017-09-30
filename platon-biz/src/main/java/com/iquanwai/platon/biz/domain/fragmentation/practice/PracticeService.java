@@ -90,6 +90,11 @@ public interface PracticeService {
     void updateEvaluation(Integer commentId, Integer useful, String reason);
 
     /**
+     * 获取当前应用题训练尚未被评价的教练评论记录
+     */
+    List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer submitId);
+
+    /**
      * 增加文章视图的记录数
      */
     Integer riseArticleViewCount(Integer module, Integer id, Integer type);

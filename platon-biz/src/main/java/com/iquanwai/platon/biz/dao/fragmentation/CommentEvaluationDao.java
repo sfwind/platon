@@ -1,16 +1,19 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.CommentEvaluation;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by xfduan on 2017/8/2.
@@ -50,6 +53,17 @@ public class CommentEvaluationDao extends PracticeDBUtil {
         }
     }
 
+    public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer submitId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CommentEvaluation WHERE SubmitId = ? AND Evaluated = 0";
+        ResultSetHandler<List<CommentEvaluation>> h = new BeanListHandler<CommentEvaluation>(CommentEvaluation.class);
+        try {
+            return runner.query(sql, h, submitId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 
     public CommentEvaluation loadByCommentId(Integer commentId) {
         QueryRunner runner = new QueryRunner(getDataSource());
