@@ -727,8 +727,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public void initCommentEvaluation(Integer commentId) {
-        commentEvaluationDao.initCommentEvaluation(commentId);
+    public void initCommentEvaluation(Integer submitId, Integer commentId) {
+        commentEvaluationDao.initCommentEvaluation(submitId, commentId);
     }
 
     @Override
@@ -778,6 +778,25 @@ public class PracticeServiceImpl implements PracticeService {
             evaluation.setNickName(profile.getNickname());
         }
         return evaluations;
+    }
+
+    @Override
+    public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationByCommentId(Integer commentId) {
+        List<CommentEvaluation> commentEvaluations = Lists.newArrayList();
+        CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
+        if (evaluation != null && evaluation.getEvaluated() == 0) {
+            Comment comment = commentDao.loadByCommentId(evaluation.getCommentId());
+            if (comment != null && comment.getCommentProfileId() != null) {
+                Profile profile = accountService.getProfile(comment.getCommentProfileId());
+                if (profile != null) {
+                    evaluation.setNickName(profile.getNickname());
+                }
+            }
+            commentEvaluations.add(evaluation);
+        } else {
+            return commentEvaluations;
+        }
+        return commentEvaluations;
     }
 
     @Override

@@ -412,9 +412,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/comment/message/{submitId}/{commentId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(LoginUser loginUser,
-                                                                           @PathVariable Integer submitId,
-                                                                           @PathVariable Integer commentId) {
+    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(LoginUser loginUser, @PathVariable Integer submitId, @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(commentId, "评论不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -433,7 +431,7 @@ public class PracticeController {
         riseRefreshListDto.setIsModifiedAfterFeedback(isModified);
 
         // 查看当前评论是否已经被评价
-        riseRefreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
+        // riseRefreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
 
         RiseWorkCommentDto dto = new RiseWorkCommentDto();
         Profile account = accountService.getProfile(comment.getCommentProfileId());
@@ -460,6 +458,9 @@ public class PracticeController {
         List<RiseWorkCommentDto> commentDtos = Lists.newArrayList();
         commentDtos.add(dto);
         riseRefreshListDto.setList(commentDtos);
+
+        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationByCommentId(commentId));
+
         return WebUtils.result(riseRefreshListDto);
     }
 
@@ -518,7 +519,7 @@ public class PracticeController {
 
             // 初始化教练回复的评论反馈评价
             if (Role.isAsst(loginUser.getRole())) {
-                practiceService.initCommentEvaluation(resultDto.getId());
+                practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
             return WebUtils.result(resultDto);
@@ -564,7 +565,7 @@ public class PracticeController {
 
             // 初始化教练回复的评论反馈评价
             if (Role.isAsst(loginUser.getRole())) {
-                practiceService.initCommentEvaluation(resultDto.getId());
+                practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

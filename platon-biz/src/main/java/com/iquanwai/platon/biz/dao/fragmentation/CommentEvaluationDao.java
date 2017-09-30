@@ -23,11 +23,11 @@ public class CommentEvaluationDao extends PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void initCommentEvaluation(Integer commentId) {
+    public void initCommentEvaluation(Integer submitId, Integer commentId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO CommentEvaluation (CommentId) VALUES (?)";
+        String sql = "INSERT INTO CommentEvaluation (SubmitId, CommentId) VALUES (?, ?)";
         try {
-            runner.insert(sql, new ScalarHandler<>(), commentId);
+            runner.insert(sql, new ScalarHandler<>(), submitId, commentId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -56,7 +56,7 @@ public class CommentEvaluationDao extends PracticeDBUtil {
     public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer submitId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CommentEvaluation WHERE SubmitId = ? AND Evaluated = 0";
-        ResultSetHandler<List<CommentEvaluation>> h = new BeanListHandler<CommentEvaluation>(CommentEvaluation.class);
+        ResultSetHandler<List<CommentEvaluation>> h = new BeanListHandler<>(CommentEvaluation.class);
         try {
             return runner.query(sql, h, submitId);
         } catch (SQLException e) {

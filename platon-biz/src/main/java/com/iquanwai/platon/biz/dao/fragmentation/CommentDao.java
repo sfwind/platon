@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -78,6 +79,18 @@ public class CommentDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    public Comment loadByCommentId(Integer id) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Comment WHERE Id = ?";
+        ResultSetHandler<Comment> h = new BeanHandler<Comment>(Comment.class);
+        try {
+            return runner.query(sql, h, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 
     public List<Comment> loadAllCommentsByReferenceIds(List<Integer> referencedIds) {

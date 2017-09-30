@@ -83,7 +83,7 @@ public interface PracticeService {
      */
     Boolean challengeSubmit(Integer id, String content);
 
-    void initCommentEvaluation(Integer commentId);
+    void initCommentEvaluation(Integer submitId, Integer commentId);
 
     Boolean loadEvaluated(Integer commentId);
 
@@ -93,6 +93,11 @@ public interface PracticeService {
      * 获取当前应用题训练尚未被评价的教练评论记录
      */
     List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer submitId);
+
+    /**
+     * 消息中心回复页面根据 commentId 来查询教练评论
+     */
+    List<CommentEvaluation> loadUnEvaluatedCommentEvaluationByCommentId(Integer commentId);
 
     /**
      * 增加文章视图的记录数
