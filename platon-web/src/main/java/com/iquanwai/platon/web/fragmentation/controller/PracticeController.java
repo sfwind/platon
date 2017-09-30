@@ -517,8 +517,10 @@ public class PracticeController {
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
 
+            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(loginUser.getRole())) {
+            if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
@@ -563,8 +565,10 @@ public class PracticeController {
             resultDto.setIsMine(true);
             resultDto.setRepliedDel(replyComment.getDel());
 
+            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(loginUser.getRole())) {
+            if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 

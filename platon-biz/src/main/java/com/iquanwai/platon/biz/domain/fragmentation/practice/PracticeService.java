@@ -294,6 +294,11 @@ public interface PracticeService {
     ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
 
     /**
+     * 根据 ApplicationSubmit 的 id 获取 ApplicationSubmit
+     */
+    ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId);
+
+    /**
      * 根据Id获取ApplicationSubmit对象
      *
      * @param id 主键

@@ -967,6 +967,11 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
+    public ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId) {
+        return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
+    }
+
+    @Override
     public ApplicationSubmit getApplicationSubmit(Integer id, Integer readProfileId) {
         ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, id);
         if (applicationSubmit != null) {
