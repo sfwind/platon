@@ -60,4 +60,16 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<RiseCertificate> loadGraduates(Integer year, Integer month) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Type in (1,2,3,5)";
+        ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return Lists.newArrayList();
+    }
+
 }

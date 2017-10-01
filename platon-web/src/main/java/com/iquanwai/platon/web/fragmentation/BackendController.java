@@ -97,10 +97,19 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "year") Integer year,
+    public ResponseEntity<Map<String, Object>> sendCertificate(@RequestParam(value = "year") Integer year,
                                                            @RequestParam(value = "month") Integer month) {
         new Thread(() -> {
             certificateService.sendCertificate(year, month);
+        }).start();
+        return WebUtils.result("正在进行中");
+    }
+
+    @RequestMapping(value = "/send/camp/offer", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year,
+                                                               @RequestParam(value = "month") Integer month) {
+        new Thread(() -> {
+            certificateService.sendOfferMsg(year, month);
         }).start();
         return WebUtils.result("正在进行中");
     }
