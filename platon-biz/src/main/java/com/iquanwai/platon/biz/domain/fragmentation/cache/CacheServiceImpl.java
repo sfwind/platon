@@ -70,10 +70,10 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存问题
         problems = problemDao.loadAll(Problem.class);
-        problems.forEach(problem -> {
+        problems.stream().filter(problem -> !problem.getDel()).forEach(problem -> {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
             problem.setChapterList(chapterList);
-            int subCatalogId = problem.getSubCatalogId();
+            Integer subCatalogId = problem.getSubCatalogId();
             ProblemSubCatalog problemSubCatalog = problemSubCatalogDao.load(ProblemSubCatalog.class, subCatalogId);
             if (problemSubCatalog != null) {
                 problem.setCategoryPic(problemSubCatalog.getPic());
