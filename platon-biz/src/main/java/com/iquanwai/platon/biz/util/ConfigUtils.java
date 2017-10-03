@@ -42,7 +42,7 @@ public class ConfigUtils {
     }
 
     public static String getValue(String key) {
-        String value = null;
+        String value;
         if (config.hasPath(key)) {
             return config.getString(key);
         } else {
@@ -191,10 +191,6 @@ public class ConfigUtils {
         return getValue("integrated.practice.index");
     }
 
-    public static Boolean prePublish() {
-        return getBooleanValue("rise.pre.publish");
-    }
-
     public static Boolean isDevelopment() {
         return getBooleanValue("development");
     }
@@ -301,13 +297,6 @@ public class ConfigUtils {
      */
     public static String getSignUpSuccessMsg() {
         return getValue("signUp.success");
-    }
-
-    /**
-     * rise小课测试状态
-     */
-    public static Boolean getRiseCoursePayTestStatus() {
-        return getBooleanValue("rise.course.pay.test");
     }
 
     /**
