@@ -248,6 +248,20 @@ public class CertificateServiceImpl implements CertificateService {
                     logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
                 }
                 break;
+            case Constants.CERTIFICATE.TYPE.ASST_COACH:
+                try {
+                    Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+                    templateMessage.setData(data);
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀助教\n"+
+                            "点击详情，领取优秀助教荣誉证书\n"));
+                    data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
+                    data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+                    data.put("keyword3", new TemplateMessage.Keyword(profile.getNickname()));
+
+                } catch (Exception e) {
+                    logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
+                }
+                break;
             default:
                 logger.error("证书类型{}不存在", type);
                 break;
@@ -299,6 +313,17 @@ public class CertificateServiceImpl implements CertificateService {
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ORDINARY);
+                break;
+            case Constants.CERTIFICATE.TYPE.ASST_COACH:
+                riseCertificate.setName(profile.getRealName());
+                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
+                        riseCertificate.getMonth() + "月小课训练营中表现卓越，荣膺\"优秀助教\"称号" +
+                        "\n\n" +
+                        "特发此证，以资鼓励");
+                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ASST_COACH);
+                break;
+            default:
+                logger.error("证书类型{}不存在", type);
                 break;
         }
     }
