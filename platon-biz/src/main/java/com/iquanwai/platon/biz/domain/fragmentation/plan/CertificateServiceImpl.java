@@ -60,7 +60,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void sendCertificate(Integer year, Integer month) {
-        List<RiseCertificate> certificateList = riseCertificateDao.loadByMonthAndYear(year, month);
+        List<RiseCertificate> certificateList = riseCertificateDao.loadUnNotifiedByMonthAndYear(year, month);
         certificateList.forEach(riseCertificate -> {
             Integer type = riseCertificate.getType();
             TemplateMessage templateMessage = new TemplateMessage();
@@ -80,6 +80,8 @@ public class CertificateServiceImpl implements CertificateService {
             templateMessage.setUrl("https://shimo.im/doc/3kL94FYajYgls0Zx?r=GQ373Y/");
             //发送优惠券信息
             sendCouponMessage(riseCertificate, type, templateMessage, profile);
+
+            riseCertificateDao.notify(riseCertificate.getId());
         });
     }
 
