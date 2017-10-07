@@ -38,7 +38,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
 
     public List<RiseCertificate> loadUnNotifiedByMonthAndYear(Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Notified=0";
+        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Notified=0 and Del=0";
         ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, year, month);
@@ -50,7 +50,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
 
     public List<RiseCertificate> loadByProfileId(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where ProfileId = ?";
+        String sql = "select * from RiseCertificate where ProfileId = ? and Del=0";
         ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, profileId);
@@ -62,7 +62,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
 
     public List<RiseCertificate> loadGraduates(Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Type in (1,2,3,5)";
+        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Type in (1,2,3,5) and Del=0";
         ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, year, month);

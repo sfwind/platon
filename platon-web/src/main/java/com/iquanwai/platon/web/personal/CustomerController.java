@@ -193,7 +193,12 @@ public class CustomerController {
                 .action("获取证书");
         operationLogService.log(operationLog);
         RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
-        return WebUtils.result(riseCertificate);
+        if (riseCertificate.getDel()) {
+            return WebUtils.error("证书已失效");
+        } else {
+            return WebUtils.result(riseCertificate);
+        }
+
     }
 
     @RequestMapping("/region")
