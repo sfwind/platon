@@ -230,9 +230,7 @@ public class CustomerController {
         operationLogService.log(operationLog);
         List<RiseCertificate> riseCertificates = certificateService.getCertificates(loginUser.getId());
         //清空profileId
-        riseCertificates.forEach(riseCertificate -> {
-            riseCertificate.setProfileId(null);
-        });
+        riseCertificates.forEach(riseCertificate -> riseCertificate.setProfileId(null));
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         PlanListDto list = new PlanListDto();
         List<PlanDto> runningPlans = Lists.newArrayList();
