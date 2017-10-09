@@ -57,6 +57,18 @@ public class CommentDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<Comment> loadCommentsByProfileId(Integer referId, Integer commentProfileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Comment WHERE ReferencedId = ? AND CommentProfileId = ? AND Del = 0";
+        ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
+        try {
+            return runner.query(sql, h, referId, commentProfileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public Integer commentCount(Integer moduleId, Integer referId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<>();
