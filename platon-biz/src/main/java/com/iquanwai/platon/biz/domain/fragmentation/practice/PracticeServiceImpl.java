@@ -730,7 +730,7 @@ public class PracticeServiceImpl implements PracticeService {
     public void initCommentEvaluation(Integer submitId, Integer commentId) {
         // 对于一道应用题，只有一次评价
         List<Comment> comments = commentDao.loadCommentsByProfileId(submitId, commentId);
-        if(comments.size() == 0) {
+        if (comments.size() == 0) {
             commentEvaluationDao.initCommentEvaluation(submitId, commentId);
         }
     }
@@ -765,7 +765,12 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer submitId) {
+    public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer profileId, Integer submitId) {
+        ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
+        if (!profileId.equals(applicationSubmit.getProfileId())) {
+            return Lists.newArrayList();
+        }
+
         List<CommentEvaluation> evaluations = commentEvaluationDao.loadUnEvaluatedCommentEvaluationBySubmitId(submitId);
         List<Integer> commentIds = evaluations.stream().map(CommentEvaluation::getCommentId).collect(Collectors.toList());
         List<Comment> comments = commentDao.loadAllCommentsByIds(commentIds);
