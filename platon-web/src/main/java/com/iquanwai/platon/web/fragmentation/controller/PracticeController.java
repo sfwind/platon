@@ -405,7 +405,7 @@ public class PracticeController {
         }).filter(Objects::nonNull).collect(Collectors.toList());
         riseRefreshListDto.setList(commentDtos);
         // 如果这个评论是自己的，则获取尚未被评价的应用题评论
-        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(submitId));
+        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(loginUser.getId(), submitId));
 
         riseRefreshListDto.setEnd(page.isLastPage());
         return WebUtils.result(riseRefreshListDto);
