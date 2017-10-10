@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -732,7 +733,7 @@ public class PracticeServiceImpl implements PracticeService {
         if (comment != null && comment.getCommentProfileId() != null) {
             // 对于一道应用题，只有一次评价
             List<Comment> comments = commentDao.loadCommentsByProfileId(submitId, comment.getCommentProfileId());
-            if (comments.size() == 0) {
+            if (CollectionUtils.isEmpty(comments)) {
                 commentEvaluationDao.initCommentEvaluation(submitId, commentId);
             }
         }
