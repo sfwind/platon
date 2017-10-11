@@ -4,93 +4,172 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-    <bean id="dao.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="jdbcUrl" value="${db.url}" />
-        <property name="user" value="${db.name}" />
-        <property name="password" value="${db.password}" />
-        <property name="driverClass" value="com.mysql.jdbc.Driver" />
-        <!--最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->
-        <property name="maxIdleTime" value="600" />
-        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 -->
-        <property name="checkoutTimeout" value="3000"/>
-        <!--每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->
-        <property name="idleConnectionTestPeriod" value="60" />
-        <!--连接池中保留的最小连接数。-->
-        <property name="minPoolSize" value="5" />
-        <!--连接池中保留的最大连接数。Default: 15 -->
-        <property name="maxPoolSize" value="15" />
-        <!--每个连接加载的PreparedStatements数量-->
-        <property name="maxStatementsPerConnection" value="30" />
+    <!--<bean id="dao.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
+        <!--<property name="jdbcUrl" value="${db.url}"/>-->
+        <!--<property name="user" value="${db.name}"/>-->
+        <!--<property name="password" value="${db.password}"/>-->
+        <!--<property name="driverClass" value="com.mysql.jdbc.Driver"/>-->
+        <!--&lt;!&ndash;最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 &ndash;&gt;-->
+        <!--<property name="maxIdleTime" value="600"/>-->
+        <!--&lt;!&ndash; 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 &ndash;&gt;-->
+        <!--<property name="checkoutTimeout" value="3000"/>-->
+        <!--&lt;!&ndash;每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 &ndash;&gt;-->
+        <!--<property name="idleConnectionTestPeriod" value="60"/>-->
+        <!--&lt;!&ndash;连接池中保留的最小连接数。&ndash;&gt;-->
+        <!--<property name="minPoolSize" value="5"/>-->
+        <!--&lt;!&ndash;连接池中保留的最大连接数。Default: 15 &ndash;&gt;-->
+        <!--<property name="maxPoolSize" value="15"/>-->
+        <!--&lt;!&ndash;每个连接加载的PreparedStatements数量&ndash;&gt;-->
+        <!--<property name="maxStatementsPerConnection" value="30"/>-->
+    <!--</bean>-->
+
+    <bean id="dao.dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.name}"/>
+        <property name="password" value="${db.password}"/>
+
+        <!--连接池建立时创建的初始化连接数-->
+        <property name="initialSize" value="5"/>
+        <!--连接池中最小的活跃连接数-->
+        <property name="minIdle" value="5"/>
+        <!--连接池中最大的活跃连接数-->
+        <property name="maxActive" value="15"/>
+        <!--配置获取连接等待超时时间-->
+        <property name="maxWait" value="60000"/>
+        <!--配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒-->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <!--校验查询 sql-->
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <!--是否在连接空闲一段时间后检测其可用性-->
+        <property name="testWhileIdle" value="true"/>
+        <!--是否在获得连接后检测其可用性-->
+        <property name="testOnBorrow" value="true"/>
+        <!--是否在连接放回连接池后检测其可用性-->
+        <property name="testOnReturn" value="false"/>
+        <!--查询超时时间-->
+        <property name="queryTimeout" value="60000"/>
+        <!--事务查询超时时间-->
+        <property name="transactionQueryTimeout" value="60000"/>
+        <!--登录超时时间	-->
+        <property name="loginTimeout" value="60000"/>
+        <!--打开 PSCache，并且制定每个连接上 PSCache 的大小-->
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>
+        <!--配置监控统计拦截的 filters，去掉后监控界面 sql 无法统计-->
+        <!--<property name="filters" value="stat"/>-->
     </bean>
 
-    <bean id="dao.fragment.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="jdbcUrl" value="${db.fragment.url}" />
-        <property name="user" value="${db.name}" />
-        <property name="password" value="${db.password}" />
-        <property name="driverClass" value="com.mysql.jdbc.Driver" />
-        <!--最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->
-        <property name="maxIdleTime" value="600" />
-        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 -->
-        <property name="checkoutTimeout" value="3000"/>
-        <!--每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->
-        <property name="idleConnectionTestPeriod" value="60" />
-        <!--连接池中保留的最小连接数。-->
-        <property name="minPoolSize" value="5" />
-        <!--连接池中保留的最大连接数。Default: 15 -->
-        <property name="maxPoolSize" value="15" />
-        <!--每个连接加载的PreparedStatements数量-->
-        <property name="maxStatementsPerConnection" value="30" />
+    <bean id="dao.fragment.dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="url" value="${db.fragment.url}"/>
+        <property name="username" value="${db.name}"/>
+        <property name="password" value="${db.password}"/>
+
+        <!--连接池建立时创建的初始化连接数-->
+        <property name="initialSize" value="5"/>
+        <!--连接池中最小的活跃连接数-->
+        <property name="minIdle" value="5"/>
+        <!--连接池中最大的活跃连接数-->
+        <property name="maxActive" value="15"/>
+        <!--配置获取连接等待超时时间-->
+        <property name="maxWait" value="60000"/>
+        <!--配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒-->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <!--校验查询 sql-->
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <!--是否在连接空闲一段时间后检测其可用性-->
+        <property name="testWhileIdle" value="true"/>
+        <!--是否在获得连接后检测其可用性-->
+        <property name="testOnBorrow" value="true"/>
+        <!--是否在连接放回连接池后检测其可用性-->
+        <property name="testOnReturn" value="false"/>
+        <!--查询超时时间-->
+        <property name="queryTimeout" value="60000"/>
+        <!--事务查询超时时间-->
+        <property name="transactionQueryTimeout" value="60000"/>
+        <!--登录超时时间	-->
+        <property name="loginTimeout" value="60000"/>
+        <!--打开 PSCache，并且制定每个连接上 PSCache 的大小-->
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>
+        <!--配置监控统计拦截的 filters，去掉后监控界面 sql 无法统计-->
+        <!--<property name="filters" value="stat"/>-->
     </bean>
 
-    <bean id="dao.forum.dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="jdbcUrl" value="${db.forum.url}" />
-        <property name="user" value="${db.name}" />
-        <property name="password" value="${db.password}" />
-        <property name="driverClass" value="com.mysql.jdbc.Driver" />
-        <!--最大空闲时间，600秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->
-        <property name="maxIdleTime" value="600" />
-        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 -->
-        <property name="checkoutTimeout" value="3000"/>
-        <!--每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->
-        <property name="idleConnectionTestPeriod" value="60" />
-        <!--连接池中保留的最小连接数。-->
-        <property name="minPoolSize" value="5" />
-        <!--连接池中保留的最大连接数。Default: 15 -->
-        <property name="maxPoolSize" value="15" />
-        <!--每个连接加载的PreparedStatements数量-->
-        <property name="maxStatementsPerConnection" value="30" />
+    <bean id="dao.forum.dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="url" value="${db.forum.url}"/>
+        <property name="username" value="${db.name}"/>
+        <property name="password" value="${db.password}"/>
+
+        <!--连接池建立时创建的初始化连接数-->
+        <property name="initialSize" value="5"/>
+        <!--连接池中最小的活跃连接数-->
+        <property name="minIdle" value="5"/>
+        <!--连接池中最大的活跃连接数-->
+        <property name="maxActive" value="15"/>
+        <!--配置获取连接等待超时时间-->
+        <property name="maxWait" value="60000"/>
+        <!--配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒-->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <!--校验查询 sql-->
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <!--是否在连接空闲一段时间后检测其可用性-->
+        <property name="testWhileIdle" value="true"/>
+        <!--是否在获得连接后检测其可用性-->
+        <property name="testOnBorrow" value="true"/>
+        <!--是否在连接放回连接池后检测其可用性-->
+        <property name="testOnReturn" value="false"/>
+        <!--查询超时时间-->
+        <property name="queryTimeout" value="60000"/>
+        <!--事务查询超时时间-->
+        <property name="transactionQueryTimeout" value="60000"/>
+        <!--登录超时时间	-->
+        <property name="loginTimeout" value="60000"/>
+        <!--打开 PSCache，并且制定每个连接上 PSCache 的大小-->
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>
+        <!--配置监控统计拦截的 filters，去掉后监控界面 sql 无法统计-->
+        <!--<property name="filters" value="stat"/>-->
     </bean>
 
     <!-- transaction domain, use JtaTransactionManager for global tx -->
     <bean id="dao.transactionManager"
           class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dao.dataSource" />
+        <property name="dataSource" ref="dao.dataSource"/>
     </bean>
 
     <!-- define the SqlSessionFactory -->
     <!--<bean id="dao.sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">-->
-        <!--<property name="dataSource" ref="dao.dataSource" />-->
-        <!--<property name="typeAliasesPackage"-->
-                  <!--value="com.iquanwai.platon.biz.po" />-->
-        <!--<property name="plugins">-->
-        <!--<array>-->
-        <!--<bean class="com.github.pagehelper.PageHelper">-->
-        <!--<property name="properties">-->
-        <!--<value>-->
-        <!--dialect=mysql-->
-        <!--reasonable=true-->
-        <!--</value>-->
-        <!--</property>-->
-        <!--</bean>-->
-        <!--</array>-->
-        <!--</property>-->
+    <!--<property name="dataSource" ref="dao.dataSource" />-->
+    <!--<property name="typeAliasesPackage"-->
+    <!--value="com.iquanwai.platon.biz.po" />-->
+    <!--<property name="plugins">-->
+    <!--<array>-->
+    <!--<bean class="com.github.pagehelper.PageHelper">-->
+    <!--<property name="properties">-->
+    <!--<value>-->
+    <!--dialect=mysql-->
+    <!--reasonable=true-->
+    <!--</value>-->
+    <!--</property>-->
+    <!--</bean>-->
+    <!--</array>-->
+    <!--</property>-->
     <!--</bean>-->
 
     <!-- scan for mappers and let them be autowired -->
     <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">-->
-        <!--<property name="basePackage"-->
-                  <!--value="com.iquanwai.platon.biz.dao" />-->
-        <!--<property name="sqlSessionFactoryBeanName" value="dao.sqlSessionFactory" />-->
+    <!--<property name="basePackage"-->
+    <!--value="com.iquanwai.platon.biz.dao" />-->
+    <!--<property name="sqlSessionFactoryBeanName" value="dao.sqlSessionFactory" />-->
     <!--</bean>-->
 
 </beans>

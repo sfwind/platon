@@ -8,11 +8,11 @@
     <display-name>Platon Web</display-name>
 
     <!--<context-param>-->
-        <!--<param-name>contextConfigLocation</param-name>-->
-        <!--<param-value>-->
-            <!--classpath*:config/spring/local/appcontext-*.xml-->
-            <!--classpath*:config/spring/local/dbcon/appcontext-*.xml-->
-        <!--</param-value>-->
+    <!--<param-name>contextConfigLocation</param-name>-->
+    <!--<param-value>-->
+    <!--classpath*:config/spring/local/appcontext-*.xml-->
+    <!--classpath*:config/spring/local/dbcon/appcontext-*.xml-->
+    <!--</param-value>-->
     <!--</context-param>-->
     <context-param>
         <param-name>log4jConfigLocation</param-name>
@@ -44,10 +44,37 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!--druid 数据库连接池后台-->
+    <!--<filter>-->
+        <!--<filter-name>DruidWebStatFilter</filter-name>-->
+        <!--<filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>-->
+        <!--<init-param>-->
+            <!--<param-name>exclusions</param-name>-->
+            <!--<param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*</param-value>-->
+        <!--</init-param>-->
+    <!--</filter>-->
+    <!--<filter-mapping>-->
+        <!--<filter-name>DruidWebStatFilter</filter-name>-->
+        <!--<url-pattern>/*</url-pattern>-->
+    <!--</filter-mapping>-->
+
+    <!--<servlet>-->
+        <!--<servlet-name>DruidStatView</servlet-name>-->
+        <!--<servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>-->
+        <!--<init-param>-->
+            <!--&lt;!&ndash; 允许清空统计数据 &ndash;&gt;-->
+            <!--<param-name>resetEnable</param-name>-->
+            <!--<param-value>false</param-value>-->
+        <!--</init-param>-->
+    <!--</servlet>-->
+    <!--<servlet-mapping>-->
+        <!--<servlet-name>DruidStatView</servlet-name>-->
+        <!--<url-pattern>/druid/*</url-pattern>-->
+    <!--</servlet-mapping>-->
 
     <!-- 读取 contextConfigLocation -->
     <!--<listener>-->
-        <!--<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>-->
+    <!--<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>-->
     <!--</listener>-->
 
     <!-- 读取 log4jConfigLocation 和 log4jRefreshInterval -->
