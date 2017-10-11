@@ -2,12 +2,14 @@ package com.iquanwai.platon.web.resolver;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -66,7 +68,8 @@ public class LoginUserService {
     private PlanService planService;
     @Autowired
     private CallbackDao callbackDao;
-
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
 
     /**
@@ -350,7 +353,7 @@ public class LoginUserService {
         loginUser.setOpenNavigator(profile.getOpenNavigator());
         loginUser.setOpenWelcome(profile.getOpenWelcome());
         loginUser.setDevice(platform.getValue());
-        loginUser.setRiseMember(profile.getRiseMember());
+        loginUser.setRiseMember(riseMember(profile.getId()));
         return loginUser;
     }
 
@@ -359,5 +362,29 @@ public class LoginUserService {
         list.addAll(pcLoginUserMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
         list.addAll(wechatLoginUserMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
         return list;
+    }
+
+    private Integer riseMember(Integer profileId){
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if(riseMember==null){
+            return 0;
+        }
+        Integer memberTypeId = riseMember.getMemberTypeId();
+        if(memberTypeId == null){
+            return 0;
+        }
+        // 精英或者专业版用户
+        if(memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
+                || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE){
+            return 1;
+        // 训练营用户
+        } else if(memberTypeId == RiseMember.CAMP){
+            return 3;
+        // 小课用户
+        } else if(memberTypeId == RiseMember.COURSE){
+            return 2;
+        }
+
+        return 0;
     }
 }
