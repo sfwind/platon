@@ -12,7 +12,6 @@ import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
@@ -182,8 +181,7 @@ public class IndexController {
 
         //点击商学院,非年费用户和小课单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
-            if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP ||
-                    loginUser.getRiseMember() == Constants.RISE_MEMBER.COURSE_USER) {
+            if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
                 loginMsg(loginUser);
             } else {
                 response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
@@ -193,7 +191,7 @@ public class IndexController {
 
         //点击训练营,非小课训练营用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
-            if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MONTHLY_CAMP) {
+            if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
                 loginMsg(loginUser);
             } else {
                 response.sendRedirect(CAMP_SALE_URL);

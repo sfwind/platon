@@ -37,23 +37,28 @@ public class WhiteListServiceImpl implements WhiteListService {
         return level != null && level.getValid() == 1;
     }
 
-    /**
-     * 点击商学院白名单
-     */
+    @Override
     public boolean checkRiseMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long riseCount = riseMembers.stream().filter(riseMember ->
-                riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                // 商学院会员（半年、一年）、小课单买用户
+                riseMember.getMemberTypeId() == RiseMember.ELITE
+                        || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                        || riseMember.getMemberTypeId() == RiseMember.COURSE
         ).count();
         return riseCount.intValue() > 0;
     }
 
-    /**
-     * 点击小课训练营白名单
-     */
+    @Override
     public boolean checkCampMenuWhiteList(Integer profileId) {
-
-        return false;
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        Long campCount = riseMembers.stream().filter(riseMember ->
+                // 专业版会员（半年、一年）、小课训练营
+                riseMember.getMemberTypeId() == RiseMember.HALF
+                        || riseMember.getMemberTypeId() == RiseMember.ANNUAL
+                        || riseMember.getMemberTypeId() == RiseMember.CAMP
+        ).count();
+        return campCount.intValue() > 0;
     }
 
 }
