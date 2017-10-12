@@ -73,7 +73,7 @@ public class EvaluateSubscribeReceiver {
     private void sendScanMsg(String openId) {
         String message = "不好，来迟了一步，洞察力测评都关闭了。\n\n" +
                 "然而，课程是开放滴，和小伙伴们一起升级职场洞察力？戳这里：\n\n" +
-                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/static/audition/success'>点击领取试听小课</a>";
+                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/static/audition/success?choose=true'>点击领取试听小课</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
