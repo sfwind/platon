@@ -73,36 +73,36 @@ public class IndexController {
         logger.info("---------loadCertainDateArticles es.set.netty.runtime.available.processors:{}", System.getProperty("es.set.netty.runtime.available.processors"));
     }
 
-    @RequestMapping(value = "/heartbeat",method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> heartbeat() throws Exception{
+    @RequestMapping(value = "/heartbeat", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> heartbeat() throws Exception {
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
-//        String accessToken = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
-//        String openid = null;
-//        Account account = null;
-//        if (accessToken != null) {
-//            openid = oAuthService.openId(accessToken);
-//            try {
-//                account = accountService.getGuestFromWeixin(openid, accessToken);
-//                logger.info("account:{}", account);
-//            } catch (Exception e) {
-//                logger.info("请求失败");
-//                CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
-//                WebUtils.askAuth(request, response);
-//                return null;
-//            }
-//        }
-
-//        if (account == null) {
-//            logger.info("用户为空:{}", accessToken);
-//            CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
-//            WebUtils.askAuth(request, response);
-//            return null;
-//        }
-//        GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
+        // String accessToken = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
+        // String openid = null;
+        // Account account = null;
+        // if (accessToken != null) {
+        //     openid = oAuthService.openId(accessToken);
+        //     try {
+        //         account = accountService.getGuestFromWeixin(openid, accessToken);
+        //         logger.info("account:{}", account);
+        //     } catch (Exception e) {
+        //         logger.info("请求失败");
+        //         CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
+        //         WebUtils.askAuth(request, response);
+        //         return null;
+        //     }
+        // }
+        //
+        // if (account == null) {
+        //     logger.info("用户为空:{}", accessToken);
+        //     CookieUtils.removeCookie(LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME, response);
+        //     WebUtils.askAuth(request, response);
+        //     return null;
+        // }
+        // GuestUser guestUser = new GuestUser(account.getOpenid(), account.getNickname(), account.getHeadimgurl(), account.getRealName());
         return courseView(request, null, false, NOTE_VIEW);
     }
 
@@ -131,7 +131,6 @@ public class IndexController {
             return null;
         }
 
-
         //如果不在白名单中,直接403报错
         boolean result = whiteListService.isInBibleWhiteList(loginUser.getId());
         if (!result) {
@@ -141,7 +140,6 @@ public class IndexController {
 
         return courseView(request, loginUser, false, NOTE_VIEW);
     }
-
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
@@ -183,21 +181,21 @@ public class IndexController {
         }
 
         //点击商学院,非年费用户和小课单买用户跳转售卖页
-        if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)){
-            if(loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP ||
-                    loginUser.getRiseMember() == Constants.RISE_MEMBER.COURSE_USER){
+        if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
+            if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP ||
+                    loginUser.getRiseMember() == Constants.RISE_MEMBER.COURSE_USER) {
                 loginMsg(loginUser);
-            } else{
+            } else {
                 response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
                 return null;
             }
         }
 
         //点击训练营,非小课训练营用户跳转售卖页
-        if (request.getRequestURI().startsWith(INDEX_CAMP_URL)){
-            if(loginUser.getRiseMember() == Constants.RISE_MEMBER.MONTHLY_CAMP){
+        if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
+            if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MONTHLY_CAMP) {
                 loginMsg(loginUser);
-            } else{
+            } else {
                 response.sendRedirect(CAMP_SALE_URL);
                 return null;
             }
@@ -240,11 +238,11 @@ public class IndexController {
                 if (lastLoginTime == null) {
                     //保存60秒
                     logger.info("{}很久未登录", loginUser.getId());
-//                    ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
-//                    //首次登录用户不发活动信息
-//                    if (improvementPlan != null) {
-//                        redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
-//                    }
+                    // ImprovementPlan improvementPlan = planService.getLatestPlan(loginUser.getId());
+                    // //首次登录用户不发活动信息
+                    // if (improvementPlan != null) {
+                    //     redisUtil.set(WELCOME_MSG_REDIS_KEY + loginUser.getId(), true, 60L);
+                    // }
                 } else {
                     Date lastLogin = DateUtils.parseStringToDateTime(lastLoginTime);
                     //上次登录时间早于活动开始时间
