@@ -155,6 +155,10 @@ public interface PlanService {
 
     void forceOpenCampOrder(String orderId);
 
+    Integer magicOpenProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
+
+    Integer magicOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
+
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate);
 
     /**

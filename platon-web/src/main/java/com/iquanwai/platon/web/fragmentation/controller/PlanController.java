@@ -33,6 +33,7 @@ import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
+import com.iquanwai.platon.web.fragmentation.dto.plan.AuditionChooseDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -758,25 +759,39 @@ public class PlanController {
         // 检查是否能选择试听课
         // 标准：1.非会员，2.没有选过
         Integer auditionId = ConfigUtils.getTrialProblemId();
+        AuditionChooseDto dto = new AuditionChooseDto();
+        dto.setGoSuccess(false);
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         if (ownedAudition != null) {
             // 已经拥有试听课
-            return WebUtils.error(ownedAudition.getId());
+            if (!ownedAudition.getStatus().equals(ImprovementPlan.COMPLETE) && !ownedAudition.getStatus().equals(ImprovementPlan.RUNNING)) {
+                // 不是进行中
+                Integer planId = planService.magicOpenProblem(loginUser.getId(), auditionId, DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
+                dto.setPlanId(planId);
+                dto.setGoSuccess(true);
+            } else {
+                // 进行中
+                dto.setPlanId(ownedAudition.getId());
+                dto.setGoSuccess(false);
+            }
         } else {
             // 没有试听课，判断是不是会员
             RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
-            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL
-                    || riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
                 // 会员不需要重复选择试听课
-                return WebUtils.result(-2);
+                dto.setErrMsg("商学院员会员可以在发现页面选课哦");
             } else {
                 // 没有试听课，并且不是年费会员,可以选择试听课
                 Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), auditionId);
                 // 发送入群消息
-                this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
-                return WebUtils.result(planId);
+                dto.setPlanId(planId);
+                dto.setGoSuccess(true);
             }
         }
+        if (dto.getGoSuccess()) {
+            this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
+        }
+        return WebUtils.result(dto);
     }
 
     // 发送普通限免小课信息
