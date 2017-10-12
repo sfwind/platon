@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.slf4j.Logger;
@@ -76,7 +77,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         if (tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
 
         String[] sceneParams = scene.split("_");
-        if (profile.getRiseMember() == 1) {
+        if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
             // 如果是会员扫码，则入 level 表，valid = 0，level = 1
             PromotionLevel promotionLevel = getDefaultPromotionLevel();
             promotionLevel.setProfileId(profile.getId());
@@ -117,7 +118,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
                 PromotionLevel promoterLevel = getDefaultPromotionLevel();
                 promoterLevel.setProfileId(promotionProfileId);
                 promoterLevel.setLevel(1);
-                promoterLevel.setValid(promotionProfile.getRiseMember() == 1 ? 0 : 1);
+                promoterLevel.setValid(promotionProfile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP ? 0 : 1);
                 promotionLevelDao.insertPromotionLevel(promoterLevel);
             }
 
@@ -165,7 +166,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
 
             Profile sourceProfile = accountService.getProfile(promoterId);
             // 区分是否为会员
-            if (sourceProfile.getRiseMember() == 1) {
+            if (sourceProfile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
                 // 是会员
                 if (successUsers.size() <= successNum) {
                     sendNormalSuccessOrderMsg(sourceProfile.getOpenid(), openId);

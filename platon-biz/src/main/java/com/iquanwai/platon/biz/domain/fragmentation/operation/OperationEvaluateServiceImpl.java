@@ -404,7 +404,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             freeLimit = true;
         } else {
             Profile sourceProfile = accountService.getProfile(sourceProfileId);
-            if(sourceProfile.getRiseMember() == 1){
+            if(sourceProfile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP){
                 freeLimit = true;
             }
         }
@@ -606,7 +606,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     // 扫码者是否是会员
     private boolean isRiseMember(Integer profileId) {
         Profile profile = accountService.getProfile(profileId);
-        return profile.getRiseMember() == 1;
+        return profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
     }
 
     // 扫码来源，区分为 1-官方， 2-自己， 3-他人
