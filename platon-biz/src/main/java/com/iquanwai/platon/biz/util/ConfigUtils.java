@@ -366,9 +366,6 @@ public class ConfigUtils {
         return getValue("product.change.msg");
     }
 
-    public static Integer getAuditionProblemId() {
-        return getIntValue("audition.problem.id");
-    }
 
 }
 

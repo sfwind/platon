@@ -757,8 +757,8 @@ public class PlanController {
         operationLogService.log(operationLog);
         // 检查是否能选择试听课
         // 标准：1.非会员，2.没有选过
-        Integer auditionId = ConfigUtils.getAuditionProblemId();
-        ImprovementPlan ownedAudition = planService.loadUserPlans(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+        Integer auditionId = ConfigUtils.getTrialProblemId();
+        ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         if (ownedAudition != null) {
             // 已经拥有试听课
             return WebUtils.error(ownedAudition.getId());
