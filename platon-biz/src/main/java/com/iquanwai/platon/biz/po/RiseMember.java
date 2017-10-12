@@ -42,4 +42,8 @@ public class RiseMember {
      * 训练营小课
      */
     public static final int CAMP = 5;
+    /**
+     * 单买小课
+     */
+    public static final int COURSE = 6;
 }
