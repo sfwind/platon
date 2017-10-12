@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -292,7 +293,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(profileId);
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
-        improvementPlan.setRiseMember(profile.getRiseMember() != 0);
+        improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);
         return improvementPlanDao.insert(improvementPlan);
 
     }

@@ -19,6 +19,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.AreaDto;
@@ -100,7 +101,7 @@ public class CustomerController {
         RiseDto riseDto = new RiseDto();
         riseDto.setRiseId(profile.getRiseId());
         riseDto.setMobile(profile.getMobileNo());
-        riseDto.setIsRiseMember(profile.getRiseMember() == 1);
+        riseDto.setIsRiseMember(profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP);
         riseDto.setNickName(profile.getNickname());
 
         RiseClassMember riseClassMember = accountService.loadActiveRiseClassMember(loginUser.getId());
