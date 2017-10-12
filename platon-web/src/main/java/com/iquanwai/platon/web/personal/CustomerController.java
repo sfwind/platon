@@ -21,12 +21,7 @@ import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
-import com.iquanwai.platon.web.personal.dto.AreaDto;
-import com.iquanwai.platon.web.personal.dto.PlanDto;
-import com.iquanwai.platon.web.personal.dto.PlanListDto;
-import com.iquanwai.platon.web.personal.dto.ProfileDto;
-import com.iquanwai.platon.web.personal.dto.RegionDto;
-import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
+import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -272,6 +267,22 @@ public class CustomerController {
                 .action("查询rise会员信息")
                 .memo(riseMember != null ? new Gson().toJson(riseMember) : "none");
         operationLogService.log(operationLog);
+
+        if (riseMember != null) {
+            return WebUtils.result(riseMember.simple());
+        } else {
+            return WebUtils.error("未找到会员数据");
+        }
+    }
+
+    @RequestMapping("/notify/expire")
+    public ResponseEntity<Map<String, Object>> notifyExpire(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSevenDays(loginUser.getId());
+        boolean expiredRiseMember = riseMemberService.expiredRiseMember(loginUser.getId());
+        RiseMember riseMember = new RiseMember();
+        riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
+        riseMember.setExpired(expiredRiseMember);
         return WebUtils.result(riseMember);
     }
 
