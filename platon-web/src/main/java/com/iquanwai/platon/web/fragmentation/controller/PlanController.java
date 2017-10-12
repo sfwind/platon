@@ -2,18 +2,33 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.Recommendation;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
@@ -28,7 +43,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -63,6 +82,10 @@ public class PlanController {
     private WhiteListService whiteListService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private RiseMemberService riseMemberService;
+    @Autowired
+    private TemplateMessageService templateMessageService;
 
     /**
      * 检查是否能选课<br/>
@@ -721,6 +744,55 @@ public class PlanController {
         } else {
             return WebUtils.error("该卡片正在制作中，请期待~");
         }
+    }
+
+    @RequestMapping(value = "/choose/audition/course", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> chooseAuditionCourse(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser.getOpenId())
+                .module("小课")
+                .function("试听课")
+                .action("选择试听课");
+        operationLogService.log(operationLog);
+        // 检查是否能选择试听课
+        // 标准：1.非会员，2.没有选过
+        Integer auditionId = ConfigUtils.getAuditionProblemId();
+        ImprovementPlan ownedAudition = planService.loadUserPlans(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+        if (ownedAudition != null) {
+            // 已经拥有试听课
+            return WebUtils.error(ownedAudition.getId());
+        } else {
+            // 没有试听课，判断是不是会员
+            RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL
+                    || riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+                // 会员不需要重复选择试听课
+                return WebUtils.result(-2);
+            } else {
+                // 没有试听课，并且不是年费会员,可以选择试听课
+                Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), auditionId);
+                // 发送入群消息
+                this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
+                return WebUtils.result(planId);
+            }
+        }
+    }
+
+    // 发送普通限免小课信息
+    private void sendAuditionMsg(String openId, Integer profileId, Integer auditionId) {
+        Profile profile = accountService.getProfile(profileId);
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(openId);
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        templateMessage.setData(data);
+        data.put("first", new TemplateMessage.Keyword("扫码完成测试啦，ta一定很关注你！\n"));
+        data.put("keyword1", new TemplateMessage.Keyword("洞察力天赋检测"));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+        data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+        data.put("remark", new TemplateMessage.Keyword("\n为了不打扰到你，超过3位好友扫码就不再提醒啦~"));
+        templateMessageService.sendMessage(templateMessage);
     }
 
 }
