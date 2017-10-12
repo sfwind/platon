@@ -13,8 +13,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
-import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.Problem;
@@ -23,6 +22,7 @@ import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.Recommendation;
 import com.iquanwai.platon.biz.po.RiseCourseOrder;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
@@ -86,7 +86,7 @@ public class PlanController {
     @Autowired
     private RiseMemberService riseMemberService;
     @Autowired
-    private TemplateMessageService templateMessageService;
+    private CustomerMessageService customerMessageService;
 
     /**
      * 检查是否能选课<br/>
@@ -766,13 +766,27 @@ public class PlanController {
             // 已经拥有试听课
             if (!ownedAudition.getStatus().equals(ImprovementPlan.COMPLETE) && !ownedAudition.getStatus().equals(ImprovementPlan.RUNNING)) {
                 // 不是进行中
-                Integer planId = planService.magicOpenProblem(loginUser.getId(), auditionId, DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
-                dto.setPlanId(planId);
-                dto.setGoSuccess(true);
+                // 判断status，白名单
+                Boolean learned = accountService.hasStatusId(loginUser.getId(), CustomerStatus.LEARNED_AUDITION);
+                if (!learned) {
+                    Integer planId = planService.magicOpenProblem(loginUser.getId(), auditionId, DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
+                    ImprovementPlan plan = planService.getPlan(planId);
+                    dto.setPlanId(planId);
+                    dto.setGoSuccess(true);
+                    dto.setStartTime(DateUtils.parseDateToString(plan.getStartDate()));
+                    dto.setEndTime(DateUtils.parseDateToString(plan.getCloseDate()));
+                } else {
+                    // 已经进行过试听课学习
+                    dto.setPlanId(ownedAudition.getId());
+                    dto.setGoSuccess(false);
+                }
+
             } else {
                 // 进行中
                 dto.setPlanId(ownedAudition.getId());
                 dto.setGoSuccess(false);
+                dto.setStartTime(DateUtils.parseDateToString(ownedAudition.getStartDate()));
+                dto.setEndTime(DateUtils.parseDateToString(ownedAudition.getCloseDate()));
             }
         } else {
             // 没有试听课，判断是不是会员
@@ -783,9 +797,12 @@ public class PlanController {
             } else {
                 // 没有试听课，并且不是年费会员,可以选择试听课
                 Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), auditionId);
+                ImprovementPlan plan = planService.getPlan(planId);
                 // 发送入群消息
                 dto.setPlanId(planId);
                 dto.setGoSuccess(true);
+                dto.setStartTime(DateUtils.parseDateToString(plan.getStartDate()));
+                dto.setEndTime(DateUtils.parseDateToString(plan.getCloseDate()));
             }
         }
         if (dto.getGoSuccess()) {
@@ -796,18 +813,7 @@ public class PlanController {
 
     // 发送普通限免小课信息
     private void sendAuditionMsg(String openId, Integer profileId, Integer auditionId) {
-        Profile profile = accountService.getProfile(profileId);
-        TemplateMessage templateMessage = new TemplateMessage();
-        templateMessage.setTouser(openId);
-        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-        templateMessage.setData(data);
-        data.put("first", new TemplateMessage.Keyword("扫码完成测试啦，ta一定很关注你！\n"));
-        data.put("keyword1", new TemplateMessage.Keyword("洞察力天赋检测"));
-        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-        data.put("remark", new TemplateMessage.Keyword("\n为了不打扰到你，超过3位好友扫码就不再提醒啦~"));
-        templateMessageService.sendMessage(templateMessage);
+        customerMessageService.sendCustomerMessage(openId, ConfigUtils.getAuditionPushMsg(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 
 }

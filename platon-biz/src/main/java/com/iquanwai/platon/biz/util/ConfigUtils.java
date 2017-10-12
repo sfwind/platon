@@ -366,6 +366,8 @@ public class ConfigUtils {
         return getValue("product.change.msg");
     }
 
-
+    public static String getAuditionPushMsg() {
+        return getValue("audition.choose.msg.media.id");
+    }
 }
 

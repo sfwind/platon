@@ -7,4 +7,6 @@ public class AuditionChooseDto {
     private Integer planId;
     private Boolean goSuccess;
     private String errMsg;
+    private String startTime;
+    private String endTime;
 }
