@@ -2,24 +2,10 @@ package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.AudioDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
-import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemSubCatalogDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
-import com.iquanwai.platon.biz.po.Audio;
-import com.iquanwai.platon.biz.po.Choice;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemCatalog;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.ProblemSubCatalog;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,8 +52,6 @@ public class CacheServiceImpl implements CacheService {
     private Map<Integer, ProblemCatalog> problemCatalogMap = Maps.newHashMap();
     //缓存问题子分类
     private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
-    //缓存背景图片 base64
-    private List<BufferedImage> essenceCardImageList = Lists.newArrayList();
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -87,9 +70,14 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存问题
         problems = problemDao.loadAll(Problem.class);
-        problems.forEach(problem -> {
+        problems.stream().filter(problem -> !problem.getDel()).forEach(problem -> {
             List<Chapter> chapterList = loadRoadMap(problem.getId());
             problem.setChapterList(chapterList);
+            Integer subCatalogId = problem.getSubCatalogId();
+            ProblemSubCatalog problemSubCatalog = problemSubCatalogDao.load(ProblemSubCatalog.class, subCatalogId);
+            if (problemSubCatalog != null) {
+                problem.setCategoryPic(problemSubCatalog.getPic());
+            }
             if (ConfigUtils.isHttps()) {
                 if (problem.getAudioId() != null) {
                     Audio audio = audioDao.load(Audio.class, problem.getAudioId());
@@ -158,7 +146,7 @@ public class CacheServiceImpl implements CacheService {
 
     }
 
-    private void initAudio(Knowledge knowledge){
+    private void initAudio(Knowledge knowledge) {
         if (knowledge.getAudioId() != null) {
             Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
             if (audio != null) {

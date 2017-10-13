@@ -647,15 +647,17 @@ public class PlanServiceImpl implements PlanService {
         Profile profile = accountService.getProfile(profileId);
         if (improvementPlan == null) {
             // 用户从来没有开过小课，新开小课
-            Integer planId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
+            resultPlanId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
             if (startDate != null) {
-                improvementPlanDao.updateStartDate(planId, startDate);
+                improvementPlanDao.updateStartDate(resultPlanId, startDate);
             }
             if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(planId, closeDate);
+                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
             }
-            generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
-            resultPlanId = planId;
+            // 开始时间不是今天,则不发开课通知
+            if (startDate != null && startDate.before(new Date())) {
+                generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
+            }
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());

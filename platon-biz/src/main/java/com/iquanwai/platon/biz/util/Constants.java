@@ -96,12 +96,16 @@ public interface Constants {
             int GROUP_LEADER = 2;
             int SUPERB_MEMBER = 3;
             int SUPERB_GROUP = 4;
+            int ORDINARY = 5;
+            int ASST_COACH = 6;
         }
         interface NAME{
             String CLASS_LEADER = "优秀班长";
             String GROUP_LEADER = "优秀组长";
             String SUPERB_MEMBER = "优秀学员";
             String SUPERB_GROUP = "优秀团队";
+            String ORDINARY = "毕业证书";
+            String ASST_COACH = "优秀助教";
         }
     }
 

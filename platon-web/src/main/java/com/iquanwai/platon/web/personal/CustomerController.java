@@ -193,7 +193,12 @@ public class CustomerController {
                 .action("获取证书");
         operationLogService.log(operationLog);
         RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
-        return WebUtils.result(riseCertificate);
+        if (riseCertificate.getDel()) {
+            return WebUtils.error("证书已失效");
+        } else {
+            return WebUtils.result(riseCertificate);
+        }
+
     }
 
     @RequestMapping("/region")
@@ -225,9 +230,7 @@ public class CustomerController {
         operationLogService.log(operationLog);
         List<RiseCertificate> riseCertificates = certificateService.getCertificates(loginUser.getId());
         //清空profileId
-        riseCertificates.forEach(riseCertificate -> {
-            riseCertificate.setProfileId(null);
-        });
+        riseCertificates.forEach(riseCertificate -> riseCertificate.setProfileId(null));
         List<ImprovementPlan> plans = planService.getPlans(loginUser.getId());
         PlanListDto list = new PlanListDto();
         List<PlanDto> runningPlans = Lists.newArrayList();

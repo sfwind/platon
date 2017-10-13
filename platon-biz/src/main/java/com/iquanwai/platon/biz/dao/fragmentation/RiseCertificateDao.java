@@ -36,9 +36,9 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return null;
     }
 
-    public List<RiseCertificate> loadByMonthAndYear(Integer year, Integer month) {
+    public List<RiseCertificate> loadUnNotifiedByMonthAndYear(Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where Year = ? and Month = ?";
+        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Notified=0 and Del=0";
         ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, year, month);
@@ -50,7 +50,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
 
     public List<RiseCertificate> loadByProfileId(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where ProfileId = ?";
+        String sql = "select * from RiseCertificate where ProfileId = ? and Del=0";
         ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, profileId);
@@ -58,6 +58,28 @@ public class RiseCertificateDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage());
         }
         return Lists.newArrayList();
+    }
+
+    public List<RiseCertificate> loadGraduates(Integer year, Integer month) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Type in (1,2,3,5) and Del=0";
+        ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return Lists.newArrayList();
+    }
+
+    public void notify(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update RiseCertificate set Notified = 1 where id = ?";
+        try {
+            runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 
 }

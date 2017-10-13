@@ -9,4 +9,5 @@ import lombok.Data;
 public class ProblemSubCatalog {
     private Integer id;
     private String name;
+    private String pic;
 }

@@ -42,7 +42,7 @@ public class ConfigUtils {
     }
 
     public static String getValue(String key) {
-        String value = null;
+        String value;
         if (config.hasPath(key)) {
             return config.getString(key);
         } else {
@@ -191,10 +191,6 @@ public class ConfigUtils {
         return getValue("integrated.practice.index");
     }
 
-    public static Boolean prePublish() {
-        return getBooleanValue("rise.pre.publish");
-    }
-
     public static Boolean isDevelopment() {
         return getBooleanValue("development");
     }
@@ -304,13 +300,6 @@ public class ConfigUtils {
     }
 
     /**
-     * rise小课测试状态
-     */
-    public static Boolean getRiseCoursePayTestStatus() {
-        return getBooleanValue("rise.course.pay.test");
-    }
-
-    /**
      * 获取应用练习得分列表
      */
     public static Map<Integer, Integer> getWorkScoreMap() {
@@ -367,6 +356,14 @@ public class ConfigUtils {
      */
     public static String getExploreBannerString() {
         return getValue("explore.banner");
+    }
+
+    public static String sendCertificateMsg() {
+        return getValue("send.certificate.msg");
+    }
+
+    public static String productChangeMsg() {
+        return getValue("product.change.msg");
     }
 
 }
