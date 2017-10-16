@@ -12,4 +12,14 @@ public interface RiseMemberService {
      * @param profileId 用户id
      * */
     RiseMember getRiseMember(Integer profileId);
+
+    /**
+     * 会员身份将在7日内过期
+     */
+    Boolean expiredRiseMemberInSevenDays(Integer profileId);
+
+    /**
+     * 会员身份过期
+     */
+    Boolean expiredRiseMember(Integer profileId);
 }

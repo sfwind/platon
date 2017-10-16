@@ -22,6 +22,21 @@ public class RiseMember {
     private String endTime; // 非DB字段，expireDate
     private String name; //非DB字段
 
+    private Boolean expiredInSevenDays; // 会员过期将在7日内过期
+
+    public RiseMember simple() {
+        RiseMember riseMember = new RiseMember();
+        riseMember.setMemberTypeId(memberTypeId);
+        riseMember.setExpireDate(expireDate);
+        riseMember.setExpired(expired);
+        riseMember.setAddTime(addTime);
+        riseMember.setStartTime(startTime);
+        riseMember.setEndTime(endTime);
+        riseMember.setName(name);
+        riseMember.setExpiredInSevenDays(expiredInSevenDays);
+        return riseMember;
+    }
+
     /**
      * 专业版半年
      */
@@ -42,4 +57,8 @@ public class RiseMember {
      * 训练营小课
      */
     public static final int CAMP = 5;
+    /**
+     * 单买小课
+     */
+    public static final int COURSE = 6;
 }

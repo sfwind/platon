@@ -68,7 +68,6 @@ public class LoginUserService {
     private CallbackDao callbackDao;
 
 
-
     /**
      * 登录，就是缓存起来
      * @param sessionId sessionId
