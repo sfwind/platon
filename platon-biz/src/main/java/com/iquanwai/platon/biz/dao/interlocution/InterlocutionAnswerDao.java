@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.dao.interlocution;
 
-import com.iquanwai.platon.biz.dao.ForumDBUtil;
+import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.dbutils.QueryRunner;
@@ -16,12 +16,12 @@ import java.util.Date;
  * Created by justin on 17/6/19.
  */
 @Repository
-public class InterlocutionAnswerDao extends ForumDBUtil {
+public class InterlocutionAnswerDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public InterlocutionAnswer load(Date date) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM InterlocutionAnswer where InterlocutionDate = ?";
+        String sql = "SELECT * FROM InterlocutionAnswer where InterlocutionDate = ? AND Del = 0";
         try {
             return run.query(sql, new BeanHandler<InterlocutionAnswer>(InterlocutionAnswer.class), DateUtils.parseDateToString(date));
         } catch (SQLException e) {

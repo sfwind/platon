@@ -137,8 +137,14 @@ public class InterlocutionServiceImpl implements InterlocutionService {
     @Override
     public InterlocutionQuestion loadQuanQuanAnswer(Date date) {
         InterlocutionAnswer answer = interlocutionAnswerDao.load(date);
+        if (answer == null) {
+            return null;
+        }
         Integer questionId = answer.getQuestionId();
         InterlocutionQuestion question = interlocutionQuestionDao.load(InterlocutionQuestion.class, questionId);
+        if (question == null) {
+            return null;
+        }
         question.setAnswer(answer);
         return question;
     }
