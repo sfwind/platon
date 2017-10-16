@@ -42,7 +42,9 @@ public class WhiteListServiceImpl implements WhiteListService {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long riseCount = riseMembers.stream().filter(riseMember ->
                 // 商学院会员（半年、一年）、小课单买用户
-                riseMember.getMemberTypeId() == RiseMember.ELITE
+                riseMember.getMemberTypeId() == RiseMember.HALF
+                        || riseMember.getMemberTypeId() == RiseMember.ANNUAL
+                        || riseMember.getMemberTypeId() == RiseMember.ELITE
                         || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
                         || riseMember.getMemberTypeId() == RiseMember.COURSE
         ).count();
@@ -54,9 +56,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long campCount = riseMembers.stream().filter(riseMember ->
                 // 专业版会员（半年、一年）、小课训练营
-                riseMember.getMemberTypeId() == RiseMember.HALF
-                        || riseMember.getMemberTypeId() == RiseMember.ANNUAL
-                        || riseMember.getMemberTypeId() == RiseMember.CAMP
+                riseMember.getMemberTypeId() == RiseMember.CAMP
         ).count();
         return campCount.intValue() > 0;
     }
