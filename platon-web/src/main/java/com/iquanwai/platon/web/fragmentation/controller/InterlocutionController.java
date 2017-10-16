@@ -149,6 +149,10 @@ public class InterlocutionController {
             return WebUtils.error("时间参数异常");
         }
         InterlocutionQuestion interlocutionQuestion = interlocutionService.loadQuanQuanAnswer(startDate);
-        return WebUtils.result(interlocutionQuestion);
+        if (interlocutionQuestion == null) {
+            return WebUtils.error("这一天没有圈圈问答哦");
+        } else {
+            return WebUtils.result(interlocutionQuestion);
+        }
     }
 }
