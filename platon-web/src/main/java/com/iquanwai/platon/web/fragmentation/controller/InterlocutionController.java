@@ -44,6 +44,10 @@ public class InterlocutionController {
                 .function("列表")
                 .action("获取列表");
         operationLogService.log(operationLog);
+        if (page == null) {
+            page = new Page();
+        }
+        page.setPageSize(5);
         List<InterlocutionQuestion> interlocutionQuestions = interlocutionService.loadQuestions(loginUser.getId(), date, page);
         RefreshListDto<InterlocutionQuestion> dto = new RefreshListDto<>();
         dto.setList(interlocutionQuestions);
