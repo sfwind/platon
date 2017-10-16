@@ -455,7 +455,7 @@ public class AccountServiceImpl implements AccountService {
         for (Coupon coupon : sourceCoupons) {
             Coupon tempCoupon = new Coupon();
             tempCoupon.setAmount(coupon.getAmount());
-            tempCoupon.setExpiredDateString(DateUtils.parseDateToFormat5(coupon.getExpiredDate()));
+            tempCoupon.setExpiredDateString(DateUtils.parseDateToFormat5(DateUtils.beforeDays(coupon.getExpiredDate(), 1)));
             tempCoupon.setDescription(coupon.getDescription());
             targetCoupons.add(tempCoupon);
         }
