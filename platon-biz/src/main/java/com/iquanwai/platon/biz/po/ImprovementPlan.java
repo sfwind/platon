@@ -22,9 +22,7 @@ public class ImprovementPlan {
     private Date closeTime; // 关闭时间
     private Integer status; //执行状态（1-正在进行, 2-已结束, 3-已过期）
     private Integer point; //积分
-    @Deprecated
     private Integer warmupComplete; //巩固练习完成数量
-    @Deprecated
     private Integer applicationComplete; //应用练习完成数量
     @Deprecated
     private Integer total; //任务总数

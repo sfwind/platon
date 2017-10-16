@@ -206,8 +206,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
-                                                                     Integer profileId, Integer planId, boolean create) {
+    public Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid, Integer profileId, Integer planId, boolean create) {
         Assert.notNull(openid, "openid不能为空");
         Boolean isNewApplication = false; // 该 ApplicationPractice 是否是新生成的
         // 查询该应用练习
@@ -503,7 +502,7 @@ public class PracticeServiceImpl implements PracticeService {
         // applicationSubmit Id 序列 -> votes
         List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
         List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
-        List<Comment> comments = commentDao.loadAllCommentsByIds(submitsIdList); // 所有评论
+        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitsIdList); // 所有评论
         List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
         // 已被点评
         List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
@@ -728,8 +727,15 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public void initCommentEvaluation(Integer commentId) {
-        commentEvaluationDao.initCommentEvaluation(commentId);
+    public void initCommentEvaluation(Integer submitId, Integer commentId) {
+        Comment comment = commentDao.load(Comment.class, commentId);
+        if (comment != null && comment.getCommentProfileId() != null) {
+            // 对于一道应用题，只有一次评价
+            List<Comment> comments = commentDao.loadCommentsByProfileId(submitId, comment.getCommentProfileId());
+            if (comments.size() == 1) {
+                commentEvaluationDao.initCommentEvaluation(submitId, commentId);
+            }
+        }
     }
 
     @Override
@@ -754,11 +760,55 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public void updateEvaluation(Integer commentId, Integer useful, String reason) {
-        if ("".equals(reason)) {
+        if (StringUtils.isEmpty(reason)) {
             commentEvaluationDao.updateEvaluation(commentId, useful);
         } else {
             commentEvaluationDao.updateEvaluation(commentId, useful, reason);
         }
+    }
+
+    @Override
+    public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer profileId, Integer submitId) {
+        ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
+        if (!profileId.equals(applicationSubmit.getProfileId())) {
+            return Lists.newArrayList();
+        }
+
+        List<CommentEvaluation> evaluations = commentEvaluationDao.loadUnEvaluatedCommentEvaluationBySubmitId(submitId);
+        List<Integer> commentIds = evaluations.stream().map(CommentEvaluation::getCommentId).collect(Collectors.toList());
+        List<Comment> comments = commentDao.loadAllCommentsByIds(commentIds);
+        Map<Integer, Comment> commentMap = comments.stream().collect(Collectors.toMap(Comment::getId, comment -> comment));
+        List<Integer> profileIds = comments.stream().map(Comment::getCommentProfileId).collect(Collectors.toList());
+        List<Profile> profiles = accountService.getProfiles(profileIds);
+        Map<Integer, Profile> profileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
+
+        for (CommentEvaluation evaluation : evaluations) {
+            Comment comment = commentMap.get(evaluation.getCommentId());
+            if (comment == null) continue;
+            Profile profile = profileMap.get(comment.getCommentProfileId());
+            if (profile == null) continue;
+            evaluation.setNickName(profile.getNickname());
+        }
+        return evaluations;
+    }
+
+    @Override
+    public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationByCommentId(Integer commentId) {
+        List<CommentEvaluation> commentEvaluations = Lists.newArrayList();
+        CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
+        if (evaluation != null && evaluation.getEvaluated() == 0) {
+            Comment comment = commentDao.loadByCommentId(evaluation.getCommentId());
+            if (comment != null && comment.getCommentProfileId() != null) {
+                Profile profile = accountService.getProfile(comment.getCommentProfileId());
+                if (profile != null) {
+                    evaluation.setNickName(profile.getNickname());
+                }
+            }
+            commentEvaluations.add(evaluation);
+        } else {
+            return commentEvaluations;
+        }
+        return commentEvaluations;
     }
 
     @Override
@@ -926,6 +976,11 @@ public class PracticeServiceImpl implements PracticeService {
 
     public ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId) {
         return applicationSubmitDao.load(applicationId, profileId);
+    }
+
+    @Override
+    public ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId) {
+        return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
     }
 
     @Override
