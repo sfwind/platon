@@ -1,10 +1,12 @@
 package com.iquanwai.platon.biz.domain.interlocution;
 
+import com.iquanwai.platon.biz.dao.interlocution.InterlocutionAnswerDao;
 import com.iquanwai.platon.biz.dao.interlocution.InterlocutionDateDao;
 import com.iquanwai.platon.biz.dao.interlocution.InterlocutionFollowDao;
 import com.iquanwai.platon.biz.dao.interlocution.InterlocutionQuestionDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionDate;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionFollow;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionQuestion;
@@ -32,6 +34,8 @@ public class InterlocutionServiceImpl implements InterlocutionService {
     private InterlocutionFollowDao interlocutionFollowDao;
     @Autowired
     private InterlocutionDateDao interlocutionDateDao;
+    @Autowired
+    private InterlocutionAnswerDao interlocutionAnswerDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -128,6 +132,15 @@ public class InterlocutionServiceImpl implements InterlocutionService {
             return null;
         }
         return interlocutionDateDao.loadDate(date);
+    }
+
+    @Override
+    public InterlocutionQuestion loadQuanQuanAnswer(Date date) {
+        InterlocutionAnswer answer = interlocutionAnswerDao.load(date);
+        Integer questionId = answer.getQuestionId();
+        InterlocutionQuestion question = interlocutionQuestionDao.load(InterlocutionQuestion.class, questionId);
+        question.setAnswer(answer);
+        return question;
     }
 
 }

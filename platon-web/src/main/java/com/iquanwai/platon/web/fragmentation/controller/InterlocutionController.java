@@ -80,6 +80,7 @@ public class InterlocutionController {
         try {
             interlocutionDate = DateUtils.parseStringToDate(date);
         } catch (Exception e) {
+            logger.error("时间参数异常", e);
             return WebUtils.error("时间参数异常");
         }
         InterlocutionDate interlocutionDateInfo = interlocutionService.loadInterlocutionDateInfo(interlocutionDate);
@@ -89,6 +90,7 @@ public class InterlocutionController {
 
     /**
      * 关注问题
+     *
      * @param questionId 问题id
      */
     @RequestMapping(value = "/follow/{questionId}", method = RequestMethod.POST)
@@ -98,7 +100,7 @@ public class InterlocutionController {
         interlocutionService.followQuestion(loginUser.getId(), questionId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("论坛")
+                .module("圈圈问答")
                 .function("问题")
                 .action("关注问题")
                 .memo(questionId.toString());
@@ -108,6 +110,7 @@ public class InterlocutionController {
 
     /**
      * 取消问题关注
+     *
      * @param questionId 问题id
      */
     @RequestMapping(value = "/follow/cancel/{questionId}", method = RequestMethod.POST)
@@ -117,11 +120,31 @@ public class InterlocutionController {
         interlocutionService.unfollowQuestion(loginUser.getId(), questionId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("论坛")
+                .module("圈圈问答")
                 .function("问题")
                 .action("取消关注问题")
                 .memo(questionId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/load/quanquan/{date}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadQuanquanAnswer(LoginUser loginUser, @PathVariable String date) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("圈圈问答")
+                .function("回答")
+                .action("获取问题")
+                .memo(date);
+        operationLogService.log(operationLog);
+        Date startDate = null;
+        try {
+            startDate = DateUtils.parseStringToDate(date);
+        } catch (Exception e) {
+            logger.error("时间参数异常", e);
+            return WebUtils.error("时间参数异常");
+        }
+        InterlocutionQuestion interlocutionQuestion = interlocutionService.loadQuanQuanAnswer(startDate);
+        return WebUtils.result(interlocutionQuestion);
     }
 }

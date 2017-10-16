@@ -48,4 +48,6 @@ public interface InterlocutionService {
     void unfollowQuestion(Integer profileId, Integer questionId);
 
     InterlocutionDate loadInterlocutionDateInfo(Date date);
+
+    InterlocutionQuestion loadQuanQuanAnswer(Date date);
 }
