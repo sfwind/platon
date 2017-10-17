@@ -107,7 +107,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
 
         // 4. 用户每天最多收到2条消息
         {
-            String distanceDateStr = DateUtils.parseDateToString(new Date());
+            String distanceDateStr = DateUtils.parseDateToString(DateUtils.beforeDays(new Date(), 1));
             List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadInDistanceDate(openId, distanceDateStr);
             authority = customerMessageLogs.size() < 2;
             if (!authority) return false;
