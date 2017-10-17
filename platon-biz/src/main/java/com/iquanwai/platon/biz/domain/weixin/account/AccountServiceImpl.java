@@ -18,6 +18,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -122,6 +123,7 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByRiseId(riseId);
 
         if (profile != null) {
+            profile.setRiseMember(riseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -141,6 +143,7 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.load(Profile.class, profileId);
 
         if (profile != null) {
+            profile.setRiseMember(riseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -159,6 +162,7 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByOpenId(openid);
 
         if (profile != null) {
+            profile.setRiseMember(riseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -180,6 +184,7 @@ public class AccountServiceImpl implements AccountService {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
+            profile.setRiseMember(riseMember(profile.getId()));
             Integer role = userRoleMap.get(profile.getOpenid());
             if (role == null) {
                 profile.setRole(0);
@@ -453,7 +458,7 @@ public class AccountServiceImpl implements AccountService {
         for (Coupon coupon : sourceCoupons) {
             Coupon tempCoupon = new Coupon();
             tempCoupon.setAmount(coupon.getAmount());
-            tempCoupon.setExpiredDateString(DateUtils.parseDateToFormat5(coupon.getExpiredDate()));
+            tempCoupon.setExpiredDateString(DateUtils.parseDateToFormat5(DateUtils.beforeDays(coupon.getExpiredDate(), 1)));
             tempCoupon.setDescription(coupon.getDescription());
             targetCoupons.add(tempCoupon);
         }
@@ -486,6 +491,29 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Boolean hasStatusId(Integer profileId, Integer statusId) {
         return customerStatusDao.load(profileId, statusId) != null;
+    }
+    private Integer riseMember(Integer profileId){
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if(riseMember==null){
+            return 0;
+        }
+        Integer memberTypeId = riseMember.getMemberTypeId();
+        if(memberTypeId == null){
+            return 0;
+        }
+        // 精英或者专业版用户
+        if(memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
+                || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE){
+            return 1;
+            // 训练营用户
+        } else if(memberTypeId == RiseMember.CAMP){
+            return 3;
+            // 小课用户
+        } else if(memberTypeId == RiseMember.COURSE){
+            return 2;
+        }
+
+        return 0;
     }
 }
 

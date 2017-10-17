@@ -362,6 +362,7 @@ public class PracticeController {
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
 
         RiseRefreshListDto<RiseWorkCommentDto> riseRefreshListDto = new RiseRefreshListDto<>();
+
         // 返回最新的 Comments 集合，如果存在是教练的评论，则将返回字段 feedback 置为 true
         List<RiseWorkCommentDto> commentDtos = practiceService.loadComments(moduleId, submitId, page).stream().map(item -> {
             Profile account = accountService.getProfile(item.getCommentProfileId());
@@ -393,14 +394,15 @@ public class PracticeController {
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
         riseRefreshListDto.setList(commentDtos);
+        // 如果这个评论是自己的，则获取尚未被评价的应用题评论
+        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(loginUser.getId(), submitId));
+
         riseRefreshListDto.setEnd(page.isLastPage());
         return WebUtils.result(riseRefreshListDto);
     }
 
     @RequestMapping(value = "/comment/message/{submitId}/{commentId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(LoginUser loginUser,
-                                                                           @PathVariable Integer submitId,
-                                                                           @PathVariable Integer commentId) {
+    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(LoginUser loginUser, @PathVariable Integer submitId, @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(commentId, "评论不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -419,7 +421,7 @@ public class PracticeController {
         riseRefreshListDto.setIsModifiedAfterFeedback(isModified);
 
         // 查看当前评论是否已经被评价
-        riseRefreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
+        // riseRefreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
 
         RiseWorkCommentDto dto = new RiseWorkCommentDto();
         Profile account = accountService.getProfile(comment.getCommentProfileId());
@@ -446,12 +448,14 @@ public class PracticeController {
         List<RiseWorkCommentDto> commentDtos = Lists.newArrayList();
         commentDtos.add(dto);
         riseRefreshListDto.setList(commentDtos);
+
+        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationByCommentId(commentId));
+
         return WebUtils.result(riseRefreshListDto);
     }
 
     @RequestMapping(value = "/evaluate/application", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitApplicationEvaluation(LoginUser loginUser,
-                                                                           @RequestBody CommentEvaluation evaluation) {
+    public ResponseEntity<Map<String, Object>> submitApplicationEvaluation(LoginUser loginUser, @RequestBody CommentEvaluation evaluation) {
         Assert.notNull(loginUser, "用户不能为空");
         Integer commentId = evaluation.getCommentId();
         Integer useful = evaluation.getUseful();
@@ -503,9 +507,11 @@ public class PracticeController {
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
 
+            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(loginUser.getRole())) {
-                practiceService.initCommentEvaluation(resultDto.getId());
+            if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
+                practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
             return WebUtils.result(resultDto);
@@ -549,9 +555,11 @@ public class PracticeController {
             resultDto.setIsMine(true);
             resultDto.setRepliedDel(replyComment.getDel());
 
+            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(loginUser.getRole())) {
-                practiceService.initCommentEvaluation(resultDto.getId());
+            if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
+                practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

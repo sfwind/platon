@@ -83,11 +83,21 @@ public interface PracticeService {
      */
     Boolean challengeSubmit(Integer id, String content);
 
-    void initCommentEvaluation(Integer commentId);
+    void initCommentEvaluation(Integer submitId, Integer commentId);
 
     Boolean loadEvaluated(Integer commentId);
 
     void updateEvaluation(Integer commentId, Integer useful, String reason);
+
+    /**
+     * 获取当前应用题训练尚未被评价的教练评论记录
+     */
+    List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer profileId, Integer submitId);
+
+    /**
+     * 消息中心回复页面根据 commentId 来查询教练评论
+     */
+    List<CommentEvaluation> loadUnEvaluatedCommentEvaluationByCommentId(Integer commentId);
 
     /**
      * 增加文章视图的记录数
@@ -282,6 +292,11 @@ public interface PracticeService {
      * @return
      */
     ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
+
+    /**
+     * 根据 ApplicationSubmit 的 id 获取 ApplicationSubmit
+     */
+    ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId);
 
     /**
      * 根据Id获取ApplicationSubmit对象

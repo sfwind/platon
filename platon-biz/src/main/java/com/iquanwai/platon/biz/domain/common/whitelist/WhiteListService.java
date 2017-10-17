@@ -10,4 +10,14 @@ public interface WhiteListService {
      * TODO 待删除，临时逻辑
      */
     boolean isInBibleWhiteList(Integer profileId);
+
+    /**
+     * 点击商学院白名单
+     */
+    boolean checkRiseMenuWhiteList(Integer profileId);
+
+    /**
+     * 点击小课训练营白名单
+     */
+    boolean checkCampMenuWhiteList(Integer profileId);
 }
