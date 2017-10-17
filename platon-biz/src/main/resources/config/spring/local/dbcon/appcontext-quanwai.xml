@@ -57,7 +57,7 @@
         <property name="loginTimeout" value="60000"/>
         <!--打开 PSCache，并且制定每个连接上 PSCache 的大小-->
         <property name="poolPreparedStatements" value="false"/>
-        <property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>
+        <!--<property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>-->
         <!--配置监控统计拦截的 filters，去掉后监控界面 sql 无法统计-->
         <!--<property name="filters" value="stat"/>-->
     </bean>
@@ -96,7 +96,7 @@
         <property name="loginTimeout" value="60000"/>
         <!--打开 PSCache，并且制定每个连接上 PSCache 的大小-->
         <property name="poolPreparedStatements" value="false"/>
-        <property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>
+        <!--<property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>-->
         <!--配置监控统计拦截的 filters，去掉后监控界面 sql 无法统计-->
         <!--<property name="filters" value="stat"/>-->
     </bean>
@@ -135,7 +135,7 @@
         <property name="loginTimeout" value="60000"/>
         <!--打开 PSCache，并且制定每个连接上 PSCache 的大小-->
         <property name="poolPreparedStatements" value="false"/>
-        <property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>
+        <!--<property name="maxPoolPreparedStatementPerConnectionSize" value="30"/>-->
         <!--配置监控统计拦截的 filters，去掉后监控界面 sql 无法统计-->
         <!--<property name="filters" value="stat"/>-->
     </bean>
