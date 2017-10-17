@@ -806,6 +806,8 @@ public class PlanController {
             }
         }
         if (dto.getGoSuccess()) {
+            // 第一次学习试听课
+            accountService.addStatusId(loginUser.getId(), CustomerStatus.LEARNED_AUDITION);
             this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
         }
         return WebUtils.result(dto);

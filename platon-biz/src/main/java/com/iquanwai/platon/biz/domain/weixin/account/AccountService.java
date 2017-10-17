@@ -136,4 +136,6 @@ public interface AccountService {
     Boolean closeLearningNotify(Integer profileId);
 
     Boolean hasStatusId(Integer profileId, Integer statusId);
+
+    Boolean addStatusId(Integer profileId, Integer statusId);
 }

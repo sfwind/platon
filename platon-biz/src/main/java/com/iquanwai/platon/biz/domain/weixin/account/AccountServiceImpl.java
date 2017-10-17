@@ -492,24 +492,35 @@ public class AccountServiceImpl implements AccountService {
     public Boolean hasStatusId(Integer profileId, Integer statusId) {
         return customerStatusDao.load(profileId, statusId) != null;
     }
-    private Integer riseMember(Integer profileId){
+
+    @Override
+    public Boolean addStatusId(Integer profileId, Integer statusId) {
+        CustomerStatus status = customerStatusDao.load(profileId, statusId);
+        if (status == null) {
+            return customerStatusDao.insert(profileId, statusId) > 0;
+        } else {
+            return true;
+        }
+    }
+
+    private Integer riseMember(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if(riseMember==null){
+        if (riseMember == null) {
             return 0;
         }
         Integer memberTypeId = riseMember.getMemberTypeId();
-        if(memberTypeId == null){
+        if (memberTypeId == null) {
             return 0;
         }
         // 精英或者专业版用户
-        if(memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
-                || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE){
+        if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
+                || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             return 1;
             // 训练营用户
-        } else if(memberTypeId == RiseMember.CAMP){
+        } else if (memberTypeId == RiseMember.CAMP) {
             return 3;
             // 小课用户
-        } else if(memberTypeId == RiseMember.COURSE){
+        } else if (memberTypeId == RiseMember.COURSE) {
             return 2;
         }
 
