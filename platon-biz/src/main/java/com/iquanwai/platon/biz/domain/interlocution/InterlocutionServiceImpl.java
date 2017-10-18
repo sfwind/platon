@@ -146,6 +146,10 @@ public class InterlocutionServiceImpl implements InterlocutionService {
             return null;
         }
         question.setAnswer(answer);
+        InterlocutionDate dateInfo = interlocutionDateDao.loadDate(date);
+        InterlocutionDate nextDate = interlocutionDateDao.loadNextDate(date);
+        question.setNextDate(nextDate);
+        question.setDateInfo(dateInfo);
         return question;
     }
 
