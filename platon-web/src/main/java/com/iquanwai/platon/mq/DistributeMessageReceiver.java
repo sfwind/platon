@@ -9,12 +9,14 @@ import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
 /**
  * Created by 三十文 on 2017/10/18
  */
+@Service
 public class DistributeMessageReceiver {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
