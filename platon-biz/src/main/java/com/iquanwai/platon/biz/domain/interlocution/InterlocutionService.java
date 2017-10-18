@@ -24,28 +24,28 @@ public interface InterlocutionService {
      * /**
      * 加载问题，不分类
      *
-     * @param loadProfileId 进行加载操作的人
+     * @param loadOpenid 进行加载操作的人
      * @param page          分页参数
      * @return 问题列表
      */
-    List<InterlocutionQuestion> loadQuestions(Integer loadProfileId, String date, Page page);
+    List<InterlocutionQuestion> loadQuestions(String loadOpenid, String date, Page page);
 
 
     /**
      * 关注问题
      *
      * @param questionId 问题id
-     * @param profileId  关注者id
+     * @param openid  关注者id
      */
-    void followQuestion(Integer profileId, Integer questionId);
+    void followQuestion(String openid, Integer questionId);
 
     /**
      * 不再关注问题
      *
      * @param questionId 问题id
-     * @param profileId  关注者id
+     * @param openid  关注者id
      */
-    void unfollowQuestion(Integer profileId, Integer questionId);
+    void unfollowQuestion(String openid, Integer questionId);
 
     InterlocutionDate loadInterlocutionDateInfo(Date date);
 

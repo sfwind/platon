@@ -59,24 +59,24 @@ public class InterlocutionServiceImpl implements InterlocutionService {
 
 
     @Override
-    public List<InterlocutionQuestion> loadQuestions(Integer loadProfileId, String date, Page page) {
+    public List<InterlocutionQuestion> loadQuestions(String loadOpenid, String date, Page page) {
         List<InterlocutionQuestion> questions = interlocutionQuestionDao.getQuestions(date, page);
         // 查询有多少条
         Integer total = interlocutionQuestionDao.count(date);
         page.setTotal(total);
         // 填充数据
-        questions.forEach(item -> initQuestionList(item, loadProfileId));
+        questions.forEach(item -> initQuestionList(item, loadOpenid));
         return questions;
     }
 
 
     @Override
-    public void followQuestion(Integer profileId, Integer questionId) {
-        InterlocutionFollow questionFollow = interlocutionFollowDao.load(questionId, profileId);
+    public void followQuestion(String openid, Integer questionId) {
+        InterlocutionFollow questionFollow = interlocutionFollowDao.load(questionId, openid);
         Integer followPoint = ConfigUtils.getForumQuestionFollowPoint();
         if (questionFollow == null) {
             questionFollow = new InterlocutionFollow();
-            questionFollow.setProfileId(profileId);
+            questionFollow.setOpenid(openid);
             questionFollow.setQuestionId(questionId);
             interlocutionFollowDao.insert(questionFollow);
             interlocutionQuestionDao.follow(questionId, followPoint);
@@ -89,8 +89,8 @@ public class InterlocutionServiceImpl implements InterlocutionService {
     }
 
     @Override
-    public void unfollowQuestion(Integer profileId, Integer questionId) {
-        InterlocutionFollow questionFollow = interlocutionFollowDao.load(questionId, profileId);
+    public void unfollowQuestion(String openid, Integer questionId) {
+        InterlocutionFollow questionFollow = interlocutionFollowDao.load(questionId, openid);
         if (questionFollow != null) {
             if (!questionFollow.getDel()) {
                 Integer followPoint = ConfigUtils.getForumQuestionFollowPoint();
@@ -104,9 +104,9 @@ public class InterlocutionServiceImpl implements InterlocutionService {
      * 初始化问题列表
      *
      * @param item          问题
-     * @param loadProfileId 执行加载操作的人
+     * @param loadOpenid 执行加载操作的人
      */
-    private void initQuestionList(InterlocutionQuestion item, Integer loadProfileId) {
+    private void initQuestionList(InterlocutionQuestion item, String loadOpenid) {
         Profile profile = accountService.getProfile(item.getProfileId());
         if (profile == null) {
             logger.error("用户 {} 不存在", item.getProfileId());
@@ -118,10 +118,8 @@ public class InterlocutionServiceImpl implements InterlocutionService {
         item.setAuthorHeadPic(profile.getHeadimgurl());
         // 初始化添加时间
         item.setAddTimeStr(DateUtils.parseDateToString(item.getAddTime()));
-        InterlocutionFollow load = interlocutionFollowDao.load(item.getId(), loadProfileId);
+        InterlocutionFollow load = interlocutionFollowDao.load(item.getId(), loadOpenid);
         item.setFollow(load != null && !load.getDel());
-
-        item.setMine(loadProfileId.equals(item.getProfileId()));
         // 去掉profileId
         item.setProfileId(null);
     }
