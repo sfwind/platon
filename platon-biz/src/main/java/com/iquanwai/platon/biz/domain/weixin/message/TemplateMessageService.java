@@ -5,16 +5,10 @@ package com.iquanwai.platon.biz.domain.weixin.message;
  */
 public interface TemplateMessageService {
     /**
-     * 发送模板消息
+     * 发送非主动推送模板消息
      * @return 返回发送结果
      */
     boolean sendMessage(TemplateMessage templateMessage);
-
-    /**
-     * @param templateMessage 模板消息对象
-     * @param forwardlyPush 是否主动推送
-     */
-    boolean sendMessage(TemplateMessage templateMessage, boolean forwardlyPush);
 
     /**
      * 根据模板库中的编号获取模板真实id

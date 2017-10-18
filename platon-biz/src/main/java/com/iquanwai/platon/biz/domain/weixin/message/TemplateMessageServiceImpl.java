@@ -36,8 +36,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
         return sendMessage(templateMessage, false);
     }
 
-    @Override
-    public boolean sendMessage(TemplateMessage templateMessage, boolean forwardlyPush) {
+    private boolean sendMessage(TemplateMessage templateMessage, boolean forwardlyPush) {
         String json = new Gson().toJson(templateMessage);
         // 发送权限校验
         boolean validPush = checkTemplateMessageAuthority(templateMessage, forwardlyPush);
