@@ -91,6 +91,10 @@ public class DateUtils {
         return new DateTime(date).plusMinutes(increment).toDate();
     }
 
+    public static Date afterHours(Date date, int increment) {
+        return new DateTime(date).plusHours(increment).toDate();
+    }
+
     public static Date startDay(Date date) {
         return new DateTime(date).withTimeAtStartOfDay().toDate();
     }
