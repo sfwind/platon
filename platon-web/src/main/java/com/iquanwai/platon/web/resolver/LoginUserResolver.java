@@ -28,16 +28,16 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
         //调试时，返回mock user
-        if(ConfigUtils.isDebug()){
+        if (ConfigUtils.isDebug()) {
             return LoginUser.defaultUser();
         }
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
 
-        if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
+        if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
             //前端调试开启时，如果debug=true,返回mockuser
-            if(request.getParameter("debug").equalsIgnoreCase("true")) {
+            if (request.getParameter("debug").equalsIgnoreCase("true")) {
                 return LoginUser.defaultUser();
-            }else{
+            } else {
                 //返回模拟的openid user
                 return loginUserService.getLoginUser(request.getParameter("debug"), LoginUserService.Platform.Wechat);
             }
@@ -51,7 +51,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             // 非登陆状态
             LoginUserService.Platform platform = loginUserService.checkPlatform(request);
             String openId = loginUserService.openId(platform, accessToken);
-            if(StringUtils.isEmpty(openId)){
+            if (StringUtils.isEmpty(openId)) {
                 logger.error("accessToken {} is not found in db", accessToken);
                 return null;
             }
@@ -62,7 +62,9 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
                 return null;
             }
             logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
-            loginUserService.login(platform, accessToken, loginUser);
+            if (loginUser.getId() != null) {
+                loginUserService.login(platform, accessToken, loginUser);
+            }
 
             return loginUser;
         }
