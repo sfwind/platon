@@ -45,7 +45,7 @@ public class DistributeMessageReceiver {
         Profile profile = accountService.getProfile(openId);
         String replyContent;
         if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
-            replyContent = "踢踢老师直播报名链接在此~\n" +
+            replyContent = "恭喜您成功领取踢踢老师直播课\n" +
                     "\n" +
                     "报名密码：963258\n" +
                     "\n" +
@@ -53,7 +53,13 @@ public class DistributeMessageReceiver {
                     "\n" +
                     "童鞋，拿了链接记得帮小哥哥宣传哦[机智]";
         } else {
-            replyContent = "非会员信息";
+            replyContent = "踢踢老师直播报名链接在此~\n" +
+                    "\n" +
+                    "报名密码：963258\n" +
+                    "\n" +
+                    "☞<a href='https://m.qlchat.com/topic/2000000114861380.htm?shareKey=6957a5d4553d45d8e5c509f3c79d212c'>戳我报名</a>☜\n" +
+                    "\n" +
+                    "童鞋，拿了链接记得帮小哥哥宣传哦[机智]";
         }
         customerMessageService.sendCustomerMessage(openId, replyContent, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
