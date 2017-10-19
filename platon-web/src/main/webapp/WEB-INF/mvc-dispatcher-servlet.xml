@@ -71,6 +71,7 @@
             <mvc:exclude-mapping path="/rise/cache/**"/>
             <mvc:exclude-mapping path="/rise/b/**"/>
             <mvc:exclude-mapping path="/rise/static/inter/quan/answer"/>
+            <mvc:exclude-mapping path="/rise/static/inter/question"/>
             <mvc:exclude-mapping path="/rise/interlocution/load/quesiton/list/**"/>
             <mvc:exclude-mapping path="/rise/interlocution/interlocution/info/**"/>
             <mvc:exclude-mapping path="/rise/interlocution/follow/**"/>
@@ -84,7 +85,7 @@
         <mvc:interceptor>
             <mvc:mapping path="/rise/bible/guest/**"/>
             <mvc:mapping path="/rise/static/inter/quan/answer"/>
-            <mvc:mapping path="/rise/static/inter/quan/answer"/>
+            <mvc:mapping path="/rise/static/inter/question"/>
             <mvc:mapping path="/rise/interlocution/load/quesiton/list/**"/>
             <mvc:mapping path="/rise/interlocution/interlocution/info/**"/>
             <mvc:mapping path="/rise/interlocution/follow/**"/>
