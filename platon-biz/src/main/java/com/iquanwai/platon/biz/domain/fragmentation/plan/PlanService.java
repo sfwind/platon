@@ -136,6 +136,11 @@ public interface PlanService {
      */
     List<ImprovementPlan> getPlanList(Integer profileId);
 
+    /**
+     * 获取当前正在学习月份的能够学习的训练营小课内容
+     */
+    List<ImprovementPlan> getCurrentCampPlanList(Integer profileId);
+
     Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
 
     /**

@@ -556,10 +556,21 @@ public class PlanController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
+        List<PlanDto> currentCampPlans = Lists.newArrayList();
+        List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId());
+        currentCampImprovementPlans.forEach(item -> {
+            PlanDto planDto = new PlanDto();
+            planDto.setPlanId(item.getId() != 0 ? item.getId() : null);
+            planDto.setName(item.getProblem().getProblem());
+            planDto.setProblemId(item.getProblemId());
+            planDto.setProblem(item.getProblem().simple());
+            currentCampPlans.add(planDto);
+        });
+
+        List<ImprovementPlan> personalImprovementPlans = planService.getPlanList(loginUser.getId());
         List<PlanDto> runningPlans = Lists.newArrayList();
         List<PlanDto> completedPlans = Lists.newArrayList();
-        plans.forEach(item -> {
+        personalImprovementPlans.forEach(item -> {
             PlanDto plan = new PlanDto();
             plan.setPlanId(item.getId());
             plan.setCompleteSeries(item.getCompleteSeries());
@@ -587,6 +598,7 @@ public class PlanController {
         List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, completedPlans);
 
         PlanListDto planListDto = new PlanListDto();
+        planListDto.setCurrentCampPlans(currentCampPlans);
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setRecommendations(recommends);

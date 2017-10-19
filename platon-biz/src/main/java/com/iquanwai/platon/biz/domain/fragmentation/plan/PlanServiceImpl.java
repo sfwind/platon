@@ -503,8 +503,29 @@ public class PlanServiceImpl implements PlanService {
         return improvementPlans;
     }
 
-    public List<ImprovementReport> getCurrentCampPlanList() {
+    @Override
+    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
+        List<ImprovementPlan> plans = Lists.newArrayList();
 
+        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        if (currentMonth == null) return plans;
+
+        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+        for (Integer problemId : problemIds) {
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+            if (improvementPlan != null) {
+                improvementPlan.setProblemId(problemId);
+                improvementPlan.setProblem(cacheService.getProblem(problemId));
+                plans.add(improvementPlan);
+            } else {
+                improvementPlan = new ImprovementPlan();
+                improvementPlan.setProblemId(problemId);
+                improvementPlan.setProblem(cacheService.getProblem(problemId));
+                plans.add(improvementPlan);
+            }
+        }
+        return plans;
     }
 
     @Override
