@@ -297,6 +297,19 @@ public class PlanController {
         }
     }
 
+    @RequestMapping(value = "/choose/problem/camp/unlock/{planId}")
+    public ResponseEntity<Map<String, Object>> unlockCampPlan(LoginUser loginUser, @PathVariable Integer planId) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("解锁过期训练营小课")
+                .action("训练营解锁")
+                .memo(planId.toString());
+        operationLogService.log(operationLog);
+
+        planService.unlockCampPlan(loginUser.getId(), planId);
+        return WebUtils.success();
+    }
+
     /**
      * 加载学习计划，必须传planId
      */
@@ -547,9 +560,7 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/mark/{series}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser,
-                                                          @PathVariable Integer series,
-                                                          @RequestParam Integer planId) {
+    public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser, @PathVariable Integer series, @RequestParam Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
         if (improvementPlan == null) {
