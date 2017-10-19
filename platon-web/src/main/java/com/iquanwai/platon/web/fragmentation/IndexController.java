@@ -84,6 +84,7 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/inter/question", "/rise/static/inter/quan/answer"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        logger.info("问题／答案页面");
         return courseView(request, null, false, RISE_VIEW);
     }
 
