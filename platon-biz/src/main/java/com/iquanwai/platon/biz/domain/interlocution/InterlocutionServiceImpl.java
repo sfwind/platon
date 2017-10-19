@@ -108,14 +108,13 @@ public class InterlocutionServiceImpl implements InterlocutionService {
      */
     private void initQuestionList(InterlocutionQuestion item, String loadOpenid) {
         Profile profile = accountService.getProfile(item.getProfileId());
-        if (profile == null) {
-            logger.error("用户 {} 不存在", item.getProfileId());
-            return;
+        if (profile != null) {
+            // 设置昵称
+            item.setAuthorUserName(profile.getNickname());
+            // 设置头像
+            item.setAuthorHeadPic(profile.getHeadimgurl());
         }
-        // 设置昵称
-        item.setAuthorUserName(profile.getNickname());
-        // 设置头像
-        item.setAuthorHeadPic(profile.getHeadimgurl());
+
         // 初始化添加时间
         item.setAddTimeStr(DateUtils.parseDateToString(item.getAddTime()));
         InterlocutionFollow load = interlocutionFollowDao.load(item.getId(), loadOpenid);
