@@ -503,6 +503,10 @@ public class PlanServiceImpl implements PlanService {
         return improvementPlans;
     }
 
+    public List<ImprovementReport> getCurrentCampPlanList() {
+
+    }
+
     @Override
     public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
         List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
@@ -536,7 +540,6 @@ public class PlanServiceImpl implements PlanService {
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
         return isLearningSuccess && essenceCard != null;
     }
-
 
     @Override
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
