@@ -256,8 +256,9 @@ public class PlanController {
         Boolean isRiseMember = accountService.isRiseMember(loginUser.getId());
         if (!isRiseMember && riseCourseOrderOrder == null && !problemId.equals(trialProblemId)) {
             // 既没有购买过这个小课，又不是rise会员,也不是限免课程
-            return WebUtils.error("非rise会员需要单独购买小课哦");
+            return WebUtils.error("您暂无该权限，有问题请在后台留言。");
         }
+
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
         // 生成小课之后发送选课成功通知
         generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), problemId);
