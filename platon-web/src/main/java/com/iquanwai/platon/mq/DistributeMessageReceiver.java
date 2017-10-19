@@ -49,7 +49,7 @@ public class DistributeMessageReceiver {
                     "\n" +
                     "报名密码：963258\n" +
                     "\n" +
-                    "☞<a href='https://m.qlchat.com/topic/2000000114861380.htm?shareKey=6957a5d4553d45d8e5c509f3c79d212c'>戳我报名</a>☜\n" +
+                    "\uD83D\uDC49<a href='https://m.qlchat.com/topic/2000000114861380.htm?shareKey=6957a5d4553d45d8e5c509f3c79d212c'>戳我报名</a>\uD83D\uDC48\n" +
                     "\n" +
                     "童鞋，拿了链接记得帮小哥哥宣传哦[机智]";
         } else {
@@ -57,7 +57,7 @@ public class DistributeMessageReceiver {
                     "\n" +
                     "报名密码：963258\n" +
                     "\n" +
-                    "☞<a href='https://m.qlchat.com/topic/2000000114861380.htm?shareKey=6957a5d4553d45d8e5c509f3c79d212c'>戳我报名</a>☜\n" +
+                    "\uD83D\uDC49<a href='https://m.qlchat.com/topic/2000000114861380.htm?shareKey=6957a5d4553d45d8e5c509f3c79d212c'>戳我报名</a>\uD83D\uDC48\n" +
                     "\n" +
                     "童鞋，拿了链接记得帮小哥哥宣传哦[机智]";
         }
