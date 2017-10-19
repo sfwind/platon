@@ -62,6 +62,9 @@ public class WebUtils {
         return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
     }
 
+    /**
+     * 默认授权方式，静默授权
+     */
     public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception{
         String url = ConfigUtils.adapterDomainName()+request.getRequestURI();
         if(!StringUtils.isEmpty(request.getQueryString())){
@@ -70,6 +73,9 @@ public class WebUtils {
         response.sendRedirect(ConfigUtils.adapterDomainName()+"/wx/oauth/auth?callbackUrl="+url);
     }
 
+    /**
+     * 提示性授权
+     */
     public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception{
         String url = ConfigUtils.adapterDomainName()+request.getRequestURI();
         if(!StringUtils.isEmpty(request.getQueryString())){
