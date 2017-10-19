@@ -36,7 +36,7 @@ public class WeixinAskHandleInterceptor extends HandlerInterceptorAdapter {
             String value = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
             logger.info("ask interceptor:{}", value);
             if (StringUtils.isEmpty(value)) {
-                WebUtils.askAuth(request, response);
+                WebUtils.auth(request, response);
                 return false;
             } else {
                return true;
