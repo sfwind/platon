@@ -278,6 +278,25 @@ public class PlanController {
         return WebUtils.result(planId);
     }
 
+    @RequestMapping(value = "/choose/problem/camp/{problemId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createCampPlan(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("选择训练营小课")
+                .action("训练营开课")
+                .memo(problemId.toString());
+        operationLogService.log(operationLog);
+
+        Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId);
+        if (campChosenCheck.getLeft()) {
+            Integer resultPlanId = planService.forceOpenProblem(loginUser.getId(), problemId, null, null);
+            return WebUtils.result(String.valueOf(resultPlanId));
+        } else {
+            return WebUtils.error("小课开启失败，请后台联系管理员");
+        }
+    }
+
     /**
      * 加载学习计划，必须传planId
      */
@@ -561,10 +580,21 @@ public class PlanController {
         List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId());
         currentCampImprovementPlans.forEach(item -> {
             PlanDto planDto = new PlanDto();
-            planDto.setPlanId(item.getId() != 0 ? item.getId() : null);
+            planDto.setPlanId(item.getId());
+            planDto.setCompleteSeries(item.getCompleteSeries());
+            planDto.setTotalSeries(item.getTotalSeries());
+            planDto.setPoint(item.getPoint());
+            planDto.setDeadline(item.getDeadline());
             planDto.setName(item.getProblem().getProblem());
+            planDto.setPic(item.getProblem().getPic());
+            planDto.setStartDate(item.getStartDate());
             planDto.setProblemId(item.getProblemId());
-            planDto.setProblem(item.getProblem().simple());
+            planDto.setCloseTime(item.getCloseTime());
+
+            // 设置 Problem 对象
+            Problem itemProblem = cacheService.getProblem(item.getProblemId());
+            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+            planDto.setProblem(itemProblem.simple());
             currentCampPlans.add(planDto);
         });
 

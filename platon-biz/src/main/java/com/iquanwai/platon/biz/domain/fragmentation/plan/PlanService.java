@@ -34,6 +34,8 @@ public interface PlanService {
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans);
 
+    Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
+
     /**
      * 获取学员最近的训练
      * @param profileId 学员id

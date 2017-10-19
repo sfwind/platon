@@ -317,6 +317,28 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
+        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+
+        Boolean tag = true;
+        String checkStr = "";
+
+        if (!problemIds.contains(problemId)) {
+            tag = false;
+            checkStr = "报名训练营小课不是当前开发的训练营小课";
+        } else {
+            Profile profile = accountService.getProfile(profileId);
+            if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
+                tag = false;
+                checkStr = "非会员用户不能在此开启训练营小课";
+            }
+        }
+        return new MutablePair<>(tag, checkStr);
+    }
+
+    @Override
     public ImprovementPlan getLatestPlan(Integer profileId) {
         return improvementPlanDao.getLastPlan(profileId);
     }
@@ -517,6 +539,7 @@ public class PlanServiceImpl implements PlanService {
             if (improvementPlan != null) {
                 improvementPlan.setProblemId(problemId);
                 improvementPlan.setProblem(cacheService.getProblem(problemId));
+                calcDeadLine(improvementPlan);
                 plans.add(improvementPlan);
             } else {
                 improvementPlan = new ImprovementPlan();
