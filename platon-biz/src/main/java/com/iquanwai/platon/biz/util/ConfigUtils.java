@@ -366,5 +366,10 @@ public class ConfigUtils {
         return getValue("product.change.msg");
     }
 
+    public static List<String> getDevelopOpenIds() {
+        String openIdsStr = getValue("sms.alarm.openids");
+        return Lists.newArrayList(openIdsStr.split(","));
+    }
+
 }
 
