@@ -179,27 +179,12 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public List<Problem> getProblems() {
-        List<Problem> dest = Lists.newArrayList();
-        problems.forEach(problem -> {
-            Problem newOne = new Problem();
-            try {
-                BeanUtils.copyProperties(problem, newOne);
-                dest.add(newOne);
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage());
-            }
-        });
-        return dest;
+        return problems.stream().map(Problem::copy).collect(Collectors.toList());
     }
 
     @Override
     public Problem getProblem(Integer problemId) {
-        for (Problem problem : problems) {
-            if (problem.getId() == problemId) {
-                return problem;
-            }
-        }
-        return null;
+        return problems.stream().filter(problem -> problem.getId() == problemId).map(Problem::copy).findFirst().orElse(null);
     }
 
     @Override
