@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.po;
 
+import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import lombok.Data;
 
@@ -69,6 +70,10 @@ public class Problem {
         problem.setChosenPersonCount(this.chosenPersonCount);
         problem.setAbbreviation(this.abbreviation);
         return problem;
+    }
+
+    public Problem copy() {
+        return JSON.parseObject(JSON.toJSONString(this), this.getClass());
     }
 
 }

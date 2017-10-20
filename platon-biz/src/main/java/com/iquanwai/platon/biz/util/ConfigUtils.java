@@ -369,5 +369,10 @@ public class ConfigUtils {
     public static String getAuditionPushMsg() {
         return getValue("audition.choose.msg.media.id");
     }
+    public static List<String> getDevelopOpenIds() {
+        String openIdsStr = getValue("sms.alarm.openids");
+        return Lists.newArrayList(openIdsStr.split(","));
+    }
+
 }
 
