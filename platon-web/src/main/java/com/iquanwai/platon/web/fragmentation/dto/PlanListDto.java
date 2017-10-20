@@ -11,6 +11,7 @@ import java.util.List;
  */
 @Data
 public class PlanListDto {
+    private List<PlanDto> currentCampPlans; // 正在进行的小课训练营课程
     private List<PlanDto> runningPlans;
     private List<PlanDto> completedPlans;
     private List<Problem> recommendations;

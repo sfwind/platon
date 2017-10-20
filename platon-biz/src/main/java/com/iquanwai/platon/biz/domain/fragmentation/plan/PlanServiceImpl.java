@@ -334,6 +334,40 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
+        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+
+        Boolean tag = true;
+        String checkStr = "";
+
+        if (!problemIds.contains(problemId)) {
+            tag = false;
+            checkStr = "报名训练营小课不是当前开发的训练营小课";
+        } else {
+            Profile profile = accountService.getProfile(profileId);
+            if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
+                tag = false;
+                checkStr = "非会员用户不能在此开启训练营小课";
+            }
+        }
+        return new MutablePair<>(tag, checkStr);
+    }
+
+    @Override
+    public void unlockCampPlan(Integer profileId, Integer planId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        Assert.notNull(improvementPlan);
+
+        if (profileId.equals(improvementPlan.getProfileId())
+                && ImprovementPlan.CLOSE == improvementPlan.getStatus()
+                && improvementPlan.getCompleteTime() == null) {
+            magicUnlockProblem(profileId, improvementPlan.getProblemId(), null, false);
+        }
+    }
+
+    @Override
     public ImprovementPlan getLatestPlan(Integer profileId) {
         return improvementPlanDao.getLastPlan(profileId);
     }
@@ -438,6 +472,7 @@ public class PlanServiceImpl implements PlanService {
         return -2;
     }
 
+    @Override
     public boolean hasProblemPlan(Integer profileId, Integer problemId) {
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         long count = improvementPlans.stream().filter(item -> item.getProblemId().equals(problemId)).count();
@@ -521,6 +556,32 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
+        List<ImprovementPlan> plans = Lists.newArrayList();
+
+        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        if (currentMonth == null) return plans;
+
+        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+        for (Integer problemId : problemIds) {
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+            if (improvementPlan != null) {
+                improvementPlan.setProblemId(problemId);
+                improvementPlan.setProblem(cacheService.getProblem(problemId));
+                calcDeadLine(improvementPlan);
+                plans.add(improvementPlan);
+            } else {
+                improvementPlan = new ImprovementPlan();
+                improvementPlan.setProblemId(problemId);
+                improvementPlan.setProblem(cacheService.getProblem(problemId));
+                plans.add(improvementPlan);
+            }
+        }
+        return plans;
+    }
+
+    @Override
     public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
         List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
@@ -553,7 +614,6 @@ public class PlanServiceImpl implements PlanService {
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
         return isLearningSuccess && essenceCard != null;
     }
-
 
     @Override
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
@@ -630,49 +690,15 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void forceOpenCampOrder(String orderId) {
-        MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
-        Integer profileId = monthlyCampOrder.getProfileId();
-
-        Integer month = monthlyCampOrder.getMonth();
-        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
-        for (MonthlyCampSchedule schedule : schedules) {
-            Integer problemId = schedule.getProblemId();
-            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampStartStudyDate(), ConfigUtils.getMonthlyCampCloseDate());
-
-            // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
-            Profile profile = accountService.getProfile(profileId);
-            if (profile.getRequestCommentCount() == 0) {
-                improvementPlanDao.updateRequestComment(planId, 1);
-            }
-        }
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
+        return this.magicUnlockProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
     }
 
     @Override
-    public Integer magicOpenProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
-        return this.magicOpenProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
-    }
-
-    @Override
-    public Integer magicOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
-        Integer resultPlanId;
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+        Integer resultPlanId = null;
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        Profile profile = accountService.getProfile(profileId);
-        if (improvementPlan == null) {
-            // 重开小课
-            // 用户从来没有开过小课，新开小课
-            resultPlanId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(resultPlanId, startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
-            }
-            // 是否发送
-            if (sendWelcomeMsg) {
-                generatePlanService.sendWelcomeMsg(profile.getOpenid(), problemId);
-            }
-        } else {
+        if (improvementPlan != null) {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
@@ -706,6 +732,25 @@ public class PlanServiceImpl implements PlanService {
             resultPlanId = improvementPlan.getId();
         }
         return resultPlanId;
+    }
+
+    @Override
+    public void forceOpenCampOrder(String orderId) {
+        MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
+        Integer profileId = monthlyCampOrder.getProfileId();
+
+        Integer month = monthlyCampOrder.getMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
+        for (MonthlyCampSchedule schedule : schedules) {
+            Integer problemId = schedule.getProblemId();
+            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampStartStudyDate(), ConfigUtils.getMonthlyCampCloseDate());
+
+            // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
+            Profile profile = accountService.getProfile(profileId);
+            if (profile.getRequestCommentCount() == 0) {
+                improvementPlanDao.updateRequestComment(planId, 1);
+            }
+        }
     }
 
     /**
