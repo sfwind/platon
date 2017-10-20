@@ -27,7 +27,6 @@ public class LoginUser {
     private Boolean openConsolidation; // 是否打开过巩固练习
     private Integer Device; // 1-pc 2-mobile
     private Boolean openWelcome; //是否打开过欢迎页
-
     public static LoginUser defaultUser(){
         return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(), "风之伤",
                 Profile.DEFAULT_AVATAR, null, 5, null, true, true, 1, true, true, 1, true);

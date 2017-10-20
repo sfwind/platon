@@ -34,6 +34,10 @@ public interface PlanService {
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans);
 
+    Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
+
+    void unlockCampPlan(Integer profileId, Integer planId);
+
     /**
      * 获取学员最近的训练
      * @param profileId 学员id
@@ -136,6 +140,11 @@ public interface PlanService {
      */
     List<ImprovementPlan> getPlanList(Integer profileId);
 
+    /**
+     * 获取当前正在学习月份的能够学习的训练营小课内容
+     */
+    List<ImprovementPlan> getCurrentCampPlanList(Integer profileId);
+
     Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
 
     /**
@@ -154,6 +163,10 @@ public interface PlanService {
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
     void forceOpenCampOrder(String orderId);
+
+    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
+
+    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
 
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate);
 

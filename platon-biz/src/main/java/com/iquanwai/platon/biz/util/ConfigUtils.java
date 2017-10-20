@@ -371,5 +371,12 @@ public class ConfigUtils {
         return Lists.newArrayList(openIdsStr.split(","));
     }
 
+    /**
+     * 获取当前正在学习中的小课训练营的月份
+     */
+    public static Integer getCurrentCampMonth() {
+        return getIntValue("current.camp.month");
+    }
+
 }
 
