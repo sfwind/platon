@@ -256,8 +256,9 @@ public class PlanController {
         Boolean isRiseMember = accountService.isRiseMember(loginUser.getId());
         if (!isRiseMember && riseCourseOrderOrder == null && !problemId.equals(trialProblemId)) {
             // 既没有购买过这个小课，又不是rise会员,也不是限免课程
-            return WebUtils.error("非rise会员需要单独购买小课哦");
+            return WebUtils.error("您暂无该权限，有问题请在后台留言。");
         }
+
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
         // 生成小课之后发送选课成功通知
         generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), problemId);
@@ -275,6 +276,38 @@ public class PlanController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(planId);
+    }
+
+    @RequestMapping(value = "/choose/problem/camp/{problemId}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createCampPlan(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("选择训练营小课")
+                .action("训练营开课")
+                .memo(problemId.toString());
+        operationLogService.log(operationLog);
+
+        Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId);
+        if (campChosenCheck.getLeft()) {
+            Integer resultPlanId = planService.forceOpenProblem(loginUser.getId(), problemId, null, null);
+            return WebUtils.result(String.valueOf(resultPlanId));
+        } else {
+            return WebUtils.error("小课开启失败，请后台联系管理员");
+        }
+    }
+
+    @RequestMapping(value = "/choose/problem/camp/unlock/{planId}")
+    public ResponseEntity<Map<String, Object>> unlockCampPlan(LoginUser loginUser, @PathVariable Integer planId) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("解锁过期训练营小课")
+                .action("训练营解锁")
+                .memo(planId.toString());
+        operationLogService.log(operationLog);
+
+        planService.unlockCampPlan(loginUser.getId(), planId);
+        return WebUtils.success();
     }
 
     /**
@@ -527,9 +560,7 @@ public class PlanController {
     }
 
     @RequestMapping(value = "/mark/{series}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser,
-                                                          @PathVariable Integer series,
-                                                          @RequestParam Integer planId) {
+    public ResponseEntity<Map<String, Object>> markSeries(LoginUser loginUser, @PathVariable Integer series, @RequestParam Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
         if (improvementPlan == null) {
@@ -556,10 +587,32 @@ public class PlanController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-        List<ImprovementPlan> plans = planService.getPlanList(loginUser.getId());
+        List<PlanDto> currentCampPlans = Lists.newArrayList();
+        List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId());
+        currentCampImprovementPlans.forEach(item -> {
+            PlanDto planDto = new PlanDto();
+            planDto.setPlanId(item.getId());
+            planDto.setCompleteSeries(item.getCompleteSeries());
+            planDto.setTotalSeries(item.getTotalSeries());
+            planDto.setPoint(item.getPoint());
+            planDto.setDeadline(item.getDeadline());
+            planDto.setName(item.getProblem().getProblem());
+            planDto.setPic(item.getProblem().getPic());
+            planDto.setStartDate(item.getStartDate());
+            planDto.setProblemId(item.getProblemId());
+            planDto.setCloseTime(item.getCloseTime());
+
+            // 设置 Problem 对象
+            Problem itemProblem = cacheService.getProblem(item.getProblemId());
+            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+            planDto.setProblem(itemProblem.simple());
+            currentCampPlans.add(planDto);
+        });
+
+        List<ImprovementPlan> personalImprovementPlans = planService.getPlanList(loginUser.getId());
         List<PlanDto> runningPlans = Lists.newArrayList();
         List<PlanDto> completedPlans = Lists.newArrayList();
-        plans.forEach(item -> {
+        personalImprovementPlans.forEach(item -> {
             PlanDto plan = new PlanDto();
             plan.setPlanId(item.getId());
             plan.setCompleteSeries(item.getCompleteSeries());
@@ -587,6 +640,7 @@ public class PlanController {
         List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, completedPlans);
 
         PlanListDto planListDto = new PlanListDto();
+        planListDto.setCurrentCampPlans(currentCampPlans);
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setRecommendations(recommends);

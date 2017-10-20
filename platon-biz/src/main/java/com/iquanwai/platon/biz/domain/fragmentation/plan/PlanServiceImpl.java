@@ -3,13 +3,30 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -317,6 +334,40 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
+        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+
+        Boolean tag = true;
+        String checkStr = "";
+
+        if (!problemIds.contains(problemId)) {
+            tag = false;
+            checkStr = "报名训练营小课不是当前开发的训练营小课";
+        } else {
+            Profile profile = accountService.getProfile(profileId);
+            if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
+                tag = false;
+                checkStr = "非会员用户不能在此开启训练营小课";
+            }
+        }
+        return new MutablePair<>(tag, checkStr);
+    }
+
+    @Override
+    public void unlockCampPlan(Integer profileId, Integer planId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        Assert.notNull(improvementPlan);
+
+        if (profileId.equals(improvementPlan.getProfileId())
+                && ImprovementPlan.CLOSE == improvementPlan.getStatus()
+                && improvementPlan.getCompleteTime() == null) {
+            magicUnlockProblem(profileId, improvementPlan.getProblemId(), null, false);
+        }
+    }
+
+    @Override
     public ImprovementPlan getLatestPlan(Integer profileId) {
         return improvementPlanDao.getLastPlan(profileId);
     }
@@ -421,6 +472,7 @@ public class PlanServiceImpl implements PlanService {
         return -2;
     }
 
+    @Override
     public boolean hasProblemPlan(Integer profileId, Integer problemId) {
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         long count = improvementPlans.stream().filter(item -> item.getProblemId().equals(problemId)).count();
@@ -504,6 +556,32 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
+        List<ImprovementPlan> plans = Lists.newArrayList();
+
+        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        if (currentMonth == null) return plans;
+
+        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+        for (Integer problemId : problemIds) {
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+            if (improvementPlan != null) {
+                improvementPlan.setProblemId(problemId);
+                improvementPlan.setProblem(cacheService.getProblem(problemId));
+                calcDeadLine(improvementPlan);
+                plans.add(improvementPlan);
+            } else {
+                improvementPlan = new ImprovementPlan();
+                improvementPlan.setProblemId(problemId);
+                improvementPlan.setProblem(cacheService.getProblem(problemId));
+                plans.add(improvementPlan);
+            }
+        }
+        return plans;
+    }
+
+    @Override
     public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
         List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
@@ -536,7 +614,6 @@ public class PlanServiceImpl implements PlanService {
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, targetChapterId);
         return isLearningSuccess && essenceCard != null;
     }
-
 
     @Override
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
@@ -613,6 +690,51 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
+        return this.magicUnlockProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
+    }
+
+    @Override
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+        Integer resultPlanId = null;
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        if (improvementPlan != null) {
+            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
+            generatePlanService.forceReopenPlan(improvementPlan.getId());
+            List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+            Map<Integer, List<PracticePlan>> seriesGroup = practicePlans.stream().filter(item -> item.getSeries() != 0).collect(Collectors.groupingBy(PracticePlan::getSeries));
+            List<Integer> seriesList = Lists.newArrayList(seriesGroup.keySet());
+            seriesList.sort(Integer::compare);
+            Integer maxSeries = seriesList.stream().mapToInt(item -> item).max().orElse(0);
+            if (maxSeries == 0) {
+                logger.error("获取最大小节数失败");
+            }
+            for (Integer series : seriesList) {
+                List<PracticePlan> practicePlanList = seriesGroup.get(series);
+                if (isDone(practicePlanList) && !series.equals(maxSeries)) {
+                    // 这个小节做完了，并且不是最后一节，查看下一个小节是否解锁
+                    List<PracticePlan> next = seriesGroup.get(series + 1);
+                    if (!next.get(0).getUnlocked()) {
+                        // 没有解锁，需要解锁
+                        next.stream().mapToInt(PracticePlan::getId).forEach(practicePlanDao::unlock);
+                    }
+                } else {
+                    // 小节没做完，或者已经是最后一节了，break
+                    break;
+                }
+            }
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            }
+            resultPlanId = improvementPlan.getId();
+        }
+        return resultPlanId;
+    }
+
+    @Override
     public void forceOpenCampOrder(String orderId) {
         MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
         Integer profileId = monthlyCampOrder.getProfileId();
@@ -631,9 +753,6 @@ public class PlanServiceImpl implements PlanService {
         }
     }
 
-    /**
-     * 根据 profileId 和 problemId 强开当前小课
-     */
     @Override
     public Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate) {
         return forceOpenProblem(profileId, problemId, null, closeDate);
