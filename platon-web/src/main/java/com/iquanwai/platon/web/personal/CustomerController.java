@@ -272,7 +272,7 @@ public class CustomerController {
         if (riseMember != null) {
             return WebUtils.result(riseMember.simple());
         } else {
-            return WebUtils.error("未找到会员数据");
+            return WebUtils.result(null);
         }
     }
 
