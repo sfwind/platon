@@ -50,4 +50,6 @@ public interface InterlocutionService {
     InterlocutionDate loadInterlocutionDateInfo(Date date);
 
     InterlocutionQuestion loadQuanQuanAnswer(Date date);
+
+    String goQuestionSubmitPageQr(String date);
 }

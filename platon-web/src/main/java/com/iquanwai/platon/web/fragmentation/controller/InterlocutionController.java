@@ -155,4 +155,21 @@ public class InterlocutionController {
             return WebUtils.result(interlocutionQuestion);
         }
     }
+
+    @RequestMapping(value = "/go/question/submit/{date}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(LoginUser loginUser, @PathVariable String date) {
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser != null ? loginUser.getOpenId() : null)
+                .module("圈圈问答")
+                .function("去提问")
+                .action("检查是否关注");
+        operationLogService.log(operationLog);
+        if (loginUser == null || loginUser.getId() == null) {
+            // 没有loginUser，即没有关注,创建一个img
+            return WebUtils.result(interlocutionService.goQuestionSubmitPageQr(date));
+        } else {
+            return WebUtils.success();
+        }
+
+    }
 }

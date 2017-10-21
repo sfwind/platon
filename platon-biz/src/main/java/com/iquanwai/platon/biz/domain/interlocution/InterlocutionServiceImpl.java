@@ -5,6 +5,8 @@ import com.iquanwai.platon.biz.dao.interlocution.InterlocutionDateDao;
 import com.iquanwai.platon.biz.dao.interlocution.InterlocutionFollowDao;
 import com.iquanwai.platon.biz.dao.interlocution.InterlocutionQuestionDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionDate;
@@ -36,6 +38,12 @@ public class InterlocutionServiceImpl implements InterlocutionService {
     private InterlocutionDateDao interlocutionDateDao;
     @Autowired
     private InterlocutionAnswerDao interlocutionAnswerDao;
+    @Autowired
+    private QRCodeService qrCodeService;
+    @Autowired
+    private UploadResourceService uploadResourceService;
+
+    public static final String QUESTION_SUBMIT_PAGE = "question_submit_";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -103,7 +111,7 @@ public class InterlocutionServiceImpl implements InterlocutionService {
     /**
      * 初始化问题列表
      *
-     * @param item          问题
+     * @param item       问题
      * @param loadOpenid 执行加载操作的人
      */
     private void initQuestionList(InterlocutionQuestion item, String loadOpenid) {
@@ -148,6 +156,12 @@ public class InterlocutionServiceImpl implements InterlocutionService {
         question.setNextDate(nextDate);
         question.setDateInfo(dateInfo);
         return question;
+    }
+
+    @Override
+    public String goQuestionSubmitPageQr(String date) {
+        String scene = QUESTION_SUBMIT_PAGE + date;
+        return qrCodeService.loadQrBase64(scene);
     }
 
 }
