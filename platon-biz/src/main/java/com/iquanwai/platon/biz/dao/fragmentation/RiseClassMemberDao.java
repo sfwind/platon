@@ -22,11 +22,11 @@ public class RiseClassMemberDao extends PracticeDBUtil {
 
     public int insert(RiseClassMember riseClassMember) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO RiseClassMember (ClassId, GroupId, MemberId, ProfileId, Active) " +
+        String sql = "INSERT INTO RiseClassMember (ClassName, GroupId, MemberId, ProfileId, Active) " +
                 "VALUES (?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    riseClassMember.getClassId(),
+                    riseClassMember.getClassName(),
                     riseClassMember.getGroupId(),
                     riseClassMember.getMemberId(),
                     riseClassMember.getProfileId(),
