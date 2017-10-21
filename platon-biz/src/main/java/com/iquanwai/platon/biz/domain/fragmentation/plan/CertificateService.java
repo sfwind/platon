@@ -16,12 +16,18 @@ public interface CertificateService {
      * */
     RiseCertificate getCertificate(String certificateNo);
 
+    void generateCertificate(Integer year, Integer month, Integer problemId);
+
+    void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);
+
     /**
      * 发送训练营证书通知
      * @param year 开营年份
      * @param month 开营月份
      * */
     void sendCertificate(Integer year, Integer month);
+
+    void sendFullAttendanceCoupon(Integer year, Integer month);
 
     /**
      * 获取我的证书

@@ -9,6 +9,10 @@ import lombok.Data;
 public class RiseCertificate {
     private int id;
     private Integer profileId; //用户id
+
+    /**
+     * IQW{Type, 02d}{RiseClassMember.MemberId}{Month, 02d}{序号, 03d}{随机数, 02d}`
+     */
     private String certificateNo; //证书id
     private Integer year; //开营年
     private Integer month; //开营月
@@ -21,4 +25,6 @@ public class RiseCertificate {
     private String name; //证书获得者 非db字段
     private String typeName; //证书类型名称 非db字段
     private String congratulation; //证书描述 非db字段
+    private Integer problemId; // 小课 id
+
 }

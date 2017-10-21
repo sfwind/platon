@@ -378,5 +378,12 @@ public class ConfigUtils {
         return getIntValue("current.camp.month");
     }
 
+    /**
+     * 账户变动提醒
+     */
+    public static String getAccountChangeMsg() {
+        return getValue("account.change.message");
+    }
+
 }
 
