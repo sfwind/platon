@@ -43,7 +43,7 @@ public class InterQuestionReceiver {
                 String openId = json.get("openid").toString();
                 String[] sceneParams = scene.split("_");
                 String date = sceneParams[2];
-                customerMessageService.sendCustomerMessage(openId, "Hi，欢迎来到【圈外商学院|一期一会】\n" +
+                customerMessageService.sendCustomerMessage(openId, "Hi，欢迎来到【圈外商学院|一期一会】\n\n" +
                         "<a href='" + QUESTION_SUBMIT_PAGE + date + "'>向圈圈提问</a>\n", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
         });
