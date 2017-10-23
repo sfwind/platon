@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.resolver;
 
 import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -41,11 +42,21 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         }
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        String value = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
+        String value = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
         logger.info("resolver:{}", value);
         Callback callback = callbackDao.queryByAccessToken(value);
+        if (callback == null) {
+            return null;
+        }
         String openid = callback.getOpenid();
-        Account account = accountService.getGuestFromWeixin(openid, value);
+        Account account;
+        try {
+            account = accountService.getAccount(openid, false);
+        } catch (NotFollowingException e){
+            account = new Account();
+            account.setOpenid(openid);
+            account.setSubscribe(0);
+        }
         if (account == null) {
             return null;
         } else {
@@ -54,6 +65,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
             guestUser.setHeadimgUrl(account.getHeadimgurl());
             guestUser.setWeixinName(account.getNickname());
             guestUser.setRealName(account.getRealName());
+            guestUser.setSubscribe(account.getSubscribe());
             return guestUser;
         }
     }
