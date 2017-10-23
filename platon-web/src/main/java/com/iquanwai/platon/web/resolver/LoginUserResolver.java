@@ -59,12 +59,14 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
                 return null;
             }
 
-        LoginUser loginUser = loginUserService.getLoginUser(openId, platform);
-        if (loginUser == null) {
-            return null;
-        }
-        logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
-        if (loginUser.getId() != null) {loginUserService.login(platform, accessToken, loginUser);}
+            LoginUser loginUser = loginUserService.getLoginUser(openId, platform);
+            if (loginUser == null) {
+                return null;
+            }
+            logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
+            if (loginUser.getId() != null) {
+                loginUserService.login(platform, accessToken, loginUser);
+            }
 
             return loginUser;
         }
