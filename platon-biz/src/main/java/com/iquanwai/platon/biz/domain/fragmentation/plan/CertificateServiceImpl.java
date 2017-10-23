@@ -102,7 +102,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 practicePlan.getStatus() == 0)
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-                    // 必须完成知识点、选择题的题数大于 0，不发毕业证书
+                    // 必须完成知识点、选择题的题数大于 0，不发结课证书
                     generateCertificateTag = false;
                 } else {
                     // 所有必须完成的知识点、选择题都已经完成
@@ -190,7 +190,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 practicePlan.getStatus() == 0)
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-                    // 必须完成知识点、选择题的题数大于 0，不发毕业证书
+                    // 必须完成知识点、选择题的题数大于 0，不发结课证书
                     generateFullAttendanceCoupon = false;
                 } else {
                     // 完成所有练习之后，对应用题完成情况进行复查
@@ -261,7 +261,7 @@ public class CertificateServiceImpl implements CertificateService {
                     ConfigUtils.domainName() + "/rise/static/customer/certificate?certificateNo="
                             + riseCertificate.getCertificateNo());
             buildGraduateMessage(riseCertificate, type, templateMessage, profile);
-            //发送毕业消息
+            //发送结课消息
             templateMessageService.sendMessage(templateMessage);
 
             templateMessage = new TemplateMessage();
@@ -344,14 +344,14 @@ public class CertificateServiceImpl implements CertificateService {
                 Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                 templateMessage.setData(data);
 
-                data.put("first", new TemplateMessage.Keyword("恭喜您" + month + "月训练营毕业，" +
+                data.put("first", new TemplateMessage.Keyword("恭喜您" + month + "月训练营结课，" +
                         "您已获得商学院免申请入学资格！办理入学请点击下方“商学院”按钮。\n"));
                 data.put("keyword1", new TemplateMessage.Keyword("圈外同学"));
                 data.put("keyword2", new TemplateMessage.Keyword("圈外商学院"));
                 data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                 data.put("keyword4", new TemplateMessage.Keyword("已获得免申请入学资格"));
 
-                //发送毕业消息
+                //发送结课消息
                 templateMessageService.sendMessage(templateMessage);
             }
 
@@ -479,8 +479,8 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您于［圈外同学］" + riseCertificate.getMonth() + "月小课训练营毕业\n" +
-                            "点击详情，领取毕业证书\n"));
+                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月小课训练营\n" +
+                            "点击详情，领取结课证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                     data.put("keyword3", new TemplateMessage.Keyword(profile.getNickname()));
@@ -551,7 +551,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.ORDINARY:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中成绩名列前茅，荣誉毕业" +
+                        riseCertificate.getMonth() + "月小课训练营中完成课程学习" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ORDINARY);

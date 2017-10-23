@@ -104,7 +104,7 @@ public interface Constants {
             String GROUP_LEADER = "优秀组长";
             String SUPERB_MEMBER = "优秀学员";
             String SUPERB_GROUP = "优秀团队";
-            String ORDINARY = "毕业证书";
+            String ORDINARY = "结课证书";
             String ASST_COACH = "优秀助教";
         }
     }
