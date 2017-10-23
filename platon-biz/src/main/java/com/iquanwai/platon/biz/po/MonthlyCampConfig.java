@@ -24,6 +24,10 @@ public class MonthlyCampConfig {
      */
     private Date closeDate;
     /**
+     * 售卖中小课的对应年份
+     */
+    private Integer sellingYear;
+    /**
      * 售卖中小课的对应月份
      */
     private Integer sellingMonth;
