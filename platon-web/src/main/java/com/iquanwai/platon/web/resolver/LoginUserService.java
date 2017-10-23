@@ -327,9 +327,6 @@ public class LoginUserService {
             }
         } catch (NotFollowingException e) {
             logger.error("异常，openid:{}，没有查到", openId);
-            LoginUser loginUser = new LoginUser();
-            loginUser.setOpenId(openId);
-            return loginUser;
         }
 
         if(profile==null){

@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.resolver;
 
 import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -48,7 +49,14 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
             return null;
         }
         String openid = callback.getOpenid();
-        Account account = accountService.getGuestFromWeixin(openid, value);
+        Account account;
+        try {
+            account = accountService.getAccount(openid, false);
+        } catch (NotFollowingException e){
+            account = new Account();
+            account.setOpenid(openid);
+            account.setSubscribe(0);
+        }
         if (account == null) {
             return null;
         } else {
@@ -57,6 +65,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
             guestUser.setHeadimgUrl(account.getHeadimgurl());
             guestUser.setWeixinName(account.getNickname());
             guestUser.setRealName(account.getRealName());
+            guestUser.setSubscribe(account.getSubscribe());
             return guestUser;
         }
     }

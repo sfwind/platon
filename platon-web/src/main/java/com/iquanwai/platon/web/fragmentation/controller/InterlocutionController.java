@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.po.interlocution.InterlocutionQuestion;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RefreshListDto;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class InterlocutionController {
     private InterlocutionService interlocutionService;
 
     @RequestMapping(value = "/load/quesiton/list/{date}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadQuestionList(LoginUser loginUser, @ModelAttribute Page page, @PathVariable String date) {
+    public ResponseEntity<Map<String, Object>> loadQuestionList(GuestUser loginUser, @ModelAttribute Page page, @PathVariable String date) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("圈圈问答")
@@ -72,7 +73,7 @@ public class InterlocutionController {
     }
 
     @RequestMapping(value = "/interlocution/info/{date}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadInterlocutionDateInfo(LoginUser loginUser, @PathVariable String date) {
+    public ResponseEntity<Map<String, Object>> loadInterlocutionDateInfo(GuestUser loginUser, @PathVariable String date) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("圈圈问答")
@@ -98,7 +99,7 @@ public class InterlocutionController {
      * @param questionId 问题id
      */
     @RequestMapping(value = "/follow/{questionId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> followQuestion(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> followQuestion(GuestUser loginUser,
                                                               @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
         interlocutionService.followQuestion(loginUser.getOpenId(), questionId);
@@ -118,7 +119,7 @@ public class InterlocutionController {
      * @param questionId 问题id
      */
     @RequestMapping(value = "/follow/cancel/{questionId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> unfollowQuestion(LoginUser loginUser,
+    public ResponseEntity<Map<String, Object>> unfollowQuestion(GuestUser loginUser,
                                                                 @PathVariable Integer questionId) {
         Assert.notNull(loginUser, "用户不能为空");
         interlocutionService.unfollowQuestion(loginUser.getOpenId(), questionId);
@@ -133,7 +134,7 @@ public class InterlocutionController {
     }
 
     @RequestMapping(value = "/load/quanquan/{date}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadQuanquanAnswer(LoginUser loginUser, @PathVariable String date) {
+    public ResponseEntity<Map<String, Object>> loadQuanquanAnswer(GuestUser loginUser, @PathVariable String date) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("圈圈问答")
@@ -157,14 +158,14 @@ public class InterlocutionController {
     }
 
     @RequestMapping(value = "/go/question/submit/{date}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(LoginUser loginUser, @PathVariable String date) {
+    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable String date) {
         OperationLog operationLog = OperationLog.create()
                 .openid(loginUser != null ? loginUser.getOpenId() : null)
                 .module("圈圈问答")
                 .function("去提问")
                 .action("检查是否关注");
         operationLogService.log(operationLog);
-        if (loginUser == null || loginUser.getId() == null) {
+        if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
             // 没有loginUser，即没有关注,创建一个img
             return WebUtils.result(interlocutionService.goQuestionSubmitPageQr(date));
         } else {
