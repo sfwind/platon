@@ -24,12 +24,12 @@ public class InterlocutionFollowDao extends PracticeDBUtil {
 
     public int insert(InterlocutionFollow interlocutionFollow) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into InterlocutionFollow(QuestionId, ProfileId) " +
+        String sql = "insert into InterlocutionFollow(QuestionId, Openid) " +
                 "values(?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
                     interlocutionFollow.getQuestionId()
-                    , interlocutionFollow.getProfileId());
+                    , interlocutionFollow.getOpenid());
             return insertRs.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -50,12 +50,12 @@ public class InterlocutionFollowDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public InterlocutionFollow load(Integer questionId, Integer profileId) {
+    public InterlocutionFollow load(Integer questionId, String openId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<InterlocutionFollow> h = new BeanHandler<>(InterlocutionFollow.class);
-        String sql = "SELECT * FROM InterlocutionFollow where QuestionId=? and ProfileId=?";
+        String sql = "SELECT * FROM InterlocutionFollow where QuestionId=? and Openid=?";
         try {
-            InterlocutionFollow followList = run.query(sql, h, questionId, profileId);
+            InterlocutionFollow followList = run.query(sql, h, questionId, openId);
             return followList;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

@@ -39,6 +39,17 @@ public class InterlocutionDateDao extends PracticeDBUtil {
         return null;
     }
 
+    public InterlocutionDate loadNextDate(Date date) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from InterlocutionDate WHERE Del = 0 and StartDate > ? limit 1";
+        try {
+            return runner.query(sql, new BeanHandler<InterlocutionDate>(InterlocutionDate.class), DateUtils.parseDateToString(date));
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
 
 
 }

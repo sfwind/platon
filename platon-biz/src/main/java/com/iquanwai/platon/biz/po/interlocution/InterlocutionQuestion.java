@@ -25,4 +25,6 @@ public class InterlocutionQuestion {
     private Boolean mine; // 是否是自己的问题
     private Boolean answered; // 是否已经回答
     private InterlocutionAnswer answer;
+    private InterlocutionDate dateInfo;
+    private InterlocutionDate nextDate;
 }

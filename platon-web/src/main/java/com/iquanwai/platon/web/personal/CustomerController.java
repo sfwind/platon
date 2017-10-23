@@ -12,7 +12,12 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseCertificate;
+import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -22,7 +27,12 @@ import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
-import com.iquanwai.platon.web.personal.dto.*;
+import com.iquanwai.platon.web.personal.dto.AreaDto;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
+import com.iquanwai.platon.web.personal.dto.PlanListDto;
+import com.iquanwai.platon.web.personal.dto.ProfileDto;
+import com.iquanwai.platon.web.personal.dto.RegionDto;
+import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -33,7 +43,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -351,5 +366,6 @@ public class CustomerController {
         List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
         return WebUtils.result(forumAnswers);
     }
+
 
 }
