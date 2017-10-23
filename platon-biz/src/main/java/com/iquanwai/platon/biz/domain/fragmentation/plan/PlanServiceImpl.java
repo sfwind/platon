@@ -335,7 +335,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
-        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        Integer currentMonth = cacheService.loadMonthlyCampConfig().getLearningMonth();
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
         List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
@@ -559,7 +559,7 @@ public class PlanServiceImpl implements PlanService {
     public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
         List<ImprovementPlan> plans = Lists.newArrayList();
 
-        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        Integer currentMonth = cacheService.loadMonthlyCampConfig().getLearningMonth();
         if (currentMonth == null) return plans;
 
         List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
@@ -743,7 +743,9 @@ public class PlanServiceImpl implements PlanService {
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
-            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampStartStudyDate(), ConfigUtils.getMonthlyCampCloseDate());
+            Integer planId = forceOpenProblem(profileId, problemId,
+                    cacheService.loadMonthlyCampConfig().getOpenDate(),
+                    cacheService.loadMonthlyCampConfig().getCloseDate());
 
             // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
             Profile profile = accountService.getProfile(profileId);

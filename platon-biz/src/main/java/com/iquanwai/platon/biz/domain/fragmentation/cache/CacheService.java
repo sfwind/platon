@@ -27,6 +27,10 @@ public interface CacheService {
     /** 获取所有问题主分类 **/
     List<ProblemCatalog> loadProblemCatalogs();
 
+    MonthlyCampConfig loadMonthlyCampConfig();
+
     /** 更新缓存*/
     void reload();
+
+    void reloadMonthlyCampConfig();
 }
