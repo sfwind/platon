@@ -862,6 +862,7 @@ public class PlanController {
         }
         if (dto.getGoSuccess()) {
             // 第一次学习试听课
+            LOGGER.info("第一次学习试听课，发送消息,loginUser:{}", loginUser);
             accountService.addStatusId(loginUser.getId(), CustomerStatus.LEARNED_AUDITION);
             this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
         }
