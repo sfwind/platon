@@ -7,6 +7,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,26 @@ import java.util.List;
 @Repository
 public class RiseCertificateDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    public int insert(RiseCertificate riseCertificate) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "INSERT INTO RiseCertificate (ProfileId, Type, CertificateNo, Year, Month, GroupNo, ProblemName) VALUES " +
+                "( ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            Long result = runner.insert(sql, new ScalarHandler<>(),
+                    riseCertificate.getProfileId(),
+                    riseCertificate.getType(),
+                    riseCertificate.getCertificateNo(),
+                    riseCertificate.getYear(),
+                    riseCertificate.getMonth(),
+                    riseCertificate.getGroupNo(),
+                    riseCertificate.getProblemName());
+            return result.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 
     /**
      * 根据 ProblemId 获取所有相关推荐小课
@@ -72,7 +93,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public void notify(Integer id){
+    public void notify(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update RiseCertificate set Notified = 1 where id = ?";
         try {

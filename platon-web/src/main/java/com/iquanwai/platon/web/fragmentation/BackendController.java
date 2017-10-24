@@ -5,6 +5,8 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ForceOpenPlanParams;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.po.FullAttendanceReward;
+import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
 import com.iquanwai.platon.web.forum.dto.AnswerDto;
@@ -81,33 +83,57 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/reply", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumReply(@RequestParam(value = "profileId") Integer profileId,
-                                                          @RequestBody AnswerCommentDto answerCommentDto) {
+    public ResponseEntity<Map<String, Object>> forumReply(@RequestParam(value = "profileId") Integer profileId, @RequestBody AnswerCommentDto answerCommentDto) {
         answerService.commentAnswer(answerCommentDto.getAnswerId(), answerCommentDto.getRepliedCommentId(),
                 profileId, answerCommentDto.getComment());
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/answer", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "profileId") Integer profileId,
-                                                           @RequestBody AnswerDto answerDto) {
+    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "profileId") Integer profileId, @RequestBody AnswerDto answerDto) {
         answerService.submitAnswer(answerDto.getAnswerId(), profileId,
                 answerDto.getAnswer(), answerDto.getQuestionId());
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/generate/certificate", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generateCertificate(@RequestBody RiseCertificate riseCertificate) {
+        Integer month = riseCertificate.getMonth();
+        Integer year = riseCertificate.getYear();
+        Integer problemId = riseCertificate.getProblemId();
+        new Thread(() ->
+                certificateService.generateCertificate(year, month, problemId)
+        ).start();
+        return WebUtils.result("正在进行中");
+    }
+
+    @RequestMapping(value = "/generate/fullattendance", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(@RequestBody FullAttendanceReward fullAttendanceReward) {
+        Integer month = fullAttendanceReward.getMonth();
+        Integer year = fullAttendanceReward.getYear();
+        Integer problemId = fullAttendanceReward.getProblemId();
+        new Thread(() ->
+                certificateService.generateFullAttendanceCoupon(year, month, problemId)
+        ).start();
+        return WebUtils.result("正在进行中");
+    }
+
     @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendCertificate(@RequestParam(value = "year") Integer year,
-                                                           @RequestParam(value = "month") Integer month) {
+    public ResponseEntity<Map<String, Object>> sendCertificate(@RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
         new Thread(() -> {
             certificateService.sendCertificate(year, month);
         }).start();
         return WebUtils.result("正在进行中");
     }
 
+    @RequestMapping(value = "/send/fullattendance", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> sendFullAttendanceCoupon(@RequestParam("year") Integer year, @RequestParam("month") Integer month) {
+        new Thread(() -> certificateService.sendFullAttendanceCoupon(year, month)).start();
+        return WebUtils.result("正在进行中");
+    }
+
     @RequestMapping(value = "/send/camp/offer", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year,
-                                                               @RequestParam(value = "month") Integer month) {
+    public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
         new Thread(() -> {
             certificateService.sendOfferMsg(year, month);
         }).start();

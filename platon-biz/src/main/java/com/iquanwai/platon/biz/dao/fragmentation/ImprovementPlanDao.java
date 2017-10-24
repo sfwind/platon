@@ -85,6 +85,25 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return null;
     }
 
+    public List<ImprovementPlan> loadPlansByProfileIds(List<Integer> profileIds, Integer problemId) {
+        if (profileIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId in (" + produceQuestionMark(profileIds.size()) + ") AND ProblemId = ?";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+        List<Object> objects = Lists.newArrayList();
+        objects.addAll(profileIds);
+        objects.add(problemId);
+        try {
+            return runner.query(sql, h, objects.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public ImprovementPlan getLastPlan(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId=? and Del=0 order by id desc";

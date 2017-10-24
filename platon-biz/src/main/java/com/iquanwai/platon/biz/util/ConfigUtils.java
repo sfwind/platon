@@ -313,21 +313,6 @@ public class ConfigUtils {
     }
 
     /**
-     * 获取每月训练营小课对应生效月份
-     */
-    public static Integer getMonthlyCampMonth() {
-        return getIntValue("monthly.camp.month");
-    }
-
-    public static Date getMonthlyCampCloseDate() {
-        return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
-    }
-
-    public static Date getMonthlyCampStartStudyDate() {
-        return DateUtils.parseStringToDate(getValue("monthly.camp.start.study.date"));
-    }
-
-    /**
      * 读取热门小课配置
      */
     public static List<Integer> loadHotProblemList() {
@@ -372,10 +357,32 @@ public class ConfigUtils {
     }
 
     /**
+     * 获取每月训练营小课对应生效月份
+     */
+    public static Integer getMonthlyCampMonth() {
+        return getIntValue("monthly.camp.month");
+    }
+
+    public static Date getMonthlyCampCloseDate() {
+        return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
+    }
+
+    public static Date getMonthlyCampStartStudyDate() {
+        return DateUtils.parseStringToDate(getValue("monthly.camp.start.study.date"));
+    }
+
+    /**
      * 获取当前正在学习中的小课训练营的月份
      */
     public static Integer getCurrentCampMonth() {
         return getIntValue("current.camp.month");
+    }
+
+    /**
+     * 账户变动提醒
+     */
+    public static String getAccountChangeMsg() {
+        return getValue("account.change.message");
     }
 
 }
