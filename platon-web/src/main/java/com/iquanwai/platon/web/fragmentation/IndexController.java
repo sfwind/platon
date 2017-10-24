@@ -270,21 +270,21 @@ public class IndexController {
             default:
                 resourceUrl = ConfigUtils.staticResourceUrl();
         }
-        String vendorUrl = ConfigUtils.vendorResourceUrl();
+//        String vendorUrl = ConfigUtils.vendorResourceUrl();
         if (request.isSecure()) {
             resourceUrl = resourceUrl.replace("http:", "https:");
         }
         if (request.getParameter("debug") != null) {
             if (ConfigUtils.isFrontDebug()) {
                 mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
-                mav.addObject("vendorResource", "http://0.0.0.0:4000/vendor.js");
+//                mav.addObject("vendorResource", "http://0.0.0.0:4000/vendor.js");
             } else {
                 mav.addObject("resource", resourceUrl);
-                mav.addObject("vendorResource", vendorUrl);
+//                mav.addObject("vendorResource", vendorUrl);
             }
         } else {
             mav.addObject("resource", resourceUrl);
-            mav.addObject("vendorResource", vendorUrl);
+//            mav.addObject("vendorResource", vendorUrl);
         }
 
         Map<String, String> userParam = Maps.newHashMap();
