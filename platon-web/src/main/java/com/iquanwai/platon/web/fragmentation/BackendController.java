@@ -12,6 +12,7 @@ import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
 import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class BackendController {
     private PlanService planService;
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser) {
+    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser, GuestUser guestUser) {
         String data = errorLogDto.getResult();
         StringBuilder sb = new StringBuilder();
         if (data.length() > 700) {
@@ -62,7 +63,13 @@ public class BackendController {
             sb.append(cookie);
         }
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser == null ? null : loginUser.getOpenId())
+        String openId = null;
+        openId = loginUser == null ? null : loginUser.getOpenId();
+        if (openId == null) {
+            openId = guestUser == null ? null : guestUser.getOpenId();
+        }
+
+        OperationLog operationLog = OperationLog.create().openid(openId)
                 .module("记录前端bug")
                 .function("bug")
                 .action("bug")
