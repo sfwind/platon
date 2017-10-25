@@ -114,7 +114,7 @@ public class CustomerController {
         riseDto.setIsRiseMember(profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP);
         riseDto.setNickName(profile.getNickname());
 
-        RiseClassMember riseClassMember = accountService.loadActiveRiseClassMember(loginUser.getId());
+        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(loginUser.getId());
         if (riseClassMember != null) {
             riseDto.setMemberId(riseClassMember.getMemberId());
         }

@@ -129,7 +129,7 @@ public interface AccountService {
 
     void insertCoupon(Coupon coupon);
 
-    RiseClassMember loadActiveRiseClassMember(Integer profileId);
+    RiseClassMember loadDisplayRiseClassMember(Integer profileId);
 
     Boolean openLearningNotify(Integer profileId);
 
