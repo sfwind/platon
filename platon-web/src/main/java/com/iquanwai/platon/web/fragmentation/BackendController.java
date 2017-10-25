@@ -79,8 +79,14 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/mark", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser, @RequestBody MarkDto markDto) {
-        OperationLog operationLog = OperationLog.create().openid(loginUser == null ? null : loginUser.getOpenId())
+    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser, GuestUser guestUser, @RequestBody MarkDto markDto) {
+        String openId = null;
+        openId = loginUser == null ? null : loginUser.getOpenId();
+        if (openId == null) {
+            openId = guestUser == null ? null : guestUser.getOpenId();
+        }
+
+        OperationLog operationLog = OperationLog.create().openid(openId)
                 .module(markDto.getModule())
                 .function(markDto.getFunction())
                 .action(markDto.getAction())
