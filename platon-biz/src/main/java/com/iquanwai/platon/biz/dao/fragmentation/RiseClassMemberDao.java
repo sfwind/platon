@@ -50,6 +50,18 @@ public class RiseClassMemberDao extends PracticeDBUtil {
         return null;
     }
 
+    public RiseClassMember loadLatestRiseClassMember(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM RiseClassMember WHERE ProfileId = ? AND Del = 0 ORDER BY AddTime DESC";
+        ResultSetHandler<RiseClassMember> h = new BeanHandler<>(RiseClassMember.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
     public List<RiseClassMember> loadRiseClassMembersByYearMonth(Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM RiseClassMember WHERE Year = ? AND Month = ? AND Del = 0";
