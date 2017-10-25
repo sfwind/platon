@@ -658,11 +658,13 @@ public class PlanServiceImpl implements PlanService {
         int buttonStatus = -1;
 
         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+            // 走限免课的逻辑
             if (plan == null) {
                 if (isRiseMember) {
                     // 选择该小课
                     buttonStatus = 2;
                 } else {
+                    // 不是会员，显示是否
                     boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
                     // 7 - 下一步 8 - 免费获取 | 加入商学院
                     buttonStatus = hasTrialAuthority ? 7 : 8;
