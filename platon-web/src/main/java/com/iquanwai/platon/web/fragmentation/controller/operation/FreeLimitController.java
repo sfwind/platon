@@ -75,9 +75,8 @@ public class FreeLimitController {
         result.setSuggestion(pairs.getRight());
 
         // 发消息比较慢,异步发送
-        ThreadPool.execute(new Thread(() -> {
-            operationEvaluateService.sendShareMessage(loginUser.getId(), score, percent, result.getLearnFreeLimit());
-        }), "thread-send-shareMsg");
+        ThreadPool.execute(() -> operationEvaluateService.sendShareMessage(
+                loginUser.getId(), score, percent, result.getLearnFreeLimit()));
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("限免推广").function("测评").action("提交测评").memo(score.toString());
