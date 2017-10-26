@@ -76,6 +76,7 @@ public class ThreadPool {
     public static ThreadPoolExecutor createSingleThreadExecutor(){
         return new ThreadPoolExecutor(1, 1,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+                new LinkedBlockingQueue<>(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 }
