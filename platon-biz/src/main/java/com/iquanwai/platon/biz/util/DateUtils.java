@@ -133,6 +133,13 @@ public class DateUtils {
         return isSameDate;
     }
 
+    public static boolean isToday(Date date) {
+        String cmpDate = date.toString().substring(0, 10);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String today = sdf.format(new Date()).substring(0, 10);
+        return today.equals(cmpDate);
+    }
+
     public static Integer getYear(Date date) {
         return new DateTime(date).getYear();
     }

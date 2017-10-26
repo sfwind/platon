@@ -41,6 +41,18 @@ public class CustomerMessageLogDao extends DBUtil {
         return -1;
     }
 
+    public List<CustomerMessageLog> loadByOpenId(String openId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CustomerMessageLog WHERE OpenId = ? AND ValidPush = 1";
+        ResultSetHandler<List<CustomerMessageLog>> h = new BeanListHandler<>(CustomerMessageLog.class);
+        try {
+            return runner.query(sql, h, openId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     // 获取在一定时间段之内的所有记录
     public List<CustomerMessageLog> loadInDistanceDate(String openId, String distanceDate) {
         QueryRunner runner = new QueryRunner(getDataSource());
