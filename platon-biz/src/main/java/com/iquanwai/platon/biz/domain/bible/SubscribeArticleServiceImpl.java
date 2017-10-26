@@ -353,7 +353,7 @@ public class SubscribeArticleServiceImpl implements SubscribeArticleService {
             //根据命中的tag数量,取前5篇文章
             List<SubscribeArticle> onedayArticles = entry.getValue().stream().map(subscribeArticle -> {
                 // 按天计算每天文章和用户喜好的匹配度
-                String tags[] = subscribeArticle.getTag().split(",");
+                String[] tags = subscribeArticle.getTag().split(",");
                 // 用户选择的标签
                 int[] userFavorTags = subscribeUserTagDao.loadAllUserFavorTags(profileId).stream()
                         .mapToInt(SubscribeUserTag::getTagId).toArray();

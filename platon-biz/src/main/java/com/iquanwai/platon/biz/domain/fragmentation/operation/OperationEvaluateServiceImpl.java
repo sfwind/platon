@@ -634,7 +634,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     }
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
-        Map<Object, Boolean> map = new ConcurrentHashMap<>();
+        Map<Object, Boolean> map = Maps.newConcurrentMap();
         return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 }
