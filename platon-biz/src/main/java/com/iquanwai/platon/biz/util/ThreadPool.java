@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -71,4 +72,10 @@ public class ThreadPool {
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
+
+    public static ThreadPoolExecutor createSingleThreadExecutor(){
+        return new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>());
+    }
 }

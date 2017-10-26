@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.io.File;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Component
 public class ConfigUtils {
@@ -21,21 +24,13 @@ public class ConfigUtils {
 
     private static Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
 
-    private static Timer timer;
-
     static {
-        loadConfig();
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                loadConfig();
-            }
-        }, 0, 1000 * 60);
+        loadLocalConfig();
         zkConfigUtils = new ZKConfigUtils();
     }
 
-    private static void loadConfig() {
+    private static void loadLocalConfig() {
+        logger.info("load local config");
         config = ConfigFactory.load("localconfig");
         fileconfig = ConfigFactory.parseFile(new File("/data/config/localconfig"));
         config = fileconfig.withFallback(config);
@@ -123,16 +118,6 @@ public class ConfigUtils {
 
     public static String staticNoteResourceUrl() {
         String url = getValue("static.note.resource.url");
-        //测试环境防浏览器缓存，添加随机参数
-        if (url.endsWith("?")) {
-            url = url.concat("_t=").concat(new Random().nextInt() + "");
-        }
-
-        return url;
-    }
-
-    public static String vendorResourceUrl() {
-        String url = getValue("static.vendor.resource.url");
         //测试环境防浏览器缓存，添加随机参数
         if (url.endsWith("?")) {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
@@ -354,28 +339,6 @@ public class ConfigUtils {
     public static List<String> getDevelopOpenIds() {
         String openIdsStr = getValue("sms.alarm.openids");
         return Lists.newArrayList(openIdsStr.split(","));
-    }
-
-    /**
-     * 获取每月训练营小课对应生效月份
-     */
-    public static Integer getMonthlyCampMonth() {
-        return getIntValue("monthly.camp.month");
-    }
-
-    public static Date getMonthlyCampCloseDate() {
-        return DateUtils.parseStringToDate(getValue("monthly.camp.close.date"));
-    }
-
-    public static Date getMonthlyCampStartStudyDate() {
-        return DateUtils.parseStringToDate(getValue("monthly.camp.start.study.date"));
-    }
-
-    /**
-     * 获取当前正在学习中的小课训练营的月份
-     */
-    public static Integer getCurrentCampMonth() {
-        return getIntValue("current.camp.month");
     }
 
     /**

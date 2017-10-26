@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.interlocution;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionQuestion;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 @Repository
 public class InterlocutionQuestionDao extends PracticeDBUtil {
@@ -77,7 +77,7 @@ public class InterlocutionQuestionDao extends PracticeDBUtil {
 
     public void open(Integer id, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), runner);
         if (point == null) {
             point = 0;
         }
@@ -111,18 +111,5 @@ public class InterlocutionQuestionDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
-    }
-
-    public List<InterlocutionQuestion> getQuestions(Integer profileId, String date, Page page) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<List<InterlocutionQuestion>> h = new BeanListHandler<>(InterlocutionQuestion.class);
-        String sql = "SELECT * FROM InterlocutionQuestion where ProfileId = ? and InterlocutionDate = ? " +
-                "order by Weight desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
-        try {
-            return runner.query(sql, h, profileId, date);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
     }
 }
