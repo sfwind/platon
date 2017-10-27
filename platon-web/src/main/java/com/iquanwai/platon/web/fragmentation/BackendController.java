@@ -16,12 +16,19 @@ import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +45,8 @@ public class BackendController {
     private CertificateService certificateService;
     @Autowired
     private PlanService planService;
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser, GuestUser guestUser) {
@@ -114,7 +123,7 @@ public class BackendController {
         Integer year = riseCertificate.getYear();
         Integer problemId = riseCertificate.getProblemId();
         ThreadPool.execute(() ->
-                        certificateService.generateCertificate(year, month, problemId)
+                certificateService.generateCertificate(year, month, problemId)
         );
         return WebUtils.result("正在进行中");
     }
@@ -155,17 +164,17 @@ public class BackendController {
                 .function("小课强开")
                 .action("小课强开");
         operationLogService.log(operationLog);
-        Integer profileId = params.getProfileId();
+        List<Integer> profileIds = params.getProfileIds();
         Integer problemId = params.getProblemId();
         Date startDate = params.getStartDate();
         Date closeDate = params.getCloseDate();
 
-        Integer result = planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
-        if (result > 0) {
-            return WebUtils.result("接口调用成功，生成 PlanId：" + result);
-        } else {
-            return WebUtils.result("接口调用失败，返回 PlanId：" + result);
-        }
+        profileIds.forEach(profileId -> {
+            Integer result = planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+            logger.info("开课: profileId:{},planId:{}", profileId, result);
+        });
+
+        return WebUtils.success();
     }
 
 }
