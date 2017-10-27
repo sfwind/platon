@@ -65,7 +65,7 @@ public class ESClientFactory {
         String clusterName = ConfigUtils.getValue("es.clusterName");
         Integer port = ConfigUtils.getIntValue("es.port");
         Boolean clientTransportSniff = ConfigUtils.getBooleanValue("es.clientTransportSniff");
-        String hostNames[] = ConfigUtils.getValue("es.hostname").split(",");
+        String[] hostNames = ConfigUtils.getValue("es.hostname").split(",");
         return newClient(clusterName, clientTransportSniff, port, hostNames);
     }
 

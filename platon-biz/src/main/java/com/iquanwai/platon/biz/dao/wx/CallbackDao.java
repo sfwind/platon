@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.dao.wx;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.common.Callback;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -11,9 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * Created by justin on 16/8/13.
@@ -24,7 +23,7 @@ public class CallbackDao extends DBUtil {
 
     public int insert(Callback callback) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
         String insertSql = "INSERT INTO Callback(Openid, Accesstoken, CallbackUrl, RefreshToken, State) " +
                 "VALUES(?, ?, ?, ?, ?)";
         try {
@@ -49,48 +48,6 @@ public class CallbackDao extends DBUtil {
 
         try {
             Callback callback = run.query("SELECT * FROM Callback where PcAccessToken=?", h, accessToken);
-            return callback;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return null;
-    }
-
-    public void updateUserInfo(String state,
-                               String accessToken,
-                               String refreshToken,
-                               String openid) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        try {
-            asyncRun.update("UPDATE Callback Set AccessToken=?,RefreshToken=?,Openid=? where State=?",
-                    accessToken, refreshToken, openid, state);
-
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
-    public void refreshToken(String state,
-                               String newAccessToken) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        try {
-            asyncRun.update("UPDATE Callback Set AccessToken=? where State=?",
-                    newAccessToken, state);
-
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
-    public Callback queryByState(String state) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<Callback> h = new BeanHandler(Callback.class);
-
-        try {
-            Callback callback = run.query("SELECT * FROM Callback where State=?", h, state);
             return callback;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

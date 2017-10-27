@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
 import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
@@ -63,8 +64,7 @@ public class BackendController {
             sb.append(cookie);
         }
 
-        String openId = null;
-        openId = loginUser == null ? null : loginUser.getOpenId();
+        String openId = loginUser == null ? null : loginUser.getOpenId();
         if (openId == null) {
             openId = guestUser == null ? null : guestUser.getOpenId();
         }
@@ -80,8 +80,7 @@ public class BackendController {
 
     @RequestMapping(value = "/mark", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser, GuestUser guestUser, @RequestBody MarkDto markDto) {
-        String openId = null;
-        openId = loginUser == null ? null : loginUser.getOpenId();
+        String openId = loginUser == null ? null : loginUser.getOpenId();
         if (openId == null) {
             openId = guestUser == null ? null : guestUser.getOpenId();
         }
@@ -114,9 +113,9 @@ public class BackendController {
         Integer month = riseCertificate.getMonth();
         Integer year = riseCertificate.getYear();
         Integer problemId = riseCertificate.getProblemId();
-        new Thread(() ->
-                certificateService.generateCertificate(year, month, problemId)
-        ).start();
+        ThreadPool.execute(() ->
+                        certificateService.generateCertificate(year, month, problemId)
+        );
         return WebUtils.result("正在进行中");
     }
 
@@ -125,31 +124,27 @@ public class BackendController {
         Integer month = fullAttendanceReward.getMonth();
         Integer year = fullAttendanceReward.getYear();
         Integer problemId = fullAttendanceReward.getProblemId();
-        new Thread(() ->
+        ThreadPool.execute(() ->
                 certificateService.generateFullAttendanceCoupon(year, month, problemId)
-        ).start();
+        );
         return WebUtils.result("正在进行中");
     }
 
     @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendCertificate(@RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
-        new Thread(() -> {
-            certificateService.sendCertificate(year, month);
-        }).start();
+        ThreadPool.execute(() -> certificateService.sendCertificate(year, month));
         return WebUtils.result("正在进行中");
     }
 
     @RequestMapping(value = "/send/fullattendance", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendFullAttendanceCoupon(@RequestParam("year") Integer year, @RequestParam("month") Integer month) {
-        new Thread(() -> certificateService.sendFullAttendanceCoupon(year, month)).start();
+        ThreadPool.execute(() -> certificateService.sendFullAttendanceCoupon(year, month));
         return WebUtils.result("正在进行中");
     }
 
     @RequestMapping(value = "/send/camp/offer", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
-        new Thread(() -> {
-            certificateService.sendOfferMsg(year, month);
-        }).start();
+        ThreadPool.execute(() -> certificateService.sendOfferMsg(year, month));
         return WebUtils.result("正在进行中");
     }
 

@@ -62,7 +62,7 @@ public class DateUtils {
     }
 
     public static int interval(Date date) {
-        long now = new Date().getTime();
+        long now = System.currentTimeMillis();
         long thatTime = date.getTime();
 
         return (int) Math.abs((now - thatTime) / 1000) / 60 / 60 / 24;
