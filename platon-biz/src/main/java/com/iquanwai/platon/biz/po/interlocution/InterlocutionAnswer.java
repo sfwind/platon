@@ -10,6 +10,7 @@ public class InterlocutionAnswer {
     private String answer; //回答
     private Integer questionId; //回答id
     private Date publishTime; //发布时间
+    private Date interlocutionDate;
     private String verse;
     private String audio;
 }

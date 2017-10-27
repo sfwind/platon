@@ -5,12 +5,14 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -47,6 +49,8 @@ public class IndexController {
     private PlanService planService;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private InterlocutionService interlocutionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     //商学院按钮url
@@ -76,6 +80,17 @@ public class IndexController {
     public ResponseEntity<Map<String, Object>> heartbeat() throws Exception {
         return WebUtils.success();
     }
+
+    @RequestMapping(value = {"/rise/static/guest/recently/answer"}, method = RequestMethod.GET)
+    public ModelAndView getGuestInterRecentlyIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        InterlocutionAnswer answer = interlocutionService.loadRecentlyAnswer();
+        String dateParam = DateUtils.parseDateToString(answer.getInterlocutionDate());
+        logger.info("最近问题／答案页面：{}", dateParam);
+        response.sendRedirect("/rise/static/guest/inter/quan/answer?date=" + dateParam);
+        return null;
+//        return courseView(request, null, false, RISE_VIEW);
+    }
+
 
     @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {

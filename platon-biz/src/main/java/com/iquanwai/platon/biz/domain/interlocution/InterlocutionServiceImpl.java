@@ -164,4 +164,8 @@ public class InterlocutionServiceImpl implements InterlocutionService {
         return qrCodeService.loadQrBase64(scene);
     }
 
+    @Override
+    public InterlocutionAnswer loadRecentlyAnswer() {
+        return interlocutionAnswerDao.loadRecently();
+    }
 }
