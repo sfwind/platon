@@ -356,6 +356,23 @@ public class ConfigUtils {
         return Lists.newArrayList(openIdsStr.split(","));
     }
 
+    public static String resourceDomainName() {
+        return getValue("resource.domain");
+    }
+
+    public static String getFtpUser() {
+        return getValue("ftp.username");
+    }
+
+    public static String getFtpPassword() {
+        return getValue("ftp.password");
+    }
+
+    public static String getFtpHost() {
+        return getValue("ftp.host");
+    }
+
+
     /**
      * 获取每月训练营小课对应生效月份
      */
