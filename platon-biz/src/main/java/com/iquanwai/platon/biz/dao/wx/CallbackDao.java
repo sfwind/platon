@@ -23,7 +23,7 @@ public class CallbackDao extends DBUtil {
 
     public int insert(Callback callback) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String insertSql = "INSERT INTO Callback(Openid, Accesstoken, CallbackUrl, RefreshToken, State) " +
                 "VALUES(?, ?, ?, ?, ?)";
         try {

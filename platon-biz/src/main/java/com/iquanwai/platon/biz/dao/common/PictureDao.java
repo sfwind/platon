@@ -38,7 +38,7 @@ public class PictureDao extends DBUtil {
 
     public int upload(Picture picture){
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String insertSql = "INSERT INTO Picture(ModuleId, ReferencedId , RemoteIp,  RealName, Length, Type, Thumbnail) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try{

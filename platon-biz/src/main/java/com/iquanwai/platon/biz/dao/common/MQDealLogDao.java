@@ -22,7 +22,7 @@ public class MQDealLogDao extends DBUtil{
 
     public int insert(MQDealLog message){
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         try {
             String insertSql = "INSERT INTO MQDealLog(MsgId, Topic, Queue, ConsumerIp)  VALUES (?,?,?,?)";
             Future<Integer> result = asyncRun.update(insertSql, message.getMsgId(),
