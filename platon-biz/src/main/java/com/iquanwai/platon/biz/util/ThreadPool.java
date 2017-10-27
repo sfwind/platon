@@ -26,6 +26,8 @@ public class ThreadPool {
     private final static int IDLE_TIME = 1;
     private final static int MAX_QUEUE_SIZE = 2000;
 
+    private static ThreadPoolExecutor SINGLE;
+
     public static void execute(Runnable runnable) {
         if (runnable == null) {
             logger.error("thread is null, return at once");
@@ -69,13 +71,14 @@ public class ThreadPool {
                 IDLE_TIME, TimeUnit.MINUTES,
                 new ArrayBlockingQueue<>(MAX_QUEUE_SIZE, true),
                 new ThreadPoolExecutor.CallerRunsPolicy());
+        SINGLE = new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
 
     public static ThreadPoolExecutor createSingleThreadExecutor() {
-        return new ThreadPoolExecutor(1, 1,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(),
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        return SINGLE;
     }
 }
