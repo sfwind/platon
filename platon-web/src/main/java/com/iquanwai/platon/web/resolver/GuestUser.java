@@ -21,7 +21,7 @@ public class GuestUser {
 
     public static GuestUser defaultUser() {
         return new GuestUser(ConfigUtils.getDefaultOpenid(), "风之伤",
-                Profile.DEFAULT_AVATAR, null,0);
+                Profile.DEFAULT_AVATAR, null,1);
     }
 
 }
