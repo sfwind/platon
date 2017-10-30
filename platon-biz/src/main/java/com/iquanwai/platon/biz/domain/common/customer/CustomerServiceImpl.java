@@ -2,7 +2,9 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.common.file.FileUploadService;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
+import com.iquanwai.platon.biz.util.QiNiuUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +57,9 @@ public class CustomerServiceImpl implements CustomerService {
         }
         InputStream cropInputStream = new ByteArrayInputStream(os.toByteArray());
 
-        return fileUploadService.uploadFtpImageFile("headImage", fileName, cropInputStream);
+        String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName;
+        boolean uploadResult = QiNiuUtils.uploadFile(targetFileName, cropInputStream);
+        return uploadResult ? targetFileName : null;
     }
 
     @Override

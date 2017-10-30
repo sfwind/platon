@@ -23,7 +23,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         FTPUtil ftpUtil = new FTPUtil();
         int dotIndex = originFileName.lastIndexOf(".");
         String sufFileName = originFileName.substring(dotIndex);
-        String targetFileName = prefix + "_" + CommonUtils.randomString(8) + sufFileName;
+        String targetFileName = prefix + "-" + CommonUtils.randomString(8) + sufFileName;
         try {
             ftpUtil.connect();
             ftpUtil.setBinaryType();
