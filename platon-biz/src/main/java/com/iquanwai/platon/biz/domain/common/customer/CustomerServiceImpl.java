@@ -50,7 +50,7 @@ public class CustomerServiceImpl implements CustomerService {
             endY = height;
         }
         BufferedImage cropBufferedImage = ImageUtils.cropImage(bufferedImage, startX, startY, endX, endY);
-        BufferedImage reSizeBufferedImage = ImageUtils.scaleByPercentage(cropBufferedImage, 400, 400);
+        BufferedImage reSizeBufferedImage = ImageUtils.scaleByPercentage(cropBufferedImage, 750, 750);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
