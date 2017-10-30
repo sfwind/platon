@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.domain.common.file.FileUploadService;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
@@ -23,8 +22,6 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private ProfileDao profileDao;
-    @Autowired
-    private FileUploadService fileUploadService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -49,8 +46,7 @@ public class CustomerServiceImpl implements CustomerService {
             endX = (width + height) / 2;
             endY = height;
         }
-        // BufferedImage cropBufferedImage = ImageUtils.cropImage(bufferedImage, startX, startY, endX, endY);
-        BufferedImage cropBufferedImage = bufferedImage;
+        BufferedImage cropBufferedImage = ImageUtils.cropImage(bufferedImage, startX, startY, endX, endY);
         BufferedImage reSizeBufferedImage = ImageUtils.scaleByPercentage(cropBufferedImage, 750, 750);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();

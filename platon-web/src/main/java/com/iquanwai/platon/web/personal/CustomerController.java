@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
-import com.iquanwai.platon.biz.domain.common.file.FileUploadService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
@@ -72,8 +71,6 @@ public class CustomerController {
     private AnswerService answerService;
     @Autowired
     private CertificateService certificateService;
-    @Autowired
-    private FileUploadService fileUploadService;
     @Autowired
     private CustomerService customerService;
 
@@ -263,7 +260,6 @@ public class CustomerController {
         } else {
             return WebUtils.result(riseCertificate);
         }
-
     }
 
     @RequestMapping("/region")
