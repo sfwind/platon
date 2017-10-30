@@ -181,14 +181,14 @@ public class CustomerController {
                 .function("头像修改")
                 .action("上传头像");
         operationLogService.log(operationLog);
-        String ftpImageUrl = null;
+        String imageUrl = null;
         try {
-            ftpImageUrl = customerService.uploadHeadImage(loginUser.getId(), fileName, file.getInputStream());
+            imageUrl = customerService.uploadHeadImage(loginUser.getId(), fileName, file.getInputStream());
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        if (ftpImageUrl != null) {
-            return WebUtils.result(ftpImageUrl);
+        if (imageUrl != null) {
+            return WebUtils.result(imageUrl);
         } else {
             return WebUtils.error("头像上传失败");
         }

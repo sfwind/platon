@@ -2,10 +2,7 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.common.file.FileUploadService;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
-import com.iquanwai.platon.biz.util.QiNiuUtils;
+import com.iquanwai.platon.biz.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -30,6 +28,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public String uploadHeadImage(Integer profileId, String fileName, InputStream inputStream) {
+        logger.info(DateUtils.parseDateTimeToString(new Date()));
+
         BufferedImage bufferedImage = ImageUtils.getBufferedImageByInputStream(inputStream);
         if (bufferedImage == null) {
             return null;
@@ -49,10 +49,14 @@ public class CustomerServiceImpl implements CustomerService {
             endX = (width + height) / 2;
             endY = height;
         }
+
+        logger.info(DateUtils.parseDateTimeToString(new Date()));
         BufferedImage cropBufferedImage = ImageUtils.cropImage(bufferedImage, startX, startY, endX, endY);
+        logger.info(DateUtils.parseDateTimeToString(new Date()));
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
-            ImageIO.write(cropBufferedImage, "png", os);
+            ImageIO.write(cropBufferedImage, "jpeg", os);
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -60,6 +64,8 @@ public class CustomerServiceImpl implements CustomerService {
 
         String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName;
         boolean uploadResult = QiNiuUtils.uploadFile(targetFileName, cropInputStream);
+        logger.info(DateUtils.parseDateTimeToString(new Date()));
+
         return uploadResult ? ConfigUtils.getPicturePrefix() + targetFileName : null;
     }
 
