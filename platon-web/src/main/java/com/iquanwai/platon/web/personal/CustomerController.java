@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
@@ -33,6 +34,7 @@ import com.iquanwai.platon.web.personal.dto.PlanListDto;
 import com.iquanwai.platon.web.personal.dto.ProfileDto;
 import com.iquanwai.platon.web.personal.dto.RegionDto;
 import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -48,6 +50,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.InvocationTargetException;
@@ -83,6 +86,9 @@ public class CustomerController {
     private AnswerService answerService;
     @Autowired
     private CertificateService certificateService;
+    @Autowired
+    private QRCodeService qrCodeService;
+
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
@@ -367,5 +373,20 @@ public class CustomerController {
         return WebUtils.result(forumAnswers);
     }
 
-
+    @RequestMapping(value = "/check/subscribe", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @RequestParam String callback) {
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser != null ? loginUser.getOpenId() : null)
+                .module("圈圈问答")
+                .function("去提问")
+                .action("检查是否关注");
+        operationLogService.log(operationLog);
+        if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
+            // 没有loginUser，即没有关注,创建一个img
+            String qrCode = accountService.createSubscribePush(loginUser != null ? loginUser.getOpenId() : null, callback);
+            return WebUtils.result(qrCode);
+        } else {
+            return WebUtils.success();
+        }
+    }
 }
