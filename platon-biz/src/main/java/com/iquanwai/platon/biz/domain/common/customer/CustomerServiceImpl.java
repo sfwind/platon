@@ -52,6 +52,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         logger.info(DateUtils.parseDateTimeToString(new Date()));
         BufferedImage cropBufferedImage = ImageUtils.cropImage(bufferedImage, startX, startY, endX, endY);
+        BufferedImage reSizeBufferedImage = ImageUtils.scaleByPercentage(cropBufferedImage, 200, 200);
         logger.info(DateUtils.parseDateTimeToString(new Date()));
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
