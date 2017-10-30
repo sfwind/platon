@@ -134,4 +134,8 @@ public interface AccountService {
     Boolean openLearningNotify(Integer profileId);
 
     Boolean closeLearningNotify(Integer profileId);
+
+    String createSubscribePush(String openid, String callback, String scene);
+
+    SubscribePush loadSubscribePush(Integer id);
 }

@@ -27,4 +27,5 @@ public class InterlocutionQuestion {
     private InterlocutionAnswer answer;
     private InterlocutionDate dateInfo;
     private InterlocutionDate nextDate;
+    private InterlocutionAnswer nextAnswer; // 最近的圈圈答案
 }
