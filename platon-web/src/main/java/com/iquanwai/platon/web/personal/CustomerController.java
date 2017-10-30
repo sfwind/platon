@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -24,6 +25,7 @@ import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -36,6 +38,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -73,6 +82,9 @@ public class CustomerController {
     private CertificateService certificateService;
     @Autowired
     private CustomerService customerService;
+    @Autowired
+    private QRCodeService qrCodeService;
+
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
@@ -417,5 +429,21 @@ public class CustomerController {
         return WebUtils.result(forumAnswers);
     }
 
-
+    @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable(value = "key") String key, @RequestParam String callback) {
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser != null ? loginUser.getOpenId() : null)
+                .module("用户信息")
+                .function("服务号")
+                .action("检查是否关注")
+                .memo(key);
+        operationLogService.log(operationLog);
+        if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
+            // 没有loginUser，即没有关注,创建一个img
+            String qrCode = accountService.createSubscribePush(loginUser != null ? loginUser.getOpenId() : null, callback, key);
+            return WebUtils.result(qrCode);
+        } else {
+            return WebUtils.success();
+        }
+    }
 }

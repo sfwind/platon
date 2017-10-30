@@ -29,4 +29,15 @@ public class InterlocutionAnswerDao extends PracticeDBUtil {
         }
         return null;
     }
+
+    public InterlocutionAnswer loadRecently() {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM InterlocutionAnswer where Del = 0 order by Id desc limit 1";
+        try {
+            return run.query(sql, new BeanHandler<InterlocutionAnswer>(InterlocutionAnswer.class));
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
 }
