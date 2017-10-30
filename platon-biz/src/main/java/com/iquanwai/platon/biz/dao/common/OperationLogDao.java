@@ -22,7 +22,7 @@ public class OperationLogDao extends DBUtil {
 
     public int insert(OperationLog log){
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         try {
             String insertSql = "INSERT INTO OperatingLog(Openid, Module, Function, Action, OperateTime, OperateDate, Memo) " +
                     "VALUES(?, ?, ?, ?, now(), curdate(), ?)";

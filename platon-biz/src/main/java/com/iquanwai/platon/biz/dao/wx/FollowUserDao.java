@@ -77,7 +77,7 @@ public class FollowUserDao extends DBUtil {
 
     public int updateMeta(Account account) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update FollowUsers Set Nickname=?, Headimgurl=?, Unionid=? where Openid=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql,

@@ -77,7 +77,7 @@ public class InterlocutionQuestionDao extends PracticeDBUtil {
 
     public void open(Integer id, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), runner);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), runner);
         if (point == null) {
             point = 0;
         }

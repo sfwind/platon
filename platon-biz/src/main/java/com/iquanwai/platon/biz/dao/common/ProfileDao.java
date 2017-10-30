@@ -57,7 +57,7 @@ public class ProfileDao extends DBUtil {
 
     public void updatePoint(Integer id, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), runner);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), runner);
         String sql = "UPDATE Profile SET Point = ? where Id = ?";
         try {
             asyncRun.update(sql, point, id);
@@ -88,7 +88,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenRise(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenRise=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -106,7 +106,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenNavigator(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenNavigator=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -124,7 +124,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenApplication(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenApplication=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -142,7 +142,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenConsolidation(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenConsolidation=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -234,7 +234,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenWelcome(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.createSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenWelcome=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
