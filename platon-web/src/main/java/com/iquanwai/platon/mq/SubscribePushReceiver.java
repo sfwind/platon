@@ -20,7 +20,7 @@ import java.util.Map;
 public class SubscribePushReceiver {
     public static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "subscribe_push_queue";
-    private static final String prefix = "subscribe_push_";
+    private static final String PREFIX = "subscribe_push_";
 
 
     @Autowired
@@ -38,13 +38,13 @@ public class SubscribePushReceiver {
         rabbitMQFactory.initReceiver(QUEUE, TOPIC, (message) -> {
             JSONObject msg = JSON.parseObject(message.getMessage().toString());
             String scene = msg.getString("scene");
-            if (scene != null && scene.startsWith(prefix)) {
+            if (scene != null && scene.startsWith(PREFIX)) {
                 String[] split = scene.split("_");
                 Integer pushId = Integer.parseInt(split[2]);
                 String openId = msg.getString("openid");
                 SubscribePush push = accountService.loadSubscribePush(pushId);
                 if (push == null) {
-                    logger.error("缺少push对象:{}", push);
+                    logger.error("缺少push对象:{}", message);
                     return;
                 }
                 String callback = push.getCallbackUrl();

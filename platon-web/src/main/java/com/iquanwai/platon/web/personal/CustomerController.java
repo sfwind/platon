@@ -374,7 +374,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable String key, @RequestParam String callback) {
+    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable(value = "key") String key, @RequestParam String callback) {
         OperationLog operationLog = OperationLog.create()
                 .openid(loginUser != null ? loginUser.getOpenId() : null)
                 .module("用户信息")
