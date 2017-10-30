@@ -16,7 +16,7 @@ public class ImageUtilTest {
     // 616 638
     // 616 627
     public static void main(String[] args) {
-        BufferedImage bufferedImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/headImage_9bn0wuj3.jpg");
+        BufferedImage bufferedImage = ImageUtils.getBufferedImageByUrl("http://f.hiphotos.baidu.com/image/pic/item/1c950a7b02087bf4e74b4f28fbd3572c10dfcf48.jpg");
         Assert.notNull(bufferedImage);
         int startX, startY, endX, endY;
         int height = bufferedImage.getHeight();
