@@ -373,17 +373,18 @@ public class CustomerController {
         return WebUtils.result(forumAnswers);
     }
 
-    @RequestMapping(value = "/check/subscribe", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @RequestParam String callback) {
+    @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable String key, @RequestParam String callback) {
         OperationLog operationLog = OperationLog.create()
                 .openid(loginUser != null ? loginUser.getOpenId() : null)
-                .module("圈圈问答")
-                .function("去提问")
-                .action("检查是否关注");
+                .module("用户信息")
+                .function("服务号")
+                .action("检查是否关注")
+                .memo(key);
         operationLogService.log(operationLog);
         if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
             // 没有loginUser，即没有关注,创建一个img
-            String qrCode = accountService.createSubscribePush(loginUser != null ? loginUser.getOpenId() : null, callback);
+            String qrCode = accountService.createSubscribePush(loginUser != null ? loginUser.getOpenId() : null, callback, key);
             return WebUtils.result(qrCode);
         } else {
             return WebUtils.success();

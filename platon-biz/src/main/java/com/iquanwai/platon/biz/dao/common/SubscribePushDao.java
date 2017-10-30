@@ -28,12 +28,12 @@ public class SubscribePushDao extends DBUtil {
         return null;
     }
 
-    public Integer insert(String openid, String callback) {
+    public Integer insert(String openid, String callback, String scene) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<Long>();
-        String sql = "INSERT  INTO SubscribePush(Openid, CallbackUrl) VALUES(? , ?)";
+        String sql = "INSERT  INTO SubscribePush(Openid, CallbackUrl,Scene) VALUES(? , ?, ?)";
         try {
-            return runner.insert(sql, h, openid, callback).intValue();
+            return runner.insert(sql, h, openid, callback, scene).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

@@ -2,10 +2,10 @@ package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.common.SubscribePush;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
 
 @Component
 public class SubscribePushReceiver {
@@ -25,15 +26,12 @@ public class SubscribePushReceiver {
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
-    private PlanService planService;
-    @Autowired
-    private CacheService cacheService;
-    @Autowired
     private AccountService accountService;
     @Autowired
     private CustomerMessageService customerMessageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Map<String, String> template = Maps.newHashMap();
 
     @PostConstruct
     public void init() {
@@ -44,12 +42,23 @@ public class SubscribePushReceiver {
                 String[] split = scene.split("_");
                 Integer pushId = Integer.parseInt(split[2]);
                 String openId = msg.getString("openid");
-                String callback = accountService.loadSubscribePush(pushId);
-
+                SubscribePush push = accountService.loadSubscribePush(pushId);
+                if (push == null) {
+                    logger.error("缺少push对象:{}", push);
+                    return;
+                }
+                String callback = push.getCallbackUrl();
+                String templateMsg = template.get(push.getScene());
                 logger.info("前往问题页面:{}", scene);
-                customerMessageService.sendCustomerMessage(openId, "Hi，欢迎来到圈外！\n\n" +
-                        "<a href='" + callback + "'>返回刚才的页面</a>\n", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
         });
+        initTemplate();
+    }
+
+    public void initTemplate() {
+        template.put("show_word", "" +
+                "Hi 欢迎来到【圈外商学院|一期一会】\n\n" +
+                "<a href='{callbackUrl}'>查看答案文稿</a>");
     }
 }

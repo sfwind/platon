@@ -7,4 +7,5 @@ public class SubscribePush {
     private Integer id;
     private String openid;
     private String callbackUrl;
+    private String scene;
 }

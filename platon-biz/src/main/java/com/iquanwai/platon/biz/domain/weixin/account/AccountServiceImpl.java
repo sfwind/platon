@@ -534,17 +534,15 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public String createSubscribePush(String openid, String callback) {
-        Integer result = subscribePushDao.insert(openid, callback);
-        String scene = SUBSCRIBE_PUSH_PREFIX + result;
-        return qrCodeService.loadQrBase64(scene);
+    public String createSubscribePush(String openid, String callback, String scene) {
+        Integer result = subscribePushDao.insert(openid, callback, scene);
+        String sceneCode = SUBSCRIBE_PUSH_PREFIX + result;
+        return qrCodeService.loadQrBase64(sceneCode);
     }
 
     @Override
-    public String loadSubscribePush(Integer id){
-        SubscribePush push = subscribePushDao.loadById(id);
-        return push != null ? push.getCallbackUrl() : null;
+    public SubscribePush loadSubscribePush(Integer id) {
+        return subscribePushDao.loadById(id);
     }
-
 }
 
