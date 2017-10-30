@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.aspect;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -51,7 +52,7 @@ public class LogAspect {
         String userName = null;
 
         // 执行完方法的返回值：调用proceed()方法，就会触发切入点方法执行  
-        Map<String, Object> outputParamMap = new HashMap<String, Object>();
+        Map<String, Object> outputParamMap = Maps.newHashMap();
         long startTimeMillis = System.currentTimeMillis();
         Object result = pjp.proceed();// result的值就是被拦截方法的返回值
         long endTimeMillis = System.currentTimeMillis();

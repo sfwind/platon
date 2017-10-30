@@ -25,24 +25,23 @@ public class ThreadPool {
     private final static int IDLE_TIME = 1;
     private final static int MAX_QUEUE_SIZE = 2000;
 
-    public static void execute(Thread thread, String threadName) {
-        if(thread==null){
+    public static void execute(Runnable runnable) {
+        if (runnable == null) {
             logger.error("thread is null, return at once");
             return;
         }
-        thread.setName(threadName);
 
-        if(!POOL.isTerminating() || !POOL.isTerminated()){
-            POOL.execute(thread);
-        }else{
+        if (!POOL.isTerminating() || !POOL.isTerminated()) {
+            POOL.execute(runnable);
+        } else {
             logger.error("pool is terminating, refuse to execute thread any more");
         }
     }
 
     @PreDestroy
-    public void destroy(){
+    public void destroy() {
         logger.info("thread pool is destroying");
-        if(POOL!=null){
+        if (POOL != null) {
             POOL.shutdown();
             try {
                 if (!POOL.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -63,7 +62,7 @@ public class ThreadPool {
     }
 
     @PostConstruct
-    public void init(){
+    public void init() {
         logger.info("thread pool is init");
         POOL = new ThreadPoolExecutor(INIT_SIZE, MAX_SIZE,
                 IDLE_TIME, TimeUnit.MINUTES,
@@ -71,4 +70,8 @@ public class ThreadPool {
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
+
+    public static ThreadPoolExecutor getThreadExecutor() {
+        return POOL;
+    }
 }

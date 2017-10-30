@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.util;
 
-import com.iquanwai.platon.biz.domain.weixin.accessToken.AccessTokenService;
+import com.iquanwai.platon.biz.domain.weixin.accesstoken.AccessTokenService;
 import com.iquanwai.platon.biz.exception.WeixinException;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;

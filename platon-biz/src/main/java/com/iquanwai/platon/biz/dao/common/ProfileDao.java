@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -57,7 +57,7 @@ public class ProfileDao extends DBUtil {
 
     public void updatePoint(Integer id, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), runner);
         String sql = "UPDATE Profile SET Point = ? where Id = ?";
         try {
             asyncRun.update(sql, point, id);
@@ -88,7 +88,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenRise(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenRise=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -106,7 +106,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenNavigator(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenNavigator=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -124,7 +124,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenApplication(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenApplication=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -142,7 +142,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenConsolidation(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenConsolidation=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);
@@ -221,17 +221,6 @@ public class ProfileDao extends DBUtil {
         }
     }
 
-    public void updateMeta(Profile profile) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set Nickname=?, Headimgurl=?, UnionId = ? where Openid=?";
-        try {
-            run.update(updateSql,
-                    profile.getNickname(), profile.getHeadimgurl(), profile.getUnionid(), profile.getOpenid());
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
     public void updateMobile(String mobileNo, Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set MobileNo=? where Id=?";
@@ -245,7 +234,7 @@ public class ProfileDao extends DBUtil {
 
     public int updateOpenWelcome(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update Profile Set OpenWelcome=1 where Id=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql, id);

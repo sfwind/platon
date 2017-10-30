@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.common;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.common.Picture;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -38,7 +38,7 @@ public class PictureDao extends DBUtil {
 
     public int upload(Picture picture){
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String insertSql = "INSERT INTO Picture(ModuleId, ReferencedId , RemoteIp,  RealName, Length, Type, Thumbnail) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try{

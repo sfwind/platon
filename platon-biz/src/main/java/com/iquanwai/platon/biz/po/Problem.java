@@ -32,11 +32,6 @@ public class Problem {
     private Boolean del; //是否删除(0-否,1-是)
     private Boolean newProblem; // 是否是新课程
     private Boolean trial; //试用版（0-否,1-是）
-    /**
-     * 已废弃，采用 zk 配置排序，problem.hot.list，逗号分隔
-     */
-    @Deprecated
-    private Boolean hot; // 热门课程（0-否,1-是）
     private String categoryPic; //分类图示
     private String abbreviation; // 缩略名
 
@@ -66,7 +61,6 @@ public class Problem {
         problem.setHasProblemScore(this.hasProblemScore);
         problem.setSubCatalog(this.subCatalog);
         problem.setCatalog(this.catalog);
-        problem.setHot(hot);
         problem.setChosenPersonCount(this.chosenPersonCount);
         problem.setAbbreviation(this.abbreviation);
         return problem;

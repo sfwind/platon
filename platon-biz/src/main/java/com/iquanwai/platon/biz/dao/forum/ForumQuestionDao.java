@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.forum;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.ForumDBUtil;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.AsyncQueryRunner;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Created by justin on 17/6/19.
@@ -80,7 +80,7 @@ public class ForumQuestionDao extends ForumDBUtil {
 
     public void open(Integer id, Integer point) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), runner);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), runner);
         if (point == null) {
             point = 0;
         }

@@ -169,7 +169,7 @@ public class PlanServiceImpl implements PlanService {
             // 未关闭 ,未关闭的都显示
             // 计算关闭时间
             // CloseDate设置为25号的，在26号0点会关闭，所以在25号查看的时候，是一天
-            long now = new Date().getTime();
+            long now = System.currentTimeMillis();
             long thatTime = DateUtils.afterDays(improvementPlan.getCloseDate(), 1).getTime();
             long internalMills = Math.abs(thatTime - now);
             int deadLine = new BigDecimal(internalMills).divide(new BigDecimal(1000 * 60 * 60 * 24), BigDecimal.ROUND_UP).intValue();

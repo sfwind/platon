@@ -62,7 +62,7 @@ public class DateUtils {
     }
 
     public static int interval(Date date) {
-        long now = new Date().getTime();
+        long now = System.currentTimeMillis();
         long thatTime = date.getTime();
 
         return (int) Math.abs((now - thatTime) / 1000) / 60 / 60 / 24;
@@ -131,6 +131,13 @@ public class DateUtils {
                 .get(Calendar.DAY_OF_MONTH);
 
         return isSameDate;
+    }
+
+    public static boolean isToday(Date date) {
+        String cmpDate = date.toString().substring(0, 10);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String today = sdf.format(new Date()).substring(0, 10);
+        return today.equals(cmpDate);
     }
 
     public static Integer getYear(Date date) {
