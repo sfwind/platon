@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.common.customer;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.common.file.FileUploadService;
 import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
 import com.iquanwai.platon.biz.util.QiNiuUtils;
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName;
         boolean uploadResult = QiNiuUtils.uploadFile(targetFileName, cropInputStream);
-        return uploadResult ? targetFileName : null;
+        return uploadResult ? ConfigUtils.getPicturePrefix() + targetFileName : null;
     }
 
     @Override
