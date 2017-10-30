@@ -57,7 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
-            ImageIO.write(cropBufferedImage, "jpeg", os);
+            ImageIO.write(reSizeBufferedImage, "jpeg", os);
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
