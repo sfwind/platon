@@ -186,11 +186,11 @@ public class CertificateServiceImpl implements CertificateService {
             if (practicePlans.size() != 0) {
                 // 完成所有练习
                 Long unCompleteNecessaryCountLong = practicePlans.stream()
-                        .filter(practicePlan ->
-                                practicePlan.getStatus() == 0)
+                        .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
+                        .filter(practicePlan -> practicePlan.getStatus() == 0)
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-                    // 必须完成知识点、选择题的题数大于 0，不发结课证书
+                    // 如果存在有没有完成的题数，则不予发送优惠券
                     generateFullAttendanceCoupon = false;
                 } else {
                     // 完成所有练习之后，对应用题完成情况进行复查
