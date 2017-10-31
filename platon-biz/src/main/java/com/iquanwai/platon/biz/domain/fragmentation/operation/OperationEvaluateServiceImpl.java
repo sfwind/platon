@@ -7,8 +7,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
@@ -39,7 +37,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -53,10 +50,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private QRCodeService qrCodeService;
-    @Autowired
-    private UploadResourceService uploadResourceService;
-    @Autowired
-    private CustomerMessageService customerMessageService;
     @Autowired
     private MessageService messageService;
     @Autowired
@@ -76,10 +69,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
     private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 测评结果
     private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 测评建议
-    private static Map<Integer, String> freeSuggestionMap = Maps.newHashMap(); // 会员测评建议
-    private static Map<Integer, String> resultTextMap = Maps.newHashMap(); // 发送测评结果
-
-    private static final String FREE_GET_TEXT = "【免费领取】\n\n分享下方你的专属海报，邀请3人扫码测试，即可免费领取原价99,带你职场开挂的洞察力课程";
 
     private final static String TEMP_IMAGE_PATH = "/data/static/images/";
 
@@ -99,47 +88,17 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
                 "  1. 有意识地使用提问的技巧\n" +
                 "  2. 通过了解背景，挖掘他人需求\n" +
                 "  3. 防止盲目的决策和行动\n\n" +
-                "当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
-                "\n" +
-                "如果你想要充分开发和增强自己的洞察力，可以领取【洞察力强化课程】（原价99，戳下方按钮免费领取）。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！");
+                "当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。");
 
         suggestionMap.put(2, "根据测评结果，我们建议你:\n\n" +
                 "  1. 掌握更多的提问技巧，挖掘他人隐藏的真实需求\n" +
                 "  2. 提升自己的分析能力，遇到难题时，先找到根本原因\n" +
                 "  3. 找到根本原因后，根据关键程度和解决成本，定位最有价值的问题\n\n" +
-                "当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
-                "\n" +
-                "如果你想要充分发挥自己的洞察力潜力，可以领取【洞察力强化课程】（原价99，戳下方按钮免费领取）。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！");
+                "当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。");
 
         suggestionMap.put(3, "你需要在工作中充分运用你的洞察力天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。\n\n" +
-                "当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
-                "\n" +
-                "如果你想要挖掘、并在职场中运用自己的洞察力天赋，可以领取【洞察力强化课程】（原价99，戳下方按钮免费领取）。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！");
+                "当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。");
 
-        freeSuggestionMap.put(1, "你需要开始发力去增强自己的洞察力并应用在职场中，在面对棘手问题时，有意识地使用一些技巧，例如提问的技巧、了解他人背景挖掘他人需求的技巧等，防止盲目的决策和行动。\n\n" +
-                "当你的能够正确领会他人意图，并找到问题的本质原因，就能顺利解决问题，得到同事和老板的认可啦。\n" +
-                "\n" +
-                "如果你想要充分开发和增强自己的洞察力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！\n" +
-                "\n" +
-                "这么有趣有料的测试，确定不邀请你的朋友也来玩一下？点击下方按钮，领取你的测评结果海报，并分享到朋友圈吧!");
-
-        freeSuggestionMap.put(2, "建议你掌握更多的提问技巧，挖掘他人隐藏的真实需求；同时提升自己的分析能力，遇到难题时，先去找到根本原因，再根据关键程度和解决成本，定位最有价值的问题。\n\n" +
-                "当你的大量时间都在解决高价值问题时，就能成为在职场上游刃有余的高效能人士啦。\n" +
-                "\n" +
-                "如果你想要充分发挥自己的洞察力潜力，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！\n" +
-                "\n" +
-                "敢不敢让你的朋友也来挑战一下？点击下方按钮，领取你的测评结果海报，并分享到朋友圈吧!");
-
-        freeSuggestionMap.put(3, "你需要在工作中充分运用你的洞察力天赋。在找到本质问题后，先不要急于解决，而是分析关键程度和解决成本，再采取对应的行动。\n\n" +
-                "当你的大量时间都在解决高价值问题时，就能成为传说中 “不加班也能升职、看透他人心思人缘爆表、提议文案一次通过”的异能人士啦。\n" +
-                "\n" +
-                "如果你想要挖掘、并在职场中运用自己的洞察力天赋，可以学习（或复习）小课【找到本质问题，减少无效努力】。据说已经使用的小伙伴，有人已经跳槽成功，薪资连涨三倍。想在职场更出色，来圈外同学一起升级吧！\n" +
-                "\n" +
-                "你的朋友们也和你一样机智吗？点击下方按钮，领取你的测评结果海报，并分享到朋友圈，让他们也检测一下吧!");
-
-        resultTextMap.put(1, "这么有趣有料的测试，确定不邀请你的朋友也来玩一玩吗？快去保存并分享到朋友圈吧！");
-        resultTextMap.put(2, "敢不敢分享到朋友圈，让你的朋友也挑战一下！");
-        resultTextMap.put(3, "下方是你的测评结果海报。你的朋友们也和你一样机智吗？分享出来，让他们也检测一下吧！");
 
         // 创建图片保存目录
         File file = new File(TEMP_IMAGE_PATH);
@@ -189,13 +148,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         Integer level = calcLevel(score);
 
-        if(freeLimit){
-            return new ImmutablePair<>(evaluateResultMap.get(level),
-                    freeSuggestionMap.get(level));
-        }else{
-            return new ImmutablePair<>(evaluateResultMap.get(level),
-                    suggestionMap.get(level));
-        }
+        return new ImmutablePair<>(evaluateResultMap.get(level),
+                suggestionMap.get(level));
     }
 
     /**
@@ -259,44 +213,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         }
     }
 
-    /**
-     * 是否参加过此活动
-     */
-    @Override
-    public boolean hasParticipateEvaluate(Integer profileId) {
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
-        return promotionLevel != null;
-    }
-
-    @Override
-    public void sendShareMessage(Integer profileId, Integer score, Integer percent, Boolean freeLimit) {
-        Profile profile = accountService.getProfile(profileId);
-        // 计算测评等级
-        Integer level = calcLevel(score);
-
-        Assert.notNull(profile, "用户不能为空");
-
-        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
-        Assert.notNull(bufferedImage, "生成图片不能为空");
-
-        String path = TEMP_IMAGE_PATH + CommonUtils.randomString(10) + profileId + ".jpg";
-        String mediaId = uploadResourceService.uploadResource(bufferedImage, path);
-
-        if(!freeLimit){
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    FREE_GET_TEXT,
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-        }else{
-            customerMessageService.sendCustomerMessage(
-                    profile.getOpenid(),
-                    resultTextMap.get(level),
-                    Constants.WEIXIN_MESSAGE_TYPE.TEXT
-            );
-        }
-        customerMessageService.sendCustomerMessage(profile.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-    }
 
     // 根据得分计算得分 level
     private Integer calcLevel(Integer score) {
@@ -500,13 +416,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));
         data.put("remark", new TemplateMessage.Keyword("\n点击卡片领取！"));
         templateMessageService.sendMessage(templateMessage);
-
-        // 发送客服消息
-        // TODO
-        // customerMessageService.sendCustomerMessage(profile.getOpenid(),
-        //         "点击免费领取洞察力小课：\n" +
-        //                 "<a href='" + ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true'>找到本质问题，减少无效努力</a>",
-        //         Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
 
         // 非会员，限免小课 TODO  删除这边时候，记得开放上面 TODO

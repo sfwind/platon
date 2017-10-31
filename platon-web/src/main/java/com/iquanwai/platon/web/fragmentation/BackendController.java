@@ -169,12 +169,10 @@ public class BackendController {
         Date startDate = params.getStartDate();
         Date closeDate = params.getCloseDate();
 
-        profileIds.forEach(profileId -> {
-            ThreadPool.execute(() -> {
-                Integer result = planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
-                logger.info("开课: profileId:{},planId:{}", profileId, result);
-            });
-        });
+        profileIds.forEach(profileId -> ThreadPool.execute(() -> {
+            Integer result = planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+            logger.info("开课: profileId:{},planId:{}", profileId, result);
+        }));
 
         return WebUtils.success();
     }
