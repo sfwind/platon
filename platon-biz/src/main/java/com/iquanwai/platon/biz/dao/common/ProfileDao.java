@@ -249,6 +249,28 @@ public class ProfileDao extends DBUtil {
         return -1;
     }
 
+    public int updateHeadImgUrl(Integer profileId, String headImgUrl) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE Profile SET HeadImgUrl = ? WHERE Id = ?";
+        try {
+            return runner.update(sql, headImgUrl, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public int updateNickName(Integer profileId, String nickName) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE Profile SET NickName = ? WHERE Id = ?";
+        try {
+            return runner.update(sql, nickName, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public Boolean updateLearningNotifyStatus(Integer profileId, Integer status) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String updateSql = "Update Profile set LearningNotify = ? where Id = ?";

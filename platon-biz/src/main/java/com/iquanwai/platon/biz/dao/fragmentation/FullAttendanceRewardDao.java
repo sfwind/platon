@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
         return -1;
     }
 
-    public List<FullAttendanceReward> loadByYearMonth(Integer year, Integer month) {
+    public List<FullAttendanceReward> loadUnNotifiedByYearMonth(Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM FullAttendanceReward WHERE Year = ? AND Month = ? AND Notified = 0 AND Del = 0";
         ResultSetHandler<List<FullAttendanceReward>> h = new BeanListHandler<>(FullAttendanceReward.class);
@@ -52,6 +53,18 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public FullAttendanceReward loadSingleByProfileId(Integer year, Integer month, Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM FullAttendanceReward WHERE ProfileId = ? AND Year = ? AND Month = ? AND Del = 0";
+        ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
+        try {
+            return runner.query(sql, h, profileId, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 
     public int updateNotify(Integer fullAttendanceRewardId, Integer notified) {

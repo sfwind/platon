@@ -93,6 +93,21 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    /**
+     * 根据年份、月份、ProfileId 获取单个用户的证书信息
+     */
+    public RiseCertificate loadSingleGraduateByProfileId(Integer year, Integer month, Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from RiseCertificate where ProfileId = ? AND Year = ? and Month = ? and Type = 5 and Del=0";
+        ResultSetHandler<RiseCertificate> h = new BeanHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, profileId, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return null;
+    }
+
     public void notify(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update RiseCertificate set Notified = 1 where id = ?";

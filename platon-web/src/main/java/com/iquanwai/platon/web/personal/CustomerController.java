@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
@@ -13,12 +14,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseCertificate;
-import com.iquanwai.platon.biz.po.RiseClassMember;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -28,12 +24,7 @@ import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
-import com.iquanwai.platon.web.personal.dto.AreaDto;
-import com.iquanwai.platon.web.personal.dto.PlanDto;
-import com.iquanwai.platon.web.personal.dto.PlanListDto;
-import com.iquanwai.platon.web.personal.dto.ProfileDto;
-import com.iquanwai.platon.web.personal.dto.RegionDto;
-import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
+import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -45,14 +36,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +74,8 @@ public class CustomerController {
     @Autowired
     private CertificateService certificateService;
     @Autowired
+    private CustomerService customerService;
+    @Autowired
     private QRCodeService qrCodeService;
 
 
@@ -119,6 +108,7 @@ public class CustomerController {
         riseDto.setMobile(profile.getMobileNo());
         riseDto.setIsRiseMember(profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP);
         riseDto.setNickName(profile.getNickname());
+        riseDto.setHeadImgUrl(profile.getHeadimgurl());
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(loginUser.getId());
         if (riseClassMember != null) {
@@ -181,6 +171,66 @@ public class CustomerController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/profile/headImg/upload")
+    public ResponseEntity<Map<String, Object>> updateHeadImg(LoginUser loginUser, @RequestParam("file") MultipartFile file) {
+        Long fileSize = file.getSize();
+        if (fileSize > 5 * 1000 * 1000) { // 文件图片大于 5M
+            return WebUtils.error("文件内容过大");
+        }
+        String fileName = file.getOriginalFilename();
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("头像修改")
+                .action("上传头像");
+        operationLogService.log(operationLog);
+        String imageUrl = null;
+        try {
+            imageUrl = customerService.uploadHeadImage(loginUser.getId(), fileName, file.getInputStream());
+        } catch (IOException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        if (imageUrl != null) {
+            return WebUtils.result(imageUrl);
+        } else {
+            return WebUtils.error("头像上传失败");
+        }
+    }
+
+    @RequestMapping(value = "/profile/headImg/update")
+    public ResponseEntity<Map<String, Object>> updateHeadImg(LoginUser loginUser, @RequestParam("headImgUrl") String headImgUrl) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(headImgUrl, "上传头像不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("头像修改")
+                .action("更新头像");
+        operationLogService.log(operationLog);
+        int updateResult = customerService.updateHeadImageUrl(loginUser.getId(), headImgUrl);
+        if (updateResult > 0) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("头像更新失败");
+        }
+    }
+
+    @RequestMapping(value = "/profile/nickName/update")
+    public ResponseEntity<Map<String, Object>> updateNickName(LoginUser loginUser, @RequestParam("nickName") String nickName) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("昵称修改")
+                .action("提交昵称");
+        operationLogService.log(operationLog);
+
+        int result = customerService.updateNickName(loginUser.getId(), nickName);
+        if (result > 0) {
+            return WebUtils.result("昵称更新成功");
+        } else {
+            return WebUtils.result("昵称更新失败");
+        }
+    }
+
     @RequestMapping(value = "/profile/certificate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitCertificateProfile(LoginUser loginUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(loginUser, "用户信息不能为空");
@@ -215,7 +265,6 @@ public class CustomerController {
         } else {
             return WebUtils.result(riseCertificate);
         }
-
     }
 
     @RequestMapping("/region")

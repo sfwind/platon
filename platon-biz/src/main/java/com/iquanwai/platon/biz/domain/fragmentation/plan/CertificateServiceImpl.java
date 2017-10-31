@@ -141,28 +141,31 @@ public class CertificateServiceImpl implements CertificateService {
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
 
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByYearMonth(year, month, profileId);
+                    RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
                     if (riseClassMember != null) {
-                        Problem problem = cacheService.getProblem(problemId);
-                        // 如果允许生成小课训练营结业证书，则生成证书
-                        RiseCertificate riseCertificate = new RiseCertificate();
-                        riseCertificate.setProfileId(profileId);
-                        riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
-                        StringBuilder certificateNoBuilder = new StringBuilder("IQW");
-                        certificateNoBuilder.append(String.format("%02d", Constants.CERTIFICATE.TYPE.ORDINARY));
-                        certificateNoBuilder.append(riseClassMember.getMemberId());
-                        certificateNoBuilder.append(String.format("%02d", month));
-                        Integer noSequence = certificateNoSequence.get(0);
-                        certificateNoSequence.clear();
-                        certificateNoSequence.add(noSequence + 1);
-                        certificateNoBuilder.append(String.format("%03d", noSequence));
-                        certificateNoBuilder.append(String.format("%02d", RandomUtils.nextInt(0, 100)));
-                        riseCertificate.setCertificateNo(certificateNoBuilder.toString());
-                        riseCertificate.setYear(year);
-                        riseCertificate.setMonth(month);
-                        riseCertificate.setGroupNo(Integer.parseInt(riseClassMember.getGroupId()));
-                        riseCertificate.setProblemName(problem.getProblem());
-                        riseCertificateDao.insert(riseCertificate);
+                        RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
+                        if (existRiseCertificate == null) {
+                            Problem problem = cacheService.getProblem(problemId);
+                            // 如果允许生成小课训练营结业证书，则生成证书
+                            RiseCertificate riseCertificate = new RiseCertificate();
+                            riseCertificate.setProfileId(profileId);
+                            riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
+                            StringBuilder certificateNoBuilder = new StringBuilder("IQW");
+                            certificateNoBuilder.append(String.format("%02d", Constants.CERTIFICATE.TYPE.ORDINARY));
+                            certificateNoBuilder.append(riseClassMember.getMemberId());
+                            certificateNoBuilder.append(String.format("%02d", month));
+                            Integer noSequence = certificateNoSequence.get(0);
+                            certificateNoSequence.clear();
+                            certificateNoSequence.add(noSequence + 1);
+                            certificateNoBuilder.append(String.format("%03d", noSequence));
+                            certificateNoBuilder.append(String.format("%02d", RandomUtils.nextInt(0, 100)));
+                            riseCertificate.setCertificateNo(certificateNoBuilder.toString());
+                            riseCertificate.setYear(year);
+                            riseCertificate.setMonth(month);
+                            riseCertificate.setGroupNo(Integer.parseInt(riseClassMember.getGroupId()));
+                            riseCertificate.setProblemName(problem.getProblem());
+                            riseCertificateDao.insert(riseCertificate);
+                        }
                     }
                 }
             }
@@ -186,11 +189,11 @@ public class CertificateServiceImpl implements CertificateService {
             if (practicePlans.size() != 0) {
                 // 完成所有练习
                 Long unCompleteNecessaryCountLong = practicePlans.stream()
-                        .filter(practicePlan ->
-                                practicePlan.getStatus() == 0)
+                        .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
+                        .filter(practicePlan -> practicePlan.getStatus() == 0)
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-                    // 必须完成知识点、选择题的题数大于 0，不发结课证书
+                    // 如果存在有没有完成的题数，则不予发送优惠券
                     generateFullAttendanceCoupon = false;
                 } else {
                     // 完成所有练习之后，对应用题完成情况进行复查
@@ -229,18 +232,21 @@ public class CertificateServiceImpl implements CertificateService {
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
 
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByYearMonth(year, month, profileId);
+                    RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
                     if (riseClassMember != null) {
-                        // 如果允许生成小课训练营结业证书，则生成证书
-                        FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
-                        fullAttendanceReward.setProfileId(profileId);
-                        fullAttendanceReward.setClassName(riseClassMember.getClassName());
-                        fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-                        fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
-                        fullAttendanceReward.setYear(year);
-                        fullAttendanceReward.setMonth(month);
-                        fullAttendanceReward.setAmount(199.00);
-                        fullAttendanceRewardDao.insert(fullAttendanceReward);
+                        FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
+                        if (existFullAttendanceReward == null) {
+                            // 如果允许生成小课训练营结业证书，则生成证书
+                            FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
+                            fullAttendanceReward.setProfileId(profileId);
+                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
+                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+                            fullAttendanceReward.setYear(year);
+                            fullAttendanceReward.setMonth(month);
+                            fullAttendanceReward.setAmount(199.00);
+                            fullAttendanceRewardDao.insert(fullAttendanceReward);
+                        }
                     }
                 }
             }
@@ -277,7 +283,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void sendFullAttendanceCoupon(Integer year, Integer month) {
-        List<FullAttendanceReward> fullAttendanceRewards = fullAttendanceRewardDao.loadByYearMonth(year, month);
+        List<FullAttendanceReward> fullAttendanceRewards = fullAttendanceRewardDao.loadUnNotifiedByYearMonth(year, month);
         fullAttendanceRewards.forEach(fullAttendanceReward -> {
             Integer profileId = fullAttendanceReward.getProfileId();
             Profile profile = accountService.getProfile(profileId);
