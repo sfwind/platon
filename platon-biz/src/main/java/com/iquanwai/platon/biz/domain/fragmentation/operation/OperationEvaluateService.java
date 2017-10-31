@@ -32,13 +32,4 @@ public interface OperationEvaluateService {
      * 微信后台推送结果卡片
      */
     String getResult(Integer profileId, Integer score, Integer percent);
-    /**
-     * 是否参加过此活动
-     * */
-    boolean hasParticipateEvaluate(Integer profileId);
-
-    /**
-     * 发送分享海报
-     * */
-    void sendShareMessage(Integer profileId, Integer score, Integer percent, Boolean freeLimit);
 }
