@@ -16,6 +16,19 @@ public interface CertificateService {
      * */
     RiseCertificate getCertificate(String certificateNo);
 
+    /**
+     * 准备打印证书图片用到
+     * @param certificateId 证书 id
+     */
+    RiseCertificate getNextCertificate(Integer certificateId);
+
+    /**
+     * 证书下载完成时间更新
+     * @param certificateNo 证书号
+     * @return
+     */
+    int updateDownloadTime(String certificateNo);
+
     void generateCertificate(Integer year, Integer month, Integer problemId);
 
     void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);

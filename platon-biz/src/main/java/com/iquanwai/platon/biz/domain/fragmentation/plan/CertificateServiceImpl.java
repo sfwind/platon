@@ -77,6 +77,16 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
+    public RiseCertificate getNextCertificate(Integer certificateId) {
+        return riseCertificateDao.loadNextCertificateNoById(certificateId);
+    }
+
+    @Override
+    public int updateDownloadTime(String certificateNo) {
+        return riseCertificateDao.updateDownloadTime(certificateNo);
+    }
+
+    @Override
     public void generateCertificate(Integer year, Integer month, Integer problemId) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
         List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());

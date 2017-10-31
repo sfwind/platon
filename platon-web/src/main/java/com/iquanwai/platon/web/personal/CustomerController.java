@@ -267,6 +267,39 @@ public class CustomerController {
         }
     }
 
+    @RequestMapping(value = "/certificate/download/{certificateNo}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getCertificateAndNext(LoginUser loginUser, @PathVariable String certificateNo) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("下载证书");
+        operationLogService.log(operationLog);
+        RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
+        RiseCertificate nextRiseCertificate = certificateService.getNextCertificate(riseCertificate.getId());
+        if(nextRiseCertificate != null) {
+            riseCertificate.setNextCertificateNo(nextRiseCertificate.getCertificateNo());
+        }
+
+        if (riseCertificate.getDel()) {
+            return WebUtils.error("证书已失效");
+        } else {
+            return WebUtils.result(riseCertificate);
+        }
+    }
+
+    @RequestMapping(value = "/certificate/download/success/{certificateNo}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> updateCertificateDownloadTime(LoginUser loginUser, @PathVariable String certificateNo) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("证书下载完成");
+        operationLogService.log(operationLog);
+        certificateService.updateDownloadTime(certificateNo);
+        return WebUtils.success();
+    }
+
     @RequestMapping("/region")
     public ResponseEntity<Map<String, Object>> loadRegion(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
