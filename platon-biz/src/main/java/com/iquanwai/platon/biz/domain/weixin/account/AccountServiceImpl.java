@@ -22,6 +22,7 @@ import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.Role;
@@ -112,6 +113,7 @@ public class AccountServiceImpl implements AccountService {
         logger.info("role init complete");
     }
 
+    @Override
     public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
         if (realTime) {
             return getAccountFromWeixin(openid);
@@ -250,8 +252,9 @@ public class AccountServiceImpl implements AccountService {
         Account accountNew = new Account();
         try {
             ConvertUtils.register((aClass, value) -> {
-                if (value == null)
+                if (value == null) {
                     return null;
+                }
 
                 if (!(value instanceof Double)) {
                     logger.error("不是日期类型");
