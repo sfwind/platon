@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
+import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
@@ -15,12 +16,23 @@ import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.*;
-import com.iquanwai.platon.biz.util.*;
+import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.po.common.SMSValidCode;
+import com.iquanwai.platon.biz.po.common.SubscribePush;
+import com.iquanwai.platon.biz.po.common.UserRole;
+import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -82,6 +94,13 @@ public class AccountServiceImpl implements AccountService {
     private CouponDao couponDao;
     @Autowired
     private CustomerStatusDao customerStatusDao;
+    @Autowired
+    private QRCodeService qrCodeService;
+    @Autowired
+    private SubscribePushDao subscribePushDao;
+
+    private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
+
 
     @PostConstruct
     public void init() {
@@ -474,8 +493,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public RiseClassMember loadActiveRiseClassMember(Integer profileId) {
-        return riseClassMemberDao.loadActiveRiseClassMember(profileId);
+    public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
+        RiseClassMember activeRiseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+        if (activeRiseClassMember == null) {
+            activeRiseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
+        }
+        return activeRiseClassMember;
     }
 
     @Override
@@ -525,6 +548,19 @@ public class AccountServiceImpl implements AccountService {
         }
 
         return 0;
+    }
+
+
+    @Override
+    public String createSubscribePush(String openid, String callback, String scene) {
+        Integer result = subscribePushDao.insert(openid, callback, scene);
+        String sceneCode = SUBSCRIBE_PUSH_PREFIX + result;
+        return qrCodeService.loadQrBase64(sceneCode);
+    }
+
+    @Override
+    public SubscribePush loadSubscribePush(Integer id) {
+        return subscribePushDao.loadById(id);
     }
 }
 

@@ -6,15 +6,13 @@ import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,7 +30,7 @@ public class ImageUtils {
     * @param inputImage 需要修改的图片
     * */
     public static BufferedImage convertCircular(BufferedImage inputImage) {
-        if(inputImage == null){
+        if (inputImage == null) {
             logger.error("input image is null");
             return null;
         }
@@ -53,7 +51,7 @@ public class ImageUtils {
     * @param newHeight 新的高度
     * */
     public static BufferedImage scaleByPercentage(BufferedImage inputImage, int newWidth, int newHeight) {
-        if(inputImage == null){
+        if (inputImage == null) {
             logger.error("input image is null");
             return null;
         }
@@ -72,6 +70,30 @@ public class ImageUtils {
         return img;
     }
 
+    /**
+     * 图片裁剪
+     * @param inputImage 需要裁剪的图片
+     * @param startX 裁剪开始 x 坐标
+     * @param startY 裁剪开始 y 坐标
+     * @param endX 裁剪截止 x 坐标
+     * @param endY 裁剪截止 y 坐标
+     */
+    public static BufferedImage cropImage(BufferedImage inputImage, int startX, int startY, int endX, int endY) {
+        Assert.isTrue(startX >= 0);
+        Assert.isTrue(startY >= 0);
+        endX = endX > inputImage.getWidth() ? inputImage.getWidth() : endX;
+        endY = endY > inputImage.getHeight() ? inputImage.getHeight() : endY;
+
+        BufferedImage result = new BufferedImage(endX - startX, endY - startY, inputImage.getType());
+        for (int x = startX; x < endX; x++) {
+            for (int y = startY; y < endY; y++) {
+                int rgb = inputImage.getRGB(x, y);
+                result.setRGB(x - startX, y - startY, rgb);
+            }
+        }
+        return result;
+    }
+
     /*
     * 写文字
     * @param image 图片
@@ -81,7 +103,7 @@ public class ImageUtils {
     * @param color 文字颜色
     * */
     public static BufferedImage writeText(BufferedImage inputImage, int x, int y, String text, Font font, Color color) {
-        if(inputImage == null){
+        if (inputImage == null) {
             logger.error("input image is null");
             return null;
         }
@@ -115,7 +137,7 @@ public class ImageUtils {
             } catch (Exception e) {
                 logger.error("execute " + url + " error", e);
             } finally {
-                if(response!=null){
+                if (response != null) {
                     response.close();
                 }
             }
@@ -139,7 +161,7 @@ public class ImageUtils {
 
     // 大图内嵌小图
     public static BufferedImage overlapImage(BufferedImage big, BufferedImage small, int x, int y) {
-        if(big == null || small == null){
+        if (big == null || small == null) {
             logger.error("input image is null");
             return big;
         }
@@ -149,8 +171,7 @@ public class ImageUtils {
         return big;
     }
 
-
-    public static void writeToFile(BufferedImage image, String format, File file){
+    public static void writeToFile(BufferedImage image, String format, File file) {
         try {
             ImageIO.write(image, format, file);
         } catch (IOException e) {
@@ -158,7 +179,7 @@ public class ImageUtils {
         }
     }
 
-    public static void writeToOutputStream(BufferedImage image, String format, OutputStream outputStream){
+    public static void writeToOutputStream(BufferedImage image, String format, OutputStream outputStream) {
         try {
             ImageIO.write(image, format, outputStream);
         } catch (IOException e) {

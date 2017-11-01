@@ -37,13 +37,19 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     }
 
     private boolean sendMessage(TemplateMessage templateMessage, boolean forwardlyPush) {
-        String json = new Gson().toJson(templateMessage);
-        // 发送权限校验
-        boolean validPush = checkTemplateMessageAuthority(templateMessage, forwardlyPush);
-        // 模板消息发送记录
-        saveTemplateMessageSendLog(templateMessage, forwardlyPush, validPush);
-        String body = null;
-        if (validPush) {
+        boolean sendTag = true;
+        if (forwardlyPush) {
+            // 发送权限校验
+            boolean validPush = checkTemplateMessageAuthority(templateMessage, forwardlyPush);
+            // 模板消息发送记录
+            saveTemplateMessageSendLog(templateMessage, forwardlyPush, validPush);
+            if (!validPush) {
+                sendTag = false;
+            }
+        }
+        String body = "";
+        if (sendTag) {
+            String json = new Gson().toJson(templateMessage);
             body = restfulHelper.post(SEND_MESSAGE_URL, json);
         }
         return StringUtils.isNoneEmpty(body);
@@ -80,43 +86,44 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
         List<String> devOpenIds = ConfigUtils.getDevelopOpenIds();
         if (!forwardlyPush || devOpenIds.contains(profile.getOpenid())) return true;
 
+        List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadByOpenId(openId);
+
         boolean authority;
         // 1. 会员用户每周最多收到 7 条消息
         if (profile.getRiseMember() == 1) {
-            String distanceDateStr = DateUtils.parseDateToString(DateUtils.beforeDays(new Date(), 7));
-            List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadInDistanceDate(openId, distanceDateStr);
-            authority = customerMessageLogs.size() < 7;
+            Date distanceDate = DateUtils.beforeDays(new Date(), 7);
+            Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceDate) > 0).count();
+            authority = result.intValue() < 7;
             if (!authority) return false;
         }
 
         // 2. 非会员用户每周最多收到 2 条消息
         if (profile.getRiseMember() != 1) {
-            String distanceDateStr = DateUtils.parseDateToString(DateUtils.beforeDays(new Date(), 7));
-            List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadInDistanceDate(openId, distanceDateStr);
-            authority = customerMessageLogs.size() < 2;
+            Date distanceDate = DateUtils.beforeDays(new Date(), 2);
+            Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceDate) > 0).count();
+            authority = result.intValue() < 2;
             if (!authority) return false;
         }
 
-        // 3. 手动发送的消息，同一个用户最多只能收到一次
+        // 3. 手动发送内容一样的消息，同一个用户最多只能收到一次
         {
-            List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadByContentHashCode(openId, Integer.toString(templateMessage.getContent().hashCode()));
-            authority = customerMessageLogs.size() < 1;
+            Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getContentHash().equals(Integer.toString(templateMessage.getContent().hashCode()))).count();
+            authority = result.intValue() < 1;
             if (!authority) return false;
         }
 
         // 4. 用户每天最多收到2条消息
         {
-            String distanceDateStr = DateUtils.parseDateToString(DateUtils.beforeDays(new Date(), 1));
-            List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadInDistanceDate(openId, distanceDateStr);
-            authority = customerMessageLogs.size() < 2;
+            Long result = customerMessageLogs.stream().filter(messageLog -> DateUtils.isToday(messageLog.getPublishTime())).count();
+            authority = result.intValue() < 2;
             if (!authority) return false;
         }
 
         // 5. 用户三小时内最多收到1条消息
         {
-            String distanceTimeStr = DateUtils.parseDateTimeToString(DateUtils.afterHours(new Date(), -3));
-            List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadInDistanceTime(openId, distanceTimeStr);
-            authority = customerMessageLogs.size() < 3;
+            Date distanceTime = DateUtils.afterHours(new Date(), -3);
+            Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceTime) > 0).count();
+            authority = result.intValue() < 1;
             if (!authority) return false;
         }
         return true;
@@ -125,7 +132,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private void saveTemplateMessageSendLog(TemplateMessage templateMessage, boolean forwardlyPush, boolean validPush) {
         CustomerMessageLog customerMessageLog = new CustomerMessageLog();
         customerMessageLog.setOpenId(templateMessage.getTouser());
-        customerMessageLog.setPublishTime(DateUtils.parseDateTimeToString(new Date()));
+        customerMessageLog.setPublishTime(new Date());
         customerMessageLog.setContentHash(Integer.toString(templateMessage.getContent().hashCode()));
         customerMessageLog.setForwardlyPush(forwardlyPush ? 1 : 0);
         customerMessageLog.setValidPush(validPush ? 1 : 0);

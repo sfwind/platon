@@ -129,7 +129,7 @@ public interface AccountService {
 
     void insertCoupon(Coupon coupon);
 
-    RiseClassMember loadActiveRiseClassMember(Integer profileId);
+    RiseClassMember loadDisplayRiseClassMember(Integer profileId);
 
     Boolean openLearningNotify(Integer profileId);
 
@@ -138,4 +138,8 @@ public interface AccountService {
     Boolean hasStatusId(Integer profileId, Integer statusId);
 
     Boolean addStatusId(Integer profileId, Integer statusId);
+
+    String createSubscribePush(String openid, String callback, String scene);
+
+    SubscribePush loadSubscribePush(Integer id);
 }

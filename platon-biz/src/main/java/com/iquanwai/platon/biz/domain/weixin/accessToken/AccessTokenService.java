@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.weixin.accessToken;
+package com.iquanwai.platon.biz.domain.weixin.accesstoken;
 
 
 public interface AccessTokenService {

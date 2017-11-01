@@ -1,9 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Date;
@@ -34,7 +31,7 @@ public interface PlanService {
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans);
 
-    Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
+    Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig);
 
     void unlockCampPlan(Integer profileId, Integer planId);
 
@@ -143,7 +140,7 @@ public interface PlanService {
     /**
      * 获取当前正在学习月份的能够学习的训练营小课内容
      */
-    List<ImprovementPlan> getCurrentCampPlanList(Integer profileId);
+    List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig);
 
     Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
 
@@ -162,7 +159,7 @@ public interface PlanService {
      */
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
-    void forceOpenCampOrder(String orderId);
+    void forceOpenCampOrder(String orderId, MonthlyCampConfig monthlyCampConfig);
 
     Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
 

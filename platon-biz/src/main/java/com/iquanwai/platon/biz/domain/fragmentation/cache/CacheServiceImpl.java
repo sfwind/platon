@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.cache;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
@@ -41,6 +43,8 @@ public class CacheServiceImpl implements CacheService {
     private ProblemSubCatalogDao problemSubCatalogDao;
     @Autowired
     private AudioDao audioDao;
+    @Autowired
+    private MonthlyCampConfigDao monthlyCampConfigDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -52,6 +56,9 @@ public class CacheServiceImpl implements CacheService {
     private Map<Integer, ProblemCatalog> problemCatalogMap = Maps.newHashMap();
     //缓存问题子分类
     private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
+    //缓存小课训练营配置
+    private MonthlyCampConfig monthlyCampConfig;
+
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -144,6 +151,8 @@ public class CacheServiceImpl implements CacheService {
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
 
+        // 缓存小课训练营配置缓存
+        monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
     }
 
     private void initAudio(Knowledge knowledge) {
@@ -271,8 +280,18 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
+    public MonthlyCampConfig loadMonthlyCampConfig() {
+        return JSONObject.parseObject(JSON.toJSONString(monthlyCampConfig), MonthlyCampConfig.class);
+    }
+
+    @Override
     public void reload() {
         init();
+    }
+
+    @Override
+    public void reloadMonthlyCampConfig() {
+        monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
     }
 
     private String chapterName(List<Section> sectionList) {

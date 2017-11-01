@@ -3,13 +3,13 @@ package com.iquanwai.platon.biz.dao.wx;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.AsyncQueryRunner;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -59,21 +58,6 @@ public class FollowUserDao extends DBUtil {
         return null;
     }
 
-
-    public List<String> queryAll() {
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<String>> h = new ColumnListHandler<>();
-
-        try {
-            List<String> account = run.query("SELECT OpenId FROM FollowUsers", h);
-            return account;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return Lists.newArrayList();
-    }
-
     public List<Account> queryAccounts(List<String> openids) {
         if(CollectionUtils.isEmpty(openids)){
             return Lists.newArrayList();
@@ -93,35 +77,11 @@ public class FollowUserDao extends DBUtil {
 
     public int updateMeta(Account account) {
         QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
+        AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), run);
         String updateSql = "Update FollowUsers Set Nickname=?, Headimgurl=?, Unionid=? where Openid=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql,
                     account.getNickname(), account.getHeadimgurl(),account.getUnionid(), account.getOpenid());
-            return result.get();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        } catch (InterruptedException e) {
-            // ignore
-        } catch (ExecutionException e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        return -1;
-    }
-
-    public int updateInfo(Account account) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        AsyncQueryRunner asyncRun = new AsyncQueryRunner(Executors.newSingleThreadExecutor(), run);
-        String updateSql = "Update FollowUsers Set MobileNo=?, Email=?, Industry=?, Function=?, WorkingLife=?, " +
-                "RealName=?, City=?, Province=? where Openid=?";
-        try {
-            Future<Integer> result = asyncRun.update(updateSql,
-                    account.getMobileNo(), account.getEmail(),
-                    account.getIndustry(), account.getFunction(),
-                    account.getWorkingLife(), account.getRealName(),
-                    account.getCity(), account.getProvince(),
-                    account.getOpenid());
             return result.get();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.interlocution;
 
+import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionDate;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionQuestion;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -52,4 +53,6 @@ public interface InterlocutionService {
     InterlocutionQuestion loadQuanQuanAnswer(Date date);
 
     String goQuestionSubmitPageQr(String date);
+
+    InterlocutionAnswer loadRecentlyAnswer();
 }

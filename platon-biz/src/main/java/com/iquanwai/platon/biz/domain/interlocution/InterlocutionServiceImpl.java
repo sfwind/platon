@@ -153,8 +153,10 @@ public class InterlocutionServiceImpl implements InterlocutionService {
         question.setAnswer(answer);
         InterlocutionDate dateInfo = interlocutionDateDao.loadDate(date);
         InterlocutionDate nextDate = interlocutionDateDao.loadNextDate(date);
+        InterlocutionAnswer nextAnswer = interlocutionAnswerDao.load(nextDate.getStartDate());
         question.setNextDate(nextDate);
         question.setDateInfo(dateInfo);
+        question.setNextAnswer(nextAnswer);
         return question;
     }
 
@@ -164,4 +166,8 @@ public class InterlocutionServiceImpl implements InterlocutionService {
         return qrCodeService.loadQrBase64(scene);
     }
 
+    @Override
+    public InterlocutionAnswer loadRecentlyAnswer() {
+        return interlocutionAnswerDao.loadRecently();
+    }
 }

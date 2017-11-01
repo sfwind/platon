@@ -312,7 +312,8 @@ public class PlanController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
 
-        Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId);
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId, monthlyCampConfig);
         if (campChosenCheck.getLeft()) {
             Integer resultPlanId = planService.forceOpenProblem(loginUser.getId(), problemId, null, null);
             return WebUtils.result(String.valueOf(resultPlanId));
@@ -612,7 +613,8 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<PlanDto> currentCampPlans = Lists.newArrayList();
-        List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId());
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId(), monthlyCampConfig);
         currentCampImprovementPlans.forEach(item -> {
             PlanDto planDto = new PlanDto();
             planDto.setPlanId(item.getId());

@@ -41,9 +41,8 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     /**
      * 查询用户提交记录
-     *
      * @param applicationId 应用练习id
-     * @param planId        计划id
+     * @param planId 计划id
      */
     public ApplicationSubmit load(Integer applicationId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
@@ -149,7 +148,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         }
     }
 
-    public List<ApplicationSubmit> loadBatchApplicationSubmits(Integer problemId,List<Integer> refers){
+    public List<ApplicationSubmit> loadBatchApplicationSubmits(Integer problemId, List<Integer> refers) {
         if (CollectionUtils.isEmpty(refers)) {
             return Lists.newArrayList();
         }
@@ -160,7 +159,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         params.addAll(refers);
         String sql = "select * from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ") and Del=0";
 
-        try{
+        try {
             return runner.query(sql, new BeanListHandler<>(ApplicationSubmit.class), params.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -168,5 +167,24 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<ApplicationSubmit> loadApplicationSubmitsByApplicationIds(List<Integer> applicationIds, Integer planId) {
+        if (applicationIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ApplicationSubmit WHERE ApplicationId in (" + produceQuestionMark(applicationIds.size())
+                + ") AND PlanId = ? AND Del = 0";
+        ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
+        List<Object> objects = Lists.newArrayList();
+        objects.addAll(applicationIds);
+        objects.add(planId);
+        try {
+            return runner.query(sql, h, objects.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return Lists.newArrayList();
+    }
 
 }

@@ -41,7 +41,10 @@ public class LoginUserService {
 
 
     public enum Platform{
-        PC(1),Wechat(2);
+        /** PC端 */
+        PC(1),
+        /** 移动端 */
+        Wechat(2);
         private int value;
         Platform(int value){
             this.value = value;

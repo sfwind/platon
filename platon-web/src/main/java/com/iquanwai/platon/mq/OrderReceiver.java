@@ -1,6 +1,8 @@
 package com.iquanwai.platon.mq;
 
+import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,8 @@ public class OrderReceiver {
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private PlanService planService;
+    @Autowired
+    private CacheService cacheService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -34,7 +38,8 @@ public class OrderReceiver {
 
     private void activeAction(String message) {
         logger.info("receive monthly camp message: {}", message);
-        planService.forceOpenCampOrder(message);
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        planService.forceOpenCampOrder(message, monthlyCampConfig);
     }
 
 }

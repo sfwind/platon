@@ -17,16 +17,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateS
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.EssenceCard;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -178,7 +169,7 @@ public class PlanServiceImpl implements PlanService {
             // 未关闭 ,未关闭的都显示
             // 计算关闭时间
             // CloseDate设置为25号的，在26号0点会关闭，所以在25号查看的时候，是一天
-            long now = new Date().getTime();
+            long now = System.currentTimeMillis();
             long thatTime = DateUtils.afterDays(improvementPlan.getCloseDate(), 1).getTime();
             long internalMills = Math.abs(thatTime - now);
             int deadLine = new BigDecimal(internalMills).divide(new BigDecimal(1000 * 60 * 60 * 24), BigDecimal.ROUND_UP).intValue();
@@ -334,8 +325,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
-        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig) {
+        Integer currentMonth = monthlyCampConfig.getLearningMonth();
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
         List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
@@ -556,10 +547,9 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
+    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig) {
         List<ImprovementPlan> plans = Lists.newArrayList();
-
-        Integer currentMonth = ConfigUtils.getCurrentCampMonth();
+        Integer currentMonth = monthlyCampConfig.getLearningMonth();
         if (currentMonth == null) return plans;
 
         List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
@@ -737,7 +727,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void forceOpenCampOrder(String orderId) {
+    public void forceOpenCampOrder(String orderId, MonthlyCampConfig monthlyCampConfig) {
         MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
         Integer profileId = monthlyCampOrder.getProfileId();
 
@@ -745,7 +735,9 @@ public class PlanServiceImpl implements PlanService {
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
-            Integer planId = forceOpenProblem(profileId, problemId, ConfigUtils.getMonthlyCampStartStudyDate(), ConfigUtils.getMonthlyCampCloseDate());
+            Integer planId = forceOpenProblem(profileId, problemId,
+                    monthlyCampConfig.getOpenDate(),
+                    monthlyCampConfig.getCloseDate());
 
             // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
             Profile profile = accountService.getProfile(profileId);

@@ -31,7 +31,7 @@ public class JsSignatureServiceImpl implements JsSignatureService {
     public JsSignature getJsSignature(String url, boolean refresh) {
         //判断是否超过间隔
         int interval = ConfigUtils.getJsSignatureInterval();
-        long now = new Date().getTime();
+        long now = System.currentTimeMillis();
         if(now - last_update > interval*1000){
             synchronized (LOCK) {
                 if((now - last_update > interval*1000)) {
