@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -55,6 +56,29 @@ public class RiseCertificateDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage());
         }
         return null;
+    }
+
+    public RiseCertificate loadNextCertificateNoById(Integer certificateId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM RiseCertificate WHERE Id > ? AND Del = 0 LIMIT 1";
+        ResultSetHandler<RiseCertificate> h = new BeanHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, certificateId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    public int updateDownloadTime(String certificateNo) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE RiseCertificate SET DownloadTime = ? WHERE CertificateNo = ?";
+        try {
+            return runner.update(sql, new Date(), certificateNo);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
 
     public List<RiseCertificate> loadUnNotifiedByMonthAndYear(Integer year, Integer month) {
