@@ -13,7 +13,7 @@ public interface CertificateService {
     /**
      * 获取证书
      * @param certificateNo 证书号
-     * */
+     */
     RiseCertificate getCertificate(String certificateNo);
 
     /**
@@ -23,9 +23,15 @@ public interface CertificateService {
     RiseCertificate getNextCertificate(Integer certificateId);
 
     /**
+     * 将图片的 base64 码转为图片保存
+     * @param base64Str base64 码
+     * @param imgPath 存储路径
+     */
+    boolean convertCertificateBase64(String base64Str, String imgPath);
+
+    /**
      * 证书下载完成时间更新
      * @param certificateNo 证书号
-     * @return
      */
     int updateDownloadTime(String certificateNo);
 
@@ -37,7 +43,7 @@ public interface CertificateService {
      * 发送训练营证书通知
      * @param year 开营年份
      * @param month 开营月份
-     * */
+     */
     void sendCertificate(Integer year, Integer month);
 
     void sendFullAttendanceCoupon(Integer year, Integer month);
@@ -45,13 +51,13 @@ public interface CertificateService {
     /**
      * 获取我的证书
      * @param profileId 用户id
-     * */
+     */
     List<RiseCertificate> getCertificates(Integer profileId);
 
     /**
      * 发送小课训练营结课用户的商学院录取消息
      * @param year 开营年份
      * @param month 开营月份
-     * */
+     */
     void sendOfferMsg(Integer year, Integer month);
 }
