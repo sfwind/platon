@@ -19,7 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Decoder;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +78,37 @@ public class CertificateServiceImpl implements CertificateService {
         //删除profileId
         riseCertificate.setProfileId(null);
         return riseCertificate;
+    }
+
+    @Override
+    public RiseCertificate getNextCertificate(Integer certificateId) {
+        return riseCertificateDao.loadNextCertificateNoById(certificateId);
+    }
+
+    @Override
+    public boolean convertCertificateBase64(String base64Str, String imgPath) {
+        BASE64Decoder decoder = new BASE64Decoder();
+        try {
+            byte[] bytes = decoder.decodeBuffer(base64Str);
+            for (int i = 0; i < bytes.length; ++i) {
+                if (bytes[i] < 0) {// 调整异常数据
+                    bytes[i] += 256;
+                }
+            }
+            OutputStream out = new FileOutputStream(imgPath);
+            out.write(bytes);
+            out.flush();
+            out.close();
+            return true;
+        } catch (IOException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return false;
+    }
+
+    @Override
+    public int updateDownloadTime(String certificateNo) {
+        return riseCertificateDao.updateDownloadTime(certificateNo);
     }
 
     @Override
