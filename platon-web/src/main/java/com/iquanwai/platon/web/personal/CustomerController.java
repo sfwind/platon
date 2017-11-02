@@ -27,6 +27,7 @@ import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -77,6 +78,8 @@ public class CustomerController {
     private CustomerService customerService;
     @Autowired
     private QRCodeService qrCodeService;
+    @Autowired
+    private LoginUserService loginUserService;
 
 
     @RequestMapping("/event/list")
@@ -207,6 +210,7 @@ public class CustomerController {
         operationLogService.log(operationLog);
         int updateResult = customerService.updateHeadImageUrl(loginUser.getId(), headImgUrl);
         if (updateResult > 0) {
+            loginUserService.updateWeixinUser(loginUser.getOpenId());
             return WebUtils.success();
         } else {
             return WebUtils.error("头像更新失败");
@@ -225,6 +229,7 @@ public class CustomerController {
 
         int result = customerService.updateNickName(loginUser.getId(), nickName);
         if (result > 0) {
+            loginUserService.updateWeixinUser(loginUser.getOpenId());
             return WebUtils.result("昵称更新成功");
         } else {
             return WebUtils.result("昵称更新失败");
@@ -265,6 +270,64 @@ public class CustomerController {
         } else {
             return WebUtils.result(riseCertificate);
         }
+    }
+
+    @RequestMapping(value = "/certificate/download/{certificateNo}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getCertificateAndNext(LoginUser loginUser, @PathVariable String certificateNo) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("下载证书");
+        operationLogService.log(operationLog);
+        RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
+        RiseCertificate nextRiseCertificate = certificateService.getNextCertificate(riseCertificate.getId());
+        if (nextRiseCertificate != null) {
+            riseCertificate.setNextCertificateNo(nextRiseCertificate.getCertificateNo());
+        }
+
+        if (riseCertificate.getDel()) {
+            return WebUtils.error("证书已失效");
+        } else {
+            return WebUtils.result(riseCertificate);
+        }
+    }
+
+    @RequestMapping(value = "/certificate/convert", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> convertBase64(LoginUser loginUser, @RequestBody Base64ConvertDto base64ConvertDto) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("证书转码");
+        operationLogService.log(operationLog);
+        if (base64ConvertDto != null && base64ConvertDto.getBase64Str() != null && base64ConvertDto.getImageName() != null) {
+            // 去除 base64 的头属性信息
+            String base64Str = base64ConvertDto.getBase64Str().substring(base64ConvertDto.getBase64Str().indexOf(",") + 1);
+            // 图片保存路径，在测试环境使用，此处根据情况配置
+            if (base64ConvertDto.getType() == null) {
+                base64ConvertDto.setType(0);
+            }
+            // TODO 图片下载配置路径，使用之前根据自己电脑情况更改
+            String imagePath = "/Users/xfduan/Downloads/type" + base64ConvertDto.getType() + "/" + base64ConvertDto.getImageName() + ".png";
+            boolean saveSuccess = certificateService.convertCertificateBase64(base64Str, imagePath);
+            if (saveSuccess) {
+                return WebUtils.success();
+            }
+        }
+        return WebUtils.error("图片保存失败");
+    }
+
+    @RequestMapping(value = "/certificate/download/success/{certificateNo}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> updateCertificateDownloadTime(LoginUser loginUser, @PathVariable String certificateNo) {
+        Assert.notNull(loginUser, "用户信息不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("个人中心")
+                .function("证书信息")
+                .action("证书下载完成");
+        operationLogService.log(operationLog);
+        certificateService.updateDownloadTime(certificateNo);
+        return WebUtils.success();
     }
 
     @RequestMapping("/region")
