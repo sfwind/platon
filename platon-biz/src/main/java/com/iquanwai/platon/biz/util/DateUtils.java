@@ -1,13 +1,13 @@
 package com.iquanwai.platon.biz.util;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class DateUtils {
@@ -169,25 +169,8 @@ public class DateUtils {
         return time;
     }
 
-    // 获得当前日期与本周日相差的天数
-    private static int getMondayPlus(Date gmtCreate) {
-        Calendar cd = Calendar.getInstance();
-        cd.setTime(gmtCreate);
-        // 获得今天是一周的第几天，星期日是第一天，星期二是第二天......
-        int dayOfWeek = cd.get(Calendar.DAY_OF_WEEK) - 1; // 因为按中国礼拜一作为第一天所以这里减1
-        if (dayOfWeek == 1) {
-            return 0;
-        } else {
-            return 1 - dayOfWeek;
-        }
-    }
-
     // 获得下周星期一的日期
     public static Date getNextMonday(Date gmtCreate) {
-        int mondayPlus = getMondayPlus(gmtCreate);
-        GregorianCalendar currentDate = new GregorianCalendar();
-        currentDate.add(GregorianCalendar.DATE, mondayPlus + 7);
-        Date monday = currentDate.getTime();
-        return monday;
+        return new DateTime(gmtCreate.getTime()).plusWeeks(1).withDayOfWeek(DateTimeConstants.MONDAY).toDate();
     }
 }
