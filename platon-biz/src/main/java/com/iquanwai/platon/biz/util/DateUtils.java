@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.util;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -19,6 +20,7 @@ public class DateUtils {
     private static DateTimeFormatter timeFormat = DateTimeFormat.forPattern("HH:mm");
     private static DateTimeFormatter format7 = DateTimeFormat.forPattern("yyyyMMdd");
     private static DateTimeFormatter format8 = DateTimeFormat.forPattern("MM月dd日");
+    private static DateTimeFormatter format9 = DateTimeFormat.forPattern("MMdd");
 
 
     public static String parseDateToFormat5(Date date) {
@@ -31,6 +33,9 @@ public class DateUtils {
 
     public static String parseDateToFormat7(Date date) {
         return format7.print(new DateTime(date));
+    }
+    public static String parseDateToFormat8(Date date) {
+        return format8.print(new DateTime(date));
     }
 
     public static String parseDateToString(Date date) {
@@ -59,6 +64,10 @@ public class DateUtils {
 
     public static Date parseStringToDateTime(String strDate) {
         return format2.parseDateTime(strDate).toDate();
+    }
+
+    public static String parseDateToFormat9(Date date) {
+        return format9.print(new DateTime((date)));
     }
 
     public static int interval(Date date) {
@@ -158,5 +167,10 @@ public class DateUtils {
         SimpleDateFormat dateFm = new SimpleDateFormat("EEEE", Locale.CHINA);
         time += "  " + dateFm.format(date);
         return time;
+    }
+
+    // 获得下周星期一的日期
+    public static Date getNextMonday(Date gmtCreate) {
+        return new DateTime(gmtCreate.getTime()).plusWeeks(1).withDayOfWeek(DateTimeConstants.MONDAY).toDate();
     }
 }

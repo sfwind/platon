@@ -48,7 +48,7 @@ public class InterlocutionController {
         if (page == null) {
             page = new Page();
         }
-        page.setPageSize(5);
+        page.setPageSize(20);
         List<InterlocutionQuestion> interlocutionQuestions = interlocutionService.loadQuestions(loginUser.getOpenId(), date, page);
         RefreshListDto<InterlocutionQuestion> dto = new RefreshListDto<>();
         dto.setList(interlocutionQuestions);

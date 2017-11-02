@@ -8,14 +8,25 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.exception.ErrorConstants;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemActivity;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
+import com.iquanwai.platon.biz.po.ProblemExtension;
+import com.iquanwai.platon.biz.po.ProblemScore;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.web.fragmentation.dto.*;
+import com.iquanwai.platon.web.fragmentation.dto.CardCollectionDto;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogDto;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemCatalogListDto;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemDto;
+import com.iquanwai.platon.web.fragmentation.dto.ProblemExploreDto;
+import com.iquanwai.platon.web.fragmentation.dto.RiseCourseDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +36,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -352,33 +368,6 @@ public class ProblemController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
-    }
-
-    @RequestMapping("curId")
-    public ResponseEntity<Map<String, Object>> loadCurProblemId(LoginUser pcLoginUser) {
-        Assert.notNull(pcLoginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(pcLoginUser.getOpenId())
-                .module("训练")
-                .function("碎片化")
-                .action("获取用户当前在解决的问题Id");
-        operationLogService.log(operationLog);
-        List<ImprovementPlan> runningPlan = planService.getRunningPlan(pcLoginUser.getId());
-        if (runningPlan.size() == 0) {
-            // 没有正在进行的主题，选一个之前做过的
-            List<ImprovementPlan> plans = planService.loadUserPlans(pcLoginUser.getId());
-            if (plans.isEmpty()) {
-                // 没有买过难题
-                logger.error("{} has no active plan", pcLoginUser.getOpenId());
-                return WebUtils.error(ErrorConstants.NOT_PAY_FRAGMENT, "没找到进行中的圈外小课");
-            } else {
-                // 购买过直接选最后一个
-                ImprovementPlan plan = plans.get(plans.size() - 1);
-                return WebUtils.result(plan.getProblemId());
-            }
-        } else {
-            // 有正在进行的主题，直接返回id
-            return WebUtils.result(runningPlan.get(0).getProblemId());
-        }
     }
 
     @RequestMapping(value = "/submit/extension", method = RequestMethod.POST)

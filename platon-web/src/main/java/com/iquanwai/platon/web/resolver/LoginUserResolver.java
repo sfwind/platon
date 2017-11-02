@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.resolver;
 
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -19,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 public class LoginUserResolver implements HandlerMethodArgumentResolver {
     @Autowired
     private LoginUserService loginUserService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -55,7 +58,6 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
                 logger.error("accessToken {} is not found in db", accessToken);
                 return null;
             }
-
 
             LoginUser loginUser = loginUserService.getLoginUser(openId, platform);
             if (loginUser == null) {

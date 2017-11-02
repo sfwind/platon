@@ -74,6 +74,7 @@ public interface PlanService {
      */
     void completePlan(Integer planId, Integer status);
 
+
     /**
      * 结束训练计划校验
      * @param improvementPlan 训练计划
@@ -175,4 +176,10 @@ public interface PlanService {
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
+
+    AuditionClassMember loadAuditionClassMember(Integer profileId);
+
+    Integer insertAuditionClassMember(AuditionClassMember auditionClassMember);
+
+    Integer setAuditionOpened(Integer id);
 }

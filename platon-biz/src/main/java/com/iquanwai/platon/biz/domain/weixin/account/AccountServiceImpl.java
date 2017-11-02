@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
+import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
 import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
@@ -21,6 +22,7 @@ import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.common.Role;
@@ -92,6 +94,8 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private CouponDao couponDao;
     @Autowired
+    private CustomerStatusDao customerStatusDao;
+    @Autowired
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
@@ -109,6 +113,7 @@ public class AccountServiceImpl implements AccountService {
         logger.info("role init complete");
     }
 
+    @Override
     public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
         if (realTime) {
             return getAccountFromWeixin(openid);
@@ -247,8 +252,9 @@ public class AccountServiceImpl implements AccountService {
         Account accountNew = new Account();
         try {
             ConvertUtils.register((aClass, value) -> {
-                if (value == null)
+                if (value == null) {
                     return null;
+                }
 
                 if (!(value instanceof Double)) {
                     logger.error("不是日期类型");
@@ -506,6 +512,21 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Boolean closeLearningNotify(Integer profileId) {
         return profileDao.updateLearningNotifyStatus(profileId, 0);
+    }
+
+    @Override
+    public Boolean hasStatusId(Integer profileId, Integer statusId) {
+        return customerStatusDao.load(profileId, statusId) != null;
+    }
+
+    @Override
+    public Boolean addStatusId(Integer profileId, Integer statusId) {
+        CustomerStatus status = customerStatusDao.load(profileId, statusId);
+        if (status == null) {
+            return customerStatusDao.insert(profileId, statusId) > 0;
+        } else {
+            return true;
+        }
     }
 
     private Integer riseMember(Integer profileId) {

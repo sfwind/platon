@@ -2,22 +2,40 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.Recommendation;
+import com.iquanwai.platon.biz.po.RiseCourseOrder;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
+import com.iquanwai.platon.web.fragmentation.dto.plan.AuditionChooseDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -28,13 +46,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +86,10 @@ public class PlanController {
     private WhiteListService whiteListService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private RiseMemberService riseMemberService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
 
     /**
      * 检查是否能选课<br/>
@@ -589,6 +616,7 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> listUserPlans(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<PlanDto> currentCampPlans = Lists.newArrayList();
+        Integer auditionId = ConfigUtils.getTrialProblemId();
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
         List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId(), monthlyCampConfig);
         currentCampImprovementPlans.forEach(item -> {
@@ -641,12 +669,53 @@ public class PlanController {
         });
         List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, completedPlans);
 
+        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        List<PlanDto> auditions = Lists.newArrayList();
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+        if (auditionClassMember != null &&
+                !(riseMember != null &&
+                        (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
+            // 有试听课,从进行中去掉这个小课
+            runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
+            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
+
+            ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+            PlanDto plan = new PlanDto();
+            // 设置 Problem 对象
+            Problem itemProblem = cacheService.getProblem(auditionId);
+            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
+            plan.setProblem(itemProblem.simple());
+            plan.setName(itemProblem.getProblem());
+            plan.setPic(itemProblem.getPic());
+            plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
+            if (!plan.getLearnable()) {
+                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
+            }
+            if (ownedAudition != null) {
+                if (!auditionClassMember.getActive()) {
+                    // 已经开课
+                    plan.setPlanId(ownedAudition.getId());
+                }
+                plan.setCompleteSeries(ownedAudition.getCompleteSeries());
+                plan.setTotalSeries(ownedAudition.getTotalSeries());
+                plan.setPoint(ownedAudition.getPoint());
+                plan.setDeadline(ownedAudition.getDeadline());
+                plan.setName(ownedAudition.getProblem().getProblem());
+                plan.setPic(ownedAudition.getProblem().getPic());
+                plan.setStartDate(ownedAudition.getStartDate());
+                plan.setProblemId(ownedAudition.getProblemId());
+                plan.setCloseTime(ownedAudition.getCloseTime());
+            }
+            auditions.add(plan);
+        }
+
         PlanListDto planListDto = new PlanListDto();
         planListDto.setCurrentCampPlans(currentCampPlans);
         planListDto.setRunningPlans(runningPlans);
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setRecommendations(recommends);
         planListDto.setRiseMember(loginUser.getRiseMember());
+        planListDto.setAuditions(auditions);
         runningPlans.sort(Comparator.comparing(PlanDto::getStartDate));
         completedPlans.sort(this::sortPlans);
 
@@ -777,6 +846,120 @@ public class PlanController {
         } else {
             return WebUtils.error("该卡片正在制作中，请期待~");
         }
+    }
+
+    @RequestMapping(value = "/open/audition/course", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> openAuditionCourse(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser.getOpenId())
+                .module("小课")
+                .function("试听课")
+                .action("开课");
+        operationLogService.log(operationLog);
+        Integer auditionId = ConfigUtils.getTrialProblemId();
+        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+        Integer planId = null;
+        if (auditionClassMember != null && auditionClassMember.getActive()) {
+            // 检查是否到了开课时间
+            if (auditionClassMember.getStartDate().compareTo(new Date()) > 0) {
+                return WebUtils.error("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课，请耐心等待");
+            }
+            if (ownedAudition != null) {
+                // 已经拥有试听课
+                // 没有试听课的状态，第一次学习试听课
+                planId = planService.magicUnlockProblem(loginUser.getId(), auditionId,
+                        DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
+                generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), auditionId);
+            } else {
+                // 没有试听课，判断是不是会员
+                RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+                if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+                    // 会员不需要重复选择试听课
+                    return WebUtils.error("商学院员会员可以在发现页面选课哦");
+                } else {
+                    // 没有试听课，并且不是年费会员,可以选择试听课
+                    planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), auditionId);
+                    // 发送入群消息
+                    generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), auditionId);
+                }
+            }
+            // 开课
+            planService.setAuditionOpened(auditionClassMember.getId());
+            return WebUtils.result(planId);
+        } else {
+            if (ownedAudition != null) {
+                return WebUtils.result(ownedAudition.getId());
+            } else {
+                return WebUtils.error("您没有试听课的权限哦");
+            }
+        }
+    }
+
+    @RequestMapping(value = "/choose/audition/course", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> chooseAuditionCourse(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser.getOpenId())
+                .module("小课")
+                .function("试听课")
+                .action("选择试听课");
+        operationLogService.log(operationLog);
+        // 检查是否能选择试听课
+        // 标准：1.非会员，2.没有选过
+        Integer auditionId = ConfigUtils.getTrialProblemId();
+        AuditionChooseDto dto = new AuditionChooseDto();
+        dto.setGoSuccess(false);
+        ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+        // 计算startTime／endTime,班号
+        Date nextMonday = DateUtils.getNextMonday(new Date());
+        Date closeDate = DateUtils.afterDays(nextMonday, GeneratePlanService.PROBLEM_MAX_LENGTH);
+        String className = DateUtils.parseDateToFormat9(nextMonday);
+        Date startDate = DateUtils.beforeDays(nextMonday, 1);
+        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        if (auditionClassMember == null) {
+            //  没有试听过
+            RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+                return WebUtils.error("商学院会员可以在发现页面选课哦");
+            } else {
+                auditionClassMember = new AuditionClassMember();
+                auditionClassMember.setProfileId(loginUser.getId());
+                auditionClassMember.setOpenid(loginUser.getOpenId());
+                auditionClassMember.setClassName(className);
+                auditionClassMember.setStartDate(startDate);
+                planService.insertAuditionClassMember(auditionClassMember);
+                customerMessageService.sendCustomerMessage(loginUser.getOpenId(), ConfigUtils.getValue("audition.choose.send.image"), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+                ThreadPool.execute(() -> {
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                        customerMessageService.sendCustomerMessage(loginUser.getOpenId(), className, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    } catch (InterruptedException e) {
+                        LOGGER.error(e.getLocalizedMessage(), e);
+                    }
+
+                });
+            }
+            dto.setGoSuccess(true);
+        }
+        if (ownedAudition != null && ownedAudition.getStatus() == ImprovementPlan.RUNNING) {
+            dto.setPlanId(ownedAudition.getId());
+        }
+        dto.setClassName(className);
+//        if (dto.getGoSuccess()) {
+//            // 第一次学习试听课
+//            LOGGER.info("第一次学习试听课，发送消息,loginUser:{}", loginUser);
+//            this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
+//
+//            // 添加到需
+//        }
+        return WebUtils.result(dto);
+    }
+
+    // 发送普通限免小课信息
+    private void sendAuditionMsg(String openId, Integer profileId, Integer auditionId) {
+        customerMessageService.sendCustomerMessage(openId, ConfigUtils.getAuditionPushMsg(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 
 }

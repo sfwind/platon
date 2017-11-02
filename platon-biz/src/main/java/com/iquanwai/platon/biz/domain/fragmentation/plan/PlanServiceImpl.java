@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
+import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
@@ -75,6 +76,8 @@ public class PlanServiceImpl implements PlanService {
     private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CardRepository cardRepository;
+    @Autowired
+    private AuditionClassMemberDao auditionClassMemberDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -550,7 +553,9 @@ public class PlanServiceImpl implements PlanService {
     public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig) {
         List<ImprovementPlan> plans = Lists.newArrayList();
         Integer currentMonth = monthlyCampConfig.getLearningMonth();
-        if (currentMonth == null) return plans;
+        if (currentMonth == null) {
+            return plans;
+        }
 
         List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
         List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
@@ -648,11 +653,13 @@ public class PlanServiceImpl implements PlanService {
         int buttonStatus = -1;
 
         if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+            // 走限免课的逻辑
             if (plan == null) {
                 if (isRiseMember) {
                     // 选择该小课
                     buttonStatus = 2;
                 } else {
+                    // 不是会员，显示是否
                     boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
                     // 7 - 下一步 8 - 免费获取 | 加入商学院
                     buttonStatus = hasTrialAuthority ? 7 : 8;
@@ -745,6 +752,9 @@ public class PlanServiceImpl implements PlanService {
         }
     }
 
+    /**
+     * 根据 profileId 和 problemId 强开当前小课
+     */
     @Override
     public Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate) {
         return forceOpenProblem(profileId, problemId, null, closeDate);
@@ -832,4 +842,18 @@ public class PlanServiceImpl implements PlanService {
         return new MutablePair<>(access, message);
     }
 
+    @Override
+    public AuditionClassMember loadAuditionClassMember(Integer profileId){
+        return auditionClassMemberDao.loadByProfileId(profileId);
+    }
+
+    @Override
+    public Integer insertAuditionClassMember(AuditionClassMember auditionClassMember){
+        return auditionClassMemberDao.insert(auditionClassMember);
+    }
+
+    @Override
+    public Integer setAuditionOpened(Integer id){
+        return auditionClassMemberDao.update(id);
+    }
 }
