@@ -400,11 +400,6 @@ public class PlanServiceImpl implements PlanService {
         }
     }
 
-    @Override
-    public void resetCloseDate(Integer planId, Date startDate, Date closeDate) {
-
-    }
-
     private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
@@ -558,7 +553,9 @@ public class PlanServiceImpl implements PlanService {
     public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig) {
         List<ImprovementPlan> plans = Lists.newArrayList();
         Integer currentMonth = monthlyCampConfig.getLearningMonth();
-        if (currentMonth == null) return plans;
+        if (currentMonth == null) {
+            return plans;
+        }
 
         List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
         List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());

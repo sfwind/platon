@@ -74,7 +74,6 @@ public interface PlanService {
      */
     void completePlan(Integer planId, Integer status);
 
-    void resetCloseDate(Integer planId, Date startDate, Date closeDate);
 
     /**
      * 结束训练计划校验
