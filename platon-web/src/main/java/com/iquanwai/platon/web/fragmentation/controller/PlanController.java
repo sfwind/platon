@@ -669,7 +669,10 @@ public class PlanController {
 
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
         List<PlanDto> auditions = Lists.newArrayList();
-        if (auditionClassMember != null) {
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+        if (auditionClassMember != null &&
+                !(riseMember != null &&
+                        (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
             // 有试听课,从进行中去掉这个小课
             runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
