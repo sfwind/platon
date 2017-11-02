@@ -25,4 +25,6 @@ public class PlanDto {
 
     private Problem problem; // 该训练计划对应的小课
 
+    private String errMsg;
+
 }

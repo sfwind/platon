@@ -34,6 +34,9 @@ public class DateUtils {
     public static String parseDateToFormat7(Date date) {
         return format7.print(new DateTime(date));
     }
+    public static String parseDateToFormat8(Date date) {
+        return format8.print(new DateTime(date));
+    }
 
     public static String parseDateToString(Date date) {
         return format1.print(new DateTime(date));

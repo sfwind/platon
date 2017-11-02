@@ -687,6 +687,10 @@ public class PlanController {
             plan.setProblem(itemProblem.simple());
             plan.setName(itemProblem.getProblem());
             plan.setPic(itemProblem.getPic());
+            plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
+            if (!plan.getLearnable()) {
+                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课，请耐心等待");
+            }
             if (ownedAudition != null) {
                 if (!auditionClassMember.getActive()) {
                     // 已经开课
@@ -701,7 +705,6 @@ public class PlanController {
                 plan.setStartDate(ownedAudition.getStartDate());
                 plan.setProblemId(ownedAudition.getProblemId());
                 plan.setCloseTime(ownedAudition.getCloseTime());
-                plan.setLearnable(ownedAudition.getStartDate().compareTo(new Date()) <= 0);
             }
             auditions.add(plan);
         }
@@ -861,7 +864,7 @@ public class PlanController {
         if (auditionClassMember != null && auditionClassMember.getActive()) {
             // 检查是否到了开课时间
             if (auditionClassMember.getStartDate().compareTo(new Date()) > 0) {
-                return WebUtils.error(DateUtils.getSpecialDateFormat(auditionClassMember.getStartDate()) + " 才可以开课哦");
+                return WebUtils.error("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课，请耐心等待");
             }
             if (ownedAudition != null) {
                 // 已经拥有试听课
