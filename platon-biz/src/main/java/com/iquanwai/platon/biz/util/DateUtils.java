@@ -7,6 +7,7 @@ import org.joda.time.format.DateTimeFormatter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class DateUtils {
@@ -19,6 +20,7 @@ public class DateUtils {
     private static DateTimeFormatter timeFormat = DateTimeFormat.forPattern("HH:mm");
     private static DateTimeFormatter format7 = DateTimeFormat.forPattern("yyyyMMdd");
     private static DateTimeFormatter format8 = DateTimeFormat.forPattern("MM月dd日");
+    private static DateTimeFormatter format9 = DateTimeFormat.forPattern("MMdd");
 
 
     public static String parseDateToFormat5(Date date) {
@@ -59,6 +61,10 @@ public class DateUtils {
 
     public static Date parseStringToDateTime(String strDate) {
         return format2.parseDateTime(strDate).toDate();
+    }
+
+    public static String parseDateToFormat9(Date date) {
+        return format9.print(new DateTime((date)));
     }
 
     public static int interval(Date date) {
@@ -158,5 +164,27 @@ public class DateUtils {
         SimpleDateFormat dateFm = new SimpleDateFormat("EEEE", Locale.CHINA);
         time += "  " + dateFm.format(date);
         return time;
+    }
+
+    // 获得当前日期与本周日相差的天数
+    private static int getMondayPlus(Date gmtCreate) {
+        Calendar cd = Calendar.getInstance();
+        cd.setTime(gmtCreate);
+        // 获得今天是一周的第几天，星期日是第一天，星期二是第二天......
+        int dayOfWeek = cd.get(Calendar.DAY_OF_WEEK) - 1; // 因为按中国礼拜一作为第一天所以这里减1
+        if (dayOfWeek == 1) {
+            return 0;
+        } else {
+            return 1 - dayOfWeek;
+        }
+    }
+
+    // 获得下周星期一的日期
+    public static Date getNextMonday(Date gmtCreate) {
+        int mondayPlus = getMondayPlus(gmtCreate);
+        GregorianCalendar currentDate = new GregorianCalendar();
+        currentDate.add(GregorianCalendar.DATE, mondayPlus + 7);
+        Date monday = currentDate.getTime();
+        return monday;
     }
 }

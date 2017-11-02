@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
+import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
@@ -75,6 +76,8 @@ public class PlanServiceImpl implements PlanService {
     private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CardRepository cardRepository;
+    @Autowired
+    private AuditionClassMemberDao auditionClassMemberDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -395,6 +398,11 @@ public class PlanServiceImpl implements PlanService {
             improvementPlanDao.updateCloseTime(planId);
             sendCloseMsg(plan, percent);
         }
+    }
+
+    @Override
+    public void resetCloseDate(Integer planId, Date startDate, Date closeDate) {
+
     }
 
     private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
@@ -837,4 +845,18 @@ public class PlanServiceImpl implements PlanService {
         return new MutablePair<>(access, message);
     }
 
+    @Override
+    public AuditionClassMember loadAuditionClassMember(Integer profileId){
+        return auditionClassMemberDao.loadByProfileId(profileId);
+    }
+
+    @Override
+    public Integer insertAuditionClassMember(AuditionClassMember auditionClassMember){
+        return auditionClassMemberDao.insert(auditionClassMember);
+    }
+
+    @Override
+    public Integer setAuditionOpened(Integer id){
+        return auditionClassMemberDao.update(id);
+    }
 }

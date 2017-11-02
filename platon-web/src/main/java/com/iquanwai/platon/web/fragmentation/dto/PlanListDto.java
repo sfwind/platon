@@ -15,5 +15,6 @@ public class PlanListDto {
     private List<PlanDto> runningPlans;
     private List<PlanDto> completedPlans;
     private List<Problem> recommendations;
+    private List<PlanDto> auditions;
     private Integer riseMember;
 }
