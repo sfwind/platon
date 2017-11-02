@@ -689,7 +689,7 @@ public class PlanController {
             plan.setPic(itemProblem.getPic());
             plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
             if (!plan.getLearnable()) {
-                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课，请耐心等待");
+                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
             }
             if (ownedAudition != null) {
                 if (!auditionClassMember.getActive()) {
