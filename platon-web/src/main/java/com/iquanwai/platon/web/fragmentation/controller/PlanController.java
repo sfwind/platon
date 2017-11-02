@@ -31,6 +31,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
@@ -56,6 +57,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -675,6 +677,7 @@ public class PlanController {
                         (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
             // 有试听课,从进行中去掉这个小课
             runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
+            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
             PlanDto plan = new PlanDto();
@@ -924,6 +927,16 @@ public class PlanController {
                 auditionClassMember.setClassName(className);
                 auditionClassMember.setStartDate(startDate);
                 planService.insertAuditionClassMember(auditionClassMember);
+                customerMessageService.sendCustomerMessage(loginUser.getOpenId(), ConfigUtils.getValue("audition.choose.send.image"), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+                ThreadPool.execute(() -> {
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                        customerMessageService.sendCustomerMessage(loginUser.getOpenId(), className, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    } catch (InterruptedException e) {
+                        LOGGER.error(e.getLocalizedMessage(), e);
+                    }
+
+                });
             }
             dto.setGoSuccess(true);
         }
