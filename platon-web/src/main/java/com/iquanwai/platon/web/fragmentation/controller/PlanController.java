@@ -679,6 +679,8 @@ public class PlanController {
             Problem itemProblem = cacheService.getProblem(auditionId);
             itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
             plan.setProblem(itemProblem.simple());
+            plan.setName(itemProblem.getProblem());
+            plan.setPic(itemProblem.getPic());
             if (ownedAudition != null) {
                 if (!auditionClassMember.getActive()) {
                     // 已经开课
