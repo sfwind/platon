@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
@@ -681,7 +682,7 @@ public class CertificateServiceImpl implements CertificateService {
             int type = riseCertificate.getType();
             switch (type) {
                 case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
-                    inputImage = excellentImage;
+                    inputImage = JSON.parseObject(JSON.toJSONString(excellentImage), BufferedImage.class);
                     ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 405, "优秀班长", font.deriveFont(72f), new Color(102, 102, 102));
@@ -693,7 +694,7 @@ public class CertificateServiceImpl implements CertificateService {
                     ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
-                    inputImage = excellentImage;
+                    inputImage = JSON.parseObject(JSON.toJSONString(excellentImage), BufferedImage.class);
                     ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 405, "优秀组长", font.deriveFont(72f), new Color(102, 102, 102));
@@ -705,7 +706,7 @@ public class CertificateServiceImpl implements CertificateService {
                     ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
-                    inputImage = excellentImage;
+                    inputImage = JSON.parseObject(JSON.toJSONString(excellentImage), BufferedImage.class);
                     ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 405, "优秀学员", font.deriveFont(72f), new Color(102, 102, 102));
@@ -716,7 +717,7 @@ public class CertificateServiceImpl implements CertificateService {
                     ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
-                    inputImage = excellentImage;
+                    inputImage = JSON.parseObject(JSON.toJSONString(excellentImage), BufferedImage.class);
                     ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 405, "优秀团队", font.deriveFont(72f), new Color(102, 102, 102));
@@ -727,7 +728,7 @@ public class CertificateServiceImpl implements CertificateService {
                     ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.ORDINARY:
-                    inputImage = ordinaryImage;
+                    inputImage = JSON.parseObject(JSON.toJSONString(ordinaryImage), BufferedImage.class);
                     ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 405, "结课证书", font.deriveFont(72f), new Color(102, 102, 102));
@@ -738,7 +739,7 @@ public class CertificateServiceImpl implements CertificateService {
                     ImageUtils.writeTextCenter(inputImage, 1265, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.ASST_COACH:
-                    inputImage = excellentImage;
+                    inputImage = JSON.parseObject(JSON.toJSONString(excellentImage), BufferedImage.class);
                     ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 405, "优秀助教", font.deriveFont(72f), new Color(102, 102, 102));
