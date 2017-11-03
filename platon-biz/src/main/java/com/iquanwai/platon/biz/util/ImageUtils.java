@@ -25,6 +25,15 @@ public class ImageUtils {
             .build();
     private static Logger logger = LoggerFactory.getLogger(ImageUtils.class);
 
+    /**
+     * 图片拷贝
+     */
+    public static BufferedImage copy(BufferedImage inputImage) {
+        BufferedImage targetImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), inputImage.getType());
+        targetImage.setData(inputImage.getData());
+        return targetImage;
+    }
+
     /*
     * 变成一个圆形
     * @param inputImage 需要修改的图片
