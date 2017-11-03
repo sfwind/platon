@@ -128,6 +128,14 @@ public class BackendController {
         return WebUtils.result("正在进行中");
     }
 
+    @RequestMapping(value = "/upload/certificate")
+    public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu() {
+        ThreadPool.execute(() -> {
+            certificateService.uploadCertificateToQiNiu();
+        });
+        return WebUtils.result("正在进行中");
+    }
+
     @RequestMapping(value = "/generate/fullattendance", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(@RequestBody FullAttendanceReward fullAttendanceReward) {
         Integer month = fullAttendanceReward.getMonth();

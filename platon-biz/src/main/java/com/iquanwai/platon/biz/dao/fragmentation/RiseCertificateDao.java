@@ -132,6 +132,32 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return null;
     }
 
+    /**
+     * 获取还没有上传证书图片的证书
+     */
+    public List<RiseCertificate> loadUnUploadImageCertificates() {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM RiseCertificate WHERE ImageUrl IS NULL AND Del = 0";
+        ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<RiseCertificate>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public int updateImageUrl(Integer certificateId, String imageUrl) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE RiseCertificate SET ImageUrl = ? WHERE Id = ?";
+        try {
+            return runner.update(sql, imageUrl, certificateId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public void notify(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update RiseCertificate set Notified = 1 where id = ?";
