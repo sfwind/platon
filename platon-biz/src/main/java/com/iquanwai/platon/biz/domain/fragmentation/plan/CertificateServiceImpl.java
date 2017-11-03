@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import sun.misc.BASE64Decoder;
 
+import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -75,6 +76,14 @@ public class CertificateServiceImpl implements CertificateService {
     private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_1.jpg?imageslim";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private static BufferedImage ordinaryImage = null;
+    private static BufferedImage excellentImage = null;
+
+    @PostConstruct
+    public void init() {
+        ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
+        excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
+    }
 
     @Override
     public RiseCertificate getCertificate(String certificateNo) {
@@ -664,8 +673,6 @@ public class CertificateServiceImpl implements CertificateService {
         String certificateNo = riseCertificate.getCertificateNo();
 
         // 绘图准备
-        BufferedImage ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
-        BufferedImage excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
         BufferedImage inputImage = null;
 
         InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
