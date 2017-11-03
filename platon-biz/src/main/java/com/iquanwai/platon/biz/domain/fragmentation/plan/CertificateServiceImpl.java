@@ -71,9 +71,9 @@ public class CertificateServiceImpl implements CertificateService {
     private static final String FULL_ATTENDANCE_COUPON_DESCRIPTION = "训练营全勤奖";
 
     // 正常证书背景
-    private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_1.jpg?imageslim";
+    private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_2.jpg?imageslim";
     // 优秀证书背景
-    private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_1.jpg?imageslim";
+    private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_2.jpg?imageslim";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static BufferedImage ordinaryImage = null;
