@@ -25,6 +25,15 @@ public class ImageUtils {
             .build();
     private static Logger logger = LoggerFactory.getLogger(ImageUtils.class);
 
+    /**
+     * 图片拷贝
+     */
+    public static BufferedImage copy(BufferedImage inputImage) {
+        BufferedImage targetImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), inputImage.getType());
+        targetImage.setData(inputImage.getData());
+        return targetImage;
+    }
+
     /*
     * 变成一个圆形
     * @param inputImage 需要修改的图片
@@ -116,6 +125,43 @@ public class ImageUtils {
         return inputImage;
     }
 
+    /**
+     * 居中书写文字
+     * @param inputImage 待绘制内容
+     * @param y y 轴
+     * @param text 内容
+     * @param font 字体
+     * @param color 颜色
+     */
+    public static BufferedImage writeTextCenter(BufferedImage inputImage, int y, String text, Font font, Color color) {
+        Assert.notNull(inputImage, "input image is null");
+        Graphics2D graphics2d = inputImage.createGraphics();
+        graphics2d.setFont(font);
+        graphics2d.setColor(color);
+        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        FontMetrics fontMetrics = graphics2d.getFontMetrics(font);
+        // 计算出中心点 x 位置
+        int centerX = inputImage.getWidth() / 2;
+        int textWidth = fontMetrics.stringWidth(text);
+        graphics2d.drawString(text, centerX - textWidth / 2, y);
+        graphics2d.dispose();
+        return inputImage;
+    }
+
+    /**
+     * 判断在一个图片域中绘制文字是否会溢出
+     * @param inputImage 待绘制的图片
+     * @param text 待绘制文字
+     * @param font 字体
+     */
+    public static boolean isTextOverflow(BufferedImage inputImage, String text, Font font) {
+        Assert.notNull(inputImage, "input image is null");
+        Graphics2D graphics2D = inputImage.createGraphics();
+        graphics2D.setFont(font);
+        FontMetrics fontMetrics = graphics2D.getFontMetrics();
+        return fontMetrics.stringWidth(text) >= inputImage.getWidth();
+    }
+
     /*
     * 通过url拉取图片信息
     * @param url 图片链接
@@ -187,6 +233,3 @@ public class ImageUtils {
         }
     }
 }
-
-
-

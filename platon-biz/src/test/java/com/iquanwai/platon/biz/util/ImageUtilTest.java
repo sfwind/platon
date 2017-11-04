@@ -1,46 +1,55 @@
 package com.iquanwai.platon.biz.util;
 
+import com.iquanwai.platon.biz.po.common.Profile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
-import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class ImageUtilTest {
     private static Logger logger = LoggerFactory.getLogger(ImageUtilTest.class);
 
 
-    // 616 638
-    // 616 627
     public static void main(String[] args) {
-        BufferedImage bufferedImage = ImageUtils.getBufferedImageByUrl("http://f.hiphotos.baidu.com/image/pic/item/1c950a7b02087bf4e74b4f28fbd3572c10dfcf48.jpg");
-        Assert.notNull(bufferedImage);
-        int startX, startY, endX, endY;
-        int height = bufferedImage.getHeight();
-        int width = bufferedImage.getWidth();
-        if (height > width) {
-            startX = 0;
-            startY = (height - width) / 2;
-            endX = width;
-            endY = (height + width) / 2;
-        } else {
-            startX = (width - height) / 2;
-            startY = 0;
-            endX = (width + height) / 2;
-            endY = height;
-        }
-        System.out.println("startX = " + startX);
-        System.out.println("startY = " + startY);
-        System.out.println("endX = " + endX);
-        System.out.println("endY = " + endY);
-        bufferedImage = ImageUtils.cropImage(bufferedImage, startX, startY, endX, endY);
+        BufferedImage ordinaryImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/certificate_normal_bg_1.jpg?imageslim");
+        BufferedImage excellentImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/certificate_bg.jpg?imageslim");
+        BufferedImage inputImage = null;
+
+        int year = 2017;
+        int month = 8;
+        String problemName = "与人沟通时条理更清晰";
+        Profile profile = new Profile();
+        profile.setRealName("张三");
+        String certificateNo = "IQW052017040010770800330";
+        int groupNo = 2;
+
+        InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
+        Font font;
         try {
-            ImageIO.write(bufferedImage, "jpg", new FileOutputStream("/Users/xfduan/Downloads/temp.jpg"));
-        } catch (IOException e) {
-            logger.error(e.getLocalizedMessage(), e);
+            font = Font.createFont(Font.TRUETYPE_FONT, in);
+            inputImage = excellentImage;
+            ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
+            ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
+            ImageUtils.writeTextCenter(inputImage, 405, "优秀团队", font.deriveFont(72f), new Color(102, 102, 102));
+            ImageUtils.writeTextCenter(inputImage, 545, NumberToHanZi.formatInteger(month) + "月小课" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(50f), new Color(102, 102, 102));
+            ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
+            ImageUtils.writeTextCenter(inputImage, 660, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(32f), new Color(102, 102, 102));
+            ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
+            ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+            ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/Hello.png"));
+        } catch (FontFormatException | IOException e) {
+            logger.error(e.getLocalizedMessage());
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                logger.error("is closed error", e);
+            }
         }
+
     }
 }
