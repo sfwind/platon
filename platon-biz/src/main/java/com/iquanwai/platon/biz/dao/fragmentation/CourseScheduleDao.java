@@ -87,8 +87,4 @@ public class CourseScheduleDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
-
-    public int updateProblemSchedule() {
-
-    }
 }

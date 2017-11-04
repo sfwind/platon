@@ -65,9 +65,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return improvementPlan == null;
     }
 
-    public boolean modifyProblemScheduleMonth(Integer profileId, Integer problemId, Integer targetYear, Integer targetMonth) {
-
-    }
 
     // 将 problem 的数据放入 CourseSchedule 之中
     private CourseSchedule buildProblemData(CourseSchedule courseSchedule) {
