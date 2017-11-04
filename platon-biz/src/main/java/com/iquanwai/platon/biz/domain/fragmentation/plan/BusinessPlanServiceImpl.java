@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -126,7 +127,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     @Override
     public List<List<CourseSchedule>> loadDefaultCourseSchedule() {
-        List<CourseSchedule> courseSchedules = courseScheduleDefaultDao.loadDefaultCourseSchedule();
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadDefaultCourseSchedule();
+        List<CourseSchedule> courseSchedules = courseScheduleDefaults.stream().map(courseScheduleDefault -> {
+            ModelMapper modelMapper = new ModelMapper();
+            return modelMapper.map(courseScheduleDefault, CourseSchedule.class);
+        }).collect(Collectors.toList());
         courseSchedules.forEach(this::buildProblemData);
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
@@ -204,7 +209,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     //小课列表 = 进行中小课+本月计划小课
-    private List<Problem> getListProblem(List<ImprovementPlan> improvementPlans, List<Integer> problemIds, List<Integer> currentMonthProblemIds){
+    private List<Problem> getListProblem(List<ImprovementPlan> improvementPlans, List<Integer> problemIds, List<Integer> currentMonthProblemIds) {
 
         // 选出进行中的小课
         List<Problem> problems = improvementPlans.stream()
