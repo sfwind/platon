@@ -17,4 +17,6 @@ public class CourseSchedule {
     private Integer month;
     private Boolean del;
     private Date addTime;
+
+    private Problem problem;
 }

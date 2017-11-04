@@ -81,10 +81,14 @@ public class CourseScheduleDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Del = 0";
         try {
-            return runner.query(sql, new BeanListHandler<CourseSchedule>(CourseSchedule.class), profileId);
+            return runner.query(sql, new BeanListHandler<>(CourseSchedule.class), profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public int updateProblemSchedule() {
+
     }
 }

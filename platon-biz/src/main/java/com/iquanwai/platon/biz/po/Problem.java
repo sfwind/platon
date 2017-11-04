@@ -34,6 +34,9 @@ public class Problem {
     private Boolean trial; //试用版（0-否,1-是）
     private String categoryPic; //分类图示
     private String abbreviation; // 缩略名
+    private Integer type; // 类型
+    private Boolean publish; // 是否已经上线
+
 
     private Boolean done; // 非db字段 用户是否做过
     private Integer status; // 非db字段 用户选过小课（0-未选过,1-正在进行,2-已完成）
