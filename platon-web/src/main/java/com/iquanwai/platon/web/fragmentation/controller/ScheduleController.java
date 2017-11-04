@@ -1,7 +1,11 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleQuestionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -10,26 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
-import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
-import com.iquanwai.platon.web.resolver.LoginUser;
-import com.iquanwai.platon.web.util.WebUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.support.Assert;
-
-import java.util.List;
-import java.util.Map;
 
 import java.util.List;
 import java.util.Map;
@@ -45,8 +34,6 @@ public class ScheduleController {
 
     @Autowired
     private BusinessPlanService businessPlanService;
-    @Autowired
-    private OperationLogService operationLogService;
     @Autowired
     private OperationLogService operationLogService;
 
