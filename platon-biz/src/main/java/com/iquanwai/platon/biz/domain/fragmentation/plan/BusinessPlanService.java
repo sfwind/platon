@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
 
 import java.util.List;
 
@@ -24,7 +23,7 @@ public interface BusinessPlanService {
     /**
      * 获取默认小课计划安排表
      */
-    List<List<CourseScheduleDefault>> loadDefaultCourseSchedule();
+    List<List<CourseSchedule>> loadDefaultCourseSchedule();
 
     /**
      * 查看某门小课的计划能否更改
