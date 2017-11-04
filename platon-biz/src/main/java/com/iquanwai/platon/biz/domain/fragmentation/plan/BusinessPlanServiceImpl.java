@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthTopicDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -99,6 +100,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         //本月主修进度
         schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
 
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        //拿到开营日
+        Date date = monthlyCampConfig.getOpenDate();
+
+        int month = DateUtils.getMonth(date);
+        schedulePlan.setMonth(month);
+        schedulePlan.setToday(DateUtils.parseDateToFormat5(new Date()));
+        schedulePlan.setTopic(cacheService.loadMonthTopic().get(month));
         return schedulePlan;
     }
 

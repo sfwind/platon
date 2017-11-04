@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -9,11 +10,11 @@ import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.support.Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -76,4 +77,15 @@ public class ScheduleController {
         }
     }
 
+    @RequestMapping("/load/plan")
+    public ResponseEntity<Map<String, Object>> loadCoursePlan(LoginUser loginUser) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("学习计划")
+                .action("获取个人学习进度");
+        operationLogService.log(operationLog);
+        SchedulePlan schedulePlan = businessPlanService.getSchedulePlan(loginUser.getId());
+        return WebUtils.result(schedulePlan);
+    }
 }
