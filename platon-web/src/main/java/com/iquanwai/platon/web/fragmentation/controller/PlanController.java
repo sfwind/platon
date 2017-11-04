@@ -728,7 +728,7 @@ public class PlanController {
     }
 
     // 查询推荐的小课
-    private List<Problem> loadRecommendations(Integer porfileId, List<PlanDto> runningPlans, List<PlanDto> completedPlans) {
+    private List<Problem> loadRecommendations(Integer profileId, List<PlanDto> runningPlans, List<PlanDto> completedPlans) {
         // 最后要返回的
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
@@ -771,7 +771,7 @@ public class PlanController {
                 return rightScore - leftScore;
             }
         }).collect(Collectors.toList());
-        boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, porfileId);
+        boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, profileId);
         for (Recommendation recommendation : recommendationLists) {
             // 开始过滤,这个推荐里的小课
             List<Problem> recommendProblems = recommendation.getRecommendProblems();

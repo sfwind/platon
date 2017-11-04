@@ -13,7 +13,7 @@ public interface ProblemService {
     Integer MAX_RECOMMENDATION_SIZE = 6;
 
     /**
-     * 获取所有工作中的问题
+     * 获取所有小课
      */
     List<Problem> loadProblems();
 
