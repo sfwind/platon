@@ -99,24 +99,6 @@ public class FreeLimitController {
         return WebUtils.success();
     }
 
-    /**
-     * 用户提交问卷结果
-     */
-    @RequestMapping(value = "/share/{score}/{percent}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> shareResult(LoginUser loginUser,
-                                                           @PathVariable Integer score,
-                                                           @PathVariable Integer percent) {
-        Assert.notNull(loginUser, "用户不能为空");
-
-        String pic = operationEvaluateService.getResult(loginUser.getId(), score, percent);
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("限免推广").function("测评").action("领取推广卡片");
-        operationLogService.log(operationLog);
-
-        return WebUtils.result(pic);
-    }
-
     private static Integer getDefeatPercent(Integer score) {
         switch (score) {
             case 0:

@@ -120,7 +120,7 @@ public class PlanController {
                 .collect(Collectors.toList());
 
         // 检查是否能选新课
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, problemId, loginUser.getId());
         if (check.getLeft() < 0) {
             if (check.getLeft() == -1) {
                 return WebUtils.error(202, check.getRight());
@@ -138,7 +138,7 @@ public class PlanController {
             case 2: {
                 // 直接选小课
                 if (loginUser.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
-                    return WebUtils.error("您不是年费会员，需要单独购买小课哦");
+                    return WebUtils.error("您不是商学院会员，需要先购买会员哦");
                 }
                 break;
             }
@@ -156,15 +156,8 @@ public class PlanController {
                         case ImprovementPlan.CLOSE:
                             // 关闭状态
                             return WebUtils.error("该小课无需购买");
-                        case ImprovementPlan.TRIALCLOSE:
-                            // 试学结束，查看会员类型
-                            if (loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
-                                // 是会员，不需要购买
-                                return WebUtils.error("您已经是会员，无需单独购买小课");
-                            }
-                            // 不是会员，需要购买
-                            // ignore
-                            break;
+                        default:
+                            return WebUtils.error("数据异常,请联系管理员");
                     }
                 } else {
                     // 没有学过该小课
@@ -195,12 +188,6 @@ public class PlanController {
                 if (plan == null) {
                     // 数据异常
                     return WebUtils.error("数据异常,请联系管理员");
-                } else {
-                    if (plan.getStatus() != ImprovementPlan.TEMP_TRIALCLOSE) {
-                        // 不是这样的特殊数据
-                        LOGGER.error("选小课check接口异常,profileId:{},problemId:{}", loginUser.getId(), problemId);
-                        return WebUtils.error("数据异常，请联系管理员");
-                    }
                 }
                 break;
             }
@@ -212,6 +199,8 @@ public class PlanController {
                 }
                 break;
             }
+            default:
+                return WebUtils.error("数据异常,请联系管理员");
         }
 
         if (CollectionUtils.isNotEmpty(runningPlans)) {
@@ -246,7 +235,7 @@ public class PlanController {
             return WebUtils.result(curPlan.getId());
         }
 
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, problemId, loginUser.getId());
 
         if (check.getLeft() < 0) {
             return WebUtils.error(check.getRight());
@@ -255,27 +244,7 @@ public class PlanController {
         // 之前是否学过这个小课，避免重复生成计划
         ImprovementPlan oldPlan = improvementPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
         if (oldPlan != null) {
-            if (oldPlan.getStatus() == ImprovementPlan.TEMP_TRIALCLOSE || oldPlan.getStatus() == ImprovementPlan.TRIALCLOSE) {
-                // 老得是试用版
-                // 将它解锁
-                generatePlanService.reopenTrialPlan(oldPlan);
-                // 解锁了
-                if (problemId.equals(trialProblemId)) {
-                    // 限免小课
-                    operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
-                            PromotionConstants.FreeLimitAction.TrialCourse);
-                }
-                OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                        .module("RISE")
-                        .function("选择小课")
-                        .action("选择小课")
-                        .memo(problemId.toString());
-                operationLogService.log(operationLog);
-                return WebUtils.result(oldPlan.getId());
-            } else {
-                // 不是试用版那些手动修改的数据，不能再次选择
-                return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
-            }
+            return WebUtils.error("你已经选过该门小课了，你可以在\"我的\"菜单里找到以前的学习记录哦");
         }
 
         // 这里生成小课训练计划，另外在检查一下是否是会员或者购买了这个小课
@@ -288,7 +257,7 @@ public class PlanController {
 
         Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
         // 生成小课之后发送选课成功通知
-        generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), problemId);
+        generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), problemId);
         // 初始化第一层promotionUser
 
         if (problemId.equals(trialProblemId)) {
@@ -871,7 +840,7 @@ public class PlanController {
                 // 没有试听课的状态，第一次学习试听课
                 planId = planService.magicUnlockProblem(loginUser.getId(), auditionId,
                         DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
-                generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), auditionId);
+                generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), auditionId);
             } else {
                 // 没有试听课，判断是不是会员
                 RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
@@ -882,7 +851,7 @@ public class PlanController {
                     // 没有试听课，并且不是年费会员,可以选择试听课
                     planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), auditionId);
                     // 发送入群消息
-                    generatePlanService.sendWelcomeMsg(loginUser.getOpenId(), auditionId);
+                    generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), auditionId);
                 }
             }
             // 开课

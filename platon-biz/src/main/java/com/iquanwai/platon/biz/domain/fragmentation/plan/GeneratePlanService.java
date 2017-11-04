@@ -1,19 +1,21 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-
 /**
  * Created by justin on 16/12/13.
  */
 public interface GeneratePlanService {
-    /**
-     * 将试用版的plan解锁
-     * @param
-     */
-    void reopenTrialPlan(ImprovementPlan planId);
+    // 每节的应用练习数量
+    int APPLICATION_TASK_NUMBER = 2;
+    //知识点顺序
+    int KNOWLEDGE_SEQUENCE = 1;
+    //巩固练习顺序
+    int WARMUP_SEQUENCE = 2;
+    //小课最长开放时间
+    int PROBLEM_MAX_LENGTH = 30;
 
     /**
      * 强制将该 ImprovementPlan 重开
+     * @param planId 计划id
      */
     void forceReopenPlan(Integer planId);
 
@@ -25,14 +27,10 @@ public interface GeneratePlanService {
      * */
     Integer generatePlan(String openid, Integer profileId, Integer problemId);
 
-    // 每节的应用练习数量
-    int APPLICATION_TASK_NUMBER = 2;
-
-    int KNOWLEDGE_SEQUENCE = 1; //知识点顺序
-    int WARMUP_SEQUENCE = 2; //巩固练习顺序
-
-    int PROBLEM_MAX_LENGTH = 30; //小课最长开放时间
-    int TRIAL_PROBLEM_MAX_LENGTH = 7; //试用小课最长开放7天
-
-    void sendWelcomeMsg(String openid, Integer problemId);
+    /**
+     * 发送开课通知
+     *  @param openid 学员id
+     *  @param problemId 问题id
+     * */
+    void sendOpenPlanMsg(String openid, Integer problemId);
 }

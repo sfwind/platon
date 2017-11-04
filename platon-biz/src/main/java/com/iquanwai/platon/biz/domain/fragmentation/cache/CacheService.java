@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.po.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by justin on 17/1/1.
@@ -28,6 +29,11 @@ public interface CacheService {
     List<ProblemCatalog> loadProblemCatalogs();
 
     MonthlyCampConfig loadMonthlyCampConfig();
+
+    /**
+     * 获取商学院计划每月主题
+     */
+    Map<Integer, String> loadMonthTopic();
 
     /** 更新缓存*/
     void reload();

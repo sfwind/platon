@@ -66,7 +66,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private static final Integer trialNum = 3;
     private static final String activity = PromotionConstants.Activities.Evaluate;
 
-    private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
     private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 测评结果
     private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 测评建议
 
@@ -76,9 +75,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_6.png?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_6.png?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_6.png?imageslim"));
 
         evaluateResultMap.put(1, "你的这方面潜力还没有得到开发和施展。你努力地工作生活，但常常感到受压抑，因为面对问题时，你可能忽视了本质原因，从而不能很有效地解决问题。");
         evaluateResultMap.put(2, "拥有洞察力潜力的你，比较关注细节，能够准确地把握事实；但有时候，因为没有把潜力发挥出来，而做了一些无用功，觉得自己的付出得不到应有的回报。");
@@ -185,34 +181,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return accessTrialCnt.intValue() > 0;
     }
 
-    /**
-     * 微信后台推送结果卡片
-     */
-    @Override
-    public String getResult(Integer profileId, Integer score, Integer percent) {
-        Profile profile = accountService.getProfile(profileId);
-        // 计算测评等级
-        Integer level = calcLevel(score);
-
-        Assert.notNull(profile, "用户不能为空");
-
-        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
-        Assert.notNull(bufferedImage, "生成图片不能为空");
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageUtils.writeToOutputStream(bufferedImage, "jpg", outputStream);
-        BASE64Encoder encoder = new BASE64Encoder();
-        try {
-            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
-        }finally {
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                logger.error("os close failed", e);
-            }
-        }
-    }
-
 
     // 根据得分计算得分 level
     private Integer calcLevel(Integer score) {
@@ -223,44 +191,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         } else {
             return 1;
         }
-    }
-
-    // 生成结果图片
-    private BufferedImage generateResultPic(Integer profileId, Integer level, Integer percent) {
-        BufferedImage targetImage = targetImageMap.get(level);
-        BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
-        BufferedImage headImage = loadHeadImage(profileId);
-
-        InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
-        Font font;
-        try {
-            font = Font.createFont(Font.TRUETYPE_FONT, in);
-        } catch (FontFormatException | IOException e) {
-            logger.error(e.getLocalizedMessage());
-            return null;
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                logger.error("is closed error", e);
-            }
-        }
-
-        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 214, 214);
-        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
-        headImage = ImageUtils.convertCircular(headImage);
-
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1025);
-        targetImage = ImageUtils.overlapImage(targetImage, headImage, 129, 273);
-
-        Profile profile = accountService.getProfile(profileId);
-
-        targetImage = ImageUtils.writeText(targetImage, 280, 320,profile.getNickname()+"的洞察力天赋",
-                font.deriveFont(30f), new Color(255, 255, 255));
-        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+percent+"%的人",
-                font.deriveFont(30f), new Color(255, 255, 255));
-        return targetImage;
     }
 
     // 获取二维码，场景值变化
