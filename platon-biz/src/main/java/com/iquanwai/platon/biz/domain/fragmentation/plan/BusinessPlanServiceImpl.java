@@ -185,18 +185,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         return courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMonth() == month &&
                 courseSchedule.getYear() == year).collect(Collectors.toList());
-
-    }
-
-
-    private boolean containsProblemId(List<Problem> problems, Integer problemId) {
-        for (Problem problem : problems) {
-            if (problem.getId() == problemId) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //计算主修或辅修小课进度
@@ -216,8 +204,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     //小课列表 = 进行中小课+本月计划小课
-    private List<Problem> getListProblem(List<ImprovementPlan> improvementPlans,
-                                         List<Integer> problemIds, List<Integer> currentMonthProblemIds){
+    private List<Problem> getListProblem(List<ImprovementPlan> improvementPlans, List<Integer> problemIds, List<Integer> currentMonthProblemIds){
 
         // 选出进行中的小课
         List<Problem> problems = improvementPlans.stream()
@@ -238,5 +225,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         });
 
         return problems;
+    }
+
+    private boolean containsProblemId(List<Problem> problems, Integer problemId) {
+        for (Problem problem : problems) {
+            if (problem.getId() == problemId) {
+                return true;
+            }
+        }
+        return false;
     }
 }
