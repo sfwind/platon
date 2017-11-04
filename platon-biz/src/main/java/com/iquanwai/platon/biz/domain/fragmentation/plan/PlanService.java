@@ -27,9 +27,11 @@ public interface PlanService {
      * 检查是否能够选新课
      *
      * @param plans  用户的小课数据
-     * @return left:是否能够选小课(-1,先完成一门，-2，试用版只能完成前三节) right:提示信息
+     * @param problemId  小课id
+     * @param profileId  用户id
+     * @return left:是否能够选小课(-1,超过允许进行中的最多门数) right:提示信息
      */
-    Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans);
+    Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer problemId, Integer profileId);
 
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig);
 

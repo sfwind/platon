@@ -28,8 +28,4 @@ public interface OperationEvaluateService {
      * 触发扫码时间，对应记录修改
      */
     void recordScan(Integer profileId, String source);
-    /**
-     * 微信后台推送结果卡片
-     */
-    String getResult(Integer profileId, Integer score, Integer percent);
 }

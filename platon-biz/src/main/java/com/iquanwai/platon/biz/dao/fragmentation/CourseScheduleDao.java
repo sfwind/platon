@@ -89,6 +89,6 @@ public class CourseScheduleDao extends PracticeDBUtil {
     }
 
     public int updateProblemSchedule() {
-
+        return 1;
     }
 }

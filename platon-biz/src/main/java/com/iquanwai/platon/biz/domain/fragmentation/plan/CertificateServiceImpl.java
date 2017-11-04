@@ -81,8 +81,10 @@ public class CertificateServiceImpl implements CertificateService {
 
     @PostConstruct
     public void init() {
-        ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
-        excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
+        if(!ConfigUtils.isDebug()){
+            ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
+            excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
+        }
     }
 
     @Override

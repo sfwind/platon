@@ -16,12 +16,6 @@ public interface BusinessPlanService {
     List<CourseSchedule> getPlan(Integer profileId);
 
     /**
-     * 获取用户已经开始的课程计划
-     * @param profileId 用户id
-     * */
-    List<CourseSchedule> getOpeningPlan(Integer profileId);
-
-    /**
      * 获取个人与月份相关的学习计划安排
      * @param profileId 个人 id
      */
@@ -33,4 +27,10 @@ public interface BusinessPlanService {
      * @param problemId 小课 id
      */
     boolean checkProblemModifyAccess(Integer profileId, Integer problemId);
+
+    /**
+     * 获取用户的课程进度
+     * @param profileId 用户 id
+     * */
+    SchedulePlan getSchedulePlan(Integer profileId);
 }
