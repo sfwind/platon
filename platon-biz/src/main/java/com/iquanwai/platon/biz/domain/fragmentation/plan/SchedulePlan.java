@@ -16,5 +16,8 @@ public class SchedulePlan {
     private List<Problem> minorProblem; // 辅修课程
     private List<Problem> completeProblem; // 辅修课程
     private List<Problem> trialProblem; // 试听课程
+    private String topic; //本月主题
+    private int month; //本月
+    private String today; //今天日期
 
 }

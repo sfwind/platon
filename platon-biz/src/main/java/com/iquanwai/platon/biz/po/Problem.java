@@ -34,7 +34,6 @@ public class Problem {
     private Boolean trial; //试用版（0-否,1-是）
     private String categoryPic; //分类图示
     private String abbreviation; // 缩略名
-    private Integer type; // 类型
     private Boolean publish; // 是否已经上线
 
 
@@ -66,6 +65,7 @@ public class Problem {
         problem.setCatalog(this.catalog);
         problem.setChosenPersonCount(this.chosenPersonCount);
         problem.setAbbreviation(this.abbreviation);
+        problem.setPublish(this.publish);
         return problem;
     }
 

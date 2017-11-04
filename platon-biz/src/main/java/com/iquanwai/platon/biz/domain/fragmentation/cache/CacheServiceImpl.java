@@ -45,6 +45,8 @@ public class CacheServiceImpl implements CacheService {
     private AudioDao audioDao;
     @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
+    @Autowired
+    private MonthTopicDao monthTopicDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -58,6 +60,8 @@ public class CacheServiceImpl implements CacheService {
     private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
     //缓存小课训练营配置
     private MonthlyCampConfig monthlyCampConfig;
+    // 商学院学习计划每月主题
+    private Map<Integer, String> monthTopicMap;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -150,6 +154,10 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存小课训练营配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
+
+        // 缓存商学院学习计划每月主题
+        List<MonthTopic> monthTopics = monthTopicDao.loadAll();
+        monthTopicMap = monthTopics.stream().collect(Collectors.toMap(MonthTopic::getMonth, MonthTopic::getTopic));
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
@@ -291,6 +299,11 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public MonthlyCampConfig loadMonthlyCampConfig() {
         return JSONObject.parseObject(JSON.toJSONString(monthlyCampConfig), MonthlyCampConfig.class);
+    }
+
+    @Override
+    public Map<Integer, String> loadMonthTopic() {
+        return monthTopicMap;
     }
 
     @Override

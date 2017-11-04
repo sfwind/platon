@@ -19,5 +19,6 @@ public class CourseSchedule {
     private Boolean del; //是否删除
     private Date addTime; //添加时间
 
+    private String topic; //非db字段
     private Problem problem; //非db字段
 }
