@@ -15,8 +15,11 @@ public class CourseSchedule {
     private Integer problemId;
     private Integer year;
     private Integer month;
+    private Integer type;
     private Boolean del;
     private Date addTime;
 
+    private String topic;
     private Problem problem;
+
 }

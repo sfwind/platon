@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -22,15 +23,20 @@ import java.util.List;
 public class CourseScheduleDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public Integer insertCourseSchedule(CourseSchedule schedule) {
+    public int insertCourseSchedule(CourseSchedule schedule) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Year, Month) VALUES(?,?,?,?) ";
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Year, Month, Type) VALUES(?, ?, ?, ?, ?) ";
         try {
-            return runner.insert(sql, new ScalarHandler<Long>(), schedule.getProfileId(), schedule.getProblemId(), schedule.getYear(), schedule.getMonth()).intValue();
+            return runner.insert(sql, new ScalarHandler<Long>(),
+                    schedule.getProfileId(),
+                    schedule.getProblemId(),
+                    schedule.getYear(),
+                    schedule.getMonth(),
+                    schedule.getType()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        return null;
+        return -1;
     }
 
     public List<CourseSchedule> getCertainMonthSchedule(Integer profileId, Integer year, Integer month) {
@@ -88,7 +94,39 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public int updateProblemSchedule() {
-
+    public int updateProblemSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Year = ?, Month = ? WHERE ProfileId = ? AND ProblemId = ? AND Del = 0";
+        try {
+            return runner.update(sql, year, month, profileId, problemId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
+
+    public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ? AND YEAR = ? AND Month = ?";
+        ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
+        try {
+            return runner.query(sql, h, profileId, problemId, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+    public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ?";
+        ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
+        try {
+            return runner.query(sql, h, profileId, problemId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
 }
