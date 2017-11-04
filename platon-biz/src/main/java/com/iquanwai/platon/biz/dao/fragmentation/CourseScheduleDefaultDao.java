@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
-import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -18,10 +18,10 @@ public class CourseScheduleDefaultDao extends PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<CourseSchedule> loadDefaultCourseSchedule() {
+    public List<CourseScheduleDefault> loadDefaultCourseSchedule() {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseScheduleDefault WHERE Del = 0";
-        ResultSetHandler<List<CourseSchedule>> h = new BeanListHandler<>(CourseSchedule.class);
+        ResultSetHandler<List<CourseScheduleDefault>> h = new BeanListHandler<>(CourseScheduleDefault.class);
         try {
             return runner.query(sql, h);
         } catch (SQLException e) {
