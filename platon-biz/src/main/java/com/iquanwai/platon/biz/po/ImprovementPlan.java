@@ -36,7 +36,7 @@ public class ImprovementPlan {
     private Integer profileId; //用户id
 
     // ----------------- 非db字段------------------
-    private Problem problem; //非db字段 问题
+    private Problem problem; //非db字段 小课
     private Boolean free; //是否免费
     private List<Section> sections; //非db字段
     private Boolean openRise; //非db字段 是否打开过rise

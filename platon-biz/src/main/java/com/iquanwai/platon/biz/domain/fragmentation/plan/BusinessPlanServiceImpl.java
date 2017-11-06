@@ -48,22 +48,20 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         //用户的本月计划
         List<CourseSchedule> currentMonthCourseSchedules = getCurrentMonthSchedule(courseSchedules);
         //已完成的小课
-        List<Problem> completeProblem = improvementPlans.stream()
+        List<ImprovementPlan> completeProblem = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.CLOSE)
-                .map(improvementPlan -> {
-                    Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                    return problem.simple();
-                }).collect(Collectors.toList());
+                .collect(Collectors.toList());
         schedulePlan.setCompleteProblem(completeProblem);
 
         //试听小课
-        List<Problem> trialProblem = improvementPlans.stream()
+        List<ImprovementPlan> trialProblem = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
                         || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
                 .filter(improvementPlan -> improvementPlan.getProblemId().equals(ConfigUtils.getTrialProblemId()))
                 .map(improvementPlan -> {
                     Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                    return problem.simple();
+                    improvementPlan.setProblem(problem.simple());
+                    return improvementPlan;
                 }).collect(Collectors.toList());
         schedulePlan.setTrialProblem(trialProblem);
 
@@ -186,9 +184,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
 
-    private boolean containsProblemId(List<Problem> problems, Integer problemId) {
-        for (Problem problem : problems) {
-            if (problem.getId() == problemId) {
+    private boolean containsProblemId(List<ImprovementPlan> problems, Integer problemId) {
+        for (ImprovementPlan problem : problems) {
+            if (problem.getProblemId().equals(problemId)) {
                 return true;
             }
         }
@@ -213,24 +211,27 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     //小课列表 = 进行中小课+本月计划小课
-    private List<Problem> getListProblem(List<ImprovementPlan> improvementPlans,
+    private List<ImprovementPlan> getListProblem(List<ImprovementPlan> improvementPlans,
                                          List<Integer> problemIds, List<Integer> currentMonthProblemIds){
 
         // 选出进行中的小课
-        List<Problem> problems = improvementPlans.stream()
+        List<ImprovementPlan> problems = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
                         || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
                 .filter(improvementPlan -> problemIds.contains(improvementPlan.getProblemId()))
                 .map(improvementPlan -> {
                     Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                    return problem.simple();
+                    improvementPlan.setProblem(problem.simple());
+                    return improvementPlan;
                 }).collect(Collectors.toList());
 
         //如果本月小课没有开始,加到推荐列表
         currentMonthProblemIds.forEach(currentMonthProblemId -> {
             boolean in = containsProblemId(problems, currentMonthProblemId);
             if (!in) {
-                problems.add(cacheService.getProblem(currentMonthProblemId).simple());
+                ImprovementPlan improvementPlan = new ImprovementPlan();
+                improvementPlan.setProblem(cacheService.getProblem(currentMonthProblemId).simple());
+                problems.add(improvementPlan);
             }
         });
 
