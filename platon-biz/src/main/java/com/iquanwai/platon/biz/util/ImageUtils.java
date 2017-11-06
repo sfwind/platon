@@ -130,26 +130,21 @@ public class ImageUtils {
 
     /**
      * 居中书写文字
-     * @param inputImage 待绘制内容
+     * @param graphics2d 画笔
      * @param y y 轴
      * @param text 内容
      * @param font 字体
      * @param color 颜色
      */
-    public static BufferedImage writeTextCenter(BufferedImage inputImage, int y, int centerX, String text, Font font, Color color) {
-        Assert.notNull(inputImage, "input image is null");
-        Graphics2D graphics2d = inputImage.createGraphics();
+    public static void writeTextCenter(Graphics2D graphics2d, int y, int centerX, String text, Font font, Color color) {
+        Assert.notNull(graphics2d, "graphics2d is null");
         graphics2d.setFont(font);
         graphics2d.setColor(color);
         graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        FontMetrics fontMetrics = graphics2d.getFontMetrics(font);
 
-        FontRenderContext context = graphics2d.getFontRenderContext();
-        TextLayout txt = new TextLayout(text, font, context);
-        Rectangle2D bounds = txt.getBounds();
-
-        graphics2d.drawString(text, centerX - (int)(bounds.getWidth() / 2), y);
-        graphics2d.dispose();
-        return inputImage;
+        int textWidth = fontMetrics.stringWidth(text);
+        graphics2d.drawString(text, centerX - textWidth / 2, y);
     }
 
     /**

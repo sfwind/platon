@@ -32,14 +32,18 @@ public class ImageUtilTest {
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
             inputImage = excellentImage;
-            ImageUtils.writeTextCenter(inputImage, 160, 375, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-            ImageUtils.writeTextCenter(inputImage, 200, 375, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-            ImageUtils.writeTextCenter(inputImage, 405, 375, "优秀团队", font.deriveFont(72f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 545, 375, NumberToHanZi.formatInteger(month) + "月小课" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(50f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 610, 375, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 660, 375, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(32f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 765, 375, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 1285, 375, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+            if(inputImage!=null){
+                Graphics2D graphics2D = inputImage.createGraphics();
+                ImageUtils.writeTextCenter(graphics2D, 160, 375, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
+                ImageUtils.writeTextCenter(graphics2D, 200, 375, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
+                ImageUtils.writeTextCenter(graphics2D, 405, 375, "优秀团队", font.deriveFont(72f), new Color(102, 102, 102));
+                ImageUtils.writeTextCenter(graphics2D, 545, 375, NumberToHanZi.formatInteger(month) + "月小课" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(50f), new Color(102, 102, 102));
+                ImageUtils.writeTextCenter(graphics2D, 610, 375, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
+                ImageUtils.writeTextCenter(graphics2D, 660, 375, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(32f), new Color(102, 102, 102));
+                ImageUtils.writeTextCenter(graphics2D, 765, 375, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
+                ImageUtils.writeTextCenter(graphics2D, 1285, 375, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                graphics2D.dispose();
+            }
             ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/Hello.png"));
         } catch (FontFormatException | IOException e) {
             logger.error(e.getLocalizedMessage());
