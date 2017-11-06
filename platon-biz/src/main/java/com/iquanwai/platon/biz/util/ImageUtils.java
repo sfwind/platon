@@ -10,7 +10,10 @@ import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.concurrent.TimeUnit;
@@ -139,10 +142,12 @@ public class ImageUtils {
         graphics2d.setFont(font);
         graphics2d.setColor(color);
         graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        FontMetrics fontMetrics = graphics2d.getFontMetrics(font);
 
-        int textWidth = fontMetrics.stringWidth(text);
-        graphics2d.drawString(text, centerX - textWidth / 2, y);
+        FontRenderContext context = graphics2d.getFontRenderContext();
+        TextLayout txt = new TextLayout(text, font, context);
+        Rectangle2D bounds = txt.getBounds();
+
+        graphics2d.drawString(text, centerX - (int)(bounds.getWidth() / 2), y);
         graphics2d.dispose();
         return inputImage;
     }
