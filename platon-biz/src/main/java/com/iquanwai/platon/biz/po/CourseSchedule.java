@@ -32,6 +32,14 @@ public class CourseSchedule {
      */
     private Integer type;
     /**
+     * 是否推荐
+     */
+    private Boolean recommend;
+    /**
+     * 是否选中状态
+     */
+    private Boolean selected;
+    /**
      * 是否删除
      */
     private Boolean del;

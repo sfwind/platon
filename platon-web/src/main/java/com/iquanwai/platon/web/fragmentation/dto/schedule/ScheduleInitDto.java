@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.dto.schedule;
 
+import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import lombok.Data;
 
 import java.util.List;
@@ -10,5 +11,5 @@ import java.util.List;
  */
 @Data
 public class ScheduleInitDto {
-    List<ScheduleQuestionDto> questionList;
+    List<ScheduleQuestion> questionList;
 }

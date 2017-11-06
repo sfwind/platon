@@ -66,6 +66,10 @@ public class IndexController {
     private static final String CAMP_SALE_URL = "/pay/camp";
     //商学院售卖页
     private static final String BUSINESS_SCHOOL_SALE_URL = "/pay/rise";
+    //倒计时页面
+    private static final String BUSINESS_COUNT_DOWN_URL = "/rise/static/business/count/down";
+    //课程计划页面
+    private static final String SCHEDULE_NOTICE = "/rise/static/course/schedule/start";
     //圈圈问答最近的页面
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
 
@@ -182,8 +186,17 @@ public class IndexController {
 
         //点击商学院,非年费用户和小课单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
-            if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+            if (whiteListService.isGoToCountDownNotice(loginUser.getId())) {
+                response.sendRedirect(BUSINESS_COUNT_DOWN_URL);
+                return null;
+            } else if (whiteListService.isGoToScheduleNotice(loginUser.getId())) {
+                response.sendRedirect(SCHEDULE_NOTICE);
+                return null;
+            } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+                // 查看他的会员
                 loginMsg(loginUser);
+                // 查看点击商学院的时候，是否已经开营
+
             } else {
                 response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
                 return null;

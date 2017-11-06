@@ -3,13 +3,12 @@ package com.iquanwai.platon.web.fragmentation.dto.schedule;
 import lombok.Data;
 
 /**
+ * 倒计时dto
+ *
  * @author nethunder
- * @version 2017-11-04
  */
 @Data
-public class ScheduleChoiceDto {
-    private Integer id;
-    private String subject;
+public class CountDownDto {
+   private Integer days;
+   private Boolean hasSchedule;
 }
-
-

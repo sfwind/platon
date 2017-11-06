@@ -1,12 +1,15 @@
 package com.iquanwai.platon.biz.domain.common.whitelist;
 
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.util.PromotionConstants;
+import org.apache.commons.collections.CollectionUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,8 @@ public class WhiteListServiceImpl implements WhiteListService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private CourseScheduleDao courseScheduleDao;
 
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
@@ -36,6 +41,23 @@ public class WhiteListServiceImpl implements WhiteListService {
         PromotionLevel level = promotionLevelDao.loadByProfileId(profileId, PromotionConstants.Activities.Bible);
         return level != null && level.getValid() == 1;
     }
+
+    @Override
+    public boolean isGoToCountDownNotice(Integer profileId) {
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        return riseMembers.stream()
+                .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
+                        && new DateTime(item.getOpenDate()).isAfterNow());
+    }
+
+    @Override
+    public boolean isGoToScheduleNotice(Integer profileId){
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        return riseMembers.stream()
+                .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
+                        && CollectionUtils.isEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId)));
+    }
+
 
     @Override
     public boolean checkRiseMenuWhiteList(Integer profileId) {

@@ -14,9 +14,11 @@ public class RiseMember {
     private String orderId;
     private String openId;
     private Integer memberTypeId;
+    private Date openDate;
     private Date expireDate;
     private Boolean expired;
     private Date addTime;
+
 
     private String startTime; // 非DB字段，addTime
     private String endTime; // 非DB字段，expireDate
@@ -30,6 +32,7 @@ public class RiseMember {
         riseMember.setExpireDate(expireDate);
         riseMember.setExpired(expired);
         riseMember.setAddTime(addTime);
+        riseMember.setOpenDate(openDate);
         riseMember.setStartTime(startTime);
         riseMember.setEndTime(endTime);
         riseMember.setName(name);
