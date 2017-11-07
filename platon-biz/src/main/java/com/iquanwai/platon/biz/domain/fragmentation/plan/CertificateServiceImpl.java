@@ -758,7 +758,7 @@ public class CertificateServiceImpl implements CertificateService {
             }
             String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
 
-            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
+            ImageUtils.writeToFile(inputImage, "png", new File("/usr/betauser/deploy/certificate/" + fileName));
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
