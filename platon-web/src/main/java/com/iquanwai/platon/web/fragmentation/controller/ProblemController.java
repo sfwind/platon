@@ -390,8 +390,8 @@ public class ProblemController {
         List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
         if (extension != null && activities != null) {
             extension.setActivities(activities);
-            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.Online.equals(activity.getType())).collect(Collectors.toList()));
-            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.Offline.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.ONLINE.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.OFFLINE.equals(activity.getType())).collect(Collectors.toList()));
             return WebUtils.result(extension);
         } else {
             return WebUtils.error("当前小课暂无延伸学习相关内容");

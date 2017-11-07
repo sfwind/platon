@@ -29,9 +29,9 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if(!ConfigUtils.isDebug()) {
+        if (!ConfigUtils.isDebug()) {
             // 前端debug开启时,不校验
-            if(request.getParameter("debug")!=null && ConfigUtils.isFrontDebug()){
+            if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
                 return true;
             }
             LoginUserService.Platform platform = loginUserService.checkPlatform(request);
@@ -39,10 +39,9 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             if (StringUtils.isEmpty(value)) {
                 switch (platform) {
                     case Wechat:
-//                        logger.error("拦截器，微信端重定向");
                         WebUtils.auth(request, response);
                         return false;
-                    case PC:{
+                    case PC: {
                         boolean cookieInvalid = false;
                         if (StringUtils.isEmpty(value)) {
                             cookieInvalid = true;
@@ -50,15 +49,14 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
                             // cookie 不为空
                             if (!loginUserService.isLogin(request)) {
                                 // 有cookie，但是没有登录
-                                Pair<Integer, Callback> pair = loginUserService.refreshLogin(platform,value);
+                                Pair<Integer, Callback> pair = loginUserService.refreshLogin(platform, value);
                                 if (pair.getLeft() < 1) {
                                     cookieInvalid = true;
                                 }
                                 // 否则通过
                             }
                         }
-                        if(cookieInvalid){
-//                            logger.error("拦截器，pc端重定向");
+                        if (cookieInvalid) {
                             Map<String, Object> map = Maps.newHashMap();
                             PrintWriter out = response.getWriter();
                             map.put("code", 401);
@@ -67,8 +65,8 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
                             return false;
                         }
                     }
+                    default:
                 }
-
             }
         }
         return true;

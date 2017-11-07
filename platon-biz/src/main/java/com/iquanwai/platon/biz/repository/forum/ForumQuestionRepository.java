@@ -1,8 +1,8 @@
 package com.iquanwai.platon.biz.repository.forum;
 
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.repository.elasticsearch.BaseESUtil;
 import com.iquanwai.platon.biz.repository.elasticsearch.ESClientFactory;
-import com.iquanwai.platon.biz.repository.elasticsearch.ESUtil;
 import com.iquanwai.platon.biz.repository.elasticsearch.SearchResult;
 import com.iquanwai.platon.biz.util.page.Page;
 import lombok.Getter;
@@ -28,7 +28,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
  * Created by nethunder on 2017/6/28.
  */
 @Repository
-public class ForumQuestionRepository extends ESUtil {
+public class ForumQuestionRepository extends BaseESUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     private ESClientFactory esClientFactory;
@@ -62,7 +62,7 @@ public class ForumQuestionRepository extends ESUtil {
                     .field("updateTime", new Date())
                     .endObject();
             IndexResponse response = insert(id, xContentBuilder);
-            if (response != null && response.getResult().getLowercase().equalsIgnoreCase("CREATED")) {
+            if (response != null && "CREATED".equalsIgnoreCase(response.getResult().getLowercase())) {
                 return true;
             } else {
                 logger.error("插入论坛提问失败");

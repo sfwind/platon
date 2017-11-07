@@ -38,7 +38,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public boolean isInBibleWhiteList(Integer profileId) {
-        PromotionLevel level = promotionLevelDao.loadByProfileId(profileId, PromotionConstants.Activities.Bible);
+        PromotionLevel level = promotionLevelDao.loadByProfileId(profileId, PromotionConstants.Activities.BIBLE);
         return level != null && level.getValid() == 1;
     }
 

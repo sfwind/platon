@@ -122,6 +122,7 @@ public class MessageServiceImpl implements MessageService {
         return null;
     }
 
+    @Override
     public SubjectArticle loadSubjectArticleByCommentId(Integer id) {
         SubjectArticle subjectArticle = new SubjectArticle();
         Comment comment = commentDao.load(Comment.class, id);
@@ -146,8 +147,12 @@ public class MessageServiceImpl implements MessageService {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof VoteMessage)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof VoteMessage)) {
+                return false;
+            }
 
             VoteMessage that = (VoteMessage) o;
 

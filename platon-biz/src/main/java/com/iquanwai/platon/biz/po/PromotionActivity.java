@@ -15,6 +15,6 @@ public class PromotionActivity {
     private String activity;  // 活动类型
     private Integer action; // 行为分类
 
-    private Date AddTime;
+    private Date addTime;
 
 }

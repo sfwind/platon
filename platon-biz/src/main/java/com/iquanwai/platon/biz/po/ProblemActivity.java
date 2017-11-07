@@ -25,7 +25,7 @@ public class ProblemActivity {
     /**
      * Type 字段分别对应值
      */
-    public static final Integer Online = 0;
-    public static final Integer Offline = 1;
+    public static final Integer ONLINE = 0;
+    public static final Integer OFFLINE = 1;
 
 }

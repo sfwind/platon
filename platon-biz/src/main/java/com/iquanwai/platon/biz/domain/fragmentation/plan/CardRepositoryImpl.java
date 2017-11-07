@@ -64,7 +64,7 @@ public class CardRepositoryImpl implements CardRepository {
 
     private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
 
-    private static final String CARD_ACTIVITY = PromotionConstants.Activities.FreeLimit;
+    private static final String CARD_ACTIVITY = PromotionConstants.Activities.FREE_LIMIT;
 
     @PostConstruct
     public void init() {

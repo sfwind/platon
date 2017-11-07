@@ -24,9 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by nethunder on 2017/6/28.
+ *
+ * @author nethunder
+ * @date 2017/6/28
  */
-public abstract class ESUtil {
+public abstract class BaseESUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     private ESClientFactory esClientFactory;
@@ -41,7 +43,7 @@ public abstract class ESUtil {
      * 2。连接数  这个自带线程池
      * 3。连接，线程安全 安全
      */
-    public ESUtil(){
+    public BaseESUtil(){
     }
 
 
@@ -160,7 +162,7 @@ public abstract class ESUtil {
      * @return 是否存在
      */
     public static boolean typesExists(Client client, String indexName, String indexType){
-        if (ESUtil.indicesExists(client, indexName)) {
+        if (BaseESUtil.indicesExists(client, indexName)) {
             TypesExistsRequest ter = new TypesExistsRequest(new String[]{indexName.toLowerCase()}, indexType);
             return client.admin().indices().typesExists(ter).actionGet().isExists();
         }

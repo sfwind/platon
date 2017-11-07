@@ -46,7 +46,7 @@ public class RabbitMQFactory {
 
     public void initReceiver(String queueName, String topicName, Consumer<RabbitMQDto> consumer) {
         String receive = ConfigUtils.getValue("open.receive.mq");
-        if (receive != null && receive.equals("false")) {
+        if (receive != null && "false".equals(receive)) {
             // 设置了开关，并且开关是false,则不接收mq消息
             return;
         }

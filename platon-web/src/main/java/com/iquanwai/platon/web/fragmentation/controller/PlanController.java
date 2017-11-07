@@ -263,7 +263,7 @@ public class PlanController {
         if (problemId.equals(trialProblemId)) {
             // 限免小课
             operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
-                    PromotionConstants.FreeLimitAction.TrialCourse);
+                    PromotionConstants.FreeLimitAction.TRIAL_COURSE);
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")

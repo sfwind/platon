@@ -26,6 +26,7 @@ public class QRCodeServiceImpl implements QRCodeService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Override
     public QRResponse generateTemporaryQRCode(String scene, Integer expire_seconds) {
         if (expire_seconds == null) {
             expire_seconds = DEFAULT_EXPIRED_TIME;
@@ -83,6 +84,7 @@ public class QRCodeServiceImpl implements QRCodeService {
         }
     }
 
+    @Override
     public QRResponse generatePermanentQRCode(String scene) {
         QRPermanentRequest qrRequest = new QRPermanentRequest(scene);
         String json = new Gson().toJson(qrRequest);

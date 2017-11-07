@@ -49,7 +49,7 @@ public class BibleSubscribeReceiver {
             JSONObject json = JSONObject.parseObject(message.getMessage().toString());
 
             String scene = json.get("scene").toString();
-            if (!scene.startsWith(PromotionConstants.Activities.Bible)) {
+            if (!scene.startsWith(PromotionConstants.Activities.BIBLE)) {
                 logger.info("scene: {}", scene);
                 return;
             }
@@ -64,12 +64,12 @@ public class BibleSubscribeReceiver {
             if (StringUtils.isNumeric(sceneParams[1])) {
                 promoter = Integer.valueOf(sceneParams[1]);
             }
-            PromotionLevel oldLevel = promotionLevelDao.loadByProfileId(profile.getId(), PromotionConstants.Activities.Bible);
+            PromotionLevel oldLevel = promotionLevelDao.loadByProfileId(profile.getId(), PromotionConstants.Activities.BIBLE);
             if (oldLevel == null) {
                 // 开始处理
                 PromotionLevel promotionLevel = new PromotionLevel();
                 promotionLevel.setProfileId(profile.getId());
-                promotionLevel.setActivity(PromotionConstants.Activities.Bible);
+                promotionLevel.setActivity(PromotionConstants.Activities.BIBLE);
                 promotionLevel.setLevel(level);
                 promotionLevel.setValid(1);
                 promotionLevel.setPromoterId(promoter);
@@ -78,8 +78,8 @@ public class BibleSubscribeReceiver {
             // 已经扫过 ignore
             PromotionActivity promotionActivity = new PromotionActivity();
             promotionActivity.setProfileId(profile.getId());
-            promotionActivity.setActivity(PromotionConstants.Activities.Bible);
-            promotionActivity.setAction(PromotionConstants.BibleAction.ScanCode);
+            promotionActivity.setActivity(PromotionConstants.Activities.BIBLE);
+            promotionActivity.setAction(PromotionConstants.BibleAction.SCAN_CODE);
             promotionActivityDao.insertPromotionActivity(promotionActivity);
 
             customerMessageService.sendCustomerMessage(profile.getOpenid(),

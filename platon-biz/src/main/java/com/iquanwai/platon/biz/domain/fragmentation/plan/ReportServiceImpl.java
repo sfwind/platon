@@ -115,7 +115,7 @@ public class ReportServiceImpl implements ReportService {
                 .map(item ->{
                     String recommendIds = item.getRecommendIds();
                     List<String> problemIdList = Lists.newArrayList();
-                    if (recommendIds != null && !recommendIds.equals("")) {
+                    if (recommendIds != null && !"".equals(recommendIds)) {
                         problemIdList = Arrays.asList(recommendIds.split("、"));
                     }
                     // 根据 ProblemId 列表获取所有的相关 Problem 信息
@@ -301,7 +301,7 @@ public class ReportServiceImpl implements ReportService {
         for (Recommendation recommendation : recommendations) {
             String recommendIds = recommendation.getRecommendIds();
             List<String> problemIdList = Lists.newArrayList();
-            if (recommendIds != null && !recommendIds.equals("")) {
+            if (recommendIds != null && !"".equals(recommendIds)) {
                 problemIdList = Arrays.asList(recommendIds.split("、"));
             }
             // 根据 ProblemId 列表获取所有的相关 Problem 信息

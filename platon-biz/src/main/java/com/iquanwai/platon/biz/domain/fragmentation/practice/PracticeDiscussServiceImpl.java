@@ -241,6 +241,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         warmupPracticeDiscussDao.markRepliedCommentDelete(discussId);
     }
 
+    @Override
     public KnowledgeDiscuss loadKnowledgeDiscuss(Integer discussId) {
         KnowledgeDiscuss discuss = knowledgeDiscussDao.load(KnowledgeDiscuss.class, discussId);
         if (discuss != null) {
