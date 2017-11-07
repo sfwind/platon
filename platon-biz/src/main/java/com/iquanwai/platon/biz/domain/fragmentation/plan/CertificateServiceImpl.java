@@ -661,7 +661,7 @@ public class CertificateServiceImpl implements CertificateService {
         Assert.notNull(riseCertificate, "证件信息不能为空");
 
         // 证书数据准备
-        List<Profile> profiles = riseCertificateDao.loadAll(Profile.class);
+        List<Profile> profiles = riseMemberDao.loadAll(Profile.class);
         // Profile profile = accountService.getProfile(riseCertificate.getProfileId());
         // if (profile == null || profile.getRealName() == null) {
         //     // 没有填写真实姓名
@@ -758,7 +758,7 @@ public class CertificateServiceImpl implements CertificateService {
             }
             String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
 
-            ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
+            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
