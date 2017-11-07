@@ -14,6 +14,7 @@ public class CourseScheduleDefault {
     private Integer problemId;
     private Integer year;
     private Integer month;
+    private String monthTopic;
     /**
      * 1-主修 2-辅修
      */
