@@ -52,7 +52,7 @@ public class ProblemServiceImpl implements ProblemService {
         //去除已删除的小课
         return cacheService.getProblems().stream().
                 filter(problem -> !problem.getDel())
-                .filter(problem -> !problem.getPublish())
+                .filter(Problem::getPublish)
                 .collect(Collectors.toList());
     }
 
