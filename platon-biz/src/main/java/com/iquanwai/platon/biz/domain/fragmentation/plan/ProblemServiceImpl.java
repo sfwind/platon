@@ -51,7 +51,9 @@ public class ProblemServiceImpl implements ProblemService {
     public List<Problem> loadProblems() {
         //去除已删除的小课
         return cacheService.getProblems().stream().
-                filter(problem -> !problem.getDel()).collect(Collectors.toList());
+                filter(problem -> !problem.getDel())
+                .filter(problem -> !problem.getPublish())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -287,5 +289,5 @@ public class ProblemServiceImpl implements ProblemService {
         }
         return banners;
     }
-  
+
 }
