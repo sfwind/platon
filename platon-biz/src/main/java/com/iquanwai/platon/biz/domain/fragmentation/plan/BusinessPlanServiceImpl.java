@@ -153,6 +153,20 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
     }
 
+    @Override
+    public boolean updateProblemScheduleSelected(Integer courseScheduleId, Boolean selected) {
+        return courseScheduleDao.updateSelected(courseScheduleId, selected ? 1 : 0) > 0;
+    }
+
+    @Override
+    public void batchModifyCourseSchedule(Integer year, Integer month, List<CourseSchedule> courseSchedules) {
+        courseSchedules.forEach(schedule -> {
+            Integer id = schedule.getId();
+            Boolean selected = schedule.getSelected();
+            courseScheduleDao.modifyScheduleYearMonth(id, year, month, selected ? 1 : 0);
+        });
+    }
+
     // 将 problem 的数据放入 CourseSchedule 之中
     private CourseSchedule buildProblemData(CourseSchedule courseSchedule) {
         if (courseSchedule == null || courseSchedule.getProblemId() == null) {
@@ -228,4 +242,5 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
         return false;
     }
+
 }

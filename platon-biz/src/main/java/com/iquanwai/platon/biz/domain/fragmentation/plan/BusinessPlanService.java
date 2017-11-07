@@ -47,4 +47,12 @@ public interface BusinessPlanService {
      */
     boolean modifyProblemSchedule(Integer profileId, Integer problemId, Integer targetYear, Integer targetMonth);
 
+    /**
+     * 更新学习计划中一门小课的选择状态
+     * @param courseScheduleId 该门小课，在 CourseSchedule 中的记录 id
+     * @param selected 是否选择 0-未选择 1-选择
+     */
+    boolean updateProblemScheduleSelected(Integer courseScheduleId, Boolean selected);
+
+    void batchModifyCourseSchedule(Integer year, Integer month, List<CourseSchedule> courseSchedules);
 }
