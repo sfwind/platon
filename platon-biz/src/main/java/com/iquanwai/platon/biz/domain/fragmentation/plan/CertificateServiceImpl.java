@@ -246,12 +246,7 @@ public class CertificateServiceImpl implements CertificateService {
             Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
             if (pair.getLeft()) {
                 // 上传成功，更新 imageUrl
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                    riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
-                } catch (InterruptedException e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                }
+                riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
             }
         });
     }
