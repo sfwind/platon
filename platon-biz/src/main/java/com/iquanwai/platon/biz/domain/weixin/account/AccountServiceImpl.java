@@ -423,7 +423,7 @@ public class AccountServiceImpl implements AccountService {
         }
         SMSDto smsDto = new SMSDto();
         //拼接区号不加中国区号
-        if (areaCode != null && !areaCode.equals("86")) {
+        if (areaCode != null && !"86".equals(areaCode)) {
             //首位去0,补+号
             phone = "+" + StringUtils.removeStart(areaCode, "0") + phone;
         }

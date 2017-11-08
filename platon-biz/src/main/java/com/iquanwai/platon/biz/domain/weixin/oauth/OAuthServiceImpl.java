@@ -17,6 +17,7 @@ public class OAuthServiceImpl implements OAuthService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Override
     public String openId(String accessToken) {
         if(accessToken==null){
             return null;

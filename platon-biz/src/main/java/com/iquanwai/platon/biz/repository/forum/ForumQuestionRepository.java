@@ -62,7 +62,7 @@ public class ForumQuestionRepository extends ESUtil {
                     .field("updateTime", new Date())
                     .endObject();
             IndexResponse response = insert(id, xContentBuilder);
-            if (response != null && response.getResult().getLowercase().equalsIgnoreCase("CREATED")) {
+            if (response != null && "CREATED".equalsIgnoreCase(response.getResult().getLowercase())) {
                 return true;
             } else {
                 logger.error("插入论坛提问失败");

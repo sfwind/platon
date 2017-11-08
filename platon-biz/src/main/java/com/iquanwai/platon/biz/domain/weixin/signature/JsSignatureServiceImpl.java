@@ -28,6 +28,7 @@ public class JsSignatureServiceImpl implements JsSignatureService {
 
     private Logger logger = LoggerFactory.getLogger(JsSignatureServiceImpl.class);
 
+    @Override
     public JsSignature getJsSignature(String url, boolean refresh) {
         //判断是否超过间隔
         int interval = ConfigUtils.getJsSignatureInterval();

@@ -183,7 +183,7 @@ public class ImageUtils {
             try {
                 response = client.newCall(request).execute();
                 String xErrorNo = response.header("X-ErrNo");
-                if (xErrorNo != null && xErrorNo.equalsIgnoreCase("-6101")) {
+                if (xErrorNo != null && "-6101".equalsIgnoreCase(xErrorNo)) {
                     return null;
                 }
                 ImageIO.setUseCache(false);

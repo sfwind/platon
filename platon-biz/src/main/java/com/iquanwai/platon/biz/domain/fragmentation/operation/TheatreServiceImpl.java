@@ -436,7 +436,7 @@ public class TheatreServiceImpl implements TheatreService {
      * @param lastQuestion 最后一道题目
      */
     private void sendGameOverToUser(Profile profile, Question lastQuestion, String message) {
-        if (message.equals("结束")) {
+        if ("结束".equals(message)) {
             // 确定结束，查看最后一个action是不是closeGame
             PromotionActivity closeGame = promotionActivityDao.loadLastAction(profile.getId(), CURRENT_GAME);
             if (closeGame.getAction().equals(CURRENT_ACTION.CloseTip)) {
@@ -498,7 +498,7 @@ public class TheatreServiceImpl implements TheatreService {
         if (message.equals(BACKPACK)) {
             // 处理背包逻辑
             this.handleBackpackMessage(profile);
-        } else if (message.equals("00") || message.equals("结束")) {
+        } else if ("00".equals(message) || "结束".equals(message)) {
             // 要结束游戏
             if (question != null && isDead) {
                 this.sendGameOverToUser(profile, question, message);
@@ -542,7 +542,7 @@ public class TheatreServiceImpl implements TheatreService {
                     if (manualStart == null) {
                         // 没有输入手动开始
                         String message = wechatMessage.getMessage();
-                        if (message.equals("48")) {
+                        if ("48".equals(message)) {
                             PromotionActivity manualStartAction = new PromotionActivity();
                             manualStartAction.setProfileId(profile.getId());
                             manualStartAction.setAction(CURRENT_ACTION.ManualStart);

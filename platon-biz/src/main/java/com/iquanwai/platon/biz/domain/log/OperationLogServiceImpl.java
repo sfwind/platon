@@ -14,6 +14,7 @@ public class OperationLogServiceImpl implements OperationLogService {
     @Autowired
     private OperationLogDao operationLogDao;
 
+    @Override
     public void log(OperationLog operationLog) {
         if(ConfigUtils.logSwitch()) {
             if (operationLog.getMemo() != null && operationLog.getMemo().length() > 1024) {

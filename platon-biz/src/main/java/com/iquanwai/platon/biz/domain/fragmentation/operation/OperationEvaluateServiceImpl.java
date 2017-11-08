@@ -159,7 +159,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     public void recordPayAction(Integer profileId) {
         // 如果不是 level 中的人则不记录
         PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
-        if (promotionLevel == null) return;
+        if (promotionLevel == null) {
+            return;
+        }
 
         recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BuyCourse);
 
@@ -308,7 +310,9 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     private void checkAwardAndSendMsg(Integer profileId) {
         // 某人完成测评，需要查看他的推广人信息
         PromotionLevel source = promotionLevelDao.loadByProfileId(profileId, activity);
-        if (source == null || source.getPromoterId() == null) return;
+        if (source == null || source.getPromoterId() == null) {
+            return;
+        }
 
         // 推广人id
         Integer sourceProfileId = source.getPromoterId();

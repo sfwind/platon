@@ -74,7 +74,9 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         Assert.notNull(profile, "扫码用户不能为空");
 
         PromotionLevel tempPromotionLevel = promotionLevelDao.loadByProfileId(profile.getId(), activity);
-        if (tempPromotionLevel != null) return; // 不是本次活动，或者说已被其他用户推广则不算新人
+        if (tempPromotionLevel != null) {
+            return; // 不是本次活动，或者说已被其他用户推广则不算新人
+        }
 
         String[] sceneParams = scene.split("_");
         if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
@@ -150,7 +152,9 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
             Integer promoterId = promotionLevel.getPromoterId();
 
             // 该用户是自己扫官方码进入，没有推广人
-            if (promoterId == null) return;
+            if (promoterId == null) {
+                return;
+            }
 
             // 必是成功推广，此时给推广人发送成功推送信息
             List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, activity);
@@ -252,7 +256,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     public Boolean hasGetTheCoupon(Integer profileId) {
         List<Coupon> coupons = couponDao.loadByProfileId(profileId);
         Long operationCouponCount = coupons.stream().filter(coupon -> coupon.getAmount().equals(50) &&
-                coupon.getDescription().equals("推广奖学金")).count();
+                "推广奖学金".equals(coupon.getDescription())).count();
         return operationCouponCount > 0;
     }
 

@@ -50,7 +50,9 @@ public class RiseMemberServiceImpl implements RiseMemberService {
     @Override
     public Boolean expiredRiseMember(Integer profileId) {
         RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (validRiseMember != null) return false;
+        if (validRiseMember != null) {
+            return false;
+        }
 
         boolean tag = false;
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
