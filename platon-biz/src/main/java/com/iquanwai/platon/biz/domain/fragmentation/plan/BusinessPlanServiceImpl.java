@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.CourseScheduleDefault;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -32,7 +33,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by justin on 2017/11/3.
+ * @author justin
+ * @version 2017/11/3
  */
 @Service
 public class BusinessPlanServiceImpl implements BusinessPlanService {
@@ -56,6 +58,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private ScheduleChoiceDao scheduleChoiceDao;
     @Autowired
     private ScheduleChoiceSubmitDao scheduleChoiceSubmitDao;
+    @Autowired
+    private AccountService accountService;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -128,17 +132,19 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         //拿到开营日
         Date date = monthlyCampConfig.getOpenDate();
 
+        Integer category = accountService.loadUserScheduleCategory(profileId);
         int month = DateUtils.getMonth(date);
         schedulePlan.setMonth(month);
         schedulePlan.setToday(DateUtils.parseDateToFormat5(new Date()));
-        schedulePlan.setTopic(cacheService.loadMonthTopic().get(month));
+        //TODO 一定要改为学习的年份!!!!!
+        schedulePlan.setTopic(cacheService.loadMonthTopic(category, monthlyCampConfig.getSellingYear()).get(month));
         return schedulePlan;
     }
 
     @Override
     public List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId) {
         List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-        courseSchedules.forEach(this::buildProblemData);
+        courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
         courseScheduleMap.forEach((k, v) -> courseScheduleLists.add(v));
@@ -146,13 +152,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     @Override
-    public List<List<CourseSchedule>> loadDefaultCourseSchedule() {
+    public List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId) {
         List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadDefaultCourseSchedule();
         List<CourseSchedule> courseSchedules = courseScheduleDefaults.stream().map(courseScheduleDefault -> {
             ModelMapper modelMapper = new ModelMapper();
             return modelMapper.map(courseScheduleDefault, CourseSchedule.class);
         }).collect(Collectors.toList());
-        courseSchedules.forEach(this::buildProblemData);
+        courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
         courseScheduleMap.forEach((k, v) -> courseScheduleLists.add(v));
@@ -188,7 +194,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Override
     public void initCourseSchedule(Integer profileId, List<ScheduleQuestion> scheduleQuestions) {
         // 用户类型id
-        Integer categoryId = this.calculateUserCategory(profileId);
+        Integer categoryId = accountService.loadUserScheduleCategory(profileId);
         // 默认课表
         List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadDefaultCourseScheduleByCategory(categoryId);
         // 用户课表
@@ -222,10 +228,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedule.setProblemId(defaultSchedule.getProblemId());
         schedule.setType(defaultSchedule.getType());
         schedule.setYear(defaultSchedule.getYear());
-        Boolean recommend  = false;
+        Boolean recommend = false;
         if (defaultSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
             List<Integer> initChoices = Lists.newArrayList(defaultSchedule.getInitChoice().split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
-            recommend  = choices.stream().anyMatch(initChoices::contains);
+            recommend = choices.stream().anyMatch(initChoices::contains);
         }
 
         if (choices.contains(NO_MINOR)) {
@@ -242,11 +248,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     @Override
-    public Integer calculateUserCategory(Integer profileId) {
-        return 1;
-    }
-
-    @Override
     public List<ScheduleQuestion> loadScheduleQuestions() {
         List<ScheduleQuestion> questions = scheduleQuestionDao.loadAll(ScheduleQuestion.class);
         List<ScheduleChoice> choices = scheduleChoiceDao.loadAll(ScheduleChoice.class);
@@ -260,14 +261,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     // 将 problem 的数据放入 CourseSchedule 之中
-    private CourseSchedule buildProblemData(CourseSchedule courseSchedule) {
+    private CourseSchedule buildProblemData(CourseSchedule courseSchedule, Integer profileId) {
         if (courseSchedule == null || courseSchedule.getProblemId() == null) {
             return null;
         }
         Problem problem = cacheService.getProblem(courseSchedule.getProblemId());
         courseSchedule.setProblem(problem.simple());
-
-        Map<Integer, String> monthTopic = cacheService.loadMonthTopic();
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        Map<Integer, String> monthTopic = cacheService.loadMonthTopic(category, courseSchedule.getYear());
         if (monthTopic != null) {
             courseSchedule.setTopic(monthTopic.get(courseSchedule.getMonth()));
         }

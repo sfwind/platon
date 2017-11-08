@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
 import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
+import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
@@ -19,6 +20,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
@@ -99,6 +101,8 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
+    @Autowired
+    private WhiteListDao whiteListDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -564,6 +568,18 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public SubscribePush loadSubscribePush(Integer id) {
         return subscribePushDao.loadById(id);
+    }
+
+    @Override
+    public Integer loadUserScheduleCategory(Integer profileId) {
+        // 老用户
+        CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.SCHEDULE_LESS);
+        if (status != null) {
+            return CourseScheduleDefault.CategoryType.OLD_STUDENT;
+        } else {
+            return CourseScheduleDefault.CategoryType.NEW_STUDENT;
+        }
+
     }
 }
 

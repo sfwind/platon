@@ -25,8 +25,10 @@ public interface BusinessPlanService {
 
     /**
      * 获取默认小课计划安排表
+     *
+     * @param profileId 个人 id
      */
-    List<List<CourseSchedule>> loadDefaultCourseSchedule();
+    List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId);
 
     /**
      * 查看某门小课的计划能否更改
@@ -66,14 +68,6 @@ public interface BusinessPlanService {
      * @param scheduleQuestions 格式：题目id-答案id
      */
     void initCourseSchedule(Integer profileId, List<ScheduleQuestion> scheduleQuestions);
-
-    /**
-     * 计算用户默认课表的小课id
-     *
-     * @param profileId 用户id
-     * @return 默认课表的小课id
-     */
-    Integer calculateUserCategory(Integer profileId);
 
     /**
      * 获取课程表选择题内容

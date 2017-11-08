@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
+import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -32,6 +33,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Autowired
     private CourseScheduleDao courseScheduleDao;
 
+
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
         return whiteListDao.loadWhiteList(function, profileId) != null;
@@ -54,15 +56,30 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public boolean isGoToScheduleNotice(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
-        if (scheduleWhiteList) {
-            // 白名单的用户不用开课程表
-            return false;
+        // 是商学院
+        Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
+        if (isElite) {
+            Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
+            if (scheduleWhiteList) {
+                // 老会员
+                WhiteList whiteList = whiteListDao.loadWhiteList(WhiteList.SCHEDULE, profileId);
+                // 老会员测试课程
+                if (whiteList != null) {
+                    Boolean hasCourseSchedule = CollectionUtils.isNotEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId));
+                    // 没有课程表
+                    return !hasCourseSchedule;
+                } else {
+                    // 老会员不测试课程
+                    return false;
+                }
+            } else {
+                // 新会员
+                Boolean hasCourseSchedule = CollectionUtils.isNotEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId));
+                // 没有课程表
+                return !hasCourseSchedule;
+            }
         } else {
-            Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
-            Boolean hasCourseSchedule = CollectionUtils.isNotEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId));
-            // 是会员，并且没有课程表
-            return isElite && !hasCourseSchedule;
+            return false;
         }
     }
 

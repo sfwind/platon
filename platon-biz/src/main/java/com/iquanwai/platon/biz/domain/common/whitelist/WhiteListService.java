@@ -32,11 +32,15 @@ public interface WhiteListService {
 
     /**
      * 点击商学院白名单
+     *
+     * @param profileId 用户id
      */
     boolean checkRiseMenuWhiteList(Integer profileId);
 
     /**
      * 点击小课训练营白名单
+     *
+     * @param profileId 用户id
      */
     boolean checkCampMenuWhiteList(Integer profileId);
 }

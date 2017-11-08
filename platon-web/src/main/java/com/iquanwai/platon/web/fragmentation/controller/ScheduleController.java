@@ -68,7 +68,7 @@ public class ScheduleController {
                 .function("学习计划")
                 .action("获取默认学习计划");
         operationLogService.log(operationLog);
-        List<List<CourseSchedule>> defaultCourseScheduleMap = businessPlanService.loadDefaultCourseSchedule();
+        List<List<CourseSchedule>> defaultCourseScheduleMap = businessPlanService.loadDefaultCourseSchedule(loginUser.getId());
         return WebUtils.result(defaultCourseScheduleMap);
     }
 

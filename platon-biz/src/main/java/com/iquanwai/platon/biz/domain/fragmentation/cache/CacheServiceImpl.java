@@ -4,10 +4,29 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.AudioDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthTopicDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampConfigDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemSubCatalogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.Audio;
+import com.iquanwai.platon.biz.po.Choice;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthTopic;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +66,8 @@ public class CacheServiceImpl implements CacheService {
     private MonthlyCampConfigDao monthlyCampConfigDao;
     @Autowired
     private MonthTopicDao monthTopicDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -61,7 +82,7 @@ public class CacheServiceImpl implements CacheService {
     //缓存小课训练营配置
     private MonthlyCampConfig monthlyCampConfig;
     // 商学院学习计划每月主题
-    private Map<Integer, String> monthTopicMap;
+    private Map<Integer, List<MonthTopic>> monthTopicMap;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -156,8 +177,15 @@ public class CacheServiceImpl implements CacheService {
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
         // 缓存商学院学习计划每月主题
-        List<MonthTopic> monthTopics = monthTopicDao.loadAll();
-        monthTopicMap = monthTopics.stream().collect(Collectors.toMap(MonthTopic::getMonth, MonthTopic::getTopic));
+        List<MonthTopic> monthTopics = courseScheduleDefaultDao.loadDefaultCourseSchedule().stream().map(item -> {
+            MonthTopic topic = new MonthTopic();
+            topic.setTopic(item.getMonthTopic());
+            topic.setMonth(item.getMonth());
+            topic.setYear(item.getYear());
+            topic.setCategory(item.getCategory());
+            return topic;
+        }).collect(Collectors.toList());
+        monthTopicMap = monthTopics.stream().collect(Collectors.groupingBy(MonthTopic::getCategory));
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
@@ -208,7 +236,7 @@ public class CacheServiceImpl implements CacheService {
             Knowledge exist = knowledgeMap.get(knowledgeId);
             if (exist != null) {
                 BeanUtils.copyProperties(knowledgeMap.get(knowledgeId), knowledge);
-            }else{
+            } else {
                 knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
                 initKnowledge(knowledge);
             }
@@ -302,8 +330,15 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public Map<Integer, String> loadMonthTopic() {
-        return monthTopicMap;
+    public Map<Integer, String> loadMonthTopic(Integer category, Integer year) {
+        List<MonthTopic> monthTopics = monthTopicMap.get(category).stream().filter(item -> item.getYear().equals(year)).collect(Collectors.toList());
+        if (monthTopics != null) {
+            Map<Integer, String> map = Maps.newHashMap();
+            monthTopics.forEach(item -> map.put(item.getMonth(), item.getTopic()));
+            return map;
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -324,7 +359,7 @@ public class CacheServiceImpl implements CacheService {
         return sectionList.get(0).getChapterName();
     }
 
-    private void initKnowledge(Knowledge knowledge){
+    private void initKnowledge(Knowledge knowledge) {
         knowledgeMap.put(knowledge.getId(), knowledge);
         if (ConfigUtils.isHttps()) {
             knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));

@@ -36,4 +36,15 @@ public class CourseScheduleDefault {
         int MINOR = 2;
     }
 
+    public interface CategoryType {
+        /**
+         * 新用户
+         */
+        int NEW_STUDENT = 1;
+        /**
+         * 老用户
+         */
+        int OLD_STUDENT = 2;
+    }
+
 }
