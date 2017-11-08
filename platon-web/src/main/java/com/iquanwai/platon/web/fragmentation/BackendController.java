@@ -130,9 +130,7 @@ public class BackendController {
 
     @RequestMapping(value = "/upload/certificate")
     public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu() {
-        ThreadPool.execute(() -> {
-            certificateService.uploadCertificateToQiNiu();
-        });
+        ThreadPool.execute(certificateService::uploadCertificateToQiNiu);
         return WebUtils.result("正在进行中");
     }
 

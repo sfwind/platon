@@ -10,7 +10,10 @@ import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.concurrent.TimeUnit;
@@ -127,25 +130,27 @@ public class ImageUtils {
 
     /**
      * 居中书写文字
-     * @param inputImage 待绘制内容
+     * @param graphics2d 画笔
      * @param y y 轴
      * @param text 内容
-     * @param font 字体
+     * @param size 字体大小
      * @param color 颜色
      */
-    public static BufferedImage writeTextCenter(BufferedImage inputImage, int y, String text, Font font, Color color) {
-        Assert.notNull(inputImage, "input image is null");
-        Graphics2D graphics2d = inputImage.createGraphics();
-        graphics2d.setFont(font);
-        graphics2d.setColor(color);
-        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        FontMetrics fontMetrics = graphics2d.getFontMetrics(font);
-        // 计算出中心点 x 位置
-        int centerX = inputImage.getWidth() / 2;
-        int textWidth = fontMetrics.stringWidth(text);
-        graphics2d.drawString(text, centerX - textWidth / 2, y);
-        graphics2d.dispose();
-        return inputImage;
+    public static void writeTextCenter(Graphics2D graphics2d, int y, int centerX, String text, float size, Color color) {
+        Assert.notNull(graphics2d, "graphics2d is null");
+        try(InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf")){
+            Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+            font.deriveFont(size);
+            graphics2d.setFont(font);
+            graphics2d.setColor(color);
+            graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            FontMetrics fontMetrics = graphics2d.getFontMetrics(font);
+
+            int textWidth = fontMetrics.stringWidth(text);
+            graphics2d.drawString(text, centerX - textWidth / 2, y);
+        }catch(Exception e){
+            logger.error(e.getLocalizedMessage(), e);
+        }
     }
 
     /**
