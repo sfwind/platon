@@ -10,12 +10,12 @@ import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -130,27 +130,30 @@ public class ImageUtils {
 
     /**
      * 居中书写文字
-     * @param graphics2d 画笔
-     * @param y y 轴
-     * @param text 内容
-     * @param size 字体大小
-     * @param color 颜色
      */
-    public static void writeTextCenter(Graphics2D graphics2d, int y, int centerX, String text, float size, Color color) {
-        Assert.notNull(graphics2d, "graphics2d is null");
-        try(InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf")){
-            Font font = Font.createFont(Font.TRUETYPE_FONT, in);
-            font.deriveFont(size);
-            graphics2d.setFont(font);
-            graphics2d.setColor(color);
-            graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            FontMetrics fontMetrics = graphics2d.getFontMetrics(font);
+    public static BufferedImage writeTextCenter(BufferedImage inputImage, int y, String text, Font font, Color color) throws IOException, FontFormatException {
+        Assert.notNull(inputImage, "input image is null");
 
-            int textWidth = fontMetrics.stringWidth(text);
-            graphics2d.drawString(text, centerX - textWidth / 2, y);
-        }catch(Exception e){
-            logger.error(e.getLocalizedMessage(), e);
+        Graphics2D graphics2d = inputImage.createGraphics();
+        graphics2d.setFont(font);
+        graphics2d.setColor(color);
+        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // 计算出中心点 x 位置
+        int centerX = inputImage.getWidth() / 2;
+        char[] chars = text.toCharArray();
+        double length = 0;
+        for (char aChar : chars) {
+            if ((int) aChar > 256) {
+                length += 1.0;
+            } else {
+                length += 5 / 9.0;
+            }
         }
+        int textWidth = (int) (length * font.getSize());
+        graphics2d.drawString(text, centerX - textWidth / 2, y);
+        graphics2d.dispose();
+        return inputImage;
     }
 
     /**
