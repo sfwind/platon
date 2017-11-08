@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -51,11 +52,18 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public boolean isGoToScheduleNotice(Integer profileId){
+    public boolean isGoToScheduleNotice(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        return riseMembers.stream()
-                .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
-                        && CollectionUtils.isEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId)));
+        Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
+        if (scheduleWhiteList) {
+            // 白名单的用户不用开课程表
+            return false;
+        } else {
+            Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
+            Boolean hasCourseSchedule = CollectionUtils.isNotEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId));
+            // 是会员，并且没有课程表
+            return isElite && !hasCourseSchedule;
+        }
     }
 
 
