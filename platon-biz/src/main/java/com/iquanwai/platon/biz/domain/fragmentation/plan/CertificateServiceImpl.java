@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -245,7 +246,12 @@ public class CertificateServiceImpl implements CertificateService {
             Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
             if (pair.getLeft()) {
                 // 上传成功，更新 imageUrl
-                riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                    riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
+                } catch (InterruptedException e) {
+                    logger.error(e.getLocalizedMessage(), e);
+                }
             }
         });
     }
@@ -659,17 +665,12 @@ public class CertificateServiceImpl implements CertificateService {
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate) {
         Assert.notNull(riseCertificate, "证件信息不能为空");
-
+        logger.info("正在生成证书：{}", riseCertificate.getCertificateNo());
         // 证书数据准备
-        List<Profile> profiles = riseMemberDao.loadAll(Profile.class);
-        // Profile profile = accountService.getProfile(riseCertificate.getProfileId());
-        // if (profile == null || profile.getRealName() == null) {
-        //     // 没有填写真实姓名
-        //     return new MutablePair<>(false, null);
-        // }
-        Profile profile = profiles.stream().findAny().orElse(null);
-        if (profile.getRealName() == null) {
-            profile.setRealName("三十文");
+        Profile profile = accountService.getProfile(riseCertificate.getProfileId());
+        if (profile == null || profile.getRealName() == null) {
+            // 没有填写真实姓名
+            return new MutablePair<>(false, null);
         }
         Integer year = riseCertificate.getYear();
         Integer month = riseCertificate.getMonth();
@@ -682,6 +683,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
         ByteArrayOutputStream outputStream = null;
+        ByteArrayInputStream inputStream = null;
         try {
             Font font = Font.createFont(Font.TRUETYPE_FONT, in);
             int type = riseCertificate.getType();
@@ -759,15 +761,16 @@ public class CertificateServiceImpl implements CertificateService {
             }
             String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
 
-            ImageUtils.writeToFile(inputImage, "png", new File("/usr/betauser/deploy/certificate/" + fileName));
+            // 图片保存到本地文件
+            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
 
             outputStream = new ByteArrayOutputStream();
             ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-            // ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            // boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
-            return new MutablePair<>(true, fileName);
-        } catch (FontFormatException | IOException e) {
-            logger.error(e.getLocalizedMessage());
+            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
+            return new MutablePair<>(uploadResult, fileName);
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
         } finally {
             try {
                 if (in != null) {
@@ -775,6 +778,9 @@ public class CertificateServiceImpl implements CertificateService {
                 }
                 if (outputStream != null) {
                     outputStream.close();
+                }
+                if (inputStream != null) {
+                    inputStream.close();
                 }
             } catch (IOException e) {
                 logger.error("is closed error", e);
