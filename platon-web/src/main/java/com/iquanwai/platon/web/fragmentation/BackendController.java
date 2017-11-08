@@ -119,12 +119,6 @@ public class BackendController {
 
     @RequestMapping(value = "/generate/certificate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> generateCertificate(@RequestBody RiseCertificate riseCertificate) {
-        OperationLog operationLog = OperationLog.create().openid("后台生成证书")
-                .module("后台功能")
-                .function("证书生成")
-                .action("生成全部证书并上传");
-        operationLogService.log(operationLog);
-
         Integer month = riseCertificate.getMonth();
         Integer year = riseCertificate.getYear();
         Integer problemId = riseCertificate.getProblemId();
