@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
@@ -44,12 +45,13 @@ public class BackendController {
     @Autowired
     private CertificateService certificateService;
     @Autowired
-    private PlanService planService;
+    private GeneratePlanService generatePlanService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser, GuestUser guestUser) {
+    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto,
+                                                   LoginUser loginUser, GuestUser guestUser) {
         String data = errorLogDto.getResult();
         StringBuilder sb = new StringBuilder();
         if (data.length() > 700) {
@@ -130,9 +132,7 @@ public class BackendController {
 
     @RequestMapping(value = "/upload/certificate")
     public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu() {
-        ThreadPool.execute(() -> {
-            certificateService.uploadCertificateToQiNiu();
-        });
+        ThreadPool.execute(certificateService::uploadCertificateToQiNiu);
         return WebUtils.result("正在进行中");
     }
 
@@ -178,7 +178,7 @@ public class BackendController {
         Date closeDate = params.getCloseDate();
 
         profileIds.forEach(profileId -> ThreadPool.execute(() -> {
-            Integer result = planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+            Integer result = generatePlanService.forceOpenProblem(profileId, problemId, startDate, closeDate);
             logger.info("开课: profileId:{},planId:{}", profileId, result);
         }));
 

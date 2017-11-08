@@ -1,7 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class ForceOpenCourseReceiver {
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
-    private PlanService planService;
+    private GeneratePlanService generatePlanService;
 
     private static final String TOPIC = "monthly_camp_force_open_topic";
     private static final String QUEUE = "monthly_camp_force_open_queue";
@@ -42,7 +42,7 @@ public class ForceOpenCourseReceiver {
         Date startDate = json.getDate("startDate");
         Date closeDate = json.getDate("closeDate");
 
-        planService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+        generatePlanService.forceOpenProblem(profileId, problemId, startDate, closeDate);
     }
 
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.MonthTopicDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -66,9 +65,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setTrialProblem(trialProblem);
 
         //主修小课id
-        List<Integer> majorProblemIds = courseSchedules.stream()
+        List<CourseSchedule> majorSchedule = courseSchedules.stream()
                 .filter(courseSchedule -> courseSchedule.getType() == Constants.ProblemType.MAJOR)
-                .map(CourseSchedule::getProblemId).collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         //本月主修小课id
         List<Integer> currentMonthMajorProblemIds = currentMonthCourseSchedules.stream()
@@ -76,16 +75,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
         //主修小课列表
-        schedulePlan.setMajorProblem(getListProblem(improvementPlans, majorProblemIds, currentMonthMajorProblemIds));
+        schedulePlan.setMajorProblem(getListProblem(improvementPlans, majorSchedule, currentMonthMajorProblemIds));
 
         //本月主修进度
         schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
 
 
         //辅修小课id
-        List<Integer> minorProblemIds = courseSchedules.stream()
+        List<CourseSchedule> minorSchedule = courseSchedules.stream()
                 .filter(courseSchedule -> courseSchedule.getType() == Constants.ProblemType.MINOR)
-                .map(CourseSchedule::getProblemId).collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         //本月辅修小课id
         List<Integer> currentMonthMinorProblemIds = currentMonthCourseSchedules.stream()
@@ -93,7 +92,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
         //辅修小课列表
-        schedulePlan.setMinorProblem(getListProblem(improvementPlans, minorProblemIds, currentMonthMinorProblemIds));
+        schedulePlan.setMinorProblem(getListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds));
 
         //本月主修进度
         schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
@@ -184,14 +183,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
 
-    private boolean containsProblemId(List<ImprovementPlan> problems, Integer problemId) {
-        for (ImprovementPlan problem : problems) {
-            if (problem.getProblemId().equals(problemId)) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean containsProblemId(List<ImprovementPlan> plans, Integer problemId) {
+        return plans.stream().filter(improvementPlan -> improvementPlan.getProblemId().equals(problemId))
+                .findAny().isPresent();
     }
 
     //计算主修或辅修小课进度
@@ -212,14 +206,29 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     //小课列表 = 进行中小课+本月计划小课
     private List<ImprovementPlan> getListProblem(List<ImprovementPlan> improvementPlans,
-                                         List<Integer> problemIds, List<Integer> currentMonthProblemIds){
+                                                 List<CourseSchedule> courseSchedules,
+                                                 List<Integer> currentMonthProblemIds){
+        List<Integer> problemIds = courseSchedules.stream().map(CourseSchedule::getProblemId)
+                .collect(Collectors.toList());
 
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        //拿到开营日
+        Date date = monthlyCampConfig.getOpenDate();
+
+        int month = DateUtils.getMonth(date);
         // 选出进行中的小课
         List<ImprovementPlan> problems = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
                         || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
                 .filter(improvementPlan -> problemIds.contains(improvementPlan.getProblemId()))
                 .map(improvementPlan -> {
+                    CourseSchedule courseSchedule = courseSchedules.stream()
+                            .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
+                            .findAny().orElse(null);
+                    if (courseSchedule != null) {
+                        improvementPlan.setMonth(courseSchedule.getMonth());
+                    }
+
                     Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                     improvementPlan.setProblem(problem.simple());
                     return improvementPlan;
@@ -230,6 +239,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean in = containsProblemId(problems, currentMonthProblemId);
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
+                improvementPlan.setMonth(month);
                 improvementPlan.setProblem(cacheService.getProblem(currentMonthProblemId).simple());
                 problems.add(improvementPlan);
             }
