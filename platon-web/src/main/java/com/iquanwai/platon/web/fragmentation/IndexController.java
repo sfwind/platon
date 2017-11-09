@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
@@ -195,7 +196,10 @@ public class IndexController {
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
-            if (isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
+            Boolean status = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
+
+            // 不是白名单
+            if (!status && isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
                 // 如果地址是null，并且是会员，则进入填写信息页面
                 response.sendRedirect(PROFILE_SUBMIT);
                 return null;
