@@ -141,7 +141,7 @@ public class ScheduleController {
                 .action("倒计时查询");
         operationLogService.log(operationLog);
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
-        if (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
             Integer days = Days.daysBetween(DateTime.now().withTimeAtStartOfDay(), new DateTime(riseMember.getOpenDate())).getDays();
             List<CourseSchedule> plan = businessPlanService.getPlan(loginUser.getId());
             CountDownDto dto = new CountDownDto();
