@@ -39,9 +39,8 @@ import java.util.List;
 public class TheatreServiceImpl implements TheatreService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public static final String CURRENT_GAME = PromotionConstants.Activities.CaitongLive;
+    public static final String CURRENT_GAME = PromotionConstants.Activities.CAITONG_LIVE;
 
-    public static final String Live_URL = "<a href='http://study.163.com/course/introduction.htm?courseId=1004290001'>直播地址</a>";
     public static final String CODE_DESCRIBE_URL = "<a href='https://shimo.im/doc/lOBVOFcT2z40qI3Q?r=NPGKQE/'>石墨文档</a>";
     public static final String CODE_CHANGE_URL = "<a href='http://m.study.163.com/myCoupon'>兑换地址</a>";
 
@@ -92,7 +91,7 @@ public class TheatreServiceImpl implements TheatreService {
         theatreScript.addQuestion("圈圈还在闭关中，这三个人就在这里偷偷搞事情！你决定一探究竟，一路跟着他们来到了圈外博物馆。\n\n" +
                         "在你打算直接跨入大门之时，两个守卫突然现身、拦住了你，声称你带了某件【圈外博物馆】的违禁品。你说：“我去，竟然不让带…… ” （请选出不让带的东西） \n" +
                         "--------------------",
-                CURRENT_ACTION.Question1)
+                CURRENT_ACTION.QUESTION1)
                 .addAnswer(11, "圈圈写的《请停止无效努力》一书", "守卫立马对小黄书鞠了一躬，毕竟小黄书是逆袭圣经啊！怎么可能是违禁物品？\n" +
                         "----------------------\n" +
                         "很抱歉，你连博物馆的门都没进去就失败了，不过你可以回复【数字编号】继续闯关\n\n" +
@@ -110,7 +109,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "刚进入了博物馆的大门，前面有一个老大爷，站在博物馆楼前，他看着你说：“找到圈外博物馆首任馆长，他知道你要找的人是谁。”\n\n" +
                         "你推开门，前方是一个看不见尽头的走廊，走廊的左手边挂着一排人物画像。你要在这里找到首任馆长的画像，于是你走向了：\n" +
                         "--------------------",
-                CURRENT_ACTION.Question2)
+                CURRENT_ACTION.QUESTION2)
                 .addAnswer(21, "孙圈圈的画像", "圈圈开始给你讲解结构化思维，一开口就再也没有停下\n" +
                         "----------------------\n" +
                         "你听着圈圈的声音昏昏欲睡，不过你可以回复【数字编号】继续闯关\n\n" +
@@ -127,7 +126,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "马馆长被你成功唤醒了，作为奖励，你得到了一个价值264元的免费邀请券，能够让你的三位小伙伴免费收听本次直播分享。（邀请券已经放入你的背包里了，游戏结束时可以回复【背包】查看领取）\n\n" +
                         "马徐骏馆长缓缓睁开眼睛，张口来了一段freestyle，你一边听着他的freestyle，一边想着怎么找到下一步的线索。你应该怎么说：\n" +
                         "--------------------",
-                CURRENT_ACTION.Question3)
+                CURRENT_ACTION.QUESTION3)
                 .addAnswer(31, "你的梦想是什么？", "马徐骏说完他的梦想之后闭上了眼睛，于是你还是不知道要怎么走出这个房间\n" +
                         "----------------------\n" +
                         "你迷失在这个走廊中，不过你可以回复【数字编号】继续闯关\n\n" +
@@ -144,7 +143,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "得到马徐骏馆长的指点，你推开第一扇门，发现这里竟然放着泰坦尼克号的模型。\n\n" +
                         "当你从旁边经过的时候，Jack从水里冒了出来：年轻人，想要过去，先回答我一个问题，我已经在水下思考几百年了，你知道什么是\"冰山模型\"吗？\n" +
                         "--------------------",
-                CURRENT_ACTION.Question4)
+                CURRENT_ACTION.QUESTION4)
                 .addAnswer(41, "我在圈外同学小课里看到过：冰山模型全面地描述了一个人所有的内在价值要素", null, null)
                 .addAnswer(42, "冰山模型和泰坦尼克号的模型原本是一对", "原来你也不知道啊，那你下来陪我一起想吧（你被拉入了水中）\n" +
                         "----------------------\n" +
@@ -161,7 +160,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "摆脱了Jack的你继续往前走，几分钟后发现前面有一扇长满青苔的石门。\n\n" +
                         "你隐隐约约听到门的背后有一男一女正在说话，你急忙想推开门，可是发现怎么也推不开，你发现门上有一行字：说出圈外正在打造什么？\n" +
                         "--------------------",
-                CURRENT_ACTION.Question5)
+                CURRENT_ACTION.QUESTION5)
                 .addAnswer(51, "圈外托儿所", "你大声喊出：圈外托儿所，门丝毫未动，无论你怎么敲打都打不开\n" +
                         "----------------------\n" +
                         "你失败了，不过你可以回复【数字编号】继续闯关\n\n" +
@@ -177,7 +176,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "你听了感觉非常疑惑，但是你已经没时间思考这些了。你急匆匆的跑上前去，你只在前面看到了一位穿着斗篷的男子，那个女子已经不见踪影。\n\n" +
                         "你上前询问，得知这位男子就是采铜。这时，那男子问你：“你知道我的江湖名号吗？”\n" +
                         "--------------------",
-                CURRENT_ACTION.Question6)
+                CURRENT_ACTION.QUESTION6)
                 .addAnswer(61, "挖矿的？难道你就是传说中的比特币大亨！", "这位男子听到答案哈哈大笑，你以为自己猜对了，却发现神秘男子已经消失不见\n" +
                         "----------------------\n" +
                         "没办法，谁叫你说错话了呢？回复\n\n" +
@@ -193,7 +192,7 @@ public class TheatreServiceImpl implements TheatreService {
                 "这位神秘男子向你走来，嘴角露出了神秘的微笑：D\n\n" +
                         "你好不容易答对前一个问题，那个叫采铜的男子又问了你一个问题：“你知道为什么我们叫圈外博物馆吗？”你该怎么回答？     \n" +
                         "--------------------",
-                CURRENT_ACTION.Question7)
+                CURRENT_ACTION.QUESTION7)
                 .addAnswer(71, "你们收藏了很多历史文物", "采铜馆长对这个回答并不满意，长叹一声消失在走廊的尽头\n" +
                         "----------------------\n" +
                         "别说了，回复\n\n" +
@@ -210,7 +209,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "你这才知道采铜就是圈外博物馆的特邀馆长。采铜馆长一边走一边和你说关于这次圈圈搞得大事情。\n\n" +
                         "突然这个时候，在阴暗角落冲出了一只怒吼中的霸王龙，在强大的恐龙面前，你的战斗力太弱了，这时你想：\n" +
                         "--------------------",
-                CURRENT_ACTION.Question8)
+                CURRENT_ACTION.QUESTION8)
                 .addAnswer(81, "果然不上圈外同学小课，战斗力跟不上啊", null, null)
                 .addAnswer(82, "你后退一步，把采铜馆长推了出去", "霸王龙就像没看到采铜馆长一般，直向你奔来，一尾巴把你甩飞到墙上，抠都抠不下来\n" +
                         "----------------------\n" +
@@ -225,7 +224,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "采铜馆长好像看穿了你的想法并用意念对你说：“去那边3本书里挑一本我编写的秘法宝典，这个可以大幅度增加你的战斗力。”\n\n" +
                         "你听完以后火速地跑过去，选出了这本书：\n" +
                         "--------------------",
-                CURRENT_ACTION.Question9)
+                CURRENT_ACTION.QUESTION9)
                 .addAnswer(91, "《请停止无效努力》", "这不就是我要交给门卫的小黄书嘛！你津津有味地读了起来，忘记了自己要做什么。\n" +
                         "----------------------\n" +
                         "回复\n\n" +
@@ -240,7 +239,7 @@ public class TheatreServiceImpl implements TheatreService {
         theatreScript.addQuestion("拿起书的一瞬间，封面上的乌鸦通体发亮，吓得霸王龙倒退了几步。你知道自己选对了！\n\n" +
                         "你翻开书，发现里面一共有三条咒语，你选对了以后真的战斗力提升了一大截。\n" +
                         "--------------------",
-                CURRENT_ACTION.Question10)
+                CURRENT_ACTION.QUESTION10)
                 .addAnswer(101, "用持续精确的努力，撬动更大的可能，这便是精进！", null, null)
                 .addAnswer(102, "稳住，我们能赢！", "你找错了咒语，你被霸王龙一脚踢出了博物馆，你口中大喊：我还会回来的。。\n" +
                         "----------------------\n" +
@@ -269,7 +268,7 @@ public class TheatreServiceImpl implements TheatreService {
             this.sendCodeToUser(profile, liveRedeemCode);
             Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
             Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-            if (maxPlayQuestion != null && maxPlayQuestion.getAction() >= CURRENT_ACTION.Question3) {
+            if (maxPlayQuestion != null && maxPlayQuestion.getAction() >= CURRENT_ACTION.QUESTION3) {
                 // 做到第四题才会有邀请券,发海报
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 String mediaId = generateSharePage(profile);
@@ -286,12 +285,12 @@ public class TheatreServiceImpl implements TheatreService {
      */
     private Pair<Boolean, Question> loadMaxPlayQuestion(Integer profileId) {
 
-        PromotionActivity activity = promotionActivityDao.loadMaxPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
+        PromotionActivity activity = promotionActivityDao.loadMaxPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.BACKPACK);
         if (activity == null) {
             return null;
         }
 
-        PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GoDie);
+        PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GO_DIE);
         Boolean isDead = deadAction != null && deadAction.getAddTime().after(activity.getAddTime());
         Question question = theatreScript.searchQuestionByAction(activity.getAction());
         return new MutablePair<>(isDead, question);
@@ -305,13 +304,13 @@ public class TheatreServiceImpl implements TheatreService {
      */
     private Pair<Boolean, Question> loadLastPlayQuestion(Integer profileId) {
 
-        PromotionActivity activity = promotionActivityDao.loadLastPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.Backpack);
+        PromotionActivity activity = promotionActivityDao.loadLastPlayQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.BACKPACK);
         if (activity == null) {
             logger.error("用户:{} 还未开始答题");
             return null;
         }
 
-        PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GoDie);
+        PromotionActivity deadAction = promotionActivityDao.loadDeadQuestion(profileId, CURRENT_GAME, CURRENT_ACTION.GO_DIE);
         Boolean isDead = deadAction != null && deadAction.getAddTime().getTime() >= activity.getAddTime().getTime();
         Question question = theatreScript.searchQuestionByAction(activity.getAction());
         return new MutablePair<>(isDead, question);
@@ -358,7 +357,7 @@ public class TheatreServiceImpl implements TheatreService {
         if (answer.getBadEnding()) {
             // go die
             PromotionActivity completeAction = new PromotionActivity();
-            completeAction.setAction(CURRENT_ACTION.GoDie);
+            completeAction.setAction(CURRENT_ACTION.GO_DIE);
             completeAction.setActivity(CURRENT_GAME);
             completeAction.setProfileId(profile.getId());
             promotionActivityDao.insertPromotionActivity(completeAction);
@@ -368,7 +367,7 @@ public class TheatreServiceImpl implements TheatreService {
             if (theatreScript.isLastQuestion(question)) {
                 // 最后一道题回答正确，送奖品
                 PromotionActivity completeAction = new PromotionActivity();
-                completeAction.setAction(CURRENT_ACTION.Complete);
+                completeAction.setAction(CURRENT_ACTION.COMPLETE);
                 completeAction.setActivity(CURRENT_GAME);
                 completeAction.setProfileId(profile.getId());
                 promotionActivityDao.insertPromotionActivity(completeAction);
@@ -384,7 +383,7 @@ public class TheatreServiceImpl implements TheatreService {
                     // TODO ERROR
                     logger.error("异常，没有下一题了,{}", question);
                 } else {
-                    if (CURRENT_ACTION.Question5 == question.getAction()) {
+                    if (CURRENT_ACTION.QUESTION5 == question.getAction()) {
                         // 第五题回答正确，推送采铜图片
                         this.sendCaitongHeadToUser(profile);
                     }
@@ -421,7 +420,7 @@ public class TheatreServiceImpl implements TheatreService {
                     .append("【").append(answer.getKey()).append("】").append(" ").append(answer.getWords());
         });
 
-        if (question.getAction().equals(CURRENT_ACTION.Question1)) {
+        if (question.getAction().equals(CURRENT_ACTION.QUESTION1)) {
             // 第一题先推送开场白
             customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getPrologue(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         }
@@ -439,10 +438,10 @@ public class TheatreServiceImpl implements TheatreService {
         if ("结束".equals(message)) {
             // 确定结束，查看最后一个action是不是closeGame
             PromotionActivity closeGame = promotionActivityDao.loadLastAction(profile.getId(), CURRENT_GAME);
-            if (closeGame.getAction().equals(CURRENT_ACTION.CloseTip)) {
+            if (closeGame.getAction().equals(CURRENT_ACTION.CLOSE_TIP)) {
                 // 确定结束
                 PromotionActivity closeAction = new PromotionActivity();
-                closeAction.setAction(CURRENT_ACTION.CloseGame);
+                closeAction.setAction(CURRENT_ACTION.CLOSE_GAME);
                 closeAction.setActivity(CURRENT_GAME);
                 closeAction.setProfileId(profile.getId());
                 promotionActivityDao.insertPromotionActivity(closeAction);
@@ -458,7 +457,7 @@ public class TheatreServiceImpl implements TheatreService {
                     this.sendCodeToUser(profile, liveRedeemCode);
                     Pair<Boolean, Question> questionPair = this.loadMaxPlayQuestion(profile.getId());
                     Question maxPlayQuestion = questionPair != null ? questionPair.getRight() : null;
-                    if (maxPlayQuestion != null && maxPlayQuestion.getAction() >= CURRENT_ACTION.Question3) {
+                    if (maxPlayQuestion != null && maxPlayQuestion.getAction() >= CURRENT_ACTION.QUESTION3) {
                         // 做到第四题才会有邀请券,发海报
                         customerMessageService.sendCustomerMessage(profile.getOpenid(), "下方是你的邀请券，通过你的邀请券进来的朋友享受“勇士の朋友”特殊待遇，可以免费听本次直播哦。", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                         String mediaId = generateSharePage(profile);
@@ -469,7 +468,7 @@ public class TheatreServiceImpl implements TheatreService {
         } else {
             // 插入询问
             PromotionActivity closeAction = new PromotionActivity();
-            closeAction.setAction(CURRENT_ACTION.CloseTip);
+            closeAction.setAction(CURRENT_ACTION.CLOSE_TIP);
             closeAction.setActivity(CURRENT_GAME);
             closeAction.setProfileId(profile.getId());
             promotionActivityDao.insertPromotionActivity(closeAction);
@@ -530,7 +529,7 @@ public class TheatreServiceImpl implements TheatreService {
         PromotionLevel liveLevel = promotionLevelDao.loadByProfileId(profile.getId(), CURRENT_GAME);
         if (liveLevel != null) {
             // 扫码，但是要判断是否结束了游戏
-            PromotionActivity closeAction = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.CloseGame);
+            PromotionActivity closeAction = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.CLOSE_GAME);
             if (closeAction == null) {
                 // 没有结束，检查是第几层
                 if (liveLevel.getLevel() == 1) {
@@ -538,14 +537,14 @@ public class TheatreServiceImpl implements TheatreService {
                     return true;
                 } else {
                     // 有没有手动输入开始
-                    PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.ManualStart);
+                    PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.MANUAL_START);
                     if (manualStart == null) {
                         // 没有输入手动开始
                         String message = wechatMessage.getMessage();
                         if ("48".equals(message)) {
                             PromotionActivity manualStartAction = new PromotionActivity();
                             manualStartAction.setProfileId(profile.getId());
-                            manualStartAction.setAction(CURRENT_ACTION.ManualStart);
+                            manualStartAction.setAction(CURRENT_ACTION.MANUAL_START);
                             manualStartAction.setActivity(CURRENT_GAME);
                             promotionActivityDao.insertPromotionActivity(manualStartAction);
                             return true;
@@ -568,7 +567,7 @@ public class TheatreServiceImpl implements TheatreService {
     @Override
     public void startGame(Profile profile) {
         // 检查用户是否结束了游戏
-        PromotionActivity closeGame = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.CloseGame);
+        PromotionActivity closeGame = promotionActivityDao.loadAction(profile.getId(), CURRENT_GAME, CURRENT_ACTION.CLOSE_GAME);
         if (closeGame != null) {
             // 用户游戏已关闭
             LiveRedeemCode liveRedeemCode = liveRedeemCodeDao.loadLiveRedeemCode(CURRENT_GAME, profile.getId());
@@ -584,7 +583,7 @@ public class TheatreServiceImpl implements TheatreService {
         } else {
             // 由mq发起，那里会插入level，所以不检查了
             PromotionActivity startAction = new PromotionActivity();
-            startAction.setAction(CURRENT_ACTION.Question1);
+            startAction.setAction(CURRENT_ACTION.QUESTION1);
             startAction.setActivity(CURRENT_GAME);
             startAction.setProfileId(profile.getId());
             promotionActivityDao.insertPromotionActivity(startAction);

@@ -4,10 +4,29 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.AudioDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChoiceDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthTopicDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampConfigDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemCatalogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemSubCatalogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.Audio;
+import com.iquanwai.platon.biz.po.Choice;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthTopic;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemCatalog;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.ProblemSubCatalog;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +64,10 @@ public class CacheServiceImpl implements CacheService {
     private AudioDao audioDao;
     @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
+    @Autowired
+    private MonthTopicDao monthTopicDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -58,21 +81,19 @@ public class CacheServiceImpl implements CacheService {
     private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
     //缓存小课训练营配置
     private MonthlyCampConfig monthlyCampConfig;
+    // 商学院学习计划每月主题
+    private Map<Integer, List<MonthTopic>> monthTopicMap;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
     public void init() {
-        List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
-        knowledgeList.forEach(knowledge -> {
-            knowledgeMap.put(knowledge.getId(), knowledge);
-            if (ConfigUtils.isHttps()) {
-                knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
-            }
-            // 设置音频字段
-            initAudio(knowledge);
-        });
+        // 缓存知识点,本地不缓存
+        if (!ConfigUtils.isDebug()) {
+            List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
+            knowledgeList.forEach(this::initKnowledge);
+        }
         logger.info("knowledge init complete");
 
         // 缓存问题
@@ -98,31 +119,32 @@ public class CacheServiceImpl implements CacheService {
         });
         logger.info("problem init complete");
 
-        // 缓存热身训练
-        List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
-        warmupPractices.forEach(warmupPractice -> {
-            warmupPractice.setChoiceList(Lists.newArrayList());
-            //添加非复习知识点
-            if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
-                warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
-            }
-            if (ConfigUtils.isHttps()) {
-                warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
-            }
-            warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
-        });
-        List<Choice> choices = choiceDao.loadAll(Choice.class);
-        choices.forEach(choice -> {
-            Integer questionId = choice.getQuestionId();
-            WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
-            if (warmupPractice != null) {
-                warmupPractice.getChoiceList().add(choice);
-            }
-        });
-
-        //选项按sequence排序
-        warmupPractices.forEach(warmupPractice ->
-                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
+        // 缓存热身训练,本地不缓存
+        if (!ConfigUtils.isDebug()) {
+            List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
+            warmupPractices.forEach(warmupPractice -> {
+                warmupPractice.setChoiceList(Lists.newArrayList());
+                //添加非复习知识点
+                if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
+                    warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+                }
+                if (ConfigUtils.isHttps()) {
+                    warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
+                }
+                warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
+            });
+            List<Choice> choices = choiceDao.loadAll(Choice.class);
+            choices.forEach(choice -> {
+                Integer questionId = choice.getQuestionId();
+                WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
+                if (warmupPractice != null) {
+                    warmupPractice.getChoiceList().add(choice);
+                }
+            });
+            //选项按sequence排序
+            warmupPractices.forEach(warmupPractice ->
+                    warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
+        }
         logger.info("warmup practice init complete");
 
         // 缓存问题主分类
@@ -153,9 +175,20 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存小课训练营配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
+
+        // 缓存商学院学习计划每月主题
+        List<MonthTopic> monthTopics = courseScheduleDefaultDao.loadDefaultCourseSchedule().stream().map(item -> {
+            MonthTopic topic = new MonthTopic();
+            topic.setTopic(item.getMonthTopic());
+            topic.setMonth(item.getMonth());
+            topic.setYear(item.getYear());
+            topic.setCategory(item.getCategory());
+            return topic;
+        }).collect(Collectors.toList());
+        monthTopicMap = monthTopics.stream().collect(Collectors.groupingBy(MonthTopic::getCategory));
     }
 
-    private void initAudio(Knowledge knowledge) {
+    private void initKnowledgeAudio(Knowledge knowledge) {
         if (knowledge.getAudioId() != null) {
             Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
             if (audio != null) {
@@ -200,7 +233,13 @@ public class CacheServiceImpl implements CacheService {
     public Knowledge getKnowledge(Integer knowledgeId) {
         Knowledge knowledge = new Knowledge();
         try {
-            BeanUtils.copyProperties(knowledgeMap.get(knowledgeId), knowledge);
+            Knowledge exist = knowledgeMap.get(knowledgeId);
+            if (exist != null) {
+                BeanUtils.copyProperties(knowledgeMap.get(knowledgeId), knowledge);
+            } else {
+                knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
+                initKnowledge(knowledge);
+            }
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -212,6 +251,12 @@ public class CacheServiceImpl implements CacheService {
         WarmupPractice warmupPractice = null;
         try {
             warmupPractice = warmupPracticeMap.get(practiceId).clone();
+            if (warmupPractice == null) {
+                warmupPractice = warmupPracticeDao.load(WarmupPractice.class, practiceId);
+                List<Choice> choices = choiceDao.getQuestionChoices(practiceId);
+                choices.sort((o1, o2) -> o1.getSequence() - o2.getSequence());
+                warmupPractice.setChoiceList(choices);
+            }
         } catch (CloneNotSupportedException e) {
             // ignore
         }
@@ -285,6 +330,18 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
+    public Map<Integer, String> loadMonthTopic(Integer category, Integer year) {
+        List<MonthTopic> monthTopics = monthTopicMap.get(category).stream().filter(item -> item.getYear().equals(year)).collect(Collectors.toList());
+        if (monthTopics != null) {
+            Map<Integer, String> map = Maps.newHashMap();
+            monthTopics.forEach(item -> map.put(item.getMonth(), item.getTopic()));
+            return map;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public void reload() {
         init();
     }
@@ -300,5 +357,14 @@ public class CacheServiceImpl implements CacheService {
         }
         //步骤
         return sectionList.get(0).getChapterName();
+    }
+
+    private void initKnowledge(Knowledge knowledge) {
+        knowledgeMap.put(knowledge.getId(), knowledge);
+        if (ConfigUtils.isHttps()) {
+            knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
+        }
+        // 设置音频字段
+        initKnowledgeAudio(knowledge);
     }
 }

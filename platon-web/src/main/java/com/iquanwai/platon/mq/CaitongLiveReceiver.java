@@ -55,7 +55,7 @@ public class CaitongLiveReceiver {
         rabbitMQFactory.initReceiver(QUEUE, TOPIC, mq -> {
             SubscribeEvent subscribeEvent = JSON.parseObject(JSON.toJSONString(mq.getMessage()), SubscribeEvent.class);
             logger.info("receive message {}", subscribeEvent);
-            if (StringUtils.startsWith(subscribeEvent.getScene(), PromotionConstants.Activities.CaitongLive)) {
+            if (StringUtils.startsWith(subscribeEvent.getScene(), PromotionConstants.Activities.CAITONG_LIVE)) {
                 String scene = subscribeEvent.getScene();
                 String[] sceneWords = scene.split("_");
                 if (sceneWords.length < 2) {
@@ -65,14 +65,14 @@ public class CaitongLiveReceiver {
                 // 采铜直播
                 logger.info("采铜直播二维码扫描:{}", mq);
                 Profile profile = accountService.getProfile(subscribeEvent.getOpenid());
-                PromotionLevel existLevel = promotionLevelDao.loadByProfileId(profile.getId(), PromotionConstants.Activities.CaitongLive);
+                PromotionLevel existLevel = promotionLevelDao.loadByProfileId(profile.getId(), PromotionConstants.Activities.CAITONG_LIVE);
                 boolean notExistLevel = null == existLevel;
                 Integer level = null;
                 if (notExistLevel) {
                     // 第一次参加活动,加入level表
                     PromotionLevel tempLevelToSave = new PromotionLevel();
                     tempLevelToSave.setValid(1);
-                    tempLevelToSave.setActivity(PromotionConstants.Activities.CaitongLive);
+                    tempLevelToSave.setActivity(PromotionConstants.Activities.CAITONG_LIVE);
                     tempLevelToSave.setProfileId(profile.getId());
                     // 查看是第几层
                     Integer promoterId = null;
@@ -82,7 +82,7 @@ public class CaitongLiveReceiver {
                             // 自己扫描自己
                             level = 1;
                         } else {
-                            PromotionLevel promoterLevel = promotionLevelDao.loadByProfileId(promoterId, PromotionConstants.Activities.CaitongLive);
+                            PromotionLevel promoterLevel = promotionLevelDao.loadByProfileId(promoterId, PromotionConstants.Activities.CAITONG_LIVE);
                             level = promoterLevel.getLevel() + 1;
 //                            List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(promoterId, TheatreServiceImpl.CURRENT_GAME);
 //                            if (promotionLevels.size() < 3) {
@@ -118,12 +118,12 @@ public class CaitongLiveReceiver {
                 // 扫码action
                 PromotionActivity promotionActivity = new PromotionActivity();
                 promotionActivity.setProfileId(profile.getId());
-                promotionActivity.setActivity(PromotionConstants.Activities.CaitongLive);
-                promotionActivity.setAction(PromotionConstants.CaitongLiveAction.ScanCode);
+                promotionActivity.setActivity(PromotionConstants.Activities.CAITONG_LIVE);
+                promotionActivity.setAction(PromotionConstants.CaitongLiveAction.SCAN_CODE);
                 promotionActivityDao.insertPromotionActivity(promotionActivity);
                 // 开始玩游戏
                 // TODO 暂时停止游戏
-//                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.ManualStart);
+//                PromotionActivity manualStart = promotionActivityDao.loadAction(profile.getId(), TheatreServiceImpl.CURRENT_GAME, TheatreServiceImpl.CURRENT_ACTION.MANUAL_START);
 //                if (level == 1 || manualStart != null) {
 //                    theatreService.startGame(profile);
 //                }

@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.fragmentation.plan;
+package com.iquanwai.platon.web.fragmentation.dto;
 
 import lombok.Data;
 

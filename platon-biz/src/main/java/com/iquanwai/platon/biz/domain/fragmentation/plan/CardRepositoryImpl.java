@@ -64,33 +64,36 @@ public class CardRepositoryImpl implements CardRepository {
 
     private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
 
-    private static final String CARD_ACTIVITY = PromotionConstants.Activities.FreeLimit;
+    private static final String CARD_ACTIVITY = PromotionConstants.Activities.FREE_LIMIT;
 
     @PostConstruct
     public void init() {
         // 初始化所有背景图的 bufferedImages 缓存
-        JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
-        for (int i = 0; i < base64ImageJson.size(); i++) {
-            String url = base64ImageJson.getString(Integer.toString(i + 1));
-            bufferedImageMap.put(i + 1, ImageUtils.getBufferedImageByUrl(url));
+        if (!ConfigUtils.isDebug()) {
+            JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
+            for (int i = 0; i < base64ImageJson.size(); i++) {
+                String url = base64ImageJson.getString(Integer.toString(i + 1));
+                bufferedImageMap.put(i + 1, ImageUtils.getBufferedImageByUrl(url));
+            }
+            JSONObject essenceThumbnail = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnails());
+            for (int i = 0; i < essenceThumbnail.size(); i++) {
+                String thumbnail = essenceThumbnail.getString(Integer.toString(i + 1));
+                thumbnailMap.put(i + 1, thumbnail);
+            }
+            JSONObject essenceThumbnailLock = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnailsLock());
+            for (int i = 0; i < essenceThumbnailLock.size(); i++) {
+                String thumbnailLock = essenceThumbnailLock.getString(Integer.toString(i + 1));
+                thumbnailLockMap.put(i + 1, thumbnailLock);
+            }
+
+            essenceFreeTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_top.png?imageslim");
+            essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_4.png?imageslim");
+            essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
+            pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
+            caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.jpg?imageslim");
+            caitongHead = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_head_image.jpg?imageslim");
         }
-        JSONObject essenceThumbnail = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnails());
-        for (int i = 0; i < essenceThumbnail.size(); i++) {
-            String thumbnail = essenceThumbnail.getString(Integer.toString(i + 1));
-            thumbnailMap.put(i + 1, thumbnail);
-        }
-        JSONObject essenceThumbnailLock = JSONObject.parseObject(ConfigUtils.getEssenceCardThumbnailsLock());
-        for (int i = 0; i < essenceThumbnailLock.size(); i++) {
-            String thumbnailLock = essenceThumbnailLock.getString(Integer.toString(i + 1));
-            thumbnailLockMap.put(i + 1, thumbnailLock);
-        }
-        essenceFreeTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_top.png?imageslim");
-        essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_4.png?imageslim");
-        essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
-        pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
-        caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.jpg?imageslim");
-        caitongHead = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_head_image.jpg?imageslim");
-        logger.info("图片加载完毕");
+        logger.info("pic loading complete");
     }
 
     @Override

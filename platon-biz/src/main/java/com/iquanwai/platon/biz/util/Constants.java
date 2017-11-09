@@ -109,6 +109,11 @@ public interface Constants {
         }
     }
 
+    interface ProblemType{
+        int MAJOR = 1;
+        int MINOR = 2;
+    }
+
     int DISCUSS_PAGE_SIZE = 100;
 
     String TEMP_IMAGE_PATH = "/data/static/images/";

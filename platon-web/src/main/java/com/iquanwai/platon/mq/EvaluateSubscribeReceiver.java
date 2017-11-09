@@ -47,7 +47,7 @@ public class EvaluateSubscribeReceiver {
         JSONObject json = JSONObject.parseObject(message);
 
         String scene = json.get("scene").toString();
-        if (!scene.startsWith(PromotionConstants.Activities.Evaluate)) {
+        if (!scene.startsWith(PromotionConstants.Activities.EVALUATE)) {
             logger.info("scene: {}", scene);
             return;
         }
@@ -56,7 +56,7 @@ public class EvaluateSubscribeReceiver {
 
         String[] sceneParams = scene.split("_");
         Assert.isTrue(sceneParams.length == 3, "场景值错误：" + scene);
-        if (!sceneParams[0].equalsIgnoreCase(PromotionConstants.Activities.Evaluate)) {
+        if (!sceneParams[0].equalsIgnoreCase(PromotionConstants.Activities.EVALUATE)) {
             return;
         }
 

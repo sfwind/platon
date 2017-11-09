@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
 import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
+import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
@@ -19,6 +20,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
@@ -99,6 +101,8 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
+    @Autowired
+    private WhiteListDao whiteListDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -354,9 +358,15 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void submitPersonalCenterProfile(Profile profile) {
+        Assert.notNull(profile, "profile 不能为空");
         Assert.notNull(profile.getId(), "profileId 不能为空");
         Profile oldProfile = profileDao.load(Profile.class, profile.getId());
-        Boolean result = profileDao.submitPersonalCenterProfile(profile);
+        Boolean result;
+        if (profile.getAddress() != null) {
+            result = profileDao.submitPersonalCenterProfileWithMoreDetail(profile);
+        } else {
+            result = profileDao.submitPersonalCenterProfile(profile);
+        }
         if (result && oldProfile.getIsFull() == 0) {
             logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
             // 第一次提交，加分
@@ -529,6 +539,11 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    public List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId) {
+        return riseMemberDao.loadRiseMembersByProfileId(profileId);
+    }
+
     private Integer riseMember(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember == null) {
@@ -564,6 +579,18 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public SubscribePush loadSubscribePush(Integer id) {
         return subscribePushDao.loadById(id);
+    }
+
+    @Override
+    public Integer loadUserScheduleCategory(Integer profileId) {
+        // 老用户
+        CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.SCHEDULE_LESS);
+        if (status != null) {
+            return CourseScheduleDefault.CategoryType.OLD_STUDENT;
+        } else {
+            return CourseScheduleDefault.CategoryType.NEW_STUDENT;
+        }
+
     }
 }
 

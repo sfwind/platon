@@ -17,20 +17,20 @@ import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.*;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.ImageUtils;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,14 +59,13 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
 
-    private static final int Source_RISE = 1; // 官方
-    private static final int Source_SELF = 2; // 自己
-    private static final int Source_Other = 3; // 他人
+    private static final int SOURCE_RISE = 1; // 官方
+    private static final int SOURCE_SELF = 2; // 自己
+    private static final int SOURCE_OTHER = 3; // 他人
 
-    private static final Integer trialNum = 3;
-    private static final String activity = PromotionConstants.Activities.Evaluate;
+    private static final Integer TRIAL_NUM = 3;
+    private static final String ACTIVITY = PromotionConstants.Activities.EVALUATE;
 
-    private static Map<Integer, BufferedImage> targetImageMap = Maps.newHashMap(); // 预先加载好所有背景图
     private static Map<Integer, String> evaluateResultMap = Maps.newHashMap(); // 测评结果
     private static Map<Integer, String> suggestionMap = Maps.newHashMap(); // 测评建议
 
@@ -76,9 +75,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     @PostConstruct
     public void init() {
-        targetImageMap.put(1, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate1_6.png?imageslim"));
-        targetImageMap.put(2, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate2_6.png?imageslim"));
-        targetImageMap.put(3, ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/evaluate3_6.png?imageslim"));
 
         evaluateResultMap.put(1, "你的这方面潜力还没有得到开发和施展。你努力地工作生活，但常常感到受压抑，因为面对问题时，你可能忽视了本质原因，从而不能很有效地解决问题。");
         evaluateResultMap.put(2, "拥有洞察力潜力的你，比较关注细节，能够准确地把握事实；但有时候，因为没有把潜力发挥出来，而做了一些无用功，觉得自己的付出得不到应有的回报。");
@@ -115,7 +111,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @Override
     public void clickHref(Integer profileId) {
         recordPromotionLevel(profileId, "RISE");
-        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.ClickHref);
+        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.CLICK_HREF);
     }
 
     /**
@@ -124,7 +120,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @Override
     public void recordScan(Integer profileId, String source) {
         recordPromotionLevel(profileId, source);
-        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.ScanCard);
+        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.SCAN_CARD);
     }
 
     /**
@@ -133,14 +129,14 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @Override
     public Pair<String, String> completeEvaluate(Integer profileId, Integer score, Boolean freeLimit, Integer percent) {
         // 如果不是 level 中的人则不记录
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, ACTIVITY);
         if (promotionLevel != null) {
-            recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FinishEvaluate);
+            recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.FINISH_EVALUATE);
             List<Integer> actions = Lists.newArrayList();
-            actions.add(PromotionConstants.EvaluateAction.FinishEvaluate);
-            actions.add(PromotionConstants.EvaluateAction.BuyCourse);
+            actions.add(PromotionConstants.EvaluateAction.FINISH_EVALUATE);
+            actions.add(PromotionConstants.EvaluateAction.BUY_COURSE);
             List<PromotionActivity> activities = promotionActivityDao.loadActionList(profileId,
-                    actions, activity);
+                    actions, ACTIVITY);
             if (activities.size() == 1) {
                 checkAwardAndSendMsg(profileId);
             }
@@ -158,18 +154,18 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     @Override
     public void recordPayAction(Integer profileId) {
         // 如果不是 level 中的人则不记录
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, ACTIVITY);
         if (promotionLevel == null) {
             return;
         }
 
-        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BuyCourse);
+        recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.BUY_COURSE);
 
         List<Integer> actions = Lists.newArrayList();
-        actions.add(PromotionConstants.EvaluateAction.FinishEvaluate);
-        actions.add(PromotionConstants.EvaluateAction.BuyCourse);
+        actions.add(PromotionConstants.EvaluateAction.FINISH_EVALUATE);
+        actions.add(PromotionConstants.EvaluateAction.BUY_COURSE);
         List<PromotionActivity> activities = promotionActivityDao.loadActionList(profileId,
-                actions, activity);
+                actions, ACTIVITY);
         if (activities.size() == 1) {
             checkAwardAndSendMsg(profileId);
         }
@@ -180,39 +176,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
      */
     @Override
     public boolean checkTrialAuthority(Integer profileId) {
-        List<PromotionActivity> activities = promotionActivityDao.loadPromotionActivities(profileId, activity);
+        List<PromotionActivity> activities = promotionActivityDao.loadPromotionActivities(profileId, ACTIVITY);
         Long accessTrialCnt = activities.stream().filter(
-                activity -> activity.getAction() == PromotionConstants.EvaluateAction.AccessTrial
+                activity -> activity.getAction() == PromotionConstants.EvaluateAction.ACCESS_TRIAL
         ).count();
         return accessTrialCnt.intValue() > 0;
-    }
-
-    /**
-     * 微信后台推送结果卡片
-     */
-    @Override
-    public String getResult(Integer profileId, Integer score, Integer percent) {
-        Profile profile = accountService.getProfile(profileId);
-        // 计算测评等级
-        Integer level = calcLevel(score);
-
-        Assert.notNull(profile, "用户不能为空");
-
-        BufferedImage bufferedImage = generateResultPic(profileId, level, percent);
-        Assert.notNull(bufferedImage, "生成图片不能为空");
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageUtils.writeToOutputStream(bufferedImage, "jpg", outputStream);
-        BASE64Encoder encoder = new BASE64Encoder();
-        try {
-            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
-        }finally {
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                logger.error("os close failed", e);
-            }
-        }
     }
 
 
@@ -225,44 +193,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         } else {
             return 1;
         }
-    }
-
-    // 生成结果图片
-    private BufferedImage generateResultPic(Integer profileId, Integer level, Integer percent) {
-        BufferedImage targetImage = targetImageMap.get(level);
-        BufferedImage qrImage = loadQrImage(PromotionConstants.Activities.Evaluate + "_" + profileId + "_9");
-        BufferedImage headImage = loadHeadImage(profileId);
-
-        InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
-        Font font;
-        try {
-            font = Font.createFont(Font.TRUETYPE_FONT, in);
-        } catch (FontFormatException | IOException e) {
-            logger.error(e.getLocalizedMessage());
-            return null;
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                logger.error("is closed error", e);
-            }
-        }
-
-        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 214, 214);
-        headImage = ImageUtils.scaleByPercentage(headImage, 120, 120);
-        headImage = ImageUtils.convertCircular(headImage);
-
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 101, 1025);
-        targetImage = ImageUtils.overlapImage(targetImage, headImage, 129, 273);
-
-        Profile profile = accountService.getProfile(profileId);
-
-        targetImage = ImageUtils.writeText(targetImage, 280, 320,profile.getNickname()+"的洞察力天赋",
-                font.deriveFont(30f), new Color(255, 255, 255));
-        targetImage = ImageUtils.writeText(targetImage, 280, 365, "打败了"+percent+"%的人",
-                font.deriveFont(30f), new Color(255, 255, 255));
-        return targetImage;
     }
 
     // 获取二维码，场景值变化
@@ -309,7 +239,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     // 查看获取当前已经获取的奖励，并且同时发送消息
     private void checkAwardAndSendMsg(Integer profileId) {
         // 某人完成测评，需要查看他的推广人信息
-        PromotionLevel source = promotionLevelDao.loadByProfileId(profileId, activity);
+        PromotionLevel source = promotionLevelDao.loadByProfileId(profileId, ACTIVITY);
         if (source == null || source.getPromoterId() == null) {
             return;
         }
@@ -344,27 +274,27 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     // 常看当前此人是否有权限获得获得限免试用资格
     private Integer accessTrial(Integer profileId) {
-        List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(profileId, activity);
+        List<PromotionLevel> promotionLevels = promotionLevelDao.loadByPromoterId(profileId, ACTIVITY);
         List<Integer> profileIds = promotionLevels.stream().map(PromotionLevel::getProfileId).collect(Collectors.toList());
-        List<PromotionActivity> newUsers = promotionActivityDao.loadNewUsers(profileIds, activity);
+        List<PromotionActivity> newUsers = promotionActivityDao.loadNewUsers(profileIds, ACTIVITY);
 
         List<PromotionActivity> successUsers = newUsers.stream().filter(
-                user -> user.getAction() == PromotionConstants.EvaluateAction.FinishEvaluate
-                        || user.getAction() == PromotionConstants.EvaluateAction.BuyCourse
+                user -> user.getAction() == PromotionConstants.EvaluateAction.FINISH_EVALUATE
+                        || user.getAction() == PromotionConstants.EvaluateAction.BUY_COURSE
         ).filter(distinctByKey(PromotionActivity::getProfileId)).collect(Collectors.toList());
 
         Integer remainTrial = -1;
 
         // 达到试用人数要求，获得试用权限
-        if (successUsers.size() == trialNum) {
-            int result = recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.AccessTrial);
+        if (successUsers.size() == TRIAL_NUM) {
+            int result = recordPromotionActivity(profileId, PromotionConstants.EvaluateAction.ACCESS_TRIAL);
             if (result > 0) {
                 remainTrial = 0;
             }
-        } else if (successUsers.size() > trialNum) {
+        } else if (successUsers.size() > TRIAL_NUM) {
             remainTrial = -1;
         } else {
-            remainTrial = trialNum - successUsers.size();
+            remainTrial = TRIAL_NUM - successUsers.size();
         }
 
         return remainTrial;
@@ -415,7 +345,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true");
         templateMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
         data.put("first", new TemplateMessage.Keyword("恭喜！你的好友"+promoterProfile.getNickname() + "扫码完成测试，总计"+
-                trialNum + "位好友完成测评，你已获得免费领取洞察力小课资格啦！\n"));
+                TRIAL_NUM + "位好友完成测评，你已获得免费领取洞察力小课资格啦！\n"));
         data.put("keyword1", new TemplateMessage.Keyword("找到本质问题，减少无效努力"));
         data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));
         data.put("remark", new TemplateMessage.Keyword("\n点击卡片领取！"));
@@ -466,20 +396,20 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         selfLevel.setProfileId(profileId);
         Integer scanSource = scanSource(profileId, source);
         switch (scanSource) {
-            case Source_RISE:
+            case SOURCE_RISE:
                 selfLevel.setLevel(1);
                 promotionLevelDao.insertPromotionLevel(selfLevel);
                 break;
-            case Source_SELF:
+            case SOURCE_SELF:
                 selfLevel.setLevel(1);
                 promotionLevelDao.insertPromotionLevel(selfLevel);
                 break;
-            case Source_Other:
+            case SOURCE_OTHER:
                 // 扫他人码
                 Integer sourceId = Integer.parseInt(source);
                 if (isExistInPromotionLevel(sourceId)) {
                     // 他人已经存在于 level 表
-                    PromotionLevel otherLevel = promotionLevelDao.loadByProfileId(sourceId, activity);
+                    PromotionLevel otherLevel = promotionLevelDao.loadByProfileId(sourceId, ACTIVITY);
                     Integer baseLevel = otherLevel.getLevel();
                     selfLevel.setLevel(baseLevel + 1);
                     selfLevel.setPromoterId(sourceId);
@@ -512,7 +442,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
     // 在 level 表中是否存在记录
     private boolean isExistInPromotionLevel(Integer profileId) {
-        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, activity);
+        PromotionLevel promotionLevel = promotionLevelDao.loadByProfileId(profileId, ACTIVITY);
         return promotionLevel != null;
     }
 
@@ -525,24 +455,24 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
     // 扫码来源，区分为 1-官方， 2-自己， 3-他人
     private Integer scanSource(Integer selfProfileId, String source) {
         if ("RISE".equalsIgnoreCase(source)) {
-            return Source_RISE;
+            return SOURCE_RISE;
         } else if (selfProfileId.toString().equalsIgnoreCase(source)) {
-            return Source_SELF;
+            return SOURCE_SELF;
         } else {
-            return Source_Other;
+            return SOURCE_OTHER;
         }
     }
 
     private PromotionLevel getDefaultPromotionLevel() {
         PromotionLevel promotionLevel = new PromotionLevel();
-        promotionLevel.setActivity(activity);
+        promotionLevel.setActivity(ACTIVITY);
         promotionLevel.setValid(1);
         return promotionLevel;
     }
 
     private PromotionActivity getDefaultPromotionActivity() {
         PromotionActivity promotionActivity = new PromotionActivity();
-        promotionActivity.setActivity(activity);
+        promotionActivity.setActivity(ACTIVITY);
         return promotionActivity;
     }
 

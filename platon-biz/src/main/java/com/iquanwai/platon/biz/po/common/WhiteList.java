@@ -18,6 +18,10 @@ public class WhiteList {
     public final static String FORUM = "FORUM";
     public final static String FRAG_COURSE_PAY = "FRAG_COURSE_PAY";
     public final static String TRIAL = "RISE_PROBLEM_TRIAL";
+    /**
+     * 课程表功能
+     */
+    public final static String SCHEDULE = "SCHEDULE";
 
 
 }
