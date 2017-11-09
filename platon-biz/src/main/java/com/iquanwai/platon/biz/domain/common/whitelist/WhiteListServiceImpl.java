@@ -46,16 +46,16 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public boolean isGoToCountDownNotice(Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+    public boolean isGoToCountDownNotice(Integer profileId,List<RiseMember> riseMembers) {
         return riseMembers.stream()
                 .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
                         && new DateTime(item.getOpenDate()).isAfterNow());
     }
 
+
     @Override
-    public boolean isGoToScheduleNotice(Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+    public boolean isGoToScheduleNotice(Integer profileId,List<RiseMember> riseMembers) {
+//        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         // 是商学院
         Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
         if (isElite) {

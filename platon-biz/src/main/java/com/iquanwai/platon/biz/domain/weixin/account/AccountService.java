@@ -4,6 +4,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -177,6 +178,13 @@ public interface AccountService {
      * @return 是否创建成功
      */
     Boolean addStatusId(Integer profileId, Integer statusId);
+
+    /**
+     * 获取所有该用户会员信息
+     *
+     * @param profileId 用户id
+     */
+    List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId);
 
     /**
      * 创建关注推送消息

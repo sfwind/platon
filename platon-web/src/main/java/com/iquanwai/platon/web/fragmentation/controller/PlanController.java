@@ -730,15 +730,9 @@ public class PlanController {
         }
         // 获取所有推荐，对这些推荐排序
         List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left, right) -> {
-            Integer rightScore = problemScores.get(right.getProblemId());
-            Integer leftScore = problemScores.get(left.getProblemId());
-            if (leftScore == null) {
-                return 1;
-            } else if (rightScore == null) {
-                return -1;
-            } else {
-                return rightScore - leftScore;
-            }
+            Integer rightScore = problemScores.get(right.getProblemId()) == null ? 0 : problemScores.get(right.getProblemId());
+            Integer leftScore = problemScores.get(left.getProblemId()) == null ? 0 : problemScores.get(left.getProblemId());
+            return rightScore - leftScore;
         }).collect(Collectors.toList());
         boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, profileId);
         for (Recommendation recommendation : recommendationLists) {
@@ -746,7 +740,7 @@ public class PlanController {
             List<Problem> recommendProblems = recommendation.getRecommendProblems();
 
             // 额外添加业务场景下所需要的字段值
-            recommendProblems.stream().forEach(problem -> {
+            recommendProblems.forEach(problem -> {
                 Integer subCatalogId = problem.getSubCatalogId();
                 if (subCatalogId != null) {
                     ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);

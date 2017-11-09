@@ -1,5 +1,9 @@
 package com.iquanwai.platon.biz.domain.common.whitelist;
 
+import com.iquanwai.platon.biz.po.RiseMember;
+
+import java.util.List;
+
 /**
  * Created by justin on 16/12/26.
  */
@@ -20,7 +24,7 @@ public interface WhiteListService {
      * @param profileId 用户id
      * @return 是否进入到倒计时页面
      */
-    boolean isGoToCountDownNotice(Integer profileId);
+    boolean isGoToCountDownNotice(Integer profileId,List<RiseMember> riseMembers);
 
     /**
      * 进入课程计划提示页面
@@ -28,7 +32,7 @@ public interface WhiteListService {
      * @param profileId 用户id
      * @return 是否进入
      */
-    boolean isGoToScheduleNotice(Integer profileId);
+    boolean isGoToScheduleNotice(Integer profileId,List<RiseMember> riseMembers);
 
     /**
      * 点击商学院白名单
