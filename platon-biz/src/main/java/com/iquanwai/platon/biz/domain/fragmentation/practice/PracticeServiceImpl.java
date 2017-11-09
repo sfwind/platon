@@ -770,7 +770,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer profileId, Integer submitId) {
         ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
-        if (!profileId.equals(applicationSubmit.getProfileId())) {
+        if (applicationSubmit == null || !profileId.equals(applicationSubmit.getProfileId())) {
             return Lists.newArrayList();
         }
 
