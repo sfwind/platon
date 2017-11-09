@@ -821,9 +821,6 @@ public class PlanServiceImpl implements PlanService {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
-            }
             if (closeDate != null) {
                 improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
             }
