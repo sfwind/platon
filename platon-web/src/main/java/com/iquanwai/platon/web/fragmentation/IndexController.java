@@ -193,7 +193,7 @@ public class IndexController {
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
             //
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
-            Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
+            Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
             if (isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
                 // 如果地址是null，并且是会员，则进入填写信息页面
