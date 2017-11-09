@@ -46,18 +46,19 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public boolean isGoToCountDownNotice(Integer profileId,List<RiseMember> riseMembers) {
+    public boolean isGoToCountDownNotice(Integer profileId, List<RiseMember> riseMembers) {
         return riseMembers.stream()
                 .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
-                        && new DateTime(item.getOpenDate()).isAfterNow());
+                        && new DateTime(item.getOpenDate()).isAfterNow() && !item.getExpired());
     }
 
 
     @Override
-    public boolean isGoToScheduleNotice(Integer profileId,List<RiseMember> riseMembers) {
+    public boolean isGoToScheduleNotice(Integer profileId, List<RiseMember> riseMembers) {
 //        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         // 是商学院
-        Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
+        Boolean isElite = riseMembers.stream().anyMatch(item -> !item.getExpired() &&
+                (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
         if (isElite) {
             Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
             if (scheduleWhiteList) {
