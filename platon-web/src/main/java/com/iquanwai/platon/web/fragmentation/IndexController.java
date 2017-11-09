@@ -195,7 +195,7 @@ public class IndexController {
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
             Boolean isElite = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
-            if (isElite && profile.getAddress() == null) {
+            if (isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
                 // 如果地址是null，并且是会员，则进入填写信息页面
                 response.sendRedirect(PROFILE_SUBMIT);
                 return null;
