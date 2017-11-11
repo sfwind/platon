@@ -14,16 +14,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.ProblemSubCatalog;
-import com.iquanwai.platon.biz.po.Recommendation;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
@@ -537,7 +528,7 @@ public class PlanController {
         if (plan == null) {
             return WebUtils.error(null);
         }
-        List<ProblemSchedule> chapterList = planService.getChapterList(plan);
+        List<UserProblemSchedule> chapterList = planService.getChapterList(plan);
         Map<Integer, ChapterDto> filterChapter = Maps.newHashMap();
         chapterList.forEach(item -> {
             ChapterDto chapterDto = filterChapter.computeIfAbsent(item.getChapter(), (chapterId) -> {

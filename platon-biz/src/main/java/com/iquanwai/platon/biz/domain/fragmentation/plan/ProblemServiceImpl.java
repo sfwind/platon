@@ -185,7 +185,8 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
-        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId);
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
     }
 
     @Override
