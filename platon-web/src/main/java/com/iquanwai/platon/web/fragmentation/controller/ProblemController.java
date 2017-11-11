@@ -298,7 +298,6 @@ public class ProblemController {
 
         // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
 
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
