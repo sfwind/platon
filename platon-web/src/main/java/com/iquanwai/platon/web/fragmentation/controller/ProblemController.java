@@ -278,9 +278,7 @@ public class ProblemController {
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblem(problemId);
-        // 查看该用户是否对该问题评分
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
+        Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("阅读问题报告")
