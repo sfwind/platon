@@ -620,12 +620,12 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
-        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return false;
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -654,12 +654,13 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
-        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return null;
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();

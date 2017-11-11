@@ -402,6 +402,12 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemCards(LoginUser loginUser, @PathVariable Integer planId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
+        OperationLog operationLog = OperationLog.create()
+                .module("小课")
+                .action("小课卡包")
+                .function("获取小课卡包")
+                .openid(loginUser.getOpenId());
+        operationLogService.log(operationLog);
         if (essenceCards == null) {
             return WebUtils.error("未找到当前小课相关卡包信息");
         } else {
