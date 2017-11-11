@@ -129,9 +129,7 @@ public class BackendController {
 
     @RequestMapping(value = "/upload/certificate")
     public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu() {
-        ThreadPool.execute(() -> {
-            certificateService.uploadCertificateToQiNiu();
-        });
+        ThreadPool.execute(() -> certificateService.uploadCertificateToQiNiu());
         return WebUtils.result("正在进行中");
     }
 
@@ -191,7 +189,7 @@ public class BackendController {
                 .function("小课强开")
                 .action("小课强开");
         operationLogService.log(operationLog);
-        problemScheduleRepository.batchinsert();
+        ThreadPool.execute(problemScheduleRepository::batchinsert);
         return WebUtils.success();
     }
 
