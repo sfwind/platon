@@ -109,8 +109,8 @@ public class ProblemScheduleRepositoryImpl implements ProblemScheduleRepository 
                 problemSchedules = problemSchedules1.stream()
                         .map(problemSchedule -> getUserProblemSchedule(problemSchedule, improvementPlan.getId()))
                         .collect(Collectors.toList());
+                userProblemScheduleDao.batchInsert(problemSchedules);
             }
-            userProblemScheduleDao.batchInsert(problemSchedules);
         });
     }
 
