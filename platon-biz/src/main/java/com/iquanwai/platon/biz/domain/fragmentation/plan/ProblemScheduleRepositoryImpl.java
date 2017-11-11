@@ -46,6 +46,12 @@ public class ProblemScheduleRepositoryImpl implements ProblemScheduleRepository 
             userProblemScheduleDao.batchInsert(problemSchedules);
         }
 
+        List<Chapter> chapterList = getChapters(problemSchedules);
+
+        return chapterList;
+    }
+
+    private List<Chapter> getChapters(List<UserProblemSchedule> problemSchedules) {
         Map<Integer, List<UserProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         //按节组合成一组知识点
         problemSchedules.forEach(problemSchedule -> {
@@ -84,7 +90,19 @@ public class ProblemScheduleRepositoryImpl implements ProblemScheduleRepository 
             }
             chapterList.add(chapter);
         });
+        return chapterList;
+    }
 
+    @Override
+    public List<Chapter> loadDefaultRoadMap(Integer problemId) {
+
+        List<ProblemSchedule> problemSchedules1 = problemScheduleDao.loadProblemSchedule(problemId);
+
+        List<UserProblemSchedule> problemSchedules = problemSchedules1.stream()
+                .map(problemSchedule -> getUserProblemSchedule(problemSchedule, null))
+                .collect(Collectors.toList());
+
+        List<Chapter> chapterList = getChapters(problemSchedules);
         return chapterList;
     }
 

@@ -67,8 +67,14 @@ public class ProblemServiceImpl implements ProblemService {
     public Problem getProblemForSchedule(Integer problemId, Integer profileId) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Problem problem = cacheService.getProblem(problemId);
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters;
+        if(improvementPlan!=null){
+            chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        }else{
+            chapters = problemScheduleRepository.loadDefaultRoadMap(problemId);
+        }
         problem.setChapterList(chapters);
+
         return problem;
     }
 

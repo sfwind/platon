@@ -12,5 +12,11 @@ public interface ProblemScheduleRepository {
      * */
     List<Chapter> loadRoadMap(Integer planId);
 
+    /**
+     * 获取章节地图
+     * @param problemId 小课id
+     * */
+    List<Chapter> loadDefaultRoadMap(Integer problemId);
+
     void batchinsert();
 }
