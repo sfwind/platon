@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemScheduleRepository;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
@@ -20,11 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -45,6 +42,8 @@ public class BackendController {
     private CertificateService certificateService;
     @Autowired
     private PlanService planService;
+    @Autowired
+    private ProblemScheduleRepository problemScheduleRepository;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -130,9 +129,7 @@ public class BackendController {
 
     @RequestMapping(value = "/upload/certificate")
     public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu() {
-        ThreadPool.execute(() -> {
-            certificateService.uploadCertificateToQiNiu();
-        });
+        ThreadPool.execute(() -> certificateService.uploadCertificateToQiNiu());
         return WebUtils.result("正在进行中");
     }
 
@@ -182,6 +179,17 @@ public class BackendController {
             logger.info("开课: profileId:{},planId:{}", profileId, result);
         }));
 
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/open/schedule", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generateSchedule() {
+        OperationLog operationLog = OperationLog.create().openid("后台小课强开")
+                .module("后台功能")
+                .function("小课强开")
+                .action("小课强开");
+        operationLogService.log(operationLog);
+        ThreadPool.execute(problemScheduleRepository::batchinsert);
         return WebUtils.success();
     }
 

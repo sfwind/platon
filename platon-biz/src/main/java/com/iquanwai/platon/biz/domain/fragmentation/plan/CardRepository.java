@@ -13,7 +13,7 @@ public interface CardRepository {
      * 获取精华卡
      * 返回base64
      * */
-    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
+    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, Integer planId);
 
     /**
      * 获取缩略图url
@@ -24,11 +24,6 @@ public interface CardRepository {
      * 获取缩略图锁定url
      * */
     String loadTargetThumbnailLockByChapterId(int chapterId, int totalSize);
-
-    /**
-     * 获取限免小课熊猫卡
-     * */
-    BufferedImage loadDefaultCardImg(Profile profile);
 
     BufferedImage loadCaitongBgImage();
 

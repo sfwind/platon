@@ -278,9 +278,7 @@ public class ProblemController {
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblem(problemId);
-        // 查看该用户是否对该问题评分
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
+        Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("阅读问题报告")
@@ -298,9 +296,7 @@ public class ProblemController {
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
 
-        // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
 
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
@@ -402,6 +398,12 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemCards(LoginUser loginUser, @PathVariable Integer planId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
+        OperationLog operationLog = OperationLog.create()
+                .module("小课")
+                .action("小课卡包")
+                .function("获取小课卡包")
+                .openid(loginUser.getOpenId());
+        operationLogService.log(operationLog);
         if (essenceCards == null) {
             return WebUtils.error("未找到当前小课相关卡包信息");
         } else {

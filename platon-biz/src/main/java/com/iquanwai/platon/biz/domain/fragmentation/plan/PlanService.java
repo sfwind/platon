@@ -61,7 +61,7 @@ public interface PlanService {
      * 获取章节信息
      * @param plan 训练计划
      */
-    List<ProblemSchedule> getChapterList(ImprovementPlan plan);
+    List<UserProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
      * 获取知识点
