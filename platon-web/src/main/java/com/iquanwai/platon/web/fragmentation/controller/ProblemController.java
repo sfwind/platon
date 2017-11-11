@@ -291,7 +291,7 @@ public class ProblemController {
     @RequestMapping("/open/{problemId}")
     public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblem(problemId);
+        Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         // 设置当前小课已学习人数
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
