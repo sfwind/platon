@@ -296,7 +296,6 @@ public class ProblemController {
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
 
-        // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
 
