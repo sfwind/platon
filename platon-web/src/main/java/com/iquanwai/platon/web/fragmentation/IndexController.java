@@ -78,6 +78,8 @@ public class IndexController {
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
     //填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
+    //申请成功页面
+    private static final String APPLY_SUCCESS = "/pay/member/apply/success";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
@@ -214,8 +216,13 @@ public class IndexController {
                 loginMsg(loginUser);
                 // 查看点击商学院的时候，是否已经开营
             } else {
-                response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
-                return null;
+                if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.PAY_BUSINESS)) {
+                    response.sendRedirect(APPLY_SUCCESS);
+                    return null;
+                } else {
+                    response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
+                    return null;
+                }
             }
         }
 
