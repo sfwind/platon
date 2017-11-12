@@ -17,6 +17,4 @@ public interface ProblemScheduleRepository {
      * @param problemId 小课id
      * */
     List<Chapter> loadDefaultRoadMap(Integer problemId);
-
-    void batchinsert();
 }

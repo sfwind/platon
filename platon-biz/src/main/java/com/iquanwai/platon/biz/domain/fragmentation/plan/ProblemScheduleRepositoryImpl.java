@@ -114,24 +114,6 @@ public class ProblemScheduleRepositoryImpl implements ProblemScheduleRepository 
         return sectionList.get(0).getChapterName();
     }
 
-    @Override
-    public void batchinsert() {
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAll(ImprovementPlan.class);
-        improvementPlans = improvementPlans.stream().filter(improvementPlan -> !improvementPlan.getDel()).collect(Collectors.toList());
-
-        improvementPlans.forEach(improvementPlan -> {
-            List<UserProblemSchedule> problemSchedules = userProblemScheduleDao.loadUserProblemSchedule(improvementPlan.getId());
-            if (CollectionUtils.isEmpty(problemSchedules)) {
-                List<ProblemSchedule> problemSchedules1 = problemScheduleDao.loadProblemSchedule(improvementPlan.getProblemId());
-
-                problemSchedules = problemSchedules1.stream()
-                        .map(problemSchedule -> getUserProblemSchedule(problemSchedule, improvementPlan.getId()))
-                        .collect(Collectors.toList());
-                userProblemScheduleDao.batchInsert(problemSchedules);
-            }
-        });
-    }
-
     private UserProblemSchedule getUserProblemSchedule(ProblemSchedule problemSchedule, Integer planId) {
         ModelMapper mapper = new ModelMapper();
         UserProblemSchedule userProblemSchedule = mapper.map(problemSchedule, UserProblemSchedule.class);
