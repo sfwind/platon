@@ -3,7 +3,6 @@ package com.iquanwai.platon.web.fragmentation;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemScheduleRepository;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
@@ -42,8 +41,6 @@ public class BackendController {
     private CertificateService certificateService;
     @Autowired
     private PlanService planService;
-    @Autowired
-    private ProblemScheduleRepository problemScheduleRepository;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -179,17 +176,6 @@ public class BackendController {
             logger.info("开课: profileId:{},planId:{}", profileId, result);
         }));
 
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/open/schedule", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generateSchedule() {
-        OperationLog operationLog = OperationLog.create().openid("后台小课强开")
-                .module("后台功能")
-                .function("小课强开")
-                .action("小课强开");
-        operationLogService.log(operationLog);
-        ThreadPool.execute(problemScheduleRepository::batchinsert);
         return WebUtils.success();
     }
 

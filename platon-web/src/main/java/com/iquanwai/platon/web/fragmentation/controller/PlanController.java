@@ -868,7 +868,6 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         // 计算startTime／endTime,班号
         Date nextMonday = DateUtils.getNextMonday(new Date());
-        Date closeDate = DateUtils.afterDays(nextMonday, GeneratePlanService.PROBLEM_MAX_LENGTH);
         String className = DateUtils.parseDateToFormat9(nextMonday);
         Date startDate = DateUtils.beforeDays(nextMonday, 1);
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
@@ -901,19 +900,8 @@ public class PlanController {
             dto.setPlanId(ownedAudition.getId());
         }
         dto.setClassName(className);
-//        if (dto.getGoSuccess()) {
-//            // 第一次学习试听课
-//            LOGGER.info("第一次学习试听课，发送消息,loginUser:{}", loginUser);
-//            this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
-//
-//            // 添加到需
-//        }
-        return WebUtils.result(dto);
-    }
 
-    // 发送普通限免小课信息
-    private void sendAuditionMsg(String openId, Integer profileId, Integer auditionId) {
-        customerMessageService.sendCustomerMessage(openId, ConfigUtils.getAuditionPushMsg(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        return WebUtils.result(dto);
     }
 
 }
