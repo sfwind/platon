@@ -79,7 +79,7 @@ public class IndexController {
     //填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
     //申请成功页面
-    private static final String APPLY_SUCCESS = "/pay/member/apply/success";
+    private static final String APPLY_SUCCESS = "/pay/apply";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
