@@ -661,7 +661,7 @@ public class CertificateServiceImpl implements CertificateService {
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate) {
         Assert.notNull(riseCertificate, "证件信息不能为空");
-
+        logger.info("正在生成证书：{}", riseCertificate.getCertificateNo());
         // 证书数据准备
         Profile profile = accountService.getProfile(riseCertificate.getProfileId());
         if (profile == null || profile.getRealName() == null) {
@@ -678,6 +678,8 @@ public class CertificateServiceImpl implements CertificateService {
         BufferedImage inputImage = null;
 
         InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
+        ByteArrayOutputStream outputStream = null;
+        ByteArrayInputStream inputStream = null;
         try {
             Font font = Font.createFont(Font.TRUETYPE_FONT, in);
             int type = riseCertificate.getType();
@@ -753,17 +755,29 @@ public class CertificateServiceImpl implements CertificateService {
                 default:
                     break;
             }
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
+
+            // 图片保存到本地文件
+            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
+
+            outputStream = new ByteArrayOutputStream();
+            ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
             return new MutablePair<>(uploadResult, fileName);
-        } catch (FontFormatException | IOException e) {
-            logger.error(e.getLocalizedMessage());
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
         } finally {
             try {
-                in.close();
+                if (in != null) {
+                    in.close();
+                }
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             } catch (IOException e) {
                 logger.error("is closed error", e);
             }

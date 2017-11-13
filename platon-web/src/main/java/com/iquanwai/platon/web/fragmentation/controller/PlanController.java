@@ -14,16 +14,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.ProblemSubCatalog;
-import com.iquanwai.platon.biz.po.Recommendation;
-import com.iquanwai.platon.biz.po.RiseCourseOrder;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
@@ -263,7 +254,7 @@ public class PlanController {
         if (problemId.equals(trialProblemId)) {
             // 限免小课
             operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
-                    PromotionConstants.FreeLimitAction.TrialCourse);
+                    PromotionConstants.FreeLimitAction.TRIAL_COURSE);
         }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
@@ -537,7 +528,7 @@ public class PlanController {
         if (plan == null) {
             return WebUtils.error(null);
         }
-        List<ProblemSchedule> chapterList = planService.getChapterList(plan);
+        List<UserProblemSchedule> chapterList = planService.getChapterList(plan);
         Map<Integer, ChapterDto> filterChapter = Maps.newHashMap();
         chapterList.forEach(item -> {
             ChapterDto chapterDto = filterChapter.computeIfAbsent(item.getChapter(), (chapterId) -> {
@@ -730,15 +721,9 @@ public class PlanController {
         }
         // 获取所有推荐，对这些推荐排序
         List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left, right) -> {
-            Integer rightScore = problemScores.get(right.getProblemId());
-            Integer leftScore = problemScores.get(left.getProblemId());
-            if (leftScore == null) {
-                return 1;
-            } else if (rightScore == null) {
-                return -1;
-            } else {
-                return rightScore - leftScore;
-            }
+            Integer rightScore = problemScores.get(right.getProblemId()) == null ? 0 : problemScores.get(right.getProblemId());
+            Integer leftScore = problemScores.get(left.getProblemId()) == null ? 0 : problemScores.get(left.getProblemId());
+            return rightScore - leftScore;
         }).collect(Collectors.toList());
         boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, profileId);
         for (Recommendation recommendation : recommendationLists) {
@@ -746,7 +731,7 @@ public class PlanController {
             List<Problem> recommendProblems = recommendation.getRecommendProblems();
 
             // 额外添加业务场景下所需要的字段值
-            recommendProblems.stream().forEach(problem -> {
+            recommendProblems.forEach(problem -> {
                 Integer subCatalogId = problem.getSubCatalogId();
                 if (subCatalogId != null) {
                     ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);
@@ -883,7 +868,6 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         // 计算startTime／endTime,班号
         Date nextMonday = DateUtils.getNextMonday(new Date());
-        Date closeDate = DateUtils.afterDays(nextMonday, GeneratePlanService.PROBLEM_MAX_LENGTH);
         String className = DateUtils.parseDateToFormat9(nextMonday);
         Date startDate = DateUtils.beforeDays(nextMonday, 1);
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
@@ -916,19 +900,8 @@ public class PlanController {
             dto.setPlanId(ownedAudition.getId());
         }
         dto.setClassName(className);
-//        if (dto.getGoSuccess()) {
-//            // 第一次学习试听课
-//            LOGGER.info("第一次学习试听课，发送消息,loginUser:{}", loginUser);
-//            this.sendAuditionMsg(loginUser.getOpenId(), loginUser.getId(), auditionId);
-//
-//            // 添加到需
-//        }
-        return WebUtils.result(dto);
-    }
 
-    // 发送普通限免小课信息
-    private void sendAuditionMsg(String openId, Integer profileId, Integer auditionId) {
-        customerMessageService.sendCustomerMessage(openId, ConfigUtils.getAuditionPushMsg(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        return WebUtils.result(dto);
     }
 
 }

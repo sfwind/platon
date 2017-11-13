@@ -11,17 +11,49 @@ import java.util.Date;
 @Data
 public class CourseSchedule {
     private Integer id;
-    private Integer profileId; //用户id
-    private Integer problemId; //小课id
-    private Integer year; //年份
-    private Integer month; //月份
-    private Integer type; //课程类型（1-主修,2-辅修）
-    private Boolean recommend; // 是否推荐
-    private Boolean selected; // 是否选择 0-否 1-是
-    private Boolean del; //是否删除
+    /**
+     * 用户id
+     */
+    private Integer profileId;
+    /**
+     * 小课id
+     */
+    private Integer problemId;
+    /**
+     * 年份
+     */
+    private Integer year;
+    /**
+     * 月份
+     */
+    private Integer month;
+    /**
+     * 课程类型（1-主修,2-辅修）
+     */
+    private Integer type;
+    /**
+     * 是否推荐
+     */
+    private Boolean recommend;
+    /**
+     * 是否选中状态
+     */
+    private Boolean selected;
+    /**
+     * 是否删除
+     */
+    private Boolean del;
+    /**
+     * 添加时间
+     */
+    private Date addTime;
 
-    private Date addTime; //添加时间
-
-    private String topic; //非db字段
-    private Problem problem; //非db字段
+    /**
+     * 非db字段
+     */
+    private String topic;
+    /**
+     * 非db字段
+     */
+    private Problem problem;
 }

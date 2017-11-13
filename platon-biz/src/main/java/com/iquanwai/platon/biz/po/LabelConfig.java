@@ -10,5 +10,5 @@ public class LabelConfig {
     private Integer id;
     private Integer problemId;
     private String name;
-    private Boolean Del;
+    private Boolean del;
 }

@@ -18,7 +18,7 @@
     }
 </script>
 <script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
-<div id="loading"><img src="//static.iqycamp.com/images/loading_page2.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
+<div id="loading"><img src="//static.iqycamp.com/images/dribz.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
 <div id="react-app"></div>
 <!-- 业务代码-->
 <%--<script src="${vendorResource}"></script>--%>

@@ -742,7 +742,9 @@ public class PracticeServiceImpl implements PracticeService {
     public Boolean loadEvaluated(Integer commentId) {
         CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
         // 数据库如果没有这条评论记录，默认为已评
-        if (evaluation == null) return true;
+        if (evaluation == null) {
+            return true;
+        }
         Integer evaluated = evaluation.getEvaluated();
         if (evaluated != null) {
             switch (evaluated) {
@@ -770,7 +772,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer profileId, Integer submitId) {
         ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
-        if (!profileId.equals(applicationSubmit.getProfileId())) {
+        if (applicationSubmit == null || !profileId.equals(applicationSubmit.getProfileId())) {
             return Lists.newArrayList();
         }
 
@@ -784,9 +786,13 @@ public class PracticeServiceImpl implements PracticeService {
 
         for (CommentEvaluation evaluation : evaluations) {
             Comment comment = commentMap.get(evaluation.getCommentId());
-            if (comment == null) continue;
+            if (comment == null) {
+                continue;
+            }
             Profile profile = profileMap.get(comment.getCommentProfileId());
-            if (profile == null) continue;
+            if (profile == null) {
+                continue;
+            }
             evaluation.setNickName(profile.getNickname());
         }
         return evaluations;
@@ -970,10 +976,12 @@ public class PracticeServiceImpl implements PracticeService {
         return null;
     }
 
+    @Override
     public void deleteComment(Integer commentId) {
         commentDao.deleteComment(commentId);
     }
 
+    @Override
     public ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId) {
         return applicationSubmitDao.load(applicationId, profileId);
     }

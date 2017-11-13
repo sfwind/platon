@@ -13,8 +13,4 @@ public class ProblemSchedule {
     private Integer knowledgeId; //知识点id
     private Integer chapter; //小课第几章
     private Integer series; //序号
-
-
-    private String chapterStr; // 非DB字段，章名
-    private String sectionStr; // 非DB字段，节名
 }

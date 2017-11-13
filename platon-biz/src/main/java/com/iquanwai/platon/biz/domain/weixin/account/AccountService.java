@@ -4,6 +4,7 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -124,22 +125,94 @@ public interface AccountService {
 
     /**
      * 获取优惠券信息
+     *
+     * @param profileId 用户id
      */
     List<Coupon> loadCoupons(Integer profileId);
 
+    /**
+     * 插入优惠券
+     *
+     * @param coupon 优惠券
+     */
     void insertCoupon(Coupon coupon);
 
+    /**
+     * 获取用户当前的RiseClassMember记录
+     *
+     * @param profileId 用户id
+     * @return 当前的学号记录
+     */
     RiseClassMember loadDisplayRiseClassMember(Integer profileId);
 
+    /**
+     * 打开每日学习提醒
+     *
+     * @param profileId 用户id
+     * @return 是否操作成功
+     */
     Boolean openLearningNotify(Integer profileId);
 
+    /**
+     * 关闭每日学习提醒
+     *
+     * @param profileId 用户id
+     * @return 是否操作成功
+     */
     Boolean closeLearningNotify(Integer profileId);
 
+    /**
+     * 是否有对应status
+     *
+     * @param profileId 用户id
+     * @param statusId  statusId
+     * @return 是否有对应statusId
+     */
     Boolean hasStatusId(Integer profileId, Integer statusId);
 
+    /**
+     * 添加CustomerStatusId
+     *
+     * @param profileId 用户id
+     * @param statusId  statusId
+     * @return 是否创建成功
+     */
     Boolean addStatusId(Integer profileId, Integer statusId);
 
+    /**
+     * 获取所有该用户会员信息
+     *
+     * @param profileId 用户id
+     */
+    List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId);
+
+    /**
+     * 创建关注推送消息
+     *
+     * @param openid   openId
+     * @param callback 回调地址
+     * @param scene    场景值
+     * @return base64图片
+     */
     String createSubscribePush(String openid, String callback, String scene);
 
+    /**
+     * 获取关注事件推送消息
+     *
+     * @param id 推送id
+     * @return 事件消息
+     */
     SubscribePush loadSubscribePush(Integer id);
+
+    /**
+     * 获取用户的课程表类型
+     *
+     * @param profileId 用户id
+     * @return 课程表类型: <br/>
+     * <ul>
+     * <li>1-新用户</li>
+     * <li>2-老用户</li>
+     * </ul>
+     */
+    Integer loadUserScheduleCategory(Integer profileId);
 }

@@ -46,7 +46,7 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
-    private ProblemScheduleDao problemScheduleDao;
+    private UserProblemScheduleDao userProblemScheduleDao;
     @Autowired
     private TemplateMessageService templateMessageService;
     @Autowired
@@ -71,6 +71,8 @@ public class PlanServiceImpl implements PlanService {
     private AuditionClassMemberDao auditionClassMemberDao;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
+    @Autowired
+    private ProblemScheduleRepository problemScheduleRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -106,6 +108,8 @@ public class PlanServiceImpl implements PlanService {
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
         calcDeadLine(improvementPlan);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        problem.setChapterList(chapters);
         improvementPlan.setProblem(problem);
         // 当前 Problem 是否为限免小课
         Integer freeLimitProblemId = ConfigUtils.getTrialProblemId();
@@ -164,13 +168,11 @@ public class PlanServiceImpl implements PlanService {
             // 已关闭
             improvementPlan.setDeadline(0);
         } else {
-            // 未关闭 ,未关闭的都显示
+            // 未关闭的都显示
             // 计算关闭时间
             // CloseDate设置为25号的，在26号0点会关闭，所以在25号查看的时候，是一天
-            long now = System.currentTimeMillis();
-            long thatTime = DateUtils.afterDays(improvementPlan.getCloseDate(), 1).getTime();
-            long internalMills = Math.abs(thatTime - now);
-            int deadLine = new BigDecimal(internalMills).divide(new BigDecimal(1000 * 60 * 60 * 24), BigDecimal.ROUND_UP).intValue();
+            int deadLine = DateUtils.interval(DateUtils.startDay(new Date()), improvementPlan.getCloseDate());
+
             improvementPlan.setDeadline(deadLine);
         }
     }
@@ -216,9 +218,9 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ProblemSchedule> getChapterList(ImprovementPlan plan) {
+    public List<UserProblemSchedule> getChapterList(ImprovementPlan plan) {
         Assert.notNull(plan, "训练计划不能为空");
-        List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(plan.getProblemId());
+        List<UserProblemSchedule> problemSchedules = userProblemScheduleDao.loadUserProblemSchedule(plan.getId());
         problemSchedules.sort((o1, o2) -> {
             if (!o1.getChapter().equals(o2.getChapter())) {
                 return o1.getChapter() - o2.getChapter();
@@ -616,12 +618,12 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId) {
-        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return false;
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -650,12 +652,13 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId) {
-        List<Chapter> chapters = cacheService.getProblem(problemId).getChapterList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return null;
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -679,7 +682,7 @@ public class PlanServiceImpl implements PlanService {
         }
         // 当前章节 和 完成章节相等
         if (isLearningSuccess) {
-            return cardRepository.loadEssenceCardImg(profileId, problemId, targetChapterId);
+            return cardRepository.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId());
         } else {
             return null;
         }
@@ -821,9 +824,6 @@ public class PlanServiceImpl implements PlanService {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             generatePlanService.forceReopenPlan(improvementPlan.getId());
             practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
-            }
             if (closeDate != null) {
                 improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
             }

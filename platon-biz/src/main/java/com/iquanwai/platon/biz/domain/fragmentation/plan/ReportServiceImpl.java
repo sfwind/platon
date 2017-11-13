@@ -50,6 +50,8 @@ public class ReportServiceImpl implements ReportService {
     private SubjectArticleDao subjectArticleDao;
     @Autowired
     private RecommendationDao recommendationDao;
+    @Autowired
+    private ProblemScheduleRepository problemScheduleRepository;
 
     @Override
     public ImprovementReport loadUserImprovementReport(ImprovementPlan plan) {
@@ -115,7 +117,7 @@ public class ReportServiceImpl implements ReportService {
                 .map(item ->{
                     String recommendIds = item.getRecommendIds();
                     List<String> problemIdList = Lists.newArrayList();
-                    if (recommendIds != null && !recommendIds.equals("")) {
+                    if (recommendIds != null && !"".equals(recommendIds)) {
                         problemIdList = Arrays.asList(recommendIds.split("、"));
                     }
                     // 根据 ProblemId 列表获取所有的相关 Problem 信息
@@ -208,7 +210,7 @@ public class ReportServiceImpl implements ReportService {
         List<Integer> questionLists = warmupPractices.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         List<WarmupSubmit> warmupSubmit = warmupSubmitDao.getWarmupSubmit(plan.getId(), questionLists);
         // 获得章
-        List<Chapter> chapters = cacheService.loadRoadMap(plan.getProblemId());
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(plan.getId());
         // 用户提交的小节
         Map<Integer, List<WarmupSubmit>> submitMap = Maps.newHashMap();
         // 总的小节题目
@@ -301,7 +303,7 @@ public class ReportServiceImpl implements ReportService {
         for (Recommendation recommendation : recommendations) {
             String recommendIds = recommendation.getRecommendIds();
             List<String> problemIdList = Lists.newArrayList();
-            if (recommendIds != null && !recommendIds.equals("")) {
+            if (recommendIds != null && !"".equals(recommendIds)) {
                 problemIdList = Arrays.asList(recommendIds.split("、"));
             }
             // 根据 ProblemId 列表获取所有的相关 Problem 信息

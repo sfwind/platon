@@ -39,6 +39,29 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return -1;
     }
 
+    public void batchInsertCourseSchedule(List<CourseSchedule> schedules) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Year, Month, Type, Recommend, Selected) " +
+                " VALUES (?,?,?,?,?,?,?)";
+        try {
+            Object[][] param = new Object[schedules.size()][];
+            for (int i = 0; i < schedules.size(); i++) {
+                CourseSchedule courseSchedule = schedules.get(i);
+                param[i] = new Object[7];
+                param[i][0] = courseSchedule.getProfileId();
+                param[i][1] = courseSchedule.getProblemId();
+                param[i][2] = courseSchedule.getYear();
+                param[i][3] = courseSchedule.getMonth();
+                param[i][4] = courseSchedule.getType();
+                param[i][5] = courseSchedule.getRecommend();
+                param[i][6] = courseSchedule.getSelected();
+            }
+            runner.batch(sql, param);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public List<CourseSchedule> getCertainMonthSchedule(Integer profileId, Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Year = ? AND Month = ? AND Del = 0";

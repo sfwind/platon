@@ -34,6 +34,7 @@ public class ImprovementPlan {
     private Boolean riseMember; //是否付费
     private Integer requestCommentCount; //求点赞次数
     private Integer profileId; //用户id
+    private Boolean del; //是否删除
 
     // ----------------- 非db字段------------------
     private Problem problem; //非db字段 问题

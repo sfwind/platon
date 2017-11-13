@@ -258,8 +258,9 @@ public class QRCodeUtils {
         resMatrix.clear();
         for (int i = 0; i < resWidth; i++) {
             for (int j = 0; j < resHeight; j++) {
-                if (matrix.get(i + rec[0], j + rec[1]))
+                if (matrix.get(i + rec[0], j + rec[1])) {
                     resMatrix.set(i, j);
+                }
             }
         }
         return resMatrix;
@@ -291,15 +292,16 @@ public class QRCodeUtils {
             Graphics2D graphic = image.createGraphics();
             graphic.setColor(Color.white);
             graphic.fillRect(0, 0, width, height);
-            if (width == destImage.getWidth(null))
+            if (width == destImage.getWidth(null)) {
                 graphic.drawImage(destImage, 0, (height - destImage
                                 .getHeight(null)) / 2, destImage.getWidth(null),
                         destImage.getHeight(null), Color.white, null);
-            else
+            } else {
                 graphic.drawImage(destImage,
                         (width - destImage.getWidth(null)) / 2, 0, destImage
                                 .getWidth(null), destImage.getHeight(null),
                         Color.white, null);
+            }
             graphic.dispose();
             destImage = image;
         }

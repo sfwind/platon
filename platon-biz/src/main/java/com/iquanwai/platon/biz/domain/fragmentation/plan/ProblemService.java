@@ -25,6 +25,13 @@ public interface ProblemService {
     Problem getProblem(Integer problemId);
 
     /**
+     * 根据问题id获取问题
+     *
+     * @param problemId 问题id
+     */
+    Problem getProblemForSchedule(Integer problemId, Integer profileId);
+
+    /**
      * 获得问题的目录分类
      */
     List<ProblemCatalog> getProblemCatalogs();

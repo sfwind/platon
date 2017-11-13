@@ -19,6 +19,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     private RedisUtil redisUtil;
     @Autowired
     private AccessTokenDao accessTokenDao;
+    @Override
     public String getAccessToken() {
         if(accessToken!=null){
             return accessToken;
@@ -27,7 +28,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         String token = redisUtil.get("accessToken");
         if(token==null){
             logger.info("insert access token");
-            String accessToken = _getAccessToken();
+            String accessToken = getRecentlyAccessToken();
             redisUtil.set("accessToken", accessToken);
             accessTokenDao.insertOrUpdate(accessToken);
         }else {
@@ -37,7 +38,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         return accessToken;
     }
 
-    private String _getAccessToken() {
+    private String getRecentlyAccessToken() {
         logger.info("refreshing access token");
         String strAccessToken = weiXinAccessTokenRepo.getAccessToken();
         if(strAccessToken!=null){
@@ -46,6 +47,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
         return accessToken;
     }
 
+    @Override
     public String refreshAccessToken(boolean force) {
         if(force) {
             forceUpdateAccessToken();
@@ -53,7 +55,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
             String token = redisUtil.get("accessToken");
             if(token==null){
                 logger.info("insert access token");
-                String accessToken = _getAccessToken();
+                String accessToken = getRecentlyAccessToken();
                 redisUtil.set("accessToken", accessToken);
                 accessTokenDao.insertOrUpdate(accessToken);
             }else{
@@ -72,7 +74,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     }
 
     private void forceUpdateAccessToken(){
-        String accessToken = _getAccessToken();
+        String accessToken = getRecentlyAccessToken();
         redisUtil.set("accessToken", accessToken);
         accessTokenDao.insertOrUpdate(accessToken);
 

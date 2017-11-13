@@ -73,6 +73,7 @@ public class PointRepoImpl implements PointRepo {
         }
     }
 
+    @Override
     public Pair<Integer, Boolean> warmupScore(WarmupPractice warmupPractice, List<Integer> userChoiceList) {
         Assert.notNull(warmupPractice, "练习不能为空");
 

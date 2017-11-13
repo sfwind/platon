@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,8 +14,8 @@ public class ImageUtilTest {
 
 
     public static void main(String[] args) {
-        BufferedImage ordinaryImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/certificate_normal_bg_1.jpg?imageslim");
-        BufferedImage excellentImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/certificate_bg.jpg?imageslim");
+        BufferedImage ordinaryImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/certificate_normal_bg_2.jpg?imageslim");
+        BufferedImage excellentImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/certificate_bg_2.jpg?imageslim");
         BufferedImage inputImage = null;
 
         int year = 2017;
@@ -32,15 +31,15 @@ public class ImageUtilTest {
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
             inputImage = excellentImage;
-            ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-            ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-            ImageUtils.writeTextCenter(inputImage, 405, "优秀团队", font.deriveFont(72f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 545, NumberToHanZi.formatInteger(month) + "月小课" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(50f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 660, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(32f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-            ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
-            ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/Hello.png"));
+            // ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
+            // ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
+            ImageUtils.writeTextCenter(inputImage, 405, "优秀学员a", font.deriveFont(72f), new Color(102, 102, 102));
+            // ImageUtils.writeTextCenter(inputImage, 545, NumberToHanZi.formatInteger(month) + "月小课" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(50f), new Color(102, 102, 102));
+            // ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
+            // ImageUtils.writeTextCenter(inputImage, 660, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(32f), new Color(102, 102, 102));
+            // ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
+            // ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/Hello.png"));
         } catch (FontFormatException | IOException e) {
             logger.error(e.getLocalizedMessage());
         } finally {

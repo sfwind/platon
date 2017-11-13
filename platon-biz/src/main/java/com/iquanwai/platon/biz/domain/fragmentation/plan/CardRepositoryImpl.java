@@ -10,7 +10,6 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.EssenceCard;
-import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.*;
@@ -29,7 +28,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by justin on 17/8/2.
@@ -40,7 +40,6 @@ public class CardRepositoryImpl implements CardRepository {
     private BufferedImage essenceFreeTop;
     private BufferedImage essenceFreeBottom;
     private BufferedImage essenceNormalTop;
-    private BufferedImage pandaCard;
     private BufferedImage caitongHead;
     /**
      * 采铜直播背景图
@@ -55,6 +54,8 @@ public class CardRepositoryImpl implements CardRepository {
     private QRCodeService qrCodeService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private ProblemScheduleRepository problemScheduleRepository;
 
     private static Logger logger = LoggerFactory.getLogger(CardRepositoryImpl.class);
 
@@ -64,7 +65,7 @@ public class CardRepositoryImpl implements CardRepository {
 
     private Map<Integer, String> thumbnailLockMap = Maps.newHashMap();
 
-    private static final String CARD_ACTIVITY = PromotionConstants.Activities.FreeLimit;
+    private static final String CARD_ACTIVITY = PromotionConstants.Activities.FREE_LIMIT;
 
     @PostConstruct
     public void init() {
@@ -89,7 +90,6 @@ public class CardRepositoryImpl implements CardRepository {
             essenceFreeTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_top.png?imageslim");
             essenceFreeBottom = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_free_bottom_4.png?imageslim");
             essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
-            pandaCard = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/panda_card_1.jpg?imageslim");
             caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.jpg?imageslim");
             caitongHead = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_head_image.jpg?imageslim");
         }
@@ -97,15 +97,10 @@ public class CardRepositoryImpl implements CardRepository {
     }
 
     @Override
-    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
+    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, Integer planId) {
         InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
-        Integer totalSize;
-        Problem problem = cacheService.getProblem(problemId);
-        if (problem != null) {
-            totalSize = problem.getChapterList().size();
-        } else {
-            return null;
-        }
+        List<Chapter> list = problemScheduleRepository.loadRoadMap(planId);
+        Integer totalSize = list.size();
 
         Profile profile = accountService.getProfile(profileId);
         Font font;
@@ -330,43 +325,6 @@ public class CardRepositoryImpl implements CardRepository {
             chapterId = chapterId % thumbnailLockMap.size() == 0 ? thumbnailLockMap.size() : chapterId % thumbnailLockMap.size();
             return thumbnailLockMap.get(chapterId);
         }
-    }
-
-    @Override
-    public BufferedImage loadDefaultCardImg(Profile profile) {
-        InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
-        Font font;
-        try {
-            font = Font.createFont(Font.TRUETYPE_FONT, in);
-        } catch (FontFormatException | IOException e) {
-            logger.error(e.getLocalizedMessage());
-            return null;
-        }
-        // TargetImage
-        BufferedImage targetImage = pandaCard;
-        targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
-        // QrImage
-        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + ConfigUtils.getTrialProblemId());
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1092);
-        // HeadImage
-        BufferedImage headImg = loadHeadImage(profile);
-        headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
-        headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 578, 1134);
-        // NickName
-        String nickName = CommonUtils.filterEmoji(profile.getNickname());
-        if (nickName == null || nickName.length() == 0) {
-            targetImage = ImageUtils.writeText(targetImage, 330, 1230, "你的好友邀请你学习，",
-                    font.deriveFont(24f), new Color(51, 51, 51));
-        } else {
-            targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
-                    font.deriveFont(24f), new Color(51, 51, 51));
-        }
-        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为洞察力爆表的人",
-                font.deriveFont(24f), new Color(51, 51, 51));
-
-        return targetImage;
     }
 
     @Override

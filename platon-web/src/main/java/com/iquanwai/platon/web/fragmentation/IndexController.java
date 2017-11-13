@@ -10,7 +10,10 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -32,10 +35,12 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Created by justin on 16/9/9.
+ * @author justin
+ * @version 16/9/9
  */
 @Controller
 public class IndexController {
@@ -65,8 +70,16 @@ public class IndexController {
     private static final String CAMP_SALE_URL = "/pay/camp";
     //商学院售卖页
     private static final String BUSINESS_SCHOOL_SALE_URL = "/pay/rise";
+    //倒计时页面
+    private static final String BUSINESS_COUNT_DOWN_URL = "/rise/static/business/count/down";
+    //课程计划页面
+    private static final String SCHEDULE_NOTICE = "/rise/static/course/schedule/start";
     //圈圈问答最近的页面
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
+    //填写信息页面
+    private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
+    //申请成功页面
+    private static final String APPLY_SUCCESS = "/pay/apply";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
@@ -181,11 +194,36 @@ public class IndexController {
 
         //点击商学院,非年费用户和小课单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
-            if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
-                loginMsg(loginUser);
-            } else {
-                response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
+            //
+            List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+            Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
+            Profile profile = accountService.getProfile(loginUser.getId());
+            Boolean status = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
+
+            // 不是白名单
+            if (!status && isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
+                // 如果地址是null，并且是会员，则进入填写信息页面
+                response.sendRedirect(PROFILE_SUBMIT);
                 return null;
+            } else if (whiteListService.isGoToCountDownNotice(loginUser.getId(), riseMembers)) {
+                response.sendRedirect(BUSINESS_COUNT_DOWN_URL);
+                return null;
+            } else if (whiteListService.isGoToScheduleNotice(loginUser.getId(), riseMembers)) {
+                response.sendRedirect(SCHEDULE_NOTICE);
+                return null;
+            } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+                // 查看他的会员
+                loginMsg(loginUser);
+                // 查看点击商学院的时候，是否已经开营
+            } else {
+                if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.PAY_BUSINESS)) {
+                    // 已经申请成功，有购买权限，非默认可购买的人(专业版)
+                    response.sendRedirect(APPLY_SUCCESS);
+                    return null;
+                } else {
+                    response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
+                    return null;
+                }
             }
         }
 

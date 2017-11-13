@@ -30,4 +30,16 @@ public class CourseScheduleDefaultDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<CourseScheduleDefault> loadDefaultCourseScheduleByCategory(Integer categoryId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseScheduleDefault WHERE Del = 0 AND Category = ?";
+        ResultSetHandler<List<CourseScheduleDefault>> h = new BeanListHandler<>(CourseScheduleDefault.class);
+        try {
+            return runner.query(sql, h, categoryId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
 }

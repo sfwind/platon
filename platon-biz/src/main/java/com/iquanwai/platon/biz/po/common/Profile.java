@@ -37,6 +37,8 @@ public class Profile {
     private Boolean learningNotify; // 是否开启学习提醒
     private Integer requestCommentCount; //求点赞次数
     private Integer role;//非db字段 用户角色id
+    private String address; // 详细地址
+    private String workingYear; //参加工作年份
 
 
     //默认头像
