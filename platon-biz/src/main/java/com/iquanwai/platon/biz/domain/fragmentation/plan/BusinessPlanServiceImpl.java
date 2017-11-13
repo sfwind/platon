@@ -34,7 +34,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
-        return courseScheduleDao.getAllScheduleByProfileId(profileId);
+        return courseScheduleDao.getAllScheduleByProfileId(profileId).stream()
+                .filter(CourseSchedule::getSelected).collect(Collectors.toList());
     }
 
     @Override
@@ -49,6 +50,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         //已完成的小课
         List<ImprovementPlan> completeProblem = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.CLOSE)
+                .map(improvementPlan -> {
+                    Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+                    improvementPlan.setProblem(problem.simple());
+                    return improvementPlan;
+                })
                 .collect(Collectors.toList());
         schedulePlan.setCompleteProblem(completeProblem);
 
@@ -104,7 +110,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         int month = DateUtils.getMonth(date);
         schedulePlan.setMonth(month);
         schedulePlan.setToday(DateUtils.parseDateToFormat5(new Date()));
-        schedulePlan.setTopic(cacheService.loadMonthTopic().get(month));
+//        schedulePlan.setTopic(cacheService.loadMonthTopic().get(month));
         return schedulePlan;
     }
 
@@ -184,23 +190,22 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
 
     private boolean containsProblemId(List<ImprovementPlan> plans, Integer problemId) {
-        return plans.stream().filter(improvementPlan -> improvementPlan.getProblemId().equals(problemId))
-                .findAny().isPresent();
+        return plans.stream().anyMatch(improvementPlan -> improvementPlan.getProblemId().equals(problemId));
     }
 
     //计算主修或辅修小课进度
     private int completePercent(List<ImprovementPlan> improvementPlans, List<Integer> currentMonthProblemIds) {
-        int majorTotalSeries = improvementPlans.stream().filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
+        int totalSeries = improvementPlans.stream().filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
                 .collect(Collectors.summingInt(ImprovementPlan::getTotalSeries));
 
-        int majorCompleteSeries = improvementPlans.stream().filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
+        int completeSeries = improvementPlans.stream().filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
                 .collect(Collectors.summingInt(ImprovementPlan::getCompleteSeries));
 
-        if (majorCompleteSeries == 0) {
+        if (completeSeries == 0) {
             return 0;
         }
 
-        return majorTotalSeries * 100 / majorCompleteSeries;
+        return completeSeries * 100 / totalSeries;
 
     }
 

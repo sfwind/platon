@@ -45,8 +45,6 @@ public class CacheServiceImpl implements CacheService {
     private AudioDao audioDao;
     @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
-    @Autowired
-    private MonthTopicDao monthTopicDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -155,9 +153,6 @@ public class CacheServiceImpl implements CacheService {
         // 缓存小课训练营配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
-        // 缓存商学院学习计划每月主题
-        List<MonthTopic> monthTopics = monthTopicDao.loadAll();
-        monthTopicMap = monthTopics.stream().collect(Collectors.toMap(MonthTopic::getMonth, MonthTopic::getTopic));
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
