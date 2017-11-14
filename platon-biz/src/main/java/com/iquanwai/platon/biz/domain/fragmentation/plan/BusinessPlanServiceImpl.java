@@ -137,7 +137,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setMonth(month);
         schedulePlan.setToday(DateUtils.parseDateToFormat5(new Date()));
         //TODO 一定要改为学习的年份!!!!!
-        schedulePlan.setTopic(cacheService.loadMonthTopic(category, monthlyCampConfig.getSellingYear()).get(month));
+        schedulePlan.setTopic(cacheService.loadMonthTopic(category).get(month));
         return schedulePlan;
     }
 
@@ -260,6 +260,20 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 collect(Collectors.toList());
     }
 
+    @Override
+    public boolean updateProblemScheduleSelected(Integer courseScheduleId, Boolean selected) {
+        return courseScheduleDao.updateSelected(courseScheduleId, selected ? 1 : 0) > 0;
+    }
+
+    @Override
+    public void batchModifyCourseSchedule(Integer year, Integer month, List<CourseSchedule> courseSchedules) {
+        courseSchedules.forEach(schedule -> {
+            Integer id = schedule.getId();
+            Boolean selected = schedule.getSelected();
+            courseScheduleDao.modifyScheduleYearMonth(id, year, month, selected ? 1 : 0);
+        });
+    }
+
     // 将 problem 的数据放入 CourseSchedule 之中
     private CourseSchedule buildProblemData(CourseSchedule courseSchedule, Integer profileId) {
         if (courseSchedule == null || courseSchedule.getProblemId() == null) {
@@ -268,9 +282,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         Problem problem = cacheService.getProblem(courseSchedule.getProblemId());
         courseSchedule.setProblem(problem.simple());
         Integer category = accountService.loadUserScheduleCategory(profileId);
-        Map<Integer, String> monthTopic = cacheService.loadMonthTopic(category, courseSchedule.getYear());
-        if (monthTopic != null) {
-            courseSchedule.setTopic(monthTopic.get(courseSchedule.getMonth()));
+        Map<Integer, String> monthTopicMap = cacheService.loadMonthTopic(category);
+        if (monthTopicMap != null) {
+            courseSchedule.setTopic(monthTopicMap.get(courseSchedule.getMonth()));
         }
         return courseSchedule;
     }
@@ -335,4 +349,5 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
         return false;
     }
+
 }

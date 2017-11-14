@@ -16,21 +16,25 @@ public class CourseSchedule {
      */
     private Integer profileId;
     /**
+     * 分类
+     */
+    private Integer category;
+    /**
      * 小课id
      */
     private Integer problemId;
     /**
-     * 年份
+     * 课程类型（1-主修,2-辅修）
+     */
+    private Integer type;
+    /**
+     * 类型
      */
     private Integer year;
     /**
      * 月份
      */
     private Integer month;
-    /**
-     * 课程类型（1-主修,2-辅修）
-     */
-    private Integer type;
     /**
      * 是否推荐
      */

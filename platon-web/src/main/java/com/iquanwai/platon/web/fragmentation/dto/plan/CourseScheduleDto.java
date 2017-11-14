@@ -9,4 +9,7 @@ public class CourseScheduleDto {
     private Integer targetYear;
     private Integer targetMonth;
 
+    private Integer id;
+    private Boolean selected;
+
 }
