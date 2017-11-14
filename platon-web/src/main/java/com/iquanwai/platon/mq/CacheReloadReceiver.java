@@ -60,6 +60,9 @@ public class CacheReloadReceiver {
                     logger.info("刷新ip");
                     break;
                 }
+                default:{
+                    logger.error("默认");
+                }
             }
         });
     }

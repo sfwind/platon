@@ -278,9 +278,7 @@ public class ProblemController {
     @RequestMapping("/get/{problemId}")
     public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblem(problemId);
-        // 查看该用户是否对该问题评分
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
+        Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("阅读问题报告")
@@ -293,14 +291,12 @@ public class ProblemController {
     @RequestMapping("/open/{problemId}")
     public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblem(problemId);
+        Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         // 设置当前小课已学习人数
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
 
-        // 查看该用户是否对该问题评分
         RiseCourseDto dto = new RiseCourseDto();
-        problem.setHasProblemScore(problemService.hasProblemScore(loginUser.getId(), problemId));
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
 
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
@@ -390,8 +386,8 @@ public class ProblemController {
         List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
         if (extension != null && activities != null) {
             extension.setActivities(activities);
-            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.Online.equals(activity.getType())).collect(Collectors.toList()));
-            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.Offline.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.ONLINE.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.OFFLINE.equals(activity.getType())).collect(Collectors.toList()));
             return WebUtils.result(extension);
         } else {
             return WebUtils.error("当前小课暂无延伸学习相关内容");
@@ -402,6 +398,12 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemCards(LoginUser loginUser, @PathVariable Integer planId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
+        OperationLog operationLog = OperationLog.create()
+                .module("小课")
+                .action("小课卡包")
+                .function("获取小课卡包")
+                .openid(loginUser.getOpenId());
+        operationLogService.log(operationLog);
         if (essenceCards == null) {
             return WebUtils.error("未找到当前小课相关卡包信息");
         } else {

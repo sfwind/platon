@@ -39,6 +39,29 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return -1;
     }
 
+    public void batchInsertCourseSchedule(List<CourseSchedule> schedules) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Year, Month, Type, Recommend, Selected) " +
+                " VALUES (?,?,?,?,?,?,?)";
+        try {
+            Object[][] param = new Object[schedules.size()][];
+            for (int i = 0; i < schedules.size(); i++) {
+                CourseSchedule courseSchedule = schedules.get(i);
+                param[i] = new Object[7];
+                param[i][0] = courseSchedule.getProfileId();
+                param[i][1] = courseSchedule.getProblemId();
+                param[i][2] = courseSchedule.getYear();
+                param[i][3] = courseSchedule.getMonth();
+                param[i][4] = courseSchedule.getType();
+                param[i][5] = courseSchedule.getRecommend();
+                param[i][6] = courseSchedule.getSelected();
+            }
+            runner.batch(sql, param);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public List<CourseSchedule> getCertainMonthSchedule(Integer profileId, Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Year = ? AND Month = ? AND Del = 0";
@@ -105,6 +128,17 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return -1;
     }
 
+    public int modifyScheduleYearMonth(Integer id, Integer year, Integer month, Integer selected) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Year = ?, Month = ?, Selected = ? WHERE Id = ? AND Del = 0";
+        try {
+            return runner.update(sql, year, month, selected, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ? AND YEAR = ? AND Month = ?";
@@ -127,6 +161,17 @@ public class CourseScheduleDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
+    }
+
+    public int updateSelected(Integer courseScheduleId, Integer selected) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Selected = ? WHERE Id = ?";
+        try {
+            return runner.update(sql, selected, courseScheduleId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
 
 }

@@ -28,7 +28,7 @@ public class Knowledge {
     private Integer keynoteAudioId;
     private String keynoteAudioWords;
     private String audio; //语音链接
-    private Integer AudioId; // 语音id
+    private Integer audioId; // 语音id
     private String audioWords;
     private Integer appear; //非db字段,是否出现过
     private WarmupPractice example; //非db字段 例题

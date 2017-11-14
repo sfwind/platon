@@ -44,6 +44,8 @@ public class ProblemServiceImpl implements ProblemService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private CardRepository cardRepository;
+    @Autowired
+    private ProblemScheduleRepository problemScheduleRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -51,12 +53,29 @@ public class ProblemServiceImpl implements ProblemService {
     public List<Problem> loadProblems() {
         //去除已删除的小课
         return cacheService.getProblems().stream().
-                filter(problem -> !problem.getDel()).collect(Collectors.toList());
+                filter(problem -> !problem.getDel())
+                .filter(Problem::getPublish)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Problem getProblem(Integer problemId) {
         return cacheService.getProblem(problemId);
+    }
+
+    @Override
+    public Problem getProblemForSchedule(Integer problemId, Integer profileId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Problem problem = cacheService.getProblem(problemId);
+        List<Chapter> chapters;
+        if(improvementPlan!=null){
+            chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        }else{
+            chapters = problemScheduleRepository.loadDefaultRoadMap(problemId);
+        }
+        problem.setChapterList(chapters);
+
+        return problem;
     }
 
     @Override
@@ -139,8 +158,8 @@ public class ProblemServiceImpl implements ProblemService {
         Integer problemId = plan.getProblemId();
         // 获取 essenceCard 所有与当前小课相关的数据
         Problem problem = cacheService.getProblem(problemId);
+        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(planId);
         Integer completeSeries = plan.getCompleteSeries();
-        List<Chapter> chapters = problem.getChapterList();
         // 目标 essenceList
         List<EssenceCard> cards = Lists.newArrayList();
         Integer tempChapter = 0;
@@ -183,7 +202,8 @@ public class ProblemServiceImpl implements ProblemService {
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
-        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId);
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
     }
 
     @Override
@@ -287,5 +307,5 @@ public class ProblemServiceImpl implements ProblemService {
         }
         return banners;
     }
-  
+
 }

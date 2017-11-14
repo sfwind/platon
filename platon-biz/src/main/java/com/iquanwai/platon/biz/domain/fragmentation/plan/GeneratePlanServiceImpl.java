@@ -14,6 +14,7 @@ import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private UserProblemScheduleDao userProblemScheduleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -76,6 +79,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             }
             return o1.getSection() - o2.getSection();
         });
+        //生成章节和计划的映射关系
+        List<UserProblemSchedule> userProblemSchedules = problemSchedules.stream().map(problemSchedule -> {
+            ModelMapper modelMapper = new ModelMapper();
+            UserProblemSchedule userProblemSchedule = modelMapper.map(problemSchedule, UserProblemSchedule.class);
+            userProblemSchedule.setPlanId(planId);
+
+            return userProblemSchedule;
+        }).collect(Collectors.toList());
+        userProblemScheduleDao.batchInsert(userProblemSchedules);
 
         //生成知识点
         practicePlans.addAll(createKnowledge(planId, problemSchedules));

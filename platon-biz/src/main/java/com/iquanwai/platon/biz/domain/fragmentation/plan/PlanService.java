@@ -48,8 +48,6 @@ public interface PlanService {
      */
     List<ImprovementPlan> getPlans(Integer profileId);
 
-    RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId);
-
     /**
      * 获取简略的训练计划(不含练习)
      * @param planId 训练计划id
@@ -60,7 +58,7 @@ public interface PlanService {
      * 获取章节信息
      * @param plan 训练计划
      */
-    List<ProblemSchedule> getChapterList(ImprovementPlan plan);
+    List<UserProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
      * 获取知识点

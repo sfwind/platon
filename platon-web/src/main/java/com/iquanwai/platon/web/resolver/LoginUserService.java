@@ -40,19 +40,22 @@ public class LoginUserService {
     public static final String ACCESS_ASK_TOKEN_COOKIE_NAME = "_ask";
 
 
-    public enum Platform{
+    public enum Platform {
         /** PC端 */
         PC(1),
         /** 移动端 */
         Wechat(2);
         private int value;
-        Platform(int value){
+
+        Platform(int value) {
             this.value = value;
         }
-        public int getValue(){
+
+        public int getValue() {
             return this.value;
         }
     }
+
     /**
      * 缓存已经登录的用户
      */
@@ -73,11 +76,12 @@ public class LoginUserService {
 
     /**
      * 登录，就是缓存起来
+     *
      * @param sessionId sessionId
      * @param loginUser 用户
      */
-    public  void login(Platform platform, String sessionId, LoginUser loginUser) {
-        switch(platform){
+    public void login(Platform platform, String sessionId, LoginUser loginUser) {
+        switch (platform) {
             case PC:
                 loginUser.setDevice(Constants.Device.PC);
                 pcLoginUserMap.put(sessionId, new SoftReference<>(loginUser));
@@ -86,6 +90,7 @@ public class LoginUserService {
                 loginUser.setDevice(Constants.Device.MOBILE);
                 wechatLoginUserMap.put(sessionId, new SoftReference<>(loginUser));
                 break;
+            default:
         }
     }
 
@@ -114,7 +119,7 @@ public class LoginUserService {
      * -2 key查到了，但是获取不到user，应该是没点服务号
      * 1 成功
      */
-    public Pair<Integer,Callback> refreshLogin(Platform platform,String sessionId){
+    public Pair<Integer, Callback> refreshLogin(Platform platform, String sessionId) {
         // 有key但是没有value，重新查一遍
         // 先检查这个cookie是否合法
         Callback callback = null;
@@ -125,13 +130,15 @@ public class LoginUserService {
             case Wechat:
                 callback = callbackDao.queryByAccessToken(sessionId);
                 break;
+            default:
+                return new MutablePair<>(-1, null);
         }
         if (callback == null) {
             // 不合法
             return new MutablePair<>(-1, null);
         } else {
             // 合法，再查一遍
-            Pair<Integer, LoginUser> result = getLoginUser(platform,sessionId);
+            Pair<Integer, LoginUser> result = getLoginUser(platform, sessionId);
             if (result.getLeft() < 0) {
                 logger.info("platform:{},key:{} is lost , remove cookie", platform, sessionId);
                 switch (platform) {
@@ -141,11 +148,13 @@ public class LoginUserService {
                     case Wechat:
                         wechatLoginUserMap.remove(sessionId);
                         break;
+                    default:
+                        logger.error("异常的平台信息");
                 }
                 return new MutablePair<>(-2, callback);
             } else {
                 logger.info("platform:{},key:{} is lost , search again: {}", platform, sessionId, result.getRight());
-                login(platform,sessionId, result.getRight());
+                login(platform, sessionId, result.getRight());
                 return new MutablePair<>(1, callback);
             }
         }
@@ -183,11 +192,11 @@ public class LoginUserService {
         pcLoginUserMap.remove(sessionId);
     }
 
-    public void updateWeixinUser(String openid){
-        if(!waitPCRefreshOpenids.contains(openid)){
+    public void updateWeixinUser(String openid) {
+        if (!waitPCRefreshOpenids.contains(openid)) {
             waitPCRefreshOpenids.add(openid);
         }
-        if(!waitWechatRefreshOpenids.contains(openid)){
+        if (!waitWechatRefreshOpenids.contains(openid)) {
             waitWechatRefreshOpenids.add(openid);
         }
     }
@@ -195,10 +204,13 @@ public class LoginUserService {
     public String getToken(HttpServletRequest request) {
         Platform platform = checkPlatform(request);
         switch (platform) {
-            case PC:return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
-            case Wechat:return CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
+            case PC:
+                return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
+            case Wechat:
+                return CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
+            default:
+                return null;
         }
-        return null;
     }
 
     public Platform checkPlatform(HttpServletRequest request) {
@@ -218,18 +230,17 @@ public class LoginUserService {
         return Platform.Wechat;
     }
 
-    public String openId(Platform platform,String accessToken){
-        String openid = null;
+    public String openId(Platform platform, String accessToken) {
         switch (platform) {
             case PC:
-                openid = oAuthService.pcOpenId(accessToken);
-                break;
+                return oAuthService.pcOpenId(accessToken);
             case Wechat:
-                openid = oAuthService.openId(accessToken);
-                break;
+                return oAuthService.openId(accessToken);
+            default:
+                return null;
         }
-        return openid;
     }
+
     /**
      * 获取PCLoginUser
      *
@@ -259,7 +270,7 @@ public class LoginUserService {
         } catch (NotFollowingException e) {
             return new MutablePair<>(-3, null);
         }
-        logger.info("platform:{},accessToken:{},openId:{},account:{}",platform, accessToken, openid, account);
+        logger.info("platform:{},accessToken:{},openId:{},account:{}", platform, accessToken, openid, account);
         if (account == null) {
             return new MutablePair<>(-2, null);
         }
@@ -270,7 +281,7 @@ public class LoginUserService {
         return new MutablePair<>(1, loginUser);
     }
 
-    public Role getUserRole(Integer profileId){
+    public Role getUserRole(Integer profileId) {
         Role role = accountService.getRole(profileId);
         if (role == null) {
             // 获得用户的openid，根据openid查询用户的学号
@@ -288,37 +299,38 @@ public class LoginUserService {
         LoginUser loginUser = null;
         switch (platform) {
             case PC:
-                if(pcLoginUserMap.get(accessToken)!=null){
+                if (pcLoginUserMap.get(accessToken) != null) {
                     loginUser = pcLoginUserMap.get(accessToken).get();
                 }
                 // 如果数据待更新,则读取数据库
-                if(loginUser!=null){
+                if (loginUser != null) {
                     String openid = loginUser.getOpenId();
-                    if(waitPCRefreshOpenids.contains(openid)){
+                    if (waitPCRefreshOpenids.contains(openid)) {
                         logger.info("更新用户{}", openid);
                         loginUser = getLoginUser(openid, platform);
                         pcLoginUserMap.put(accessToken, new SoftReference<>(loginUser));
                         waitPCRefreshOpenids.remove(openid);
                     }
                 }
-                break;
+                return loginUser;
             case Wechat:
-                if(wechatLoginUserMap.get(accessToken)!=null){
+                if (wechatLoginUserMap.get(accessToken) != null) {
                     loginUser = wechatLoginUserMap.get(accessToken).get();
                 }
                 // 如果数据待更新,则读取数据库
-                if(loginUser!=null){
+                if (loginUser != null) {
                     String openid2 = loginUser.getOpenId();
-                    if(waitWechatRefreshOpenids.contains(openid2)){
+                    if (waitWechatRefreshOpenids.contains(openid2)) {
                         logger.info("更新用户{}", openid2);
                         loginUser = getLoginUser(openid2, platform);
                         wechatLoginUserMap.put(accessToken, new SoftReference<>(loginUser));
                         waitWechatRefreshOpenids.remove(openid2);
                     }
                 }
-                break;
+                return loginUser;
+            default:
+                return null;
         }
-        return loginUser;
     }
 
     public LoginUser getLoginUser(String openId, Platform platform) {
@@ -335,7 +347,7 @@ public class LoginUserService {
             return loginUser;
         }
 
-        if(profile==null){
+        if (profile == null) {
             logger.error("openId {} is not found in db", openId);
             return null;
         }
@@ -359,7 +371,7 @@ public class LoginUserService {
         return loginUser;
     }
 
-    public static List<LoginUser> getAllUsers(){
+    public static List<LoginUser> getAllUsers() {
         List<LoginUser> list = Lists.newArrayList();
         list.addAll(pcLoginUserMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
         list.addAll(wechatLoginUserMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));

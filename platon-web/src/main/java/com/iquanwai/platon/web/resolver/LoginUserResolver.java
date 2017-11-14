@@ -25,10 +25,12 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Override
     public boolean supportsParameter(MethodParameter methodParameter) {
         return LoginUser.class.isAssignableFrom(methodParameter.getParameterType());
     }
 
+    @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
         //调试时，返回mock user
         if (ConfigUtils.isDebug()) {
@@ -38,7 +40,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
             //前端调试开启时，如果debug=true,返回mockuser
-            if (request.getParameter("debug").equalsIgnoreCase("true")) {
+            if ("true".equalsIgnoreCase(request.getParameter("debug"))) {
                 return LoginUser.defaultUser();
             } else {
                 //返回模拟的openid user

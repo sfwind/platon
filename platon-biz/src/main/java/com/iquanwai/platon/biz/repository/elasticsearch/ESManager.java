@@ -70,7 +70,7 @@ public class ESManager {
         indexName = indexName.toLowerCase();
         indexType = indexType.toLowerCase();
 
-        if(ESUtil.indicesExists(client, indexName)) {
+        if(BaseESUtil.indicesExists(client, indexName)) {
 //            OpenIndexRequestBuilder openIndexBuilder = new OpenIndexRequestBuilder(getClient(),getClient().admin().indices().create);
 //            openIndexBuilder.setIndices(indexName).execute().actionGet();
         }else{

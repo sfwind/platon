@@ -52,7 +52,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
     @Override
     public void scanCourseReductionQR(SubscribeEvent subscribeEvent) {
         logger.info("处理课程优惠mq;{}", subscribeEvent);
-        if (!StringUtils.startsWith(subscribeEvent.getScene(), PromotionConstants.Activities.CourseReduction)
+        if (!StringUtils.startsWith(subscribeEvent.getScene(), PromotionConstants.Activities.COURSE_REDUCTION)
                 || subscribeEvent.getOpenid() == null) {
             logger.error("扫描优惠推广课程的事件处理异常,{}", subscribeEvent);
             return;
@@ -93,7 +93,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
 //        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
-        promotionActivity.setAction(PromotionConstants.CourseReductionAction.ScanCode);
+        promotionActivity.setAction(PromotionConstants.CourseReductionAction.SCAN_CODE);
         promotionActivity.setActivity(subscribeEvent.getScene());
         promotionActivity.setProfileId(profile.getId());
         promotionActivityDao.insertPromotionActivity(promotionActivity);
@@ -124,10 +124,10 @@ public class CourseReductionServiceImpl implements CourseReductionService {
             activity.setActivity(promotionLevel.getActivity());
             if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_MEMBER)) {
                 // 会员
-                activity.setAction(PromotionConstants.CourseReductionAction.PayMember);
+                activity.setAction(PromotionConstants.CourseReductionAction.PAY_MEMBER);
             } else if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_COURSE)) {
                 // 小课
-                activity.setAction(PromotionConstants.CourseReductionAction.PayCourse);
+                activity.setAction(PromotionConstants.CourseReductionAction.PAY_COURSE);
             }
             promotionActivityDao.insertPromotionActivity(activity);
         }
@@ -137,7 +137,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
 
     @Override
     public Pair<CourseReductionActivity, PromotionLevel> loadRecentCourseReduction(Integer profileId, Integer problemId) {
-        List<PromotionLevel> promotionLevels = promotionLevelDao.loadByRegex(PromotionConstants.Activities.CourseReduction, profileId);
+        List<PromotionLevel> promotionLevels = promotionLevelDao.loadByRegex(PromotionConstants.Activities.COURSE_REDUCTION, profileId);
         if (CollectionUtils.isEmpty(promotionLevels)) {
             return null;
         }

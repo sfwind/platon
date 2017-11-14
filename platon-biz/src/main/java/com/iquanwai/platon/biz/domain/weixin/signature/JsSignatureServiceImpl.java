@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ public class JsSignatureServiceImpl implements JsSignatureService {
 
     private Logger logger = LoggerFactory.getLogger(JsSignatureServiceImpl.class);
 
+    @Override
     public JsSignature getJsSignature(String url, boolean refresh) {
         //判断是否超过间隔
         int interval = ConfigUtils.getJsSignatureInterval();

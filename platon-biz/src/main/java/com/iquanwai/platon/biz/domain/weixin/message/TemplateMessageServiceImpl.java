@@ -55,6 +55,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
         return StringUtils.isNoneEmpty(body);
     }
 
+    @Override
     public String getTemplateId(String templateShortId) {
         Map<String, String> map = Maps.newHashMap();
         map.put("template_id_short", templateShortId);
@@ -84,7 +85,9 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
 
         // 如果不是主动推送或者发送对象是开发人员，不进行任何限制
         List<String> devOpenIds = ConfigUtils.getDevelopOpenIds();
-        if (!forwardlyPush || devOpenIds.contains(profile.getOpenid())) return true;
+        if (!forwardlyPush || devOpenIds.contains(profile.getOpenid())) {
+            return true;
+        }
 
         List<CustomerMessageLog> customerMessageLogs = customerMessageLogDao.loadByOpenId(openId);
 
@@ -94,7 +97,9 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
             Date distanceDate = DateUtils.beforeDays(new Date(), 7);
             Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceDate) > 0).count();
             authority = result.intValue() < 7;
-            if (!authority) return false;
+            if (!authority) {
+                return false;
+            }
         }
 
         // 2. 非会员用户每周最多收到 2 条消息
@@ -102,21 +107,27 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
             Date distanceDate = DateUtils.beforeDays(new Date(), 2);
             Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceDate) > 0).count();
             authority = result.intValue() < 2;
-            if (!authority) return false;
+            if (!authority) {
+                return false;
+            }
         }
 
         // 3. 手动发送内容一样的消息，同一个用户最多只能收到一次
         {
             Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getContentHash().equals(Integer.toString(templateMessage.getContent().hashCode()))).count();
             authority = result.intValue() < 1;
-            if (!authority) return false;
+            if (!authority) {
+                return false;
+            }
         }
 
         // 4. 用户每天最多收到2条消息
         {
             Long result = customerMessageLogs.stream().filter(messageLog -> DateUtils.isToday(messageLog.getPublishTime())).count();
             authority = result.intValue() < 2;
-            if (!authority) return false;
+            if (!authority) {
+                return false;
+            }
         }
 
         // 5. 用户三小时内最多收到1条消息
@@ -124,7 +135,9 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
             Date distanceTime = DateUtils.afterHours(new Date(), -3);
             Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceTime) > 0).count();
             authority = result.intValue() < 1;
-            if (!authority) return false;
+            if (!authority) {
+                return false;
+            }
         }
         return true;
     }

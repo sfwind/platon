@@ -25,7 +25,7 @@ public class MonthlyCampReloadReceiver {
     public void init() {
         rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
             String message = messageQueue.getMessage().toString();
-            if (message.equals("campConfigReload")) {
+            if ("campConfigReload".equals(message)) {
                 cacheService.reloadMonthlyCampConfig();
                 logger.info("小课训练营配置刷新成功");
             }

@@ -5,11 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +33,6 @@ public class CacheServiceImpl implements CacheService {
     @Autowired
     private ChoiceDao choiceDao;
     @Autowired
-    private ProblemScheduleDao problemScheduleDao;
-    @Autowired
     private ProblemCatalogDao problemCatalogDao;
     @Autowired
     private ProblemSubCatalogDao problemSubCatalogDao;
@@ -45,6 +40,8 @@ public class CacheServiceImpl implements CacheService {
     private AudioDao audioDao;
     @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
+    @Autowired
+    private CourseScheduleTopicDao courseScheduleTopicDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -59,7 +56,7 @@ public class CacheServiceImpl implements CacheService {
     //缓存小课训练营配置
     private MonthlyCampConfig monthlyCampConfig;
     // 商学院学习计划每月主题
-    private Map<Integer, String> monthTopicMap;
+    private Map<Integer, List<CourseScheduleTopic>> courseScheduleTopicMap;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -76,8 +73,6 @@ public class CacheServiceImpl implements CacheService {
         // 缓存问题
         problems = problemDao.loadAll(Problem.class);
         problems.forEach(problem -> {
-            List<Chapter> chapterList = loadRoadMap(problem.getId());
-            problem.setChapterList(chapterList);
             Integer subCatalogId = problem.getSubCatalogId();
             ProblemSubCatalog problemSubCatalog = problemSubCatalogDao.load(ProblemSubCatalog.class, subCatalogId);
             if (problemSubCatalog != null) {
@@ -153,6 +148,10 @@ public class CacheServiceImpl implements CacheService {
         // 缓存小课训练营配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
+        // 缓存商学院学习计划每月主题
+        List<CourseScheduleTopic> courseScheduleTopics = courseScheduleTopicDao.loadAll();
+        courseScheduleTopicMap = courseScheduleTopics.stream().collect(Collectors.groupingBy(CourseScheduleTopic::getCategory));
+
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
@@ -203,7 +202,7 @@ public class CacheServiceImpl implements CacheService {
             Knowledge exist = knowledgeMap.get(knowledgeId);
             if (exist != null) {
                 BeanUtils.copyProperties(knowledgeMap.get(knowledgeId), knowledge);
-            }else{
+            } else {
                 knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
                 initKnowledge(knowledge);
             }
@@ -231,50 +230,6 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public List<Chapter> loadRoadMap(Integer problemId) {
-        List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
-        Map<Integer, List<ProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
-        //按节组合成一组知识点
-        problemSchedules.forEach(problemSchedule -> {
-            List<ProblemSchedule> problemScheduleList = problemScheduleMap.getOrDefault(problemSchedule.getChapter(), Lists.newArrayList());
-            problemScheduleList.add(problemSchedule);
-            problemScheduleMap.put(problemSchedule.getChapter(), problemScheduleList);
-        });
-
-        List<Chapter> chapterList = Lists.newArrayList();
-
-        //构建章节
-        problemScheduleMap.keySet().forEach(chapterSequence -> {
-            Chapter chapter = new Chapter();
-            List<ProblemSchedule> scheduleList = problemScheduleMap.get(chapterSequence);
-            List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection() - o2.getSection())
-                    .map(problemSchedule -> {
-                        //构建小节
-                        Section section = new Section();
-                        Knowledge knowledge = getKnowledge(problemSchedule.getKnowledgeId());
-                        section.setKnowledgeId(knowledge.getId());
-                        section.setName(knowledge.getKnowledge());
-                        section.setSection(problemSchedule.getSection());
-                        section.setSeries(problemSchedule.getSeries());
-                        section.setIntegrated(Knowledge.isReview(problemSchedule.getKnowledgeId()));
-                        section.setChapterName(knowledge.getStep());
-                        section.setChapter(problemSchedule.getChapter());
-                        return section;
-                    })
-                    .collect(Collectors.toList());
-            chapter.setName(chapterName(sectionList));
-            chapter.setSections(sectionList);
-            chapter.setChapter(chapterSequence);
-            if (CollectionUtils.isNotEmpty(sectionList)) {
-                chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledgeId()));
-            }
-            chapterList.add(chapter);
-        });
-
-        return chapterList;
-    }
-
-    @Override
     public ProblemCatalog getProblemCatalog(Integer id) {
         return problemCatalogMap.get(id);
     }
@@ -297,7 +252,12 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public Map<Integer, String> loadMonthTopic() {
+    public Map<Integer, String> loadMonthTopic(Integer category) {
+        List<CourseScheduleTopic> courseScheduleTopics = courseScheduleTopicMap.get(category);
+        Map<Integer, String> monthTopicMap = Maps.newHashMap();
+        courseScheduleTopics.forEach(courseScheduleTopic -> {
+            monthTopicMap.put(courseScheduleTopic.getMonth(), courseScheduleTopic.getTopic());
+        });
         return monthTopicMap;
     }
 
@@ -311,15 +271,7 @@ public class CacheServiceImpl implements CacheService {
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
     }
 
-    private String chapterName(List<Section> sectionList) {
-        if (CollectionUtils.isEmpty(sectionList)) {
-            return "";
-        }
-        //步骤
-        return sectionList.get(0).getChapterName();
-    }
-
-    private void initKnowledge(Knowledge knowledge){
+    private void initKnowledge(Knowledge knowledge) {
         knowledgeMap.put(knowledge.getId(), knowledge);
         if (ConfigUtils.isHttps()) {
             knowledge.setPic(StringUtils.replace(knowledge.getPic(), "http:", "https:"));
