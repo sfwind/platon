@@ -43,7 +43,7 @@ public class CacheServiceImpl implements CacheService {
     @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
     @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    private CourseScheduleTopicDao courseScheduleTopicDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -58,7 +58,7 @@ public class CacheServiceImpl implements CacheService {
     //缓存小课训练营配置
     private MonthlyCampConfig monthlyCampConfig;
     // 商学院学习计划每月主题
-    private Map<Integer, List<MonthTopic>> monthTopicMap;
+    private Map<Integer, List<CourseScheduleTopic>> courseScheduleTopicMap;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -151,15 +151,8 @@ public class CacheServiceImpl implements CacheService {
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
         // 缓存商学院学习计划每月主题
-        List<MonthTopic> monthTopics = courseScheduleDefaultDao.loadDefaultCourseSchedule().stream().map(item -> {
-            MonthTopic topic = new MonthTopic();
-            topic.setTopic(item.getMonthTopic());
-            topic.setMonth(item.getMonth());
-            topic.setYear(item.getYear());
-            topic.setCategory(item.getCategory());
-            return topic;
-        }).collect(Collectors.toList());
-        monthTopicMap = monthTopics.stream().collect(Collectors.groupingBy(MonthTopic::getCategory));
+        List<CourseScheduleTopic> courseScheduleTopics = courseScheduleTopicDao.loadAll();
+        courseScheduleTopicMap = courseScheduleTopics.stream().collect(Collectors.groupingBy(CourseScheduleTopic::getCategory));
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
@@ -260,15 +253,13 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public Map<Integer, String> loadMonthTopic(Integer category, Integer year) {
-        List<MonthTopic> monthTopics = monthTopicMap.get(category).stream().filter(item -> item.getYear().equals(year)).collect(Collectors.toList());
-        if (monthTopics != null) {
-            Map<Integer, String> map = Maps.newHashMap();
-            monthTopics.forEach(item -> map.put(item.getMonth(), item.getTopic()));
-            return map;
-        } else {
-            return null;
-        }
+    public Map<Integer, String> loadMonthTopic(Integer category) {
+        List<CourseScheduleTopic> courseScheduleTopics = courseScheduleTopicMap.get(category);
+        Map<Integer, String> monthTopicMap = Maps.newHashMap();
+        courseScheduleTopics.forEach(courseScheduleTopic -> {
+            monthTopicMap.put(courseScheduleTopic.getMonth(), courseScheduleTopic.getTopic());
+        });
+        return monthTopicMap;
     }
 
     @Override

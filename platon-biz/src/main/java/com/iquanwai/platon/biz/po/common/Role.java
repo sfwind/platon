@@ -26,6 +26,7 @@ public class Role {
     public static final Integer CONTENT_ADMIN = 8; //内容管理员
     public static final Integer ADMIN = 9; //管理员
     public static final Integer CONTENT_OPERATION = 10; //内容运营
+    public static final Integer COACH_LEVEL11 = 11; // 候选教练
 
     private static List<Integer> asstRoleLevel = Lists.newArrayList(COACH_LEVEL_1, COACH_LEVEL_2,
             COACH_LEVEL_3, COACH_LEVEL_4, CONTENT_OPERATION, CONTENT_ADMIN);

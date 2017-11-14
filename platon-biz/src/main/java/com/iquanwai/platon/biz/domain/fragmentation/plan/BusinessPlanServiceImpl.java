@@ -137,7 +137,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setMonth(month);
         schedulePlan.setToday(DateUtils.parseDateToFormat5(new Date()));
         //TODO 一定要改为学习的年份!!!!!
-        schedulePlan.setTopic(cacheService.loadMonthTopic(category, monthlyCampConfig.getSellingYear()).get(month));
+        schedulePlan.setTopic(cacheService.loadMonthTopic(category).get(month));
         return schedulePlan;
     }
 
@@ -282,9 +282,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         Problem problem = cacheService.getProblem(courseSchedule.getProblemId());
         courseSchedule.setProblem(problem.simple());
         Integer category = accountService.loadUserScheduleCategory(profileId);
-        Map<Integer, String> monthTopic = cacheService.loadMonthTopic(category, courseSchedule.getYear());
-        if (monthTopic != null) {
-            courseSchedule.setTopic(monthTopic.get(courseSchedule.getMonth()));
+        Map<Integer, String> monthTopicMap = cacheService.loadMonthTopic(category);
+        if (monthTopicMap != null) {
+            courseSchedule.setTopic(monthTopicMap.get(courseSchedule.getMonth()));
         }
         return courseSchedule;
     }
