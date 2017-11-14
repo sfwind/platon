@@ -40,7 +40,6 @@ public class ImprovementPlan {
     private Problem problem; //非db字段 小课
     private Boolean free; //是否免费
     private List<Section> sections; //非db字段
-    private Boolean openRise; //非db字段 是否打开过rise
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean hasProblemScore; //是否已打分
     private Boolean doneAllIntegrated; //是否做完所有综合练习

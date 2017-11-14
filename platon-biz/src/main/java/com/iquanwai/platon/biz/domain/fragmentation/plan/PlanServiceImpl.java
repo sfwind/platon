@@ -333,17 +333,17 @@ public class PlanServiceImpl implements PlanService {
 
                 if(problemType == Constants.ProblemType.MAJOR){
                     if(runningCount>=MAX_MAJOR_RUNNING_PROBLEM_NUMBER){
-                        return new MutablePair<>(-1, "为了更专注的学习，主修课最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
+                        return new MutablePair<>(-1, "为了更专注的学习，主修课最多进行" + MAX_MAJOR_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
                     }
                 }
 
                 if(problemType == Constants.ProblemType.MINOR){
                     if(runningCount>=MAX_MINOR_RUNNING_PROBLEM_NUMBER){
-                        return new MutablePair<>(-1, "为了更专注的学习，辅修课最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
+                        return new MutablePair<>(-1, "为了更专注的学习，辅修课最多进行" + MAX_MINOR_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
                     }
                 }
             } else {
-                // 如果不再计划内,则最多只能同时开3门课
+                // 如果不在计划内,则最多只能同时开3门课
                 if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
                     // 会员已经有两门再学
                     return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");

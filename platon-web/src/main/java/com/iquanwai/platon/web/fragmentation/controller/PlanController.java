@@ -11,7 +11,6 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -185,7 +184,7 @@ public class PlanController {
 
         if (CollectionUtils.isNotEmpty(runningPlans)) {
             // 第二门需要提示一下
-            return WebUtils.error(201, "为了更专注的学习，同时最多进行两门小课，确定选择吗？");
+            return WebUtils.error(201, "为了更专注的学习，同时最多进行3门小课，确定选择吗？");
         }
 
         // 现在完成小课必须在learn页面，所以这里只需要判断是否是小课已完成
@@ -228,11 +227,10 @@ public class PlanController {
         }
 
         // 这里生成小课训练计划，另外在检查一下是否是会员或者购买了这个小课
-//        RiseCourseOrder riseCourseOrderOrder = planService.getEntryRiseCourseOrder(loginUser.getId(), problemId);
         Boolean isRiseMember = accountService.isRiseMember(loginUser.getId());
         if (!isRiseMember && !problemId.equals(trialProblemId)) {
             // 既没有购买过这个小课，又不是rise会员,也不是限免课程
-            return WebUtils.error("您暂无该权限，有问题请在后台留言。");
+            return WebUtils.error("您不是商学院会员，需要先购买会员哦");
         }
 
         Integer planId = generatePlanService.generatePlan(loginUser.getId(), problemId);
@@ -297,13 +295,6 @@ public class PlanController {
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
-        if (!loginUser.getOpenRise()) {
-            // 没有点开rise
-            Profile profile = accountService.getProfile(loginUser.getId());
-            loginUser.setOpenRise(profile.getOpenRise());
-            improvementPlan.setOpenRise(profile.getOpenRise());
-        }
-        improvementPlan.setOpenRise(loginUser.getOpenRise());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")

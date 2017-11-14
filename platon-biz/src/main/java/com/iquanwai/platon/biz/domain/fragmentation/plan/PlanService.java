@@ -32,6 +32,14 @@ public interface PlanService {
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer problemId, Integer profileId);
 
+    /**
+     * 检查是否能够选训练营小课
+     *
+     * @param monthlyCampConfig  训练营配置
+     * @param problemId  小课id
+     * @param profileId  用户id
+     * @return left:是否能够选小课(-1,超过允许进行中的最多门数) right:提示信息
+     */
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig);
 
     void unlockCampPlan(Integer profileId, Integer planId);
