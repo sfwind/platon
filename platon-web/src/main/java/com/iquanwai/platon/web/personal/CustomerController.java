@@ -42,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -377,6 +378,7 @@ public class CustomerController {
                 donePlans.add(planDto);
             }
             planDto.setProblem(cacheService.getProblem(item.getProblemId()).simple());
+            planDto.setLearnable(item.getStartDate().compareTo(new Date()) <= 0);
         });
         list.setRunningPlans(runningPlans);
         list.setDonePlans(donePlans);

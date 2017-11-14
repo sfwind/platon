@@ -114,7 +114,13 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        logger.info("问题／答案页面");
+        logger.info("问题／答案页面,{},{}", request.getRequestURI(), request.getParameter("date"));
+        if (request.getRequestURI().endsWith("rise/static/guest/inter/quan/answer")) {
+            if ("2017-11-07".equals(request.getParameter("date"))) {
+                response.sendRedirect(request.getRequestURI() + "?date=2017-11-14");
+                return null;
+            }
+        }
         return courseView(request, null, false, RISE_VIEW);
     }
 
