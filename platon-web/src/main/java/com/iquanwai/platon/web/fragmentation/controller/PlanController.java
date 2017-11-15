@@ -635,14 +635,13 @@ public class PlanController {
         if (auditionClassMember != null &&
                 !(riseMember != null &&
                         (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
-            // 有试听课,从进行中去掉这个小课
-            runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
-//            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                     .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.CLOSE)
                     .findFirst().orElse(null);
             if (ownedAudition != null){
+                // 有试听课,从进行中去掉这个小课
+                runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
                 PlanDto plan = new PlanDto();
                 // 设置 Problem 对象
                 Problem itemProblem = cacheService.getProblem(auditionId);
