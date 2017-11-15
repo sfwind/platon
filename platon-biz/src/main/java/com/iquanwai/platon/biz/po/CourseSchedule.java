@@ -28,6 +28,10 @@ public class CourseSchedule {
      */
     private Integer type;
     /**
+     * 年份
+     */
+    private Integer year;
+    /**
      * 月份
      */
     private Integer month;
