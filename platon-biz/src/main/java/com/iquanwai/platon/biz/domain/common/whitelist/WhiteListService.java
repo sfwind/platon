@@ -47,4 +47,12 @@ public interface WhiteListService {
      * @param profileId 用户id
      */
     boolean checkCampMenuWhiteList(Integer profileId);
+
+    /**
+     *  进入新的学习页面
+     * @param profileId 用户id
+     * @param riseMembers 会员信息
+     * @return
+     */
+    boolean isGoToNewSchedulePlans(Integer profileId, List<RiseMember> riseMembers);
 }

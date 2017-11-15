@@ -80,6 +80,8 @@ public class IndexController {
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
     //申请成功页面
     private static final String APPLY_SUCCESS = "/pay/apply";
+    //新学习页面
+    private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
@@ -216,6 +218,9 @@ public class IndexController {
                 return null;
             } else if (whiteListService.isGoToScheduleNotice(loginUser.getId(), riseMembers)) {
                 response.sendRedirect(SCHEDULE_NOTICE);
+                return null;
+            } else if(whiteListService.isGoToNewSchedulePlans(loginUser.getId(),riseMembers)){
+                response.sendRedirect(NEW_SCHEDULE_PLAN);
                 return null;
             } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
                 // 查看他的会员
