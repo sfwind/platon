@@ -640,7 +640,7 @@ public class PlanController {
 //            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
-                    .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.COMPLETE)
+                    .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.CLOSE)
                     .findFirst().orElse(null);
             PlanDto plan = new PlanDto();
             // 设置 Problem 对象
