@@ -642,18 +642,18 @@ public class PlanController {
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                     .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.CLOSE)
                     .findFirst().orElse(null);
-            PlanDto plan = new PlanDto();
-            // 设置 Problem 对象
-            Problem itemProblem = cacheService.getProblem(auditionId);
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
-            plan.setProblem(itemProblem.simple());
-            plan.setName(itemProblem.getProblem());
-            plan.setPic(itemProblem.getPic());
-            plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
-            if (!plan.getLearnable()) {
-                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
-            }
-            if (ownedAudition != null) {
+            if (ownedAudition != null){
+                PlanDto plan = new PlanDto();
+                // 设置 Problem 对象
+                Problem itemProblem = cacheService.getProblem(auditionId);
+                itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
+                plan.setProblem(itemProblem.simple());
+                plan.setName(itemProblem.getProblem());
+                plan.setPic(itemProblem.getPic());
+                plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
+                if (!plan.getLearnable()) {
+                    plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
+                }
                 if (!auditionClassMember.getActive()) {
                     // 已经开课
                     plan.setPlanId(ownedAudition.getId());
@@ -667,8 +667,9 @@ public class PlanController {
                 plan.setStartDate(ownedAudition.getStartDate());
                 plan.setProblemId(ownedAudition.getProblemId());
                 plan.setCloseTime(ownedAudition.getCloseTime());
+                auditions.add(plan);
             }
-            auditions.add(plan);
+
         }
 
         PlanListDto planListDto = new PlanListDto();
