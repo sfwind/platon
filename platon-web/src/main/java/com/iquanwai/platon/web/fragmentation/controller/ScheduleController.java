@@ -4,7 +4,6 @@ import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -39,14 +38,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/rise/schedule")
 public class ScheduleController {
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private BusinessPlanService businessPlanService;
     @Autowired
     private OperationLogService operationLogService;
-    @Autowired
-    private AccountService accountService;
     @Autowired
     private RiseMemberService riseMemberService;
 

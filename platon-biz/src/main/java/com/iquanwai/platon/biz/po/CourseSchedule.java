@@ -28,7 +28,7 @@ public class CourseSchedule {
      */
     private Integer type;
     /**
-     * 类型
+     * 年份
      */
     private Integer year;
     /**

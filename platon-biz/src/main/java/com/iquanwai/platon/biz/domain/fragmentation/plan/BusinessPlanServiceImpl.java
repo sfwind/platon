@@ -150,7 +150,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         List<Integer> planProblemIds = improvementPlans.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
-        courseSchedules.forEach((item) -> item.setAdjustable(!planProblemIds.contains(item.getProblemId())));
+        courseSchedules.forEach((item) -> {
+            if (planProblemIds.contains(item.getProblemId())) {
+                item.setAdjustable(false);
+            }
+        });
 
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
@@ -315,6 +319,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (monthTopicMap != null) {
             courseSchedule.setTopic(monthTopicMap.get(courseSchedule.getMonth()));
         }
+        courseSchedule.setAdjustable(problem.getPublish());
         return courseSchedule;
     }
 
