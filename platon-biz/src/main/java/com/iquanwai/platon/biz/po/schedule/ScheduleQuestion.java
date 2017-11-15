@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 public class ScheduleQuestion {
     private Integer id;
+    private String categoryGroup;
     private String question;
     private Boolean del;
 

@@ -281,8 +281,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     @Override
-    public List<ScheduleQuestion> loadScheduleQuestions() {
-        List<ScheduleQuestion> questions = scheduleQuestionDao.loadAll(ScheduleQuestion.class);
+    public List<ScheduleQuestion> loadScheduleQuestions(Integer profileId) {
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<ScheduleQuestion> questions = scheduleQuestionDao.loadAll(ScheduleQuestion.class)
+                .stream()
+                .filter(item -> Lists.newArrayList(item.getCategoryGroup().split(",")).contains(category.toString()))
+                .collect(Collectors.toList());
         List<ScheduleChoice> choices = scheduleChoiceDao.loadAll(ScheduleChoice.class);
         Map<Integer, List<ScheduleChoice>> mapChoices = choices.stream().
                 filter(item -> !item.getDel()).
