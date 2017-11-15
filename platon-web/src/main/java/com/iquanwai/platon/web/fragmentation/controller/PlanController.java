@@ -637,7 +637,7 @@ public class PlanController {
                         (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
             // 有试听课,从进行中去掉这个小课
             runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
-            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
+//            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
             PlanDto plan = new PlanDto();
