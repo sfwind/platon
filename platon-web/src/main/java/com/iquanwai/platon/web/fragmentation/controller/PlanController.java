@@ -639,7 +639,9 @@ public class PlanController {
             runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 //            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
-            ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+            ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
+                    .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.COMPLETE)
+                    .findFirst().orElse(null);
             PlanDto plan = new PlanDto();
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(auditionId);
