@@ -227,7 +227,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedule.setProfileId(profileId);
         schedule.setProblemId(defaultSchedule.getProblemId());
         schedule.setType(defaultSchedule.getType());
-        schedule.setYear(defaultSchedule.getYear());
+        schedule.setCategory(defaultSchedule.getCategory());
         Boolean recommend = false;
         if (defaultSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
             List<Integer> initChoices = Lists.newArrayList(defaultSchedule.getInitChoice().split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());

@@ -12,7 +12,6 @@ public class CourseScheduleDefault {
     private Integer id;
     private Integer category;
     private Integer problemId;
-    private Integer year;
     private Integer month;
     private String monthTopic;
     /**
