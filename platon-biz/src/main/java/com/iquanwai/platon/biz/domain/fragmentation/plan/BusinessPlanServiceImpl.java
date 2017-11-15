@@ -292,6 +292,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (monthTopicMap != null) {
             courseSchedule.setTopic(monthTopicMap.get(courseSchedule.getMonth()));
         }
+        if (!problem.getPublish()) {
+            courseSchedule.setAdjustable(false);
+        }
         return courseSchedule;
     }
 
