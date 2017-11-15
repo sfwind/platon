@@ -137,7 +137,7 @@ public class ScheduleController {
                 .function("学习计划")
                 .action("获取学习计划题目");
         operationLogService.log(operationLog);
-        List<ScheduleQuestion> questions = businessPlanService.loadScheduleQuestions();
+        List<ScheduleQuestion> questions = businessPlanService.loadScheduleQuestions(loginUser.getId());
         return WebUtils.result(questions);
     }
 
