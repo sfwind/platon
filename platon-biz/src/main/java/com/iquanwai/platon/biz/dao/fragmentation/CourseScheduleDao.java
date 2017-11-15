@@ -139,6 +139,17 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return -1;
     }
 
+    public int modifyScheduleYearMonth(Integer id, Integer month, Integer selected) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Month = ?, Selected = ? WHERE Id = ? AND Del = 0";
+        try {
+            return runner.update(sql, month, selected, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ? AND YEAR = ? AND Month = ?";
