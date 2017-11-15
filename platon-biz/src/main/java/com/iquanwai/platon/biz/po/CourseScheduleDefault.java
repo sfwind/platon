@@ -14,6 +14,8 @@ public class CourseScheduleDefault {
     private Integer problemId;
     private Integer month;
     private String monthTopic;
+    private Boolean defaultSelected;
+
     /**
      * 1-主修 2-辅修
      */
@@ -23,6 +25,8 @@ public class CourseScheduleDefault {
      * 初始化时使用的题目和序号id
      */
     private String initChoice;
+    private String twoMinorInitChoice;
+
 
     public interface Type {
         /**

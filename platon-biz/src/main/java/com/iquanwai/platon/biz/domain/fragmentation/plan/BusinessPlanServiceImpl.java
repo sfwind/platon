@@ -42,8 +42,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static Integer NO_MINOR = 24;
-    private static Integer DEFAULT_MINOR = 25;
-    private static Integer ALL_MINOR = 26;
+    private static Integer ONE_MINOR = 25;
+    private static Integer TWO_MINOR = 26;
+    private static Integer ALL_MINOR = 37;
 
     @Autowired
     private CacheService cacheService;
@@ -235,20 +236,42 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedule.setType(defaultSchedule.getType());
         schedule.setCategory(defaultSchedule.getCategory());
         Boolean recommend = false;
+
         if (defaultSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
-            List<Integer> initChoices = Lists.newArrayList(defaultSchedule.getInitChoice().split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
-            recommend = choices.stream().anyMatch(initChoices::contains);
+            // 是辅修课
+            if (choices.contains(NO_MINOR)) {
+                // 不选辅修课 ignore
+            } else if (choices.contains(ONE_MINOR)) {
+                // 一门辅修课
+                if (defaultSchedule.getDefaultSelected()) {
+                    // 默认选择，不用看用户选了什么
+                    recommend = true;
+                } else {
+                    // 查看是否选了对应的题
+                    List<Integer> initChoices = Lists.newArrayList(defaultSchedule.getInitChoice().split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
+                    recommend = choices.stream().anyMatch(initChoices::contains);
+                }
+            } else if (choices.contains(TWO_MINOR)) {
+                if (defaultSchedule.getDefaultSelected()) {
+                    recommend = true;
+                } else {
+                    // 两门辅修课
+                    String initChoices;
+                    if (defaultSchedule.getTwoMinorInitChoice() != null) {
+                        initChoices = defaultSchedule.getTwoMinorInitChoice();
+                    } else {
+                        initChoices = defaultSchedule.getInitChoice();
+                    }
+                    List<Integer> initChoicesList = Lists.newArrayList(initChoices.split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
+                    recommend = choices.stream().anyMatch(initChoicesList::contains);
+                }
+            } else if (choices.contains(ALL_MINOR)) {
+                // 全部辅修课
+                recommend = true;
+            }
         }
 
-        if (choices.contains(NO_MINOR)) {
-            // 默认不选
-            recommend = false;
-        } else if (choices.contains(ALL_MINOR)) {
-            // 默认全选
-            recommend = true;
-        }
         schedule.setRecommend(recommend);
-        // 默认选中
         schedule.setSelected(recommend);
         return schedule;
     }
