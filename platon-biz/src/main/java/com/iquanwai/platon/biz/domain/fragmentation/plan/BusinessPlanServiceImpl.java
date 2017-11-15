@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -298,12 +299,19 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
         //拿到开营日
         Date date = monthlyCampConfig.getOpenDate();
+        Optional<CourseSchedule> first = courseSchedules.stream().findFirst();
+        Integer category;
+        if (first.isPresent()) {
+            category = accountService.loadUserScheduleCategory(first.get().getProfileId());
+        } else {
+            category = null;
+        }
 
         int month = DateUtils.getMonth(date);
         int year = DateUtils.getYear(date);
 
         return courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMonth() == month &&
-                courseSchedule.getYear() == year).collect(Collectors.toList());
+                courseSchedule.getCategory().equals(category)).collect(Collectors.toList());
     }
 
     //计算主修或辅修小课进度
