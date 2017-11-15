@@ -60,4 +60,8 @@ public class CourseSchedule {
      * 非db字段
      */
     private Problem problem;
+    /**
+     * 是否是可调整的
+     */
+    private Boolean adjustable;
 }

@@ -145,6 +145,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     public List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId) {
         List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
         courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
+
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
+        List<Integer> planProblemIds = improvementPlans.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        courseSchedules.forEach((item) -> item.setAdjustable(!planProblemIds.contains(item.getProblemId())));
+
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
         courseScheduleMap.forEach((k, v) -> courseScheduleLists.add(v));
