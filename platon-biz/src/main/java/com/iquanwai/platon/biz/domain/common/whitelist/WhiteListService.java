@@ -62,5 +62,5 @@ public interface WhiteListService {
      *
      * @param profileId 用户id
      */
-    Boolean isShowExploreTab(Integer profileId);
+    Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers);
 }

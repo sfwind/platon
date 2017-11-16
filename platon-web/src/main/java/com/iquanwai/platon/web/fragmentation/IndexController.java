@@ -185,6 +185,8 @@ public class IndexController {
             return null;
         }
 
+        List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+
         // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
         ModuleShow moduleShow = new ModuleShow();
         Boolean showForum = true;
@@ -196,7 +198,7 @@ public class IndexController {
 
         // 是否显示发现tab
         // 谁不显示：有课程计划表则不显示
-        Boolean showExplore = whiteListService.isShowExploreTab(loginUser.getId());
+        Boolean showExplore = whiteListService.isShowExploreTab(loginUser.getId(), riseMembers);
         moduleShow.setShowExplore(showExplore);
 
         if (ConfigUtils.isDevelopment()) {
@@ -211,7 +213,6 @@ public class IndexController {
         //点击商学院,非年费用户和小课单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
             //
-            List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
             Boolean status = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);

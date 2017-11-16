@@ -5,7 +5,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
@@ -140,10 +139,9 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public Boolean isShowExploreTab(Integer profileId) {
-        // 是否有课程计划表
-        List<CourseSchedule> schedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-        return CollectionUtils.isEmpty(schedules);
+    public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
+        // 去新课程计划表则不显示
+        return !this.isGoToNewSchedulePlans(profileId, riseMembers);
     }
 
 }
