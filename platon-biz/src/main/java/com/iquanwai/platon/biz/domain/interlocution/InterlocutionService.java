@@ -52,6 +52,13 @@ public interface InterlocutionService {
 
     InterlocutionQuestion loadQuanQuanAnswer(Date date);
 
+    /**
+     * 加载其他圈圈问答
+     * @param date
+     * @return
+     */
+    List<InterlocutionDate> loadQuanQuanOtherAnswers(Date date);
+
     String goQuestionSubmitPageQr(String date);
 
     InterlocutionAnswer loadRecentlyAnswer();

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 17/6/19.
@@ -158,6 +159,15 @@ public class InterlocutionServiceImpl implements InterlocutionService {
         question.setDateInfo(dateInfo);
         question.setNextAnswer(nextAnswer);
         return question;
+    }
+
+    @Override
+    public List<InterlocutionDate> loadQuanQuanOtherAnswers(Date date) {
+        return interlocutionDateDao.loadOtherDate(date).stream().sorted(((o1, o2) -> {
+            int o1Batch = o1 == null ? 0 : o1.getBatch();
+            int o2Batch = o2 == null ? 0 : o2.getBatch();
+            return o1Batch - o2Batch;
+        })).collect(Collectors.toList());
     }
 
     @Override
