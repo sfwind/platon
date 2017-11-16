@@ -135,11 +135,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        //拿到开营日
-        Date date = monthlyCampConfig.getOpenDate();
 
+        //本月
+        int month = monthlyCampConfig.getLearningMonth();
         Integer category = accountService.loadUserScheduleCategory(profileId);
-        int month = DateUtils.getMonth(date);
         schedulePlan.setMonth(month);
         schedulePlan.setToday(DateUtils.parseDateToFormat5(new Date()));
 
@@ -383,7 +382,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     //小课列表 = 进行中小课+本月计划小课
     private List<ImprovementPlan> getListProblem(List<ImprovementPlan> improvementPlans,
                                                  List<CourseSchedule> courseSchedules,
-                                                 List<Integer> currentMonthProblemIds){
+                                                 List<Integer> currentMonthProblemIds) {
         List<Integer> problemIds = courseSchedules.stream().map(CourseSchedule::getProblemId)
                 .collect(Collectors.toList());
 
