@@ -277,6 +277,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 // 全部辅修课
                 recommend = true;
             }
+        } else {
+            // 主修
+            recommend = true;
         }
 
         schedule.setRecommend(recommend);
@@ -358,7 +361,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
 
     private boolean containsProblemId(List<ImprovementPlan> plans, Integer problemId) {
-        return plans.stream().anyMatch(improvementPlan -> improvementPlan.getProblemId().equals(problemId));
+        return plans.stream().anyMatch(improvementPlan -> improvementPlan.getProblem().getId() == problemId);
     }
 
     //计算主修或辅修小课进度
