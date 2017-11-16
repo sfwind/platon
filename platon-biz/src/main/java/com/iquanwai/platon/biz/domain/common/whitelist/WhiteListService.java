@@ -24,7 +24,7 @@ public interface WhiteListService {
      * @param profileId 用户id
      * @return 是否进入到倒计时页面
      */
-    boolean isGoToCountDownNotice(Integer profileId,List<RiseMember> riseMembers);
+    boolean isGoToCountDownNotice(Integer profileId, List<RiseMember> riseMembers);
 
     /**
      * 进入课程计划提示页面
@@ -32,7 +32,7 @@ public interface WhiteListService {
      * @param profileId 用户id
      * @return 是否进入
      */
-    boolean isGoToScheduleNotice(Integer profileId,List<RiseMember> riseMembers);
+    boolean isGoToScheduleNotice(Integer profileId, List<RiseMember> riseMembers);
 
     /**
      * 点击商学院白名单
@@ -49,10 +49,18 @@ public interface WhiteListService {
     boolean checkCampMenuWhiteList(Integer profileId);
 
     /**
-     *  进入新的学习页面
-     * @param profileId 用户id
+     * 进入新的学习页面
+     *
+     * @param profileId   用户id
      * @param riseMembers 会员信息
      * @return
      */
     boolean isGoToNewSchedulePlans(Integer profileId, List<RiseMember> riseMembers);
+
+    /**
+     * 是否显示发现页面
+     *
+     * @param profileId 用户id
+     */
+    Boolean isShowExploreTab(Integer profileId);
 }
