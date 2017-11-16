@@ -77,7 +77,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             coupon.setProfileId(profileId);
             coupon.setAmount(100);
             coupon.setUsed(0);
-            coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
+            coupon.setExpiredDate(DateUtils.afterDays(new Date(), 7));
             coupon.setDescription("奖品卡");
             int couponInsertResult = couponDao.insertCoupon(coupon);
 
