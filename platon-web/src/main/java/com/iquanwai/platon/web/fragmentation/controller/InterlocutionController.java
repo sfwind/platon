@@ -153,6 +153,8 @@ public class InterlocutionController {
         if (interlocutionQuestion == null) {
             return WebUtils.error("这一天没有圈圈问答哦");
         } else {
+            List<InterlocutionDate> interlocutionDates = interlocutionService.loadQuanQuanOtherAnswers(startDate);
+            interlocutionQuestion.setOtherDates(interlocutionDates);
             return WebUtils.result(interlocutionQuestion);
         }
     }

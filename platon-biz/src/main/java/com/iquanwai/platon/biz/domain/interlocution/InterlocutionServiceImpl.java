@@ -161,6 +161,11 @@ public class InterlocutionServiceImpl implements InterlocutionService {
     }
 
     @Override
+    public List<InterlocutionDate> loadQuanQuanOtherAnswers(Date date) {
+        return interlocutionDateDao.loadOtherDate(date);
+    }
+
+    @Override
     public String goQuestionSubmitPageQr(String date) {
         String scene = QUESTION_SUBMIT_PAGE + date;
         return qrCodeService.loadQrBase64(scene);
