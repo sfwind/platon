@@ -14,6 +14,7 @@ import java.util.List;
 public class ScheduleQuestion {
     private Integer id;
     private String categoryGroup;
+    private Integer sequence;
     private String question;
     private Boolean del;
 

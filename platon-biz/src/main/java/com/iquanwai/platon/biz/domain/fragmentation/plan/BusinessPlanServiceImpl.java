@@ -293,6 +293,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 collect(Collectors.groupingBy(ScheduleChoice::getQuestionId));
         return questions.stream().
                 filter(item -> !item.getDel()).
+                sorted(((o1, o2) -> {
+                    int o1Sequence = o1.getSequence() == null ? 0 : o1.getSequence();
+                    int o2Sequence = o2.getSequence() == null ? 0 : o2.getSequence();
+                    return o1Sequence - o2Sequence;
+                })).
                 peek(item -> item.setScheduleChoices(mapChoices.get(item.getId()))).
                 collect(Collectors.toList());
     }
