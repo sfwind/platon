@@ -609,23 +609,24 @@ public class PlanController {
         if (auditionClassMember != null &&
                 !(riseMember != null &&
                         (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
-            // 有试听课,从进行中去掉这个小课
-            runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
-            completedPlans.removeIf(item -> item.getProblemId().equals(auditionId));
 
-            ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
-            PlanDto plan = new PlanDto();
-            // 设置 Problem 对象
-            Problem itemProblem = cacheService.getProblem(auditionId);
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
-            plan.setProblem(itemProblem.simple());
-            plan.setName(itemProblem.getProblem());
-            plan.setPic(itemProblem.getPic());
-            plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
-            if (!plan.getLearnable()) {
-                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
-            }
-            if (ownedAudition != null) {
+            ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
+                    .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.CLOSE)
+                    .findFirst().orElse(null);
+            if (ownedAudition != null){
+                // 有试听课,从进行中去掉这个小课
+                runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
+                PlanDto plan = new PlanDto();
+                // 设置 Problem 对象
+                Problem itemProblem = cacheService.getProblem(auditionId);
+                itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
+                plan.setProblem(itemProblem.simple());
+                plan.setName(itemProblem.getProblem());
+                plan.setPic(itemProblem.getPic());
+                plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
+                if (!plan.getLearnable()) {
+                    plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
+                }
                 if (!auditionClassMember.getActive()) {
                     // 已经开课
                     plan.setPlanId(ownedAudition.getId());
@@ -639,8 +640,9 @@ public class PlanController {
                 plan.setStartDate(ownedAudition.getStartDate());
                 plan.setProblemId(ownedAudition.getProblemId());
                 plan.setCloseTime(ownedAudition.getCloseTime());
+                auditions.add(plan);
             }
-            auditions.add(plan);
+
         }
 
         PlanListDto planListDto = new PlanListDto();

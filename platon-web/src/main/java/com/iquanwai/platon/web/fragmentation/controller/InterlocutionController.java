@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/rise/interlocution")
@@ -153,6 +155,11 @@ public class InterlocutionController {
         if (interlocutionQuestion == null) {
             return WebUtils.error("这一天没有圈圈问答哦");
         } else {
+            List<InterlocutionDate> interlocutionDates = interlocutionService.loadQuanQuanOtherAnswers(startDate).
+                    stream().
+                    filter(item -> new DateTime(item.getStartDate()).isBeforeNow()). // 这个时间在现在之前
+                    collect(Collectors.toList());
+            interlocutionQuestion.setOtherDates(interlocutionDates);
             return WebUtils.result(interlocutionQuestion);
         }
     }
