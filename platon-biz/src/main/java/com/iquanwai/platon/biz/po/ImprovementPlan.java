@@ -37,13 +37,13 @@ public class ImprovementPlan {
     private Boolean del; //是否删除
 
     // ----------------- 非db字段------------------
-    private Problem problem; //非db字段 问题
+    private Problem problem; //非db字段 小课
     private Boolean free; //是否免费
     private List<Section> sections; //非db字段
-    private Boolean openRise; //非db字段 是否打开过rise
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean hasProblemScore; //是否已打分
     private Boolean doneAllIntegrated; //是否做完所有综合练习
+    private int month; //几月小课
     private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
 
     /**

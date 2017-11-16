@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -56,19 +57,18 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     @Override
     public void forceReopenPlan(Integer planId) {
-        improvementPlanDao.reOpenPlan(planId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
+        improvementPlanDao.reopenPlan(planId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
     }
 
     @Override
-    public Integer generatePlan(String openid, Integer profileId, Integer problemId) {
-        Assert.notNull(openid, "openid不能为空");
+    public Integer generatePlan(Integer profileId, Integer problemId) {
         Assert.notNull(profileId, "profileId不能为空");
         Problem problem = cacheService.getProblem(problemId);
         if (problem == null) {
             logger.error("problemId {} is invalid", problemId);
         }
         //生成训练计划
-        int planId = createPlan(problem, profileId, openid);
+        int planId = createPlan(problem, profileId);
 
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
@@ -271,13 +271,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selectedPractice;
     }
 
-    private int createPlan(Problem problem, Integer profileId, String openid) {
+    private int createPlan(Problem problem, Integer profileId) {
         Assert.notNull(problem, "problem不能为空");
         Assert.notNull(profileId, "profileId不能为空");
-        Assert.notNull(openid, "openid不能为空");
+        // 查询是否是riseMember
+        Profile profile = accountService.getProfile(profileId);
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
-        improvementPlan.setOpenid(openid);
+        improvementPlan.setOpenid(profile.getOpenid());
         improvementPlan.setProfileId(profileId);
         improvementPlan.setWarmupComplete(0);
         improvementPlan.setApplicationComplete(0);
@@ -292,12 +293,107 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(new Date());
         improvementPlan.setEndDate(null);
-        // 查询是否是riseMember
-        Profile profile = accountService.getProfile(profileId);
+
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
         improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);
         return improvementPlanDao.insert(improvementPlan);
 
+    }
+
+    @Override
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
+        return this.magicUnlockProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
+    }
+
+    @Override
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+        Integer resultPlanId = null;
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        if (improvementPlan != null) {
+            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
+            forceReopenPlan(improvementPlan.getId());
+            List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+            Map<Integer, List<PracticePlan>> seriesGroup = practicePlans.stream().filter(item -> item.getSeries() != 0)
+                    .collect(Collectors.groupingBy(PracticePlan::getSeries));
+            List<Integer> seriesList = Lists.newArrayList(seriesGroup.keySet());
+            seriesList.sort(Integer::compare);
+            Integer maxSeries = seriesList.stream().mapToInt(item -> item).max().orElse(0);
+            if (maxSeries == 0) {
+                logger.error("获取最大小节数失败");
+            }
+            for (Integer series : seriesList) {
+                List<PracticePlan> practicePlanList = seriesGroup.get(series);
+                if (isDone(practicePlanList) && !series.equals(maxSeries)) {
+                    // 这个小节做完了，并且不是最后一节，查看下一个小节是否解锁
+                    List<PracticePlan> next = seriesGroup.get(series + 1);
+                    if (!next.get(0).getUnlocked()) {
+                        // 没有解锁，需要解锁
+                        next.stream().mapToInt(PracticePlan::getId).forEach(practicePlanDao::unlock);
+                    }
+                } else {
+                    // 小节没做完，或者已经是最后一节了，break
+                    break;
+                }
+            }
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            }
+            resultPlanId = improvementPlan.getId();
+        }
+        return resultPlanId;
+    }
+
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
+        Integer resultPlanId;
+
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Profile profile = accountService.getProfile(profileId);
+        if (improvementPlan == null) {
+            // 用户从来没有开过小课，新开小课
+            resultPlanId = generatePlan(profileId, problemId);
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(resultPlanId, startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
+            }
+            // 开始时间不是今天,则不发开课通知
+            if (startDate != null && startDate.before(new Date())) {
+                sendOpenPlanMsg(profile.getOpenid(), problemId);
+            }
+        } else {
+            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
+            forceReopenPlan(improvementPlan.getId());
+            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            }
+            resultPlanId = improvementPlan.getId();
+        }
+        return resultPlanId;
+    }
+
+    private boolean isDone(List<PracticePlan> runningPractices) {
+        if (CollectionUtils.isNotEmpty(runningPractices)) {
+            for (PracticePlan practicePlan : runningPractices) {
+                //巩固练习或理解练习未完成时,返回false
+                if ((practicePlan.getType() == PracticePlan.WARM_UP ||
+                        practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE ||
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && practicePlan.getStatus() == 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

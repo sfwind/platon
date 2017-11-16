@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.po.*;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,6 +32,14 @@ public interface PlanService {
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer problemId, Integer profileId);
 
+    /**
+     * 检查是否能够选训练营小课
+     *
+     * @param monthlyCampConfig  训练营配置
+     * @param problemId  小课id
+     * @param profileId  用户id
+     * @return left:是否能够选小课(-1,超过允许进行中的最多门数) right:提示信息
+     */
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig);
 
     void unlockCampPlan(Integer profileId, Integer planId);
@@ -48,8 +55,6 @@ public interface PlanService {
      * @param profileId 学员id
      */
     List<ImprovementPlan> getPlans(Integer profileId);
-
-    RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId);
 
     /**
      * 获取简略的训练计划(不含练习)
@@ -162,20 +167,7 @@ public interface PlanService {
      */
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
-    void forceOpenCampOrder(String orderId, MonthlyCampConfig monthlyCampConfig);
-
-    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
-
-    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
-
-    Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate);
-
-    /**
-     * 小课强开
-     * startDate 小课开始日期
-     * closeDate 小课关闭日期
-     */
-    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
+    void forceOpenCampOrder(String orderId);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
 

@@ -5,23 +5,16 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
@@ -37,11 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -70,8 +59,6 @@ public class PlanController {
     @Autowired
     private ReportService reportService;
     @Autowired
-    private OperationFreeLimitService operationFreeLimitService;
-    @Autowired
     private ProblemService problemService;
     @Autowired
     private WhiteListService whiteListService;
@@ -88,7 +75,8 @@ public class PlanController {
      * 1.会员可以选两门<br/>
      */
     @RequestMapping(value = "/choose/problem/check/{problemId}/{type}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId, @PathVariable(value = "type") Integer type) {
+    public ResponseEntity<Map<String, Object>> checkChoosePlan(LoginUser loginUser, @PathVariable(value = "problemId") Integer problemId,
+                                                               @PathVariable(value = "type") Integer type) {
         Assert.notNull(loginUser, "用户不能为空");
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -196,7 +184,7 @@ public class PlanController {
 
         if (CollectionUtils.isNotEmpty(runningPlans)) {
             // 第二门需要提示一下
-            return WebUtils.error(201, "为了更专注的学习，同时最多进行两门小课，确定选择吗？");
+            return WebUtils.error(201, "为了更专注的学习，同时最多进行3门小课，确定选择吗？");
         }
 
         // 现在完成小课必须在learn页面，所以这里只需要判断是否是小课已完成
@@ -239,23 +227,16 @@ public class PlanController {
         }
 
         // 这里生成小课训练计划，另外在检查一下是否是会员或者购买了这个小课
-        RiseCourseOrder riseCourseOrderOrder = planService.getEntryRiseCourseOrder(loginUser.getId(), problemId);
         Boolean isRiseMember = accountService.isRiseMember(loginUser.getId());
-        if (!isRiseMember && riseCourseOrderOrder == null && !problemId.equals(trialProblemId)) {
+        if (!isRiseMember && !problemId.equals(trialProblemId)) {
             // 既没有购买过这个小课，又不是rise会员,也不是限免课程
-            return WebUtils.error("您暂无该权限，有问题请在后台留言。");
+            return WebUtils.error("您不是商学院会员，需要先购买会员哦");
         }
 
-        Integer planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), problemId);
+        Integer planId = generatePlanService.generatePlan(loginUser.getId(), problemId);
         // 生成小课之后发送选课成功通知
         generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), problemId);
-        // 初始化第一层promotionUser
 
-        if (problemId.equals(trialProblemId)) {
-            // 限免小课
-            operationFreeLimitService.recordOrderAndSendMsg(loginUser.getOpenId(),
-                    PromotionConstants.FreeLimitAction.TRIAL_COURSE);
-        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("选择小课")
@@ -278,7 +259,7 @@ public class PlanController {
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
         Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId, monthlyCampConfig);
         if (campChosenCheck.getLeft()) {
-            Integer resultPlanId = planService.forceOpenProblem(loginUser.getId(), problemId, null, null);
+            Integer resultPlanId = generatePlanService.forceOpenProblem(loginUser.getId(), problemId, null, null);
             return WebUtils.result(String.valueOf(resultPlanId));
         } else {
             return WebUtils.error("小课开启失败，请后台联系管理员");
@@ -314,13 +295,6 @@ public class PlanController {
         planService.buildPlanDetail(improvementPlan);
         // openid置为null
         improvementPlan.setOpenid(null);
-        if (!loginUser.getOpenRise()) {
-            // 没有点开rise
-            Profile profile = accountService.getProfile(loginUser.getId());
-            loginUser.setOpenRise(profile.getOpenRise());
-            improvementPlan.setOpenRise(profile.getOpenRise());
-        }
-        improvementPlan.setOpenRise(loginUser.getOpenRise());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")
@@ -814,7 +788,7 @@ public class PlanController {
         Integer auditionId = ConfigUtils.getTrialProblemId();
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
-        Integer planId = null;
+        Integer planId;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
             // 检查是否到了开课时间
             if (auditionClassMember.getStartDate().compareTo(new Date()) > 0) {
@@ -823,7 +797,7 @@ public class PlanController {
             if (ownedAudition != null) {
                 // 已经拥有试听课
                 // 没有试听课的状态，第一次学习试听课
-                planId = planService.magicUnlockProblem(loginUser.getId(), auditionId,
+                planId = generatePlanService.magicUnlockProblem(loginUser.getId(), auditionId,
                         DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
                 generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), auditionId);
             } else {
@@ -834,7 +808,7 @@ public class PlanController {
                     return WebUtils.error("商学院员会员可以在发现页面选课哦");
                 } else {
                     // 没有试听课，并且不是年费会员,可以选择试听课
-                    planId = generatePlanService.generatePlan(loginUser.getOpenId(), loginUser.getId(), auditionId);
+                    planId = generatePlanService.generatePlan(loginUser.getId(), auditionId);
                     // 发送入群消息
                     generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), auditionId);
                 }
@@ -903,5 +877,6 @@ public class PlanController {
 
         return WebUtils.result(dto);
     }
+
 
 }
