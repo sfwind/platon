@@ -2,9 +2,11 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -47,6 +49,8 @@ public class ScheduleController {
     private AccountService accountService;
     @Autowired
     private RiseMemberService riseMemberService;
+    @Autowired
+    private PlanService planService;
 
     @RequestMapping("/load/personal")
     public ResponseEntity<Map<String, Object>> loadPersonalCourseSchedulePlan(LoginUser loginUser) {
@@ -144,9 +148,11 @@ public class ScheduleController {
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
             Integer days = Days.daysBetween(DateTime.now().withTimeAtStartOfDay(), new DateTime(riseMember.getOpenDate())).getDays();
             List<CourseSchedule> plan = businessPlanService.getPlan(loginUser.getId());
+            AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
             CountDownDto dto = new CountDownDto();
             dto.setDays(days);
             dto.setHasSchedule(!CollectionUtils.isEmpty(plan));
+            dto.setHasAudition(auditionClassMember != null);
             return WebUtils.result(dto);
         } else {
             // 非商学院
