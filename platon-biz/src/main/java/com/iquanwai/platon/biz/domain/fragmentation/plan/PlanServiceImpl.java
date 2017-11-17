@@ -333,17 +333,17 @@ public class PlanServiceImpl implements PlanService {
 
                 if(problemType == Constants.ProblemType.MAJOR){
                     if(runningCount>=MAX_MAJOR_RUNNING_PROBLEM_NUMBER){
-                        return new MutablePair<>(-1, "为了更专注的学习，主修课最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
+                        return new MutablePair<>(-1, "为了更专注的学习，主修课最多进行" + MAX_MAJOR_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
                     }
                 }
 
                 if(problemType == Constants.ProblemType.MINOR){
                     if(runningCount>=MAX_MINOR_RUNNING_PROBLEM_NUMBER){
-                        return new MutablePair<>(-1, "为了更专注的学习，辅修课最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
+                        return new MutablePair<>(-1, "为了更专注的学习，辅修课最多进行" + MAX_MINOR_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
                     }
                 }
             } else {
-                // 如果不再计划内,则最多只能同时开3门课
+                // 如果不在计划内,则最多只能同时开3门课
                 if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
                     // 会员已经有两门再学
                     return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
@@ -397,7 +397,7 @@ public class PlanServiceImpl implements PlanService {
         if (profileId.equals(improvementPlan.getProfileId())
                 && ImprovementPlan.CLOSE == improvementPlan.getStatus()
                 && improvementPlan.getCompleteTime() == null) {
-            magicUnlockProblem(profileId, improvementPlan.getProblemId(), null, false);
+            generatePlanService.magicUnlockProblem(profileId, improvementPlan.getProblemId(), null, false);
         }
     }
 
@@ -409,11 +409,6 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public List<ImprovementPlan> getPlans(Integer profileId) {
         return improvementPlanDao.loadAllPlans(profileId);
-    }
-
-    @Override
-    public RiseCourseOrder getEntryRiseCourseOrder(Integer profileId, Integer problemId) {
-        return riseCourseDao.loadEntryOrder(profileId, problemId);
     }
 
     @Override
@@ -728,60 +723,17 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
-        return this.magicUnlockProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
-    }
-
-    @Override
-    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
-        Integer resultPlanId = null;
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        if (improvementPlan != null) {
-            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
-            generatePlanService.forceReopenPlan(improvementPlan.getId());
-            List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
-            Map<Integer, List<PracticePlan>> seriesGroup = practicePlans.stream().filter(item -> item.getSeries() != 0).collect(Collectors.groupingBy(PracticePlan::getSeries));
-            List<Integer> seriesList = Lists.newArrayList(seriesGroup.keySet());
-            seriesList.sort(Integer::compare);
-            Integer maxSeries = seriesList.stream().mapToInt(item -> item).max().orElse(0);
-            if (maxSeries == 0) {
-                logger.error("获取最大小节数失败");
-            }
-            for (Integer series : seriesList) {
-                List<PracticePlan> practicePlanList = seriesGroup.get(series);
-                if (isDone(practicePlanList) && !series.equals(maxSeries)) {
-                    // 这个小节做完了，并且不是最后一节，查看下一个小节是否解锁
-                    List<PracticePlan> next = seriesGroup.get(series + 1);
-                    if (!next.get(0).getUnlocked()) {
-                        // 没有解锁，需要解锁
-                        next.stream().mapToInt(PracticePlan::getId).forEach(practicePlanDao::unlock);
-                    }
-                } else {
-                    // 小节没做完，或者已经是最后一节了，break
-                    break;
-                }
-            }
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
-            }
-            resultPlanId = improvementPlan.getId();
-        }
-        return resultPlanId;
-    }
-
-    @Override
-    public void forceOpenCampOrder(String orderId, MonthlyCampConfig monthlyCampConfig) {
+    public void forceOpenCampOrder(String orderId) {
         MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
         Integer profileId = monthlyCampOrder.getProfileId();
-
         Integer month = monthlyCampOrder.getMonth();
+
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        // 售卖训练营支持多门小课
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
-            Integer planId = forceOpenProblem(profileId, problemId,
+            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId,
                     monthlyCampConfig.getOpenDate(),
                     monthlyCampConfig.getCloseDate());
 
@@ -791,45 +743,6 @@ public class PlanServiceImpl implements PlanService {
                 improvementPlanDao.updateRequestComment(planId, 1);
             }
         }
-    }
-
-    /**
-     * 根据 profileId 和 problemId 强开当前小课
-     */
-    @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate) {
-        return forceOpenProblem(profileId, problemId, null, closeDate);
-    }
-
-    @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
-        Integer resultPlanId;
-
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        Profile profile = accountService.getProfile(profileId);
-        if (improvementPlan == null) {
-            // 用户从来没有开过小课，新开小课
-            resultPlanId = generatePlanService.generatePlan(profile.getOpenid(), profileId, problemId);
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(resultPlanId, startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
-            }
-            // 开始时间不是今天,则不发开课通知
-            if (startDate != null && startDate.before(new Date())) {
-                generatePlanService.sendOpenPlanMsg(profile.getOpenid(), problemId);
-            }
-        } else {
-            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
-            generatePlanService.forceReopenPlan(improvementPlan.getId());
-            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
-            }
-            resultPlanId = improvementPlan.getId();
-        }
-        return resultPlanId;
     }
 
     /**

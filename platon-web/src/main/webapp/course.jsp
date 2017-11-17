@@ -14,6 +14,7 @@
         userName: "${userName}",
         headImage:"${headImage}",
         showForum:"${showForum}",
+        showExplore:"${showExplore}",
         configUrl:'',
     }
 </script>

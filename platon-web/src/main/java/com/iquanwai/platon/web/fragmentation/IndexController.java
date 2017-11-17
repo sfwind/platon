@@ -21,6 +21,7 @@ import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +112,7 @@ public class IndexController {
 
     @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        return courseView(request, null, false, NOTE_VIEW);
+        return courseView(request, null, new ModuleShow(), NOTE_VIEW);
     }
 
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
@@ -123,7 +124,7 @@ public class IndexController {
                 return null;
             }
         }
-        return courseView(request, null, false, RISE_VIEW);
+        return courseView(request, null, new ModuleShow(), RISE_VIEW);
     }
 
     @RequestMapping(value = {"/rise/static/note/**"}, method = RequestMethod.GET)
@@ -158,7 +159,7 @@ public class IndexController {
             return null;
         }
 
-        return courseView(request, loginUser, false, NOTE_VIEW);
+        return courseView(request, loginUser, new ModuleShow(), NOTE_VIEW);
     }
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
@@ -184,12 +185,21 @@ public class IndexController {
             return null;
         }
 
+        List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+
         // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
+        ModuleShow moduleShow = new ModuleShow();
         Boolean showForum = true;
         if (ConfigUtils.isForumTest()) {
             // 论坛处于测试中,在白名单则显示，否则隐藏
             showForum = whiteListService.isInWhiteList(WhiteList.FORUM, loginUser.getId());
         }
+        moduleShow.setShowForum(showForum);
+
+        // 是否显示发现tab
+        // 谁不显示：有课程计划表则不显示
+        Boolean showExplore = whiteListService.isShowExploreTab(loginUser.getId(), riseMembers);
+        moduleShow.setShowExplore(showExplore);
 
         if (ConfigUtils.isDevelopment()) {
             //如果不在白名单中,直接403报错
@@ -203,7 +213,6 @@ public class IndexController {
         //点击商学院,非年费用户和小课单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
             //
-            List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
             Boolean status = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
@@ -219,7 +228,7 @@ public class IndexController {
             } else if (whiteListService.isGoToScheduleNotice(loginUser.getId(), riseMembers)) {
                 response.sendRedirect(SCHEDULE_NOTICE);
                 return null;
-            } else if(whiteListService.isGoToNewSchedulePlans(loginUser.getId(),riseMembers)){
+            } else if (whiteListService.isGoToNewSchedulePlans(loginUser.getId(), riseMembers)) {
                 response.sendRedirect(NEW_SCHEDULE_PLAN);
                 return null;
             } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
@@ -248,7 +257,8 @@ public class IndexController {
             }
         }
 
-        return courseView(request, loginUser, showForum, RISE_VIEW);
+
+        return courseView(request, loginUser, moduleShow, RISE_VIEW);
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
@@ -323,7 +333,7 @@ public class IndexController {
         return !StringUtils.isEmpty(openid);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, LoginUser account, Boolean showForum, String viewName) {
+    private ModelAndView courseView(HttpServletRequest request, LoginUser account, ModuleShow moduleShow, String viewName) {
         ModelAndView mav = new ModelAndView(viewName);
         String resourceUrl;
         switch (viewName) {
@@ -359,8 +369,19 @@ public class IndexController {
             userParam.put("headImage", account.getHeadimgUrl().replace("http:", "https:"));
         }
         mav.addAllObjects(userParam);
-        mav.addObject("showForum", showForum);
-
+        mav.addObject("showForum", moduleShow.getShowForum());
+        mav.addObject("showExplore", moduleShow.getShowExplore());
         return mav;
     }
+}
+
+@Data
+class ModuleShow {
+    public ModuleShow() {
+        this.showForum = false;
+        this.showExplore = true;
+    }
+
+    private Boolean showForum;
+    private Boolean showExplore;
 }

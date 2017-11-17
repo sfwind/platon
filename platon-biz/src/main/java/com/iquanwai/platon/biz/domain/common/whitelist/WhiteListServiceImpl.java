@@ -138,4 +138,10 @@ public class WhiteListServiceImpl implements WhiteListService {
         }
     }
 
+    @Override
+    public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
+        // 去新课程计划表则不显示
+        return !this.isGoToNewSchedulePlans(profileId, riseMembers);
+    }
+
 }

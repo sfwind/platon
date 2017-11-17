@@ -24,7 +24,7 @@ public class CouponDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public Integer insertCoupon(Coupon coupon) {
+    public int insertCoupon(Coupon coupon) {
         coupon.setUsed(0);
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "INSERT INTO Coupon (OpenId, ProfileId, Amount, Used, ExpiredDate, Description) " +

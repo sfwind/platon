@@ -38,8 +38,7 @@ public class OrderReceiver {
 
     private void activeAction(String message) {
         logger.info("receive monthly camp message: {}", message);
-        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        planService.forceOpenCampOrder(message, monthlyCampConfig);
+        planService.forceOpenCampOrder(message);
     }
 
 }
