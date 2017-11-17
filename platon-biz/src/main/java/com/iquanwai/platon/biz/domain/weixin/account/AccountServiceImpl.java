@@ -478,7 +478,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Boolean isRiseMember(Integer profileId) {
-        return riseMemberDao.validRiseMember(profileId) != null;
+        return riseMemberDao.loadValidRiseMember(profileId) != null;
     }
 
     @Override
