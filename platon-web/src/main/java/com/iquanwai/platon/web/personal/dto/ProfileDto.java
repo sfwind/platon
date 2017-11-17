@@ -20,4 +20,5 @@ public class ProfileDto {
     private Boolean bindMobile; //是否绑定手机号
     private String realName; //真名
     private String address;
+    private String mobileNo;
 }
