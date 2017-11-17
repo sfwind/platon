@@ -23,7 +23,7 @@ public class RiseMemberServiceImpl implements RiseMemberService {
 
     @Override
     public RiseMember getRiseMember(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember != null) {
             riseMember.setStartTime(DateUtils.parseDateToStringByCommon(riseMember.getAddTime()));
             riseMember.setEndTime(DateUtils.parseDateToStringByCommon(

@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -317,6 +316,15 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer problemId, Integer profileId) {
         List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if (riseMember != null) {
+            Date openDate = riseMember.getOpenDate();
+            if (new Date().compareTo(openDate) < 0) {
+                return new MutablePair<>(-1, "还没有到开课时间，暂时还不能学习哦");
+            }
+        }
+
         //普通人
         if (courseSchedules.isEmpty()) {
             if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
@@ -331,14 +339,14 @@ public class PlanServiceImpl implements PlanService {
                     return type == problemType;
                 }).collect(Collectors.counting()).intValue();
 
-                if(problemType == Constants.ProblemType.MAJOR){
-                    if(runningCount>=MAX_MAJOR_RUNNING_PROBLEM_NUMBER){
+                if (problemType == Constants.ProblemType.MAJOR) {
+                    if (runningCount >= MAX_MAJOR_RUNNING_PROBLEM_NUMBER) {
                         return new MutablePair<>(-1, "为了更专注的学习，主修课最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
                     }
                 }
 
-                if(problemType == Constants.ProblemType.MINOR){
-                    if(runningCount>=MAX_MINOR_RUNNING_PROBLEM_NUMBER){
+                if (problemType == Constants.ProblemType.MINOR) {
+                    if (runningCount >= MAX_MINOR_RUNNING_PROBLEM_NUMBER) {
                         return new MutablePair<>(-1, "为了更专注的学习，辅修课最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
                     }
                 }

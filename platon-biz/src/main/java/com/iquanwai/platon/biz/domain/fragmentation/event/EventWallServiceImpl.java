@@ -55,7 +55,7 @@ public class EventWallServiceImpl implements EventWallService {
 
     @Override
     public List<EventWall> getEventWall(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         List<ImprovementPlan> plans = improvementPlanDao.loadRunningPlan(profileId);
 
         List<EventWall> eventWalls = eventWallDao
