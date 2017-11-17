@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.CountDownDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
@@ -149,10 +150,11 @@ public class ScheduleController {
             Integer days = Days.daysBetween(DateTime.now().withTimeAtStartOfDay(), new DateTime(riseMember.getOpenDate())).getDays();
             List<CourseSchedule> plan = businessPlanService.getPlan(loginUser.getId());
             AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+            boolean hasPlan = planService.loadUserPlans(loginUser.getId()).stream().anyMatch(item -> item.getProblemId().equals(ConfigUtils.getTrialProblemId()));
             CountDownDto dto = new CountDownDto();
             dto.setDays(days);
             dto.setHasSchedule(!CollectionUtils.isEmpty(plan));
-            dto.setHasAudition(auditionClassMember != null);
+            dto.setHasAudition(auditionClassMember != null && hasPlan);
             return WebUtils.result(dto);
         } else {
             // 非商学院
