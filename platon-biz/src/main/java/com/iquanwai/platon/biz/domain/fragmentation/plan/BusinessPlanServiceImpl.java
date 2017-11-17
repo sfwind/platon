@@ -9,11 +9,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDa
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -21,6 +17,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.joda.time.DateTime;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,8 +155,28 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
-        courseScheduleMap.forEach((k, v) -> courseScheduleLists.add(v));
+
+        int courseMonth;
+        for (int i = 0; i < 12; i++) {
+            if (i == 0) {
+                courseMonth = cacheService.loadMonthlyCampConfig().getLearningMonth();
+                courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+            } else {
+                courseMonth = cacheService.loadMonthlyCampConfig().getLearningMonth() + i;
+                if (courseMonth > 12) {
+                    courseMonth = courseMonth % 12;
+                }
+                courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+            }
+        }
+
         return courseScheduleLists;
+    }
+
+    public static void main(String[] args) {
+        DateTime dateTime = new DateTime(new Date());
+        dateTime.plusMonths(1);
+        System.out.println(dateTime.getMonthOfYear());
     }
 
     @Override
