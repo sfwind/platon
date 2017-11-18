@@ -152,6 +152,7 @@ public class CustomerController {
         profileDto.setCityId(city == null ? null : city.getId());
         profileDto.setProvinceId(province == null ? null : province.getId());
         profileDto.setBindMobile(!StringUtils.isEmpty(account.getMobileNo()));
+        profileDto.setPhone(account.getMobileNo());
         return WebUtils.result(profileDto);
     }
 
