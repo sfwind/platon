@@ -150,7 +150,7 @@ public class ScheduleController {
             Integer days = Days.daysBetween(DateTime.now().withTimeAtStartOfDay(), new DateTime(riseMember.getOpenDate())).getDays();
             List<CourseSchedule> plan = businessPlanService.getPlan(loginUser.getId());
             AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
-            boolean hasPlan = planService.loadUserPlans(loginUser.getId()).stream().anyMatch(item -> item.getProblemId().equals(ConfigUtils.getTrialProblemId()));
+            boolean hasPlan = planService.loadUserPlans(loginUser.getId()).stream().anyMatch(item -> !item.getDel() && item.getProblemId().equals(ConfigUtils.getTrialProblemId()));
             CountDownDto dto = new CountDownDto();
             dto.setDays(days);
             dto.setHasSchedule(!CollectionUtils.isEmpty(plan));
