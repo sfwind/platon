@@ -96,7 +96,7 @@ public class CommentDao extends PracticeDBUtil {
     public Comment loadByCommentId(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM Comment WHERE Id = ?";
-        ResultSetHandler<Comment> h = new BeanHandler<Comment>(Comment.class);
+        ResultSetHandler<Comment> h = new BeanHandler<>(Comment.class);
         try {
             return runner.query(sql, h, id);
         } catch (SQLException e) {
@@ -111,7 +111,7 @@ public class CommentDao extends PracticeDBUtil {
         }
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
-        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ")";
+        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ") and Del=0";
         try {
             return runner.query(sql, h, referencedIds.toArray());
         } catch (SQLException e) {
@@ -125,8 +125,8 @@ public class CommentDao extends PracticeDBUtil {
             return Lists.newArrayList();
         }
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM Comment WHERE Id in (" + produceQuestionMark(ids.size()) + ")";
-        ResultSetHandler<List<Comment>> h = new BeanListHandler<Comment>(Comment.class);
+        String sql = "SELECT * FROM Comment WHERE Id in (" + produceQuestionMark(ids.size()) + ") and Del=0";
+        ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
         try {
             return runner.query(sql, h, ids.toArray());
         } catch (SQLException e) {

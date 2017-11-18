@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
@@ -47,7 +48,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private PointRepo pointRepo;
     @Autowired
-    private CouponDao couponDao;
+    private UserRoleDao.CouponDao couponDao;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
     @Autowired

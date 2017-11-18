@@ -23,7 +23,7 @@ public class AuditionClassMemberDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from AuditionClassMember where ProfileId = ? and Del = 0 ";
         try {
-            return runner.query(sql, new BeanHandler<AuditionClassMember>(AuditionClassMember.class), profileId);
+            return runner.query(sql, new BeanHandler<>(AuditionClassMember.class), profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

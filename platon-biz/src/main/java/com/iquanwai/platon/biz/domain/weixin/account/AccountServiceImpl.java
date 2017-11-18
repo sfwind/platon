@@ -9,7 +9,6 @@ import com.iquanwai.platon.biz.dao.common.SMSValidCodeDao;
 import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
@@ -56,7 +55,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/8/10.
@@ -94,7 +92,7 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private SMSValidCodeDao smsValidCodeDao;
     @Autowired
-    private CouponDao couponDao;
+    private UserRoleDao.CouponDao couponDao;
     @Autowired
     private CustomerStatusDao customerStatusDao;
     @Autowired
@@ -485,8 +483,7 @@ public class AccountServiceImpl implements AccountService {
     public List<Coupon> loadCoupons(Integer profileId) {
         List<Coupon> targetCoupons = Lists.newArrayList();
         // 过滤出未使用并且未过期的优惠券
-        List<Coupon> sourceCoupons = couponDao.loadCoupons(profileId).stream().filter(coupon ->
-                coupon.getUsed() == 0 && coupon.getExpiredDate().compareTo(new Date()) >= 0).collect(Collectors.toList());
+        List<Coupon> sourceCoupons = couponDao.loadByProfileId(profileId);
         for (Coupon coupon : sourceCoupons) {
             Coupon tempCoupon = new Coupon();
             tempCoupon.setAmount(coupon.getAmount());

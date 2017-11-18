@@ -22,7 +22,7 @@ public class AsstCoachCommentDao extends PracticeDBUtil {
     public AsstCoachComment loadAsstCoachComment(Integer problemId, Integer profileId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<AsstCoachComment> h = new BeanHandler<>(AsstCoachComment.class);
-        String sql = "SELECT * FROM AsstCoachComment where ProblemId=? and ProfileId=?";
+        String sql = "SELECT * FROM AsstCoachComment where ProblemId=? and ProfileId=? and Del=0";
         try {
             return run.query(sql, h, problemId, profileId);
         } catch (SQLException e) {

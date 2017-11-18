@@ -48,7 +48,7 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         objects.add(planId);
         objects.addAll(questionIds);
         try {
-            List<WarmupSubmit> submits = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId in (" + questionMark + ")",
+            List<WarmupSubmit> submits = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId in (" + questionMark + ") and Del=0",
                     h, objects.toArray());
 
             return submits;
@@ -63,7 +63,7 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<WarmupSubmit> h = new BeanHandler<>(WarmupSubmit.class);
         try {
-            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where ProfileId=? and QuestionId=?",
+            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where ProfileId=? and QuestionId=? and Del=0",
                     h, profileId, questionId);
 
             return submit;
@@ -78,7 +78,7 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<WarmupSubmit> h = new BeanHandler<>(WarmupSubmit.class);
         try {
-            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId=? and ProfileId=?",
+            WarmupSubmit submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and QuestionId=? and ProfileId=? and Del=0",
                     h, planId, questionId, profileId);
 
             return submit;

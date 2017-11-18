@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -45,7 +45,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
     @Autowired
     private AccountService accountService;
     @Autowired
-    private CouponDao couponDao;
+    private UserRoleDao.CouponDao couponDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
