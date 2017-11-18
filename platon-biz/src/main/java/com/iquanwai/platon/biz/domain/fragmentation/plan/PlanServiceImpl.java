@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
@@ -72,6 +73,8 @@ public class PlanServiceImpl implements PlanService {
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
+    @Autowired
+    private RedisUtil redisUtil;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -902,4 +905,22 @@ public class PlanServiceImpl implements PlanService {
     public Integer setAuditionOpened(Integer id) {
         return auditionClassMemberDao.update(id);
     }
+
+    @Override
+    public int generateAuditionClassSuffix() {
+        List<Integer> classIds = Lists.newArrayList();
+        Date nextMonday = DateUtils.getNextMonday(new Date());
+        redisUtil.lock("generate:audition:sequence", lock -> {
+            String key = "audition:sequence:" + nextMonday;
+            String sequenceStr = redisUtil.get(key);
+            if (sequenceStr == null) {
+                sequenceStr = "0";
+            }
+            int sequence = Integer.parseInt(sequenceStr);
+            classIds.add(sequence / 300 + 1);
+            redisUtil.set(key, sequence + 1, DateUtils.afterMonths(new Date(), 1).getTime());
+        });
+        return classIds.get(0);
+    }
+
 }

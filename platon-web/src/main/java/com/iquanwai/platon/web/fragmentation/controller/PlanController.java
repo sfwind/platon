@@ -639,7 +639,7 @@ public class PlanController {
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                     .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.CLOSE)
                     .findFirst().orElse(null);
-            if (ownedAudition != null){
+            if (ownedAudition != null) {
                 // 有试听课,从进行中去掉这个小课
                 runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
                 PlanDto plan = new PlanDto();
@@ -870,7 +870,7 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         // 计算startTime／endTime,班号
         Date nextMonday = DateUtils.getNextMonday(new Date());
-        String className = DateUtils.parseDateToFormat9(nextMonday);
+        String className = DateUtils.parseDateToFormat9(nextMonday) + planService.generateAuditionClassSuffix();
         Date startDate = DateUtils.beforeDays(nextMonday, 1);
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
         if (auditionClassMember == null) {
