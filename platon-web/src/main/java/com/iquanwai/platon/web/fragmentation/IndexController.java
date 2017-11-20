@@ -161,7 +161,7 @@ public class IndexController {
         return courseView(request, loginUser, false, NOTE_VIEW);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/rise/static/audition/refresh", method = RequestMethod.GET)
     public ModelAndView getCurrentAuditionFix(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击修复audition");
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
