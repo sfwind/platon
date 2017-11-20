@@ -639,6 +639,7 @@ public class PlanController {
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                     .filter(plan -> plan.getProblemId().equals(auditionId))
                     .findFirst().orElse(null);
+
             PlanDto plan = new PlanDto();
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(auditionId);
@@ -650,7 +651,7 @@ public class PlanController {
             if (!plan.getLearnable()) {
                 plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
             }
-            if (ownedAudition != null){
+            if (ownedAudition != null) {
                 // 有试听课,从进行中去掉这个小课
                 runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
                 if (!auditionClassMember.getActive()) {
@@ -668,7 +669,7 @@ public class PlanController {
                 plan.setCloseTime(ownedAudition.getCloseTime());
             }
             // 没有试听课或者试听课未完成时,显示试听课选项
-            if(ownedAudition ==null || ownedAudition.getStatus() != ImprovementPlan.CLOSE){
+            if (ownedAudition == null || ownedAudition.getStatus() != ImprovementPlan.CLOSE) {
                 auditions.add(plan);
             }
         }
@@ -872,7 +873,7 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         // 计算startTime／endTime,班号
         Date nextMonday = DateUtils.getNextMonday(new Date());
-        String className = DateUtils.parseDateToFormat9(nextMonday);
+        String className = DateUtils.parseDateToFormat9(nextMonday) + planService.generateAuditionClassSuffix();
         Date startDate = DateUtils.beforeDays(nextMonday, 1);
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
         if (auditionClassMember == null) {

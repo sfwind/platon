@@ -184,4 +184,6 @@ public interface PlanService {
     Integer insertAuditionClassMember(AuditionClassMember auditionClassMember);
 
     Integer setAuditionOpened(Integer id);
+
+    int generateAuditionClassSuffix();
 }
