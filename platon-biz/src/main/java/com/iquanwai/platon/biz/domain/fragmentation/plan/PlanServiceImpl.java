@@ -909,7 +909,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public int generateAuditionClassSuffix() {
         List<Integer> classIds = Lists.newArrayList();
-        Date nextMonday = DateUtils.getNextMonday(new Date());
+        String nextMonday = DateUtils.parseDateToString(DateUtils.getNextMonday(new Date()));
         redisUtil.lock("generate:audition:sequence", lock -> {
             String key = "audition:sequence:" + nextMonday;
             String sequenceStr = redisUtil.get(key);
@@ -921,6 +921,10 @@ public class PlanServiceImpl implements PlanService {
             redisUtil.set(key, sequence + 1, DateUtils.afterMonths(new Date(), 1).getTime());
         });
         return classIds.get(0);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(DateUtils.getNextMonday(new Date()));
     }
 
 }
