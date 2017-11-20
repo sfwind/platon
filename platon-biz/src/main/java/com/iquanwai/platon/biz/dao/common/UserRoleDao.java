@@ -25,7 +25,7 @@ public class UserRoleDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<UserRole> getRoles(Integer profileId){
+    public List<UserRole> getRoles(Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<UserRole>> h = new BeanListHandler<>(UserRole.class);
         String sql = "SELECT * FROM UserRole where ProfileId=? and Del=0";
@@ -49,11 +49,17 @@ public class UserRoleDao extends DBUtil {
         public int insertCoupon(Coupon coupon) {
             coupon.setUsed(0);
             QueryRunner runner = new QueryRunner(getDataSource());
-            String sql = "INSERT INTO Coupon (OpenId, ProfileId, Amount, Used, ExpiredDate, Description) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO Coupon (OpenId, ProfileId, Amount, Used, ExpiredDate, Category, Description) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
             try {
-                Long result = runner.insert(sql, new ScalarHandler<>(), coupon.getOpenId(), coupon.getProfileId(),
-                        coupon.getAmount(), coupon.getUsed(), coupon.getExpiredDate(), coupon.getDescription());
+                Long result = runner.insert(sql, new ScalarHandler<>(),
+                        coupon.getOpenId(),
+                        coupon.getProfileId(),
+                        coupon.getAmount(),
+                        coupon.getUsed(),
+                        coupon.getExpiredDate(),
+                        coupon.getCategory(),
+                        coupon.getDescription());
                 return result.intValue();
             } catch (SQLException e) {
                 logger.error(e.getLocalizedMessage(), e);
