@@ -6,6 +6,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -172,5 +173,9 @@ public class DateUtils {
     // 获得下周星期一的日期
     public static Date getNextMonday(Date gmtCreate) {
         return new DateTime(gmtCreate.getTime()).plusWeeks(1).withDayOfWeek(DateTimeConstants.MONDAY).toDate();
+    }
+
+    public static Date getThisMonday(Date gmtCreate){
+        return new DateTime(gmtCreate).withDayOfWeek(DayOfWeek.MONDAY.getValue()).toDate();
     }
 }

@@ -924,4 +924,9 @@ public class PlanServiceImpl implements PlanService {
         return classIds.get(0);
     }
 
+    @Override
+    public void becomeCurrentAuditionMember(Integer id) {
+        Date currentMonday = DateUtils.getThisMonday(new Date());
+        auditionClassMemberDao.updateAuditionClass(id, DateUtils.beforeDays(currentMonday, 1));
+    }
 }
