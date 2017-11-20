@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -918,9 +919,13 @@ public class PlanServiceImpl implements PlanService {
             }
             int sequence = Integer.parseInt(sequenceStr);
             classIds.add(sequence / 300 + 1);
-            redisUtil.set(key, sequence + 1, DateUtils.afterMonths(new Date(), 1).getTime());
+            redisUtil.set(key, sequence + 1, TimeUnit.DAYS.toSeconds(30));
         });
         return classIds.get(0);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(TimeUnit.DAYS.toSeconds(30));
     }
 
 }
