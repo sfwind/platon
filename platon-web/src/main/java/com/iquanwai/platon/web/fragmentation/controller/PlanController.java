@@ -637,11 +637,9 @@ public class PlanController {
                         (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
 
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
-                    .filter(plan -> plan.getProblemId().equals(auditionId) && plan.getStatus() != ImprovementPlan.CLOSE)
+                    .filter(plan -> plan.getProblemId().equals(auditionId))
                     .findFirst().orElse(null);
-            if (ownedAudition != null) {
-                // 有试听课,从进行中去掉这个小课
-                runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
+
                 PlanDto plan = new PlanDto();
                 // 设置 Problem 对象
                 Problem itemProblem = cacheService.getProblem(auditionId);
@@ -652,7 +650,9 @@ public class PlanController {
                 plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
                 if (!plan.getLearnable()) {
                     plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
-                }
+                }if (ownedAudition != null){
+                // 有试听课,从进行中去掉这个小课
+                runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
                 if (!auditionClassMember.getActive()) {
                     // 已经开课
                     plan.setPlanId(ownedAudition.getId());
@@ -666,9 +666,11 @@ public class PlanController {
                 plan.setStartDate(ownedAudition.getStartDate());
                 plan.setProblemId(ownedAudition.getProblemId());
                 plan.setCloseTime(ownedAudition.getCloseTime());
+            }
+            // 没有试听课或者试听课未完成时,显示试听课选项
+            if(ownedAudition ==null || ownedAudition.getStatus() != ImprovementPlan.CLOSE){
                 auditions.add(plan);
             }
-
         }
 
         PlanListDto planListDto = new PlanListDto();
