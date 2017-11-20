@@ -19,7 +19,7 @@ public class SubscribePushDao extends DBUtil {
     public SubscribePush loadById(Integer id) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<SubscribePush> h = new BeanHandler<>(SubscribePush.class);
-        String sql = "SELECT * FROM SubscribePush where Id=? order by Id desc";
+        String sql = "SELECT * FROM SubscribePush where Id=?";
         try {
             return run.query(sql, h, id);
         } catch (SQLException e) {

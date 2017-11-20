@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.RedisUtil;
-import com.iquanwai.platon.biz.dao.fragmentation.CouponDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
@@ -25,7 +25,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     @Autowired
     private PrizeCardDao prizeCardDao;
     @Autowired
-    private CouponDao couponDao;
+    private UserRoleDao.CouponDao couponDao;
     @Autowired
     private AccountService accountService;
 
