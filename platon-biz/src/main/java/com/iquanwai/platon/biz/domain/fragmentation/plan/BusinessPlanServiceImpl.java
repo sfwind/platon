@@ -272,8 +272,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     recommend = true;
                 } else {
                     // 查看是否选了对应的题
-                    List<Integer> initChoices = Lists.newArrayList(defaultSchedule.getInitChoice().split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
-                    recommend = choices.stream().anyMatch(initChoices::contains);
+                    if (defaultSchedule.getInitChoice() == null) {
+                        recommend = false;
+                    } else {
+                        List<Integer> initChoices = Lists.newArrayList(defaultSchedule.getInitChoice().split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
+                        recommend = choices.stream().anyMatch(initChoices::contains);
+                    }
                 }
             } else if (choices.contains(TWO_MINOR)) {
                 if (defaultSchedule.getDefaultSelected()) {
