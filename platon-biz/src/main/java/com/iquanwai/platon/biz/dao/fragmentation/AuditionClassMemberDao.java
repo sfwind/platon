@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.Date;
 
 /**
  * @author nethunder
@@ -47,6 +48,17 @@ public class AuditionClassMemberDao extends PracticeDBUtil {
         String sql = "UPDATE AuditionClassMember SET Active = 0 WHERE Id = ?";
         try {
             return runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public Integer updateAuditionClass(Integer id, Date monday) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE AuditionClassMember SET StartDate = ? WHERE Id = ?";
+        try {
+            return runner.update(sql, monday, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

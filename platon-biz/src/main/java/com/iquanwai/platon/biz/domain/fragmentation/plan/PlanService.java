@@ -186,4 +186,10 @@ public interface PlanService {
     Integer setAuditionOpened(Integer id);
 
     int generateAuditionClassSuffix();
+
+    /**
+     * 刷成当前开课的情况
+     * @param id RiseClassMember的Id
+     */
+    void becomeCurrentAuditionMember(Integer id);
 }
