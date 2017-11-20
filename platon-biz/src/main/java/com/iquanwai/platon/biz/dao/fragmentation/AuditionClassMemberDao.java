@@ -56,7 +56,7 @@ public class AuditionClassMemberDao extends PracticeDBUtil {
 
     public Integer updateAuditionClass(Integer id, Date monday) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE AuditionClassMember SET Active = 0,StartDate = ? WHERE Id = ?";
+        String sql = "UPDATE AuditionClassMember SET StartDate = ? WHERE Id = ?";
         try {
             return runner.update(sql, monday, id);
         } catch (SQLException e) {
