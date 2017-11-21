@@ -163,13 +163,17 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         for (int i = 0; i < 12; i++) {
             if (i == 0) {
                 courseMonth = cacheService.loadMonthlyCampConfig().getLearningMonth();
-                courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+                if (courseScheduleMap.get(courseMonth) != null) {
+                    courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+                }
             } else {
                 courseMonth = cacheService.loadMonthlyCampConfig().getLearningMonth() + i;
                 if (courseMonth > 12) {
                     courseMonth = courseMonth % 12;
                 }
-                courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+                if (courseScheduleMap.get(courseMonth) != null) {
+                    courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+                }
             }
         }
 
