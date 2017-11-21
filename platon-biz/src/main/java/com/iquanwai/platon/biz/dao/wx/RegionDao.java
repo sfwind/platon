@@ -22,10 +22,10 @@ public class RegionDao extends DBUtil{
 
     public List<Region> loadAllProvinces() {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<Region>> h = new BeanListHandler(Region.class);
+        ResultSetHandler<List<Region>> h = new BeanListHandler<>(Region.class);
 
         try {
-            List<Region> provinces = run.query("SELECT * FROM Region where Type=20", h);
+            List<Region> provinces = run.query("SELECT * FROM Region where Type=20 and Del=0", h);
             return provinces;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -36,10 +36,10 @@ public class RegionDao extends DBUtil{
 
     public List<Region> loadAllCities() {
         QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<Region>> h = new BeanListHandler(Region.class);
+        ResultSetHandler<List<Region>> h = new BeanListHandler<>(Region.class);
 
         try {
-            List<Region> regions = run.query("SELECT * FROM Region where Type=30", h);
+            List<Region> regions = run.query("SELECT * FROM Region where Type=30 and Del=0", h);
             return regions;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
