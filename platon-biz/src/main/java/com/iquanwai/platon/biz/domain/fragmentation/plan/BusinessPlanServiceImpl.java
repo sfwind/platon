@@ -430,10 +430,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     return improvementPlan;
                 }).collect(Collectors.toList());
 
+        // 选出已完成的小课
+        List<ImprovementPlan> closeProblems = improvementPlans.stream()
+                .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.CLOSE)
+                .collect(Collectors.toList());
+
         //如果本月小课没有开始,加到推荐列表
         currentMonthProblemIds.forEach(currentMonthProblemId -> {
-            boolean in = containsProblemId(problems, currentMonthProblemId);
-            if (!in) {
+            boolean inRunning = containsProblemId(problems, currentMonthProblemId);
+            boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
+            if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setMonth(month);
                 improvementPlan.setProblem(cacheService.getProblem(currentMonthProblemId).simple());
