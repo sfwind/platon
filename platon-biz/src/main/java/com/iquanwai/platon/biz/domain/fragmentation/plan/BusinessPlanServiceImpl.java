@@ -343,8 +343,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         courseSchedules.forEach(schedule -> {
             Integer id = schedule.getId();
             Boolean selected = schedule.getSelected();
-            // TODO 是否更新年份 商榷
-            courseScheduleDao.modifyScheduleYearMonth(id, month, selected ? 1 : 0);
+            courseScheduleDao.modifyScheduleYearMonth(id, year, month, selected ? 1 : 0);
         });
     }
 
