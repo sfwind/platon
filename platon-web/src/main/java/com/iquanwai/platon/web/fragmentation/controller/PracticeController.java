@@ -314,7 +314,7 @@ public class PracticeController {
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
                     dto.setPublishTime(item.getPublishTime());
-                    dto.setType(Constants.PracticeType.APPLICATION);
+                    dto.setType(PracticePlan.APPLICATION);
                     dto.setSubmitId(item.getId());
                     dto.setFeedback(item.getFeedback());
                     Profile account = accountService.getProfile(item.getProfileId());
@@ -634,7 +634,7 @@ public class PracticeController {
                 .stream().map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setSubmitId(item.getId());
-                    dto.setType(Constants.PracticeType.SUBJECT);
+                    dto.setType(PracticePlan.CHALLENGE);
                     dto.setContent(item.getContent());
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
                     Profile account = accountService.getProfile(item.getProfileId());

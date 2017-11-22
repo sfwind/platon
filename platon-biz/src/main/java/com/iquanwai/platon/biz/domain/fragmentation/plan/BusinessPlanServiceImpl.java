@@ -100,12 +100,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         //主修小课id
         List<CourseSchedule> majorSchedule = courseSchedules.stream()
-                .filter(courseSchedule -> courseSchedule.getType() == Constants.ProblemType.MAJOR)
+                .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)
                 .collect(Collectors.toList());
 
         //本月主修小课id
         List<Integer> currentMonthMajorProblemIds = currentMonthCourseSchedules.stream()
-                .filter(courseSchedule -> courseSchedule.getType() == Constants.ProblemType.MAJOR)
+                .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
         //主修小课列表
@@ -119,12 +119,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         //辅修小课id
         List<CourseSchedule> minorSchedule = courseSchedules.stream()
-                .filter(courseSchedule -> courseSchedule.getType() == Constants.ProblemType.MINOR)
+                .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .collect(Collectors.toList());
 
         //本月辅修小课id
         List<Integer> currentMonthMinorProblemIds = currentMonthCourseSchedules.stream()
-                .filter(courseSchedule -> courseSchedule.getType() == Constants.ProblemType.MINOR)
+                .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
         //辅修小课列表
@@ -480,11 +480,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
         int month = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
-        int year = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+        int year = DateUtils.getYear(monthlyCampConfig.getOpenDate());
 
         // 过去几个月的主修课id
         List<CourseSchedule> courseScheduleList = courseSchedules.stream().filter(courseSchedule -> {
-            if (courseSchedule.getType() == 2) {
+            if (courseSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
                 return false;
             }
             return courseSchedule.getYear() < year ||
