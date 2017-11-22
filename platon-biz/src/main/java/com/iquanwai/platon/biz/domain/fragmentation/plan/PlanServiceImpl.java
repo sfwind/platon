@@ -84,9 +84,9 @@ public class PlanServiceImpl implements PlanService {
     // 精英会员半年版最大选课数
     private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
     // 主修最大进行小课数
-    private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
+//    private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
     // 辅修最大进行小课数
-    private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
+//    private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
     // 普通人最大进行小课数
     private static final int MAX_NORMAL_RUNNING_PROBLEM_NUMBER = 3;
 
@@ -318,49 +318,11 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer problemId, Integer profileId) {
-        List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember != null) {
-            Date openDate = riseMember.getOpenDate();
-            if (new Date().compareTo(openDate) < 0) {
-                return new MutablePair<>(-1, "还没有到开课时间，暂时还不能学习哦");
-            }
-        }
-
-        //普通人
-        if (courseSchedules.isEmpty()) {
-            if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-                // 会员最多同时开3门课
-                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
-            }
-        } else {
-            int problemType = getProblemType(courseSchedules, problemId);
-            if (problemType != 0) {
-                int runningCount = plans.stream().filter(plan -> {
-                    int type = getProblemType(courseSchedules, plan.getProblemId());
-                    return type == problemType;
-                }).collect(Collectors.counting()).intValue();
-
-                if (problemType == Constants.ProblemType.MAJOR) {
-                    if (runningCount >= MAX_MAJOR_RUNNING_PROBLEM_NUMBER) {
-                        return new MutablePair<>(-1, "为了更专注的学习，主修课最多进行" + MAX_MAJOR_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
-                    }
-                }
-
-                if (problemType == Constants.ProblemType.MINOR) {
-                    if (runningCount >= MAX_MINOR_RUNNING_PROBLEM_NUMBER) {
-                        return new MutablePair<>(-1, "为了更专注的学习，辅修课最多进行" + MAX_MINOR_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
-                    }
-                }
-            } else {
-                // 如果不在计划内,则最多只能同时开3门课
-                if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-                    // 会员已经有两门再学
-                    return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER + "门小课。先完成进行中的一门，再选新课哦");
-                }
-            }
+    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
+        if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
+            // 会员已经有两门再学
+            return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
+                    + "门小课。先完成进行中的一门，再选新课哦");
         }
 
         return new MutablePair<>(1, "");

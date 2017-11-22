@@ -109,7 +109,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
         //主修小课列表
-        schedulePlan.setMajorProblem(getListProblem(improvementPlans, majorSchedule, currentMonthMajorProblemIds));
+        List<ImprovementPlan> majorProblem = getListProblem(improvementPlans, majorSchedule, currentMonthMajorProblemIds);
+        majorProblem.addAll(getPreUnopenMajorProblems(improvementPlans, majorSchedule));
+        schedulePlan.setMajorProblem(majorProblem);
 
         //本月主修进度
         schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
@@ -265,6 +267,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedule.setCategory(defaultSchedule.getCategory());
         Boolean recommend = false;
 
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        int month = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+        int year = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+
+        if (defaultSchedule.getMonth() < month) {
+            schedule.setYear(year + 1);
+        } else {
+            schedule.setYear(year);
+        }
+
         if (defaultSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
             // 是辅修课
             if (choices.contains(NO_MINOR)) {
@@ -329,7 +341,15 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     int o2Sequence = o2.getSequence() == null ? 0 : o2.getSequence();
                     return o1Sequence - o2Sequence;
                 })).
-                peek(item -> item.setScheduleChoices(mapChoices.get(item.getId()))).
+                peek(item -> {
+                    List<ScheduleChoice> choicesGroup = mapChoices.get(item.getId());
+                    choicesGroup.sort(((o1, o2) -> {
+                        int o1Sequence = o1.getSequence() == null ? 0 : o1.getSequence();
+                        int o2Sequence = o2.getSequence() == null ? 0 : o2.getSequence();
+                        return o1Sequence - o2Sequence;
+                    }));
+                    item.setScheduleChoices(choicesGroup);
+                }).
                 collect(Collectors.toList());
     }
 
@@ -433,10 +453,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     return improvementPlan;
                 }).collect(Collectors.toList());
 
+        // 选出已完成的小课
+        List<ImprovementPlan> closeProblems = improvementPlans.stream()
+                .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.CLOSE)
+                .collect(Collectors.toList());
+
         //如果本月小课没有开始,加到推荐列表
         currentMonthProblemIds.forEach(currentMonthProblemId -> {
-            boolean in = containsProblemId(problems, currentMonthProblemId);
-            if (!in) {
+            boolean inRunning = containsProblemId(problems, currentMonthProblemId);
+            boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
+            if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setMonth(month);
                 improvementPlan.setProblem(cacheService.getProblem(currentMonthProblemId).simple());
@@ -445,5 +471,38 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         });
 
         return problems;
+    }
+
+    // 没有之前月份未开课的小课
+    private List<ImprovementPlan> getPreUnopenMajorProblems(List<ImprovementPlan> improvementPlans,
+                                                            List<CourseSchedule> courseSchedules) {
+        List<ImprovementPlan> improvementPlanList = Lists.newArrayList();
+
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        int month = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+        int year = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+
+        // 过去几个月的主修课id
+        List<CourseSchedule> courseScheduleList = courseSchedules.stream().filter(courseSchedule -> {
+            if (courseSchedule.getType() == 2) {
+                return false;
+            }
+            return courseSchedule.getYear() < year ||
+                    (courseSchedule.getYear() == year && courseSchedule.getMonth() < month);
+        }).collect(Collectors.toList());
+
+        //如果之前月份的主修课没有开始,加到推荐列表
+        courseScheduleList.forEach(courseSchedule -> {
+            Integer problemId = courseSchedule.getProblemId();
+            boolean in = containsProblemId(improvementPlans, problemId);
+            if (!in) {
+                ImprovementPlan improvementPlan = new ImprovementPlan();
+                improvementPlan.setMonth(month);
+                improvementPlan.setProblem(cacheService.getProblem(problemId).simple());
+                improvementPlanList.add(improvementPlan);
+            }
+        });
+
+        return improvementPlanList;
     }
 }
