@@ -404,7 +404,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
 
     private boolean containsProblemId(List<ImprovementPlan> plans, Integer problemId) {
-        return plans.stream().anyMatch(improvementPlan -> improvementPlan.getProblem().getId() == problemId);
+        return plans.stream().anyMatch(improvementPlan -> {
+                    if (improvementPlan.getProblem() == null) {
+                        return false;
+                    }
+                    return improvementPlan.getProblem().getId() == problemId;
+                }
+        );
     }
 
     //计算主修或辅修小课进度
