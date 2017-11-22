@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
@@ -13,8 +14,6 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -59,6 +58,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private ScheduleChoiceSubmitDao scheduleChoiceSubmitDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private AuditionClassMemberDao auditionClassMemberDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -85,18 +86,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 })
                 .collect(Collectors.toList());
         schedulePlan.setCompleteProblem(completeProblem);
-
-        //试听小课
-        List<ImprovementPlan> trialProblem = improvementPlans.stream()
-                .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
-                        || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
-                .filter(improvementPlan -> improvementPlan.getProblemId().equals(ConfigUtils.getTrialProblemId()))
-                .map(improvementPlan -> {
-                    Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                    improvementPlan.setProblem(problem.simple());
-                    return improvementPlan;
-                }).collect(Collectors.toList());
-        schedulePlan.setTrialProblem(trialProblem);
 
         //主修小课id
         List<CourseSchedule> majorSchedule = courseSchedules.stream()
@@ -127,9 +116,35 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
-        //辅修小课列表
-        schedulePlan.setMinorProblem(getListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds));
+        //试听小课
+        AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
+        Integer auditionProblemId = null;
+        if (auditionClassMember != null) {
+            List<ImprovementPlan> trialProblem = improvementPlans.stream()
+                    .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
+                            || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
+                    .filter(improvementPlan -> improvementPlan.getProblemId().equals(auditionClassMember.getProblemId()))
+                    .map(improvementPlan -> {
+                        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+                        improvementPlan.setProblem(problem.simple());
+                        return improvementPlan;
+                    }).collect(Collectors.toList());
+            //如果试听课正在进行中,加入试听课列表
+            if (CollectionUtils.isNotEmpty(trialProblem)) {
+                schedulePlan.setTrialProblem(trialProblem);
+                auditionProblemId = auditionClassMember.getProblemId();
+            }
 
+        }
+        List<ImprovementPlan> minorProblem = getListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds);
+        // 如果试听课正在进行中,则在辅修课中过滤试听课
+        if (auditionProblemId != null) {
+            int problemId  = auditionProblemId;
+            minorProblem = minorProblem.stream().filter(improvementPlan -> improvementPlan.getProblemId() != problemId)
+                    .collect(Collectors.toList());
+        }
+        //辅修小课列表
+        schedulePlan.setMinorProblem(minorProblem);
         //本月主修进度
         schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
 
