@@ -887,6 +887,7 @@ public class PlanController {
                 auditionClassMember.setOpenid(loginUser.getOpenId());
                 auditionClassMember.setClassName(className);
                 auditionClassMember.setStartDate(startDate);
+                auditionClassMember.setProblemId(auditionId);
                 planService.insertAuditionClassMember(auditionClassMember);
                 customerMessageService.sendCustomerMessage(loginUser.getOpenId(), ConfigUtils.getValue("audition.choose.send.image"), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
                 ThreadPool.execute(() -> {
