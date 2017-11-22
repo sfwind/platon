@@ -325,7 +325,15 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     int o2Sequence = o2.getSequence() == null ? 0 : o2.getSequence();
                     return o1Sequence - o2Sequence;
                 })).
-                peek(item -> item.setScheduleChoices(mapChoices.get(item.getId()))).
+                peek(item -> {
+                    List<ScheduleChoice> choicesGroup = mapChoices.get(item.getId());
+                    choicesGroup.sort(((o1, o2) -> {
+                        int o1Sequence = o1.getSequence() == null ? 0 : o1.getSequence();
+                        int o2Sequence = o2.getSequence() == null ? 0 : o2.getSequence();
+                        return o1Sequence - o2Sequence;
+                    }));
+                    item.setScheduleChoices(choicesGroup);
+                }).
                 collect(Collectors.toList());
     }
 
