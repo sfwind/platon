@@ -263,6 +263,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedule.setCategory(defaultSchedule.getCategory());
         Boolean recommend = false;
 
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        int month = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+        int year = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+
+        if (defaultSchedule.getMonth() < month) {
+            schedule.setYear(year + 1);
+        } else {
+            schedule.setYear(year);
+        }
+
         if (defaultSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
             // 是辅修课
             if (choices.contains(NO_MINOR)) {
@@ -462,7 +472,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     // 没有之前月份未开课的小课
     private List<ImprovementPlan> getPreUnopenMajorProblems(List<ImprovementPlan> improvementPlans,
-                                                               List<CourseSchedule> courseSchedules){
+                                                            List<CourseSchedule> courseSchedules) {
         List<ImprovementPlan> improvementPlanList = Lists.newArrayList();
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
@@ -471,7 +481,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         // 过去几个月的主修课id
         List<CourseSchedule> courseScheduleList = courseSchedules.stream().filter(courseSchedule -> {
-            if(courseSchedule.getType() == 2){
+            if (courseSchedule.getType() == 2) {
                 return false;
             }
             return courseSchedule.getYear() < year ||
