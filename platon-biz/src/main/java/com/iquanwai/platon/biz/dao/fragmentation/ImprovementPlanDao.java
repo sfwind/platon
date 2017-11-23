@@ -91,7 +91,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
 
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId in (" + produceQuestionMark(profileIds.size()) + ") AND ProblemId = ?";
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId in (" + produceQuestionMark(profileIds.size()) + ") AND ProblemId = ? And Del=0";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         List<Object> objects = Lists.newArrayList();
         objects.addAll(profileIds);
@@ -141,19 +141,6 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "UPDATE ImprovementPlan SET CloseTime = CURRENT_TIMESTAMP where Id=? and CloseTime is null";
         try {
             runner.update(sql, planId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
-    /**
-     * 更新课程 job 关闭的时间
-     */
-    public void updateCloseTime(Integer planId, Date date) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE ImprovementPlan SET CloseTime = ? WHERE Id = ?";
-        try {
-            runner.update(sql, date, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -264,7 +251,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     // 查询该用户付过费的plan
     public List<ImprovementPlan> loadUserPlans(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ?";
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ? And Del=0";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         try {
             return runner.query(sql, h, profileId);
@@ -294,7 +281,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
      */
     public int loadChosenPersonCount(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT COUNT(DISTINCT(ProfileId)) FROM ImprovementPlan WHERE ProblemId = ?";
+        String sql = "SELECT COUNT(DISTINCT(ProfileId)) FROM ImprovementPlan WHERE ProblemId = ? And Del=0";
         ResultSetHandler<Long> h = new ScalarHandler<>();
         try {
             Long result = runner.query(sql, h, problemId);

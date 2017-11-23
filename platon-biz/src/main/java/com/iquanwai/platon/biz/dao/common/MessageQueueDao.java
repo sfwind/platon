@@ -43,7 +43,7 @@ public class MessageQueueDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         String sql = "Select * from MessageQueue where MsgId = ?";
         try{
-            return run.query(sql, new BeanHandler<MessageQueue>(MessageQueue.class), msgId);
+            return run.query(sql, new BeanHandler<>(MessageQueue.class), msgId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -52,7 +52,7 @@ public class MessageQueueDao extends DBUtil {
 
     public void update(Integer id, String ip, String queue) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String sql = "UPDATE MessageQueue SET Status = 1, ConsumerIp=?,Queue = ? where Id = ?";
+        String sql = "UPDATE MessageQueue SET Status = 1, ConsumerIp=?, Queue = ? where Id = ?";
         try {
             run.update(sql, ip, queue, id);
         } catch (SQLException e) {

@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
@@ -22,6 +23,7 @@ import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +81,7 @@ public class IndexController {
     //填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
     //申请成功页面
-    private static final String APPLY_SUCCESS = "/pay/member/apply/success";
+    private static final String APPLY_SUCCESS = "/pay/apply";
 
     private static final String LOGIN_REDIS_KEY = "login:";
     private static final String WELCOME_MSG_REDIS_KEY = "welcome:msg:";
@@ -114,7 +116,13 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        logger.info("问题／答案页面");
+        logger.info("问题／答案页面,{},{}", request.getRequestURI(), request.getParameter("date"));
+        if (request.getRequestURI().endsWith("rise/static/guest/inter/quan/answer")) {
+            if ("2017-11-07".equals(request.getParameter("date"))) {
+                response.sendRedirect(request.getRequestURI() + "?date=2017-11-14");
+                return null;
+            }
+        }
         return courseView(request, null, false, RISE_VIEW);
     }
 
@@ -151,6 +159,43 @@ public class IndexController {
         }
 
         return courseView(request, loginUser, false, NOTE_VIEW);
+    }
+
+    @RequestMapping(value = "/rise/static/audition/refresh", method = RequestMethod.GET)
+    public ModelAndView getCurrentAuditionFix(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("点击修复audition");
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                // 未关注
+                response.sendRedirect(SUBSCRIBE_URL);
+                return null;
+            }
+        }
+
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        } else {
+            AuditionClassMember classMember = planService.loadAuditionClassMember(loginUser.getId());
+            if (classMember != null) {
+                // 有试听课权限
+                if (new DateTime(classMember.getStartDate()).isAfterNow() && classMember.getActive()) {
+                    // 开课日期在今天之后，则刷成这一期的
+                    planService.becomeCurrentAuditionMember(classMember.getId());
+                }
+            }
+        }
+        // 试听课已经开营，相当于点商学院
+        response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
+        return null;
     }
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)

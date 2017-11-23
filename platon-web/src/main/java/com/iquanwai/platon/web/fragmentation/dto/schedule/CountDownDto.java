@@ -11,4 +11,5 @@ import lombok.Data;
 public class CountDownDto {
    private Integer days;
    private Boolean hasSchedule;
+   private Boolean hasAudition;
 }

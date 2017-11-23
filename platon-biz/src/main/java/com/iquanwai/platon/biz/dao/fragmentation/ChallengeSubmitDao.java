@@ -46,7 +46,7 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
     public ChallengeSubmit load(Integer challengeId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ChallengeSubmit> h = new BeanHandler<>(ChallengeSubmit.class);
-        String sql = "SELECT * FROM ChallengeSubmit where ProfileId=? and ChallengeId=? and PlanId=?";
+        String sql = "SELECT * FROM ChallengeSubmit where ProfileId=? and ChallengeId=? and PlanId=? and Del=0";
         try {
             return run.query(sql, h, profileId, challengeId, planId);
         } catch (SQLException e) {
@@ -93,18 +93,6 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
             return false;
         }
         return true;
-    }
-
-    public List<ChallengeSubmit> load(Integer challengeId) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<ChallengeSubmit>> h = new BeanListHandler<>(ChallengeSubmit.class);
-        String sql = "SELECT * FROM ChallengeSubmit where ChallengeId=? and Content is not null order by UpdateTime desc";
-        try {
-            return run.query(sql, h, challengeId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
     }
 
     public void updateContent(Integer id, String content) {

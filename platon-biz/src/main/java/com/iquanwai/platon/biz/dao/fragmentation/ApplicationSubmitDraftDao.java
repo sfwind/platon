@@ -62,7 +62,7 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
      */
     public ApplicationSubmitDraft loadApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ApplicationSubmitDraft where ProfileId = ? and ApplicationId = ? and PlanId = ?";
+        String sql = "select * from ApplicationSubmitDraft where ProfileId = ? and ApplicationId = ? and PlanId = ? and Del=0";
         try {
             return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), profileId, applicationId, planId);
         } catch (SQLException e) {
@@ -73,8 +73,8 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
 
     public ApplicationSubmitDraft loadApplicationSubmitDraft(Integer applicationId, Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ApplicationSubmitDraft WHERE ApplicationId = ? AND PlanId = ?";
-        ResultSetHandler<ApplicationSubmitDraft> h = new BeanHandler<ApplicationSubmitDraft>(ApplicationSubmitDraft.class);
+        String sql = "SELECT * FROM ApplicationSubmitDraft WHERE ApplicationId = ? AND PlanId = ? AND Del=0";
+        ResultSetHandler<ApplicationSubmitDraft> h = new BeanHandler<>(ApplicationSubmitDraft.class);
         try {
             return runner.query(sql, h, applicationId, planId);
         } catch (SQLException e) {
