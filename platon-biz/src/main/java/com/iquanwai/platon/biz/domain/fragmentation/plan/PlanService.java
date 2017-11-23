@@ -181,7 +181,10 @@ public interface PlanService {
 
     AuditionClassMember loadAuditionClassMember(Integer profileId);
 
-    Integer insertAuditionClassMember(AuditionClassMember auditionClassMember);
+    /**
+     * 报名试听课
+     * */
+    String signupAudition(Integer profileId, String openid);
 
     Integer setAuditionOpened(Integer id);
 }
