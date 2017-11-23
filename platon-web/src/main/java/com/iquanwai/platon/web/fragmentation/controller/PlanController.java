@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
@@ -70,6 +71,8 @@ public class PlanController {
     private RiseMemberService riseMemberService;
     @Autowired
     private CustomerMessageService customerMessageService;
+    @Autowired
+    private AuditionService auditionService;
 
     /**
      * 检查是否能选课<br/>
@@ -618,7 +621,7 @@ public class PlanController {
         });
         List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, completedPlans);
 
-        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         List<PlanDto> auditions = Lists.newArrayList();
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (auditionClassMember != null &&
@@ -806,7 +809,7 @@ public class PlanController {
                 .action("开课");
         operationLogService.log(operationLog);
         Integer auditionId = ConfigUtils.getTrialProblemId();
-        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         Integer planId = null;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
@@ -834,7 +837,7 @@ public class PlanController {
                 }
             }
             // 开课
-            planService.setAuditionOpened(auditionClassMember.getId());
+            auditionService.openAuditionCourse(auditionClassMember.getId());
             return WebUtils.result(planId);
         } else {
             if (ownedAudition != null) {
@@ -862,14 +865,14 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                 .filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
 
-        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         if (auditionClassMember == null) {
             //  没有试听过
             RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
             if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
                 return WebUtils.error("商学院会员可以在发现页面选课哦");
             } else {
-                String className = planService.signupAudition(loginUser.getId(), loginUser.getOpenId());
+                String className = auditionService.signupAudition(loginUser.getId(), loginUser.getOpenId());
                 dto.setClassName(className);
                 customerMessageService.sendCustomerMessage(loginUser.getOpenId(), ConfigUtils.getValue("audition.choose.send.image"), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
                 ThreadPool.execute(() -> {

@@ -1,6 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -24,6 +25,8 @@ public class AuditionSignupReceiver {
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private CustomerMessageService customerMessageService;
+    @Autowired
+    private PlanService planService;
 
     private static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "audition_signup_queue";
