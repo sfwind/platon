@@ -10,4 +10,5 @@ public class AuditionChooseDto {
     private String errMsg;
     private String startTime;
     private String endTime;
+    private Boolean subscribe;
 }
