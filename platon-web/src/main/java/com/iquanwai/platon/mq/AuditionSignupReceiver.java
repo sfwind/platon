@@ -28,7 +28,7 @@ public class AuditionSignupReceiver {
     private static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "audition_signup_queue";
 
-    private static final String AUDITION_SUCCESS = "/pay/static/audition/success";
+    private static final String AUDITION_SUCCESS = "/pay/audition/success";
 
     @PostConstruct
     public void init() {
