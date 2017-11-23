@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ public class AuditionSignupReceiver {
     @Autowired
     private CustomerMessageService customerMessageService;
 
-    private static final String TOPIC = "audition_signup";
+    private static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "audition_signup_queue";
 
     private static final String AUDITION_SUCCESS = "/pay/static/audition/success";
@@ -35,6 +36,11 @@ public class AuditionSignupReceiver {
             logger.info("receive message {}", message);
 
             JSONObject json = JSONObject.parseObject(message.getMessage().toString());
+            String scene = json.get("scene").toString();
+            if (!scene.startsWith(PromotionConstants.Activities.AUDITION_SIGNUP)) {
+                logger.info("scene: {}", scene);
+                return;
+            }
 
             String openId = json.getString("openid");
             customerMessageService.sendCustomerMessage(openId, "<a href='"+ConfigUtils.domainName()+AUDITION_SUCCESS+"'>"+"点击这里完成预约</a>",
