@@ -6,11 +6,14 @@ import lombok.Data;
  * @author nethunder
  * @version 2017-11-23
  * <p>
- * 商学院申请的提交记录
+ * 申请提交记录
  */
 @Data
-public class BusinessApplySubmitVO {
+public class BusinessApplySubmit {
+    private Integer id;
+    private Integer applyId;
     private Integer questionId;
-    private String userValue;
     private Integer choiceId;
+    private String choiceText;
+    private String userValue;
 }

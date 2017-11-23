@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
+import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
@@ -78,7 +79,15 @@ public class BusinessApplyController {
                 .function("申请")
                 .action("提交申请");
         operationLogService.log(operationLog);
-
+        List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
+            BusinessApplySubmit submit = new BusinessApplySubmit();
+            submit.setQuestionId(applySubmitVO.getQuestionId());
+            submit.setChoiceId(applySubmitVO.getChoiceId());
+            submit.setUserValue(applySubmitVO.getUserValue());
+            return submit;
+        }).collect(Collectors.toList());
+        applyService.submitBusinessApply(userApplySubmits);
+        return WebUtils.success();
     }
 
 }

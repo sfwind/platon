@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.apply.BusinessApplyQuestionDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyChoice;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
+import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -61,5 +62,11 @@ public class ApplyServiceImpl implements ApplyService {
     public BusinessSchoolApplication loadCheckingApply(Integer profileId) {
         return businessSchoolApplicationDao.loadCheckingApplication(profileId);
     }
+
+    @Override
+    public void submitBusinessApply(List<BusinessApplySubmit> userApplySubmits) {
+
+    }
+
 
 }
