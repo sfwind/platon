@@ -33,10 +33,10 @@ public class AuditionClassMemberDao extends PracticeDBUtil {
 
     public Integer insert(AuditionClassMember member) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO AuditionClassMember(ProfileId,Openid,ClassName,StartDate) VALUES(?,?,?,?)";
+        String sql = "INSERT INTO AuditionClassMember(ProfileId,Openid,ClassName,StartDate,ProblemId) VALUES(?,?,?,?,?)";
         try {
             return runner.insert(sql, new ScalarHandler<Long>(), member.getProfileId(), member.getOpenid(), member.getClassName(),
-                    member.getStartDate()).intValue();
+                    member.getStartDate(), member.getProblemId()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

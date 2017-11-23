@@ -11,6 +11,7 @@ public interface PromotionConstants {
         String COURSE_REDUCTION = "courseReduction";
         String CAITONG_LIVE = "caitonglive";
         String BIBLE = "bible";
+        String AUDITION_SIGNUP = "audition_signup";
     }
 
     interface FreeLimitAction {

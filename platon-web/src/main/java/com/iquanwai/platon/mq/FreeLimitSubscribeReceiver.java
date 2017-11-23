@@ -30,15 +30,9 @@ public class FreeLimitSubscribeReceiver {
     @Autowired
     private OperationFreeLimitService operationFreeLimitService;
     @Autowired
-    private OperationEvaluateService operationEvaluateService;
-    @Autowired
     private CustomerMessageService customerMessageService;
     @Autowired
-    private CacheService cacheService;
-    @Autowired
     private RabbitMQFactory rabbitMQFactory;
-    @Autowired
-    private AccountService accountService;
 
     @PostConstruct
     public void init() {
@@ -46,8 +40,6 @@ public class FreeLimitSubscribeReceiver {
             activeAction(messageQueue.getMessage().toString());
         });
     }
-
-
 
     private void sendScanMsg(String openId) {
         String message = "不好，来迟了一步，洞察力测评都关闭了。\n\n" +
