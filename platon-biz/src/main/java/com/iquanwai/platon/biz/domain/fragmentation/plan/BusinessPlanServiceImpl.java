@@ -279,10 +279,53 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     .map(defaultCourse -> this.buildSchedule(defaultCourse, profileId, choices, riseMember.getOpenDate()))
                     .collect(Collectors.toList());
             // 插入数据库
+            Map<Integer, List<CourseSchedule>> waitToReduce = waitInserts.stream()
+                    .filter(item -> item.getType() == CourseScheduleDefault.Type.MINOR)
+                    .filter(CourseSchedule::getRecommend)
+                    .collect(Collectors.groupingBy(CourseSchedule::getMonth));
+            if (choices.contains(ONE_MINOR)) {
+                // 一门课
+                waitToReduce.forEach((key, list) -> {
+                    if (list.size() > 1) {
+                        // 需要筛选
+                        list.forEach(item -> {
+                            item.setRecommend(false);
+                            item.setSelected(false);
+                        });
+                        list.stream().sorted(this::scoreCompare).findFirst().ifPresent(item -> {
+                            item.setSelected(true);
+                            item.setRecommend(true);
+                        });
+                    }
+                });
+            } else if (choices.contains(TWO_MINOR)) {
+                // 二门课
+                waitToReduce.forEach((key, list) -> {
+                    if (list.size() > 2) {
+                        // 需要筛选
+                        list.forEach(item -> {
+                            item.setRecommend(false);
+                            item.setSelected(false);
+                        });
+                        list.stream().sorted(this::scoreCompare).limit(2).forEach(item -> {
+                            item.setRecommend(true);
+                            item.setSelected(true);
+                        });
+                    }
+                });
+            }
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
         } else {
             logger.error("用户：{}，再次生成课表", profileId);
         }
+    }
+
+    private int scoreCompare(CourseSchedule o1, CourseSchedule o2) {
+        Problem p1 = cacheService.getProblem(o1.getProblemId());
+        Problem p2 = cacheService.getProblem(o2.getProblemId());
+        Double useful1 = p1.getUsefulScore() == null ? 4 : p1.getUsefulScore();
+        Double useful2 = p2.getUsefulScore() == null ? 4 : p2.getUsefulScore();
+        return useful2.compareTo(useful1);
     }
 
     private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId, List<Integer> choices, Date openDate) {
