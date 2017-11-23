@@ -1,8 +1,14 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
+import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author nethunder
@@ -24,15 +32,41 @@ public class BusinessApplyController {
 
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private ApplyService applyService;
 
     @RequestMapping(value = "/load/questions", method = RequestMethod.GET)
-    public ResponseEntity<Map<String,Object>> loadBusinessApplyQuestions(LoginUser loginUser){
+    public ResponseEntity<Map<String, Object>> loadBusinessApplyQuestions(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("商学院")
                 .function("申请")
                 .action("获取申请问题");
         operationLogService.log(operationLog);
+        List<BusinessApplyQuestion> questionList = applyService.loadBusinessApplyQuestions(loginUser.getId());
+        Map<Integer, List<BusinessApplyQuestion>> collect = questionList.stream().collect(Collectors.groupingBy(BusinessApplyQuestion::getSeries));
+        List<ApplyQuestionDto> result = Lists.newArrayList();
+        collect.keySet().stream().sorted().forEach(item -> {
+            ApplyQuestionDto dto = new ApplyQuestionDto();
+            dto.setSeries(item);
+            dto.setQuestions(collect.get(item));
+            result.add(dto);
+        });
+        return WebUtils.result(result);
+    }
 
+    @RequestMapping(value = "/check/submit/apply", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> checkApplySubmit(LoginUser loginUser) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("商学院")
+                .function("申请")
+                .action("检查是否能够申请");
+        operationLogService.log(operationLog);
+        BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
+        if (application == null) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("您的申请正在审核中哦");
+        }
     }
 
 }
