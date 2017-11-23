@@ -528,7 +528,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             }
             return courseSchedule.getYear() < year ||
                     (courseSchedule.getYear() == year && courseSchedule.getMonth() < month);
-        }).sorted((o1, o2) -> o1.getMonth() - o2.getMonth()).collect(Collectors.toList());
+        }).sorted((o1, o2) -> o2.getMonth() - o1.getMonth()).collect(Collectors.toList());
 
         //如果之前月份的主修课没有开始,加到推荐列表
         courseScheduleList.forEach(courseSchedule -> {
