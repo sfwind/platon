@@ -908,6 +908,7 @@ public class PlanServiceImpl implements PlanService {
         auditionClassMember.setOpenid(openid);
         auditionClassMember.setClassName(className);
         auditionClassMember.setStartDate(startDate);
+        auditionClassMember.setProblemId(ConfigUtils.getTrialProblemId());
         auditionClassMemberDao.insert(auditionClassMember);
 
         return className;
