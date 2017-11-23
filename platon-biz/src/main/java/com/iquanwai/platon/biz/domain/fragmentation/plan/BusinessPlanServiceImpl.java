@@ -113,7 +113,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setMajorProblem(majorProblem);
 
         //本月主修进度
-        schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
+        schedulePlan.setMajorPercent(completePercent(majorProblem, currentMonthMajorProblemIds));
 
 
         //辅修小课id
@@ -156,7 +156,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         //辅修小课列表
         schedulePlan.setMinorProblem(minorProblem);
         //本月主修进度
-        schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
+        schedulePlan.setMinorPercent(completePercent(minorProblem, currentMonthMinorProblemIds));
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
 
@@ -575,6 +575,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 improvementPlan.setMonth(month);
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
+                improvementPlan.setProblemId(problem.getId());
                 improvementPlan.setTotalSeries(problem.getLength());
                 improvementPlan.setCompleteSeries(0);
                 problems.add(improvementPlan);
@@ -609,7 +610,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setMonth(courseSchedule.getMonth());
-                improvementPlan.setProblem(cacheService.getProblem(problemId).simple());
+                Problem problem = cacheService.getProblem(problemId).simple();
+                improvementPlan.setProblem(problem.simple());
+                improvementPlan.setProblemId(problem.getId());
+                improvementPlan.setTotalSeries(problem.getLength());
+                improvementPlan.setCompleteSeries(0);
                 improvementPlanList.add(improvementPlan);
             }
         });
