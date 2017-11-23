@@ -6,23 +6,16 @@ import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.PromotionConstants;
-import com.iquanwai.platon.biz.util.ThreadPool;
+import com.iquanwai.platon.biz.util.*;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
@@ -37,11 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -870,11 +859,9 @@ public class PlanController {
         Integer auditionId = ConfigUtils.getTrialProblemId();
         AuditionChooseDto dto = new AuditionChooseDto();
         dto.setGoSuccess(false);
-        ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
-        // 计算startTime／endTime,班号
-        Date nextMonday = DateUtils.getNextMonday(new Date());
-        String className = DateUtils.parseDateToFormat9(nextMonday) + planService.generateAuditionClassSuffix();
-        Date startDate = DateUtils.beforeDays(nextMonday, 1);
+        ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
+                .filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
+
         AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
         if (auditionClassMember == null) {
             //  没有试听过
@@ -882,13 +869,8 @@ public class PlanController {
             if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
                 return WebUtils.error("商学院会员可以在发现页面选课哦");
             } else {
-                auditionClassMember = new AuditionClassMember();
-                auditionClassMember.setProfileId(loginUser.getId());
-                auditionClassMember.setOpenid(loginUser.getOpenId());
-                auditionClassMember.setClassName(className);
-                auditionClassMember.setStartDate(startDate);
-                auditionClassMember.setProblemId(auditionId);
-                planService.insertAuditionClassMember(auditionClassMember);
+                String className = planService.signupAudition(loginUser.getId(), loginUser.getOpenId());
+                dto.setClassName(className);
                 customerMessageService.sendCustomerMessage(loginUser.getOpenId(), ConfigUtils.getValue("audition.choose.send.image"), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
                 ThreadPool.execute(() -> {
                     try {
@@ -901,11 +883,18 @@ public class PlanController {
                 });
             }
             dto.setGoSuccess(true);
+        } else{
+            dto.setClassName(auditionClassMember.getClassName());
         }
         if (ownedAudition != null && ownedAudition.getStatus() == ImprovementPlan.RUNNING) {
             dto.setPlanId(ownedAudition.getId());
         }
-        dto.setClassName(className);
+        dto.setSubscribe(true);
+        try {
+            accountService.getAccount(loginUser.getOpenId(), true);
+        } catch (NotFollowingException e) {
+            dto.setSubscribe(false);
+        }
 
         return WebUtils.result(dto);
     }
