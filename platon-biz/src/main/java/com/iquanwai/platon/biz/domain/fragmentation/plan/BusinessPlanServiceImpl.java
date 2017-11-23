@@ -528,7 +528,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             }
             return courseSchedule.getYear() < year ||
                     (courseSchedule.getYear() == year && courseSchedule.getMonth() < month);
-        }).collect(Collectors.toList());
+        }).sorted((o1, o2) -> o1.getMonth() - o2.getMonth()).collect(Collectors.toList());
 
         //如果之前月份的主修课没有开始,加到推荐列表
         courseScheduleList.forEach(courseSchedule -> {
@@ -536,7 +536,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean in = containsProblemId(improvementPlans, problemId);
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setMonth(courseSchedule.getMonth());
                 improvementPlan.setProblem(cacheService.getProblem(problemId).simple());
                 improvementPlanList.add(improvementPlan);
             }
