@@ -573,7 +573,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setMonth(month);
-                improvementPlan.setProblem(cacheService.getProblem(currentMonthProblemId).simple());
+                Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
+                improvementPlan.setProblem(problem);
+                improvementPlan.setTotalSeries(problem.getLength());
+                improvementPlan.setCompleteSeries(0);
                 problems.add(improvementPlan);
             }
         });
