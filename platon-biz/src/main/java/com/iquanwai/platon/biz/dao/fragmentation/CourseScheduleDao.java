@@ -41,20 +41,21 @@ public class CourseScheduleDao extends PracticeDBUtil {
 
     public void batchInsertCourseSchedule(List<CourseSchedule> schedules) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category, Month, Type, Recommend, Selected) " +
-                " VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category,Year, Month, Type, Recommend, Selected) " +
+                " VALUES (?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[schedules.size()][];
             for (int i = 0; i < schedules.size(); i++) {
                 CourseSchedule courseSchedule = schedules.get(i);
-                param[i] = new Object[7];
+                param[i] = new Object[8];
                 param[i][0] = courseSchedule.getProfileId();
                 param[i][1] = courseSchedule.getProblemId();
                 param[i][2] = courseSchedule.getCategory();
-                param[i][3] = courseSchedule.getMonth();
-                param[i][4] = courseSchedule.getType();
-                param[i][5] = courseSchedule.getRecommend();
-                param[i][6] = courseSchedule.getSelected();
+                param[i][3] = courseSchedule.getYear();
+                param[i][4] = courseSchedule.getMonth();
+                param[i][5] = courseSchedule.getType();
+                param[i][6] = courseSchedule.getRecommend();
+                param[i][7] = courseSchedule.getSelected();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {

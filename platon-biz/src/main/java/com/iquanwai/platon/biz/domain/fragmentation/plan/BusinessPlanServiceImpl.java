@@ -5,12 +5,19 @@ import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -60,6 +67,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private AccountService accountService;
     @Autowired
     private AuditionClassMemberDao auditionClassMemberDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -139,7 +148,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> minorProblem = getListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds);
         // 如果试听课正在进行中,则在辅修课中过滤试听课
         if (auditionProblemId != null) {
-            int problemId  = auditionProblemId;
+            int problemId = auditionProblemId;
             minorProblem = minorProblem.stream().filter(improvementPlan -> improvementPlan.getProblemId() != problemId)
                     .collect(Collectors.toList());
         }
@@ -254,6 +263,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 用户选择的选项id
         List<Integer> choices = Lists.newArrayList();
         scheduleQuestions.forEach(question -> question.getScheduleChoices().forEach(item -> choices.add(item.getId())));
+        // 用户购买记录
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+
         if (CollectionUtils.isEmpty(userSchedule)) {
             // 插入用户选择
             scheduleChoiceSubmitDao.batchInsert(choices.stream().map(item -> {
@@ -264,7 +276,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             }).collect(Collectors.toList()));
             // 用户还没有课表,生成课表
             List<CourseSchedule> waitInserts = defaults.stream()
-                    .map(defaultCourse -> this.buildSchedule(defaultCourse, profileId, choices))
+                    .map(defaultCourse -> this.buildSchedule(defaultCourse, profileId, choices, riseMember.getOpenDate()))
                     .collect(Collectors.toList());
             // 插入数据库
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
@@ -273,24 +285,30 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
     }
 
-    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId, List<Integer> choices) {
+    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId, List<Integer> choices, Date openDate) {
+        Integer year;
+        Integer month;
+        if (defaultSchedule.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
+            // 新学员，以开营日来计算
+            DateTime openDateTime = new DateTime(openDate);
+            year = openDateTime.getYear();
+            month = openDateTime.getMonthOfYear();
+        } else {
+            // 老学员
+            year = 2017;
+            month = 8;
+        }
+        if (defaultSchedule.getMonth() < month) {
+            year++;
+        }
         CourseSchedule schedule = new CourseSchedule();
+        schedule.setYear(year);
         schedule.setMonth(defaultSchedule.getMonth());
         schedule.setProfileId(profileId);
         schedule.setProblemId(defaultSchedule.getProblemId());
         schedule.setType(defaultSchedule.getType());
         schedule.setCategory(defaultSchedule.getCategory());
         Boolean recommend = false;
-
-        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        int month = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
-        int year = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
-
-        if (defaultSchedule.getMonth() < month) {
-            schedule.setYear(year + 1);
-        } else {
-            schedule.setYear(year);
-        }
 
         if (defaultSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
             // 是辅修课
