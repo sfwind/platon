@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -301,6 +302,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             } else if (choices.contains(TWO_MINOR)) {
                 // 二门课
                 waitToReduce.forEach((key, list) -> {
+                    List<Integer> selectedIds = Lists.newArrayList(list.stream().mapToInt(CourseSchedule::getProblemId).iterator());
+
                     if (list.size() > 2) {
                         // 需要筛选
                         list.forEach(item -> {
@@ -310,6 +313,29 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                         list.stream().sorted(this::scoreCompare).limit(2).forEach(item -> {
                             item.setRecommend(true);
                             item.setSelected(true);
+                        });
+                    } else {
+                        // 不满足两门，要补足两门
+                        List<Integer> collect = defaults.stream()
+                                .filter(item -> Objects.equals(item.getMonth(), key))
+                                .filter(item -> item.getType() == CourseScheduleDefault.Type.MINOR)
+                                .filter(item -> !selectedIds.contains(item.getProblemId()))
+                                .map(CourseScheduleDefault::getProblemId)
+                                .sorted(((o1, o2) -> {
+                                    Problem p1 = cacheService.getProblem(o1);
+                                    Problem p2 = cacheService.getProblem(o2);
+                                    // 默认四分
+                                    Double useful1 = p1.getUsefulScore() == null ? 4 : p1.getUsefulScore();
+                                    Double useful2 = p2.getUsefulScore() == null ? 4 : p2.getUsefulScore();
+                                    return useful2.compareTo(useful1);
+                                }))
+                                .limit(2 - list.size())
+                                .collect(Collectors.toList());
+                        waitInserts.forEach(item -> {
+                            if (collect.contains(item.getProblemId())) {
+                                item.setSelected(true);
+                                item.setRecommend(true);
+                            }
                         });
                     }
                 });
