@@ -3,19 +3,26 @@ package com.iquanwai.platon.biz.domain.apply;
 
 import com.iquanwai.platon.biz.dao.apply.BusinessApplyChoiceDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplyQuestionDao;
+import com.iquanwai.platon.biz.dao.apply.BusinessApplySubmitDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyChoice;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.common.Profile;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +39,13 @@ public class ApplyServiceImpl implements ApplyService {
     private BusinessApplyChoiceDao businessApplyChoiceDao;
     @Autowired
     private BusinessSchoolApplicationDao businessSchoolApplicationDao;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private BusinessApplySubmitDao businessApplySubmitDao;
+
 
     @Override
     public List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId) {
@@ -64,8 +78,28 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public void submitBusinessApply(List<BusinessApplySubmit> userApplySubmits) {
+    public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits) {
+        Profile profile = accountService.getProfile(profileId);
 
+        BusinessSchoolApplication application = new BusinessSchoolApplication();
+        application.setProfileId(profileId);
+        application.setSubmitTime(new Date());
+        application.setOpenid(profile.getOpenid());
+        application.setStatus(BusinessSchoolApplication.APPLYING);
+        application.setIsDuplicate(false);
+        application.setDeal(false);
+        Optional<RiseMember> optional = riseMemberDao.loadRiseMembersByProfileId(profileId).stream().sorted(((o1, o2) -> o2.getId() - o1.getId())).findFirst();
+        optional.ifPresent(riseMember -> application.setOriginMemberType(riseMember.getMemberTypeId()));
+
+        Integer applyId = businessSchoolApplicationDao.insert(application);
+        userApplySubmits.forEach(item->{
+            item.setApplyId(applyId);
+            if (item.getChoiceId() != null) {
+                BusinessApplyChoice choice = businessApplyChoiceDao.load(BusinessApplyChoice.class, item.getChoiceId());
+                item.setChoiceText(choice.getSubject() == null ? "异常数据" : choice.getSubject());
+            }
+        });
+        businessApplySubmitDao.batchInsertApplySubmit(userApplySubmits);
     }
 
 

@@ -86,8 +86,13 @@ public class BusinessApplyController {
             submit.setUserValue(applySubmitVO.getUserValue());
             return submit;
         }).collect(Collectors.toList());
-        applyService.submitBusinessApply(userApplySubmits);
-        return WebUtils.success();
+        BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
+        if (application == null) {
+            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits);
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("您的申请正在审核中哦");
+        }
     }
 
 }

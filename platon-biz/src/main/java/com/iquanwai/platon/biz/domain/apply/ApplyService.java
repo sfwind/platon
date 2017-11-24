@@ -13,6 +13,7 @@ import java.util.List;
 public interface ApplyService {
     /**
      * 获取商学院问题
+     *
      * @param profileId 用户id
      * @return 商学院问卷的问题
      */
@@ -20,6 +21,7 @@ public interface ApplyService {
 
     /**
      * 获取正在审批中的记录
+     *
      * @param profileId 用户id
      * @return 审批记录
      */
@@ -27,7 +29,9 @@ public interface ApplyService {
 
     /**
      * 提交商学院申请
+     *
+     * @param profileId        用户id
      * @param userApplySubmits 用户的申请记录
      */
-    void submitBusinessApply(List<BusinessApplySubmit> userApplySubmits);
+    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits);
 }
