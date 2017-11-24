@@ -1,7 +1,11 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
+import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.PromotionConstants;
@@ -24,6 +28,10 @@ public class AuditionSignupReceiver {
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private CustomerMessageService customerMessageService;
+    @Autowired
+    private AuditionService auditionService;
+    @Autowired
+    private AccountService accountService;
 
     private static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "audition_signup_queue";
@@ -42,9 +50,14 @@ public class AuditionSignupReceiver {
                 return;
             }
 
-            String openId = json.getString("openid");
-            customerMessageService.sendCustomerMessage(openId, "<a href='"+ConfigUtils.domainName()+AUDITION_SUCCESS+"'>"+"点击这里完成预约</a>",
+            String openid = json.getString("openid");
+            customerMessageService.sendCustomerMessage(openid, "<a href='"+ConfigUtils.domainName()+AUDITION_SUCCESS+"'>"+"点击这里完成预约</a>",
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+
+            Profile profile = accountService.getProfile(openid);
+            if(profile!=null){
+                auditionService.setProfileIdForAuditionMember(openid, profile.getId());
+            }
         });
 
     }

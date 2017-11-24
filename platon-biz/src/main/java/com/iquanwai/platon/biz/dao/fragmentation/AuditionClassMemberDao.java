@@ -64,4 +64,15 @@ public class AuditionClassMemberDao extends PracticeDBUtil {
         }
         return -1;
     }
+
+    public Integer updateProfileId(Integer id, String openid) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE AuditionClassMember SET ProfileId = ? WHERE OpenId = ?";
+        try {
+            return runner.update(sql, id, openid);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 }

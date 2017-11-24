@@ -69,13 +69,9 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private CardRepository cardRepository;
     @Autowired
-    private AuditionClassMemberDao auditionClassMemberDao;
-    @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
-    @Autowired
-    private RedisUtil redisUtil;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -805,14 +801,6 @@ public class PlanServiceImpl implements PlanService {
         }
     }
 
-    /**
-     * 根据 profileId 和 problemId 强开当前小课
-     */
-    @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate) {
-        return forceOpenProblem(profileId, problemId, null, closeDate);
-    }
-
     @Override
     public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
         Integer resultPlanId;
@@ -890,55 +878,5 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         return new MutablePair<>(access, message);
-    }
-
-    @Override
-    public AuditionClassMember loadAuditionClassMember(Integer profileId) {
-        return auditionClassMemberDao.loadByProfileId(profileId);
-    }
-
-    @Override
-    public String signupAudition(Integer profileId, String openid) {
-        // 计算startTime／endTime,班号
-        Date nextMonday = DateUtils.getNextMonday(new Date());
-        String className = DateUtils.parseDateToFormat9(nextMonday);
-        Date startDate = DateUtils.beforeDays(nextMonday, 1);
-        AuditionClassMember auditionClassMember = new AuditionClassMember();
-        auditionClassMember.setProfileId(profileId);
-        auditionClassMember.setOpenid(openid);
-        auditionClassMember.setClassName(className);
-        auditionClassMember.setStartDate(startDate);
-        auditionClassMember.setProblemId(ConfigUtils.getTrialProblemId());
-        auditionClassMemberDao.insert(auditionClassMember);
-
-        return className;
-    }
-
-    @Override
-    public Integer setAuditionOpened(Integer id) {
-        return auditionClassMemberDao.update(id);
-    }
-
-    @Override
-    public int generateAuditionClassSuffix() {
-        List<Integer> classIds = Lists.newArrayList();
-        String nextMonday = DateUtils.parseDateToString(DateUtils.getNextMonday(new Date()));
-        redisUtil.lock("generate:audition:sequence", lock -> {
-            String key = "audition:sequence:" + nextMonday;
-            String sequenceStr = redisUtil.get(key);
-            if (sequenceStr == null) {
-                sequenceStr = "0";
-            }
-            int sequence = Integer.parseInt(sequenceStr);
-            classIds.add(sequence / 300 + 1);
-            redisUtil.set(key, sequence + 1, TimeUnit.DAYS.toSeconds(30));
-        });
-        return classIds.get(0);
-    }
-
-    @Override
-    public void becomeCurrentAuditionMember(Integer id) {
-        Date currentMonday = DateUtils.getThisMonday(new Date());
-        auditionClassMemberDao.updateAuditionClass(id, DateUtils.beforeDays(currentMonday, 1));
     }
 }
