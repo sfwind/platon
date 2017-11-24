@@ -32,7 +32,7 @@ public class AuditionServiceImpl implements AuditionService {
     public String signupAudition(Integer profileId, String openid) {
         // 计算startTime／endTime,班号
         Date nextMonday = DateUtils.getNextMonday(new Date());
-        String className = DateUtils.parseDateToFormat9(nextMonday);
+        String className = DateUtils.parseDateToFormat9(nextMonday) + generateAuditionClassSuffix();
         Date startDate = DateUtils.beforeDays(nextMonday, 1);
         AuditionClassMember auditionClassMember = new AuditionClassMember();
         auditionClassMember.setProfileId(profileId);
