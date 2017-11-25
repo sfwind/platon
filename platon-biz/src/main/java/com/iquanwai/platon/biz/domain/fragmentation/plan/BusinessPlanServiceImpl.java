@@ -30,11 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -186,20 +182,32 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
         Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
 
-        int courseMonth;
+        int startMonth;
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        if (CourseScheduleDefault.CategoryType.OLD_STUDENT == category) {
+            startMonth = 8;
+        } else {
+            CourseSchedule oldestCourseSchedule = courseScheduleDao.loadOldestCourseSchedule(profileId);
+            if (oldestCourseSchedule != null) {
+                startMonth = oldestCourseSchedule.getMonth();
+            } else {
+                startMonth = 1;
+            }
+        }
+
+        int month;
         for (int i = 0; i < 12; i++) {
             if (i == 0) {
-                courseMonth = cacheService.loadMonthlyCampConfig().getLearningMonth();
-                if (courseScheduleMap.get(courseMonth) != null) {
-                    courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+                if (courseScheduleMap.get(startMonth) != null) {
+                    courseScheduleLists.add(courseScheduleMap.get(startMonth));
                 }
             } else {
-                courseMonth = cacheService.loadMonthlyCampConfig().getLearningMonth() + i;
-                if (courseMonth > 12) {
-                    courseMonth = courseMonth % 12;
+                month = startMonth + i;
+                if (month > 12) {
+                    month = month % 12;
                 }
-                if (courseScheduleMap.get(courseMonth) != null) {
-                    courseScheduleLists.add(courseScheduleMap.get(courseMonth));
+                if (courseScheduleMap.get(month) != null) {
+                    courseScheduleLists.add(courseScheduleMap.get(month));
                 }
             }
         }

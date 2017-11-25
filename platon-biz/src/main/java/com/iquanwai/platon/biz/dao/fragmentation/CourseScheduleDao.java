@@ -175,6 +175,18 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return null;
     }
 
+    public CourseSchedule loadOldestCourseSchedule(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseSchedule WHERE Type = 1 AND Del = 0 AND ProfileId = ? ORDER BY Year ASC, Month ASC";
+        ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return null;
+    }
+
     public int updateSelected(Integer courseScheduleId, Integer selected) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE CourseSchedule SET Selected = ? WHERE Id = ?";
