@@ -17,4 +17,5 @@ public class AuditionClassMember {
     private Date addTime;
     private Date startDate;
     private Boolean active;
+    private Integer problemId;
 }

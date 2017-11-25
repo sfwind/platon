@@ -11,22 +11,11 @@ public interface Constants {
     interface AccountError{
         Integer TIME_OUT = 100001;
     }
-    interface PracticeType{
-        int CHALLENGE = 21;
-        int APPLICATION = 11;
-        int SUBJECT = 1; // 小课论坛
-    }
+
     interface VoteType{
         int CHALLENGE = 1;
         int APPLICATION = 2;
         int SUBJECT = 3;
-    }
-
-    interface PictureType {
-        int HOMEWORK = 1;
-        int CHALLENGE = 2;
-        int APPLICATION = 3;
-        int SUBJECT = 4;
     }
 
     interface CommentModule {
@@ -107,11 +96,6 @@ public interface Constants {
             String ORDINARY = "结课证书";
             String ASST_COACH = "优秀助教";
         }
-    }
-
-    interface ProblemType{
-        int MAJOR = 1;
-        int MINOR = 2;
     }
 
     int DISCUSS_PAGE_SIZE = 100;
