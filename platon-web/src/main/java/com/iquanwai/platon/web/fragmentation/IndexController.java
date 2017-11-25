@@ -275,7 +275,7 @@ public class IndexController {
                 loginMsg(loginUser);
                 // 查看点击商学院的时候，是否已经开营
             } else {
-                if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.PAY_BUSINESS)) {
+                if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)) {
                     // 已经申请成功，有购买权限，非默认可购买的人(专业版)
                     response.sendRedirect(APPLY_SUCCESS);
                     return null;
