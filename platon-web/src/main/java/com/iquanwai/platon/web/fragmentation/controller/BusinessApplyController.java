@@ -79,15 +79,15 @@ public class BusinessApplyController {
                 .function("申请")
                 .action("提交申请");
         operationLogService.log(operationLog);
-        List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
-            BusinessApplySubmit submit = new BusinessApplySubmit();
-            submit.setQuestionId(applySubmitVO.getQuestionId());
-            submit.setChoiceId(applySubmitVO.getChoiceId());
-            submit.setUserValue(applySubmitVO.getUserValue());
-            return submit;
-        }).collect(Collectors.toList());
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
         if (application == null) {
+            List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
+                BusinessApplySubmit submit = new BusinessApplySubmit();
+                submit.setQuestionId(applySubmitVO.getQuestionId());
+                submit.setChoiceId(applySubmitVO.getChoiceId());
+                submit.setUserValue(applySubmitVO.getUserValue());
+                return submit;
+            }).collect(Collectors.toList());
             applyService.submitBusinessApply(loginUser.getId(), userApplySubmits);
             return WebUtils.success();
         } else {
