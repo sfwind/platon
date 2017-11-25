@@ -810,6 +810,16 @@ public class PlanController {
         operationLogService.log(operationLog);
         Integer auditionId = ConfigUtils.getTrialProblemId();
         AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
+
+        /*
+          特殊逻辑
+         */
+        if (auditionClassMember != null && auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
+            // 2017-11-26日开课的人都提示特殊信息
+            return WebUtils.error("试听课下周开始，具体信息添加小助手获取");
+        }
+
+
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         Integer planId = null;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
