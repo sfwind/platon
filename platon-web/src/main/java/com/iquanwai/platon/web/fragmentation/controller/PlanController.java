@@ -643,6 +643,10 @@ public class PlanController {
             if (!plan.getLearnable()) {
                 plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
             }
+            // TODO 特殊逻辑，周四删除
+            if (auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
+                plan.setErrMsg("试听课下周开始，具体信息添加小助手获取");
+            }
             if (ownedAudition != null) {
                 // 有试听课,从进行中去掉这个小课
                 runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
@@ -811,9 +815,7 @@ public class PlanController {
         Integer auditionId = ConfigUtils.getTrialProblemId();
         AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
 
-        /*
-          特殊逻辑
-         */
+        // TODO 特殊逻辑，周四删除
         if (auditionClassMember != null && auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
             // 2017-11-26日开课的人都提示特殊信息
             return WebUtils.error("试听课下周开始，具体信息添加小助手获取");
@@ -896,7 +898,7 @@ public class PlanController {
                 });
             }
             dto.setGoSuccess(true);
-        } else{
+        } else {
             dto.setClassName(auditionClassMember.getClassName());
         }
         if (ownedAudition != null && ownedAudition.getStatus() == ImprovementPlan.RUNNING) {
