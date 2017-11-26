@@ -1,40 +1,25 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.joda.time.DateTime;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -346,14 +331,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return useful2.compareTo(useful1);
     }
 
-    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId, List<Integer> choices, Date openDate) {
+    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId,
+                                         List<Integer> choices, Date openDate) {
         Integer year;
         Integer month;
         if (defaultSchedule.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
             // 新学员，以开营日来计算
-            DateTime openDateTime = new DateTime(openDate);
-            year = openDateTime.getYear();
-            month = openDateTime.getMonthOfYear();
+            month = DateUtils.getMonth(openDate);
+            year = DateUtils.getYear(openDate);
         } else {
             // 老学员
             year = 2017;
