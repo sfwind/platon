@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
@@ -70,6 +71,8 @@ public class PlanController {
     private RiseMemberService riseMemberService;
     @Autowired
     private CustomerMessageService customerMessageService;
+    @Autowired
+    private AuditionService auditionService;
 
     /**
      * 检查是否能选课<br/>
@@ -618,7 +621,7 @@ public class PlanController {
         });
         List<Problem> recommends = loadRecommendations(loginUser.getId(), runningPlans, completedPlans);
 
-        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         List<PlanDto> auditions = Lists.newArrayList();
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         if (auditionClassMember != null &&
@@ -639,6 +642,10 @@ public class PlanController {
             plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
             if (!plan.getLearnable()) {
                 plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
+            }
+            // TODO 特殊逻辑，周四删除
+            if (auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
+                plan.setErrMsg("试听课下周开始，具体信息添加圈外小Y（id:quanwai666）获取");
             }
             if (ownedAudition != null) {
                 // 有试听课,从进行中去掉这个小课
@@ -806,7 +813,15 @@ public class PlanController {
                 .action("开课");
         operationLogService.log(operationLog);
         Integer auditionId = ConfigUtils.getTrialProblemId();
-        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+        AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
+
+        // TODO 特殊逻辑，周四删除
+        if (auditionClassMember != null && auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
+            // 2017-11-26日开课的人都提示特殊信息
+            return WebUtils.error("试听课下周开始，具体信息添加圈外小Y（id:quanwai666）获取");
+        }
+
+
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         Integer planId = null;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
@@ -834,7 +849,7 @@ public class PlanController {
                 }
             }
             // 开课
-            planService.setAuditionOpened(auditionClassMember.getId());
+            auditionService.openAuditionCourse(auditionClassMember.getId());
             return WebUtils.result(planId);
         } else {
             if (ownedAudition != null) {
@@ -857,19 +872,20 @@ public class PlanController {
         // 检查是否能选择试听课
         // 标准：1.非会员，2.没有选过
         Integer auditionId = ConfigUtils.getTrialProblemId();
+        AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         AuditionChooseDto dto = new AuditionChooseDto();
+
         dto.setGoSuccess(false);
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                 .filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
 
-        AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
         if (auditionClassMember == null) {
             //  没有试听过
             RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
             if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
                 return WebUtils.error("商学院会员可以在发现页面选课哦");
             } else {
-                String className = planService.signupAudition(loginUser.getId(), loginUser.getOpenId());
+                String className = auditionService.signupAudition(loginUser.getId(), loginUser.getOpenId());
                 dto.setClassName(className);
                 customerMessageService.sendCustomerMessage(loginUser.getOpenId(), ConfigUtils.getValue("audition.choose.send.image"), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
                 ThreadPool.execute(() -> {
@@ -883,8 +899,12 @@ public class PlanController {
                 });
             }
             dto.setGoSuccess(true);
-        } else{
+        } else {
             dto.setClassName(auditionClassMember.getClassName());
+            // 未开课时也跳到售卖页
+            if(auditionClassMember.getStartDate().after(new Date())){
+                dto.setGoSuccess(true);
+            }
         }
         if (ownedAudition != null && ownedAudition.getStatus() == ImprovementPlan.RUNNING) {
             dto.setPlanId(ownedAudition.getId());
