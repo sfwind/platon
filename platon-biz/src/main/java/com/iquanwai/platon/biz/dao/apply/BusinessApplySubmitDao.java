@@ -22,7 +22,7 @@ public class BusinessApplySubmitDao extends PracticeDBUtil {
 
     public void batchInsertApplySubmit(List<BusinessApplySubmit> submits) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO fragmentCourse.BusinessApplySubmit(ApplyId, QuestionId, ChoiceId, ChoiceText, UserValue) " +
+        String sql = "INSERT INTO BusinessApplySubmit(ApplyId, QuestionId, ChoiceId, ChoiceText, UserValue) " +
                 "VALUES (?,?,?,?,?) ";
         try {
             Object[][] param = new Object[submits.size()][];
