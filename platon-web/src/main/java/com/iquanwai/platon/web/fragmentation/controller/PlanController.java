@@ -874,17 +874,10 @@ public class PlanController {
         Integer auditionId = ConfigUtils.getTrialProblemId();
         AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         AuditionChooseDto dto = new AuditionChooseDto();
-//        // TODO 特殊逻辑，周四删除
-//        if (auditionClassMember != null && auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
-//            dto.setErrMsg("试听课下周开始，具体信息添加小助手获取");
-//            return WebUtils.result(dto);
-//        }
 
         dto.setGoSuccess(false);
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                 .filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
-
-
 
         if (auditionClassMember == null) {
             //  没有试听过
@@ -908,6 +901,10 @@ public class PlanController {
             dto.setGoSuccess(true);
         } else {
             dto.setClassName(auditionClassMember.getClassName());
+            // 未开课时也跳到售卖页
+            if(auditionClassMember.getStartDate().after(new Date())){
+                dto.setGoSuccess(true);
+            }
         }
         if (ownedAudition != null && ownedAudition.getStatus() == ImprovementPlan.RUNNING) {
             dto.setPlanId(ownedAudition.getId());
