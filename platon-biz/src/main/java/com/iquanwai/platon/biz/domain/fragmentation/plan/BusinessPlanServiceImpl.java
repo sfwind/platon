@@ -215,12 +215,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return courseScheduleLists;
     }
 
-    public static void main(String[] args) {
-        DateTime dateTime = new DateTime(new Date());
-        dateTime.plusMonths(1);
-        System.out.println(dateTime.getMonthOfYear());
-    }
-
     @Override
     public List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId) {
         List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadDefaultCourseSchedule();
@@ -555,7 +549,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> problems = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
                         || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
-                .filter(improvementPlan -> problemIds.contains(improvementPlan.getProblemId()))
                 .map(improvementPlan -> {
                     CourseSchedule courseSchedule = courseSchedules.stream()
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
