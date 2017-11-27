@@ -81,7 +81,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @PostConstruct
     public void init() {
-        if(!ConfigUtils.isDebug()){
+        if (!ConfigUtils.isDebug()) {
             ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
             excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
         }
@@ -92,7 +92,7 @@ public class CertificateServiceImpl implements CertificateService {
         RiseCertificate riseCertificate = riseCertificateDao.loadByCertificateNo(certificateNo);
         Profile profile = accountService.getProfile(riseCertificate.getProfileId());
         if (profile.getRealName() != null && riseCertificate.getImageUrl() == null) {
-            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
+            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
             if (pair.getLeft()) {
                 String imageUrl = ConfigUtils.getPicturePrefix() + pair.getRight();
                 riseCertificate.setImageUrl(imageUrl);
@@ -227,7 +227,7 @@ public class CertificateServiceImpl implements CertificateService {
                             int generateId = riseCertificateDao.insert(riseCertificate);
 
                             if (generateId > 0) {
-                                Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
+                                Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
                                 if (pair.getLeft()) {
                                     riseCertificateDao.updateImageUrl(generateId, ConfigUtils.getPicturePrefix() + pair.getRight());
                                 }
@@ -244,7 +244,7 @@ public class CertificateServiceImpl implements CertificateService {
     public void uploadCertificateToQiNiu() {
         List<RiseCertificate> riseCertificates = riseCertificateDao.loadUnUploadImageCertificates();
         riseCertificates.forEach(riseCertificate -> {
-            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
+            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
             if (pair.getLeft()) {
                 // 上传成功，更新 imageUrl
                 riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
@@ -659,15 +659,23 @@ public class CertificateServiceImpl implements CertificateService {
      * 将证书上传至七牛云
      * @return 是否上传成功，上传文件名称
      */
-    private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate) {
+    private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
         Assert.notNull(riseCertificate, "证件信息不能为空");
         logger.info("正在生成证书：{}", riseCertificate.getCertificateNo());
-        // 证书数据准备
-        Profile profile = accountService.getProfile(riseCertificate.getProfileId());
-        if (profile == null || profile.getRealName() == null) {
-            // 没有填写真实姓名
-            return new MutablePair<>(false, null);
+
+        Profile profile;
+        if (isOnline) {
+            // 证书数据准备
+            profile = accountService.getProfile(riseCertificate.getProfileId());
+            if (profile == null || profile.getRealName() == null) {
+                // 没有填写真实姓名
+                return new MutablePair<>(false, null);
+            }
+        } else {
+            profile = new Profile();
+            profile.setRealName(riseCertificate.getRealName());
         }
+
         Integer year = riseCertificate.getYear();
         Integer month = riseCertificate.getMonth();
         String problemName = riseCertificate.getProblemName();
@@ -753,16 +761,22 @@ public class CertificateServiceImpl implements CertificateService {
                 default:
                     break;
             }
+
+
             String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
 
-            // 图片保存到本地文件
-            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
-
-            outputStream = new ByteArrayOutputStream();
-            ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
-            return new MutablePair<>(uploadResult, fileName);
+            if (isOnline) {
+                // 网页正常显示图片
+                outputStream = new ByteArrayOutputStream();
+                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+                inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
+                return new MutablePair<>(uploadResult, fileName);
+            } else {
+                // 本地图片文件保存
+                ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName));
+                return new MutablePair<>(false, null);
+            }
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         } finally {
