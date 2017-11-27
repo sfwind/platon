@@ -3,9 +3,11 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySubmitDto;
@@ -37,6 +39,8 @@ public class BusinessApplyController {
     private OperationLogService operationLogService;
     @Autowired
     private ApplyService applyService;
+    @Autowired
+    private AccountService accountService;
 
     @RequestMapping(value = "/load/questions", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadBusinessApplyQuestions(LoginUser loginUser) {
@@ -65,6 +69,7 @@ public class BusinessApplyController {
                 .action("检查是否能够申请");
         operationLogService.log(operationLog);
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
+
         if (application == null) {
             return WebUtils.success();
         } else {
@@ -80,6 +85,11 @@ public class BusinessApplyController {
                 .action("提交申请");
         operationLogService.log(operationLog);
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
+        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.PAY_BUSINESS);
+        if (applyPass) {
+            return WebUtils.error("您已经有报名权限,无需重复申请");
+        }
+
         if (application == null) {
             List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
                 BusinessApplySubmit submit = new BusinessApplySubmit();
@@ -94,5 +104,4 @@ public class BusinessApplyController {
             return WebUtils.error("您的申请正在审核中哦");
         }
     }
-
 }
