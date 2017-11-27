@@ -72,9 +72,9 @@ public class CertificateServiceImpl implements CertificateService {
     private static final String FULL_ATTENDANCE_COUPON_DESCRIPTION = "训练营全勤奖";
 
     // 正常证书背景
-    private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_2.jpg?imageslim";
+    private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_5.jpg?imageslim";
     // 优秀证书背景
-    private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_2.jpg?imageslim";
+    private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_5.jpg?imageslim";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static BufferedImage ordinaryImage = null;
@@ -82,10 +82,8 @@ public class CertificateServiceImpl implements CertificateService {
 
     @PostConstruct
     public void init() {
-        if(!ConfigUtils.isDebug()){
-            ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
-            excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
-        }
+        ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
+        excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
     }
 
     @Override
@@ -93,7 +91,7 @@ public class CertificateServiceImpl implements CertificateService {
         RiseCertificate riseCertificate = riseCertificateDao.loadByCertificateNo(certificateNo);
         Profile profile = accountService.getProfile(riseCertificate.getProfileId());
         if (profile.getRealName() != null && riseCertificate.getImageUrl() == null) {
-            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
+            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
             if (pair.getLeft()) {
                 String imageUrl = ConfigUtils.getPicturePrefix() + pair.getRight();
                 riseCertificate.setImageUrl(imageUrl);
@@ -228,7 +226,7 @@ public class CertificateServiceImpl implements CertificateService {
                             int generateId = riseCertificateDao.insert(riseCertificate);
 
                             if (generateId > 0) {
-                                Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
+                                Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
                                 if (pair.getLeft()) {
                                     riseCertificateDao.updateImageUrl(generateId, ConfigUtils.getPicturePrefix() + pair.getRight());
                                 }
@@ -242,15 +240,16 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void uploadCertificateToQiNiu() {
+    public void uploadCertificateToQiNiu(Boolean isOnline) {
         List<RiseCertificate> riseCertificates = riseCertificateDao.loadUnUploadImageCertificates();
         riseCertificates.forEach(riseCertificate -> {
-            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate);
+            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, isOnline);
             if (pair.getLeft()) {
                 // 上传成功，更新 imageUrl
                 riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
             }
         });
+        logger.info("证书生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
     }
 
     @Override
@@ -660,15 +659,26 @@ public class CertificateServiceImpl implements CertificateService {
      * 将证书上传至七牛云
      * @return 是否上传成功，上传文件名称
      */
-    private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate) {
+    private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
         Assert.notNull(riseCertificate, "证件信息不能为空");
         logger.info("正在生成证书：{}", riseCertificate.getCertificateNo());
-        // 证书数据准备
-        Profile profile = accountService.getProfile(riseCertificate.getProfileId());
-        if (profile == null || profile.getRealName() == null) {
-            // 没有填写真实姓名
-            return new MutablePair<>(false, null);
+
+        Profile profile;
+        if (isOnline) {
+            // 证书数据准备
+            profile = accountService.getProfile(riseCertificate.getProfileId());
+            if (profile == null || profile.getRealName() == null) {
+                // 没有填写真实姓名
+                return new MutablePair<>(false, null);
+            }
+        } else {
+            profile = new Profile();
+            if (riseCertificate.getRealName() == null) {
+                return new MutablePair<>(false, null);
+            }
+            profile.setRealName(riseCertificate.getRealName());
         }
+
         Integer year = riseCertificate.getYear();
         Integer month = riseCertificate.getMonth();
         String problemName = riseCertificate.getProblemName();
@@ -687,85 +697,92 @@ public class CertificateServiceImpl implements CertificateService {
             switch (type) {
                 case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 405, "优秀班长", font.deriveFont(72f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 545, profile.getRealName(), font.deriveFont(50f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 660, "担任班长一职，表现突出，荣膺“优秀班", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 710, "长”称号", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 785, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 450, "优秀班长", font.deriveFont(92f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 850, "担任班长一职，表现突出，荣膺“优秀班长”称号", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 405, "优秀组长", font.deriveFont(72f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 545, profile.getRealName(), font.deriveFont(50f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 660, "担任组长一职，表现优异，荣膺“优秀组", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 710, "长”称号", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 785, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 450, "优秀组长", font.deriveFont(92f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 850, "担任组长一职，表现优异，荣膺“优秀组长”称号", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 405, "优秀学员", font.deriveFont(72f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 545, profile.getRealName(), font.deriveFont(50f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 660, "成绩名列前茅，荣膺“优秀学员”称号", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 450, "优秀学员", font.deriveFont(92f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 850, "成绩名列前茅，荣膺“优秀学员”称号", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 405, "优秀团队", font.deriveFont(72f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 545, NumberToHanZi.formatInteger(month) + "月小课" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(50f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 660, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 450, "优秀团队", font.deriveFont(92f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, NumberToHanZi.formatInteger(month) + "月" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 850, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.ORDINARY:
                     inputImage = ImageUtils.copy(ordinaryImage);
-                    ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 405, "结课证书", font.deriveFont(72f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 545, profile.getRealName(), font.deriveFont(50f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 660, "完成课程学习", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 1265, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 450, "结课证书", font.deriveFont(92f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 850, "完成课程学习", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.ASST_COACH:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 160, "圈外同学 • " + month + "月小课训练营", font.deriveFont(20f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 200, "《" + problemName + "》", font.deriveFont(32f), new Color(255, 255, 255));
-                    ImageUtils.writeTextCenter(inputImage, 405, "优秀助教", font.deriveFont(72f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 545, profile.getRealName(), font.deriveFont(50f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 610, "在【圈外同学】" + year + "年" + month + "月小课训练营中", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 660, "表现卓越，荣膺“优秀助教”称号", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "特发此证，以资鼓励", font.deriveFont(32f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 1285, "证书编号：" + certificateNo, font.deriveFont(20f), new Color(182, 144, 47));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 450, "优秀助教", font.deriveFont(92f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 850, "表现卓越，荣膺“优秀助教”称号", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 default:
                     break;
             }
-            String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
 
-            // 图片保存到本地文件
-            // ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/tmp/" + fileName));
-
-            outputStream = new ByteArrayOutputStream();
-            ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
-            return new MutablePair<>(uploadResult, fileName);
+            if (isOnline) {
+                String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
+                // 网页正常显示图片
+                outputStream = new ByteArrayOutputStream();
+                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+                inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
+                return new MutablePair<>(uploadResult, fileName);
+            } else {
+                String fileName = "certificate-" + certificateNo + ".png";
+                File file = new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName);
+                if (!file.exists()) {
+                    ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName));
+                }
+                riseCertificateDao.updateDownloadTime(certificateNo);
+                // 本地图片文件保存
+                return new MutablePair<>(false, null);
+            }
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         } finally {
