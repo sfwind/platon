@@ -81,10 +81,8 @@ public class CertificateServiceImpl implements CertificateService {
 
     @PostConstruct
     public void init() {
-        if (!ConfigUtils.isDebug()) {
-            ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
-            excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
-        }
+        ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
+        excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
     }
 
     @Override
@@ -250,6 +248,7 @@ public class CertificateServiceImpl implements CertificateService {
                 riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
             }
         });
+        logger.info("证书生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
     }
 
     @Override
@@ -673,6 +672,9 @@ public class CertificateServiceImpl implements CertificateService {
             }
         } else {
             profile = new Profile();
+            if (riseCertificate.getRealName() == null) {
+                return new MutablePair<>(false, null);
+            }
             profile.setRealName(riseCertificate.getRealName());
         }
 
@@ -762,9 +764,8 @@ public class CertificateServiceImpl implements CertificateService {
                     break;
             }
 
-            String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
-
             if (isOnline) {
+                String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
                 // 网页正常显示图片
                 outputStream = new ByteArrayOutputStream();
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
@@ -772,8 +773,13 @@ public class CertificateServiceImpl implements CertificateService {
                 boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
                 return new MutablePair<>(uploadResult, fileName);
             } else {
+                String fileName = "certificate-" + certificateNo + ".png";
+                File file = new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName);
+                if (!file.exists()) {
+                    ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName));
+                }
+                riseCertificateDao.updateDownloadTime(certificateNo);
                 // 本地图片文件保存
-                ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName));
                 return new MutablePair<>(false, null);
             }
         } catch (Exception e) {
