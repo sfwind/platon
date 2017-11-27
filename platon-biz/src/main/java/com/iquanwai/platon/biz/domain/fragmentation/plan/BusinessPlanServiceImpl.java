@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.modelmapper.ModelMapper;
@@ -328,6 +329,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                         });
                     }
                 });
+            }
+
+
+            AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
+            Integer trialProblemId = ConfigUtils.getTrialProblemId();
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, trialProblemId);
+            if (auditionClassMember != null && improvementPlan != null) {
+                waitInserts.removeIf(item -> item.getProblemId().equals(trialProblemId));
             }
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
         } else {
