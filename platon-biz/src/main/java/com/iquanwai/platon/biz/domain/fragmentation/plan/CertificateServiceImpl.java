@@ -241,10 +241,10 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void uploadCertificateToQiNiu() {
+    public void uploadCertificateToQiNiu(Boolean isOnline) {
         List<RiseCertificate> riseCertificates = riseCertificateDao.loadUnUploadImageCertificates();
         riseCertificates.forEach(riseCertificate -> {
-            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
+            Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, isOnline);
             if (pair.getLeft()) {
                 // 上传成功，更新 imageUrl
                 riseCertificateDao.updateImageUrl(riseCertificate.getId(), ConfigUtils.getPicturePrefix() + pair.getRight());
@@ -761,7 +761,6 @@ public class CertificateServiceImpl implements CertificateService {
                 default:
                     break;
             }
-
 
             String fileName = "certificate-" + CommonUtils.randomString(8) + "-" + certificateNo + ".png";
 

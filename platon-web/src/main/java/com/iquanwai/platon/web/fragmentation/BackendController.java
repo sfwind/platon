@@ -129,9 +129,9 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/upload/certificate")
-    public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu() {
+    public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu(@RequestParam Boolean isOnline) {
         ThreadPool.execute(() -> {
-            certificateService.uploadCertificateToQiNiu();
+            certificateService.uploadCertificateToQiNiu(isOnline);
         });
         return WebUtils.result("正在进行中");
     }
