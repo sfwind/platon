@@ -23,7 +23,7 @@ public class ApplicationPracticeDao extends PracticeDBUtil {
     public List<ApplicationPractice> loadPractice(int knowledgeId, int problemId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationPractice>> h = new BeanListHandler<>(ApplicationPractice.class);
-        String sql = "SELECT * FROM ApplicationPractice where KnowledgeId=? and ProblemId=?";
+        String sql = "SELECT * FROM ApplicationPractice where KnowledgeId=? and ProblemId=? and Del=0";
         try {
             return run.query(sql, h, knowledgeId, problemId);
         } catch (SQLException e) {

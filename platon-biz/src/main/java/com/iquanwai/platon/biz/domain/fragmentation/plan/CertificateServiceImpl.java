@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
@@ -293,10 +294,10 @@ public class CertificateServiceImpl implements CertificateService {
                                 .map(Integer::parseInt)
                                 .collect(Collectors.toList());
                         // 每个 Series 中每一节都是优质完成
-                        // 返回不合格完成应用题数
+                        // 返回不合格完成应用题数，全勤奖去除字数限制
                         Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
                             ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
-                            return applicationSubmit == null || (!applicationSubmit.getContent().contains("img") && applicationSubmit.getLength() <= 10);
+                            return applicationSubmit == null;
                         }).count();
                         return seriesApplicationCheckLong.intValue() == 0; // 不合格数为0的话，说明当前小节全部完成，参与计数
                     }).count();

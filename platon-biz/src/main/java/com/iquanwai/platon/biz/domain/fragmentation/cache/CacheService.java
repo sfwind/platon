@@ -22,8 +22,6 @@ public interface CacheService {
     /** 获取某个巩固练习 */
     WarmupPractice getWarmupPractice(Integer practiceId);
 
-    List<Chapter> loadRoadMap(Integer problemId);
-
     /** 获取某个问题的主分类 **/
     ProblemCatalog getProblemCatalog(Integer catalogId);
 
@@ -33,6 +31,9 @@ public interface CacheService {
     /** 获取所有问题主分类 **/
     List<ProblemCatalog> loadProblemCatalogs();
 
+    /**
+     * 获取当月训练营小课配置
+     * */
     MonthlyCampConfig loadMonthlyCampConfig();
 
     /**

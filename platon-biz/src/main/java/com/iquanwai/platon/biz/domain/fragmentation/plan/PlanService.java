@@ -61,7 +61,7 @@ public interface PlanService {
      * 获取章节信息
      * @param plan 训练计划
      */
-    List<ProblemSchedule> getChapterList(ImprovementPlan plan);
+    List<UserProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
      * 获取知识点
@@ -168,8 +168,6 @@ public interface PlanService {
 
     Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
 
-    Integer forceOpenProblem(Integer profileId, Integer problemId, Date closeDate);
-
     /**
      * 小课强开
      * startDate 小课开始日期
@@ -178,10 +176,4 @@ public interface PlanService {
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
-
-    AuditionClassMember loadAuditionClassMember(Integer profileId);
-
-    Integer insertAuditionClassMember(AuditionClassMember auditionClassMember);
-
-    Integer setAuditionOpened(Integer id);
 }

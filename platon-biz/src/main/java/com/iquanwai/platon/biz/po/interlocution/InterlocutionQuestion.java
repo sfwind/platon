@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.po.interlocution;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class InterlocutionQuestion {
@@ -28,4 +29,5 @@ public class InterlocutionQuestion {
     private InterlocutionDate dateInfo;
     private InterlocutionDate nextDate;
     private InterlocutionAnswer nextAnswer; // 最近的圈圈答案
+    private List<InterlocutionDate> otherDates;
 }

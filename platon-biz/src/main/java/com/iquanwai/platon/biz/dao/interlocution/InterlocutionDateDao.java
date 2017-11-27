@@ -1,16 +1,19 @@
 package com.iquanwai.platon.biz.dao.interlocution;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionDate;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 
 @Repository
 public class InterlocutionDateDao extends PracticeDBUtil {
@@ -37,6 +40,17 @@ public class InterlocutionDateDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
+    }
+
+    public List<InterlocutionDate> loadOtherDate(Date date) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from InterlocutionDate WHERE Del = 0 and StartDate != ?";
+        try {
+            return runner.query(sql, new BeanListHandler<InterlocutionDate>(InterlocutionDate.class), DateUtils.parseDateToString(date));
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 
     public InterlocutionDate loadNextDate(Date date) {

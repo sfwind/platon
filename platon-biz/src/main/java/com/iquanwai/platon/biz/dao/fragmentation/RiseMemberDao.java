@@ -18,25 +18,12 @@ import java.util.List;
 public class RiseMemberDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public RiseMember validRiseMember(Integer profileId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseMember where ProfileId = ? and Expired = 0 AND Del = 0";
-
-        try {
-            BeanHandler<RiseMember> handler = new BeanHandler<>(RiseMember.class);
-            return runner.query(sql, handler, profileId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
-    }
-
     public RiseMember loadValidRiseMember(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from RiseMember where ProfileId = ? and Expired = 0 AND Del = 0";
 
         try {
-            ResultSetHandler<RiseMember> handler = new BeanHandler<>(RiseMember.class);
+            BeanHandler<RiseMember> handler = new BeanHandler<>(RiseMember.class);
             return runner.query(sql, handler, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

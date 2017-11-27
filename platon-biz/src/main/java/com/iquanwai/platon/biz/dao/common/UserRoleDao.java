@@ -22,7 +22,7 @@ public class UserRoleDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<UserRole> getRoles(Integer profileId){
+    public List<UserRole> getRoles(Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<UserRole>> h = new BeanListHandler<>(UserRole.class);
         String sql = "SELECT * FROM UserRole where ProfileId=? and Del=0";
@@ -34,5 +34,4 @@ public class UserRoleDao extends DBUtil {
 
         return Lists.newArrayList();
     }
-
 }

@@ -74,7 +74,7 @@ public class CacheReloadReceiver {
             try {
                 if (user.getRiseMember() == 1) {
                     // 是会员，查询现在还是不是
-                    RiseMember riseMember = riseMemberDao.validRiseMember(user.getId());
+                    RiseMember riseMember = riseMemberDao.loadValidRiseMember(user.getId());
                     if (riseMember == null) {
                         // 不是会员了
                         user.setRiseMember(0);

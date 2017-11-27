@@ -286,7 +286,7 @@ public class PracticeServiceImpl implements PracticeService {
         if (plan != null && plan.getRequestCommentCount() > 0) {
             applicationPractice.setRequestCommentCount(plan.getRequestCommentCount());
         } else {
-            RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
+            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
             if (riseMember != null) {
                 if (riseMember.getMemberTypeId().equals(RiseMember.ELITE) || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
                     applicationPractice.setRequestCommentCount(0);
@@ -772,7 +772,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public List<CommentEvaluation> loadUnEvaluatedCommentEvaluationBySubmitId(Integer profileId, Integer submitId) {
         ApplicationSubmit applicationSubmit = applicationSubmitDao.load(ApplicationSubmit.class, submitId);
-        if (!profileId.equals(applicationSubmit.getProfileId())) {
+        if (applicationSubmit == null || !profileId.equals(applicationSubmit.getProfileId())) {
             return Lists.newArrayList();
         }
 
@@ -966,7 +966,7 @@ public class PracticeServiceImpl implements PracticeService {
         if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
             return improvementPlan.getRequestCommentCount();
         }
-        RiseMember riseMember = riseMemberDao.validRiseMember(profileId);
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember != null) {
             if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)
                     || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {

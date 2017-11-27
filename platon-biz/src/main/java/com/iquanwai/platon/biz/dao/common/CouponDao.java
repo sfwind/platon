@@ -1,9 +1,8 @@
-package com.iquanwai.platon.biz.dao.fragmentation;
+package com.iquanwai.platon.biz.dao.common;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -24,14 +23,20 @@ public class CouponDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public Integer insertCoupon(Coupon coupon) {
+    public int insertCoupon(Coupon coupon) {
         coupon.setUsed(0);
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO Coupon (OpenId, ProfileId, Amount, Used, ExpiredDate, Description) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Coupon (OpenId, ProfileId, Amount, Used, ExpiredDate, Category, Description) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), coupon.getOpenId(), coupon.getProfileId(),
-                    coupon.getAmount(), coupon.getUsed(), coupon.getExpiredDate(), coupon.getDescription());
+            Long result = runner.insert(sql, new ScalarHandler<>(),
+                    coupon.getOpenId(),
+                    coupon.getProfileId(),
+                    coupon.getAmount(),
+                    coupon.getUsed(),
+                    coupon.getExpiredDate(),
+                    coupon.getCategory(),
+                    coupon.getDescription());
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -41,22 +46,10 @@ public class CouponDao extends DBUtil {
 
     public List<Coupon> loadByProfileId(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM Coupon WHERE ProfileId = ? AND Used = 0 AND ExpiredDate >= " + DateUtils.parseDateToString(new Date());
-        ResultSetHandler<List<Coupon>> h = new BeanListHandler<Coupon>(Coupon.class);
-        try {
-            return runner.query(sql, h, profileId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
-
-    public List<Coupon> loadCoupons(Integer profileId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM Coupon WHERE ProfileId = ?";
+        String sql = "SELECT * FROM Coupon WHERE ProfileId = ? AND Used = 0 AND Del =0 AND ExpiredDate >= ?";
         ResultSetHandler<List<Coupon>> h = new BeanListHandler<>(Coupon.class);
         try {
-            return runner.query(sql, h, profileId);
+            return runner.query(sql, h, profileId, new Date());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

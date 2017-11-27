@@ -8,6 +8,7 @@ import java.util.Date;
 public class InterlocutionDate {
     private Integer id;
     private String topic;
+    private String title;
     private String description;
     private Integer batch;
     private Date startDate;
