@@ -10,8 +10,9 @@ import java.util.Date;
 @Data
 public class RiseCertificate {
     private int id;
-    private Integer profileId; //用户id
+    private Integer profileId; //用户 Id
     private String realName; // 用户真实姓名
+    private Integer memberTypeId; // 会员身份 Id
 
     /**
      * IQW{Type, 02d}{RiseClassMember.MemberId}{Month, 02d}{序号, 03d}{随机数, 02d}`
