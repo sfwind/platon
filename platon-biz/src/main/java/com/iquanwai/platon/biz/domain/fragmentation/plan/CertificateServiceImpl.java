@@ -774,10 +774,27 @@ public class CertificateServiceImpl implements CertificateService {
                 boolean uploadResult = QiNiuUtils.uploadFile(fileName, inputStream);
                 return new MutablePair<>(uploadResult, fileName);
             } else {
+                StringBuilder builder = new StringBuilder("/Users/xfduan/Downloads/certificate/");
+
+                if (riseCertificate.getMemberTypeId() != null) {
+                    if (RiseMember.CAMP == riseCertificate.getMemberTypeId()) {
+                        builder.append("camp/");
+                    } else {
+                        builder.append("rise/");
+                    }
+                }
+                builder.append(riseCertificate.getProfileId()).append("/");
+
+                logger.info(builder.toString());
+                File dirPath = new File(builder.toString());
+                if (!dirPath.exists()) {
+                    dirPath.mkdirs();
+                }
+
                 String fileName = "certificate-" + certificateNo + ".png";
-                File file = new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName);
+                File file = new File(builder.toString() + fileName);
                 if (!file.exists()) {
-                    ImageUtils.writeToFile(inputImage, "png", new File("/Users/xfduan/Downloads/certificate/type" + type + "/" + fileName));
+                    ImageUtils.writeToFile(inputImage, "png", file);
                 }
                 riseCertificateDao.updateDownloadTime(certificateNo);
                 // 本地图片文件保存
@@ -801,6 +818,13 @@ public class CertificateServiceImpl implements CertificateService {
             }
         }
         return new MutablePair<>(false, null);
+    }
+
+    public static void main(String[] args) {
+        File file = new File("/Users/xfduan/Downloads/certificate/rise/210/");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
     }
 
 }
