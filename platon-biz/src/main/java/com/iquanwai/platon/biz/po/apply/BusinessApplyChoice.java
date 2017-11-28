@@ -25,6 +25,10 @@ public class BusinessApplyChoice {
      * 顺序
      */
     private Integer sequence;
+    /**
+     * 默认选中
+     */
+    private Boolean defaultSelected;
 
     private Boolean del;
 }
