@@ -5,11 +5,12 @@ package com.iquanwai.platon.biz.util;
  */
 public class NumberToHanZi {
 
-    static String[] units = { "", "十", "百", "千", "万", "十万", "百万", "千万", "亿",
-            "十亿", "百亿", "千亿", "万亿" };
-    static char[] numArray = { '零', '一', '二', '三', '四', '五', '六', '七', '八', '九' };
+    static String[] units = {"", "十", "百", "千", "万", "十万", "百万", "千万", "亿",
+            "十亿", "百亿", "千亿", "万亿"};
+    static char[] numArray = {'零', '一', '二', '三', '四', '五', '六', '七', '八', '九'};
 
-    public static String formatInteger(int num) {
+    @Deprecated
+    public static String formatInteger2(int num) {
         char[] val = String.valueOf(num).toCharArray();
         int len = val.length;
         StringBuilder sb = new StringBuilder();
@@ -30,6 +31,48 @@ public class NumberToHanZi {
             }
         }
         return sb.toString();
+    }
+
+    public static String formatInteger(int num) {
+        char[] numArr = String.valueOf(num).toCharArray();
+        StringBuilder builder = new StringBuilder();
+        if (num < 10) {
+            builder.append(numArray[num]);
+        } else {
+            for (int i = 0; i < numArr.length; i++) {
+                int c = Integer.parseInt(String.valueOf(numArr[i]));
+                if (i != numArr.length - 1) {
+                    if (c != 0) {
+                        if (c == 1) {
+                            if (numArr.length == 2) {
+                                builder.append(units[numArr.length - i - 1]);
+                            } else {
+                                builder.append(numArray[c]);
+                                builder.append(units[numArr.length - i - 1]);
+                            }
+                        } else {
+                            builder.append(numArray[c]);
+                            builder.append(units[numArr.length - i - 1]);
+                        }
+                    } else {
+                        boolean tag = true;
+                        for (int j = i + 1; j < numArr.length; j++) {
+                            if (Integer.parseInt(String.valueOf(numArr[j])) != 0) {
+                                if (tag && i > 0 && Integer.parseInt(String.valueOf(numArr[i - 1])) != 0) {
+                                    builder.append("零");
+                                    tag = false;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (c != 0) {
+                        builder.append(numArray[c]);
+                    }
+                }
+            }
+        }
+        return builder.toString();
     }
 
     public static String formatDecimal(double decimal) {
