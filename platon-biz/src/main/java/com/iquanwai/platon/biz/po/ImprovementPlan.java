@@ -43,7 +43,6 @@ public class ImprovementPlan {
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean hasProblemScore; //是否已打分
     private Boolean doneAllIntegrated; //是否做完所有综合练习
-    private int month; //几月小课
     private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
 
     /**
@@ -54,6 +53,12 @@ public class ImprovementPlan {
      **/
     private Integer reportStatus; // report的状态以及点击后的行为
     private Integer mustStudyDays; // 最小学习天数
+    private String typeDesc; //课程类型描述
+    private Integer type; //课程类型
+
+    public final static int TYPE_MAJOR = 1;
+    public final static int TYPE_MINOR = 2;
+    public final static int TYPE_TRIAL = 3;
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;

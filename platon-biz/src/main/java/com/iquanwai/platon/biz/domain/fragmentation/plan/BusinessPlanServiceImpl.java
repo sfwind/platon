@@ -67,7 +67,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     public SchedulePlan getSchedulePlan(Integer profileId) {
         SchedulePlan schedulePlan = new SchedulePlan();
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
-
+        List<ImprovementPlan> runningProblems = Lists.newArrayList();
         //用户的课程计划
         List<CourseSchedule> courseSchedules = getPlan(profileId);
         //用户的本月计划
@@ -95,8 +95,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         //主修小课列表
         List<ImprovementPlan> majorProblem = getMajorListProblem(improvementPlans, majorSchedule, currentMonthMajorProblemIds);
-        schedulePlan.setMajorProblem(majorProblem);
-
+        runningProblems.addAll(majorProblem);
         //本月主修进度
         schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
 
@@ -113,22 +112,17 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         //试听小课
         AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
         Integer auditionProblemId = null;
+        List<ImprovementPlan> trialProblem = Lists.newArrayList();
         if (auditionClassMember != null) {
-            List<ImprovementPlan> trialProblem = improvementPlans.stream()
+            trialProblem = improvementPlans.stream()
                     .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
                             || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
                     .filter(improvementPlan -> improvementPlan.getProblemId().equals(auditionClassMember.getProblemId()))
-                    .map(improvementPlan -> {
-                        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                        improvementPlan.setProblem(problem.simple());
-                        return improvementPlan;
-                    }).collect(Collectors.toList());
+                    .collect(Collectors.toList());
             //如果试听课正在进行中,加入试听课列表
             if (CollectionUtils.isNotEmpty(trialProblem)) {
-                schedulePlan.setTrialProblem(trialProblem);
                 auditionProblemId = auditionClassMember.getProblemId();
             }
-
         }
         List<ImprovementPlan> minorProblem = getMinorListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds);
         // 如果试听课正在进行中,则在辅修课中过滤试听课
@@ -137,8 +131,22 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             minorProblem = minorProblem.stream().filter(improvementPlan -> improvementPlan.getProblemId() != problemId)
                     .collect(Collectors.toList());
         }
+        runningProblems.addAll(minorProblem);
+
+        if(CollectionUtils.isNotEmpty(trialProblem)){
+            trialProblem = trialProblem.stream().map(improvementPlan -> {
+                        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+                        improvementPlan.setProblem(problem.simple());
+                        improvementPlan.setTypeDesc("试听课");
+                        improvementPlan.setType(ImprovementPlan.TYPE_TRIAL);
+                        return improvementPlan;
+            }).collect(Collectors.toList());
+            runningProblems.addAll(trialProblem);
+        }
+
+        schedulePlan.setRunningProblem(runningProblems);
+
         //辅修小课列表
-        schedulePlan.setMinorProblem(minorProblem);
         schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
 
         //本月辅修进度
@@ -162,7 +170,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         List<Integer> planProblemIds = improvementPlans.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         courseSchedules.forEach((item) -> {
-            if (planProblemIds.contains(item.getProblemId())) {
+            if (planProblemIds.contains(item.getProblemId()) || CourseScheduleDefault.Type.MAJOR == item.getType()) {
                 item.setAdjustable(false);
             }
         });
@@ -520,7 +528,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
-                        improvementPlan.setMonth(courseSchedule.getMonth());
+                        improvementPlan.setType(ImprovementPlan.TYPE_MINOR);
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月辅修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -540,7 +549,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setType(ImprovementPlan.TYPE_MINOR);
+                improvementPlan.setTypeDesc(month +"月辅修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -573,7 +583,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
-                        improvementPlan.setMonth(courseSchedule.getMonth());
+                        improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -593,7 +604,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
+                improvementPlan.setTypeDesc(month + "月主修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -632,7 +644,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean in = containsProblemId(improvementPlans, problemId);
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(courseSchedule.getMonth());
+                improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
+                improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
                 Problem problem = cacheService.getProblem(problemId).simple();
                 improvementPlan.setProblem(problem.simple());
                 improvementPlan.setProblemId(problem.getId());
