@@ -2,15 +2,33 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -28,7 +46,6 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -69,13 +86,9 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private CardRepository cardRepository;
     @Autowired
-    private AuditionClassMemberDao auditionClassMemberDao;
-    @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
-    @Autowired
-    private RedisUtil redisUtil;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -719,6 +732,37 @@ public class PlanServiceImpl implements PlanService {
         }
     }
 
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
+        Integer resultPlanId;
+
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Profile profile = accountService.getProfile(profileId);
+        if (improvementPlan == null) {
+            // 用户从来没有开过小课，新开小课
+            resultPlanId = generatePlanService.generatePlan(profileId, problemId);
+            if (startDate != null) {
+                improvementPlanDao.updateStartDate(resultPlanId, startDate);
+            }
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
+            }
+            // 开始时间不是今天,则不发开课通知
+            if (startDate != null && startDate.before(new Date())) {
+                generatePlanService.sendOpenPlanMsg(profile.getOpenid(), problemId);
+            }
+        } else {
+            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
+            generatePlanService.forceReopenPlan(improvementPlan.getId());
+            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
+            if (closeDate != null) {
+                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            }
+            resultPlanId = improvementPlan.getId();
+        }
+        return resultPlanId;
+    }
+
     /**
      * 对于精英版会员，是否有权限继续选课
      */
@@ -765,55 +809,5 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         return new MutablePair<>(access, message);
-    }
-
-    @Override
-    public AuditionClassMember loadAuditionClassMember(Integer profileId) {
-        return auditionClassMemberDao.loadByProfileId(profileId);
-    }
-
-    @Override
-    public String signupAudition(Integer profileId, String openid) {
-        // 计算startTime／endTime,班号
-        Date nextMonday = DateUtils.getNextMonday(new Date());
-        String className = DateUtils.parseDateToFormat9(nextMonday);
-        Date startDate = DateUtils.beforeDays(nextMonday, 1);
-        AuditionClassMember auditionClassMember = new AuditionClassMember();
-        auditionClassMember.setProfileId(profileId);
-        auditionClassMember.setOpenid(openid);
-        auditionClassMember.setClassName(className);
-        auditionClassMember.setStartDate(startDate);
-        auditionClassMember.setProblemId(ConfigUtils.getTrialProblemId());
-        auditionClassMemberDao.insert(auditionClassMember);
-
-        return className;
-    }
-
-    @Override
-    public Integer setAuditionOpened(Integer id) {
-        return auditionClassMemberDao.update(id);
-    }
-
-    @Override
-    public int generateAuditionClassSuffix() {
-        List<Integer> classIds = Lists.newArrayList();
-        String nextMonday = DateUtils.parseDateToString(DateUtils.getNextMonday(new Date()));
-        redisUtil.lock("generate:audition:sequence", lock -> {
-            String key = "audition:sequence:" + nextMonday;
-            String sequenceStr = redisUtil.get(key);
-            if (sequenceStr == null) {
-                sequenceStr = "0";
-            }
-            int sequence = Integer.parseInt(sequenceStr);
-            classIds.add(sequence / 300 + 1);
-            redisUtil.set(key, sequence + 1, TimeUnit.DAYS.toSeconds(30));
-        });
-        return classIds.get(0);
-    }
-
-    @Override
-    public void becomeCurrentAuditionMember(Integer id) {
-        Date currentMonday = DateUtils.getThisMonday(new Date());
-        auditionClassMemberDao.updateAuditionClass(id, DateUtils.beforeDays(currentMonday, 1));
     }
 }

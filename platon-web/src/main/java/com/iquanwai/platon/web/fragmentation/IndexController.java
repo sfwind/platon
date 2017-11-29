@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -59,6 +60,8 @@ public class IndexController {
     private RedisUtil redisUtil;
     @Autowired
     private InterlocutionService interlocutionService;
+    @Autowired
+    private AuditionService auditionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     //商学院按钮url
@@ -119,6 +122,7 @@ public class IndexController {
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         logger.info("问题／答案页面,{},{}", request.getRequestURI(), request.getParameter("date"));
+        // TODO: 12月初删除
         if (request.getRequestURI().endsWith("rise/static/guest/inter/quan/answer")) {
             if ("2017-11-07".equals(request.getParameter("date"))) {
                 response.sendRedirect(request.getRequestURI() + "?date=2017-11-14");
@@ -186,12 +190,12 @@ public class IndexController {
             WebUtils.auth(request, response);
             return null;
         } else {
-            AuditionClassMember classMember = planService.loadAuditionClassMember(loginUser.getId());
+            AuditionClassMember classMember = auditionService.loadAuditionClassMember(loginUser.getId());
             if (classMember != null) {
                 // 有试听课权限
                 if (new DateTime(classMember.getStartDate()).isAfterNow() && classMember.getActive()) {
                     // 开课日期在今天之后，则刷成这一期的
-                    planService.becomeCurrentAuditionMember(classMember.getId());
+                    auditionService.becomeCurrentAuditionMember(classMember.getId());
                 }
             }
         }
