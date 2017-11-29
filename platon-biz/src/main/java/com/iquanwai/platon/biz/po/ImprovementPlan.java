@@ -54,6 +54,11 @@ public class ImprovementPlan {
     private Integer reportStatus; // report的状态以及点击后的行为
     private Integer mustStudyDays; // 最小学习天数
     private String typeDesc; //课程类型描述
+    private Integer type; //课程类型
+
+    public final static int TYPE_MAJOR = 1;
+    public final static int TYPE_MINOR = 2;
+    public final static int TYPE_TRIAL = 3;
 
     public final static int RUNNING = 1;
     public final static int COMPLETE = 2;
