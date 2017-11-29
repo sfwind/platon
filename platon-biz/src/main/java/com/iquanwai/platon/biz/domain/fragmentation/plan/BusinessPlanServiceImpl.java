@@ -170,7 +170,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         List<Integer> planProblemIds = improvementPlans.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         courseSchedules.forEach((item) -> {
-            if (planProblemIds.contains(item.getProblemId())) {
+            if (planProblemIds.contains(item.getProblemId()) || CourseScheduleDefault.Type.MAJOR == item.getType()) {
                 item.setAdjustable(false);
             }
         });
