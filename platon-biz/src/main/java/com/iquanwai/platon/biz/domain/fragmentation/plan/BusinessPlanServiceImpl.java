@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.modelmapper.ModelMapper;
@@ -120,6 +121,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     .map(improvementPlan -> {
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
+                        improvementPlan.setTypeDesc("试听课");
                         return improvementPlan;
                     }).collect(Collectors.toList());
             //如果试听课正在进行中,加入试听课列表
@@ -328,6 +330,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                         });
                     }
                 });
+            }
+
+
+            AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
+            Integer trialProblemId = ConfigUtils.getTrialProblemId();
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, trialProblemId);
+            if (auditionClassMember != null && improvementPlan != null) {
+                waitInserts.removeIf(item -> item.getProblemId().equals(trialProblemId));
             }
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
         } else {
@@ -539,7 +549,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
-                        improvementPlan.setMonth(courseSchedule.getMonth());
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月辅修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -559,7 +569,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setTypeDesc(month +"月辅修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -592,7 +602,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
-                        improvementPlan.setMonth(courseSchedule.getMonth());
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -612,7 +622,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setTypeDesc(month + "月主修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -651,7 +661,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean in = containsProblemId(improvementPlans, problemId);
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(courseSchedule.getMonth());
+                improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
                 Problem problem = cacheService.getProblem(problemId).simple();
                 improvementPlan.setProblem(problem.simple());
                 improvementPlan.setProblemId(problem.getId());
