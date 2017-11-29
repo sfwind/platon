@@ -111,7 +111,6 @@ public class IndexController {
 //        return courseView(request, null, false, RISE_VIEW);
     }
 
-
     @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return courseView(request, null, new ModuleShow(), NOTE_VIEW);
@@ -254,35 +253,36 @@ public class IndexController {
             //
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
-            Boolean status = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
+            Boolean modifyPlanSchedule = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
 
             // 不是白名单
-            if (!status && isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
-                // 如果地址是null，并且是会员，则进入填写信息页面
+            if (!modifyPlanSchedule && isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
+                // 未填写信息的已购买商学院的 “新” 会员
                 response.sendRedirect(PROFILE_SUBMIT);
                 return null;
             } else if (whiteListService.isGoToCountDownNotice(loginUser.getId(), riseMembers)) {
+                // 填完身份信息之后，开始学习日期未到
                 response.sendRedirect(BUSINESS_COUNT_DOWN_URL);
                 return null;
             } else if (whiteListService.isGoToScheduleNotice(loginUser.getId(), riseMembers)) {
+                // 进入课程计划提示页面
                 response.sendRedirect(SCHEDULE_NOTICE);
                 return null;
             } else if (whiteListService.isGoToNewSchedulePlans(loginUser.getId(), riseMembers)) {
+                // 进入新的学习页面
                 response.sendRedirect(NEW_SCHEDULE_PLAN);
+                return null;
+            } else if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)) {
+                // 已经申请成功，有购买权限，非默认可购买的人(专业版)
+                response.sendRedirect(APPLY_SUCCESS);
                 return null;
             } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
                 // 查看他的会员
                 loginMsg(loginUser);
                 // 查看点击商学院的时候，是否已经开营
             } else {
-                if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)) {
-                    // 已经申请成功，有购买权限，非默认可购买的人(专业版)
-                    response.sendRedirect(APPLY_SUCCESS);
-                    return null;
-                } else {
-                    response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
-                    return null;
-                }
+                response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
+                return null;
             }
         }
 
@@ -295,7 +295,6 @@ public class IndexController {
                 return null;
             }
         }
-
 
         return courseView(request, loginUser, moduleShow, RISE_VIEW);
     }

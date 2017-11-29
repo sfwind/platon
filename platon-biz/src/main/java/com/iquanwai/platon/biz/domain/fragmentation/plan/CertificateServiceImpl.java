@@ -61,6 +61,8 @@ public class CertificateServiceImpl implements CertificateService {
     private FullAttendanceRewardDao fullAttendanceRewardDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -82,7 +84,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @PostConstruct
     public void init() {
-        if(!ConfigUtils.isDebug()){
+        if (!ConfigUtils.isDebug()) {
             ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
             excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
         }
@@ -671,7 +673,23 @@ public class CertificateServiceImpl implements CertificateService {
         }
         Integer year = riseCertificate.getYear();
         Integer month = riseCertificate.getMonth();
-        String problemName = riseCertificate.getProblemName();
+        String problemName = null;
+
+        Integer category = accountService.loadUserScheduleCategory(profile.getId());
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadDefaultCourseScheduleByCategory(category);
+        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
+        Integer problemId = courseScheduleDefault.getProblemId();
+        if (problemId != null) {
+            Problem problem = cacheService.getProblem(problemId);
+            if (problem != null) {
+                problemName = problem.getProblem();
+            }
+        }
+
+        if (problemName == null) {
+            return new MutablePair<>(false, null);
+        }
+
         Integer groupNo = riseCertificate.getGroupNo();
         String certificateNo = riseCertificate.getCertificateNo();
 
