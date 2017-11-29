@@ -39,7 +39,7 @@ public interface WhiteListService {
      *
      * @param profileId 用户id
      */
-    boolean checkRiseMenuWhiteList(Integer profileId);
+    boolean  checkRiseMenuWhiteList(Integer profileId);
 
     /**
      * 点击小课训练营白名单
