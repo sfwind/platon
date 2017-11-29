@@ -120,6 +120,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     .map(improvementPlan -> {
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
+                        improvementPlan.setTypeDesc("试听课");
                         return improvementPlan;
                     }).collect(Collectors.toList());
             //如果试听课正在进行中,加入试听课列表
@@ -527,7 +528,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
-                        improvementPlan.setMonth(courseSchedule.getMonth());
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月辅修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -547,7 +548,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setTypeDesc(month +"月辅修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -580,7 +581,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(improvementPlan.getProblemId()))
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
-                        improvementPlan.setMonth(courseSchedule.getMonth());
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -600,7 +601,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean inClose = containsProblemId(closeProblems, currentMonthProblemId);
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(month);
+                improvementPlan.setTypeDesc(month + "月主修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -639,7 +640,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             boolean in = containsProblemId(improvementPlans, problemId);
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setMonth(courseSchedule.getMonth());
+                improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
                 Problem problem = cacheService.getProblem(problemId).simple();
                 improvementPlan.setProblem(problem.simple());
                 improvementPlan.setProblemId(problem.getId());
