@@ -273,7 +273,7 @@ public class IndexController {
                 response.sendRedirect(NEW_SCHEDULE_PLAN);
                 return null;
             } else if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)
-                    && !whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+                    && !whiteListService.checkRunningRiseMenuWhiteList(loginUser.getId())) {
                 // 已经申请成功，有购买权限，非默认可购买的人(专业版)
                 response.sendRedirect(APPLY_SUCCESS);
                 return null;

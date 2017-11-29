@@ -42,6 +42,13 @@ public interface WhiteListService {
     boolean  checkRiseMenuWhiteList(Integer profileId);
 
     /**
+     * 当前是否有未失效的身份
+     * @param profileId
+     * @return
+     */
+    boolean checkRunningRiseMenuWhiteList(Integer profileId);
+
+    /**
      * 点击小课训练营白名单
      *
      * @param profileId 用户id
