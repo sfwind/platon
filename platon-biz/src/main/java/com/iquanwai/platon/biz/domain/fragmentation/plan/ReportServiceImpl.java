@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,11 +32,7 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private ProblemDao problemDao;
-    @Autowired
     private CacheService cacheService;
-    @Autowired
-    private ProblemService problemService;
     @Autowired
     private WarmupSubmitDao warmupSubmitDao;
     @Autowired
@@ -48,8 +43,6 @@ public class ReportServiceImpl implements ReportService {
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
     private SubjectArticleDao subjectArticleDao;
-    @Autowired
-    private RecommendationDao recommendationDao;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
 
@@ -98,36 +91,8 @@ public class ReportServiceImpl implements ReportService {
         } else {
             report.setShowNextBtn(true);
         }
-        // 增加推荐学习数据
-        List<Recommendation> recommendations = loadRecommendation(problem.getId());
-        report.setRecommendations(recommendations);
 
         return report;
-    }
-
-    @Override
-    public List<Recommendation> loadRecommendationByProblemId(Integer problemId) {
-        return loadRecommendation(problemId);
-    }
-
-    @Override
-    public List<Recommendation> loadAllRecommendation() {
-        return recommendationDao.loadAll(Recommendation.class)
-                .stream().filter(item -> !item.getDel())
-                .map(item ->{
-                    String recommendIds = item.getRecommendIds();
-                    List<String> problemIdList = Lists.newArrayList();
-                    if (recommendIds != null && !"".equals(recommendIds)) {
-                        problemIdList = Arrays.asList(recommendIds.split("、"));
-                    }
-                    // 根据 ProblemId 列表获取所有的相关 Problem 信息
-                    List<Problem> problems = Lists.newArrayList();
-                    problemIdList.forEach(id -> {
-                        problems.add(problemDao.load(Problem.class, Integer.parseInt(id)));
-                    });
-                    item.setRecommendProblems(problems);
-                    return item;
-                }).collect(Collectors.toList());
     }
 
     private Integer calculateVoteCount(List<HomeworkVote> list, ImprovementPlan plan) {
@@ -298,32 +263,5 @@ public class ReportServiceImpl implements ReportService {
         return warmupPractices;
     }
 
-    private List<Recommendation> loadRecommendation(Integer problemId) {
-        List<Recommendation> recommendations = recommendationDao.loadRecommendationByProblemId(problemId);
-        for (Recommendation recommendation : recommendations) {
-            String recommendIds = recommendation.getRecommendIds();
-            List<String> problemIdList = Lists.newArrayList();
-            if (recommendIds != null && !"".equals(recommendIds)) {
-                problemIdList = Arrays.asList(recommendIds.split("、"));
-            }
-            // 根据 ProblemId 列表获取所有的相关 Problem 信息
-            List<Problem> problems = Lists.newArrayList();
-            problemIdList.forEach(id -> {
-                Problem problem = problemDao.load(Problem.class, Integer.parseInt(id));
-                ProblemCatalog catalog = cacheService.getProblemCatalog(problem.getCatalogId());
-                if(catalog != null) {
-                    problem.setCatalog(catalog.getName());
-                }
-                ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(problem.getSubCatalogId());
-                if(subCatalog != null) {
-                    problem.setSubCatalog(subCatalog.getName());
-                }
-                problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
-                problems.add(problem);
-            });
-            recommendation.setRecommendProblems(problems);
-        }
-        return recommendations;
-    }
 
 }

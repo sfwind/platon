@@ -402,17 +402,6 @@ public class PlanController {
         return WebUtils.result(report);
     }
 
-    @RequestMapping(value = "/improvement/report/recommendation/{problemId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadRecommendation(LoginUser loginUser, @PathVariable Integer problemId) {
-        Assert.notNull(loginUser, "当前用户不能为空");
-        List<Recommendation> recommendations = reportService.loadRecommendationByProblemId(problemId);
-        if (recommendations.size() > 0) {
-            return WebUtils.result(recommendations);
-        } else {
-            return WebUtils.error("未找到推荐小课信息");
-        }
-    }
-
     @RequestMapping(value = "/close", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> close(LoginUser loginUser, @RequestParam Integer planId) {
 
@@ -694,70 +683,27 @@ public class PlanController {
         List<Problem> problems = Lists.newArrayList();
         // 用户已经有的小课
         List<Integer> userProblems = Lists.newArrayList();
-        List<Integer> runningProblemId = runningPlans.stream().map(PlanDto::getProblemId).collect(Collectors.toList());
         runningPlans.forEach(item -> userProblems.add(item.getProblemId()));
         completedPlans.forEach(item -> userProblems.add(item.getProblemId()));
-        List<Integer> problemIds;
 
         // 根据有用性评分排列小课
-        List<Integer> usefulProblems = problemService.loadProblems().stream()
+        List<Problem> usefulProblems = problemService.loadProblems().stream()
                 .sorted((left, right) -> right.getUsefulScore() > left.getUsefulScore() ? 1 : -1)
-                .map(Problem::getId).collect(Collectors.toList());
+                .collect(Collectors.toList());
 
-        if (CollectionUtils.isEmpty(runningPlans)) {
-            // 没有进行中的练习,根据实用度排序
-            problemIds = usefulProblems;
-        } else {
-            // 有进行中的,有用性评分的小课排在后面
-            List<Integer> collect = usefulProblems.stream()
-                    .filter(item -> !runningProblemId.contains(item)).collect(Collectors.toList());
-            runningProblemId.addAll(collect);
-            problemIds = runningProblemId.stream().distinct().collect(Collectors.toList());
-        }
-        // 对这些小课设定分数，用于排序
-        Map<Integer, Integer> problemScores = Maps.newHashMap();
-        for (int i = 0; i < problemIds.size(); i++) {
-            int score = problemIds.size() - i;
-            problemScores.putIfAbsent(problemIds.get(i), score);
-        }
-        // 获取所有推荐，对这些推荐排序
-        List<Recommendation> recommendationLists = reportService.loadAllRecommendation().stream().sorted((left, right) -> {
-            Integer rightScore = problemScores.get(right.getProblemId()) == null ? 0 : problemScores.get(right.getProblemId());
-            Integer leftScore = problemScores.get(left.getProblemId()) == null ? 0 : problemScores.get(left.getProblemId());
-            return rightScore - leftScore;
-        }).collect(Collectors.toList());
         boolean inWhiteList = whiteListService.isInWhiteList(WhiteList.TRIAL, profileId);
-        for (Recommendation recommendation : recommendationLists) {
-            // 开始过滤,这个推荐里的小课
-            List<Problem> recommendProblems = recommendation.getRecommendProblems();
-
-            // 额外添加业务场景下所需要的字段值
-            recommendProblems.forEach(problem -> {
-                Integer subCatalogId = problem.getSubCatalogId();
-                if (subCatalogId != null) {
-                    ProblemSubCatalog subCatalog = cacheService.getProblemSubCatalog(subCatalogId);
-                    problem.setSubCatalog(subCatalog.getName());
+        for (Problem problem : usefulProblems) {
+            //非天使用户去除内测小课
+            if (!inWhiteList) {
+                if (problem.getTrial()) {
+                    continue;
                 }
-                // 设置每个 problem 当前完成的人数
-                problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
-            });
-
-            for (Problem problem : recommendProblems) {
-                //非天使用户去除试用版小课
-                if (!inWhiteList) {
-                    if (problem.getTrial()) {
-                        continue;
-                    }
-                }
-                if (!userProblems.contains(problem.getId())) {
-                    // 用户没有做过 ignore
-                    if (!problems.stream().map(Problem::getId).collect(Collectors.toList()).contains(problem.getId())) {
-                        // 没有添加进去
-                        problems.add(problem.simple());
-                    }
-                    if (problems.size() >= ProblemService.MAX_RECOMMENDATION_SIZE) {
-                        return problems;
-                    }
+            }
+            if (!userProblems.contains(problem.getId())) {
+                // 只推荐用户没有上过的课程
+                problems.add(problem.simple());
+                if (problems.size() >= ProblemService.MAX_RECOMMENDATION_SIZE) {
+                    return problems;
                 }
             }
         }
