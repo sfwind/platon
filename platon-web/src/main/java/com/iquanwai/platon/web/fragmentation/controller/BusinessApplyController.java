@@ -69,7 +69,7 @@ public class BusinessApplyController {
                 .action("检查是否能够申请");
         operationLogService.log(operationLog);
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
-        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.PAY_BUSINESS);
+        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
             return WebUtils.error("您已经有报名权限,无需重复申请");
         }
@@ -89,7 +89,7 @@ public class BusinessApplyController {
                 .action("提交申请");
         operationLogService.log(operationLog);
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
-        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.PAY_BUSINESS);
+        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
             return WebUtils.error("您已经有报名权限,无需重复申请");
         }

@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Created by justin on 16/12/26.
+ * @author justin
+ * @version 16/12/26
  */
 @Service
 public class WhiteListServiceImpl implements WhiteListService {
@@ -100,6 +101,22 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
+    public boolean checkRunningRiseMenuWhiteList(Integer profileId) {
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        Long riseCount = riseMembers.stream()
+                .filter(riseMember -> !riseMember.getExpired())
+                .filter(riseMember ->
+                        // 商学院会员（半年、一年）、小课单买用户
+                        riseMember.getMemberTypeId() == RiseMember.HALF
+                                || riseMember.getMemberTypeId() == RiseMember.ANNUAL
+                                || riseMember.getMemberTypeId() == RiseMember.ELITE
+                                || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                                || riseMember.getMemberTypeId() == RiseMember.COURSE)
+                .count();
+        return riseCount.intValue() > 0;
+    }
+
+    @Override
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long campCount = riseMembers.stream().filter(riseMember ->
@@ -107,6 +124,40 @@ public class WhiteListServiceImpl implements WhiteListService {
                 riseMember.getMemberTypeId() == RiseMember.CAMP
         ).count();
         return campCount.intValue() > 0;
+    }
+
+    @Override
+    public boolean isGoToNewSchedulePlans(Integer profileId, List<RiseMember> riseMembers) {
+        // 是否精英版
+        Boolean isElite = riseMembers.stream().anyMatch(item -> !item.getExpired() &&
+                (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
+        if (isElite) {
+            // 是否老学员（不用开计划)
+            Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
+            if (scheduleWhiteList) {
+                // 老会员(但是要开计划，白名单)
+                WhiteList whiteList = whiteListDao.loadWhiteList(WhiteList.SCHEDULE, profileId);
+                if (whiteList != null) {
+                    // 有课程表,而且要测试课程
+                    return CollectionUtils.isNotEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId));
+                } else {
+                    // 老会员不测试课程
+                    return false;
+                }
+            } else {
+                // 新会员&有课程表
+                return CollectionUtils.isNotEmpty(courseScheduleDao.getAllScheduleByProfileId(profileId));
+            }
+        } else {
+            // 不是精英版，肯定不会进去
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
+        // 去新课程计划表则不显示
+        return !this.isGoToNewSchedulePlans(profileId, riseMembers);
     }
 
 }

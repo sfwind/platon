@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -14,6 +13,8 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
+import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleModifyDto;
+import com.iquanwai.platon.web.fragmentation.dto.plan.MonthCourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.CountDownDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -41,6 +42,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/rise/schedule")
 public class ScheduleController {
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -54,56 +56,24 @@ public class ScheduleController {
     @Autowired
     private PlanService planService;
 
+    /**
+     * 获取个人的学习计划
+     */
     @RequestMapping("/load/personal")
     public ResponseEntity<Map<String, Object>> loadPersonalCourseSchedulePlan(LoginUser loginUser) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("RISE")
                 .function("学习计划")
-                .action("获取学习计划");
+                .action("获取个人学习计划");
         operationLogService.log(operationLog);
         List<List<CourseSchedule>> courseScheduleMap = businessPlanService.loadPersonalCourseSchedule(loginUser.getId());
         return WebUtils.result(courseScheduleMap);
     }
 
-    @RequestMapping("/load/default")
-    public ResponseEntity<Map<String, Object>> loadDefaultCourseSchedulePlan(LoginUser loginUser) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
-                .function("学习计划")
-                .action("获取默认学习计划");
-        operationLogService.log(operationLog);
-        List<List<CourseSchedule>> defaultCourseScheduleMap = businessPlanService.loadDefaultCourseSchedule(loginUser.getId());
-        return WebUtils.result(defaultCourseScheduleMap);
-    }
-
-    @RequestMapping(value = "/load/questions", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadScheduleQuestions(LoginUser loginUser) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
-                .function("学习计划")
-                .action("获取学习计划题目");
-        operationLogService.log(operationLog);
-        List<ScheduleQuestion> questions = businessPlanService.loadScheduleQuestions();
-        return WebUtils.result(questions);
-    }
-
-    @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitQuestions(LoginUser loginUser, @RequestBody ScheduleInitDto initDto) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("学习")
-                .function("课程表")
-                .action("初始化课程表");
-        operationLogService.log(operationLog);
-        Assert.notNull(initDto);
-        List<ScheduleQuestion> questions = initDto.getQuestionList();
-        businessPlanService.initCourseSchedule(loginUser.getId(), questions);
-        return WebUtils.success();
-    }
-
+    /**
+     * 更新单门小课的年月信息
+     */
     @RequestMapping(value = "/update/problem", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> modifyProblemSchedule(LoginUser loginUser, @RequestBody CourseScheduleDto courseScheduleDto) {
         Assert.notNull(loginUser, "登录用户不能为空");
@@ -124,6 +94,73 @@ public class ScheduleController {
         } else {
             return WebUtils.error("小课计划调整出错，请联系管理员！");
         }
+    }
+
+    /**
+     * 单门小课更新是否选择
+     */
+    @RequestMapping(value = "/update/selected", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> updateProblemScheduleSelectedStatus(LoginUser loginUser, @RequestBody CourseScheduleDto courseScheduleDto) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(courseScheduleDto, "小课更改参数不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("学习计划")
+                .action("小课计划更改");
+        operationLogService.log(operationLog);
+        Integer courseScheduleId = courseScheduleDto.getId();
+        Boolean selected = courseScheduleDto.getSelected();
+        businessPlanService.updateProblemScheduleSelected(courseScheduleId, selected);
+        return WebUtils.success();
+    }
+
+    /**
+     * 全量更新小课的选择情况
+     */
+    @RequestMapping(value = "/update/all", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> modifyCourseSchedule(LoginUser loginUser, @RequestBody CourseScheduleModifyDto courseScheduleModifyDto) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(courseScheduleModifyDto, "小课更改参数不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("学习计划")
+                .action("小课计划整体更改");
+        operationLogService.log(operationLog);
+        List<MonthCourseScheduleDto> monthCourseScheduleDtos = courseScheduleModifyDto.getMonthCourseSchedules();
+
+        monthCourseScheduleDtos.forEach(monthCourseScheduleDto -> {
+            Integer year = monthCourseScheduleDto.getYear();
+            Integer month = monthCourseScheduleDto.getMonth();
+            List<CourseSchedule> courseSchedules = monthCourseScheduleDto.getCourseSchedules();
+            businessPlanService.batchModifyCourseSchedule(year, month, courseSchedules);
+        });
+        return WebUtils.success();
+    }
+
+    @RequestMapping(value = "/load/questions", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadScheduleQuestions(LoginUser loginUser) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("RISE")
+                .function("学习计划")
+                .action("获取学习计划题目");
+        operationLogService.log(operationLog);
+        List<ScheduleQuestion> questions = businessPlanService.loadScheduleQuestions(loginUser.getId());
+        return WebUtils.result(questions);
+    }
+
+    @RequestMapping(value = "/init", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitQuestions(LoginUser loginUser, @RequestBody ScheduleInitDto initDto) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("学习")
+                .function("课程表")
+                .action("初始化课程表");
+        operationLogService.log(operationLog);
+        Assert.notNull(initDto);
+        List<ScheduleQuestion> questions = initDto.getQuestionList();
+        businessPlanService.initCourseSchedule(loginUser.getId(), questions);
+        return WebUtils.success();
     }
 
     @RequestMapping("/load/plan")

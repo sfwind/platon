@@ -20,9 +20,9 @@ public class CustomerStatus {
      */
     public static final Integer EDIT_TAG = 2;
     /**
-     * 购买商学院
+     * 申请通过
      */
-    public static final Integer PAY_BUSINESS = 3;
+    public static final Integer APPLY_BUSINESS_SCHOOL_SUCCESS = 3;
     /**
      * 学过试听课
      * @deprecated

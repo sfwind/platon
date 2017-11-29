@@ -266,7 +266,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
      * @param planId planId
      * @param closeDate 关闭订单
      */
-    public void reOpenPlan(Integer planId, Date closeDate) {
+    public void reopenPlan(Integer planId, Date closeDate) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE ImprovementPlan set RiseMember = 1,Status = 1,CloseDate =? WHERE Id = ?";
         try {

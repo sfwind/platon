@@ -7,9 +7,10 @@ import lombok.Data;
  * @version 2017-11-08
  */
 @Data
-public class MonthTopic {
-    private Integer year;
+public class CourseScheduleTopic {
+    private Integer id;
+    private Integer category;
     private Integer month;
     private String topic;
-    private Integer category;
+    private Boolean del;
 }

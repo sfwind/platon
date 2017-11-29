@@ -41,20 +41,21 @@ public class CourseScheduleDao extends PracticeDBUtil {
 
     public void batchInsertCourseSchedule(List<CourseSchedule> schedules) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Year, Month, Type, Recommend, Selected) " +
-                " VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category,Year, Month, Type, Recommend, Selected) " +
+                " VALUES (?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[schedules.size()][];
             for (int i = 0; i < schedules.size(); i++) {
                 CourseSchedule courseSchedule = schedules.get(i);
-                param[i] = new Object[7];
+                param[i] = new Object[8];
                 param[i][0] = courseSchedule.getProfileId();
                 param[i][1] = courseSchedule.getProblemId();
-                param[i][2] = courseSchedule.getYear();
-                param[i][3] = courseSchedule.getMonth();
-                param[i][4] = courseSchedule.getType();
-                param[i][5] = courseSchedule.getRecommend();
-                param[i][6] = courseSchedule.getSelected();
+                param[i][2] = courseSchedule.getCategory();
+                param[i][3] = courseSchedule.getYear();
+                param[i][4] = courseSchedule.getMonth();
+                param[i][5] = courseSchedule.getType();
+                param[i][6] = courseSchedule.getRecommend();
+                param[i][7] = courseSchedule.getSelected();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {
@@ -128,6 +129,28 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return -1;
     }
 
+    public int modifyScheduleYearMonth(Integer id, Integer year, Integer month, Integer selected) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Year = ?, Month = ?, Selected = ? WHERE Id = ? AND Del = 0";
+        try {
+            return runner.update(sql, year, month, selected, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public int modifyScheduleYearMonth(Integer id, Integer month, Integer selected) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Month = ?, Selected = ? WHERE Id = ? AND Del = 0";
+        try {
+            return runner.update(sql, month, selected, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
     public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ? AND YEAR = ? AND Month = ?";
@@ -150,6 +173,29 @@ public class CourseScheduleDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
+    }
+
+    public CourseSchedule loadOldestCourseSchedule(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseSchedule WHERE Type = 1 AND Del = 0 AND ProfileId = ? ORDER BY Year ASC, Month ASC";
+        ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    public int updateSelected(Integer courseScheduleId, Integer selected) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE CourseSchedule SET Selected = ? WHERE Id = ?";
+        try {
+            return runner.update(sql, selected, courseScheduleId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
 
 }

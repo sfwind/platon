@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import java.util.Date;
+
 /**
  * Created by justin on 16/12/13.
  */
@@ -21,11 +23,10 @@ public interface GeneratePlanService {
 
     /**
      * 为学员生成训练计划
-     *  @param openid 学员id
      *  @param profileId 学员id
      *  @param problemId 问题id
      * */
-    Integer generatePlan(String openid, Integer profileId, Integer problemId);
+    Integer generatePlan(Integer profileId, Integer problemId);
 
     /**
      * 发送开课通知
@@ -33,4 +34,15 @@ public interface GeneratePlanService {
      *  @param problemId 问题id
      * */
     void sendOpenPlanMsg(String openid, Integer problemId);
+
+    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
+
+    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
+
+    /**
+     * 小课强开
+     * startDate 小课开始日期
+     * closeDate 小课关闭日期
+     */
+    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 }

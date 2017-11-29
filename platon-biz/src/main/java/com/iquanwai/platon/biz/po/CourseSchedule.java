@@ -16,9 +16,17 @@ public class CourseSchedule {
      */
     private Integer profileId;
     /**
+     * 分类
+     */
+    private Integer category;
+    /**
      * 小课id
      */
     private Integer problemId;
+    /**
+     * 课程类型（1-主修,2-辅修）
+     */
+    private Integer type;
     /**
      * 年份
      */
@@ -27,10 +35,6 @@ public class CourseSchedule {
      * 月份
      */
     private Integer month;
-    /**
-     * 课程类型（1-主修,2-辅修）
-     */
-    private Integer type;
     /**
      * 是否推荐
      */
@@ -56,4 +60,8 @@ public class CourseSchedule {
      * 非db字段
      */
     private Problem problem;
+    /**
+     * 是否是可调整的
+     */
+    private Boolean adjustable;
 }

@@ -64,6 +64,7 @@ public class Problem {
         problem.setChosenPersonCount(this.chosenPersonCount);
         problem.setAbbreviation(this.abbreviation);
         problem.setPublish(this.publish);
+        problem.setLength(this.length);
         return problem;
     }
 
