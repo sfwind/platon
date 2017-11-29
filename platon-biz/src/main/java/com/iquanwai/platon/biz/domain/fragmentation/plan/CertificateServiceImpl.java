@@ -85,8 +85,8 @@ public class CertificateServiceImpl implements CertificateService {
     @PostConstruct
     public void init() {
 
-            ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
-            excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
+        ordinaryImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_ORDINARY);
+        excellentImage = ImageUtils.getBufferedImageByUrl(RISE_CERTIFICATE_BG_EXCELLENT);
 
     }
 
@@ -380,11 +380,7 @@ public class CertificateServiceImpl implements CertificateService {
                 coupon.setProfileId(profileId);
                 coupon.setAmount(fullAttendanceReward.getAmount().intValue());
                 coupon.setUsed(0);
-                if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
-                    coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
-                } else {
-                    coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
-                }
+                buildCouponExpireDate(coupon, profile);
                 coupon.setCategory(FULL_ATTENDANCE_COUPON_CATEGORY);
                 coupon.setDescription(FULL_ATTENDANCE_COUPON_DESCRIPTION);
                 couponInsertResult = couponDao.insertCoupon(coupon);
@@ -479,14 +475,7 @@ public class CertificateServiceImpl implements CertificateService {
         coupon.setProfileId(profile.getId());
         coupon.setDescription(description);
         coupon.setUsed(0);
-
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
-        if (riseMember != null && Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
-            coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
-        } else {
-            coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
-        }
-
+        buildCouponExpireDate(coupon, profile);
         coupon.setAmount(amount);
         couponDao.insertCoupon(coupon);
 
@@ -663,6 +652,15 @@ public class CertificateServiceImpl implements CertificateService {
             default:
                 logger.error("证书类型{}不存在", type);
                 break;
+        }
+    }
+
+    private void buildCouponExpireDate(Coupon coupon, Profile profile) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
+        if (riseMember != null && Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
+            coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
+        } else {
+            coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
         }
     }
 
@@ -845,13 +843,6 @@ public class CertificateServiceImpl implements CertificateService {
             }
         }
         return new MutablePair<>(false, null);
-    }
-
-    public static void main(String[] args) {
-        File file = new File("/Users/xfduan/Downloads/certificate/rise/210/");
-        if (!file.exists()) {
-            file.mkdirs();
-        }
     }
 
 }
