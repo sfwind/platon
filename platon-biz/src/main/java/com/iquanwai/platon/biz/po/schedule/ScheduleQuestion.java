@@ -17,6 +17,7 @@ public class ScheduleQuestion {
     private Integer sequence;
     private String question;
     private Boolean del;
+    private Boolean multiple;
 
     /**
      * 非DB字段

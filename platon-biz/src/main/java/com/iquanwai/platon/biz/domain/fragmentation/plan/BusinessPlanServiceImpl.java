@@ -300,8 +300,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             } else if (choices.contains(TWO_MINOR)) {
                 // 二门课
                 waitToReduce.forEach((key, list) -> {
-                    List<Integer> selectedIds = Lists.newArrayList(list.stream().mapToInt(CourseSchedule::getProblemId).iterator());
-
                     if (list.size() > 2) {
                         // 需要筛选
                         list.forEach(item -> {
@@ -312,33 +310,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             item.setRecommend(true);
                             item.setSelected(true);
                         });
-                    } else {
-                        // 不满足两门，要补足两门
-                        List<Integer> collect = defaults.stream()
-                                .filter(item -> Objects.equals(item.getMonth(), key))
-                                .filter(item -> item.getType() == CourseScheduleDefault.Type.MINOR)
-                                .filter(item -> !selectedIds.contains(item.getProblemId()))
-                                .map(CourseScheduleDefault::getProblemId)
-                                .sorted(((o1, o2) -> {
-                                    Problem p1 = cacheService.getProblem(o1);
-                                    Problem p2 = cacheService.getProblem(o2);
-                                    // 默认四分
-                                    Double useful1 = p1.getUsefulScore() == null ? 4 : p1.getUsefulScore();
-                                    Double useful2 = p2.getUsefulScore() == null ? 4 : p2.getUsefulScore();
-                                    return useful2.compareTo(useful1);
-                                }))
-                                .limit(2 - list.size())
-                                .collect(Collectors.toList());
-                        waitInserts.forEach(item -> {
-                            if (collect.contains(item.getProblemId())) {
-                                item.setSelected(true);
-                                item.setRecommend(true);
-                            }
-                        });
                     }
                 });
             }
-
 
             AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
             Integer trialProblemId = ConfigUtils.getTrialProblemId();
@@ -403,7 +377,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                         recommend = choices.stream().anyMatch(initChoices::contains);
                     }
                 }
-            } else if (choices.contains(TWO_MINOR)) {
+            } else if (choices.contains(TWO_MINOR) || choices.contains(ALL_MINOR)) {
+                // 两门三门都用这个
                 if (defaultSchedule.getDefaultSelected()) {
                     recommend = true;
                 } else {
@@ -417,9 +392,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     List<Integer> initChoicesList = Lists.newArrayList(initChoices.split(",")).stream().map(Integer::valueOf).collect(Collectors.toList());
                     recommend = choices.stream().anyMatch(initChoicesList::contains);
                 }
-            } else if (choices.contains(ALL_MINOR)) {
-                // 全部辅修课
-                recommend = true;
             }
         } else {
             // 主修
