@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
+import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
@@ -48,6 +49,8 @@ public class ScheduleController {
     private BusinessPlanService businessPlanService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private AuditionService auditionService;
     @Autowired
     private RiseMemberService riseMemberService;
     @Autowired
@@ -184,7 +187,7 @@ public class ScheduleController {
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
             Integer days = Days.daysBetween(DateTime.now().withTimeAtStartOfDay(), new DateTime(riseMember.getOpenDate())).getDays();
             List<CourseSchedule> plan = businessPlanService.getPlan(loginUser.getId());
-            AuditionClassMember auditionClassMember = planService.loadAuditionClassMember(loginUser.getId());
+            AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
             boolean hasPlan = planService.loadUserPlans(loginUser.getId()).stream().anyMatch(item -> !item.getDel() && item.getProblemId().equals(ConfigUtils.getTrialProblemId()));
             CountDownDto dto = new CountDownDto();
             dto.setDays(days);

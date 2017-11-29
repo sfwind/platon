@@ -122,7 +122,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
      */
     public RiseCertificate loadSingleGraduateByProfileId(Integer year, Integer month, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where ProfileId = ? AND Year = ? and Month = ? and Type = 5 and Del=0";
+        String sql = "select * from RiseCertificate where ProfileId = ? AND Year = ? and Month = ? and Type in (3, 5) and Del = 0";
         ResultSetHandler<RiseCertificate> h = new BeanHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, profileId, year, month);

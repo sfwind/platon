@@ -40,7 +40,7 @@ public interface CertificateService {
     /**
      * 将 RiseCertificate 表中没有上传图片的，生成图片并且上传到七牛云
      */
-    void uploadCertificateToQiNiu();
+    void uploadCertificateToQiNiu(Boolean isOnline);
 
     void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);
 

@@ -166,23 +166,18 @@ public interface PlanService {
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
     void forceOpenCampOrder(String orderId);
+    void forceOpenCampOrder(String orderId, MonthlyCampConfig monthlyCampConfig);
+
+    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
+
+    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
+
+    /**
+     * 小课强开
+     * startDate 小课开始日期
+     * closeDate 小课关闭日期
+     */
+    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
-
-    AuditionClassMember loadAuditionClassMember(Integer profileId);
-
-    /**
-     * 报名试听课
-     * */
-    String signupAudition(Integer profileId, String openid);
-
-    Integer setAuditionOpened(Integer id);
-
-    int generateAuditionClassSuffix();
-
-    /**
-     * 刷成当前开课的情况
-     * @param id RiseClassMember的Id
-     */
-    void becomeCurrentAuditionMember(Integer id);
 }

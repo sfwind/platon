@@ -144,7 +144,11 @@ public class ImageUtils {
         char[] chars = text.toCharArray();
         double length = 0;
         for (char aChar : chars) {
-            if ((int) aChar > 256) {
+            if (aChar == '“') {
+                length += 13 / 24.0;
+            } else if (aChar == '”') {
+                length += 13 / 24.0;
+            } else if ((int) aChar > 256) {
                 length += 1.0;
             } else {
                 length += 5 / 9.0;
