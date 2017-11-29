@@ -478,7 +478,14 @@ public class CertificateServiceImpl implements CertificateService {
         coupon.setProfileId(profile.getId());
         coupon.setDescription(description);
         coupon.setUsed(0);
-        coupon.setExpiredDate(DateUtils.parseStringToDate("2099-01-01"));
+
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
+        if (riseMember != null && Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
+            coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
+        } else {
+            coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
+        }
+
         coupon.setAmount(amount);
         couponDao.insertCoupon(coupon);
 
