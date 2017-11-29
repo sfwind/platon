@@ -272,11 +272,12 @@ public class IndexController {
                 // 进入新的学习页面
                 response.sendRedirect(NEW_SCHEDULE_PLAN);
                 return null;
-            } else if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS) && !whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+            } else if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)
+                    && !whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
                 // 已经申请成功，有购买权限，非默认可购买的人(专业版)
                 response.sendRedirect(APPLY_SUCCESS);
                 return null;
-            } else if ( whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+            } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
                 // 查看他的会员
                 loginMsg(loginUser);
                 // 查看点击商学院的时候，是否已经开营
