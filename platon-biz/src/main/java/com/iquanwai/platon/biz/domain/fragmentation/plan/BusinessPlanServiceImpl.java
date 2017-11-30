@@ -217,7 +217,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     @Override
     public List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId) {
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadDefaultCourseSchedule();
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefault();
         List<CourseSchedule> courseSchedules = courseScheduleDefaults.stream().map(courseScheduleDefault -> {
             ModelMapper modelMapper = new ModelMapper();
             return modelMapper.map(courseScheduleDefault, CourseSchedule.class);
@@ -260,7 +260,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 用户类型id
         Integer categoryId = accountService.loadUserScheduleCategory(profileId);
         // 默认课表
-        List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadDefaultCourseScheduleByCategory(categoryId);
+        List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(categoryId);
         // 用户课表
         List<CourseSchedule> userSchedule = courseScheduleDao.getAllScheduleByProfileId(profileId);
         // 用户选择的选项id

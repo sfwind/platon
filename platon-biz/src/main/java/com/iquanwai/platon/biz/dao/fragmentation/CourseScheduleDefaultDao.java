@@ -18,7 +18,7 @@ public class CourseScheduleDefaultDao extends PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<CourseScheduleDefault> loadDefaultCourseSchedule() {
+    public List<CourseScheduleDefault> loadCourseScheduleDefault() {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseScheduleDefault WHERE Del = 0";
         ResultSetHandler<List<CourseScheduleDefault>> h = new BeanListHandler<>(CourseScheduleDefault.class);
@@ -30,12 +30,24 @@ public class CourseScheduleDefaultDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<CourseScheduleDefault> loadDefaultCourseScheduleByCategory(Integer categoryId) {
+    public List<CourseScheduleDefault> loadCourseScheduleDefaultByCategory(Integer categoryId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseScheduleDefault WHERE Del = 0 AND Category = ?";
         ResultSetHandler<List<CourseScheduleDefault>> h = new BeanListHandler<>(CourseScheduleDefault.class);
         try {
             return runner.query(sql, h, categoryId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<CourseScheduleDefault> loadMajorCourseScheduleDefaultByCategory(Integer category) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseScheduleDefault WHERE Category = ? AND Type = 1 AND Del = 0";
+        ResultSetHandler<List<CourseScheduleDefault>> h = new BeanListHandler<>(CourseScheduleDefault.class);
+        try {
+            return runner.query(sql, h, category);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

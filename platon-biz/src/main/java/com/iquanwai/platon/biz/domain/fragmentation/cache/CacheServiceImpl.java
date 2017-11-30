@@ -151,7 +151,6 @@ public class CacheServiceImpl implements CacheService {
         // 缓存商学院学习计划每月主题
         List<CourseScheduleTopic> courseScheduleTopics = courseScheduleTopicDao.loadAll();
         courseScheduleTopicMap = courseScheduleTopics.stream().collect(Collectors.groupingBy(CourseScheduleTopic::getCategory));
-
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {

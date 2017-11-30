@@ -103,7 +103,7 @@ public interface ProblemService {
      */
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
-    String loadProblemSchedule(Integer problemId);
+    String loadProblemScheduleMonth(Integer profileId, Integer problemId);
 
     int loadChosenPersonCount(Integer problemId);
 
@@ -117,7 +117,7 @@ public interface ProblemService {
 
     List<Problem> loadHotProblems(List<Integer> problemIds);
 
-    Integer loadMonthlyCampMonth(Integer problemId);
+    Integer loadCoursePlanSchedule(Integer profileId, Integer problemId);
 
     List<ExploreBanner> loadExploreBanner();
 }

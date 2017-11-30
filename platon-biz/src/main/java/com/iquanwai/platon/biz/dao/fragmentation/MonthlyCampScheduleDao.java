@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
+@Deprecated
 public class MonthlyCampScheduleDao extends PracticeDBUtil {
 
     Logger logger = LoggerFactory.getLogger(getClass());
