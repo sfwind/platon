@@ -109,6 +109,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
+        // 本月是否有辅修课
+        if(CollectionUtils.isEmpty(currentMonthMinorProblemIds)){
+            schedulePlan.setMinorSelected(false);
+        }else{
+            schedulePlan.setMinorSelected(true);
+        }
+
         //试听小课
         AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
         Integer auditionProblemId = null;
@@ -133,13 +140,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
         runningProblems.addAll(minorProblem);
 
-        if(CollectionUtils.isNotEmpty(trialProblem)){
+        if (CollectionUtils.isNotEmpty(trialProblem)) {
             trialProblem = trialProblem.stream().map(improvementPlan -> {
-                        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                        improvementPlan.setProblem(problem.simple());
-                        improvementPlan.setTypeDesc("试听课");
-                        improvementPlan.setType(ImprovementPlan.TYPE_TRIAL);
-                        return improvementPlan;
+                Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+                improvementPlan.setProblem(problem.simple());
+                improvementPlan.setTypeDesc("试听课");
+                improvementPlan.setType(ImprovementPlan.TYPE_TRIAL);
+                return improvementPlan;
             }).collect(Collectors.toList());
             runningProblems.addAll(trialProblem);
         }
@@ -465,8 +472,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     private List<CourseSchedule> getCurrentMonthSchedule(List<CourseSchedule> courseSchedules) {
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        //拿到开营日
-        Date date = monthlyCampConfig.getOpenDate();
+
         Optional<CourseSchedule> first = courseSchedules.stream().findFirst();
         Integer category;
         if (first.isPresent()) {
@@ -474,8 +480,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         } else {
             category = null;
         }
-
-        int month = DateUtils.getMonth(date);
+        //当前学习中的月份
+        int month = monthlyCampConfig.getLearningMonth();
 
         return courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMonth() == month &&
                 courseSchedule.getCategory().equals(category)).collect(Collectors.toList());
@@ -510,14 +516,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     //辅修小课列表 = 进行中辅修小课+本月计划辅修小课
     private List<ImprovementPlan> getMinorListProblem(List<ImprovementPlan> improvementPlans,
-                                                 List<CourseSchedule> courseSchedules,
-                                                 List<Integer> currentMonthProblemIds) {
+                                                      List<CourseSchedule> courseSchedules,
+                                                      List<Integer> currentMonthProblemIds) {
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        //拿到开营日
-        Date date = monthlyCampConfig.getOpenDate();
-
-        int month = DateUtils.getMonth(date);
+        //当前学习中的月份
+        int month = monthlyCampConfig.getLearningMonth();
         // 选出进行中的辅修小课
         List<ImprovementPlan> problems = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
@@ -529,7 +533,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
                         improvementPlan.setType(ImprovementPlan.TYPE_MINOR);
-                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月辅修");
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月辅修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -550,7 +554,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setType(ImprovementPlan.TYPE_MINOR);
-                improvementPlan.setTypeDesc(month +"月辅修");
+                improvementPlan.setTypeDesc(month + "月辅修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -569,10 +573,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                                                       List<Integer> currentMonthProblemIds) {
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        //拿到开营日
-        Date date = monthlyCampConfig.getOpenDate();
-
-        int month = DateUtils.getMonth(date);
+        //当前学习中的月份
+        int month = monthlyCampConfig.getLearningMonth();
         // 选出进行中的主修小课
         List<ImprovementPlan> problems = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
@@ -584,7 +586,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                             .findAny().orElse(null);
                     if (courseSchedule != null) {
                         improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
-                        improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
+                        improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月主修");
                         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                         improvementPlan.setProblem(problem.simple());
                         return true;
@@ -626,8 +628,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> improvementPlanList = Lists.newArrayList();
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        int month = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
-        int year = DateUtils.getYear(monthlyCampConfig.getOpenDate());
+        int month = monthlyCampConfig.getLearningMonth();
+        int openMonth = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
+        int openYear = DateUtils.getYear(monthlyCampConfig.getOpenDate());
+        // 判断是否跨年
+        int year = openMonth >= month ? openYear : openYear - 1;
 
         // 过去几个月的主修课id
         List<CourseSchedule> courseScheduleList = courseSchedules.stream().filter(courseSchedule -> {
@@ -645,7 +650,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (!in) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
-                improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月主修");
+                improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月主修");
                 Problem problem = cacheService.getProblem(problemId).simple();
                 improvementPlan.setProblem(problem.simple());
                 improvementPlan.setProblemId(problem.getId());
