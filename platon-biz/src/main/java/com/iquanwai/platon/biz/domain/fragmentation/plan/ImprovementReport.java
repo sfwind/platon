@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
-import com.iquanwai.platon.biz.po.Recommendation;
 import lombok.Data;
 
 import java.util.List;
@@ -29,6 +28,5 @@ public class ImprovementReport {
     // data
     private Boolean showNextBtn;
     private Boolean doneAllApps;
-    private List<Recommendation> recommendations;
 
 }
