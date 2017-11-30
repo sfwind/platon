@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,12 +36,11 @@ public interface PlanService {
     /**
      * 检查是否能够选训练营小课
      *
-     * @param monthlyCampConfig  训练营配置
      * @param problemId  小课id
      * @param profileId  用户id
      * @return left:是否能够选小课(-1,超过允许进行中的最多门数) right:提示信息
      */
-    Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig);
+    Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
 
     void unlockCampPlan(Integer profileId, Integer planId);
 
@@ -150,7 +148,7 @@ public interface PlanService {
     /**
      * 获取当前正在学习月份的能够学习的训练营小课内容
      */
-    List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig);
+    List<ImprovementPlan> getCurrentCampPlanList(Integer profileId);
 
     Boolean loadChapterCardAccess(Integer profileId, Integer problemId, Integer practicePlanId);
 

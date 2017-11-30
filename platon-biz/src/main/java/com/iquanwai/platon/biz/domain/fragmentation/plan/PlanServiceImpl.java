@@ -355,9 +355,9 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig) {
-        Integer currentMonth = monthlyCampConfig.getLearningMonth();
-        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(learningMonth);
         List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
         Boolean tag = true;
@@ -572,14 +572,14 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig) {
+    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
         List<ImprovementPlan> plans = Lists.newArrayList();
-        Integer currentMonth = monthlyCampConfig.getLearningMonth();
-        if (currentMonth == null) {
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+        if (learningMonth == null) {
             return plans;
         }
 
-        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
+        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(learningMonth);
         List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
         for (Integer problemId : problemIds) {
             ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
@@ -720,9 +720,7 @@ public class PlanServiceImpl implements PlanService {
         List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
         for (MonthlyCampSchedule schedule : schedules) {
             Integer problemId = schedule.getProblemId();
-            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId,
-                    monthlyCampConfig.getOpenDate(),
-                    monthlyCampConfig.getCloseDate());
+            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), monthlyCampConfig.getCloseDate());
 
             // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
             Profile profile = accountService.getProfile(profileId);
