@@ -78,8 +78,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .map(improvementPlan -> {
                     Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                     improvementPlan.setProblem(problem.simple());
+                    // 如果closeTime = null, 设成今天,保证不出现异常
+                    if (improvementPlan.getCloseTime() == null) {
+                        improvementPlan.setCloseTime(new Date());
+                    }
                     return improvementPlan;
-                })
+                }).sorted(((o1, o2) -> o1.getCloseTime().before(o2.getCloseTime()) ? 1 : -1))
                 .collect(Collectors.toList());
         schedulePlan.setCompleteProblem(completeProblem);
 
@@ -110,9 +114,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .map(CourseSchedule::getProblemId).collect(Collectors.toList());
 
         // 本月是否有辅修课
-        if(CollectionUtils.isEmpty(currentMonthMinorProblemIds)){
+        if (CollectionUtils.isEmpty(currentMonthMinorProblemIds)) {
             schedulePlan.setMinorSelected(false);
-        }else{
+        } else {
             schedulePlan.setMinorSelected(true);
         }
 

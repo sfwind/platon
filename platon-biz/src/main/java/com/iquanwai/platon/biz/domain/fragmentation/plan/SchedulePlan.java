@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Problem;
 import lombok.Data;
 
 import java.util.List;
