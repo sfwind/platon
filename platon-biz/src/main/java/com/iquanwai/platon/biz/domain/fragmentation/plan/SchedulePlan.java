@@ -18,5 +18,6 @@ public class SchedulePlan {
     private String topic; //本月主题
     private int month; //本月
     private String today; //今天日期
+    private boolean minorSelected; // 当月是否选了辅修课
 
 }
