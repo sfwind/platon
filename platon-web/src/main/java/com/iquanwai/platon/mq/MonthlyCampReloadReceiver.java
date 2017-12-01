@@ -19,15 +19,15 @@ public class MonthlyCampReloadReceiver {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public final static String TOPIC = "monthly_camp_configuration_reload";
+    public final static String TOPIC = "purchase_configuration_reload";
 
     @PostConstruct
     public void init() {
         rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
             String message = messageQueue.getMessage().toString();
-            if ("campConfigReload".equals(message)) {
+            if ("PurchaseConfigReload".equals(message)) {
                 cacheService.reloadMonthlyCampConfig();
-                logger.info("小课训练营配置刷新成功");
+                logger.info("支付配置刷新成功");
             }
         });
     }

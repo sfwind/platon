@@ -71,11 +71,11 @@ public class CacheController {
     @RequestMapping("/reload/camp")
     public ResponseEntity<Map<String, Object>> reloadMonthlyCampConfig() {
         try {
-            monthlyCampRabbitMQPublisher.publish("campConfigReload");
+            monthlyCampRabbitMQPublisher.publish("PurchaseConfigReload");
             return WebUtils.success();
         } catch (Exception e) {
             logger.error("reload member", e);
         }
-        return WebUtils.error("reload campConfig");
+        return WebUtils.error("reload config error");
     }
 }

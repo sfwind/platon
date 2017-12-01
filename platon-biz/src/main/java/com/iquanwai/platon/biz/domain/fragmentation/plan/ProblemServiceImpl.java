@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
@@ -31,8 +32,6 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
     private ProblemExtensionDao problemExtensionDao;
     @Autowired
     private ProblemActivityDao problemActivityDao;
@@ -43,9 +42,13 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    @Autowired
     private CardRepository cardRepository;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -68,9 +71,9 @@ public class ProblemServiceImpl implements ProblemService {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Problem problem = cacheService.getProblem(problemId);
         List<Chapter> chapters;
-        if(improvementPlan!=null){
+        if (improvementPlan != null) {
             chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
-        }else{
+        } else {
             chapters = problemScheduleRepository.loadDefaultRoadMap(problemId);
         }
         problem.setChapterList(chapters);
@@ -207,13 +210,13 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public String loadProblemSchedule(Integer problemId) {
-        MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
-        if (schedule != null && schedule.getMonth() != null) {
-            return Integer.toString(schedule.getMonth());
-        } else {
-            return null;
-        }
+    public String loadProblemScheduleMonth(Integer profileId, Integer problemId) {
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+
+        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> problemId.equals(scheduleDefault.getProblemId())).findAny().orElse(null);
+        return courseScheduleDefault != null ? courseScheduleDefault.getMonth() + "" : null;
     }
 
     @Override
@@ -286,12 +289,14 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Integer loadMonthlyCampMonth(Integer problemId) {
-        MonthlyCampSchedule schedule = monthlyCampScheduleDao.loadByProblemId(problemId);
-        if (schedule != null) {
-            return schedule.getMonth();
-        }
-        return null;
+    public Integer loadCoursePlanSchedule(Integer profileId, Integer problemId) {
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> problemId.equals(scheduleDefault.getProblemId())).findAny().orElse(null);
+
+        return courseScheduleDefault != null ? courseScheduleDefault.getMonth() : null;
     }
 
     @Override

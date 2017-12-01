@@ -257,8 +257,7 @@ public class PlanController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
 
-        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId, monthlyCampConfig);
+        Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId);
         if (campChosenCheck.getLeft()) {
             Integer resultPlanId = generatePlanService.forceOpenProblem(loginUser.getId(), problemId, null, null);
             return WebUtils.result(String.valueOf(resultPlanId));
@@ -541,8 +540,7 @@ public class PlanController {
         Assert.notNull(loginUser, "用户不能为空");
         List<PlanDto> currentCampPlans = Lists.newArrayList();
         Integer auditionId = ConfigUtils.getTrialProblemId();
-        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId(), monthlyCampConfig);
+        List<ImprovementPlan> currentCampImprovementPlans = planService.getCurrentCampPlanList(loginUser.getId());
         currentCampImprovementPlans.forEach(item -> {
             PlanDto planDto = new PlanDto();
             planDto.setPlanId(item.getId());
@@ -596,9 +594,8 @@ public class PlanController {
         AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
         List<PlanDto> auditions = Lists.newArrayList();
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
-        if (auditionClassMember != null &&
-                !(riseMember != null &&
-                        (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
+        if (auditionClassMember != null && !(riseMember != null &&
+                (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE))) {
 
             ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream()
                     .filter(plan -> plan.getProblemId().equals(auditionId))
@@ -831,7 +828,7 @@ public class PlanController {
         } else {
             dto.setClassName(auditionClassMember.getClassName());
             // 未开课时也跳到售卖页
-            if(auditionClassMember.getStartDate().after(new Date())){
+            if (auditionClassMember.getStartDate().after(new Date())) {
                 dto.setGoSuccess(true);
             }
         }

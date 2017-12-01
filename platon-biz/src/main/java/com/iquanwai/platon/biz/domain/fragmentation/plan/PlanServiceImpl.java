@@ -3,32 +3,13 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseCourseDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.EssenceCard;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.UserProblemSchedule;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -80,13 +61,11 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
     private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CardRepository cardRepository;
     @Autowired
-    private CourseScheduleDao courseScheduleDao;
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
 
@@ -97,9 +76,9 @@ public class PlanServiceImpl implements PlanService {
     // 精英会员半年版最大选课数
     private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
     // 主修最大进行小课数
-//    private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
+    // private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
     // 辅修最大进行小课数
-//    private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
+    // private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
     // 普通人最大进行小课数
     private static final int MAX_NORMAL_RUNNING_PROBLEM_NUMBER = 3;
 
@@ -295,10 +274,6 @@ public class PlanServiceImpl implements PlanService {
         }
         practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
-//        if(practice.getKnowledge()== null) {
-//            Knowledge knowledge = getKnowledge(practicePlan.getKnowledgeId());
-//            practice.setKnowledge(knowledge);
-//        }
         return practice;
     }
 
@@ -355,13 +330,17 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId, MonthlyCampConfig monthlyCampConfig) {
-        Integer currentMonth = monthlyCampConfig.getLearningMonth();
-        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
-        List<Integer> problemIds = schedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+    public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+        List<Integer> problemIds = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> learningMonth.equals(scheduleDefault.getMonth()))
+                .map(CourseScheduleDefault::getProblemId).collect(Collectors.toList());
 
         Boolean tag = true;
-        String checkStr = "";
+        String checkStr = null;
 
         if (!problemIds.contains(problemId)) {
             tag = false;
@@ -572,15 +551,20 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId, MonthlyCampConfig monthlyCampConfig) {
+    public List<ImprovementPlan> getCurrentCampPlanList(Integer profileId) {
         List<ImprovementPlan> plans = Lists.newArrayList();
-        Integer currentMonth = monthlyCampConfig.getLearningMonth();
-        if (currentMonth == null) {
+
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+        if (learningMonth == null) {
             return plans;
         }
 
-        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadByMonth(currentMonth);
-        List<Integer> problemIds = monthlyCampSchedules.stream().map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+        List<Integer> problemIds = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> learningMonth.equals(scheduleDefault.getMonth()))
+                .map(CourseScheduleDefault::getProblemId).collect(Collectors.toList());
+
         for (Integer problemId : problemIds) {
             ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
             if (improvementPlan != null) {
@@ -713,16 +697,19 @@ public class PlanServiceImpl implements PlanService {
     public void forceOpenCampOrder(String orderId) {
         MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
         Integer profileId = monthlyCampOrder.getProfileId();
-        Integer month = monthlyCampOrder.getMonth();
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        // 售卖训练营支持多门小课
-        List<MonthlyCampSchedule> schedules = monthlyCampScheduleDao.loadByMonth(month);
-        for (MonthlyCampSchedule schedule : schedules) {
-            Integer problemId = schedule.getProblemId();
-            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId,
-                    monthlyCampConfig.getOpenDate(),
-                    monthlyCampConfig.getCloseDate());
+
+        Integer sellingMonth = monthlyCampConfig.getSellingMonth();
+
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+        List<Integer> problemIds = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> sellingMonth.equals(scheduleDefault.getMonth()))
+                .map(CourseScheduleDefault::getProblemId).collect(Collectors.toList());
+
+        for (Integer problemId : problemIds) {
+            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), monthlyCampConfig.getCloseDate());
 
             // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
             Profile profile = accountService.getProfile(profileId);

@@ -294,7 +294,7 @@ public class ProblemController {
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         // 设置当前小课已学习人数
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
-        problem.setMonthlyCampMonth(problemService.loadMonthlyCampMonth(problemId));
+        problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
@@ -315,7 +315,7 @@ public class ProblemController {
 
         if (loginUser.getRiseMember() == 1) {
             // 是会员，才会继续
-            String monthStr = problemService.loadProblemSchedule(problemId);
+            String monthStr = problemService.loadProblemScheduleMonth(loginUser.getId(), problemId);
             if (monthStr != null) {
                 dto.setTogetherClassMonth(monthStr);
             }

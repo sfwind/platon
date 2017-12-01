@@ -693,7 +693,7 @@ public class CertificateServiceImpl implements CertificateService {
         String problemName = null;
 
         Integer category = accountService.loadUserScheduleCategory(profile.getId());
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadDefaultCourseScheduleByCategory(category);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
         CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
         Integer problemId = courseScheduleDefault.getProblemId();
         if (problemId != null) {
