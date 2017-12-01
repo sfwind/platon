@@ -61,8 +61,6 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
     private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CardRepository cardRepository;

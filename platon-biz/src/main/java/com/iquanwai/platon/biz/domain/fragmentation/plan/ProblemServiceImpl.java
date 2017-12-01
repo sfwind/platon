@@ -32,8 +32,6 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
     private ProblemExtensionDao problemExtensionDao;
     @Autowired
     private ProblemActivityDao problemActivityDao;
