@@ -138,6 +138,7 @@ public class IndexController {
             return null;
         }
 
+        // TODO 去掉ABTest时，需要修改
         boolean hasRiseMenuWhiteList = whiteListService.checkRiseMenuWhiteList(loginUser.getId());
         if (hasRiseMenuWhiteList) {
             response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
