@@ -519,6 +519,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
                 .collect(Collectors.summingInt(ImprovementPlan::getCompleteSeries));
 
+        if (completeSeries == 0 || totalSeries == 0) {
+            return 0;
+        }
+
         return completeSeries * 100 / totalSeries;
     }
 
