@@ -24,6 +24,7 @@ import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -741,19 +742,13 @@ public class PlanController {
         Integer auditionId = ConfigUtils.getTrialProblemId();
         AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
 
-        // TODO 特殊逻辑，周四删除
-        if (auditionClassMember != null && auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
-            // 2017-11-26日开课的人都提示特殊信息
-            return WebUtils.error("试听课下周开始，具体信息添加圈外小Y（id:quanwai666）获取");
-        }
-
-
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         Integer planId;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
+            Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
             // 检查是否到了开课时间
-            if (auditionClassMember.getStartDate().compareTo(new Date()) > 0) {
-                return WebUtils.error("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课，请耐心等待");
+            if (startDate.compareTo(new Date()) > 0) {
+                return WebUtils.error(DateUtils.parseDateToFormat8(startDate) + " 统一开课，请耐心等待");
             }
             if (ownedAudition != null) {
                 // 已经拥有试听课
