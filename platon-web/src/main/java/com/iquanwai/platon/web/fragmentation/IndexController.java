@@ -114,6 +114,41 @@ public class IndexController {
 //        return courseView(request, null, false, RISE_VIEW);
     }
 
+    @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
+    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("点击学习页面");
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                // 未关注
+                response.sendRedirect(SUBSCRIBE_URL);
+                return null;
+            }
+        }
+
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+        // TODO 去掉ABTest时，需要修改
+        boolean hasRiseMenuWhiteList = whiteListService.checkRiseMenuWhiteList(loginUser.getId());
+        if (hasRiseMenuWhiteList) {
+            response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
+            return null;
+        } else {
+            response.sendRedirect(INDEX_CAMP_URL);
+            return null;
+        }
+    }
+
     @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
     public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return courseView(request, null, new ModuleShow(), NOTE_VIEW);
