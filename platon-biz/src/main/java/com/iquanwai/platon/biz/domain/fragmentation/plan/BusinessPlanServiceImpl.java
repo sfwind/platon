@@ -496,14 +496,28 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     //计算主修或辅修小课进度
     private int completePercent(List<ImprovementPlan> improvementPlans, List<Integer> currentMonthProblemIds) {
-        int totalSeries = improvementPlans.stream().filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
-                .mapToInt(ImprovementPlan::getCompleteSeries).sum();
+        List<ImprovementPlan> openProblems = improvementPlans.stream()
+                .filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
+                .collect(Collectors.toList());
 
-        int completeSeries = improvementPlans.stream().filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
-                .mapToInt(ImprovementPlan::getCompleteSeries).sum();
-        if (completeSeries == 0) {
-            return 0;
-        }
+        // 已开课的课程id
+        List<Integer> problemIds = openProblems.stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+
+        // 取出还未开课的课程
+        List<Problem> problems = cacheService.getProblems().stream()
+                .filter(problem -> currentMonthProblemIds.contains(problem.getId()))
+                .filter(problem -> !problemIds.contains(problem.getId()))
+                .collect(Collectors.toList());
+
+        // 计算未开课课程的总节数
+        int notOpenTotalSeries = problems.stream().collect(Collectors.summingInt(Problem::getLength));
+        // 计算已开课课程的总节数
+        int openTotalSeries = openProblems.stream().collect(Collectors.summingInt(ImprovementPlan::getTotalSeries));
+        int totalSeries = notOpenTotalSeries + openTotalSeries;
+
+        int completeSeries = improvementPlans.stream()
+                .filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
+                .collect(Collectors.summingInt(ImprovementPlan::getCompleteSeries));
 
         return completeSeries * 100 / totalSeries;
     }
