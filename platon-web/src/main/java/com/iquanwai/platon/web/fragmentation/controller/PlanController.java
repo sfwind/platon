@@ -609,14 +609,12 @@ public class PlanController {
             plan.setProblem(itemProblem.simple());
             plan.setName(itemProblem.getProblem());
             plan.setPic(itemProblem.getPic());
-            plan.setLearnable(auditionClassMember.getStartDate().compareTo(new Date()) <= 0);
+            Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
+            plan.setLearnable(startDate.compareTo(new Date()) <= 0);
             if (!plan.getLearnable()) {
-                plan.setErrMsg("本周日（" + DateUtils.parseDateToFormat8(auditionClassMember.getStartDate()) + "）统一开课\n请耐心等待");
+                plan.setErrMsg(DateUtils.parseDateToFormat8(startDate) + " 统一开课\n请耐心等待");
             }
-            // TODO 特殊逻辑，周四删除
-            if (auditionClassMember.getStartDate().equals(DateUtils.parseStringToDate("2017-11-26"))) {
-                plan.setErrMsg("试听课下周开始，具体信息添加圈外小Y（id:quanwai666）获取");
-            }
+
             if (ownedAudition != null) {
                 // 有试听课,从进行中去掉这个小课
                 runningPlans.removeIf(item -> item.getProblemId().equals(auditionId));
@@ -823,7 +821,9 @@ public class PlanController {
         } else {
             dto.setClassName(auditionClassMember.getClassName());
             // 未开课时也跳到售卖页
-            if (auditionClassMember.getStartDate().after(new Date())) {
+            Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
+
+            if (startDate.after(new Date())) {
                 dto.setGoSuccess(true);
             }
         }
