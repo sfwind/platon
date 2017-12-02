@@ -609,6 +609,7 @@ public class PlanController {
             plan.setProblem(itemProblem.simple());
             plan.setName(itemProblem.getProblem());
             plan.setPic(itemProblem.getPic());
+            // TODO 临时逻辑，开课时间加两天
             Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
             plan.setLearnable(startDate.compareTo(new Date()) <= 0);
             if (!plan.getLearnable()) {
@@ -743,6 +744,7 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         Integer planId;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
+            // TODO 临时逻辑，开课时间加两天
             Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
             // 检查是否到了开课时间
             if (startDate.compareTo(new Date()) > 0) {
@@ -821,6 +823,7 @@ public class PlanController {
         } else {
             dto.setClassName(auditionClassMember.getClassName());
             // 未开课时也跳到售卖页
+            // TODO 临时逻辑，开课时间加两天
             Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
 
             if (startDate.after(new Date())) {
