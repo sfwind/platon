@@ -157,13 +157,6 @@ public class IndexController {
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         logger.info("问题／答案页面,{},{}", request.getRequestURI(), request.getParameter("date"));
-        // TODO: 12月初删除
-        if (request.getRequestURI().endsWith("rise/static/guest/inter/quan/answer")) {
-            if ("2017-11-07".equals(request.getParameter("date"))) {
-                response.sendRedirect(request.getRequestURI() + "?date=2017-11-14");
-                return null;
-            }
-        }
         return courseView(request, null, new ModuleShow(), RISE_VIEW);
     }
 
@@ -239,8 +232,9 @@ public class IndexController {
         return null;
     }
 
-    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
-    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+    @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
+    public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("点击商学院按钮");
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -262,22 +256,6 @@ public class IndexController {
             return null;
         }
 
-        List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
-
-        // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
-        ModuleShow moduleShow = new ModuleShow();
-        Boolean showForum = true;
-        if (ConfigUtils.isForumTest()) {
-            // 论坛处于测试中,在白名单则显示，否则隐藏
-            showForum = whiteListService.isInWhiteList(WhiteList.FORUM, loginUser.getId());
-        }
-        moduleShow.setShowForum(showForum);
-
-        // 是否显示发现tab
-        // 谁不显示：有课程计划表则不显示
-        Boolean showExplore = whiteListService.isShowExploreTab(loginUser.getId(), riseMembers);
-        moduleShow.setShowExplore(showExplore);
-
         if (ConfigUtils.isDevelopment()) {
             //如果不在白名单中,直接403报错
             boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
@@ -286,6 +264,9 @@ public class IndexController {
                 return null;
             }
         }
+
+        List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+        ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
         //点击商学院,非年费用户和小课单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
@@ -326,6 +307,46 @@ public class IndexController {
             }
         }
 
+        return courseView(request, loginUser, moduleShow, RISE_VIEW);
+    }
+
+    @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
+    public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        logger.info("点击训练营按钮");
+
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                // 未关注
+                response.sendRedirect(SUBSCRIBE_URL);
+                return null;
+            }
+        }
+
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+        if (ConfigUtils.isDevelopment()) {
+            //如果不在白名单中,直接403报错
+            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
+            if (!result) {
+                response.sendRedirect(FORBID_URL);
+                return null;
+            }
+        }
+
+        List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+        ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
+
         //点击训练营,非小课训练营用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
             if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
@@ -337,6 +358,61 @@ public class IndexController {
         }
 
         return courseView(request, loginUser, moduleShow, RISE_VIEW);
+    }
+
+    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
+    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
+        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String openid = null;
+        Account account = null;
+        if (accessToken != null) {
+            openid = oAuthService.openId(accessToken);
+            try {
+                account = accountService.getAccount(openid, false);
+                logger.info("account:{}", account);
+            } catch (NotFollowingException e) {
+                // 未关注
+                response.sendRedirect(SUBSCRIBE_URL);
+                return null;
+            }
+        }
+
+        if (!checkAccessToken(request, openid) || account == null) {
+            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+        if (ConfigUtils.isDevelopment()) {
+            //如果不在白名单中,直接403报错
+            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, loginUser.getId());
+            if (!result) {
+                response.sendRedirect(FORBID_URL);
+                return null;
+            }
+        }
+
+        List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+        ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
+
+        return courseView(request, loginUser, moduleShow, RISE_VIEW);
+    }
+
+    private ModuleShow getModuleShow(LoginUser loginUser, List<RiseMember> riseMembers) {
+        // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
+        ModuleShow moduleShow = new ModuleShow();
+        Boolean showForum = true;
+        if (ConfigUtils.isForumTest()) {
+            // 论坛处于测试中,在白名单则显示，否则隐藏
+            showForum = whiteListService.isInWhiteList(WhiteList.FORUM, loginUser.getId());
+        }
+        moduleShow.setShowForum(showForum);
+
+        // 是否显示发现tab
+        // 谁不显示：有课程计划表则不显示
+        Boolean showExplore = whiteListService.isShowExploreTab(loginUser.getId(), riseMembers);
+        moduleShow.setShowExplore(showExplore);
+        return moduleShow;
     }
 
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
