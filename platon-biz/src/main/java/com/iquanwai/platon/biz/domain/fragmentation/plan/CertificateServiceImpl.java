@@ -339,7 +339,8 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     /**
-     * 判断单个用户是否有资格生成全勤券
+     * 判断单个用户是否能够获得全勤券
+     *
      * @param practicePlanId
      */
     @Override
@@ -347,8 +348,8 @@ public class CertificateServiceImpl implements CertificateService {
         int planId;
         int profileId;
         int problemId;
-        List<PracticePlan> practicePlanList = practicePlanDao.loadApplicationById(practicePlanId);
-        if(!CollectionUtils.isEmpty(practicePlanList)) {
+        List<PracticePlan> practicePlanList = practicePlanDao.loadApplicationPracticeById(practicePlanId);
+        if (!CollectionUtils.isEmpty(practicePlanList)) {
             planId = practicePlanList.get(0).getPlanId();
             List<ImprovementPlan> improvementPlans = improvementPlanDao.loadImprovementPlanById(planId);
             if (!CollectionUtils.isEmpty(improvementPlans)) {
@@ -358,34 +359,34 @@ public class CertificateServiceImpl implements CertificateService {
                 if (businessPlanService.getLearningProblemId(profileId) == problemId) {
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
+                    //获得学习内容完成情况列表
                     List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-                    if(practicePlans.size()!=0){
+                    if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
-                                .filter(practicePlan -> PracticePlan.CHALLENGE!=practicePlan.getType())
-                                .filter(practicePlan -> practicePlan.getStatus()==0)
+                                .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
+                                .filter(practicePlan -> practicePlan.getStatus() == 0)
                                 .count();
-                        if((unCompleteNecessaryCountLong.intValue())>0){
+                        if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                             //如果存在没有完成的题目，不不予发送优惠券
                             isGenerate = false;
-                        }
-                        else {
+                        } else {
                             //完成所有练习之后，对应用已完成情况进行复查
                             List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                                    .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType()||PracticePlan.APPLICATION_REVIEW==practicePlan.getType())
+                                    .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
                                     .collect(Collectors.toList());
 
                             List<Integer> applicationIds = applicationPracticePlans.stream()
                                     .map(PracticePlan::getPracticeId)
                                     .map(Integer::parseInt)
                                     .collect(Collectors.toList());
-                            List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds,planId);
-                            Map<Integer,ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
-                                    .collect(Collectors.toMap(ApplicationSubmit::getApplicationId,applicationSubmit -> applicationSubmit));
+                            List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
+                            Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
+                                    .collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
 
-                             //根据planId和practicePlan中的PracticeId来获取应用题完成数据
+                            //根据planId和practicePlan中的PracticeId来获取应用题完成数据
                             Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
                             //Plan中每节都是优质完成应用题的小节数
-                            Long planApplicationCheckLong = seriesSet.stream().filter(series->{
+                            Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
                                 List<Integer> practiceIds = applicationPracticePlans.stream()
                                         .filter(practicePlan -> practicePlan.getSeries().equals(series))
                                         .map(PracticePlan::getPracticeId)
@@ -400,20 +401,20 @@ public class CertificateServiceImpl implements CertificateService {
                                 return seriesApplicationCheckLong.intValue() == 0;//不合格数为0的话，说明当前小节全部完成，参与计数
                             }).count();
 
-                            if(planApplicationCheckLong.intValue()!=seriesSet.size()){
+                            if (planApplicationCheckLong.intValue() != seriesSet.size()) {
                                 isGenerate = false;
                             }
 
                         }
                         //有发送全勤奖的资格
-                        if(isGenerate){
+                        if (isGenerate) {
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year,month,profileId);
+                            RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
 
-                            if(riseClassMember != null){
-                                FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year,month,profileId);
-                                if(existFullAttendanceReward == null){
+                            if (riseClassMember != null) {
+                                FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
+                                if (existFullAttendanceReward == null) {
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
                                     fullAttendanceReward.setClassName(riseClassMember.getClassName());
@@ -423,15 +424,9 @@ public class CertificateServiceImpl implements CertificateService {
                                     fullAttendanceReward.setMonth(month);
                                     fullAttendanceReward.setAmount(199.00);
                                     fullAttendanceRewardDao.insert(fullAttendanceReward);
-                                    sendSingleFullAttendanceCoupon(year,month,profileId);
+                                    sendSingleFullAttendanceCoupon(year, month, profileId);
                                 }
                             }
-                            System.out.println("有资格发送全勤奖");
-                            logger.info("有资格发送全勤奖");
-                        }
-                        else{
-                            System.out.println("没有资格发送全勤奖");
-                            logger.info("没有资格发送全勤奖");
                         }
                     }
                 }
@@ -514,12 +509,13 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 发送该用户对应的全勤优惠券
+     *
      * @param year
      * @param month
      * @param profileId
      */
-    private void sendSingleFullAttendanceCoupon(int year,int month,int profileId){
-        FullAttendanceReward fullAttendanceReward = fullAttendanceRewardDao.loadUnNotifiedByYearMonthProfileId(year,month,profileId);
+    private void sendSingleFullAttendanceCoupon(int year, int month, int profileId) {
+        FullAttendanceReward fullAttendanceReward = fullAttendanceRewardDao.loadUnNotifiedByYearMonthProfileId(year, month, profileId);
         Profile profile = accountService.getProfile(profileId);
 
         // 添加 coupon 数据记录
@@ -812,6 +808,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {

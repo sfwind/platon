@@ -156,7 +156,7 @@ public class PracticePlanDao extends PracticeDBUtil {
      * @param id
      * @return
      */
-    public List<PracticePlan> loadApplicationById(Integer id){
+    public List<PracticePlan> loadApplicationPracticeById(Integer id){
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan  where id = ?";

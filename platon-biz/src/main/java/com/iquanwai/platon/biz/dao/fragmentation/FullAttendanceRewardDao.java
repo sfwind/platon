@@ -64,7 +64,7 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
      */
     public FullAttendanceReward loadUnNotifiedByYearMonthProfileId(Integer year,Integer month,Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from FullAttendanceReward Year = ? AND Month = ? AND ProfileId = ? AND Notified = 0 AND Del = 0";
+        String sql = "select * from FullAttendanceReward  where Year = ? AND Month = ? AND ProfileId = ? AND Notified = 0 AND Del = 0";
         ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
         try {
             return runner.query(sql,h,year,month,profileId);
