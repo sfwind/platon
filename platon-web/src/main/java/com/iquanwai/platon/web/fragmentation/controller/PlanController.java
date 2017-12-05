@@ -101,7 +101,7 @@ public class PlanController {
                 .collect(Collectors.toList());
 
         // 检查是否能选新课
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getId(), problemId);
         if (check.getLeft() < 0) {
             if (check.getLeft() == -1) {
                 return WebUtils.error(202, check.getRight());
@@ -216,7 +216,7 @@ public class PlanController {
             return WebUtils.result(curPlan.getId());
         }
 
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getId(), problemId);
 
         if (check.getLeft() < 0) {
             return WebUtils.error(check.getRight());
