@@ -149,4 +149,24 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+
+    /**
+     * 根据id查找
+     * @param id
+     * @return
+     */
+    public List<PracticePlan> loadApplicationById(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan  where id = ?";
+
+        try {
+            List<PracticePlan> practicePlans = runner.query(sql,h,id);
+            return practicePlans;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Lists.newArrayList();
+    }
 }

@@ -306,4 +306,23 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+
+    /**
+     * 根据id查找ImprovementPlan
+     * @param id
+     * @return
+     */
+    public List<ImprovementPlan> loadImprovementPlanById(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from ImprovementPlan where id = ? and del = 0 ";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+
+        try {
+            return runner.query(sql,h,id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return Lists.newArrayList();
+    }
 }

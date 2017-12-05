@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -51,7 +52,6 @@ public class PracticeController {
     private PictureService pictureService;
     @Autowired
     private PracticeDiscussService practiceDiscussService;
-
     //分页文章数量
     private static final int PAGE_SIZE = 10;
 
@@ -152,6 +152,7 @@ public class PracticeController {
                                                                  @PathVariable("planId") Integer planId,
                                                                  @PathVariable("applicationId") Integer applicationId,
                                                                  @RequestBody SubmitDto submitDto) {
+        System.out.println("请求提交应用题接口");
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
         Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,

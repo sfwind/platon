@@ -20,16 +20,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +62,8 @@ public class CertificateServiceImpl implements CertificateService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -335,6 +336,44 @@ public class CertificateServiceImpl implements CertificateService {
             }
         });
         logger.info("全勤奖优惠券待发人员生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
+    }
+
+    /**
+     * 判断单个用户是否有资格生成全勤券
+     * @param practicePlanId
+     */
+    @Override
+    public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
+        //判断用户是否参加了训练营
+        boolean isCamp = false;
+        int profileId;
+        int problemId;
+
+        List<PracticePlan> practicePlans = practicePlanDao.loadApplicationById(practicePlanId);
+        if(!CollectionUtils.isEmpty(practicePlans)){
+            int planId = practicePlans.get(0).getPlanId();
+            List<ImprovementPlan> improvementPlans = improvementPlanDao.loadImprovementPlanById(planId);
+            if(!CollectionUtils.isEmpty(improvementPlans)){
+                profileId = improvementPlans.get(0).getProfileId();
+                problemId = improvementPlans.get(0).getProblemId();
+                RiseClassMember  riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+                Integer month = riseClassMember.getMonth();
+                MonthlyCampSchedule monthlyCampSchedule = monthlyCampScheduleDao.loadMonthlyScheduleByMonth(month);
+                if(monthlyCampSchedule!=null){
+                    if(problemId == monthlyCampSchedule.getProblemId()){
+                        isCamp = true;
+                    }
+                }
+            }
+        }
+        //如果参加了训练营
+        if(isCamp){
+            //判断是否完成并生成优惠券
+        }
+
+
+
+
     }
 
     @Override
