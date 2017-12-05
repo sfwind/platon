@@ -422,11 +422,12 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.load(Profile.class, profileId);
         if (profile == null) {
             return new ImmutablePair<>(false, "系统错误,请联系小Q");
-        } else {
-            if (phone.equals(profile.getMobileNo())) {
-                return new ImmutablePair<>(false, "该手机号已绑定");
-            }
         }
+//        else {
+//            if (phone.equals(profile.getMobileNo())) {
+//                return new ImmutablePair<>(false, "该手机号已绑定");
+//            }
+//        }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
         smsDto.setType(SMSDto.NORMAL);
