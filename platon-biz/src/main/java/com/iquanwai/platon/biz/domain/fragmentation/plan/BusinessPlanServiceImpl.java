@@ -69,7 +69,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         List<ImprovementPlan> runningProblems = Lists.newArrayList();
         //用户的课程计划
-        List<CourseSchedule> courseSchedules = getPlan(profileId);
+        List<CourseSchedule> courseAllSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        List<CourseSchedule> courseSchedules = courseAllSchedules.stream()
+                .filter(CourseSchedule::getSelected).collect(Collectors.toList());
+
         //用户的本月计划
         List<CourseSchedule> currentMonthCourseSchedules = getCurrentMonthSchedule(courseSchedules);
         //已完成的课程
@@ -78,7 +81,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .map(improvementPlan -> {
                     Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                     improvementPlan.setProblem(problem.simple());
-                    courseSchedules.stream().forEach(courseSchedule -> {
+                    courseAllSchedules.stream().forEach(courseSchedule -> {
                         //已完成课程
                         if(courseSchedule.getProblemId().equals(problem.getId())){
                             String type = courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修":"辅修";
