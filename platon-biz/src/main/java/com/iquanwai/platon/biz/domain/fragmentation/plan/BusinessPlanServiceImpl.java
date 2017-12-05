@@ -468,7 +468,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
                 .filter(scheduleDefault -> ConfigUtils.getLearningMonth().equals(scheduleDefault.getMonth()))
                 .findAny().orElse(null);
-        return courseScheduleDefault == null ? null : courseScheduleDefault.getMonth();
+        return courseScheduleDefault == null ? null : courseScheduleDefault.getProblemId();
     }
 
     // 将 problem 的数据放入 CourseSchedule 之中
