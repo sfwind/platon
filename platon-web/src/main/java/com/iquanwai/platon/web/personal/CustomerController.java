@@ -13,7 +13,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -29,8 +28,8 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +75,6 @@ public class CustomerController {
     private CertificateService certificateService;
     @Autowired
     private CustomerService customerService;
-    @Autowired
-    private QRCodeService qrCodeService;
     @Autowired
     private LoginUserService loginUserService;
 
@@ -137,15 +133,11 @@ public class CustomerController {
                 .function("个人信息")
                 .action("加载个人信息");
         operationLogService.log(operationLog);
-        ProfileDto profileDto = new ProfileDto();
         Profile account = accountService.getProfile(loginUser.getId());
 
-        try {
-            BeanUtils.copyProperties(profileDto, account);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error", e);
-            return WebUtils.error("加载个人信息失败");
-        }
+        ModelMapper modelMapper = new ModelMapper();
+        ProfileDto profileDto = modelMapper.map(account, ProfileDto.class);
+
         // 查询id
         Region city = accountService.loadCityByName(account.getCity());
         Region province = accountService.loadProvinceByName(account.getProvince());
@@ -164,13 +156,8 @@ public class CustomerController {
                 .function("个人信息")
                 .action("提交个人信息");
         operationLogService.log(operationLog);
-        Profile profile = new Profile();
-        try {
-            BeanUtils.copyProperties(profile, profileDto);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error", e);
-            return WebUtils.error("提交个人信息失败");
-        }
+        ModelMapper modelMapper = new ModelMapper();
+        Profile profile = modelMapper.map(profileDto, Profile.class);
         profile.setId(loginUser.getId());
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
@@ -246,13 +233,8 @@ public class CustomerController {
                 .function("证书信息")
                 .action("提交个人信息");
         operationLogService.log(operationLog);
-        Profile profile = new Profile();
-        try {
-            BeanUtils.copyProperties(profile, profileDto);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error", e);
-            return WebUtils.error("提交个人信息失败");
-        }
+        ModelMapper modelMapper = new ModelMapper();
+        Profile profile = modelMapper.map(profileDto, Profile.class);
         profile.setId(loginUser.getId());
         accountService.submitCertificateProfile(profile);
         return WebUtils.success();
