@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -342,8 +343,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return useful2.compareTo(useful1);
     }
 
-    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId,
-                                         List<Integer> choices, Date openDate) {
+    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId, List<Integer> choices, Date openDate) {
         Integer year;
         Integer month;
         if (defaultSchedule.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
@@ -455,6 +455,21 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         });
     }
 
+    /**
+     * 查看当前用户正在学习的小课 id
+     * @param profileId 用户 id
+     * @return 正在学习的小课 id
+     */
+    public Integer getLearningProblemId(Integer profileId) {
+        Assert.notNull(profileId, "用户 Id 不能为空");
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> ConfigUtils.getLearningMonth().equals(scheduleDefault.getMonth()))
+                .findAny().orElse(null);
+        return courseScheduleDefault == null ? null : courseScheduleDefault.getMonth();
+    }
+
     // 将 problem 的数据放入 CourseSchedule 之中
     private CourseSchedule buildProblemData(CourseSchedule courseSchedule, Integer profileId) {
         if (courseSchedule == null || courseSchedule.getProblemId() == null) {
@@ -482,7 +497,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(schedule -> schedule.getMonth() == learningMonth && schedule.getCategory().equals(category))
                 .collect(Collectors.toList());
     }
-
 
     private boolean containsProblemId(List<ImprovementPlan> plans, Integer problemId) {
         return plans.stream().anyMatch(improvementPlan -> {
