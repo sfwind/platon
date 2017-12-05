@@ -169,7 +169,8 @@ public class PracticeServiceImpl implements PracticeService {
             practicePlanDao.complete(practicePlan.getId());
             //TODO:验证是否能够发送优惠券
             System.out.println("验证完成选择题后能否发送优惠券");
-
+            logger.info("验证完成选择题后能否发送优惠券");
+            certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
 
 
         }
@@ -341,6 +342,8 @@ public class PracticeServiceImpl implements PracticeService {
                 practicePlanDao.complete(practicePlan.getId());
                 //TODO:验证是否能够发送优惠券
                 System.out.println("验证完成应用题后能否发送优惠券");
+                logger.info("验证完成应用题后能否发送优惠券");
+                certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
                 Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
                 pointRepo.risePoint(submit.getPlanId(), point);
@@ -933,6 +936,8 @@ public class PracticeServiceImpl implements PracticeService {
         practicePlanDao.complete(practicePlanId);
         //TODO:验证能否发送优惠券
         System.out.println("验证点击完知识点后能否发送优惠券");
+        logger.info("验证点击完知识点后能否发送优惠券");
+        certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
     }
 
     @Override

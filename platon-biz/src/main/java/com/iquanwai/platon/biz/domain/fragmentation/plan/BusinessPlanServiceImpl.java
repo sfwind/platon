@@ -460,6 +460,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
      * @param profileId 用户 id
      * @return 正在学习的小课 id
      */
+    @Override
     public Integer getLearningProblemId(Integer profileId) {
         Assert.notNull(profileId, "用户 Id 不能为空");
         Integer category = accountService.loadUserScheduleCategory(profileId);
