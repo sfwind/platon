@@ -313,6 +313,7 @@ public class CertificateServiceImpl implements CertificateService {
                 }
 
                 if (generateFullAttendanceCoupon) {
+                    logger.info("进入发送优惠券");
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
 
@@ -355,8 +356,6 @@ public class CertificateServiceImpl implements CertificateService {
             if (!CollectionUtils.isEmpty(improvementPlans)) {
                 profileId = improvementPlans.get(0).getProfileId();
                 problemId = improvementPlans.get(0).getProblemId();
-                logger.info("当月计划的课："+businessPlanService.getLearningProblemId(profileId).toString());
-                logger.info("现在的课："+problemId);
                 //判断是否是当前主修的problemId
                 if (businessPlanService.getLearningProblemId(profileId) == problemId) {
                     //判断是否应该发送全勤奖
