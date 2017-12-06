@@ -359,5 +359,12 @@ public class ConfigUtils {
         return getIntValue("learning.month");
     }
 
+    /**
+     * 获取训练营宣传 banner 连接
+     */
+    public static String getCampProblemBanner() {
+        return getValue("camp.problem.banner");
+    }
+
 }
 
