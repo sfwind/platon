@@ -83,8 +83,6 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
-    @Autowired
-    private WhiteListDao whiteListDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -572,6 +570,11 @@ public class AccountServiceImpl implements AccountService {
             return CourseScheduleDefault.CategoryType.NEW_STUDENT;
         }
 
+    }
+
+    @Override
+    public void updateWeixinId(Integer profileId, String weixinId) {
+        profileDao.updateWeixinId(profileId, weixinId);
     }
 }
 

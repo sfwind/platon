@@ -359,6 +359,10 @@ public class ConfigUtils {
         return getIntValue("learning.month");
     }
 
+    public static String getCertificateSaveFolder() {
+        return getValue("certificate.local.save.folder");
+    }
+
     /**
      * 获取训练营宣传 banner 连接
      */
