@@ -307,7 +307,7 @@ public class ProblemServiceImpl implements ProblemService {
         // 训练营 Banner 放第一个
         ExploreBanner campBanner = new ExploreBanner();
         campBanner.setImageUrl(ConfigUtils.getCampProblemBanner());
-        campBanner.setLinkUrl(ConfigUtils.adapterDomainName() + "/pay/camp");
+        campBanner.setLinkUrl(ConfigUtils.domainName() + "/pay/camp");
         banners.add(campBanner);
 
         for (int i = 0; i < bannerArray.size(); i++) {
