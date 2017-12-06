@@ -103,6 +103,47 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return planId;
     }
 
+    private int createPlan(Problem problem, Integer profileId) {
+        Assert.notNull(problem, "problem不能为空");
+        Assert.notNull(profileId, "profileId不能为空");
+        // 查询是否是riseMember
+        Profile profile = accountService.getProfile(profileId);
+        int length = problem.getLength();
+        ImprovementPlan improvementPlan = new ImprovementPlan();
+        improvementPlan.setOpenid(profile.getOpenid());
+        improvementPlan.setProfileId(profileId);
+        improvementPlan.setWarmupComplete(0);
+        improvementPlan.setApplicationComplete(0);
+        improvementPlan.setProblemId(problem.getId());
+        improvementPlan.setPoint(0);
+        // 初始化状态进行中
+        improvementPlan.setStatus(ImprovementPlan.RUNNING);
+        // 总节数
+        improvementPlan.setTotalSeries(length);
+        improvementPlan.setCurrentSeries(1);
+        improvementPlan.setStartDate(new Date());
+        improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
+        improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
+        improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);
+        return improvementPlanDao.insert(improvementPlan);
+    }
+
+    private List<PracticePlan> createIntroduction(Problem problem, Integer planId) {
+        List<PracticePlan> selected = Lists.newArrayList();
+
+        PracticePlan practicePlan = new PracticePlan();
+        practicePlan.setPlanId(planId);
+        practicePlan.setType(PracticePlan.INTRODUCTION);
+        practicePlan.setPracticeId(problem.getId() + "");
+        practicePlan.setSeries(0);
+        practicePlan.setSequence(1);
+        practicePlan.setStatus(0);
+        practicePlan.setUnlocked(true);
+
+        selected.add(practicePlan);
+        return selected;
+    }
+
     private List<PracticePlan> createKnowledge(int planId, List<ProblemSchedule> problemScheduleList) {
         List<PracticePlan> selected = Lists.newArrayList();
 
@@ -127,107 +168,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setStatus(0);
             practicePlan.setSequence(KNOWLEDGE_SEQUENCE);
             practicePlan.setSeries(sequence);
-//            practicePlan.setSummary(false);
             selected.add(practicePlan);
         }
 
         return selected;
     }
 
-    @Override
-    public void sendOpenPlanMsg(String openid, Integer problemId) {
-        Problem problem = cacheService.getProblem(problemId);
-        if (problem == null) {
-            logger.error("problemId {} is invalid", problemId);
-        }
-        Assert.notNull(openid, "openid不能为空");
-        Assert.notNull(problem, "problem不能为空");
-        TemplateMessage templateMessage = new TemplateMessage();
-        templateMessage.setTouser(openid);
-        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setData(data);
-        templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
-        templateMessage.setUrl(ConfigUtils.domainName() + INDEX_URL);
-        Profile profile = accountService.getProfile(openid);
-        String first = "Hi，" + profile.getNickname() + "，你刚才选择了圈外小课：\n";
-        int length = problem.getLength();
-
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
-
-        String startDate = DateUtils.parseDateToStringByCommon(improvementPlan.getStartDate());
-        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.beforeDays(improvementPlan.getCloseDate(), 1));
-
-        data.put("first", new TemplateMessage.Keyword(first));
-        data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
-        data.put("keyword2", new TemplateMessage.Keyword(startDate + "——" + closeDate));
-        data.put("remark", new TemplateMessage.Keyword("\n小tip：该小课共" + length + "节，建议每节至少做1道应用练习题，帮助你内化知识\n" +
-                "\n如有疑问请在下方对话框留言，后台小哥哥会在24小时内回复你~"));
-        templateMessageService.sendMessage(templateMessage);
-    }
-
-    private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
-        Assert.notNull(problem, "problem不能为空");
-        List<PracticePlan> selected = Lists.newArrayList();
-
-        PracticePlan practicePlan = new PracticePlan();
-        practicePlan.setUnlocked(true);
-        practicePlan.setPlanId(planId);
-        practicePlan.setType(PracticePlan.CHALLENGE);
-        practicePlan.setPracticeId(problem.getId() + "");
-        practicePlan.setStatus(0);
-        practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
-        practicePlan.setSeries(0);
-        // practicePlan.setSummary(false);
-        selected.add(practicePlan);
-
-        return selected;
-    }
-
-    private List<PracticePlan> createApplicationPractice(Problem problem, int planId,
-                                                         List<ProblemSchedule> problemScheduleList) {
-        Assert.notNull(problem, "problem不能为空");
-        List<PracticePlan> selectedPractice = Lists.newArrayList();
-
-        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
-            ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
-            Integer knowledgeId = problemSchedule.getKnowledgeId();
-            //该节是否是综合练习
-            boolean review = Knowledge.isReview(knowledgeId);
-//            practicePlan.setSummary(false);
-            int problemId = problemSchedule.getProblemId();
-            List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
-            practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
-            //设置应用练习
-            for (int i = 0; i < practices.size(); i++) {
-                PracticePlan practicePlan = new PracticePlan();
-                //第一节内容自动解锁
-                if (sequence == 1) {
-                    practicePlan.setUnlocked(true);
-                } else {
-                    practicePlan.setUnlocked(false);
-                }
-                practicePlan.setPlanId(planId);
-                if (!review) {
-                    practicePlan.setType(PracticePlan.APPLICATION);
-                } else {
-                    practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
-                }
-                practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
-                practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
-                //设置节序号
-                practicePlan.setSeries(sequence);
-                practicePlan.setStatus(0);
-                practicePlan.setPracticeId(practices.get(i).getId() + "");
-                selectedPractice.add(practicePlan);
-            }
-        }
-
-        return selectedPractice;
-    }
-
-
-    private List<PracticePlan> createWarmupPractice(Integer planId,
-                                                    List<ProblemSchedule> problemScheduleList) {
+    private List<PracticePlan> createWarmupPractice(Integer planId, List<ProblemSchedule> problemScheduleList) {
         List<PracticePlan> selectedPractice = Lists.newArrayList();
 
         //构建选择题
@@ -271,34 +218,93 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selectedPractice;
     }
 
-    private int createPlan(Problem problem, Integer profileId) {
+    private List<PracticePlan> createApplicationPractice(Problem problem, int planId, List<ProblemSchedule> problemScheduleList) {
         Assert.notNull(problem, "problem不能为空");
-        Assert.notNull(profileId, "profileId不能为空");
-        // 查询是否是riseMember
-        Profile profile = accountService.getProfile(profileId);
+        List<PracticePlan> selectedPractice = Lists.newArrayList();
+
+        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
+            ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
+            Integer knowledgeId = problemSchedule.getKnowledgeId();
+            //该节是否是综合练习
+            boolean review = Knowledge.isReview(knowledgeId);
+//            practicePlan.setSummary(false);
+            int problemId = problemSchedule.getProblemId();
+            List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
+            practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
+            //设置应用练习
+            for (int i = 0; i < practices.size(); i++) {
+                PracticePlan practicePlan = new PracticePlan();
+                //第一节内容自动解锁
+                if (sequence == 1) {
+                    practicePlan.setUnlocked(true);
+                } else {
+                    practicePlan.setUnlocked(false);
+                }
+                practicePlan.setPlanId(planId);
+                if (!review) {
+                    practicePlan.setType(PracticePlan.APPLICATION);
+                } else {
+                    practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
+                }
+                practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
+                practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
+                //设置节序号
+                practicePlan.setSeries(sequence);
+                practicePlan.setStatus(0);
+                practicePlan.setPracticeId(practices.get(i).getId() + "");
+                selectedPractice.add(practicePlan);
+            }
+        }
+
+        return selectedPractice;
+    }
+
+    private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
+        List<PracticePlan> selected = Lists.newArrayList();
+
+        PracticePlan practicePlan = new PracticePlan();
+        practicePlan.setPlanId(planId);
+        practicePlan.setType(PracticePlan.CHALLENGE);
+        practicePlan.setPracticeId(problem.getId() + "");
+        practicePlan.setSeries(0);
+        // TODO 是否删除，考虑
+        practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
+        practicePlan.setStatus(0);
+        practicePlan.setUnlocked(true);
+        selected.add(practicePlan);
+
+        return selected;
+    }
+
+    @Override
+    public void sendOpenPlanMsg(String openid, Integer problemId) {
+        Problem problem = cacheService.getProblem(problemId);
+        if (problem == null) {
+            logger.error("problemId {} is invalid", problemId);
+        }
+        Assert.notNull(openid, "openid不能为空");
+        Assert.notNull(problem, "problem不能为空");
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(openid);
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
+        templateMessage.setUrl(ConfigUtils.domainName() + INDEX_URL);
+        Profile profile = accountService.getProfile(openid);
+        String first = "Hi，" + profile.getNickname() + "，你刚才选择了圈外小课：\n";
         int length = problem.getLength();
-        ImprovementPlan improvementPlan = new ImprovementPlan();
-        improvementPlan.setOpenid(profile.getOpenid());
-        improvementPlan.setProfileId(profileId);
-        improvementPlan.setWarmupComplete(0);
-        improvementPlan.setApplicationComplete(0);
-        improvementPlan.setProblemId(problem.getId());
-        improvementPlan.setPoint(0);
-        //初始化状态进行中
-        improvementPlan.setStatus(ImprovementPlan.RUNNING);
-        //初始化时有一把钥匙
-        improvementPlan.setKeycnt(0);
-        //总节数
-        improvementPlan.setTotalSeries(length);
-        improvementPlan.setCurrentSeries(1);
-        improvementPlan.setStartDate(new Date());
-        improvementPlan.setEndDate(null);
 
-        improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
-        improvementPlan.setCloseDate(DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
-        improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);
-        return improvementPlanDao.insert(improvementPlan);
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
 
+        String startDate = DateUtils.parseDateToStringByCommon(improvementPlan.getStartDate());
+        String closeDate = DateUtils.parseDateToStringByCommon(DateUtils.beforeDays(improvementPlan.getCloseDate(), 1));
+
+        data.put("first", new TemplateMessage.Keyword(first));
+        data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
+        data.put("keyword2", new TemplateMessage.Keyword(startDate + "——" + closeDate));
+        data.put("remark", new TemplateMessage.Keyword("\n小tip：该小课共" + length + "节，建议每节至少做1道应用练习题，帮助你内化知识\n" +
+                "\n如有疑问请在下方对话框留言，后台小哥哥会在24小时内回复你~"));
+        templateMessageService.sendMessage(templateMessage);
     }
 
     @Override

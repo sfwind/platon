@@ -9,7 +9,7 @@ import lombok.Data;
 public class PracticePlan {
     private int id;
     private Integer planId; //训练id
-    private Integer type; //题目类型（1-巩固练习，2-巩固练习，11-应用练习，12-应用练习，21-小目标，31-知识理解，32-知识回顾）
+    private Integer type; //题目类型（0-课程介绍 1-巩固练习，2-巩固练习，11-应用练习，12-应用练习，21-小目标，31-知识理解，32-知识回顾）
     private String practiceId; //练习id,多个时用逗号隔开
     private Boolean unlocked; // 是否解锁
     private Integer series; // 节号
@@ -19,6 +19,7 @@ public class PracticePlan {
     @Deprecated
     private Boolean summary; //是否已总结(0-否，1-是) 废弃
 
+    public static final int INTRODUCTION = 0;
     public static final int WARM_UP = 1;
     public static final int WARM_UP_REVIEW = 2;
     public static final int APPLICATION = 11;
