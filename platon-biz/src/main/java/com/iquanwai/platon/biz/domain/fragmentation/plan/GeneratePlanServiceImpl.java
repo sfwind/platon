@@ -146,7 +146,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selected;
     }
 
-    private List<PracticePlan> createKnowledge(int planId, List<ProblemSchedule> problemScheduleList) {
+    private List<PracticePlan> createKnowledge(Integer planId, List<ProblemSchedule> problemScheduleList) {
         List<PracticePlan> selected = Lists.newArrayList();
 
         for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
@@ -180,12 +180,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
             boolean review = Knowledge.isReview(knowledgeId);
-            //第一节内容自动解锁
-            if (sequence == 1) {
-                practicePlan.setUnlocked(true);
-            } else {
-                practicePlan.setUnlocked(false);
-            }
+            practicePlan.setUnlocked(false);
             practicePlan.setPlanId(planId);
             if (!review) {
                 practicePlan.setType(PracticePlan.WARM_UP);
@@ -196,7 +191,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setSeries(sequence);
             practicePlan.setStatus(0);
             practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
-//            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<WarmupPractice> practices = warmupPracticeDao.loadPractice(knowledgeId, problemId);
             //设置巩固练习的id
@@ -223,19 +217,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
             boolean review = Knowledge.isReview(knowledgeId);
-//            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用练习
             for (int i = 0; i < practices.size(); i++) {
                 PracticePlan practicePlan = new PracticePlan();
-                //第一节内容自动解锁
-                if (sequence == 1) {
-                    practicePlan.setUnlocked(true);
-                } else {
-                    practicePlan.setUnlocked(false);
-                }
+                practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 if (!review) {
                     practicePlan.setType(PracticePlan.APPLICATION);
