@@ -98,7 +98,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         // 生成应用练习
         practicePlans.addAll(createApplicationPractice(problem, planId, problemSchedules));
         // 生成小目标
-        // practicePlans.addAll(createChallengePractice(problem, planId));
+        practicePlans.addAll(createChallengePractice(problem, planId));
         // 插入数据库
         practicePlanDao.batchInsert(practicePlans);
 
@@ -152,12 +152,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             PracticePlan practicePlan = new PracticePlan();
             Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
-            //第一节内容自动解锁
-            if (sequence == 1) {
-                practicePlan.setUnlocked(true);
-            } else {
-                practicePlan.setUnlocked(false);
-            }
+            practicePlan.setUnlocked(false);
             boolean review = Knowledge.isReview(knowledgeId);
             if (!review) {
                 practicePlan.setType(PracticePlan.KNOWLEDGE);
@@ -165,7 +160,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
             }
             practicePlan.setPlanId(planId);
-
             practicePlan.setPracticeId(knowledgeId.toString());
             practicePlan.setStatus(0);
             practicePlan.setSequence(KNOWLEDGE_SEQUENCE);
@@ -269,10 +263,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlan.setType(PracticePlan.CHALLENGE);
         practicePlan.setPracticeId(problem.getId() + "");
         practicePlan.setSeries(0);
-        // TODO 是否删除，考虑
-        practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
+        practicePlan.setSequence(2);
         practicePlan.setStatus(0);
-        practicePlan.setUnlocked(true);
+        practicePlan.setUnlocked(false);
         selected.add(practicePlan);
 
         return selected;
