@@ -83,9 +83,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     improvementPlan.setProblem(problem.simple());
                     courseAllSchedules.stream().forEach(courseSchedule -> {
                         //已完成课程
-                        if(courseSchedule.getProblemId().equals(problem.getId())){
-                            String type = courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修":"辅修";
-                            improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月"+type);
+                        if (courseSchedule.getProblemId().equals(problem.getId())) {
+                            String type = courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修" : "辅修";
+                            improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月" + type);
                         }
                     });
                     // 如果closeTime = null, 设成今天,保证不出现异常
@@ -338,6 +338,15 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (auditionClassMember != null && improvementPlan != null) {
                 waitInserts.removeIf(item -> item.getProblemId().equals(trialProblemId));
             }
+
+            List<Integer> planProblemIds = improvementPlanDao.loadAllPlans(profileId).stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+
+            waitInserts.forEach(item -> {
+                // 待插入的记录过滤一遍
+                if (planProblemIds.contains(item.getProblemId())) {
+                    item.setSelected(true);
+                }
+            });
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
         } else {
             logger.error("用户：{}，再次生成课表", profileId);
