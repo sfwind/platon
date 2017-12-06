@@ -313,7 +313,6 @@ public class CertificateServiceImpl implements CertificateService {
                 }
 
                 if (generateFullAttendanceCoupon) {
-                    logger.info("进入发送优惠券");
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
 
