@@ -350,11 +350,16 @@ public class CertificateServiceImpl implements CertificateService {
         int problemId;
         PracticePlan plan = practicePlanDao.load(PracticePlan.class,practicePlanId);
         if (plan!=null) {
+            logger.info("planId不为空");
             planId = plan.getPlanId();
            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class,planId);
             if (improvementPlan!=null) {
+                logger.info("improvementPlan不为空");
+            if (improvementPlan!=null) {
                 profileId = improvementPlan.getProfileId();
                 problemId = improvementPlan.getProblemId();
+                logger.info("当前主修problemId:"+businessPlanService.getLearningProblemId(profileId));
+                logger.info("problemId:"+problemId);
                 //判断是否是当前主修的problemId
                 if (businessPlanService.getLearningProblemId(profileId).equals(problemId)) {
                     //判断是否应该发送全勤奖
@@ -372,6 +377,7 @@ public class CertificateServiceImpl implements CertificateService {
                         }
                         //有发送全勤奖的资格
                         if (isGenerate) {
+                            logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
                             RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
