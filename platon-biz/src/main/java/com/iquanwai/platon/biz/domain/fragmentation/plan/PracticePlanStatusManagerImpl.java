@@ -72,7 +72,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
                 break;
-            // 如果完成的是基础班应用题，解锁进阶应用题和下一节的知识点
+            // 如果完成的是简单应用题，解锁困难应用题和下一节知识点
             case PracticePlan.APPLICATION_BASE:
                 targetPracticePlan = practicePlans.stream()
                         .filter(plan -> plan.getType() == PracticePlan.APPLICATION_UPGRADED && plan.getSeries() == series)
