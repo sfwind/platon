@@ -158,7 +158,6 @@ public class CustomerController {
 
     @RequestMapping(value = "/profile", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitProfile(LoginUser loginUser, @RequestBody ProfileDto profileDto) {
-        System.out.println(profileDto.toString());
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
@@ -173,7 +172,6 @@ public class CustomerController {
             return WebUtils.error("提交个人信息失败");
         }
         profile.setId(loginUser.getId());
-        profile.setId(54343);
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
     }
