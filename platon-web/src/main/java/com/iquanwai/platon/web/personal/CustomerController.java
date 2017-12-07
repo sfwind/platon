@@ -13,7 +13,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -21,6 +20,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.forum.ForumAnswer;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
@@ -29,10 +29,10 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +76,6 @@ public class CustomerController {
     private CertificateService certificateService;
     @Autowired
     private CustomerService customerService;
-    @Autowired
-    private QRCodeService qrCodeService;
     @Autowired
     private LoginUserService loginUserService;
 
@@ -140,19 +137,19 @@ public class CustomerController {
         ProfileDto profileDto = new ProfileDto();
         Profile account = accountService.getProfile(loginUser.getId());
 
-        try {
-            BeanUtils.copyProperties(profileDto, account);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error", e);
-            return WebUtils.error("加载个人信息失败");
-        }
+        BeanUtils.copyProperties(account, profileDto);
         // 查询id
         Region city = accountService.loadCityByName(account.getCity());
         Region province = accountService.loadProvinceByName(account.getProvince());
         profileDto.setCityId(city == null ? null : city.getId());
         profileDto.setProvinceId(province == null ? null : province.getId());
-        profileDto.setBindMobile(!StringUtils.isEmpty(account.getMobileNo()));
+        boolean bindMobile = true;
+        if (StringUtils.isEmpty(account.getMobileNo()) && StringUtils.isEmpty(account.getWeixinId())) {
+            bindMobile = false;
+        }
+        profileDto.setBindMobile(bindMobile);
         profileDto.setPhone(account.getMobileNo());
+        profileDto.setWeixinId(account.getWeixinId());
         return WebUtils.result(profileDto);
     }
 
@@ -165,12 +162,7 @@ public class CustomerController {
                 .action("提交个人信息");
         operationLogService.log(operationLog);
         Profile profile = new Profile();
-        try {
-            BeanUtils.copyProperties(profile, profileDto);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error", e);
-            return WebUtils.error("提交个人信息失败");
-        }
+        BeanUtils.copyProperties(profileDto, profile);
         profile.setId(loginUser.getId());
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
@@ -247,12 +239,7 @@ public class CustomerController {
                 .action("提交个人信息");
         operationLogService.log(operationLog);
         Profile profile = new Profile();
-        try {
-            BeanUtils.copyProperties(profile, profileDto);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("beanUtils copy props error", e);
-            return WebUtils.error("提交个人信息失败");
-        }
+        BeanUtils.copyProperties(profileDto, profile);
         profile.setId(loginUser.getId());
         accountService.submitCertificateProfile(profile);
         return WebUtils.success();
@@ -310,8 +297,8 @@ public class CustomerController {
             if (base64ConvertDto.getType() == null) {
                 base64ConvertDto.setType(0);
             }
-            // TODO 图片下载配置路径，使用之前根据自己电脑情况更改
-            String imagePath = "/Users/xfduan/Downloads/type" + base64ConvertDto.getType() + "/" + base64ConvertDto.getImageName() + ".png";
+            // 本地调用时,需要在localconfig中配置certificate.local.save.folder
+            String imagePath = ConfigUtils.getCertificateSaveFolder() + base64ConvertDto.getType() + "/" + base64ConvertDto.getImageName() + ".png";
             boolean saveSuccess = certificateService.convertCertificateBase64(base64Str, imagePath);
             if (saveSuccess) {
                 return WebUtils.success();
@@ -448,6 +435,19 @@ public class CustomerController {
                 .memo(validCodeDto.getPhone() + ":" + result.getLeft());
         operationLogService.log(operationLog);
         return result.getLeft() ? WebUtils.success() : WebUtils.error(result.getRight());
+    }
+
+    @RequestMapping(value = "/update/weixinId", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> updateWeixinId(LoginUser loginUser, @RequestBody WeixinDto weixinDto) {
+        Assert.notNull(loginUser, "用户不能为空");
+        accountService.updateWeixinId(loginUser.getId(), weixinDto.getWeixinId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("用户信息")
+                .function("个人信息")
+                .action("更新微信id")
+                .memo(weixinDto.getWeixinId());
+        operationLogService.log(operationLog);
+        return WebUtils.success();
     }
 
     @RequestMapping("/forum/mine/questions")

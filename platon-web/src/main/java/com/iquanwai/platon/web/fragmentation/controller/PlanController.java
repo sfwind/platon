@@ -14,7 +14,10 @@ import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.WhiteList;
-import com.iquanwai.platon.biz.util.*;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
@@ -24,7 +27,6 @@ import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +103,7 @@ public class PlanController {
                 .collect(Collectors.toList());
 
         // 检查是否能选新课
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getId(), problemId);
         if (check.getLeft() < 0) {
             if (check.getLeft() == -1) {
                 return WebUtils.error(202, check.getRight());
@@ -216,7 +218,7 @@ public class PlanController {
             return WebUtils.result(curPlan.getId());
         }
 
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans);
+        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getId(), problemId);
 
         if (check.getLeft() < 0) {
             return WebUtils.error(check.getRight());
@@ -609,8 +611,7 @@ public class PlanController {
             plan.setProblem(itemProblem.simple());
             plan.setName(itemProblem.getProblem());
             plan.setPic(itemProblem.getPic());
-            // TODO 临时逻辑，开课时间加两天
-            Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
+            Date startDate = auditionClassMember.getStartDate();
             plan.setLearnable(startDate.compareTo(new Date()) <= 0);
             if (!plan.getLearnable()) {
                 plan.setErrMsg(DateUtils.parseDateToFormat8(startDate) + " 统一开课\n请耐心等待");
@@ -646,6 +647,7 @@ public class PlanController {
         planListDto.setRecommendations(recommends);
         planListDto.setRiseMember(loginUser.getRiseMember());
         planListDto.setAuditions(auditions);
+        planListDto.setCampBanner(ConfigUtils.getCampProblemBanner());
         runningPlans.sort(Comparator.comparing(PlanDto::getStartDate));
         completedPlans.sort(this::sortPlans);
 
@@ -744,8 +746,7 @@ public class PlanController {
         ImprovementPlan ownedAudition = planService.getPlanList(loginUser.getId()).stream().filter(plan -> plan.getProblemId().equals(auditionId)).findFirst().orElse(null);
         Integer planId;
         if (auditionClassMember != null && auditionClassMember.getActive()) {
-            // TODO 临时逻辑，开课时间加两天
-            Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
+            Date startDate = auditionClassMember.getStartDate();
             // 检查是否到了开课时间
             if (startDate.compareTo(new Date()) > 0) {
                 return WebUtils.error(DateUtils.parseDateToFormat8(startDate) + " 统一开课，请耐心等待");
@@ -823,8 +824,7 @@ public class PlanController {
         } else {
             dto.setClassName(auditionClassMember.getClassName());
             // 未开课时也跳到售卖页
-            // TODO 临时逻辑，开课时间加两天
-            Date startDate = new DateTime(auditionClassMember.getStartDate()).plusDays(2).toDate();
+            Date startDate = auditionClassMember.getStartDate();
 
             if (startDate.after(new Date())) {
                 dto.setGoSuccess(true);
