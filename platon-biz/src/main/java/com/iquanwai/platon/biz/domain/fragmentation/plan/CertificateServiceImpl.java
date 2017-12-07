@@ -384,8 +384,10 @@ public class CertificateServiceImpl implements CertificateService {
                             RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
 
                             if (riseClassMember != null) {
+                                logger.info("riseClassMember不为空");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
+                                    logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
                                     fullAttendanceReward.setClassName(riseClassMember.getClassName());
