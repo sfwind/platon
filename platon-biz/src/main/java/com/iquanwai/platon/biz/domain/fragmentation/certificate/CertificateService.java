@@ -45,6 +45,11 @@ public interface CertificateService {
     void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);
 
     /**
+     * 生成单个全勤奖
+     */
+    void generateSingleFullAttendanceCoupon(Integer practicePlanId);
+
+    /**
      * 发送训练营证书通知
      * @param year 开营年份
      * @param month 开营月份

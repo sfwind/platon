@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
@@ -82,6 +83,8 @@ public class PracticeServiceImpl implements PracticeService {
     private UserRoleDao userRoleDao;
     @Autowired
     private CommentEvaluationDao commentEvaluationDao;
+    @Autowired
+    private CertificateService certificateService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -164,6 +167,7 @@ public class PracticeServiceImpl implements PracticeService {
         }
         if (practicePlan.getStatus() == 0) {
             practicePlanDao.complete(practicePlan.getId());
+            certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
         }
         improvementPlanDao.updateWarmupComplete(planId);
         poinManager.risePoint(planId, point);
@@ -331,6 +335,7 @@ public class PracticeServiceImpl implements PracticeService {
                     submit.getApplicationId(), type);
             if (practicePlan != null) {
                 practicePlanDao.complete(practicePlan.getId());
+                certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
                 Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
                 poinManager.risePoint(submit.getPlanId(), point);
@@ -921,6 +926,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public void learnKnowledge(Integer practicePlanId) {
         practicePlanDao.complete(practicePlanId);
+        certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
     }
 
     @Override

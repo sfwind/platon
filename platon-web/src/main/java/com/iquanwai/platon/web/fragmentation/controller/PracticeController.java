@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -51,7 +52,6 @@ public class PracticeController {
     private PictureService pictureService;
     @Autowired
     private PracticeDiscussService practiceDiscussService;
-
     //分页文章数量
     private static final int PAGE_SIZE = 10;
 

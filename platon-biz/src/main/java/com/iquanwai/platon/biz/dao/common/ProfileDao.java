@@ -302,4 +302,16 @@ public class ProfileDao extends DBUtil {
         }
         return false;
     }
+
+    public Boolean updateWeixinId(Integer profileId, String weixinId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile set WeixinId = ? where Id = ?";
+        try {
+            int update = runner.update(updateSql, weixinId, profileId);
+            return update > 0;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return false;
+    }
 }

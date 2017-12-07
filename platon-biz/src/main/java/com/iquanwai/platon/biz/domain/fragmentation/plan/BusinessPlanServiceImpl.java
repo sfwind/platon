@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,9 +84,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     improvementPlan.setProblem(problem.simple());
                     courseAllSchedules.stream().forEach(courseSchedule -> {
                         //已完成课程
-                        if(courseSchedule.getProblemId().equals(problem.getId())){
-                            String type = courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修":"辅修";
-                            improvementPlan.setTypeDesc(courseSchedule.getMonth()+"月"+type);
+                        if (courseSchedule.getProblemId().equals(problem.getId())) {
+                            String type = courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修" : "辅修";
+                            improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月" + type);
                         }
                     });
                     // 如果closeTime = null, 设成今天,保证不出现异常
@@ -338,6 +339,15 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (auditionClassMember != null && improvementPlan != null) {
                 waitInserts.removeIf(item -> item.getProblemId().equals(trialProblemId));
             }
+
+            List<Integer> planProblemIds = improvementPlanDao.loadAllPlans(profileId).stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+
+            waitInserts.forEach(item -> {
+                // 待插入的记录过滤一遍
+                if (planProblemIds.contains(item.getProblemId())) {
+                    item.setSelected(true);
+                }
+            });
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
         } else {
             logger.error("用户：{}，再次生成课表", profileId);
@@ -352,8 +362,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return useful2.compareTo(useful1);
     }
 
-    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId,
-                                         List<Integer> choices, Date openDate) {
+    private CourseSchedule buildSchedule(CourseScheduleDefault defaultSchedule, Integer profileId, List<Integer> choices, Date openDate) {
         Integer year;
         Integer month;
         if (defaultSchedule.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
@@ -465,6 +474,22 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         });
     }
 
+    /**
+     * 查看当前用户正在学习的小课 id
+     * @param profileId 用户 id
+     * @return 正在学习的小课 id
+     */
+    @Override
+    public Integer getLearningProblemId(Integer profileId) {
+        Assert.notNull(profileId, "用户 Id 不能为空");
+        Integer category = accountService.loadUserScheduleCategory(profileId);
+        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
+        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
+                .filter(scheduleDefault -> ConfigUtils.getLearningMonth().equals(scheduleDefault.getMonth()))
+                .findAny().orElse(null);
+        return courseScheduleDefault == null ? null : courseScheduleDefault.getProblemId();
+    }
+
     // 将 problem 的数据放入 CourseSchedule 之中
     private CourseSchedule buildProblemData(CourseSchedule courseSchedule, Integer profileId) {
         if (courseSchedule == null || courseSchedule.getProblemId() == null) {
@@ -492,7 +517,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(schedule -> schedule.getMonth() == learningMonth && schedule.getCategory().equals(category))
                 .collect(Collectors.toList());
     }
-
 
     private boolean containsProblemId(List<ImprovementPlan> plans, Integer problemId) {
         return plans.stream().anyMatch(improvementPlan -> {
