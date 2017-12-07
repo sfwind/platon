@@ -83,4 +83,11 @@ public interface BusinessPlanService {
      * @return 课程表选择题
      */
     List<ScheduleQuestion> loadScheduleQuestions(Integer profileId);
+
+    /**
+     * 获取当前主修小课
+     * @param profileId
+     * @return
+     */
+    Integer getLearningProblemId(Integer profileId);
 }

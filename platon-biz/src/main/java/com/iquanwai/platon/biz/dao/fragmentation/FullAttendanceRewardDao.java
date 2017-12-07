@@ -55,9 +55,28 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    /**
+     * 查询单个用户对应的全勤奖学金
+     * @param year
+     * @param month
+     * @param profileId
+     * @return
+     */
+    public FullAttendanceReward loadUnNotifiedByYearMonthProfileId(Integer year,Integer month,Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from FullAttendanceReward  where Year = ? AND Month = ? AND ProfileId = ? AND Notified = 0 AND Del = 0";
+        ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
+        try {
+            return runner.query(sql,h,year,month,profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return null;
+    }
+
     public FullAttendanceReward loadSingleByProfileId(Integer year, Integer month, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM FullAttendanceReward WHERE ProfileId = ? AND Year = ? AND Month = ? AND Del = 0";
+        String sql = "SELECT * FROM FullAttendanceReward WHERE ProfileId = ? AND Year = ? AND Month = ?  AND Del = 0";
         ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
         try {
             return runner.query(sql, h, profileId, year, month);
@@ -66,6 +85,22 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
         }
         return null;
     }
+
+    public FullAttendanceReward loadFullAttendanceRewardByProfileId(Integer year,Integer month,Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM FullAttendanceReward WHERE ProfileId = ? AND Year = ? AND Month = ? AND Notified = 1 AND Del = 0";
+        ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
+        try {
+            return runner.query(sql, h, profileId, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+
+
+
 
     public int updateNotify(Integer fullAttendanceRewardId, Integer notified) {
         QueryRunner runner = new QueryRunner(getDataSource());
