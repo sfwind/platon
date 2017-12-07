@@ -17,8 +17,9 @@ public class ProfileDto {
     private String province; //省份
     private Integer provinceId; //省份id
     private Boolean isFull; //是否已经填完整
-    private Boolean bindMobile; //是否绑定手机号
+    private Boolean bindMobile; //是否绑定手机号或微信
     private String realName; //真名
     private String address;
     private String phone;
+    private String weixinId;
 }

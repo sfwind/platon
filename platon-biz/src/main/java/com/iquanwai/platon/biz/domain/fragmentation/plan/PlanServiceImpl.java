@@ -306,11 +306,16 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans) {
+    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId) {
         if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-            // 会员已经有两门再学
+            // 会员已经有三门再学
             return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
                     + "门小课。先完成进行中的一门，再选新课哦");
+        }
+
+        Problem problem = cacheService.getProblem(problemId);
+        if(!problem.getPublish()){
+            return new MutablePair<>(-1, "该小课还在开发中，敬请期待");
         }
 
         return new MutablePair<>(1, "");

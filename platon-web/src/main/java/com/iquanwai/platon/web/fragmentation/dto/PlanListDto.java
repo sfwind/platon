@@ -17,4 +17,7 @@ public class PlanListDto {
     private List<Problem> recommendations;
     private List<PlanDto> auditions;
     private Integer riseMember;
+
+    // 训练营宣传 banner
+    private String campBanner;
 }

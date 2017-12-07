@@ -23,9 +23,9 @@ public class Profile {
     private String workingLife; //工作年限
     private String realName; //真名
     private String signature; //签名
-    private Integer point;
-    private Integer isFull;
-    private String riseId;
+    private Integer point; //总积分
+    private Integer isFull; //资料是否填写完毕
+    private String riseId; //riseid
     private Boolean openRise; // 是否打开过rise
     private String unionid;	//只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。详见：获取用户个人信息（UnionID机制）
     private Date expireDate; // 过期时间
@@ -39,6 +39,7 @@ public class Profile {
     private Integer role;//非db字段 用户角色id
     private String address; // 详细地址
     private String workingYear; //参加工作年份
+    private String weixinId; //微信id
 
 
     //默认头像
