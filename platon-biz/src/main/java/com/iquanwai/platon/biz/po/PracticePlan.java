@@ -28,6 +28,10 @@ public class PracticePlan {
     public static final int KNOWLEDGE = 31;
     public static final int KNOWLEDGE_REVIEW = 32;
 
+
+    public static final int APPLICATION_BASE = 13;
+    public static final int APPLICATION_UPGRADED = 14;
+
     public static String APPLICATION_REVIEW_NOTICE = "提升能力和解决问题<br/>需要你的刻意练习<br/>我们推荐你至少完成所有综合练习";
     public static String APPLICATION_NOTICE = "从了解知识到能够运用<br/>还差一个内化的距离<br/>来一个应用练习吧";
 }

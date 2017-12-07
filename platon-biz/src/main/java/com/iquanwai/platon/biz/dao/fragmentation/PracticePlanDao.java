@@ -21,7 +21,7 @@ import java.util.List;
 public class PracticePlanDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void batchInsert(List<PracticePlan> planList){
+    public void batchInsert(List<PracticePlan> planList) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence, Series, Summary) " +
                 "values(?,?,?,?,?,?,?,?,?)";
@@ -41,19 +41,17 @@ public class PracticePlanDao extends PracticeDBUtil {
                 param[i][8] = practicePlan.getSummary();
             }
             runner.batch(sql, param);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public List<PracticePlan> loadPracticePlan(Integer planId){
+    public List<PracticePlan> loadPracticePlan(Integer planId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? Order by Series";
+        String sql = "SELECT * FROM PracticePlan where PlanId=? AND Del = 0 Order by Series";
         try {
-            List<PracticePlan> practicePlans = run.query(sql, h,
-                    planId);
-            return practicePlans;
+            return run.query(sql, h, planId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -61,7 +59,7 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type){
+    public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";
@@ -76,7 +74,7 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public PracticePlan loadChallengePractice(Integer planId){
+    public PracticePlan loadChallengePractice(Integer planId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=?";
@@ -91,22 +89,22 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
-    public void complete(Integer id){
+    public void complete(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update PracticePlan set Status=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
-    public void unlock(Integer id){
+    public void unlock(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update PracticePlan set UnLocked=1 where Id=?";
         try {
             runner.update(sql, id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
@@ -124,27 +122,27 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
     }
 
-    public List<PracticePlan> loadBySeries(Integer planId, Integer series){
+    public List<PracticePlan> loadBySeries(Integer planId, Integer series) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=?";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId, series);
             return practicePlans;
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
     }
 
-    public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId){
+    public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12)";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId);
             return practicePlans;
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
