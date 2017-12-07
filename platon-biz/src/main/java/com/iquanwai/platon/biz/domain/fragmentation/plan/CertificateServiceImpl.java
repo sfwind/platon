@@ -20,16 +20,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +62,8 @@ public class CertificateServiceImpl implements CertificateService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    @Autowired
+    private BusinessPlanService businessPlanService;
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -337,6 +338,66 @@ public class CertificateServiceImpl implements CertificateService {
         logger.info("全勤奖优惠券待发人员生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
     }
 
+    /**
+     * 判断单个用户是否能够获得全勤券
+     *
+     * @param practicePlanId
+     */
+    @Override
+    public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
+        int planId;
+        int profileId;
+        int problemId;
+        PracticePlan plan = practicePlanDao.load(PracticePlan.class,practicePlanId);
+        if (plan!=null) {
+            planId = plan.getPlanId();
+           ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class,planId);
+            if (improvementPlan!=null) {
+                profileId = improvementPlan.getProfileId();
+                problemId = improvementPlan.getProblemId();
+                //判断是否是当前主修的problemId
+                if (businessPlanService.getLearningProblemId(profileId).equals(problemId)) {
+                    //判断是否应该发送全勤奖
+                    boolean isGenerate = true;
+                    //获得学习内容完成情况列表
+                    List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+                    if (practicePlans.size() != 0) {
+                        Long unCompleteNecessaryCountLong = practicePlans.stream()
+                                .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
+                                .filter(practicePlan -> practicePlan.getStatus() == 0)
+                                .count();
+                        if ((unCompleteNecessaryCountLong.intValue()) > 0) {
+                            //如果存在没有完成的题目，不不予发送优惠券
+                            isGenerate = false;
+                        }
+                        //有发送全勤奖的资格
+                        if (isGenerate) {
+                            int year = ConfigUtils.getLearningYear();
+                            int month = ConfigUtils.getLearningMonth();
+                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
+
+                            if (riseClassMember != null) {
+                                FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
+                                if (existFullAttendanceReward == null) {
+                                    FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
+                                    fullAttendanceReward.setProfileId(profileId);
+                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
+                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+                                    fullAttendanceReward.setYear(year);
+                                    fullAttendanceReward.setMonth(month);
+                                    fullAttendanceReward.setAmount(199.00);
+                                    fullAttendanceRewardDao.insert(fullAttendanceReward);
+                                    sendSingleFullAttendanceCoupon(year, month, profileId);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void sendCertificate(Integer year, Integer month) {
         List<RiseCertificate> certificateList = riseCertificateDao.loadUnNotifiedByMonthAndYear(year, month);
@@ -408,6 +469,51 @@ public class CertificateServiceImpl implements CertificateService {
             }
         });
         logger.info("全勤奖消息通知发送完毕，时间：{}", new Date());
+    }
+
+    /**
+     * 发送该用户对应的全勤优惠券
+     *
+     * @param year
+     * @param month
+     * @param profileId
+     */
+    private void sendSingleFullAttendanceCoupon(int year, int month, int profileId) {
+        FullAttendanceReward fullAttendanceReward = fullAttendanceRewardDao.loadUnNotifiedByYearMonthProfileId(year, month, profileId);
+        Profile profile = accountService.getProfile(profileId);
+
+        // 添加 coupon 数据记录
+        int couponInsertResult;
+        Coupon coupon = new Coupon();
+        coupon.setOpenId(profile.getOpenid());
+        coupon.setProfileId(profileId);
+        coupon.setAmount(fullAttendanceReward.getAmount().intValue());
+        coupon.setUsed(0);
+        buildCouponExpireDate(coupon, profile);
+        coupon.setCategory(FULL_ATTENDANCE_COUPON_CATEGORY);
+        coupon.setDescription(FULL_ATTENDANCE_COUPON_DESCRIPTION);
+        couponInsertResult = couponDao.insertCoupon(coupon);
+
+        int notifiedUpdateResult = -1;
+        // 成功插入优惠券更新表中字段值
+        if (couponInsertResult > 0) {
+            notifiedUpdateResult = fullAttendanceRewardDao.updateNotify(fullAttendanceReward.getId(), 1);
+        }
+
+        // 发送模板消息
+        if (notifiedUpdateResult > 0) {
+            TemplateMessage templateMessage = new TemplateMessage();
+            templateMessage.setTemplate_id(ConfigUtils.getAccountChangeMsg());
+            templateMessage.setTouser(profile.getOpenid());
+            Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+            templateMessage.setData(data);
+            data.put("first", new TemplateMessage.Keyword("价值199元的“全勤奖学金”已经放入您的账户！\n"));
+            data.put("keyword1", new TemplateMessage.Keyword(DateUtils.parseDateToFormat6(new Date())));
+            data.put("keyword2", new TemplateMessage.Keyword("奖学金（优惠券）"));
+            data.put("keyword3", new TemplateMessage.Keyword("价值199元"));
+
+            templateMessageService.sendMessage(templateMessage);
+        }
     }
 
     @Override
@@ -666,6 +772,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
