@@ -4,7 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -44,9 +48,9 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
-    private CardRepository cardRepository;
+    private CardManager cardManager;
     @Autowired
-    private ProblemScheduleRepository problemScheduleRepository;
+    private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private AccountService accountService;
 
@@ -72,9 +76,9 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = cacheService.getProblem(problemId);
         List<Chapter> chapters;
         if (improvementPlan != null) {
-            chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+            chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         } else {
-            chapters = problemScheduleRepository.loadDefaultRoadMap(problemId);
+            chapters = problemScheduleManager.loadDefaultRoadMap(problemId);
         }
         problem.setChapterList(chapters);
 
@@ -161,7 +165,7 @@ public class ProblemServiceImpl implements ProblemService {
         Integer problemId = plan.getProblemId();
         // 获取 essenceCard 所有与当前小课相关的数据
         Problem problem = cacheService.getProblem(problemId);
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(planId);
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(planId);
         Integer completeSeries = plan.getCompleteSeries();
         // 目标 essenceList
         List<EssenceCard> cards = Lists.newArrayList();
@@ -171,8 +175,8 @@ public class ProblemServiceImpl implements ProblemService {
             EssenceCard essenceCard = new EssenceCard();
             essenceCard.setProblemId(problemId);
             essenceCard.setChapterId(chapterId);
-            essenceCard.setThumbnail(cardRepository.loadTargetThumbnailByChapterId(chapterId, chapters.size()));
-            essenceCard.setThumbnailLock(cardRepository.loadTargetThumbnailLockByChapterId(chapterId, chapters.size()));
+            essenceCard.setThumbnail(cardManager.loadTargetThumbnailByChapterId(chapterId, chapters.size()));
+            essenceCard.setThumbnailLock(cardManager.loadTargetThumbnailLockByChapterId(chapterId, chapters.size()));
             essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
             if (chapterId == chapters.size()) {
                 essenceCard.setChapter("小课知识清单");
@@ -206,7 +210,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
+        return cardManager.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
     }
 
     @Override

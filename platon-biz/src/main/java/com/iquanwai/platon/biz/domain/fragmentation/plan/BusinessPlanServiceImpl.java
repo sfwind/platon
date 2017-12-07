@@ -5,7 +5,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;

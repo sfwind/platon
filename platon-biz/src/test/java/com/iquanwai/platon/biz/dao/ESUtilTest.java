@@ -3,13 +3,10 @@ package com.iquanwai.platon.biz.dao;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.TestBase;
 import com.iquanwai.platon.biz.dao.forum.ForumQuestionDao;
+import com.iquanwai.platon.biz.domain.forum.elasticsearch.ESManager;
 import com.iquanwai.platon.biz.po.forum.ForumQuestion;
-import com.iquanwai.platon.biz.repository.elasticsearch.ESManager;
-import com.iquanwai.platon.biz.repository.elasticsearch.SearchResult;
-import com.iquanwai.platon.biz.repository.forum.ForumQuestionRepository;
+import com.iquanwai.platon.biz.domain.forum.ForumQuestionRepository;
 import com.iquanwai.platon.biz.util.page.Page;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

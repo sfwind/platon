@@ -1,7 +1,7 @@
 package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;

@@ -1,6 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation;
 
-import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
+import com.iquanwai.platon.biz.domain.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.OperationLog;

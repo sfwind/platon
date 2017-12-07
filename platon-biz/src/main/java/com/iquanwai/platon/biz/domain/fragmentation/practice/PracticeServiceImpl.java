@@ -3,10 +3,10 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
@@ -51,7 +51,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private PointRepo pointRepo;
+    private PointManager poinManager;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
@@ -95,11 +95,11 @@ public class PracticeServiceImpl implements PracticeService {
                 //设置分值
                 WarmupPractice warmupPractice = cacheService.getWarmupPractice(Integer.parseInt(practiceId));
                 if (warmupPractice.getDifficulty() == 1) {
-                    warmupPractice.setScore(PointRepo.EASY_SCORE);
+                    warmupPractice.setScore(PointManager.EASY_SCORE);
                 } else if (warmupPractice.getDifficulty() == 2) {
-                    warmupPractice.setScore(PointRepo.NORMAL_SCORE);
+                    warmupPractice.setScore(PointManager.NORMAL_SCORE);
                 } else if (warmupPractice.getDifficulty() == 3) {
-                    warmupPractice.setScore(PointRepo.HARD_SCORE);
+                    warmupPractice.setScore(PointManager.HARD_SCORE);
                 }
                 warmupPractices.add(warmupPractice);
             }
@@ -139,7 +139,7 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("practice {} is not existed", userAnswer.getId());
                 continue;
             }
-            Pair<Integer, Boolean> ret = pointRepo.warmupScore(practice, userChoice);
+            Pair<Integer, Boolean> ret = poinManager.warmupScore(practice, userChoice);
             Integer score = ret.getLeft();
             Boolean accurate = ret.getRight();
             if (accurate) {
@@ -166,7 +166,7 @@ public class PracticeServiceImpl implements PracticeService {
             practicePlanDao.complete(practicePlan.getId());
         }
         improvementPlanDao.updateWarmupComplete(planId);
-        pointRepo.risePoint(planId, point);
+        poinManager.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
 
@@ -331,9 +331,9 @@ public class PracticeServiceImpl implements PracticeService {
                     submit.getApplicationId(), type);
             if (practicePlan != null) {
                 practicePlanDao.complete(practicePlan.getId());
-                Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
+                Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
-                pointRepo.risePoint(submit.getPlanId(), point);
+                poinManager.risePoint(submit.getPlanId(), point);
                 // 修改status
                 applicationSubmitDao.updatePointStatus(id);
             }
@@ -394,7 +394,7 @@ public class PracticeServiceImpl implements PracticeService {
             if (practicePlan != null) {
                 practicePlanDao.complete(practicePlan.getId());
                 // 加分
-                pointRepo.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
+                poinManager.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
                 // 修改status
                 challengeSubmitDao.updatePointStatus(id);
             }
@@ -476,7 +476,7 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setVotedProfileId(submitProfileId);
             homeworkVote.setDevice(device);
             homeworkVoteDao.vote(homeworkVote);
-            pointRepo.risePoint(planId, ConfigUtils.getVoteScore());
+            poinManager.risePoint(planId, ConfigUtils.getVoteScore());
         } else {
             homeworkVoteDao.reVote(vote.getId());
         }

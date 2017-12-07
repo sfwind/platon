@@ -10,7 +10,7 @@ import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
@@ -70,7 +70,7 @@ public class AccountServiceImpl implements AccountService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
-    private PointRepo pointRepo;
+    private PointManager pointRepo;
     @Autowired
     private ShortMessageService shortMessageService;
     @Autowired

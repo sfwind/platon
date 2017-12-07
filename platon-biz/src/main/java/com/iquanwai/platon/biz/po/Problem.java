@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.po;
 
 import com.alibaba.fastjson.JSON;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
 import lombok.Data;
 
 import java.util.List;

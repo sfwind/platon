@@ -4,8 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.operation.OperationEvaluateService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -55,19 +59,17 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
-    private RiseCourseDao riseCourseDao;
-    @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
     private OperationEvaluateService operationEvaluateService;
     @Autowired
-    private CardRepository cardRepository;
+    private CardManager cardManager;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
-    private ProblemScheduleRepository problemScheduleRepository;
+    private ProblemScheduleManager problemScheduleManager;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -103,7 +105,7 @@ public class PlanServiceImpl implements PlanService {
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
         calcDeadLine(improvementPlan);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         problem.setChapterList(chapters);
         improvementPlan.setProblem(problem);
         // 当前 Problem 是否为限免小课
@@ -594,7 +596,7 @@ public class PlanServiceImpl implements PlanService {
             return false;
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -629,7 +631,7 @@ public class PlanServiceImpl implements PlanService {
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
 
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -653,7 +655,7 @@ public class PlanServiceImpl implements PlanService {
         }
         // 当前章节 和 完成章节相等
         if (isLearningSuccess) {
-            return cardRepository.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId());
+            return cardManager.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId());
         } else {
             return null;
         }

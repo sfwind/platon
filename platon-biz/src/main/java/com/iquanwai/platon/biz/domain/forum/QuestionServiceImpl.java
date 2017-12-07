@@ -15,7 +15,6 @@ import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.po.forum.ForumTag;
 import com.iquanwai.platon.biz.po.forum.QuestionFollow;
 import com.iquanwai.platon.biz.po.forum.QuestionTag;
-import com.iquanwai.platon.biz.repository.forum.ForumQuestionRepository;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;

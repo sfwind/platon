@@ -3,9 +3,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -44,7 +47,7 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private SubjectArticleDao subjectArticleDao;
     @Autowired
-    private ProblemScheduleRepository problemScheduleRepository;
+    private ProblemScheduleManager problemScheduleManager;
 
     @Override
     public ImprovementReport loadUserImprovementReport(ImprovementPlan plan) {
@@ -151,7 +154,7 @@ public class ReportServiceImpl implements ReportService {
             // 已完成，计算分数
             Optional<ApplicationPractice> first = applicationPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
             first.ifPresent(practice -> {
-                Integer point = PointRepoImpl.score.get(practice.getDifficulty());
+                Integer point = PointManagerImpl.score.get(practice.getDifficulty());
                 if (item.getStatus() == 1) {
                     report.setApplicationScore(report.getApplicationScore() + point);
                 }
@@ -175,7 +178,7 @@ public class ReportServiceImpl implements ReportService {
         List<Integer> questionLists = warmupPractices.stream().map(WarmupPractice::getId).collect(Collectors.toList());
         List<WarmupSubmit> warmupSubmit = warmupSubmitDao.getWarmupSubmit(plan.getId(), questionLists);
         // 获得章
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(plan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(plan.getId());
         // 用户提交的小节
         Map<Integer, List<WarmupSubmit>> submitMap = Maps.newHashMap();
         // 总的小节题目
@@ -241,11 +244,11 @@ public class ReportServiceImpl implements ReportService {
                     } else {
                         Integer difficulty = warmupPractice.getDifficulty();
                         if (difficulty == 1) {
-                            score = PointRepo.EASY_SCORE;
+                            score = PointManager.EASY_SCORE;
                         } else if (difficulty == 2) {
-                            score = PointRepo.NORMAL_SCORE;
+                            score = PointManager.NORMAL_SCORE;
                         } else if (difficulty == 3) {
-                            score = PointRepo.HARD_SCORE;
+                            score = PointManager.HARD_SCORE;
                         } else {
                             logger.error("难度系数不正常,{},{}", difficulty, practiceId);
                             score = 0;
