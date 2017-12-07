@@ -314,7 +314,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
      * @return
      */
     public ImprovementPlan loadImprovementPlanById(Integer id){
-       return  super.load(ImprovementPlan.class,id);
+       return  load(ImprovementPlan.class,id);
     }
 
 
