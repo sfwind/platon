@@ -149,14 +149,4 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
-
-
-    /**
-     * 根据id查找
-     * @param id
-     * @return
-     */
-    public PracticePlan loadPracticePlanById(Integer id){
-        return load(PracticePlan.class,id);
-    }
 }

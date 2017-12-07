@@ -306,16 +306,4 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
-
-
-    /**
-     * 根据id查找ImprovementPlan
-     * @param id
-     * @return
-     */
-    public ImprovementPlan loadImprovementPlanById(Integer id){
-       return  load(ImprovementPlan.class,id);
-    }
-
-
 }
