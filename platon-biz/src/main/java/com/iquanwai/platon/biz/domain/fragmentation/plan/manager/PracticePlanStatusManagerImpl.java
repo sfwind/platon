@@ -7,10 +7,12 @@ import com.iquanwai.platon.biz.po.PracticePlan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -21,6 +23,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     private ImprovementPlanDao improvementPlanDao;
 
     // 根据 PlanId 完成 PracticePlan
+    @Override
     public void completePracticePlan(Integer profileId, Integer practicePlanId) {
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
@@ -92,25 +95,33 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
         }
     }
 
-    public boolean calculateSectionUnlocked(Integer planId, Integer series) {
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-        return practicePlans.stream()
+    @Override
+    public int calculateSectionStatus(List<PracticePlan> practicePlans, Integer series) {
+
+        boolean unlocked = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
                 .map(PracticePlan::getUnlocked)
                 .reduce((lock1, lock2) -> lock1 && lock2).orElse(false);
-    }
-
-    public boolean calculateSectionStatus(Integer planId, Integer series) {
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-        return practicePlans.stream()
+        boolean complete = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
+                .filter(plan -> plan.getType() != PracticePlan.APPLICATION_UPGRADED)
                 .map(PracticePlan::getStatus)
                 .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
+
+        if(!unlocked){
+            return -1;
+        }else {
+            if(complete){
+                return 1;
+            }else{
+                return 0;
+            }
+        }
     }
 
     // 用来做延伸学习、学习报告的解锁状态控制
-    public boolean calculateProblemUnlocked(Integer planId) {
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+    @Override
+    public boolean calculateProblemUnlocked(List<PracticePlan> practicePlans) {
         return practicePlans.stream()
                 .filter(plan -> plan.getType() != PracticePlan.APPLICATION_UPGRADED)
                 .map(PracticePlan::getUnlocked)

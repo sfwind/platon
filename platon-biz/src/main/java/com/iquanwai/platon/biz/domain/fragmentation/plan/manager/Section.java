@@ -17,7 +17,7 @@ public class Section {
     private Integer series; //序号
     private Integer chapter; //第几章
     private Boolean integrated; //是否是综合练习
-
     private String chapterName; //章节名
     private List<Practice> practices = Lists.newArrayList(); //练习
+    private Integer status; //-1锁定,0-未完成,1-已完成
 }

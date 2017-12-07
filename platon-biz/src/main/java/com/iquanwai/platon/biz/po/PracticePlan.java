@@ -20,7 +20,7 @@ public class PracticePlan {
     private Boolean summary; //是否已总结(0-否，1-是) 废弃
 
 
-    public static final int INTRODUCTION = 0; // 课程介绍
+    public static final int INTRODUCTION = 20; // 课程介绍
     public static final int CHALLENGE = 21; // 小目标
 
     public static final int KNOWLEDGE = 31; // 知识理解
