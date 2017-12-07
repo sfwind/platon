@@ -87,12 +87,37 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
                 break;
+            default:
+                break;
         }
     }
 
-    public void unlock(Integer planId) {
-
+    public boolean calculateSectionUnlocked(Integer planId, Integer series) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        return practicePlans.stream()
+                .filter(plan -> series.equals(plan.getSeries()))
+                .map(PracticePlan::getUnlocked)
+                .reduce((lock1, lock2) -> lock1 && lock2).orElse(false);
     }
+
+    public boolean calculateSectionStatus(Integer planId, Integer series) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        return practicePlans.stream()
+                .filter(plan -> series.equals(plan.getSeries()))
+                .map(PracticePlan::getStatus)
+                .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
+    }
+
+    // 用来做延伸学习、学习报告的解锁状态控制
+    public boolean calculateProblemUnlocked(Integer planId) {
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        return practicePlans.stream()
+                .filter(plan -> plan.getType() != PracticePlan.APPLICATION_UPGRADED)
+                .map(PracticePlan::getUnlocked)
+                .reduce((lock1, lock2) -> lock1 && lock2)
+                .orElse(false);
+    }
+
 
 
 }
