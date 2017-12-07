@@ -348,13 +348,13 @@ public class CertificateServiceImpl implements CertificateService {
         int planId;
         int profileId;
         int problemId;
-        List<PracticePlan> practicePlanList = practicePlanDao.loadApplicationPracticeById(practicePlanId);
-        if (!CollectionUtils.isEmpty(practicePlanList)) {
-            planId = practicePlanList.get(0).getPlanId();
-            List<ImprovementPlan> improvementPlans = improvementPlanDao.loadImprovementPlanById(planId);
-            if (!CollectionUtils.isEmpty(improvementPlans)) {
-                profileId = improvementPlans.get(0).getProfileId();
-                problemId = improvementPlans.get(0).getProblemId();
+        PracticePlan plan = practicePlanDao.loadPracticePlanById(practicePlanId);
+        if (plan!=null) {
+            planId = plan.getPlanId();
+           ImprovementPlan improvementPlan = improvementPlanDao.loadImprovementPlanById(planId);
+            if (improvementPlan!=null) {
+                profileId = improvementPlan.getProfileId();
+                problemId = improvementPlan.getProblemId();
                 //判断是否是当前主修的problemId
                 if (businessPlanService.getLearningProblemId(profileId) == problemId) {
                     //判断是否应该发送全勤奖
@@ -410,10 +410,10 @@ public class CertificateServiceImpl implements CertificateService {
                         if (isGenerate) {
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
+                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
 
                             if (riseClassMember != null) {
-                                FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
+                                FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);

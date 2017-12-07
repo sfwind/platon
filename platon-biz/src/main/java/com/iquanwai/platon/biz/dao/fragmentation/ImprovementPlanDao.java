@@ -313,16 +313,9 @@ public class ImprovementPlanDao extends PracticeDBUtil {
      * @param id
      * @return
      */
-    public List<ImprovementPlan> loadImprovementPlanById(Integer id){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ImprovementPlan where id = ? and del = 0 ";
-        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
-
-        try {
-            return runner.query(sql,h,id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
-        }
-        return Lists.newArrayList();
+    public ImprovementPlan loadImprovementPlanById(Integer id){
+       return  super.load(ImprovementPlan.class,id);
     }
+
+
 }
