@@ -70,7 +70,7 @@ public class CardManagerImpl implements CardManager {
     @PostConstruct
     public void init() {
         // 初始化所有背景图的 bufferedImages 缓存
-        if (!ConfigUtils.isDebug()) {
+        if (ConfigUtils.isOpenCache()) {
             JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
             for (int i = 0; i < base64ImageJson.size(); i++) {
                 String url = base64ImageJson.getString(Integer.toString(i + 1));
