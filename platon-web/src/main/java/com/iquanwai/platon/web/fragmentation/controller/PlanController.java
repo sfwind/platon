@@ -72,6 +72,8 @@ public class PlanController {
     private CustomerMessageService customerMessageService;
     @Autowired
     private AuditionService auditionService;
+    @Autowired
+    private StudyService studyService;
 
     /**
      * 检查是否能选课<br/>
@@ -843,5 +845,19 @@ public class PlanController {
         return WebUtils.result(dto);
     }
 
+    @RequestMapping(value = "/load/studyline/{planId}")
+    public ResponseEntity<Map<String, Object>> loadStudyLine(LoginUser loginUser, @PathVariable Integer planId) {
+        Assert.notNull(loginUser, "用户不能为空");
 
+        StudyLine studyLine = studyService.loadStudyLine(planId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("课程学习")
+                .function("打开课程学习")
+                .action("打开课程学习")
+                .memo(planId.toString());
+        operationLogService.log(operationLog);
+
+        return WebUtils.result(studyLine);
+    }
 }

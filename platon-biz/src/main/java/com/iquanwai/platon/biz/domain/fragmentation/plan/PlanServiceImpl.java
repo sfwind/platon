@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
@@ -62,8 +61,6 @@ public class PlanServiceImpl implements PlanService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
-    @Autowired
-    private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CardManager cardManager;
     @Autowired
@@ -323,18 +320,6 @@ public class PlanServiceImpl implements PlanService {
         return new MutablePair<>(1, "");
     }
 
-    private int getProblemType(List<CourseSchedule> courseSchedules, Integer problemId) {
-        int type = 0;
-        CourseSchedule courseScheduleInPlan = courseSchedules.stream()
-                .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(problemId))
-                .findAny().orElse(null);
-
-        if (courseScheduleInPlan != null) {
-            type = courseScheduleInPlan.getType();
-        }
-
-        return type;
-    }
 
     @Override
     public Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId) {
@@ -673,10 +658,8 @@ public class PlanServiceImpl implements PlanService {
                     // 选择该小课
                     buttonStatus = 2;
                 } else {
-                    // 不是会员，显示是否
-                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
-                    // 7 - 下一步 8 - 免费获取 | 加入商学院
-                    buttonStatus = hasTrialAuthority ? 7 : 8;
+                    // 加入商学院
+                    buttonStatus = 1;
                 }
             } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
                 // 小课已开始，去上课
@@ -769,7 +752,8 @@ public class PlanServiceImpl implements PlanService {
             // 是精英会员用户才会有选课上限分析，专业版后期没有继续招募
             RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
             Integer memberTypeId = riseMember.getMemberTypeId();
-            Date startTime3 = riseMember.getAddTime(); // 会员开始时间
+            // 会员开始时间
+            Date startTime3 = riseMember.getAddTime();
             switch (memberTypeId) {
                 case RiseMember.ELITE:
                     //精英版一年，按照加入时间
@@ -789,7 +773,8 @@ public class PlanServiceImpl implements PlanService {
                     if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
                         access = true;
                     } else {
-                        Date startTime4 = riseMember.getAddTime(); // 会员开始时间
+                        // 会员开始时间
+                        Date startTime4 = riseMember.getAddTime();
                         List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
                         Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         if (countLong4.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
