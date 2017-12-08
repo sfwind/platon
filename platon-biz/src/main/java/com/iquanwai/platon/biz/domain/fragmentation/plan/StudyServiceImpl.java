@@ -48,11 +48,22 @@ public class StudyServiceImpl implements StudyService{
             return null;
         }
 
+        boolean close = improvementPlan.getStatus() == ImprovementPlan.CLOSE;
+
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         studyLine.setProblemId(problem.getId());
         studyLine.setProblemName(problem.getProblem());
 
-        List<PracticePlan> preview = practicePlans.stream().filter(practicePlan -> practicePlan.getSeries() == 0).collect(Collectors.toList());
+        List<PracticePlan> preview = practicePlans.stream()
+                .filter(practicePlan -> practicePlan.getSeries() == 0)
+                .map(practicePlan -> {
+                    //设置过期状态
+                    if (close && !practicePlan.getUnlocked()) {
+                        practicePlan.setStatus(-3);
+                    }
+                    return practicePlan;
+                }).collect(Collectors.toList());
+
         studyLine.setPreview(preview);
 
         List<Chapter> chapters = problemScheduleManager.loadRoadMap(planId);
@@ -60,28 +71,42 @@ public class StudyServiceImpl implements StudyService{
             List<Section> sections = chapter.getSections();
             sections.forEach(section -> {
                 int status = practicePlanStatusManager.calculateSectionStatus(practicePlans, section.getSeries());
-                section.setStatus(status);
+                if (close) {
+                    //设置过期状态
+                    section.setStatus(-3);
+                } else {
+                    section.setStatus(status);
+                }
             });
         });
         studyLine.setChapters(chapters);
 
-        studyLine.setReview(buildReviewPractice(practicePlans));
+        studyLine.setReview(buildReviewPractice(practicePlans, close));
 
         return studyLine;
     }
 
-    private List<ReviewPractice> buildReviewPractice(List<PracticePlan> practicePlans){
+    private List<ReviewPractice> buildReviewPractice(List<PracticePlan> practicePlans, boolean close){
         boolean unlocked = practicePlanStatusManager.calculateProblemUnlocked(practicePlans);
+        //设置解锁状态
+        int status = 0;
+        if(close){
+            status = -3;
+        }else{
+            if(!unlocked){
+                status = -1;
+            }
+        }
 
         List<ReviewPractice> reviewPractices = Lists.newArrayList();
         ReviewPractice studyReport = new ReviewPractice();
         studyReport.setType(ReviewPractice.STUDY_REPORT);
-        studyReport.setUnlocked(unlocked);
+        studyReport.setStatus(status);
         reviewPractices.add(studyReport);
 
         ReviewPractice studyExtension = new ReviewPractice();
         studyExtension.setType(ReviewPractice.STUDY_EXTENSION);
-        studyExtension.setUnlocked(unlocked);
+        studyExtension.setStatus(status);
         reviewPractices.add(studyExtension);
 
         return reviewPractices;

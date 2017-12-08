@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class ReviewPractice {
     private int type; //类型
-    private boolean unlocked; //是否解锁
+    private int status; //-3 过期 -1 锁定 0 解锁
 
     public static final int STUDY_REPORT = 1; //学习报告
     public static final int STUDY_EXTENSION = 2; //延伸学习
