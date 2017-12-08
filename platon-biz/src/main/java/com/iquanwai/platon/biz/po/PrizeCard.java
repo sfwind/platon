@@ -11,4 +11,8 @@ public class PrizeCard {
     private Boolean used;
     private Boolean del;
 
+    //礼品卡新增字段（2017/12/08）
+    private Double amount;
+    private String receiverOpenId;
+    private Boolean shared;
 }

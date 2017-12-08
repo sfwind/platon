@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -56,4 +57,47 @@ public class PrizeCardController {
         }
     }
 
+    /**
+     * 获得
+     * @param loginUser
+     * @return
+     */
+    @RequestMapping("/unused/cards")
+    public ResponseEntity<Map<String,Object>> loadUnUsedPrizeCards(LoginUser loginUser){
+        Assert.notNull(loginUser,"登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡片").function("加载未使用礼品卡").action("获得礼品卡");
+        operationLogService.log(operationLog);
+        List<PrizeCard> prizeCards = prizeCardService.loadPrizeCards(loginUser.getId());
+
+        return WebUtils.result(prizeCards);
+    }
+
+    /**
+     *检查卡片是否已经被领取
+     * @param loginUser
+     * @return
+     */
+    @RequestMapping("/card/received/{id}")
+    public ResponseEntity<Map<String,Object>> setReceived(LoginUser loginUser,@PathVariable Integer id){
+
+        Assert.notNull(loginUser,"登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡片").function("更新礼品卡").action("设置礼品卡领取者");
+        operationLogService.log(operationLog);
+        return WebUtils.result(prizeCardService.setReceived(loginUser.getOpenId(),id));
+    }
+
+    /**
+     *
+     * @param loginUser
+     * @param id
+     * @return
+     */
+    @RequestMapping("/card/shared/{id}")
+    public ResponseEntity<Map<String,Object>> setShared(LoginUser loginUser,@PathVariable Integer id){
+        Assert.notNull(loginUser);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡片").function("设置分享").action("设置礼品卡已经分享过");
+        operationLogService.log(operationLog);
+        prizeCardService.setShared(id);
+        return WebUtils.success();
+    }
 }

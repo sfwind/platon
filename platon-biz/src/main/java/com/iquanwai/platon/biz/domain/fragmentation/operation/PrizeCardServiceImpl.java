@@ -61,6 +61,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         }
     }
 
+
     @Override
     public boolean exchangePrizeCard(Integer profileId, Integer prizeCardId) {
         boolean exchangeResult = false;
@@ -86,6 +87,37 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             }
         }
         return exchangeResult;
+    }
+
+    /**
+     * 根据profileId获得尚未使用的礼品卡
+     *
+     * @param profileId
+     * @return
+     */
+    @Override
+    public List<PrizeCard> loadPrizeCards(Integer profileId) {
+        return prizeCardDao.getPrizeCardsByProfileId(profileId);
+    }
+
+    /**
+     * 检查礼品卡是否已经被领取
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Integer setReceived(String openId,Integer id) {
+        return prizeCardDao.setCardReceived(openId,id);
+    }
+
+    /**
+     * 设置礼品卡分享过
+     * @param id
+     */
+    @Override
+    public void setShared(Integer id) {
+        prizeCardDao.setCardShared(id);
     }
 
 }
