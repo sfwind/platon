@@ -350,17 +350,23 @@ public class CertificateServiceImpl implements CertificateService {
         int problemId;
         PracticePlan plan = practicePlanDao.load(PracticePlan.class,practicePlanId);
         if (plan!=null) {
+            logger.info("plan不为空");
             planId = plan.getPlanId();
            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class,planId);
             if (improvementPlan!=null) {
+                logger.info("improvementPlan不为空");
                 profileId = improvementPlan.getProfileId();
                 problemId = improvementPlan.getProblemId();
+                logger.info("当前主修的problemId为："+businessPlanService.getLearningProblemId(profileId));
+                logger.info("您目前的problemId为："+problemId);
                 //判断是否是当前主修的problemId
                 if (businessPlanService.getLearningProblemId(profileId).equals(problemId)) {
+                    logger.info("当前课程是训练营课程");
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
                     //获得学习内容完成情况列表
                     List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+                    logger.info("practiceplans的大小："+practicePlans.size());
                     if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
                                 .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
@@ -372,13 +378,16 @@ public class CertificateServiceImpl implements CertificateService {
                         }
                         //有发送全勤奖的资格
                         if (isGenerate) {
+                            logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
                             RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
 
                             if (riseClassMember != null) {
+                                logger.info("riseClassMember不为空");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
+                                    logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
                                     fullAttendanceReward.setClassName(riseClassMember.getClassName());
