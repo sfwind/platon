@@ -152,7 +152,6 @@ public class PracticeController {
                                                                  @PathVariable("planId") Integer planId,
                                                                  @PathVariable("applicationId") Integer applicationId,
                                                                  @RequestBody SubmitDto submitDto) {
-        System.out.println("请求提交应用题接口");
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
         Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
