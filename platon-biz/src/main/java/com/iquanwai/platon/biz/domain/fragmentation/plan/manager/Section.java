@@ -20,4 +20,7 @@ public class Section {
     private String chapterName; //章节名
     private List<Practice> practices = Lists.newArrayList(); //练习
     private Integer status; //-1锁定,0-未完成,1-已完成
+
+    private Integer type; // 第一个练习的类型
+    private Integer practicePlanId; // 第一个练习的id
 }

@@ -88,6 +88,14 @@ public class StudyServiceImpl implements StudyService {
                 } else {
                     section.setStatus(status);
                 }
+                PracticePlan knowledge = practicePlans.stream().filter(practicePlan ->
+                        practicePlan.getSeries().equals(section.getSection())
+                        && practicePlan.getSequence() == 1).findAny().orElse(null);
+
+                if(knowledge!=null){
+                    section.setType(knowledge.getType());
+                    section.setPracticePlanId(knowledge.getId());
+                }
             });
         });
         studyLine.setChapters(chapters);
@@ -127,8 +135,8 @@ public class StudyServiceImpl implements StudyService {
     private boolean isMajorCourse(Integer problemId, Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         List<CourseScheduleDefault> courseSchedules;
-        if (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
 
             //老学员用老课表
             if (customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE) != null) {
