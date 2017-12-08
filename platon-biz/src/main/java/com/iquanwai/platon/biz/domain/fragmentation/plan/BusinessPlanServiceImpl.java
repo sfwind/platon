@@ -476,6 +476,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     /**
      * 查看当前用户正在学习的小课 id
+     *
      * @param profileId 用户 id
      * @return 正在学习的小课 id
      */
@@ -690,15 +691,17 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             Integer problemId = courseSchedule.getProblemId();
             boolean in = containsProblemId(improvementPlans, problemId);
             if (!in) {
-                ImprovementPlan improvementPlan = new ImprovementPlan();
-                improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
-                improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月主修");
                 Problem problem = cacheService.getProblem(problemId).simple();
-                improvementPlan.setProblem(problem.simple());
-                improvementPlan.setProblemId(problem.getId());
-                improvementPlan.setTotalSeries(problem.getLength());
-                improvementPlan.setCompleteSeries(0);
-                improvementPlanList.add(improvementPlan);
+                if (problem != null && problem.getPublish()) {
+                    ImprovementPlan improvementPlan = new ImprovementPlan();
+                    improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
+                    improvementPlan.setTypeDesc(courseSchedule.getMonth() + "月主修");
+                    improvementPlan.setProblem(problem.simple());
+                    improvementPlan.setProblemId(problem.getId());
+                    improvementPlan.setTotalSeries(problem.getLength());
+                    improvementPlan.setCompleteSeries(0);
+                    improvementPlanList.add(improvementPlan);
+                }
             }
         });
 
