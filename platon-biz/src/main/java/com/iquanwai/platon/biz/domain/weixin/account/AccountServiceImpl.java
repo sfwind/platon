@@ -563,7 +563,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Integer loadUserScheduleCategory(Integer profileId) {
         // 老用户
-        CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.SCHEDULE_LESS);
+        CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE);
         if (status != null) {
             return CourseScheduleDefault.CategoryType.OLD_STUDENT;
         } else {

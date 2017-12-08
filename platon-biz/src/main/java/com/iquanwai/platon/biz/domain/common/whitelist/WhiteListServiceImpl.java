@@ -61,7 +61,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         Boolean isElite = riseMembers.stream().anyMatch(item -> !item.getExpired() &&
                 (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
         if (isElite) {
-            Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
+            Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.OLD_SCHEDULE);
             if (scheduleWhiteList) {
                 // 老会员
                 WhiteList whiteList = whiteListDao.loadWhiteList(WhiteList.SCHEDULE, profileId);
@@ -133,7 +133,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
         if (isElite) {
             // 是否老学员（不用开计划)
-            Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.SCHEDULE_LESS);
+            Boolean scheduleWhiteList = accountService.hasStatusId(profileId, CustomerStatus.OLD_SCHEDULE);
             if (scheduleWhiteList) {
                 // 老会员(但是要开计划，白名单)
                 WhiteList whiteList = whiteListDao.loadWhiteList(WhiteList.SCHEDULE, profileId);

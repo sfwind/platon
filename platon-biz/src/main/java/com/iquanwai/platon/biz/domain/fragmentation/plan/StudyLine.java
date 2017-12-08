@@ -11,10 +11,11 @@ import java.util.List;
  */
 @Data
 public class StudyLine {
-    private List<PracticePlan> preview;
-    private List<Chapter> chapters;
-    private List<ReviewPractice> review;
-    private Integer problemId;
-    private String problemName;
-    private String headPic;
+    private List<PracticePlan> preview; //课前准备
+    private List<Chapter> chapters; //课程章节
+    private List<ReviewPractice> review; //课后复习
+    private Integer problemId;  //课程id
+    private String problemName; //课程名称
+    private String headPic; //课程头图
+    private String problemType; //课程类型 major-主修 minor-辅修
 }
