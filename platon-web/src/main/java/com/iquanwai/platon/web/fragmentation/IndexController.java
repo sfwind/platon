@@ -292,7 +292,7 @@ public class IndexController {
             //
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
             Profile profile = accountService.getProfile(loginUser.getId());
-            Boolean modifyPlanSchedule = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
+            Boolean modifyPlanSchedule = accountService.hasStatusId(loginUser.getId(), CustomerStatus.OLD_SCHEDULE);
 
             // 不是白名单
             if (!modifyPlanSchedule && isElite && (profile.getAddress() == null ||
