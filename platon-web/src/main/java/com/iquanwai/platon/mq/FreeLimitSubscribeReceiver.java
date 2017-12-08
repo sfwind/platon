@@ -42,9 +42,8 @@ public class FreeLimitSubscribeReceiver {
     }
 
     private void sendScanMsg(String openId) {
-        String message = "不好，来迟了一步，洞察力测评都关闭了。\n\n" +
-                "然而，课程是开放滴，和小伙伴们一起升级职场洞察力？戳这里：\n\n" +
-                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/pay/static/audition/success?choose=true'>点击领取试听小课</a>";
+        String message = "欢迎来到圈外同学，如何找到本质问题，不做无用功？戳这里：\n\n" +
+                "\uD83D\uDC49<a href='" + ConfigUtils.domainName() + "/rise/static/plan/view?id=9'>点击查看</a>";
         customerMessageService.sendCustomerMessage(openId, message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
