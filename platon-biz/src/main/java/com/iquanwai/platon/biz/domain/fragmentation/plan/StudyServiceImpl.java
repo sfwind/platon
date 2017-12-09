@@ -1,18 +1,16 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.PracticePlanStatusManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
-import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +34,6 @@ public class StudyServiceImpl implements StudyService {
     private PracticePlanStatusManager practicePlanStatusManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
-    @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
-    @Autowired
-    private CustomerStatusDao customerStatusDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -61,9 +53,7 @@ public class StudyServiceImpl implements StudyService {
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         studyLine.setProblemId(problem.getId());
         studyLine.setProblemName(problem.getProblem());
-
-        boolean major = isMajorCourse(problem.getId(), improvementPlan.getProfileId());
-        studyLine.setProblemType(major ? "major" : "minor");
+        studyLine.setProblemType(problemScheduleManager.getProblemType(problem.getId(), improvementPlan.getProfileId()));
 
         List<PracticePlan> preview = practicePlans.stream()
                 .filter(practicePlan -> practicePlan.getSeries() == 0)
@@ -131,29 +121,4 @@ public class StudyServiceImpl implements StudyService {
         return reviewPractices;
     }
 
-
-    private boolean isMajorCourse(Integer problemId, Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        List<CourseScheduleDefault> courseSchedules;
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-
-            //老学员用老课表
-            if (customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE) != null) {
-                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
-                        CourseScheduleDefault.CategoryType.OLD_STUDENT);
-            } else {
-                //新学员用新课表
-                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
-                        CourseScheduleDefault.CategoryType.NEW_STUDENT);
-            }
-        } else {
-            //非商学院用户,使用新课表
-            courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
-                    CourseScheduleDefault.CategoryType.NEW_STUDENT);
-        }
-
-        return courseSchedules.stream().anyMatch(courseScheduleDefault ->
-                courseScheduleDefault.getProblemId().equals(problemId));
-    }
 }

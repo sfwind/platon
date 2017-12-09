@@ -2,14 +2,11 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan.manager;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +29,12 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    @Autowired
+    private CustomerStatusDao customerStatusDao;
 
     @Override
     public List<Chapter> loadRoadMap(Integer planId) {
@@ -119,5 +122,33 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
         UserProblemSchedule userProblemSchedule = mapper.map(problemSchedule, UserProblemSchedule.class);
         userProblemSchedule.setPlanId(planId);
         return userProblemSchedule;
+    }
+
+    @Override
+    public Integer getProblemType(Integer problemId, Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        List<CourseScheduleDefault> courseSchedules;
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+
+            //老学员用老课表
+            if (customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE) != null) {
+                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
+                        CourseScheduleDefault.CategoryType.OLD_STUDENT);
+            } else {
+                //新学员用新课表
+                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
+                        CourseScheduleDefault.CategoryType.NEW_STUDENT);
+            }
+        } else {
+            //非商学院用户,使用新课表
+            courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
+                    CourseScheduleDefault.CategoryType.NEW_STUDENT);
+        }
+
+        boolean major = courseSchedules.stream().anyMatch(courseScheduleDefault ->
+                courseScheduleDefault.getProblemId().equals(problemId));
+
+        return major ? CourseScheduleDefault.Type.MAJOR : CourseScheduleDefault.Type.MINOR;
     }
 }
