@@ -174,6 +174,14 @@ public class InterlocutionController {
         operationLogService.log(operationLog);
         if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
             // 没有loginUser，即没有关注,创建一个img
+            OperationLog operationLog1 = OperationLog.create()
+                    .openid(loginUser != null ? loginUser.getOpenId() : null)
+                    .module("圈圈问答")
+                    .function("去提问")
+                    .action("创建关注链接")
+                    .memo(date);
+            operationLogService.log(operationLog1);
+
             return WebUtils.result(interlocutionService.goQuestionSubmitPageQr(date));
         } else {
             return WebUtils.success();
