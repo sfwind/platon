@@ -17,5 +17,5 @@ public class StudyLine {
     private Integer problemId;  //课程id
     private String problemName; //课程名称
     private String headPic; //课程头图
-    private String problemType; //课程类型 major-主修 minor-辅修
+    private Integer problemType; //课程类型 1-主修 2-辅修
 }

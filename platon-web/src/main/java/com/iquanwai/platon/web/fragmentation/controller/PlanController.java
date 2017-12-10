@@ -561,7 +561,7 @@ public class PlanController {
 
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(item.getProblemId());
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+//            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
             planDto.setProblem(itemProblem.simple());
             currentCampPlans.add(planDto);
         });
@@ -585,7 +585,7 @@ public class PlanController {
 
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(item.getProblemId());
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+//            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
             plan.setProblem(itemProblem.simple());
 
             if (item.getStatus() == ImprovementPlan.CLOSE) {
@@ -609,7 +609,7 @@ public class PlanController {
             PlanDto plan = new PlanDto();
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(auditionId);
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
+//            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
             plan.setProblem(itemProblem.simple());
             plan.setName(itemProblem.getProblem());
             plan.setPic(itemProblem.getPic());

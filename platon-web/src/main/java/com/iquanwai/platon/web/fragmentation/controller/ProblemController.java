@@ -76,9 +76,9 @@ public class ProblemController {
         List<Problem> problems = problemService.loadProblems();
 
         // 获取每门小课已经选择的人数
-        for (Problem problem : problems) {
-            problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
-        }
+//        for (Problem problem : problems) {
+//            problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
+//        }
 
         //非天使用户去除试用版小课
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
@@ -218,7 +218,7 @@ public class ProblemController {
                         dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                         dto.setName(item.getProblem());
                         dto.setId(item.getId());
-                        dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+//                        dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
                         dto.setAbbreviation(item.getAbbreviation());
                         return dto;
                     })
@@ -266,7 +266,7 @@ public class ProblemController {
                     dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                     dto.setName(item.getProblem());
                     dto.setId(item.getId());
-                    dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+//                    dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
                     dto.setAbbreviation(item.getAbbreviation());
                     return dto;
                 })
@@ -293,7 +293,7 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         // 设置当前小课已学习人数
-        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
+//        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
         RiseCourseDto dto = new RiseCourseDto();

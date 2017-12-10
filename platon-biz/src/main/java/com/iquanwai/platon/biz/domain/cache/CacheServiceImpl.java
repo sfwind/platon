@@ -81,8 +81,12 @@ public class CacheServiceImpl implements CacheService {
             if (ConfigUtils.isHttps()) {
                 if (problem.getAudioId() != null) {
                     Audio audio = audioDao.load(Audio.class, problem.getAudioId());
-                    problem.setAudio(audio.getUrl());
-                    problem.setAudioWords(audio.getWords());
+                    if(audio == null){
+                        logger.info("{} is not exist", problem.getAudioId());
+                    }else{
+                        problem.setAudio(audio.getUrl());
+                        problem.setAudioWords(audio.getWords());
+                    }
                 }
                 problem.setPic(StringUtils.replace(problem.getPic(), "http:", "https:"));
                 problem.setDescPic(StringUtils.replace(problem.getDescPic(), "http:", "https:"));

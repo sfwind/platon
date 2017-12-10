@@ -13,8 +13,15 @@ public interface ProblemScheduleManager {
     List<Chapter> loadRoadMap(Integer planId);
 
     /**
-     * 获取章节地图
+     * 获取默认章节地图
      * @param problemId 小课id
      * */
     List<Chapter> loadDefaultRoadMap(Integer problemId);
+
+    /**
+     * 获取课程类型
+     * @param problemId 小课id
+     * @param profileId 用户id
+     * */
+    Integer getProblemType(Integer problemId, Integer profileId);
 }

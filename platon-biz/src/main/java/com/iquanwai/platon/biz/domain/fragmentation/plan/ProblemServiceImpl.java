@@ -81,6 +81,7 @@ public class ProblemServiceImpl implements ProblemService {
             chapters = problemScheduleManager.loadDefaultRoadMap(problemId);
         }
         problem.setChapterList(chapters);
+        problem.setProblemType(problemScheduleManager.getProblemType(problemId, profileId));
 
         return problem;
     }
@@ -286,7 +287,6 @@ public class ProblemServiceImpl implements ProblemService {
         for (Integer problemId : problemIds) {
             Problem problem = cacheService.getProblem(problemId);
             Assert.notNull(problem, "配置的小课不能为空");
-            problem.setChosenPersonCount(loadChosenPersonCount(problemId));
             problems.add(problem);
         }
         return problems;
@@ -308,7 +308,7 @@ public class ProblemServiceImpl implements ProblemService {
         JSONArray bannerArray = JSONArray.parseArray(ConfigUtils.getExploreBannerString());
         List<ExploreBanner> banners = Lists.newArrayList();
 
-        // 训练营 Banner 放第一个
+        // 发现页banner 训练营广告放第一个
         ExploreBanner campBanner = new ExploreBanner();
         campBanner.setImageUrl(ConfigUtils.getCampProblemBanner());
         campBanner.setLinkUrl(ConfigUtils.domainName() + "/pay/camp");
