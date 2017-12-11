@@ -215,4 +215,10 @@ public interface AccountService {
      * </ul>
      */
     Integer loadUserScheduleCategory(Integer profileId);
+
+    /**
+     * 更新微信id
+     *
+     * */
+    void updateWeixinId(Integer profileId, String weixinId);
 }
