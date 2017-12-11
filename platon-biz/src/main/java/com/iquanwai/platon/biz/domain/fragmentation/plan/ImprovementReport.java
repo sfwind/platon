@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 public class ImprovementReport {
     private String problem; //小课
+    private Integer problemId; // 小课 Id
     private Integer planId;
     private String pic; // 头图
     private Integer totalScore; //小课总得分

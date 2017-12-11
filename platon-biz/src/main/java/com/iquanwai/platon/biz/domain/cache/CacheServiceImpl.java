@@ -64,7 +64,7 @@ public class CacheServiceImpl implements CacheService {
     @PostConstruct
     public void init() {
         // 缓存知识点,本地不缓存
-        if (!ConfigUtils.isDebug()) {
+        if (ConfigUtils.isOpenCache()) {
             List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
             knowledgeList.forEach(this::initKnowledge);
         }
@@ -96,7 +96,7 @@ public class CacheServiceImpl implements CacheService {
         logger.info("problem init complete");
 
         // 缓存热身训练,本地不缓存
-        if (!ConfigUtils.isDebug()) {
+        if (ConfigUtils.isOpenCache()) {
             List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
             warmupPractices.forEach(warmupPractice -> {
                 warmupPractice.setChoiceList(Lists.newArrayList());

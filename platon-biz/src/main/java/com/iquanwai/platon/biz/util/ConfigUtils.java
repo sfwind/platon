@@ -90,6 +90,10 @@ public class ConfigUtils {
         return getBooleanValue("debug");
     }
 
+    public static boolean isOpenCache() {
+        return getBooleanValue("open.local.cache");
+    }
+
     public static boolean isFrontDebug() {
         return getBooleanValue("front.debug");
     }

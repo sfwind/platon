@@ -57,6 +57,7 @@ public class ReportServiceImpl implements ReportService {
         report.setPlanId(plan.getId());
         // problem
         report.setProblem(problem.getProblem());
+        report.setProblemId(problem.getId());
         report.setPic(problem.getPic());
         // 用时
         Integer studyDays;
