@@ -62,6 +62,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
+    private ProblemScheduleDao problemScheduleDao;
+    @Autowired
     private CardManager cardManager;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
@@ -313,7 +315,7 @@ public class PlanServiceImpl implements PlanService {
         }
 
         Problem problem = cacheService.getProblem(problemId);
-        if(!problem.getPublish()){
+        if (!problem.getPublish()) {
             return new MutablePair<>(-1, "该小课还在开发中，敬请期待");
         }
 
@@ -789,4 +791,59 @@ public class PlanServiceImpl implements PlanService {
         }
         return new MutablePair<>(access, message);
     }
+
+    @Override
+    public List<PlanSeriesStatus> loadPlanSeries(Integer practicePlanId) {
+        List<PlanSeriesStatus> planSeriesStatuses = Lists.newArrayList();
+
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        Integer planId = practicePlan.getPlanId();
+        Integer series = practicePlan.getSeries();
+
+        List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(planId, series);
+        for (PracticePlan plan : practicePlans) {
+            PlanSeriesStatus seriesStatus = new PlanSeriesStatus();
+            seriesStatus.setPracticePlanId(plan.getId());
+            seriesStatus.setPlanId(plan.getPlanId());
+            seriesStatus.setPracticeId(plan.getPracticeId());
+            seriesStatus.setSeries(plan.getSeries());
+            seriesStatus.setSequence(plan.getSequence());
+            seriesStatus.setType(plan.getType());
+            seriesStatus.setUnlock(plan.getUnlocked());
+            seriesStatus.setComplete(plan.getStatus() == 1);
+            planSeriesStatuses.add(seriesStatus);
+        }
+
+        return planSeriesStatuses;
+    }
+
+    @Override
+    public String loadPlanSeriesTitle(Integer practicePlanId) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (practicePlan == null) {
+            return null;
+        }
+
+        Integer planId = practicePlan.getPlanId();
+        Integer series = practicePlan.getSeries();
+        List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(planId, series);
+        PracticePlan planWithKnowledgeId = practicePlans.stream().filter(item -> item.getKnowledgeId() != null)
+                .findAny().orElse(null);
+
+        if (planWithKnowledgeId == null) {
+            return null;
+        }
+
+        int knowledgeId = planWithKnowledgeId.getKnowledgeId();
+        ProblemSchedule schedule = problemScheduleDao.loadByKnowledgeId(knowledgeId);
+        StringBuilder titleBuilder = new StringBuilder();
+        titleBuilder.append(schedule.getChapter())
+                .append(".")
+                .append(schedule.getSection())
+                .append(" ");
+        String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
+        titleBuilder.append(knowledgeStr);
+        return titleBuilder.toString();
+    }
+
 }

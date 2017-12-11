@@ -125,10 +125,9 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadBySeries(Integer planId, Integer series) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and Series=?";
+        String sql = "SELECT * FROM PracticePlan WHERE PlanId = ? and Series = ? AND Del = 0 ORDER BY Sequence ASC";
         try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planId, series);
-            return practicePlans;
+            return runner.query(sql, h, planId, series);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -147,4 +146,5 @@ public class PracticePlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
 }

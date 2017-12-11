@@ -182,4 +182,16 @@ public interface PlanService {
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
+
+    /**
+     * 根据 PracticePlanId 获取该 Series 中各个题型题目的完成情况
+     */
+    List<PlanSeriesStatus> loadPlanSeries(Integer practicePlanId);
+
+    /**
+     * 获取该小节对应知识点的名称标题
+     * @param practicePlanId
+     * @return
+     */
+    String loadPlanSeriesTitle(Integer practicePlanId);
 }

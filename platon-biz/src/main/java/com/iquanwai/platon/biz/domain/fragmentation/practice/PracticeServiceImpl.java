@@ -267,8 +267,10 @@ public class PracticeServiceImpl implements PracticeService {
             applicationPractice.setSubmitId(submit.getId());
             applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
             applicationPractice.setFeedback(submit.getFeedback());
+
+            planId = submit.getPlanId();
         }
-        applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
+        applicationPractice.setPlanId(planId);
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
@@ -297,6 +299,13 @@ public class PracticeServiceImpl implements PracticeService {
                 }
             }
         }
+
+        // 检查该道题是否是简单应用题还是复杂应用题
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        PracticePlan targetPracticePlan = practicePlans.stream()
+                .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
+        applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
+
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
 

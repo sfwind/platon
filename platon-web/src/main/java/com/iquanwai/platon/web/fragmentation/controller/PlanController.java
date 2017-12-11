@@ -21,6 +21,7 @@ import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
+import com.iquanwai.platon.web.fragmentation.dto.SectionProgressDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.AuditionChooseDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -860,4 +861,22 @@ public class PlanController {
 
         return WebUtils.result(studyLine);
     }
+
+    @RequestMapping(value = "/load/series/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadPlanSeriesStatus(LoginUser loginUser, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        List<PlanSeriesStatus> planSeriesStatuses = planService.loadPlanSeries(practicePlanId);
+        String planSeriesTitle = planService.loadPlanSeriesTitle(practicePlanId);
+
+        if (planSeriesStatuses.size() == 0) {
+            return WebUtils.error("小节数据完成情况为空");
+        } else {
+            SectionProgressDto sectionProgressDto = new SectionProgressDto();
+            sectionProgressDto.setPlanSeriesTitle(planSeriesTitle);
+            sectionProgressDto.setPlanSeriesStatuses(planSeriesStatuses);
+            return WebUtils.result(sectionProgressDto);
+        }
+    }
+
 }
+
