@@ -60,7 +60,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             // 如果完成的是小目标，
             case PracticePlan.CHALLENGE:
                 targetPracticePlan = practicePlans.stream()
-                        .filter(plan -> plan.getType() == PracticePlan.KNOWLEDGE && plan.getSeries() == 0)
+                        .filter(plan -> plan.getType() == PracticePlan.KNOWLEDGE && plan.getSeries() == 1)
                         .findAny().orElse(null);
                 if (targetPracticePlan != null) {
                     practicePlanDao.unlock(targetPracticePlan.getId());

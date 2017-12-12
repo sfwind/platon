@@ -415,7 +415,6 @@ public class PracticeServiceImpl implements PracticeService {
                 // 修改status
                 challengeSubmitDao.updatePointStatus(id);
             }
-
         }
 
         return result;
