@@ -2,7 +2,6 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
-import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -771,7 +770,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
                                                               @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
-        practiceService.learnKnowledge(practicePlanId);
+        practiceService.learnKnowledge(loginUser.getId(), practicePlanId);
         planService.checkPlanComplete(practicePlanId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

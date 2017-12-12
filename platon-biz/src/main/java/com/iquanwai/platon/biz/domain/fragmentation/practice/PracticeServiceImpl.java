@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.PracticePlanStatusManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -85,6 +86,8 @@ public class PracticeServiceImpl implements PracticeService {
     private CommentEvaluationDao commentEvaluationDao;
     @Autowired
     private CertificateService certificateService;
+    @Autowired
+    private PracticePlanStatusManager practicePlanStatusManager;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -166,7 +169,8 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmitDao.insert(warmupSubmit);
         }
         if (practicePlan.getStatus() == 0) {
-            practicePlanDao.complete(practicePlan.getId());
+            // practicePlanDao.complete(practicePlan.getId());
+            practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
             certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
         }
         improvementPlanDao.updateWarmupComplete(planId);
@@ -340,10 +344,9 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
             }
             logger.info("应用练习加分:{}", id);
-            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
-                    submit.getApplicationId(), type);
+            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(), submit.getApplicationId(), type);
             if (practicePlan != null) {
-                practicePlanDao.complete(practicePlan.getId());
+                practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
                 certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
                 Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
@@ -933,8 +936,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public void learnKnowledge(Integer practicePlanId) {
-        practicePlanDao.complete(practicePlanId);
+    public void learnKnowledge(Integer profileId, Integer practicePlanId) {
+        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
         certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
     }
 

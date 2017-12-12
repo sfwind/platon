@@ -89,17 +89,18 @@ public class PlanServiceImpl implements PlanService {
         Integer series = improvementPlan.getCompleteSeries();
         Integer planId = improvementPlan.getId();
 
-        //已过期不能解锁
-        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
-            improvementPlan.setLockedStatus(-3);
-        } else {
-            //解锁下一组
-            List<PracticePlan> nextSeriesPracticePlans = practicePlanDao.loadBySeries(planId,
-                    series + 1);
-            if (CollectionUtils.isNotEmpty(nextSeriesPracticePlans)) {
-                unlock(nextSeriesPracticePlans, planId);
-            }
-        }
+        // TODO 解锁题目
+        // //已过期不能解锁
+        // if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
+        //     improvementPlan.setLockedStatus(-3);
+        // } else {
+        //     //解锁下一组
+        //     List<PracticePlan> nextSeriesPracticePlans = practicePlanDao.loadBySeries(planId,
+        //             series + 1);
+        //     if (CollectionUtils.isNotEmpty(nextSeriesPracticePlans)) {
+        //         unlock(nextSeriesPracticePlans, planId);
+        //     }
+        // }
         //写入字段
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
         calcDeadLine(improvementPlan);
@@ -150,7 +151,6 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
         }
-
 
         //组装小节数据
         buildSections(improvementPlan);

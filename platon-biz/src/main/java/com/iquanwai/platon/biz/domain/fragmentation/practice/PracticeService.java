@@ -257,7 +257,7 @@ public interface PracticeService {
      *
      * @param practicePlanId 练习id
      */
-    void learnKnowledge(Integer practicePlanId);
+    void learnKnowledge(Integer profileId, Integer practicePlanId);
 
     /**
      * 求点评
