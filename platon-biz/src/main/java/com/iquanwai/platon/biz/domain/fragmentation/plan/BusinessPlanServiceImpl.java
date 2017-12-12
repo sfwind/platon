@@ -166,6 +166,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             runningProblems.addAll(trialProblem);
         }
 
+        runningProblems.forEach(item -> {
+            if(item.getCloseDate() != null) {
+                Integer deadLine = DateUtils.interval(DateUtils.startDay(new Date()), item.getCloseDate());
+                item.setDeadline(deadLine);
+            }
+        });
+
         schedulePlan.setRunningProblem(runningProblems);
 
         //辅修课程列表
@@ -476,7 +483,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     /**
      * 查看当前用户正在学习的小课 id
-     *
      * @param profileId 用户 id
      * @return 正在学习的小课 id
      */
