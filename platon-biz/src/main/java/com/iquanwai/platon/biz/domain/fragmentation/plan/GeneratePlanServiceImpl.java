@@ -225,10 +225,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
-                if (!review) {
-                    practicePlan.setType(PracticePlan.APPLICATION);
+                if (i == 0) {
+                    practicePlan.setType(PracticePlan.APPLICATION_BASE);
                 } else {
-                    practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
+                    practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
                 }
                 practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
                 practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());

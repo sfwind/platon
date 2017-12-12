@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rise/practice")
 public class PracticeController {
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PracticeService practiceService;
     @Autowired
@@ -98,7 +98,7 @@ public class PracticeController {
         ImprovementPlan improvementPlan = planService.getPlan(planId);
 
         if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            logger.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
@@ -130,7 +130,7 @@ public class PracticeController {
         Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            LOGGER.info("提交平台:{}", loginUser.getDevice());
+            logger.info("提交平台:{}", loginUser.getDevice());
             if (loginUser.getDevice() == Constants.Device.PC) {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
             } else {
@@ -251,7 +251,7 @@ public class PracticeController {
             }
         } else {
             // 取消点赞
-            LOGGER.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
+            logger.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
             return WebUtils.error("禁止取消点赞");
         }
     }
@@ -388,7 +388,7 @@ public class PracticeController {
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
             } else {
-                LOGGER.error("未找到该评论用户:{}", item);
+                logger.error("未找到该评论用户:{}", item);
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -440,7 +440,7 @@ public class PracticeController {
             dto.setRole(account.getRole());
             dto.setRepliedDel(comment.getRepliedDel());
         } else {
-            LOGGER.error("未找到该评论用户：{}", comment);
+            logger.error("未找到该评论用户：{}", comment);
             return null;
         }
 
@@ -846,7 +846,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
         if (discussDto.getComment() == null || discussDto.getComment().length() > 1000) {
-            LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
+            logger.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }
 

@@ -409,7 +409,7 @@ public class PracticeServiceImpl implements PracticeService {
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                     submit.getChallengeId(), PracticePlan.CHALLENGE);
             if (practicePlan != null) {
-                practicePlanDao.complete(practicePlan.getId());
+                practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
                 // 加分
                 poinManager.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
                 // 修改status

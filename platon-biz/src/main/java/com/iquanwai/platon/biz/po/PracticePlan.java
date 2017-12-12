@@ -30,8 +30,8 @@ public class PracticePlan {
     public static final int APPLICATION = 11; // 应用题
     public static final int APPLICATION_REVIEW = 12; // 综合应用题
 
-    public static final int APPLICATION_BASE = 13; // 简单应用题
-    public static final int APPLICATION_UPGRADED = 14; // 困难应用题
+    public static final int APPLICATION_BASE = 11; // 简单应用题
+    public static final int APPLICATION_UPGRADED = 12; // 困难应用题
 
     public static String APPLICATION_REVIEW_NOTICE = "提升能力和解决问题<br/>需要你的刻意练习<br/>我们推荐你至少完成所有综合练习";
     public static String APPLICATION_NOTICE = "从了解知识到能够运用<br/>还差一个内化的距离<br/>来一个应用练习吧";
