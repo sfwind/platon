@@ -153,12 +153,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             PracticePlan practicePlan = new PracticePlan();
             Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
             practicePlan.setUnlocked(false);
-            boolean review = Knowledge.isReview(knowledgeId);
-            if (!review) {
-                practicePlan.setType(PracticePlan.KNOWLEDGE);
-            } else {
-                practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
-            }
+            practicePlan.setType(PracticePlan.KNOWLEDGE);
             practicePlan.setPlanId(planId);
             practicePlan.setPracticeId(knowledgeId.toString());
             practicePlan.setStatus(0);
@@ -179,14 +174,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
-            boolean review = Knowledge.isReview(knowledgeId);
             practicePlan.setUnlocked(false);
             practicePlan.setPlanId(planId);
-            if (!review) {
-                practicePlan.setType(PracticePlan.WARM_UP);
-            } else {
-                practicePlan.setType(PracticePlan.WARM_UP_REVIEW);
-            }
+            practicePlan.setType(PracticePlan.WARM_UP);
             practicePlan.setSequence(WARMUP_SEQUENCE);
             practicePlan.setSeries(sequence);
             practicePlan.setStatus(0);
