@@ -216,7 +216,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
-            boolean review = Knowledge.isReview(knowledgeId);
             int problemId = problemSchedule.getProblemId();
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
@@ -225,7 +224,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
-                if (i == 0) {
+                if (practices.get(i) != null && practices.get(i).getSequence() == 1) {
                     practicePlan.setType(PracticePlan.APPLICATION_BASE);
                 } else {
                     practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);

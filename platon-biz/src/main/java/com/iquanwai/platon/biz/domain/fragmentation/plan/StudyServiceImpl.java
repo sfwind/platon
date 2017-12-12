@@ -78,11 +78,11 @@ public class StudyServiceImpl implements StudyService {
                 } else {
                     section.setStatus(status);
                 }
-                PracticePlan knowledge = practicePlans.stream().filter(practicePlan ->
-                        practicePlan.getSeries().equals(section.getSection())
-                        && practicePlan.getSequence() == 1).findAny().orElse(null);
+                PracticePlan knowledge = practicePlans.stream()
+                        .filter(practicePlan -> practicePlan.getSeries().equals(section.getSeries()) && practicePlan.getSequence() == 1)
+                        .findAny().orElse(null);
 
-                if(knowledge!=null){
+                if (knowledge != null) {
                     section.setType(knowledge.getType());
                     section.setPracticePlanId(knowledge.getId());
                 }

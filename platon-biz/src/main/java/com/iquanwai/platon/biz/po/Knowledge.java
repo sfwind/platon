@@ -35,13 +35,13 @@ public class Knowledge {
 
     private static String REVIEW_KNOWLEDGE = ConfigUtils.getIntegratedPracticeIndex();
 
-    public static boolean isReview(Integer knowledgeId){
-        if(knowledgeId==null){
+    public static boolean isReview(Integer knowledgeId) {
+        if (knowledgeId == null) {
             return false;
         }
         String[] ids = REVIEW_KNOWLEDGE.split(",");
-        for(String id:ids){
-            if(id.equals(knowledgeId.toString())){
+        for (String id : ids) {
+            if (id.equals(knowledgeId.toString())) {
                 return true;
             }
         }

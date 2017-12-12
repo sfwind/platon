@@ -323,10 +323,10 @@ public class PracticeServiceImpl implements PracticeService {
         }
         int applicationId = submit.getApplicationId();
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
-        if (Knowledge.isReview(applicationPractice.getKnowledgeId())) {
-            type = PracticePlan.APPLICATION_REVIEW;
+        if (applicationPractice != null && applicationPractice.getSequence() == 1) {
+            type = PracticePlan.APPLICATION_BASE;
         } else {
-            type = PracticePlan.APPLICATION;
+            type = PracticePlan.APPLICATION_UPGRADED;
         }
         boolean result;
         int length = CommonUtils.removeHTMLTag(content).length();
