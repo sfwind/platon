@@ -75,6 +75,15 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
                 break;
+            // 如果完成的是巩固练习，解锁简单应用题
+            case PracticePlan.WARM_UP:
+                targetPracticePlan = practicePlans.stream()
+                        .filter(plan -> plan.getType() == PracticePlan.APPLICATION_BASE && plan.getSeries() == series)
+                        .findAny().orElse(null);
+                if (targetPracticePlan != null) {
+                    practicePlanDao.unlock(targetPracticePlan.getId());
+                }
+                break;
             // 如果完成的是简单应用题，解锁困难应用题和下一节知识点
             case PracticePlan.APPLICATION_BASE:
                 targetPracticePlan = practicePlans.stream()
@@ -108,12 +117,12 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .map(PracticePlan::getStatus)
                 .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
 
-        if(!unlocked){
+        if (!unlocked) {
             return -1;
-        }else {
-            if(complete){
+        } else {
+            if (complete) {
                 return 1;
-            }else{
+            } else {
                 return 0;
             }
         }
@@ -128,7 +137,6 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .reduce((lock1, lock2) -> lock1 && lock2)
                 .orElse(false);
     }
-
 
 
 }

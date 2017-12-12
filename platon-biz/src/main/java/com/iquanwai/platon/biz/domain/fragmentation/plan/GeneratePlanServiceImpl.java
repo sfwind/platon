@@ -91,14 +91,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         // 生成小课介绍
         practicePlans.addAll(createIntroduction(problem, planId));
+        // 生成小目标
+        practicePlans.addAll(createChallengePractice(problem, planId));
         // 生成知识点
         practicePlans.addAll(createKnowledge(planId, problemSchedules));
         // 生成巩固练习
         practicePlans.addAll(createWarmupPractice(planId, problemSchedules));
         // 生成应用练习
         practicePlans.addAll(createApplicationPractice(problem, planId, problemSchedules));
-        // 生成小目标
-        practicePlans.addAll(createChallengePractice(problem, planId));
         // 插入数据库
         practicePlanDao.batchInsert(practicePlans);
 
@@ -253,7 +253,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlan.setSeries(0);
         practicePlan.setSequence(2);
         practicePlan.setStatus(0);
-        practicePlan.setUnlocked(false);
+        practicePlan.setUnlocked(true);
         selected.add(practicePlan);
 
         return selected;
