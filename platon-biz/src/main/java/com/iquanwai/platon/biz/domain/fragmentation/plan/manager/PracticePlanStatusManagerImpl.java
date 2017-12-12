@@ -101,7 +101,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
         boolean unlocked = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
                 .map(PracticePlan::getUnlocked)
-                .reduce((lock1, lock2) -> lock1 && lock2).orElse(false);
+                .reduce((lock1, lock2) -> lock1 || lock2).orElse(false);
         boolean complete = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
                 .filter(plan -> plan.getType() != PracticePlan.APPLICATION_UPGRADED)
