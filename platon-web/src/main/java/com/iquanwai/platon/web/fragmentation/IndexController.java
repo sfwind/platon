@@ -130,12 +130,16 @@ public class IndexController {
             return null;
         }
 
-        // TODO 去掉ABTest时，需要修改
         boolean hasRiseMenuWhiteList = whiteListService.checkRiseMenuWhiteList(loginUser.getId());
         if (hasRiseMenuWhiteList) {
             response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
             return null;
         } else {
+            //TODO: 试听课用户 1.1日删除
+            if (auditionService.loadAuditionClassMember(loginUser.getId()) != null) {
+                response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
+                return null;
+            }
             response.sendRedirect(INDEX_CAMP_URL);
             return null;
         }
