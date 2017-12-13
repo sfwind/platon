@@ -389,6 +389,9 @@ public class IndexController {
             }
         }
 
+        // 加载首屏广告信息
+        activityMessageService.loginMsg(loginUser.getId());
+
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 

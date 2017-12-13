@@ -47,6 +47,7 @@ public class ActivityMessageServiceImpl implements ActivityMessageService {
     public void loginMsg(Integer profileId) {
         try {
             String json = ConfigUtils.getWelcomeMsg();
+            logger.info("activityMsg:{}", json);
             if (json != null) {
                 Gson gson = new Gson();
                 ActivityMsg msg = gson.fromJson(json, ActivityMsg.class);
