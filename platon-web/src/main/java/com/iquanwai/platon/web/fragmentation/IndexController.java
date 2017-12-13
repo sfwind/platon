@@ -276,7 +276,8 @@ public class IndexController {
             Boolean modifyPlanSchedule = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
 
             // 不是白名单
-            if (!modifyPlanSchedule && isElite && (profile.getAddress() == null || profile.getMobileNo() == null || profile.getIsFull() == 0)) {
+            if (!modifyPlanSchedule && isElite && (profile.getAddress() == null ||
+                    (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0)) {
                 // 未填写信息的已购买商学院的 “新” 会员
                 response.sendRedirect(PROFILE_SUBMIT);
                 return null;

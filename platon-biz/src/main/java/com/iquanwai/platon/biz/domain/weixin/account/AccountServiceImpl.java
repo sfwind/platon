@@ -83,8 +83,6 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
-    @Autowired
-    private WhiteListDao whiteListDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -422,11 +420,12 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.load(Profile.class, profileId);
         if (profile == null) {
             return new ImmutablePair<>(false, "系统错误,请联系小Q");
-        } else {
-            if (phone.equals(profile.getMobileNo())) {
-                return new ImmutablePair<>(false, "该手机号已绑定");
-            }
         }
+//        else {
+//            if (phone.equals(profile.getMobileNo())) {
+//                return new ImmutablePair<>(false, "该手机号已绑定");
+//            }
+//        }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
         smsDto.setType(SMSDto.NORMAL);
@@ -572,6 +571,11 @@ public class AccountServiceImpl implements AccountService {
             return CourseScheduleDefault.CategoryType.NEW_STUDENT;
         }
 
+    }
+
+    @Override
+    public void updateWeixinId(Integer profileId, String weixinId) {
+        profileDao.updateWeixinId(profileId, weixinId);
     }
 }
 
