@@ -137,7 +137,7 @@ public class BusinessSchoolApplicationDao extends DBUtil {
         String sql = " select * from BusinessSchoolApplication where profileId = ? and status != 0 and del = 0  order by UpdateTime desc";
 
         try {
-          return   runner.query(sql,new ScalarHandler<>(),profileId);
+          return   runner.query(sql,new BeanHandler<>(BusinessSchoolApplication.class),profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(),e);
         }
