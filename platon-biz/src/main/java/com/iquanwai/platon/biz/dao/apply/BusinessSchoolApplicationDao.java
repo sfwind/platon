@@ -134,8 +134,7 @@ public class BusinessSchoolApplicationDao extends DBUtil {
      */
     public BusinessSchoolApplication getLastVerifiedByProfileId(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<BusinessSchoolApplication> h = new BeanHandler<>(BusinessSchoolApplication.class);
-        String sql = " select * from BusinessSchoolApplication where profiledId = ? and status != 0 and del = 0  order by UpdateTime desc";
+        String sql = " select * from BusinessSchoolApplication where profileId = ? and status != 0 and del = 0  order by UpdateTime desc";
 
         try {
           return   runner.query(sql,new ScalarHandler<>(),profileId);
