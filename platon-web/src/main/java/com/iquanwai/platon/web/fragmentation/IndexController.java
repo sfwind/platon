@@ -137,8 +137,10 @@ public class IndexController {
         } else {
             //TODO: 试听课用户 1.1日删除
             if (auditionService.loadAuditionClassMember(loginUser.getId()) != null) {
-                response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
-                return null;
+                List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+                ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
+
+                return courseView(request, loginUser, moduleShow, RISE_VIEW);
             }
             response.sendRedirect(INDEX_CAMP_URL);
             return null;
