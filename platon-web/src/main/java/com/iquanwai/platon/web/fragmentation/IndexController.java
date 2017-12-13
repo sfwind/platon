@@ -213,6 +213,8 @@ public class IndexController {
                     // 未关注
                     response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
                     return null;
+                } else {
+                    response.sendRedirect(SUBSCRIBE_URL);
                 }
             }
         }
