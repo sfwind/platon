@@ -55,6 +55,7 @@ public class ActivityMessageServiceImpl implements ActivityMessageService {
                     ActivityPopupMessage activityPopupMessage = activityPopupMessageDao.load(profileId, msg.getEventKey());
                     //该用户不再定向推送列表中,不用推送
                     if (activityPopupMessage == null) {
+                        logger.info("{}不在定向推送list中", profileId);
                         return;
                     }
                 }
