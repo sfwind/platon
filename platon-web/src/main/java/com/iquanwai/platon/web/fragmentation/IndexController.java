@@ -130,20 +130,17 @@ public class IndexController {
             return null;
         }
 
-        boolean hasRiseMenuWhiteList = whiteListService.checkRiseMenuWhiteList(loginUser.getId());
-        if (hasRiseMenuWhiteList) {
+        if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
             response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
             return null;
-        } else {
-            //TODO: 试听课用户 1.1日删除
-            if (auditionService.loadAuditionClassMember(loginUser.getId()) != null) {
-                List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
-                ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
-
-                return courseView(request, loginUser, moduleShow, RISE_VIEW);
-            }
+        } else if(whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
             response.sendRedirect(INDEX_CAMP_URL);
             return null;
+        }else{
+            List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
+            ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
+
+            return courseView(request, loginUser, moduleShow, RISE_VIEW);
         }
     }
 
