@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.domain.common.subscribe.SubscribeRouterService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
-import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -58,8 +57,6 @@ public class IndexController {
     private InterlocutionService interlocutionService;
     @Autowired
     private SubscribeRouterService subscribeRouterService;
-    @Autowired
-    private AuditionService auditionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     //商学院按钮url
@@ -67,7 +64,7 @@ public class IndexController {
     //训练营按钮url
     private static final String INDEX_CAMP_URL = "/rise/static/camp";
     //关注页面
-    private static final String SUBSCRIBE_URL = "/static/subscribe";
+    private static final String SUBSCRIBE_URL = "/subscribe";
     //内测页面
     private static final String FORBID_URL = "/403.jsp";
     //训练营售卖页
@@ -202,18 +199,6 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
-        System.out.println("request.getQueryString() = " + request.getQueryString());
-        System.out.println("request.getRequestURI() = " + request.getRequestURI());
-        System.out.println("request.getParameterMap() = " + request.getParameterMap());
-
-
-        SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-        if (subscribeRouterConfig != null) {
-            // 未关注
-            response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-            return null;
-        }
-
         String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
         String openid = null;
         Account account = null;
@@ -223,10 +208,12 @@ public class IndexController {
                 account = accountService.getAccount(openid, false);
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
-                subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
+                SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+                if (subscribeRouterConfig != null) {
+                    // 未关注
+                    response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                    return null;
+                }
             }
         }
 
