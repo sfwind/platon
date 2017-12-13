@@ -89,15 +89,26 @@ public class ApplyServiceImpl implements ApplyService {
     @Override
     public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, String orderId) {
         Profile profile = accountService.getProfile(profileId);
+        //获取上次审核的结果
+        BusinessSchoolApplication lastBussinessApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
 
         BusinessSchoolApplication application = new BusinessSchoolApplication();
         application.setProfileId(profileId);
         application.setSubmitTime(new Date());
         application.setOpenid(profile.getOpenid());
         application.setStatus(BusinessSchoolApplication.APPLYING);
+
         application.setIsDuplicate(false);
+
         application.setDeal(false);
         application.setOrderId(orderId);
+
+        if(lastBussinessApplication!=null){
+            application.setLastVerified(lastBussinessApplication.getStatus());
+        }
+        else{
+            application.setLastVerified(0);
+        }
 
         Optional<RiseMember> optional = riseMemberDao.loadRiseMembersByProfileId(profileId).stream().sorted(((o1, o2) -> o2.getId() - o1.getId())).findFirst();
         optional.ifPresent(riseMember -> application.setOriginMemberType(riseMember.getMemberTypeId()));
@@ -113,6 +124,5 @@ public class ApplyServiceImpl implements ApplyService {
         });
         businessApplySubmitDao.batchInsertApplySubmit(userApplySubmits);
     }
-
 
 }

@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -113,15 +114,35 @@ public class BusinessSchoolApplicationDao extends DBUtil {
 
     public Integer insert(BusinessSchoolApplication businessSchoolApplication) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, ProfileId, Openid, Status, CheckTime, IsDuplicate, Deal, OriginMemberType,SubmitTime,DealTime,Comment,OrderId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, ProfileId, Openid, Status, CheckTime, IsDuplicate, Deal, OriginMemberType,SubmitTime,DealTime,Comment,OrderId,LastVerified) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
             return runner.insert(sql, new ScalarHandler<Long>(), businessSchoolApplication.getSubmitId(), businessSchoolApplication.getProfileId(), businessSchoolApplication.getOpenid(),
                     businessSchoolApplication.getStatus(), businessSchoolApplication.getCheckTime(), businessSchoolApplication.getIsDuplicate(),
                     businessSchoolApplication.getDeal(), businessSchoolApplication.getOriginMemberType(), businessSchoolApplication.getSubmitTime(), businessSchoolApplication.getDealTime(),
-                    businessSchoolApplication.getComment(), businessSchoolApplication.getOrderId()).intValue();
+                    businessSchoolApplication.getComment(), businessSchoolApplication.getOrderId(),businessSchoolApplication.getLastVerified()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+        return null;
+    }
+
+
+    /**
+     * 获得最近一次被审批过的商学院申请
+     * @param profileId
+     * @return
+     */
+    public BusinessSchoolApplication getLastVerifiedByProfileId(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<BusinessSchoolApplication> h = new BeanHandler<>(BusinessSchoolApplication.class);
+        String sql = " select * from BusinessSchoolApplication where profiledId = ? and status != 0 and del = 0  order by UpdateTime desc";
+
+        try {
+          return   runner.query(sql,new ScalarHandler<>(),profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+
         return null;
     }
 }
