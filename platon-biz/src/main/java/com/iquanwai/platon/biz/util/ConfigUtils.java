@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PreDestroy;
 import java.io.File;
@@ -113,7 +114,7 @@ public class ConfigUtils {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
         }
 
-        if (domainName != null) {
+        if (!StringUtils.isEmpty(domainName)) {
             url = replaceDomainName(url, domainName);
         }
 
@@ -127,7 +128,7 @@ public class ConfigUtils {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
         }
 
-        if (domainName != null) {
+        if (!StringUtils.isEmpty(domainName)) {
             url = replaceDomainName(url, domainName);
         }
 
