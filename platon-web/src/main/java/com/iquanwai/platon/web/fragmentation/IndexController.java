@@ -3,18 +3,18 @@ package com.iquanwai.platon.web.fragmentation;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMessageService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMsg;
+import com.iquanwai.platon.biz.domain.common.subscribe.SubscribeRouterService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.Account;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -23,7 +23,6 @@ import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +53,7 @@ public class IndexController {
     @Autowired
     private InterlocutionService interlocutionService;
     @Autowired
-    private AuditionService auditionService;
+    private SubscribeRouterService subscribeRouterService;
     @Autowired
     private ActivityMessageService activityMessageService;
 
@@ -64,7 +63,7 @@ public class IndexController {
     //训练营按钮url
     private static final String INDEX_CAMP_URL = "/rise/static/camp";
     //关注页面
-    private static final String SUBSCRIBE_URL = "/static/subscribe";
+    private static final String SUBSCRIBE_URL = "/subscribe";
     //内测页面
     private static final String FORBID_URL = "/403.jsp";
     //训练营售卖页
@@ -190,43 +189,6 @@ public class IndexController {
         return courseView(request, loginUser, new ModuleShow(), NOTE_VIEW);
     }
 
-    @RequestMapping(value = "/rise/static/audition/refresh", method = RequestMethod.GET)
-    public ModelAndView getCurrentAuditionFix(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
-        logger.info("点击修复audition");
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        String openid = null;
-        Account account = null;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
-            try {
-                account = accountService.getAccount(openid, false);
-                logger.info("account:{}", account);
-            } catch (NotFollowingException e) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
-            }
-        }
-
-        if (!checkAccessToken(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
-            WebUtils.auth(request, response);
-            return null;
-        } else {
-            AuditionClassMember classMember = auditionService.loadAuditionClassMember(loginUser.getId());
-            if (classMember != null) {
-                // 有试听课权限
-                if (new DateTime(classMember.getStartDate()).isAfterNow() && classMember.getActive()) {
-                    // 开课日期在今天之后，则刷成这一期的
-                    auditionService.becomeCurrentAuditionMember(classMember.getId());
-                }
-            }
-        }
-        // 试听课已经开营，相当于点商学院
-        response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
-        return null;
-    }
-
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击商学院按钮");
@@ -239,9 +201,14 @@ public class IndexController {
                 account = accountService.getAccount(openid, false);
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
+                SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+                if (subscribeRouterConfig != null) {
+                    // 未关注
+                    response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                    return null;
+                } else {
+                    response.sendRedirect(SUBSCRIBE_URL);
+                }
             }
         }
 
