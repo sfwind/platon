@@ -5,14 +5,10 @@ import com.iquanwai.platon.biz.domain.common.message.ActivityMessageService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMsg;
 import com.iquanwai.platon.biz.domain.common.subscribe.SubscribeRouterService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
-import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
@@ -132,10 +128,10 @@ public class IndexController {
         if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
             response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
             return null;
-        } else if(whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
+        } else if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
             response.sendRedirect(INDEX_CAMP_URL);
             return null;
-        }else{
+        } else {
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
             ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
@@ -208,6 +204,7 @@ public class IndexController {
                     return null;
                 } else {
                     response.sendRedirect(SUBSCRIBE_URL);
+                    return null;
                 }
             }
         }
@@ -338,9 +335,15 @@ public class IndexController {
                 account = accountService.getAccount(openid, false);
                 logger.info("account:{}", account);
             } catch (NotFollowingException e) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
+                SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+                if (subscribeRouterConfig != null) {
+                    // 未关注
+                    response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                    return null;
+                } else {
+                    response.sendRedirect(SUBSCRIBE_URL);
+                    return null;
+                }
             }
         }
 
