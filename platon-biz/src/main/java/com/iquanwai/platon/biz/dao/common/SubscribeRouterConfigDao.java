@@ -20,7 +20,7 @@ public class SubscribeRouterConfigDao extends DBUtil {
 
     public List<SubscribeRouterConfig> loadAll() {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM SubscribeRouterConfig WHERE Del = 0 ORDER BY Id ASC";
+        String sql = "SELECT * FROM SubscribeRouterConfig WHERE Del = 0 ORDER BY Sequence ASC";
         ResultSetHandler<List<SubscribeRouterConfig>> h = new BeanListHandler<>(SubscribeRouterConfig.class);
         try {
             return runner.query(sql, h);
