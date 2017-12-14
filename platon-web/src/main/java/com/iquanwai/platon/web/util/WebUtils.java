@@ -68,7 +68,7 @@ public class WebUtils {
      * 默认授权方式，静默授权
      */
     public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String domainName = request.getHeader("Host");
+        String domainName = request.getHeader("Host-Test");
         String url;
         if(domainName != null){
             url = "http://" + domainName + request.getRequestURI();
@@ -88,7 +88,7 @@ public class WebUtils {
      * 提示性授权
      */
     public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String domainName = request.getHeader("Host");
+        String domainName = request.getHeader("Host-Test");
         String url;
         if(domainName != null){
             url = "http://" + domainName + request.getRequestURI();
