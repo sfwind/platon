@@ -40,6 +40,7 @@ public class Profile {
     private String address; // 详细地址
     private String workingYear; //参加工作年份
     private String weixinId; //微信id
+    private String receiver;//收件人
 
 
     //默认头像
