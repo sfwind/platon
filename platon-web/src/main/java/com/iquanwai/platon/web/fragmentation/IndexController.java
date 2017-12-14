@@ -440,32 +440,18 @@ public class IndexController {
     private ModelAndView courseView(HttpServletRequest request, LoginUser account, ModuleShow moduleShow, String viewName) {
         ModelAndView mav = new ModelAndView(viewName);
         String resourceUrl;
+        String domainName = request.getHeader("Host-Test");
         switch (viewName) {
             case RISE_VIEW:
-                resourceUrl = ConfigUtils.staticResourceUrl();
+                resourceUrl = ConfigUtils.staticResourceUrl(domainName);
                 break;
             case NOTE_VIEW:
-                resourceUrl = ConfigUtils.staticNoteResourceUrl();
+                resourceUrl = ConfigUtils.staticNoteResourceUrl(domainName);
                 break;
             default:
-                resourceUrl = ConfigUtils.staticResourceUrl();
+                resourceUrl = ConfigUtils.staticResourceUrl(domainName);
         }
-//        String vendorUrl = ConfigUtils.vendorResourceUrl();
-        if (request.isSecure()) {
-            resourceUrl = resourceUrl.replace("http:", "https:");
-        }
-        if (request.getParameter("debug") != null) {
-            if (ConfigUtils.isFrontDebug()) {
-                mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
-//                mav.addObject("vendorResource", "http://0.0.0.0:4000/vendor.js");
-            } else {
-                mav.addObject("resource", resourceUrl);
-//                mav.addObject("vendorResource", vendorUrl);
-            }
-        } else {
-            mav.addObject("resource", resourceUrl);
-//            mav.addObject("vendorResource", vendorUrl);
-        }
+        mav.addObject("resource", resourceUrl);
 
         Map<String, String> userParam = Maps.newHashMap();
         userParam.put("userName", account != null ? account.getWeixinName() : "");
