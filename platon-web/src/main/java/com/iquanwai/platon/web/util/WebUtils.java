@@ -68,35 +68,39 @@ public class WebUtils {
      * 默认授权方式，静默授权
      */
     public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String url = ConfigUtils.adapterDomainName() + request.getRequestURI();
+        String domainName = request.getHeader("Domain-Name");
+        String url;
+        if(domainName != null){
+            url = "http://" + domainName + request.getRequestURI();
+        }else{
+            url = ConfigUtils.adapterDomainName() + request.getRequestURI();
+        }
+
         if (!StringUtils.isEmpty(request.getQueryString())) {
             url = url + "?" + request.getQueryString();
         }
         url = URLEncoder.encode(url, "UTF-8");
 
-        String domainName = request.getHeader("Domain-Name");
-
-        if (domainName != null) {
-            response.sendRedirect("http://" + domainName + "/wx/oauth/auth?callbackUrl=" + url);
-        } else {
-            response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth?callbackUrl=" + url);
-        }
+        response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth?callbackUrl=" + url);
     }
 
     /**
      * 提示性授权
      */
     public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String url = ConfigUtils.adapterDomainName() + request.getRequestURI();
+        String domainName = request.getHeader("Domain-Name");
+        String url;
+        if(domainName != null){
+            url = "http://" + domainName + request.getRequestURI();
+        }else{
+            url = ConfigUtils.adapterDomainName() + request.getRequestURI();
+        }
+
         if (!StringUtils.isEmpty(request.getQueryString())) {
             url = url + "?" + request.getQueryString();
         }
-        String domainName = request.getHeader("Domain-Name");
+        url = URLEncoder.encode(url, "UTF-8");
 
-        if (domainName != null) {
-            response.sendRedirect("http://" + domainName + "/wx/oauth/auth/ask?callbackUrl=" + url);
-        } else {
-            response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth/ask?callbackUrl=" + url);
-        }
+        response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth/ask?callbackUrl=" + url);
     }
 }
