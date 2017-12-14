@@ -150,6 +150,7 @@ public class CustomerController {
         profileDto.setBindMobile(bindMobile);
         profileDto.setPhone(account.getMobileNo());
         profileDto.setWeixinId(account.getWeixinId());
+        profileDto.setReceiver(account.getReceiver());
         return WebUtils.result(profileDto);
     }
 

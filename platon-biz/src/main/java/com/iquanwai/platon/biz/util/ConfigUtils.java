@@ -106,21 +106,29 @@ public class ConfigUtils {
         return getValue("app.domainname");
     }
 
-    public static String staticResourceUrl() {
+    public static String staticResourceUrl(String domainName) {
         String url = getValue("static.resource.url");
         //测试环境防浏览器缓存，添加随机参数
         if (url.endsWith("?")) {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
         }
 
+        if (domainName != null) {
+            url = replaceDomainName(url, domainName);
+        }
+
         return url;
     }
 
-    public static String staticNoteResourceUrl() {
+    public static String staticNoteResourceUrl(String domainName) {
         String url = getValue("static.note.resource.url");
         //测试环境防浏览器缓存，添加随机参数
         if (url.endsWith("?")) {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
+        }
+
+        if (domainName != null) {
+            url = replaceDomainName(url, domainName);
         }
 
         return url;
@@ -370,5 +378,10 @@ public class ConfigUtils {
         return getValue("camp.problem.banner");
     }
 
+    public static String replaceDomainName(String url, String domainName) {
+        String urlPattern = "^((http://)|(https://))?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}(/)";
+        //替换
+        return url.replaceAll(urlPattern, "http://" + domainName);
+    }
 }
 

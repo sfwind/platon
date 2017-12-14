@@ -119,8 +119,18 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        Long risememberCount = riseMembers.stream().filter(riseMember ->
+                        // 半年/一年 精英版
+                        riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+        ).count();
+        // 如果转化成商学院 跳转训练营售卖页
+        if(risememberCount > 0){
+            return false;
+        }
+
         Long campCount = riseMembers.stream().filter(riseMember ->
-                // 专业版会员（半年、一年）、小课训练营
+                // 训练营
                 riseMember.getMemberTypeId() == RiseMember.CAMP
         ).count();
         return campCount.intValue() > 0;
