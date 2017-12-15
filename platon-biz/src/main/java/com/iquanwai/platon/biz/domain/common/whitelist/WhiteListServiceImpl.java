@@ -175,7 +175,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean isMonthlyCampStart(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember == null || riseMember.getMemberTypeId() != RiseMember.CAMP) {
-            return true;
+            return false;
         } else {
             return riseMember.getOpenDate().compareTo(new Date()) >= 0;
         }
