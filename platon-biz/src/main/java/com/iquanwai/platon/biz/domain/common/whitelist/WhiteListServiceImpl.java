@@ -90,7 +90,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean checkRiseMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long riseCount = riseMembers.stream().filter(riseMember ->
-                // 商学院会员（半年、一年）、小课单买用户
+                // 商学院会员（半年、一年）、课程单买用户
                 riseMember.getMemberTypeId() == RiseMember.HALF
                         || riseMember.getMemberTypeId() == RiseMember.ANNUAL
                         || riseMember.getMemberTypeId() == RiseMember.ELITE
@@ -106,7 +106,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         Long riseCount = riseMembers.stream()
                 .filter(riseMember -> !riseMember.getExpired())
                 .filter(riseMember ->
-                        // 商学院会员（半年、一年）、小课单买用户
+                        // 商学院会员（半年、一年）、课程单买用户
                         riseMember.getMemberTypeId() == RiseMember.HALF
                                 || riseMember.getMemberTypeId() == RiseMember.ANNUAL
                                 || riseMember.getMemberTypeId() == RiseMember.ELITE

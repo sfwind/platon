@@ -8,13 +8,13 @@ import java.util.List;
 public interface ProblemScheduleRepository {
     /**
      * 获取章节地图
-     * @param planId 小课计划id
+     * @param planId 课程计划id
      * */
     List<Chapter> loadRoadMap(Integer planId);
 
     /**
-     * 获取章节地图
-     * @param problemId 小课id
+     * 获取默认章节地图
+     * @param problemId 课程id
      * */
     List<Chapter> loadDefaultRoadMap(Integer problemId);
 }

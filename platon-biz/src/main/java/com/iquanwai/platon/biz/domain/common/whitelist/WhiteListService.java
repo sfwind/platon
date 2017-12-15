@@ -49,7 +49,7 @@ public interface WhiteListService {
     boolean checkRunningRiseMenuWhiteList(Integer profileId);
 
     /**
-     * 点击小课训练营白名单
+     * 点击训练营白名单
      *
      * @param profileId 用户id
      */

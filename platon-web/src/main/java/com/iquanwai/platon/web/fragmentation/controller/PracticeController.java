@@ -584,7 +584,7 @@ public class PracticeController {
 
         boolean b = planService.hasProblemPlan(loginUser.getId(), problemId);
         if (!b) {
-            return WebUtils.error("您并没有该小课，无法提交");
+            return WebUtils.error("您并没有该课程，无法提交");
         }
         Integer submitId = practiceService.submitSubjectArticle(new SubjectArticle(
                 workInfoDto.getSubmitId(),
@@ -599,7 +599,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create()
                 .module("训练")
                 .function("碎片化")
-                .action("移动小课输出区提交")
+                .action("移动课程输出区提交")
                 .memo(submitId + "");
         operationLogService.log(operationLog);
         if (submitId == -1) {
@@ -628,7 +628,7 @@ public class PracticeController {
     @RequestMapping(value = "/subject/list/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getSubjectList(LoginUser loginUser, @PathVariable("problemId") Integer problemId, @ModelAttribute Page page) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "小课id不能为空");
+        Assert.notNull(problemId, "课程id不能为空");
         page.setPageSize(PAGE_SIZE);
         List<RiseWorkInfoDto> list = practiceService.loadSubjectArticles(problemId, page)
                 .stream().map(item -> {
@@ -677,7 +677,7 @@ public class PracticeController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("碎片化")
-                .action("移动端加载小课论坛")
+                .action("移动端加载课程论坛")
                 .memo(problemId + "");
         operationLogService.log(operationLog);
         return WebUtils.result(result);
@@ -717,12 +717,12 @@ public class PracticeController {
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
                     .function("碎片化")
-                    .action("移动端加载小课分享文章")
+                    .action("移动端加载课程分享文章")
                     .memo(submitId.toString());
             operationLogService.log(operationLog);
             return WebUtils.result(dto);
         } else {
-            return WebUtils.error("小课分享不存在");
+            return WebUtils.error("课程分享不存在");
         }
 
     }
@@ -730,11 +730,11 @@ public class PracticeController {
     @RequestMapping(value = "/label/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadLabels(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "小课不能为空");
+        Assert.notNull(problemId, "课程不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("标签")
-                .action("加载小课标签")
+                .action("加载课程标签")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(practiceService.loadProblemLabels(problemId));
@@ -798,7 +798,7 @@ public class PracticeController {
         if (result) {
             return WebUtils.success();
         } else {
-            return WebUtils.error("本小课求点评次数已用完");
+            return WebUtils.error("本课程求点评次数已用完");
         }
     }
 
@@ -874,7 +874,7 @@ public class PracticeController {
         }
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课")
+                .module("课程")
                 .function("知识理解")
                 .action("删除回复")
                 .memo("KnowledgeId:" + id);

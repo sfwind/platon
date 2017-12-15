@@ -57,11 +57,11 @@ public class RiseMember {
      */
     public static final int HALF_ELITE = 4;
     /**
-     * 训练营小课
+     * 训练营
      */
     public static final int CAMP = 5;
     /**
-     * 单买小课
+     * 单买课程
      */
     public static final int COURSE = 6;
 }

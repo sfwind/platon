@@ -20,9 +20,9 @@ public class LoginUser {
     private String realName;
     private Integer role;
     private String signature;
-    private Boolean openRise;// 是否打开过小课详情页
-    private Boolean openNavigator; // 是否打开过小课列表页
-    private Integer riseMember;   //0-免费用户,1-会员,2-小课用户
+    private Boolean openRise;// 是否打开过课程详情页
+    private Boolean openNavigator; // 是否打开过课程列表页
+    private Integer riseMember;   //0-免费用户,1-会员,2-课程单买用户
     private Boolean openApplication; // 是否打开过应用练习
     private Boolean openConsolidation; // 是否打开过巩固练习
     private Integer Device; // 1-pc 2-mobile

@@ -12,7 +12,7 @@ public class ProblemActivity {
      * db 字段
      */
     private Integer id;
-    private Integer problemId; // 小课 Id
+    private Integer problemId; // 课程 Id
     private String description; // 活动描述
     private String location; // 活动地址
     private String workshop; // 工作坊名称

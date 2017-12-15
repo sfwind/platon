@@ -25,7 +25,7 @@ public class RiseWorkInfoDto {
     private String desc; //文章描述
     private Integer priority; //排序优先级
     private Boolean perfect; //是否是精华
-    private Integer problemId; //小课id
+    private Integer problemId; //课程id
     private Integer authorType; //作者类型
     private Boolean isMine; //是否是本人文章
     private List<ArticleLabel> labelList; //标签列表

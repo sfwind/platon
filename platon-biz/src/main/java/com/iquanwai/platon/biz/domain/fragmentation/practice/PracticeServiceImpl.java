@@ -392,7 +392,7 @@ public class PracticeServiceImpl implements PracticeService {
             result = challengeSubmitDao.answer(id, content, length);
         }
         if (result && submit.getPointStatus() == 0) {
-            // 修改小课任务记录
+            // 修改课程任务记录
             logger.info("小目标加分:{}", id);
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                     submit.getChallengeId(), PracticePlan.CHALLENGE);
@@ -458,7 +458,7 @@ public class PracticeServiceImpl implements PracticeService {
                 submitOpenId = submit.getOpenid();
                 submitProfileId = submit.getProfileId();
             } else if (type == Constants.VoteType.SUBJECT) {
-                // 小课论坛点赞
+                // 课程论坛点赞
                 SubjectArticle submit = subjectArticleDao.load(SubjectArticle.class, referencedId);
                 if (submit == null) {
                     return false;
@@ -650,7 +650,7 @@ public class PracticeServiceImpl implements PracticeService {
             if (moduleId == 2) {
                 msg = "评论了我的应用题";
             } else if (moduleId == 3) {
-                msg = "评论了我的小课分享";
+                msg = "评论了我的课程分享";
             }
             url = url.append("?moduleId=").append(moduleId).append("&submitId=").append(referId).append("&commentId=").append(id);
             messageService.sendMessage(msg, repliedComment.getCommentProfileId().toString(), profileId.toString(), url.toString());
@@ -710,7 +710,7 @@ public class PracticeServiceImpl implements PracticeService {
             //自己给自己评论不提醒
             if (load.getProfileId() != null && !load.getProfileId().equals(profileId)) {
                 String url = "/rise/static/message/subject/reply?submitId=" + referId;
-                messageService.sendMessage("评论了我的小课分享", load.getProfileId().toString(), profileId.toString(), url);
+                messageService.sendMessage("评论了我的课程分享", load.getProfileId().toString(), profileId.toString(), url);
             }
         }
         return new MutablePair<>(id, "评论成功");

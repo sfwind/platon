@@ -38,12 +38,12 @@ public class Problem {
 
 
     private Boolean done; // 非db字段 用户是否做过
-    private Integer status; // 非db字段 用户选过小课（0-未选过,1-正在进行,2-已完成）
+    private Integer status; // 非db字段 用户选过课程（0-未选过,1-正在进行,2-已完成）
     private List<Chapter> chapterList; // 非db字段 课程表
     private String subCatalog; // 非db字段 字类名
     private String catalog; // 非db字段 类名
-    private Integer chosenPersonCount; // 该门小课学习的人数
-    private Integer monthlyCampMonth; // 小课对应训练营月份
+    private Integer chosenPersonCount; // 该门课程学习的人数
+    private Integer monthlyCampMonth; // 课程对应训练营月份
 
 
     public Problem simple() {

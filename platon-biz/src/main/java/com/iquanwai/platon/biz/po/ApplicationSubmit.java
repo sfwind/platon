@@ -23,7 +23,7 @@ public class ApplicationSubmit {
     private Boolean requestFeedback; //是否求点评
     private Boolean feedback; // 教练是否已点评
     private Integer length; //字数
-    private Integer problemId;//小课id
+    private Integer problemId;//课程id
 
     private Integer voteCount; //非db字段 点赞数
     private boolean voteStatus; //非db字段 是否点赞

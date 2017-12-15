@@ -20,7 +20,7 @@ public class CourseSchedule {
      */
     private Integer category;
     /**
-     * 小课id
+     * 课程id
      */
     private Integer problemId;
     /**

@@ -12,23 +12,23 @@ public class MonthlyCampConfig {
 
     private Integer id;
     /**
-     * 小课训练营的购买开关
+     * 训练营的购买开关
      */
     private Boolean purchaseSwitch;
     /**
-     * 售卖中小课的开营日期
+     * 售卖中课程的开营日期
      */
     private Date openDate;
     /**
-     * 售卖小课的结营日期
+     * 售卖中课程的结营日期
      */
     private Date closeDate;
     /**
-     * 售卖中小课的对应年份
+     * 售卖中课程的对应年份
      */
     private Integer sellingYear;
     /**
-     * 售卖中小课的对应月份
+     * 售卖中课程的对应月份
      */
     private Integer sellingMonth;
     /**

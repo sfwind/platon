@@ -277,7 +277,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     }
 
     /**
-     * 获取当前小课此时已经学习过的人数
+     * 获取当前课程此时已经学习过的人数
      */
     public int loadChosenPersonCount(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
@@ -293,7 +293,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     }
 
     /**
-     * 当前会员期间内购买的小课
+     * 当前会员期间内学习的课程
      */
     public List<ImprovementPlan> loadRiseMemberPlans(Integer profileId, Date startDate) {
         QueryRunner runner = new QueryRunner(getDataSource());

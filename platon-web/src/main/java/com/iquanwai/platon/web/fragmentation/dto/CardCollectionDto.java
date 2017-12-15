@@ -11,9 +11,9 @@ import java.util.List;
 @Data
 public class CardCollectionDto {
 
-    private Integer problemId; // 小课 Id
-    private String problem; // 小课名称
+    private Integer problemId; // 课程 Id
+    private String problem; // 课程名称
     private Boolean isRiseMember; // 是否会员
-    private List<EssenceCard> cards; // 小课信息集合
+    private List<EssenceCard> cards; // 精华卡信息集合
 
 }

@@ -21,7 +21,7 @@ public class RiseCertificate {
     private Integer year; //开营年
     private Integer month; //开营月
     private Integer groupNo; //小组号
-    private String problemName; //小课名
+    private String problemName; //课程
     private Integer type; //证书类型（1-优秀班长，2-优秀组长，3-优秀学员，4-优秀团队, 5-结课证书）
     private Boolean notified; //是否通知（0-否，1-是）
     private String imageUrl; // 证书图片 url
@@ -32,7 +32,7 @@ public class RiseCertificate {
     private String name; //证书获得者 非db字段
     private String typeName; //证书类型名称 非db字段
     private String congratulation; //证书描述 非db字段
-    private Integer problemId; // 小课 id
+    private Integer problemId; // 课程 id
     private String nextCertificateNo; // 下一位证书的证书 No，下载证书图片用
 
 }

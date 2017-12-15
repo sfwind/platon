@@ -227,7 +227,7 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        //点击商学院,非年费用户和小课单买用户跳转售卖页
+        //点击商学院,非年费用户和课程单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
             //
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
@@ -311,7 +311,7 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        //点击训练营,非小课训练营用户跳转售卖页
+        //点击训练营,非训练营用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
             if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
                 activityMessageService.loginMsg(loginUser.getId());

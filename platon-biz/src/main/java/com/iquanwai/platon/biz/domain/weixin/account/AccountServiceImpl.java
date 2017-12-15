@@ -544,7 +544,7 @@ public class AccountServiceImpl implements AccountService {
             // 训练营用户
         } else if (memberTypeId == RiseMember.CAMP) {
             return 3;
-            // 小课用户
+            // 课程单买用户
         } else if (memberTypeId == RiseMember.COURSE) {
             return 2;
         }

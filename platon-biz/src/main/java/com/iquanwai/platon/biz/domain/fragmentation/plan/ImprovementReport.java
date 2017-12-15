@@ -9,10 +9,10 @@ import java.util.List;
  */
 @Data
 public class ImprovementReport {
-    private String problem; //小课
+    private String problem; //课程
     private Integer planId;
     private String pic; // 头图
-    private Integer totalScore; //小课总得分
+    private Integer totalScore; //课程总得分
     private Integer percent; //打败了百分之多少的同学
     private Integer mustStudyDays;
     private Integer studyDays; //学习时长

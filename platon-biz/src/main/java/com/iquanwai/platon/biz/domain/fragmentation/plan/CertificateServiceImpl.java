@@ -210,7 +210,7 @@ public class CertificateServiceImpl implements CertificateService {
                         RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
                         if (existRiseCertificate == null) {
                             Problem problem = cacheService.getProblem(problemId);
-                            // 如果允许生成小课训练营结业证书，则生成证书
+                            // 如果允许生成训练营结业证书，则生成证书
                             RiseCertificate riseCertificate = new RiseCertificate();
                             riseCertificate.setProfileId(profileId);
                             riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
@@ -320,7 +320,7 @@ public class CertificateServiceImpl implements CertificateService {
                     if (riseClassMember != null) {
                         FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
                         if (existFullAttendanceReward == null) {
-                            // 如果允许生成小课训练营结业证书，则生成证书
+                            // 如果允许生成训练营结业证书，则生成证书
                             FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                             fullAttendanceReward.setProfileId(profileId);
                             fullAttendanceReward.setClassName(riseClassMember.getClassName());
@@ -581,7 +581,7 @@ public class CertificateServiceImpl implements CertificateService {
         templateMessage.setData(data);
 
         data.put("keyword1", new TemplateMessage.Keyword(
-                "您的" + riseCertificate.getMonth() + "月小课训练营" + amount + "元优惠券奖励已到账"));
+                "您的" + riseCertificate.getMonth() + "月训练营" + amount + "元优惠券奖励已到账"));
         data.put("keyword2", new TemplateMessage.Keyword("点击详情，了解优惠券领取位置及使用方式"));
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
 
@@ -604,7 +604,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀班长\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀班长\n" +
                             "点击详情，领取优秀班长荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -623,7 +623,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀组长\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀组长\n" +
                             "点击详情，领取优秀组长荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -642,7 +642,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀学员\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀学员\n" +
                             "点击详情，领取优秀学员荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -663,7 +663,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您所在的小组荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀团队\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您所在的小组荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀团队\n" +
                             "点击详情，领取优秀团队荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -679,12 +679,12 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月小课训练营\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月训练营\n" +
                             "点击详情，领取结课证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                     data.put("keyword3", new TemplateMessage.Keyword(profile.getNickname()));
-                    data.put("remark", new TemplateMessage.Keyword("\n荣誉证书也可以在［商学院/训练营］－［我的］－［我的小课］中查询"));
+                    data.put("remark", new TemplateMessage.Keyword("\n荣誉证书也可以在［商学院/训练营］－［我的］－［我的课程］中查询"));
 
                 } catch (Exception e) {
                     logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
@@ -694,7 +694,7 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀助教\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀助教\n" +
                             "点击详情，领取优秀助教荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -717,7 +717,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中担任班长一职，表现突出，荣膺\"优秀班长\"称号" +
+                        riseCertificate.getMonth() + "月训练营中担任班长一职，表现突出，荣膺\"优秀班长\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.CLASS_LEADER);
@@ -725,7 +725,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
+                        riseCertificate.getMonth() + "月训练营中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.GROUP_LEADER);
@@ -733,7 +733,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中成绩名列前茅，荣膺\"优秀学员\"称号" +
+                        riseCertificate.getMonth() + "月训练营中成绩名列前茅，荣膺\"优秀学员\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_MEMBER);
@@ -741,9 +741,9 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
                 String monthStr = NumberToHanZi.formatInteger(riseCertificate.getMonth());
                 String groupNoStr = NumberToHanZi.formatInteger(riseCertificate.getGroupNo());
-                riseCertificate.setName(monthStr + "月小课" + groupNoStr + "组");
+                riseCertificate.setName(monthStr + "月训练营" + groupNoStr + "组");
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中小组表现优异，荣膺\"优秀小组\"称号" +
+                        riseCertificate.getMonth() + "月训练营中小组表现优异，荣膺\"优秀小组\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_GROUP);
@@ -751,7 +751,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.ORDINARY:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中完成课程学习" +
+                        riseCertificate.getMonth() + "月训练营中完成课程学习" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ORDINARY);
@@ -759,7 +759,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.ASST_COACH:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中表现卓越，荣膺\"优秀助教\"称号" +
+                        riseCertificate.getMonth() + "月训练营中表现卓越，荣膺\"优秀助教\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ASST_COACH);
