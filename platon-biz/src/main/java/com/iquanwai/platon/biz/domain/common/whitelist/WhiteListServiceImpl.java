@@ -130,10 +130,11 @@ public class WhiteListServiceImpl implements WhiteListService {
             return false;
         }
 
-        Long campCount = riseMembers.stream().filter(riseMember ->
-                // 训练营
-                riseMember.getMemberTypeId() == RiseMember.CAMP
-        ).count();
+        // 训练营
+        Long campCount = riseMembers.stream()
+                .filter(riseMember -> riseMember.getMemberTypeId() == RiseMember.CAMP
+                        && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) <= 0)
+                .count();
         return campCount.intValue() > 0;
     }
 
