@@ -232,7 +232,7 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        //点击商学院,非年费用户和小课单买用户跳转售卖页
+        //点击商学院,非年费用户和课程单买用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
             //
             Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
@@ -319,7 +319,7 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        //点击训练营,非小课训练营用户跳转售卖页
+        //点击训练营,非训练营用户跳转售卖页
         if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
             if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
                 activityMessageService.loginMsg(loginUser.getId());
@@ -432,7 +432,15 @@ public class IndexController {
             default:
                 resourceUrl = ConfigUtils.staticResourceUrl(domainName);
         }
-        mav.addObject("resource", resourceUrl);
+        if (request.getParameter("debug") != null) {
+            if (ConfigUtils.isFrontDebug()) {
+                mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
+            } else {
+                mav.addObject("resource", resourceUrl);
+            }
+        } else {
+            mav.addObject("resource", resourceUrl);
+        }
 
         Map<String, String> userParam = Maps.newHashMap();
         userParam.put("userName", account != null ? account.getWeixinName() : "");

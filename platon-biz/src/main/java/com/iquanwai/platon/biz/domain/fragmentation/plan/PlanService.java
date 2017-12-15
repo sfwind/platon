@@ -27,16 +27,18 @@ public interface PlanService {
 
     /**
      * 检查是否能够选新课
-     * @param plans 用户的小课数据
-     * @return left:是否能够选小课(-1,超过允许进行中的最多门数) right:提示信息
+     *
+      @param plans  用户的课程数据
+     * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId);
 
     /**
-     * 检查是否能够选训练营小课
-     * @param problemId 小课id
-     * @param profileId 用户id
-     * @return left:是否能够选小课(-1,超过允许进行中的最多门数) right:提示信息
+     * 检查是否能够选训练营
+     *
+      @param problemId  课程id
+     * @param profileId  用户id
+     * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
 
@@ -90,26 +92,26 @@ public interface PlanService {
      * 当前节练习是否可以做
      * @param series 节序号
      * @param improvementPlan 训练计划
-     * @return -3 小课已过期
+     * @return -3 课程已过期
      */
     Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
 
     /**
-     * 查询是否有该小课
+     * 查询是否有该课程
      * @param profileId 用户id
-     * @param problemId 小课id
+     * @param problemId 课程id
      */
     boolean hasProblemPlan(Integer profileId, Integer problemId);
 
     /**
-     * 查询是否有该小课
+     * 查询是否有该课程
      * @param profileId 用户id
-     * @param problemId 小课id
+     * @param problemId 课程id
      */
     ImprovementPlan getPlanByProblemId(Integer profileId, Integer problemId);
 
     /**
-     * 判断小课是否完成,当理解练习和巩固练习都完成时,小课判定为完成
+     * 判断课程是否完成,当理解练习和巩固练习都完成时,课程判定为完成
      * @param practicePlanId 练习id
      */
     void checkPlanComplete(Integer practicePlanId);
@@ -136,12 +138,12 @@ public interface PlanService {
     List<ImprovementPlan> loadUserPlans(Integer profileId);
 
     /**
-     * 获取用户的计划列表，主要用在列表页面，会set小课头图和名字
+     * 获取用户的计划列表，主要用在列表页面，会set课程头图和名字
      */
     List<ImprovementPlan> getPlanList(Integer profileId);
 
     /**
-     * 获取当前正在学习月份的能够学习的训练营小课内容
+     * 获取当前正在学习月份的能够学习的训练营课程内容
      */
     List<ImprovementPlan> getCurrentCampPlanList(Integer profileId);
 
@@ -160,9 +162,9 @@ public interface PlanService {
     void forceOpenCampOrder(String orderId);
 
     /**
-     * 小课强开
-     * startDate 小课开始日期
-     * closeDate 小课关闭日期
+     * 课程强开
+     * startDate 课程开始日期
+     * closeDate 课程关闭日期
      */
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 

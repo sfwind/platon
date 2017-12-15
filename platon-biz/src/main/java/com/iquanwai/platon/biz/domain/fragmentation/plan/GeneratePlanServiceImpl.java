@@ -149,7 +149,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         templateMessage.setTemplate_id(ConfigUtils.courseStartMsg());
         templateMessage.setUrl(ConfigUtils.domainName() + INDEX_URL);
         Profile profile = accountService.getProfile(openid);
-        String first = "Hi，" + profile.getNickname() + "，你刚才选择了圈外小课：\n";
+        String first = "Hi，" + profile.getNickname() + "，你刚才选择了圈外课程：\n";
         int length = problem.getLength();
 
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profile.getId(), problem.getId());
@@ -160,7 +160,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         data.put("first", new TemplateMessage.Keyword(first));
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(startDate + "——" + closeDate));
-        data.put("remark", new TemplateMessage.Keyword("\n小tip：该小课共" + length + "节，建议每节至少做1道应用练习题，帮助你内化知识\n" +
+        data.put("remark", new TemplateMessage.Keyword("\n小tip：该课程共" + length + "节，建议每节至少做1道应用练习题，帮助你内化知识\n" +
                 "\n如有疑问请在下方对话框留言，后台小哥哥会在24小时内回复你~"));
         templateMessageService.sendMessage(templateMessage);
     }
@@ -354,7 +354,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
         if (improvementPlan == null) {
-            // 用户从来没有开过小课，新开小课
+            // 用户从来没有开过课程，新开课程
             resultPlanId = generatePlan(profileId, problemId);
             if (startDate != null) {
                 improvementPlanDao.updateStartDate(resultPlanId, startDate);

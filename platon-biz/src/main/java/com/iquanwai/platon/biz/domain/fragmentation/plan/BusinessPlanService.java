@@ -24,17 +24,17 @@ public interface BusinessPlanService {
     List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId);
 
     /**
-     * 获取默认小课计划安排表
+     * 获取默认课程计划安排表
      *
      * @param profileId 个人 id
      */
     List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId);
 
     /**
-     * 查看某门小课的计划能否更改
+     * 查看某门课程的计划能否更改
      *
      * @param profileId 用户 id
-     * @param problemId 小课 id
+     * @param problemId 课程 id
      */
     boolean checkProblemModifyAccess(Integer profileId, Integer problemId);
 
@@ -46,18 +46,18 @@ public interface BusinessPlanService {
     SchedulePlan getSchedulePlan(Integer profileId);
 
     /**
-     * 个人计划中小课对应学习年月的更改
+     * 个人计划中课程对应学习年月的更改
      *
      * @param profileId   个人 id
-     * @param problemId   小课 id
+     * @param problemId   课程 id
      * @param targetYear  目标年份
      * @param targetMonth 目标月份
      */
     boolean modifyProblemSchedule(Integer profileId, Integer problemId, Integer targetYear, Integer targetMonth);
 
     /**
-     * 更新学习计划中一门小课的选择状态
-     * @param courseScheduleId 该门小课，在 CourseSchedule 中的记录 id
+     * 更新学习计划中一门课程的选择状态
+     * @param courseScheduleId 该门课程，在 CourseSchedule 中的记录 id
      * @param selected 是否选择 0-未选择 1-选择
      */
     boolean updateProblemScheduleSelected(Integer courseScheduleId, Boolean selected);
@@ -85,7 +85,7 @@ public interface BusinessPlanService {
     List<ScheduleQuestion> loadScheduleQuestions(Integer profileId);
 
     /**
-     * 获取当前主修小课
+     * 获取当前主修课
      * @param profileId
      * @return
      */

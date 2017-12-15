@@ -54,7 +54,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<Problem> loadProblems() {
-        //去除已删除的小课
+        //去除已删除的课程
         return cacheService.getProblems().stream().
                 filter(problem -> !problem.getDel())
                 .filter(Problem::getPublish)
@@ -107,11 +107,6 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public boolean hasProblemScore(Integer profileId, Integer problemId) {
-        return problemScoreDao.userProblemScoreCount(profileId, problemId) > 0;
-    }
-
-    @Override
     public Integer insertProblemExtension(ProblemExtension problemExtension) {
         ProblemExtension extensionTarget = new ProblemExtension();
         BeanUtils.copyProperties(problemExtension, extensionTarget);
@@ -159,7 +154,7 @@ public class ProblemServiceImpl implements ProblemService {
         // 根据 planId 获取 improvement 中的 problemId
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         Integer problemId = plan.getProblemId();
-        // 获取 essenceCard 所有与当前小课相关的数据
+        // 获取 essenceCard 所有与当前课程相关的数据
         Problem problem = cacheService.getProblem(problemId);
         List<Chapter> chapters = problemScheduleRepository.loadRoadMap(planId);
         Integer completeSeries = plan.getCompleteSeries();
@@ -175,7 +170,7 @@ public class ProblemServiceImpl implements ProblemService {
             essenceCard.setThumbnailLock(cardRepository.loadTargetThumbnailLockByChapterId(chapterId, chapters.size()));
             essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
             if (chapterId == chapters.size()) {
-                essenceCard.setChapter("小课知识清单");
+                essenceCard.setChapter("课程知识清单");
             } else {
                 essenceCard.setChapter(chapter.getName());
             }
@@ -234,7 +229,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public int collectProblem(Integer profileId, Integer problemId) {
         int result = -1;
-        // 判断以前是否收藏过这门小课
+        // 判断以前是否收藏过这门课程
         ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
         if (collection != null) {
             // 已经存在过这门课，如果 Del 字段为 1，将其置为 0
@@ -251,7 +246,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public int disCollectProblem(Integer profileId, Integer problemId) {
         int result = -1;
-        // 判断以前是否收藏过这门小课
+        // 判断以前是否收藏过这门课程
         ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
         if (collection != null) {
             // 已经存在过这门课，如果 Del 字段为 0，将其置为 1
@@ -281,7 +276,7 @@ public class ProblemServiceImpl implements ProblemService {
         List<Problem> problems = Lists.newArrayList();
         for (Integer problemId : problemIds) {
             Problem problem = cacheService.getProblem(problemId);
-            Assert.notNull(problem, "配置的小课不能为空");
+            Assert.notNull(problem, "配置的课程不能为空");
             problem.setChosenPersonCount(loadChosenPersonCount(problemId));
             problems.add(problem);
         }

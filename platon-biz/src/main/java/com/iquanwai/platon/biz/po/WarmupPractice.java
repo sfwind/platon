@@ -22,7 +22,7 @@ public class WarmupPractice implements Cloneable{
     @Deprecated
     private Integer sceneId; //场景id
     private Boolean del; //是否删除(0-否,1-是)
-    private Integer problemId; //小课id
+    private Integer problemId; //课程id
     private Integer sequence; //出现顺序
     private Boolean example; //是否例题(0-否,1-是)
     private String practiceUid; //任务唯一编号

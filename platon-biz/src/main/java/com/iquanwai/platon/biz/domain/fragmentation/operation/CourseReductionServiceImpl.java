@@ -83,7 +83,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                     "&free=true'>『" + problem.getProblem() + "』</a>\n";
         } else {
             sendMsg = profile.getNickname() + "，果然只有机智的人才能成为张良计的真爱粉[嘿哈]\n" +
-                    "点击\"上课啦\" 进入发现页面购买小课吧！";
+                    "点击\"上课啦\" 进入发现页面购买课程吧！";
         }
 
         customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), sendMsg,
@@ -126,7 +126,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                 // 会员
                 activity.setAction(PromotionConstants.CourseReductionAction.PAY_MEMBER);
             } else if (quanwaiOrder.getGoodsType().equals(QuanwaiOrder.FRAGMENT_COURSE)) {
-                // 小课
+                // 购买课程
                 activity.setAction(PromotionConstants.CourseReductionAction.PAY_COURSE);
             }
             promotionActivityDao.insertPromotionActivity(activity);

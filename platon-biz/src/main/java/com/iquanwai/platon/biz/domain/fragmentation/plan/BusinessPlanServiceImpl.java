@@ -482,9 +482,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     /**
-     * 查看当前用户正在学习的小课 id
+     * 查看当前用户正在学习的课程 id
      * @param profileId 用户 id
-     * @return 正在学习的小课 id
+     * @return 正在学习的课程 id
      */
     @Override
     public Integer getLearningProblemId(Integer profileId) {

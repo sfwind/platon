@@ -61,7 +61,7 @@ public class FreeLimitSubscribeReceiver {
         String[] sceneParams = scene.split("_");
 
         try {
-            // 只记录限免小课活动
+            // 只记录限免课程活动
             if (sceneParams.length == 3) {
                 operationFreeLimitService.recordPromotionLevel(openId, scene);
                 sendScanMsg(openId);

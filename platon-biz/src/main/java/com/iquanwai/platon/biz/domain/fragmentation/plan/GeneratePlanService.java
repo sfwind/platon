@@ -12,7 +12,7 @@ public interface GeneratePlanService {
     int KNOWLEDGE_SEQUENCE = 1;
     //巩固练习顺序
     int WARMUP_SEQUENCE = 2;
-    //小课最长开放时间
+    //课程最长开放时间
     int PROBLEM_MAX_LENGTH = 30;
 
     /**
@@ -40,9 +40,9 @@ public interface GeneratePlanService {
     Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
 
     /**
-     * 小课强开
-     * startDate 小课开始日期
-     * closeDate 小课关闭日期
+     * 课程强开
+     * startDate 课程开始日期
+     * closeDate 课程关闭日期
      */
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 }

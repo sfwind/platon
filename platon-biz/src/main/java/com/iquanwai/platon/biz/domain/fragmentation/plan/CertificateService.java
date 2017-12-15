@@ -65,7 +65,7 @@ public interface CertificateService {
     List<RiseCertificate> getCertificates(Integer profileId);
 
     /**
-     * 发送小课训练营结课用户的商学院录取消息
+     * 发送训练营结课用户的商学院录取消息
      * @param year 开营年份
      * @param month 开营月份
      */

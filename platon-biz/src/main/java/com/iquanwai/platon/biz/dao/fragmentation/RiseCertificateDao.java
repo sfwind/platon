@@ -43,9 +43,6 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return -1;
     }
 
-    /**
-     * 根据 ProblemId 获取所有相关推荐小课
-     */
     public RiseCertificate loadByCertificateNo(String certificateNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from RiseCertificate where CertificateNo = ?";

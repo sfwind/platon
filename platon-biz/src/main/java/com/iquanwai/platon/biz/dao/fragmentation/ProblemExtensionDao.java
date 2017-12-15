@@ -39,7 +39,7 @@ public class ProblemExtensionDao extends PracticeDBUtil {
     }
 
     /**
-     * 根据 ProblemId 获取小课延伸信息
+     * 根据 ProblemId 获取课程延伸信息
      */
     public ProblemExtension loadByProblemId(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());

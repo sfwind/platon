@@ -77,11 +77,11 @@ public class PlanServiceImpl implements PlanService {
     private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
     // 精英会员半年版最大选课数
     private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
-    // 主修最大进行小课数
+    // 主修最大进行课程数
     // private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
-    // 辅修最大进行小课数
+    // 辅修最大进行课程数
     // private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
-    // 普通人最大进行小课数
+    // 普通人最大进行课程数
     private static final int MAX_NORMAL_RUNNING_PROBLEM_NUMBER = 3;
 
     @Override
@@ -108,7 +108,7 @@ public class PlanServiceImpl implements PlanService {
         List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
         problem.setChapterList(chapters);
         improvementPlan.setProblem(problem);
-        // 当前 Problem 是否为限免小课
+        // 当前 Problem 是否为限免课程
         Integer freeLimitProblemId = ConfigUtils.getTrialProblemId();
         if (freeLimitProblemId != null && freeLimitProblemId == problem.getId()) {
             improvementPlan.setFree(true);
@@ -312,12 +312,12 @@ public class PlanServiceImpl implements PlanService {
         if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
             // 会员已经有三门再学
             return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
-                    + "门小课。先完成进行中的一门，再选新课哦");
+                    + "门课程。先完成进行中的一门，再选新课哦");
         }
 
         Problem problem = cacheService.getProblem(problemId);
         if (!problem.getPublish()) {
-            return new MutablePair<>(-1, "该小课还在开发中，敬请期待");
+            return new MutablePair<>(-1, "该课程还在开发中，敬请期待");
         }
 
         return new MutablePair<>(1, "");
@@ -351,12 +351,12 @@ public class PlanServiceImpl implements PlanService {
 
         if (!problemIds.contains(problemId)) {
             tag = false;
-            checkStr = "报名训练营小课不是当前开发的训练营小课";
+            checkStr = "报名训练营课程不是当前开发的训练营课程";
         } else {
             Profile profile = accountService.getProfile(profileId);
             if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                 tag = false;
-                checkStr = "非会员用户不能在此开启训练营小课";
+                checkStr = "非会员用户不能在此开启训练营课程";
             }
         }
         return new MutablePair<>(tag, checkStr);
@@ -417,13 +417,13 @@ public class PlanServiceImpl implements PlanService {
         Problem problem = cacheService.getProblem(plan.getProblemId());
         templateMessage.setData(data);
 
-        data.put("first", new TemplateMessage.Keyword("太棒了！你已完成这个小课，并获得了" + plan.getPoint()
+        data.put("first", new TemplateMessage.Keyword("太棒了！你已完成这个课程，并获得了" + plan.getPoint()
                 + "积分，打败了" + percent + "%的圈柚\n"));
 
         data.put("keyword1", new TemplateMessage.Keyword(problem.getProblem()));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToStringByCommon(new Date())));
-        data.put("remark", new TemplateMessage.Keyword("\n小tip：已完成的小课，就在“我的”->”我的小课“中\n\n" +
-                "【反馈】看过小课的学习报告了吗？除了目前的学习情况，你还想了解自己的哪些学习数据呢？点击详情告诉我们吧↓↓↓"));
+        data.put("remark", new TemplateMessage.Keyword("\n小tip：已完成的课程，就在“我的”->”我的课程“中\n\n" +
+                "【反馈】看过课程的学习报告了吗？除了目前的学习情况，你还想了解自己的哪些学习数据呢？点击详情告诉我们吧↓↓↓"));
 
         templateMessageService.sendMessage(templateMessage);
     }
@@ -519,7 +519,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
 
-        // TODO 对于限免小课，不设置最小学习天数，后期删除
+        // TODO 对于限免课程，不设置最小学习天数，后期删除
         int minStudyDays;
         if (plan.getProblemId().equals(ConfigUtils.getTrialProblemId())) {
             minStudyDays = 0;
@@ -670,7 +670,7 @@ public class PlanServiceImpl implements PlanService {
             // 走限免课的逻辑
             if (plan == null) {
                 if (isRiseMember) {
-                    // 选择该小课
+                    // 选择该课程
                     buttonStatus = 2;
                 } else {
                     // 不是会员，显示是否
@@ -679,21 +679,21 @@ public class PlanServiceImpl implements PlanService {
                     buttonStatus = hasTrialAuthority ? 7 : 8;
                 }
             } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
-                // 小课已开始，去上课
+                // 课程已开始，去上课
                 buttonStatus = 3;
             } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
-                // 小课已完成，去复习
+                // 课程已完成，去复习
                 buttonStatus = 4;
             }
         } else {
             if (plan == null) {
-                // 2 - 选择该小课 1 - 加入商学院
+                // 2 - 选择该课程 1 - 加入商学院
                 buttonStatus = isRiseMember ? 2 : 1;
             } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
-                // 小课已开始，去上课
+                // 课程已开始，去上课
                 buttonStatus = 3;
             } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
-                // 小课已开始，去复习
+                // 课程已开始，去复习
                 buttonStatus = 4;
             }
         }
@@ -733,7 +733,7 @@ public class PlanServiceImpl implements PlanService {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
         if (improvementPlan == null) {
-            // 用户从来没有开过小课，新开小课
+            // 用户从来没有开过课程，新开课程
             resultPlanId = generatePlanService.generatePlan(profileId, problemId);
             if (startDate != null) {
                 improvementPlanDao.updateStartDate(resultPlanId, startDate);

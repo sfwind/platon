@@ -13,8 +13,8 @@ public class ProblemExtension {
     private Integer id;
     private String catalog; // 分类名称
     private String subCatalog; // 子类名称
-    private String problem; // 小课名称
-    private Integer problemId; // 小课 Id
+    private String problem; // 课程名称
+    private Integer problemId; // 课程 Id
     private String extension; // 延伸阅读
     private Date addTime; // 添加时间
     private Date updateTime; // 更新时间

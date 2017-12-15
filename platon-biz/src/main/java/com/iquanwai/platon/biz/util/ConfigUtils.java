@@ -217,7 +217,7 @@ public class ConfigUtils {
     }
 
     /**
-     * 获取限免小课 ProblemId
+     * 获取限免课程 ProblemId
      */
     public static Integer getTrialProblemId() {
         return getIntValue("rise.trial.problem.id");
@@ -306,7 +306,7 @@ public class ConfigUtils {
     }
 
     /**
-     * 读取热门小课配置
+     * 读取热门课程配置
      */
     public static List<Integer> loadHotProblemList() {
         String idStr = getValue("problem.hot.list");

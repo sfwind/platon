@@ -9,7 +9,7 @@ public class EssenceCard {
      * db 字段
      */
     private Integer id;
-    private Integer problemId; // 小课id
+    private Integer problemId; // 课程id
     private Integer chapterId; // 章节id
     private String tag; // 成为 XXX 力爆表的人
     private String essenceTitle; // 精华卡片标题
