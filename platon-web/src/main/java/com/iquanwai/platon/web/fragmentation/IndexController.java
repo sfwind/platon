@@ -54,29 +54,31 @@ public class IndexController {
     private ActivityMessageService activityMessageService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    //商学院按钮url
+    // 商学院按钮url
     private static final String INDEX_BUSINESS_SCHOOL_URL = "/rise/static/rise";
-    //训练营按钮url
+    // 训练营按钮url
     private static final String INDEX_CAMP_URL = "/rise/static/camp";
-    //关注页面
+    // 关注页面
     private static final String SUBSCRIBE_URL = "/subscribe";
-    //内测页面
+    // 内测页面
     private static final String FORBID_URL = "/403.jsp";
-    //训练营售卖页
+    // 训练营售卖页
     private static final String CAMP_SALE_URL = "/pay/camp";
-    //商学院售卖页
+    // 训练营倒计时页面
+    private static final String CAMP_COUNT_DOWN_URL = "/rise/static/camp/count/down";
+    // 商学院售卖页
     private static final String BUSINESS_SCHOOL_SALE_URL = "/pay/rise";
-    //倒计时页面
+    // 倒计时页面
     private static final String BUSINESS_COUNT_DOWN_URL = "/rise/static/business/count/down";
-    //课程计划页面
+    // 课程计划页面
     private static final String SCHEDULE_NOTICE = "/rise/static/course/schedule/start";
-    //圈圈问答最近的页面
+    // 圈圈问答最近的页面
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
-    //填写信息页面
+    // 填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
-    //申请成功页面
+    // 申请成功页面
     private static final String APPLY_SUCCESS = "/pay/apply";
-    //新学习页面
+    // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
 
     private static final String RISE_VIEW = "course";
@@ -185,6 +187,9 @@ public class IndexController {
         return courseView(request, loginUser, new ModuleShow(), NOTE_VIEW);
     }
 
+    /**
+     * 主菜单：商学院
+     */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击商学院按钮");
@@ -274,6 +279,9 @@ public class IndexController {
                 (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
     }
 
+    /**
+     * 主菜单：训练营
+     */
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
     public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击训练营按钮");
@@ -315,6 +323,9 @@ public class IndexController {
         if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
             if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
                 activityMessageService.loginMsg(loginUser.getId());
+            } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
+                response.sendRedirect(CAMP_COUNT_DOWN_URL);
+                return null;
             } else {
                 response.sendRedirect(CAMP_SALE_URL);
                 return null;

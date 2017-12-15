@@ -28,7 +28,7 @@ public interface PlanService {
     /**
      * 检查是否能够选新课
      *
-     * @param plans  用户的课程数据
+      @param plans  用户的课程数据
      * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId);
@@ -36,7 +36,7 @@ public interface PlanService {
     /**
      * 检查是否能够选训练营
      *
-     * @param problemId  课程id
+      @param problemId  课程id
      * @param profileId  用户id
      * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
@@ -92,10 +92,8 @@ public interface PlanService {
      * 当前节练习是否可以做
      * @param series 节序号
      * @param improvementPlan 训练计划
-     * @return -1 非会员未解锁
-     * @return -2 之前系列未完成
      * @return -3 课程已过期
-     * */
+     */
     Integer checkPractice(Integer series, ImprovementPlan improvementPlan);
 
     /**
@@ -122,10 +120,9 @@ public interface PlanService {
      * 查看是否可以完成训练
      * @param plan 计划
      * @return left:是否完成全部必做
-     *
-     *  right:最小完成天数,0-已过，1+未过
+     * right:最小完成天数,0-已过，1+未过
      */
-    Pair<Boolean,Integer> checkCloseable(ImprovementPlan plan);
+    Pair<Boolean, Integer> checkCloseable(ImprovementPlan plan);
 
     /**
      * 记录用户当前所进行的小节序号
@@ -154,25 +151,15 @@ public interface PlanService {
 
     /**
      * 用户每学习完一章之后，弹出该章章节卡
-     * @param profileId
-     * @param problemId
-     * @param practicePlanId
-     * @return
      */
     String loadChapterCard(Integer profileId, Integer problemId, Integer practicePlanId);
 
     /**
-     * 课程介绍页的按钮状态
-     * @return
+     * 小课介绍页的按钮状态
      */
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
     void forceOpenCampOrder(String orderId);
-//    void forceOpenCampOrder(String orderId, MonthlyCampConfig monthlyCampConfig);
-//
-//    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg);
-//
-//    Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
 
     /**
      * 课程强开

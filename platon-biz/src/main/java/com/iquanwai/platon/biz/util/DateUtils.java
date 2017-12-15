@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.util;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
+import org.joda.time.Days;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -35,6 +36,7 @@ public class DateUtils {
     public static String parseDateToFormat7(Date date) {
         return format7.print(new DateTime(date));
     }
+
     public static String parseDateToFormat8(Date date) {
         return format8.print(new DateTime(date));
     }
@@ -72,17 +74,11 @@ public class DateUtils {
     }
 
     public static int interval(Date date) {
-        long now = System.currentTimeMillis();
-        long thatTime = date.getTime();
-
-        return (int) Math.abs((now - thatTime) / 1000) / 60 / 60 / 24;
+        return Math.abs(Days.daysBetween(new DateTime(date), new DateTime().withTimeAtStartOfDay()).getDays());
     }
 
     public static int interval(Date date1, Date date2) {
-        long thisTime = date1.getTime();
-        long thatTime = date2.getTime();
-
-        return (int) Math.abs((thisTime - thatTime) / 1000) / 60 / 60 / 24;
+        return Math.abs(Days.daysBetween(new DateTime(date1), new DateTime(date2)).getDays());
     }
 
     public static long currentTimestamp() {
@@ -175,7 +171,7 @@ public class DateUtils {
         return new DateTime(gmtCreate.getTime()).plusWeeks(1).withDayOfWeek(DateTimeConstants.MONDAY).toDate();
     }
 
-    public static Date getThisMonday(Date gmtCreate){
+    public static Date getThisMonday(Date gmtCreate) {
         return new DateTime(gmtCreate).withDayOfWeek(DayOfWeek.MONDAY.getValue()).toDate();
     }
 }

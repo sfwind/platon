@@ -120,19 +120,20 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long risememberCount = riseMembers.stream().filter(riseMember ->
-                        // 半年/一年 精英版
-                        riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                // 半年/一年 精英版
+                riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                        riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
         ).count();
         // 如果转化成商学院 跳转训练营售卖页
-        if(risememberCount > 0){
+        if (risememberCount > 0) {
             return false;
         }
 
-        Long campCount = riseMembers.stream().filter(riseMember ->
-                // 训练营
-                riseMember.getMemberTypeId() == RiseMember.CAMP
-        ).count();
+        // 训练营
+        Long campCount = riseMembers.stream()
+                .filter(riseMember -> riseMember.getMemberTypeId() == RiseMember.CAMP
+                        && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) <= 0)
+                .count();
         return campCount.intValue() > 0;
     }
 
@@ -168,6 +169,12 @@ public class WhiteListServiceImpl implements WhiteListService {
     public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
         // 去新课程计划表则不显示
         return !this.isGoToNewSchedulePlans(profileId, riseMembers);
+    }
+
+    @Override
+    public boolean isGoCampCountDownPage(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
     }
 
 }

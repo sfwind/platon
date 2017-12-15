@@ -60,7 +60,7 @@ public class ReportServiceImpl implements ReportService {
         if (plan.getStatus() == ImprovementPlan.CLOSE) {
             studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()) + 1);
         } else {
-            studyDays = DateUtils.interval(plan.getStartDate()) + 1;
+            studyDays = DateUtils.interval(plan.getStartDate());
         }
         if (studyDays > 30) {
             // 最多显示30天
@@ -134,7 +134,7 @@ public class ReportServiceImpl implements ReportService {
         calculateAppScores(report, applicationPlanList);
     }
 
-    private void calculateAppScores(ImprovementReport report,List<PracticePlan> applicationPlanList) {
+    private void calculateAppScores(ImprovementReport report, List<PracticePlan> applicationPlanList) {
         List<Integer> applicationIds = applicationPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
 
         List<ApplicationPractice> applicationPractices;
@@ -204,7 +204,7 @@ public class ReportServiceImpl implements ReportService {
         submitMap.forEach((series, submits) -> {
             // 综合小节内题目的得分
             seriesScores.putIfAbsent(series, 0);
-            submits.forEach(item-> seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore()));
+            submits.forEach(item -> seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore()));
         });
         totalMap.forEach((series, practice) -> {
             // 综合小节内题目的得分

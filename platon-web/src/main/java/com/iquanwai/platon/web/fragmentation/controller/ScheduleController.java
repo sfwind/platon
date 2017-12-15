@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleModifyDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.MonthCourseScheduleDto;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -197,6 +199,17 @@ public class ScheduleController {
         } else {
             // 非商学院
             return WebUtils.error("请先报名商学院哦");
+        }
+    }
+
+    @RequestMapping(value = "/camp/count/down", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadMonthlyCampCountDown(LoginUser loginUser) {
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+        if (riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new Date()) > 0) {
+            int interval = DateUtils.interval(riseMember.getOpenDate());
+            return WebUtils.result(String.format("%02d", interval));
+        } else {
+            return WebUtils.error("无当前页面访问权限");
         }
     }
 }
