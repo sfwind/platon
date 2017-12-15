@@ -67,6 +67,8 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
+    @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -314,7 +316,7 @@ public class PlanServiceImpl implements PlanService {
         }
 
         Problem problem = cacheService.getProblem(problemId);
-        if(!problem.getPublish()){
+        if (!problem.getPublish()) {
             return new MutablePair<>(-1, "该小课还在开发中，敬请期待");
         }
 
@@ -705,13 +707,13 @@ public class PlanServiceImpl implements PlanService {
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
 
+        Integer sellingYear = monthlyCampConfig.getSellingYear();
         Integer sellingMonth = monthlyCampConfig.getSellingMonth();
 
-        Integer category = accountService.loadUserScheduleCategory(profileId);
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
-        List<Integer> problemIds = courseScheduleDefaults.stream()
-                .filter(scheduleDefault -> sellingMonth.equals(scheduleDefault.getMonth()))
-                .map(CourseScheduleDefault::getProblemId).collect(Collectors.toList());
+        List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
+        List<Integer> problemIds = monthlyCampSchedules.stream()
+                .filter(monthlyCampSchedule -> monthlyCampSchedule.getYear().equals(sellingYear) && monthlyCampSchedule.getMonth().equals(sellingMonth))
+                .map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
         for (Integer problemId : problemIds) {
             Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), monthlyCampConfig.getCloseDate());

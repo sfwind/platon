@@ -15,6 +15,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -120,12 +121,12 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long risememberCount = riseMembers.stream().filter(riseMember ->
-                        // 半年/一年 精英版
-                        riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                // 半年/一年 精英版
+                riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                        riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
         ).count();
         // 如果转化成商学院 跳转训练营售卖页
-        if(risememberCount > 0){
+        if (risememberCount > 0) {
             return false;
         }
 
@@ -168,6 +169,16 @@ public class WhiteListServiceImpl implements WhiteListService {
     public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
         // 去新课程计划表则不显示
         return !this.isGoToNewSchedulePlans(profileId, riseMembers);
+    }
+
+    @Override
+    public boolean isMonthlyCampStart(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if (riseMember == null || riseMember.getMemberTypeId() != RiseMember.CAMP) {
+            return true;
+        } else {
+            return riseMember.getOpenDate().compareTo(new Date()) >= 0;
+        }
     }
 
 }
