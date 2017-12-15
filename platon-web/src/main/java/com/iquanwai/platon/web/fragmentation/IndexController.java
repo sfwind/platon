@@ -421,7 +421,15 @@ public class IndexController {
             default:
                 resourceUrl = ConfigUtils.staticResourceUrl(domainName);
         }
-        mav.addObject("resource", resourceUrl);
+        if (request.getParameter("debug") != null) {
+            if (ConfigUtils.isFrontDebug()) {
+                mav.addObject("resource", "http://0.0.0.0:4000/bundle.js");
+            } else {
+                mav.addObject("resource", resourceUrl);
+            }
+        } else {
+            mav.addObject("resource", resourceUrl);
+        }
 
         Map<String, String> userParam = Maps.newHashMap();
         userParam.put("userName", account != null ? account.getWeixinName() : "");
