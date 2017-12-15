@@ -15,7 +15,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -173,13 +172,9 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public boolean isMonthlyCampStart(Integer profileId) {
+    public boolean isGoCampCountDownPage(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember == null || riseMember.getMemberTypeId() != RiseMember.CAMP) {
-            return false;
-        } else {
-            return riseMember.getOpenDate().compareTo(new Date()) >= 0;
-        }
+        return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
     }
 
 }

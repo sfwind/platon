@@ -63,8 +63,8 @@ public interface WhiteListService {
     Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers);
 
     /**
-     * 查看当前用户的小课训练营身份是否开始<br/>
-     * 如果不是小课训练营用户，返回 true
+     * 是否进入倒计时页面 <br/>
+     * 只有未开课的小课训练营的用户才能进
      */
-    boolean isMonthlyCampStart(Integer profileId);
+    boolean isGoCampCountDownPage(Integer profileId);
 }

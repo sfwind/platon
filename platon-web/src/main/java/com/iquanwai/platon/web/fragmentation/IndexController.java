@@ -323,7 +323,7 @@ public class IndexController {
         if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
             if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
                 activityMessageService.loginMsg(loginUser.getId());
-            } else if (whiteListService.isMonthlyCampStart(loginUser.getId())) {
+            } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
                 response.sendRedirect(CAMP_COUNT_DOWN_URL);
                 return null;
             } else {
