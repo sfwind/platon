@@ -22,6 +22,24 @@ public interface GeneratePlanService {
     void forceReopenPlan(Integer planId);
 
     /**
+     * 创建一带二活动计划
+     * @param profileId ProfileId
+     * @return 计划id
+     */
+    Integer createTeamLearningPlan(Integer profileId);
+
+    /**
+     * 生成学习计划
+     * @param profileId profileId
+     * @param problemId 小课id
+     * @param maxSeries 最大学习节数
+     * @param startDate 开始时间
+     * @param closeDate 结束时间
+     * @return 小课id
+     */
+    Integer generatePlan(Integer profileId, Integer problemId, Integer maxSeries, Date startDate, Date closeDate);
+
+    /**
      * 为学员生成训练计划
      *  @param profileId 学员id
      *  @param problemId 问题id

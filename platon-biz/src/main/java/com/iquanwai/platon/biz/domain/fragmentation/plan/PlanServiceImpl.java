@@ -120,7 +120,7 @@ public class PlanServiceImpl implements PlanService {
         // 所有的综合练习是否完成
         List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
         // 拿到未完成的综合训练
-        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && practicePlan.getStatus() == 0)
+        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
                 .collect(Collectors.toList());
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
@@ -205,7 +205,7 @@ public class PlanServiceImpl implements PlanService {
                 if ((practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && practicePlan.getStatus() == 0) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
                     return false;
                 }
             }
@@ -244,10 +244,13 @@ public class PlanServiceImpl implements PlanService {
         Assert.notNull(planId, "训练计划不能为空");
         Assert.notNull(runningPractice, "练习计划不能为空");
         //如果练习未解锁,则解锁练习
-        runningPractice.stream().filter(practicePlan -> !practicePlan.getUnlocked()).forEach(practicePlan -> {
-            practicePlan.setUnlocked(true);
-            practicePlanDao.unlock(practicePlan.getId());
-        });
+        runningPractice.stream()
+                .filter(practicePlan -> !practicePlan.getUnlocked())
+                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
+                .forEach(practicePlan -> {
+                    practicePlan.setUnlocked(true);
+                    practicePlanDao.unlock(practicePlan.getId());
+                });
         Integer progress = runningPractice.get(0).getSeries();
         improvementPlanDao.updateProgress(planId, progress - 1);
     }
