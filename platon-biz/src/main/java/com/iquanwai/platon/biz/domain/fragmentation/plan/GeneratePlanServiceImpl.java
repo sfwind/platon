@@ -110,7 +110,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //生成小目标
         practicePlans.addAll(createChallengePractice(problem, planId));
         if (maxSeries != null) {
-            practicePlans.stream().filter(item -> item.getSeries() > maxSeries).forEach(item -> item.setStatus(PracticePlan.STATUS.UNCOMPLETED));
+            practicePlans.stream().filter(item -> item.getSeries() > maxSeries).forEach(item -> item.setStatus(PracticePlan.STATUS.NEVER_UNLOCK));
         }
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
