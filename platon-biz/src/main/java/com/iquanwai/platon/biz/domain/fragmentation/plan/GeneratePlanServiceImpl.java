@@ -185,6 +185,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         templateMessageService.sendMessage(templateMessage);
     }
 
+    /**
+     * 创建小目标记录
+     * @param problem 小课信息
+     * @param planId 计划id
+     * @return 课程计划对象
+     */
     private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
         Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selected = Lists.newArrayList();
@@ -203,6 +209,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selected;
     }
 
+    /**
+     * 创建应用题记录
+     * @param planId 计划id
+     * @param problemScheduleList 应用题课程计划
+     * @return 课程计划对象
+     */
     private List<PracticePlan> createApplicationPractice(Problem problem, int planId,
                                                          List<ProblemSchedule> problemScheduleList) {
         Assert.notNull(problem, "problem不能为空");
@@ -246,6 +258,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
 
+    /**
+     * 创建选择题记录
+     * @param planId 计划id
+     * @param problemScheduleList 选择题课程计划
+     * @return 课程计划对象
+     */
     private List<PracticePlan> createWarmupPractice(Integer planId,
                                                     List<ProblemSchedule> problemScheduleList) {
         List<PracticePlan> selectedPractice = Lists.newArrayList();
@@ -291,6 +309,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return selectedPractice;
     }
 
+    /**
+     * 创建plan记录
+     * @param problem 小课信息
+     * @param profileId 用户id
+     * @param startDate 开始时间
+     * @param closeDate 结束时间
+     * @return 小课id
+     */
     private int createPlan(Problem problem, Integer profileId, Date startDate, Date closeDate) {
         Assert.notNull(problem, "problem不能为空");
         Assert.notNull(profileId, "profileId不能为空");
@@ -320,6 +346,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return improvementPlanDao.insert(improvementPlan);
     }
 
+    /**
+     * 创建小课plan记录
+     * @param problem 小课信息
+     * @param profileId 用户id
+     * @return planId
+     */
     private int createPlan(Problem problem, Integer profileId) {
         return this.createPlan(problem, profileId, new Date(), DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
     }

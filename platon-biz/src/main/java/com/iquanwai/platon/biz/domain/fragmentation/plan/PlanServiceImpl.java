@@ -18,6 +18,7 @@ import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -704,7 +705,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void forceOpenCampOrder(String orderId) {
+    public void magicOpenCampOrder(String orderId) {
         MonthlyCampOrder monthlyCampOrder = monthlyCampOrderDao.loadTrainOrder(orderId);
         Integer profileId = monthlyCampOrder.getProfileId();
 
@@ -719,45 +720,26 @@ public class PlanServiceImpl implements PlanService {
                 .map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
         for (Integer problemId : problemIds) {
-            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), monthlyCampConfig.getCloseDate());
 
-            // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
-            Profile profile = accountService.getProfile(profileId);
-            if (profile.getRequestCommentCount() == 0) {
-                improvementPlanDao.updateRequestComment(planId, 1);
+            Date closeDate = null;
+            if (new DateTime(monthlyCampConfig.getOpenDate()).isAfterNow()) {
+                // 开营时间在现在之后 11-12 > 11-11 14:20
+                closeDate = new DateTime(monthlyCampConfig.getOpenDate()).plusDays(30).toDate();
+            } else {
+                // 开营时间在现在之前 11-12 < 11-12 14:00
+                closeDate = new DateTime().plusDays(30).toDate();
+            }
+
+            Integer planId = generatePlanService.magicUnlockProblem(profileId, problemId, closeDate, false);
+
+            if (planId != null) {
+                // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
+                Profile profile = accountService.getProfile(profileId);
+                if (profile.getRequestCommentCount() == 0) {
+                    improvementPlanDao.updateRequestComment(planId, 1);
+                }
             }
         }
-    }
-
-    @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
-        Integer resultPlanId;
-
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        Profile profile = accountService.getProfile(profileId);
-        if (improvementPlan == null) {
-            // 用户从来没有开过课程，新开课程
-            resultPlanId = generatePlanService.generatePlan(profileId, problemId);
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(resultPlanId, startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
-            }
-            // 开始时间不是今天,则不发开课通知
-            if (startDate != null && startDate.before(new Date())) {
-                generatePlanService.sendOpenPlanMsg(profile.getOpenid(), problemId);
-            }
-        } else {
-            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
-            generatePlanService.forceReopenPlan(improvementPlan.getId());
-            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
-            }
-            resultPlanId = improvementPlan.getId();
-        }
-        return resultPlanId;
     }
 
     /**
@@ -806,5 +788,10 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         return new MutablePair<>(access, message);
+    }
+
+    @Override
+    public void unlockNeverUnlockPlans(Integer profileId){
+        improvementPlanDao.loadAllPlans(profileId).stream().map()
     }
 }
