@@ -38,7 +38,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     public boolean checkGroupPromotionAuthority(String openId) {
         // 查看用户是否关注
         try {
-            Account account = accountService.getAccount(openId, true);
+            Account account = accountService.getAccount(openId, false);
             if (account == null) {
                 return true;
             } else {
@@ -100,6 +100,12 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         Profile profile = accountService.getProfile(openId);
         Assert.notNull(profile, "扫码用户不能为空");
         return participateGroup(profile.getId(), groupCode);
+    }
+
+    @Override
+    public boolean hasParticipateGroup(Integer profileId) {
+        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
+        return groupPromotion != null;
     }
 
 }

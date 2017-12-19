@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -47,6 +48,18 @@ public class GroupPromotionDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public GroupPromotion loadByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM GroupPromotion WHERE ProfileId = ? AND Del = 0";
+        ResultSetHandler<GroupPromotion> h = new BeanHandler<>(GroupPromotion.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 
 }

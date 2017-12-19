@@ -22,4 +22,9 @@ public interface GroupPromotionService {
     boolean participateGroup(Integer profileId, String groupCode);
 
     boolean participateGroup(String openId, String groupCode);
+
+    /**
+     * 查看一个用户是否已经参加团队学习活动
+     */
+    boolean hasParticipateGroup(Integer profileId);
 }
