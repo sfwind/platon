@@ -20,4 +20,6 @@ public interface GroupPromotionService {
      * 如果是参加一个新建团队，额外给团长开课
      */
     boolean participateGroup(Integer profileId, String groupCode);
+
+    boolean participateGroup(String openId, String groupCode);
 }

@@ -95,4 +95,11 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         return insertResult > 0;
     }
 
+    @Override
+    public boolean participateGroup(String openId, String groupCode) {
+        Profile profile = accountService.getProfile(openId);
+        Assert.notNull(profile, "扫码用户不能为空");
+        return participateGroup(profile.getId(), groupCode);
+    }
+
 }
