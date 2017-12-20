@@ -81,7 +81,7 @@ public class IndexController {
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
     // 组团学习倒计时页面
-    private static final String GROUP_PROMOTION_COUNT_DOWN = "/rise/static/grouppromotion/count/down";
+    private static final String GROUP_PROMOTION_COUNT_DOWN = "/rise/static/group/promotion/count/down";
 
     private static final String RISE_VIEW = "course";
     private static final String NOTE_VIEW = "note";
