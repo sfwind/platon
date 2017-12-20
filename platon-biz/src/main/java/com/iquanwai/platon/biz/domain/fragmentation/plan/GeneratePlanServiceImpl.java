@@ -187,8 +187,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     /**
      * 创建小目标记录
+     *
      * @param problem 小课信息
-     * @param planId 计划id
+     * @param planId  计划id
      * @return 课程计划对象
      */
     private List<PracticePlan> createChallengePractice(Problem problem, int planId) {
@@ -211,7 +212,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     /**
      * 创建应用题记录
-     * @param planId 计划id
+     *
+     * @param planId              计划id
      * @param problemScheduleList 应用题课程计划
      * @return 课程计划对象
      */
@@ -260,7 +262,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     /**
      * 创建选择题记录
-     * @param planId 计划id
+     *
+     * @param planId              计划id
      * @param problemScheduleList 选择题课程计划
      * @return 课程计划对象
      */
@@ -311,7 +314,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     /**
      * 创建plan记录
-     * @param problem 小课信息
+     *
+     * @param problem   小课信息
      * @param profileId 用户id
      * @param startDate 开始时间
      * @param closeDate 结束时间
@@ -348,7 +352,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     /**
      * 创建小课plan记录
-     * @param problem 小课信息
+     *
+     * @param problem   小课信息
      * @param profileId 用户id
      * @return planId
      */
@@ -366,9 +371,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Integer resultPlanId = null;
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null) {
-            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
-            forceReopenPlan(improvementPlan.getId());
             List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
+            if (practicePlans.stream().anyMatch(item -> PracticePlan.STATUS.NEVER_UNLOCK.equals(item.getStatus()))) {
+                // 有永不解锁的小节
+                practicePlanDao.revertNeverUnlockPracticePlan(improvementPlan.getId());
+            }
+
             Map<Integer, List<PracticePlan>> seriesGroup = practicePlans.stream().filter(item -> item.getSeries() != 0)
                     .collect(Collectors.groupingBy(PracticePlan::getSeries));
             List<Integer> seriesList = Lists.newArrayList(seriesGroup.keySet());
@@ -392,11 +400,16 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 }
             }
             if (startDate != null) {
+                // 刷新开始时间
                 improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
             }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
+            if (closeDate == null) {
+                // 默认关闭时间，30天
+                closeDate = DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH);
             }
+            // 设置为进行中，RiseMember为1，并且更新关闭时间
+            improvementPlanDao.reopenPlan(improvementPlan.getId(), closeDate);
+
             resultPlanId = improvementPlan.getId();
         }
         return resultPlanId;

@@ -165,4 +165,10 @@ public interface PlanService {
     void magicOpenCampOrder(String orderId);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
+
+    /**
+     * 解锁之前用不解锁的计划
+     * @param profileId 用户id
+     */
+    void unlockNeverUnlockPlans(Integer profileId);
 }

@@ -264,7 +264,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     /**
      * 重新开课
      * @param planId planId
-     * @param closeDate 关闭订单
+     * @param closeDate 关闭时间
      */
     public void reopenPlan(Integer planId, Date closeDate) {
         QueryRunner runner = new QueryRunner(getDataSource());

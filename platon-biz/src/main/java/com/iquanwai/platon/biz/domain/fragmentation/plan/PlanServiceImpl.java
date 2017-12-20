@@ -719,17 +719,16 @@ public class PlanServiceImpl implements PlanService {
                 .filter(monthlyCampSchedule -> monthlyCampSchedule.getYear().equals(sellingYear) && monthlyCampSchedule.getMonth().equals(sellingMonth))
                 .map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
+        Date closeDate = null;
+        if (new DateTime(monthlyCampConfig.getOpenDate()).isAfterNow()) {
+            // 开营时间在现在之后 11-12 > 11-11 14:20
+            closeDate = new DateTime(monthlyCampConfig.getOpenDate()).plusDays(30).toDate();
+        } else {
+            // 开营时间在现在之前 11-12 < 11-12 14:00
+            closeDate = new DateTime().plusDays(30).toDate();
+        }
+
         for (Integer problemId : problemIds) {
-
-            Date closeDate = null;
-            if (new DateTime(monthlyCampConfig.getOpenDate()).isAfterNow()) {
-                // 开营时间在现在之后 11-12 > 11-11 14:20
-                closeDate = new DateTime(monthlyCampConfig.getOpenDate()).plusDays(30).toDate();
-            } else {
-                // 开营时间在现在之前 11-12 < 11-12 14:00
-                closeDate = new DateTime().plusDays(30).toDate();
-            }
-
             Integer planId = generatePlanService.magicUnlockProblem(profileId, problemId, closeDate, false);
 
             if (planId != null) {
@@ -791,7 +790,25 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void unlockNeverUnlockPlans(Integer profileId){
-        improvementPlanDao.loadAllPlans(profileId).stream().map()
+    public void unlockNeverUnlockPlans(Integer profileId) {
+        List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
+        List<Integer> planIds = plans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
+        List<PracticePlan> unlockPractices = practicePlanDao.loadNeverUnlockPlan(planIds);
+        List<Integer> unlockPlanIds = unlockPractices.stream().map(PracticePlan::getPlanId).collect(Collectors.toList());
+
+
+
+        plans.stream().filter(item -> unlockPlanIds.contains(item.getId())).forEach(item -> {
+            DateTime otherCloseDate = new DateTime().plusDays(30);
+            Date closeDate;
+            if (otherCloseDate.isAfter(item.getCloseDate().getTime())) {
+                closeDate = otherCloseDate.toDate();
+            } else {
+                closeDate = item.getCloseDate();
+            }
+
+            // 解锁
+            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate, false);
+        });
     }
 }
