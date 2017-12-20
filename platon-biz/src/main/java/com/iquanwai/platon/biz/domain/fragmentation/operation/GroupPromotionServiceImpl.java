@@ -42,7 +42,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     // 推广成功人数
-    private static int GROUP_PROMOTION_SUCCESS_COUNT = 3;
+    private static final int GROUP_PROMOTION_SUCCESS_COUNT = 3;
 
     @Override
     public boolean checkGroupPromotionAuthority(String openId) {
