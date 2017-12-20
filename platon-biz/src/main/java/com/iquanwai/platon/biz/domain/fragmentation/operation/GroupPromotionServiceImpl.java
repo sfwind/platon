@@ -97,6 +97,12 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         List<GroupPromotion> groupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
         Assert.isTrue(groupPromotions.size() > 0, "团队编号不存在");
 
+        // 如果已经入团，直接返回 true
+        Long existPromotion = groupPromotions.stream().filter(groupPromotion -> groupPromotion.getProfileId().equals(profileId)).count();
+        if (existPromotion.intValue() > 0) {
+            return true;
+        }
+
         GroupPromotion groupPromotion = new GroupPromotion();
         groupPromotion.setProfileId(profileId);
         groupPromotion.setGroupCode(groupCode);
