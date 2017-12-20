@@ -41,19 +41,13 @@ public class GroupPromotionController {
         groupPromotionOpenDateTime = new DateTime(2018, 1, 7, 0, 0);
     }
 
-    // @RequestMapping(value = "/participate/authority")
-    // public ResponseEntity<Map<String, Object>> loadGroupPromotionAuthority(LoginUser loginUser) {
-    //     // 页面可能无 ProfileId
-    //     boolean checkGroupPromotionAuthority = groupPromotionService.checkGroupPromotionAuthority(loginUser.getOpenId());
-    //     if (checkGroupPromotionAuthority) {
-    //         return WebUtils.success();
-    //     } else {
-    //         return WebUtils.error("用户无参加活动权限");
-    //     }
-    // }
-
     @RequestMapping(value = "/participate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
+        boolean hasParticipateGroup = groupPromotionService.hasParticipateGroup(loginUser.getId());
+        if (hasParticipateGroup) {
+            return WebUtils.success();
+        }
+
         // 能点击参团必然是已经成功关注的人员
         boolean checkGroupPromotionAuthority = groupPromotionService.checkGroupPromotionAuthority(loginUser.getOpenId());
         if (checkGroupPromotionAuthority) {
