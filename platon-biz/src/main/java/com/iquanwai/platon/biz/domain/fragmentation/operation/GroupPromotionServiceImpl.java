@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
@@ -25,6 +26,8 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private GeneratePlanService generatePlanService;
     @Autowired
     private GroupPromotionDao groupPromotionDao;
     @Autowired
@@ -91,11 +94,11 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         if (insertResult > 0) {
             if (groupPromotions.size() == 1) {
                 // 如果响应了一个新晋团队，则将团长开课
-                // TODO 添加团长开课逻辑
+                generatePlanService.createTeamLearningPlan(groupPromotions.get(0).getProfileId());
                 logger.info("给团长开课");
             }
             // 给自己开课
-            // TODO 自己开课逻辑
+            generatePlanService.createTeamLearningPlan(profileId);
             logger.info("给自己开课");
         }
         return insertResult > 0;
