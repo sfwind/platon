@@ -62,7 +62,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     @Override
     public Integer createTeamLearningPlan(Integer profileId) {
-        return this.generatePlan(profileId, ConfigUtils.getTeamLearningProblemId(), 3, new Date(), DateUtils.afterDays(new Date(), 7));
+        Integer teamLearningProblemId = ConfigUtils.getTeamLearningProblemId();
+        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, teamLearningProblemId);
+        if (plan != null) {
+            return this.magicUnlockProblem(profileId, teamLearningProblemId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH), false);
+        } else {
+            // TODO 修改maxSeries和closeDate
+            return this.generatePlan(profileId, teamLearningProblemId, 3, new Date(), DateUtils.afterDays(new Date(), 7));
+        }
     }
 
 
