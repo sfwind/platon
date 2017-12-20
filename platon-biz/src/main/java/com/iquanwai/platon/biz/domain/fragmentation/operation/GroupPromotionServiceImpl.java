@@ -100,8 +100,8 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         logger.info("即将入团人员Id: {}", profileId);
 
         // 如果已经入团，直接返回 true
-        GroupPromotion existPromotion = groupPromotionDao.loadByProfileId(profileId);
-        if (existPromotion != null) {
+        Long existPromotion = groupPromotions.stream().filter(groupPromotion -> groupPromotion.getProfileId().equals(profileId)).count();
+        if (existPromotion.intValue() > 0) {
             return true;
         }
 
