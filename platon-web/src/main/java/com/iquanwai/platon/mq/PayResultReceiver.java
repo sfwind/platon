@@ -51,6 +51,8 @@ public class PayResultReceiver {
                 operationEvaluateService.recordPayAction(profile.getId());
                 // 优惠推广活动
                 courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
+                // 打开之前永不解锁的小课
+                planService.unlockNeverUnlockPlans(profile.getId());
             }
         });
     }

@@ -77,9 +77,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         int planId;
 
         if (startDate != null && closeDate != null) {
-            planId = createPlan(problem, profileId);
-        } else {
             planId = createPlan(problem, profileId, startDate, closeDate);
+
+        } else {
+            planId = createPlan(problem, profileId);
         }
 
         List<PracticePlan> practicePlans = Lists.newArrayList();

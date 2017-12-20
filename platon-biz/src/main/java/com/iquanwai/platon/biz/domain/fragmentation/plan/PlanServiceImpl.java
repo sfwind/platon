@@ -794,7 +794,7 @@ public class PlanServiceImpl implements PlanService {
         List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
         List<Integer> planIds = plans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
         List<PracticePlan> unlockPractices = practicePlanDao.loadNeverUnlockPlan(planIds);
-        List<Integer> unlockPlanIds = unlockPractices.stream().map(PracticePlan::getPlanId).collect(Collectors.toList());
+        List<Integer> unlockPlanIds = unlockPractices.stream().map(PracticePlan::getPlanId).distinct().collect(Collectors.toList());
 
 
 

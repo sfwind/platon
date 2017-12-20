@@ -29,9 +29,8 @@ public class PracticePlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM PracticePlan WHERE PlanId in (" + produceQuestionMark(planIds.size()) + ") AND Status = 2 And Del=0";
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        List<Object> objects = Lists.newArrayList(planIds);
         try {
-            runner.query(sql, h, objects.toArray());
+            return runner.query(sql, h, planIds.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
