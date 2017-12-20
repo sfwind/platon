@@ -68,7 +68,7 @@ public class GroupPromotionController {
         }
     }
 
-    @RequestMapping(value = "/following", method = RequestMethod.POST)
+    @RequestMapping(value = "/following")
     public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
         // 页面可能无 ProfileId
         try {
