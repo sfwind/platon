@@ -55,6 +55,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     private static final String INDEX_URL = "/rise/static/learn";
 
+    /**
+     * 1带1带学相关值
+     */
+    private static final Integer TEAM_LEARNING_PROBLEM_ID = 20;
+    private static final Integer TEAM_LEARNING_MAX_SERIES = 2;
+
     @Override
     public void forceReopenPlan(Integer planId) {
         improvementPlanDao.reopenPlan(planId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
@@ -62,13 +68,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     @Override
     public Integer createTeamLearningPlan(Integer profileId) {
-        Integer teamLearningProblemId = ConfigUtils.getTeamLearningProblemId();
-        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, teamLearningProblemId);
+        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, TEAM_LEARNING_PROBLEM_ID);
         if (plan != null) {
-            return this.magicUnlockProblem(profileId, teamLearningProblemId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH), false);
+            return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH), false);
         } else {
             // TODO 修改maxSeries和closeDate
-            return this.generatePlan(profileId, teamLearningProblemId, 2, new Date(), DateUtils.afterDays(new Date(), 7));
+            return this.generatePlan(profileId, TEAM_LEARNING_PROBLEM_ID, TEAM_LEARNING_MAX_SERIES, new Date(), DateUtils.afterDays(new Date(), 7));
         }
     }
 

@@ -223,13 +223,6 @@ public class ConfigUtils {
         return getIntValue("rise.trial.problem.id");
     }
 
-    /**
-     * 获取新一期一带二 ProblemId
-     */
-    public static Integer getTeamLearningProblemId(){
-        return getIntValue("rise.team.learning.problem.id");
-    }
-
     public static Double getRiseCourseFee() {
         return getDoubleValue("rise.course.fee");
     }
