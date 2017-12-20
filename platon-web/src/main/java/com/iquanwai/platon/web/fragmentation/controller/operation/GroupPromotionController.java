@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller.operation;
 
 import com.iquanwai.platon.biz.domain.fragmentation.operation.GroupPromotionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -28,6 +29,8 @@ public class GroupPromotionController {
     private GroupPromotionService groupPromotionService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private QRCodeService qrCodeService;
 
     private DateTime groupPromotionOpenDateTime;
 
@@ -66,13 +69,14 @@ public class GroupPromotionController {
     }
 
     @RequestMapping(value = "/following", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(LoginUser loginUser) {
+    public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
         // 页面可能无 ProfileId
         try {
             accountService.getAccount(loginUser.getOpenId(), false);
             return WebUtils.success();
         } catch (NotFollowingException e) {
-            return WebUtils.error("用户还未关注");
+            String qrCodeBase64 = qrCodeService.loadQrBase64("groupPromotion_" + groupCode);
+            return WebUtils.error(201, qrCodeBase64);
         }
     }
 
