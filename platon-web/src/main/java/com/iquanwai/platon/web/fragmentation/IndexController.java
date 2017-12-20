@@ -80,6 +80,8 @@ public class IndexController {
     private static final String APPLY_SUCCESS = "/pay/apply";
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
+    // 组团学习倒计时页面
+    private static final String GROUP_PROMOTION_COUNT_DOWN = "/rise/static/grouppromotion/count/down";
 
     private static final String RISE_VIEW = "course";
     private static final String NOTE_VIEW = "note";
@@ -325,6 +327,9 @@ public class IndexController {
                 activityMessageService.loginMsg(loginUser.getId());
             } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
                 response.sendRedirect(CAMP_COUNT_DOWN_URL);
+                return null;
+            } else if (whiteListService.isGoGroupPromotionCountDownPage(loginUser.getId())) {
+                response.sendRedirect(GROUP_PROMOTION_COUNT_DOWN);
                 return null;
             } else {
                 response.sendRedirect(CAMP_SALE_URL);

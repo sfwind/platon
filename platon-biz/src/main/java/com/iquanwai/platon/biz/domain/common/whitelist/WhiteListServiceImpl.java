@@ -2,9 +2,11 @@ package com.iquanwai.platon.biz.domain.common.whitelist;
 
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
@@ -15,6 +17,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,7 +36,8 @@ public class WhiteListServiceImpl implements WhiteListService {
     private AccountService accountService;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
-
+    @Autowired
+    private GroupPromotionDao groupPromotionDao;
 
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
@@ -52,7 +56,6 @@ public class WhiteListServiceImpl implements WhiteListService {
                 .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
                         && new DateTime(item.getOpenDate()).isAfterNow() && !item.getExpired());
     }
-
 
     @Override
     public boolean isGoToScheduleNotice(Integer profileId, List<RiseMember> riseMembers) {
@@ -84,7 +87,6 @@ public class WhiteListServiceImpl implements WhiteListService {
             return false;
         }
     }
-
 
     @Override
     public boolean checkRiseMenuWhiteList(Integer profileId) {
@@ -175,6 +177,13 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean isGoCampCountDownPage(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
+    }
+
+    @Override
+    public boolean isGoGroupPromotionCountDownPage(Integer profileId) {
+        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
+        Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
+        return groupPromotion != null && campOpenDate.compareTo(new Date()) > 0;
     }
 
 }

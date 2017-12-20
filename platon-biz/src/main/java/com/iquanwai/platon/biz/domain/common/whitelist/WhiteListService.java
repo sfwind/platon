@@ -67,4 +67,6 @@ public interface WhiteListService {
      * 只有未开课的小课训练营的用户才能进
      */
     boolean isGoCampCountDownPage(Integer profileId);
+
+    boolean isGoGroupPromotionCountDownPage(Integer profileId);
 }
