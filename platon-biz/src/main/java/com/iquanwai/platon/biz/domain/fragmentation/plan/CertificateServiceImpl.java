@@ -3,15 +3,37 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.FullAttendanceRewardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseCertificateDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.FullAttendanceReward;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseCertificate;
+import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.*;
+import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.ImageUtils;
+import com.iquanwai.platon.biz.util.NumberToHanZi;
+import com.iquanwai.platon.biz.util.QiNiuUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,15 +42,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -274,7 +303,7 @@ public class CertificateServiceImpl implements CertificateService {
                 // 完成所有练习
                 Long unCompleteNecessaryCountLong = practicePlans.stream()
                         .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                        .filter(practicePlan -> practicePlan.getStatus() == 0)
+                        .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                     // 如果存在有没有完成的题数，则不予发送优惠券
@@ -370,7 +399,7 @@ public class CertificateServiceImpl implements CertificateService {
                     if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
                                 .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                                .filter(practicePlan -> practicePlan.getStatus() == 0)
+                                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
                                 .count();
                         if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                             //如果存在没有完成的题目，不不予发送优惠券
