@@ -76,6 +76,11 @@ public class GroupPromotionController {
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createGroupPromotion(LoginUser loginUser) {
+        boolean hasParticipateGroup = groupPromotionService.hasParticipateGroup(loginUser.getId());
+        if (!hasParticipateGroup) {
+            return WebUtils.error("用户无参加活动权限");
+        }
+
         GroupPromotion groupPromotion = groupPromotionService.createGroup(loginUser.getId());
         if (groupPromotion != null) {
             return WebUtils.result(groupPromotion.getGroupCode());
