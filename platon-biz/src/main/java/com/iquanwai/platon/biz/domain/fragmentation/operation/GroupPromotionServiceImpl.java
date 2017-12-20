@@ -63,13 +63,19 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     }
 
     @Override
-    public int createGroup(Integer profileId) {
+    public GroupPromotion createGroup(Integer profileId) {
+        GroupPromotion existPromotion = groupPromotionDao.loadByProfileId(profileId);
+        if (existPromotion != null) {
+            return existPromotion;
+        }
+
         String groupCode = CommonUtils.randomString(16);
         GroupPromotion groupPromotion = new GroupPromotion();
         groupPromotion.setProfileId(profileId);
         groupPromotion.setGroupCode(groupCode);
         groupPromotion.setLeader(true);
-        return groupPromotionDao.insert(groupPromotion);
+        groupPromotionDao.insert(groupPromotion);
+        return groupPromotion;
     }
 
     @Override
