@@ -118,7 +118,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
             generatePlanService.createTeamLearningPlan(profileId);
             logger.info("给自己开课");
             logger.info("发送参团成功消息");
-            sendParticipateSuccessLatest(profileId, groupCode);
+            sendParticipateSuccessMessage(profileId, groupCode);
         }
 
         return insertResult > 0;
@@ -138,7 +138,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     }
 
     // 新用户接收消息
-    private void sendParticipateSuccessLatest(Integer newProfileId, String groupCode) {
+    private void sendParticipateSuccessMessage(Integer newProfileId, String groupCode) {
         Profile newProfile = accountService.getProfile(newProfileId);
         List<GroupPromotion> currentGroupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
 
