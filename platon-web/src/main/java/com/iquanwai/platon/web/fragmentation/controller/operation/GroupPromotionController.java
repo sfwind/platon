@@ -41,33 +41,32 @@ public class GroupPromotionController {
         groupPromotionOpenDateTime = new DateTime(2018, 1, 7, 0, 0);
     }
 
-    @RequestMapping(value = "/participate/authority")
-    public ResponseEntity<Map<String, Object>> loadGroupPromotionAuthority(LoginUser loginUser) {
-        // 页面可能无 ProfileId
-        boolean checkGroupPromotionAuthority = groupPromotionService.checkGroupPromotionAuthority(loginUser.getOpenId());
-        if (checkGroupPromotionAuthority) {
-            return WebUtils.success();
-        } else {
-            return WebUtils.error("用户无参加活动权限");
-        }
-    }
-
-    // 貌似没有用
-    // @RequestMapping(value = "/participate", method = RequestMethod.POST)
-    // public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
-    //     // 能点击参团必然是已经成功关注的人员
+    // @RequestMapping(value = "/participate/authority")
+    // public ResponseEntity<Map<String, Object>> loadGroupPromotionAuthority(LoginUser loginUser) {
+    //     // 页面可能无 ProfileId
     //     boolean checkGroupPromotionAuthority = groupPromotionService.checkGroupPromotionAuthority(loginUser.getOpenId());
     //     if (checkGroupPromotionAuthority) {
-    //         boolean participateResult = groupPromotionService.participateGroup(loginUser.getId(), groupCode);
-    //         if (participateResult) {
-    //             return WebUtils.success();
-    //         } else {
-    //             return WebUtils.error("用户参团失败，请练习管理员");
-    //         }
+    //         return WebUtils.success();
     //     } else {
     //         return WebUtils.error("用户无参加活动权限");
     //     }
     // }
+
+    @RequestMapping(value = "/participate", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
+        // 能点击参团必然是已经成功关注的人员
+        boolean checkGroupPromotionAuthority = groupPromotionService.checkGroupPromotionAuthority(loginUser.getOpenId());
+        if (checkGroupPromotionAuthority) {
+            boolean participateResult = groupPromotionService.participateGroup(loginUser.getId(), groupCode);
+            if (participateResult) {
+                return WebUtils.success();
+            } else {
+                return WebUtils.error("用户参团失败，请练习管理员");
+            }
+        } else {
+            return WebUtils.error("用户无参加活动权限");
+        }
+    }
 
     @RequestMapping(value = "/following")
     public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
