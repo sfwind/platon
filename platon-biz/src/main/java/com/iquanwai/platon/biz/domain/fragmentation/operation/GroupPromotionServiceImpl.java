@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.support.Assert;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -38,6 +40,8 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private AuditionClassMemberDao auditionClassMemberDao;
+    @Autowired
+    private ProfileDao profileDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -144,6 +148,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         Assert.notNull(leaderPromotion, "团队创建人不能为空");
         Profile leaderProfile = accountService.getProfile(leaderPromotion.getProfileId());
 
+        // 给新人发送消息
         String newProfileMessage;
         if (remainderCount > 0) {
             newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入开启7天学习资格";
@@ -152,13 +157,22 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         }
         customerMessageService.sendCustomerMessage(newProfile.getOpenid(), newProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
+        // 给不是自己的老人发送消息
         String oldProfileMessage;
         if (remainderCount > 0) {
             oldProfileMessage = newProfile.getNickname() + "已接受邀请，加入学习。还差" + remainderCount + "人加入领取7天学习资格，分享邀请链接，和你的好友一起7天学习。如有疑问XXXX";
         } else {
             oldProfileMessage = "你已组团完毕，成功领取168元7天学习资格。1月7日晚20点课程正式开始，开课后记得评价你的好友，告诉ta了解你眼中的ta哦~";
         }
-        customerMessageService.sendCustomerMessage(newProfile.getOpenid(), oldProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        List<GroupPromotion> oldPromotionUsers = currentGroupPromotions.stream()
+                .filter(groupPromotion -> !groupPromotion.getProfileId().equals(newProfileId)).collect(Collectors.toList());
+        List<Integer> oldPromotionUsersProfileIds = oldPromotionUsers.stream().map(GroupPromotion::getProfileId).collect(Collectors.toList());
+        List<Profile> profiles = profileDao.queryAccounts(oldPromotionUsersProfileIds);
+        profiles.forEach(profile -> {
+            String openId = profile.getOpenid();
+            customerMessageService.sendCustomerMessage(openId, oldProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        });
+
     }
 
 }
