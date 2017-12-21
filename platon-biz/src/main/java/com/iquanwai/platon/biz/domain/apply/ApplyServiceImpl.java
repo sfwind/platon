@@ -82,11 +82,6 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId) {
-        return businessSchoolApplicationOrderDao.loadUnAppliedOrder(profileId);
-    }
-
-    @Override
     public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, String orderId) {
         Profile profile = accountService.getProfile(profileId);
         //获取上次审核的结果

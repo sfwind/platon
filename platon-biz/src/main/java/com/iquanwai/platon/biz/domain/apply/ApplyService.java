@@ -28,8 +28,6 @@ public interface ApplyService {
      */
     BusinessSchoolApplication loadCheckingApply(Integer profileId);
 
-    BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId);
-
     /**
      * 提交商学院申请
      *
