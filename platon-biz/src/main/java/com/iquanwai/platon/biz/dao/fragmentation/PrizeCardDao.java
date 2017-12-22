@@ -1,15 +1,19 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @Repository
 public class PrizeCardDao extends PracticeDBUtil {
@@ -65,4 +69,56 @@ public class PrizeCardDao extends PracticeDBUtil {
         return -1;
     }
 
+
+    /**
+     * 获得年度礼品卡
+     * @param profileId
+     * @return
+     */
+    public List<PrizeCard> getAnnualPrizeCards(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where profileId = ? and Category = 100 and Del = 0";
+        ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
+
+        try {
+           return runner.query(sql,h,profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return Lists.newArrayList();
+    }
+
+
+    /**
+     * 领取年度礼品卡
+     * @param id
+     * @return
+     */
+    public Integer updateAnnualPrizeCards(Integer id,Integer receiverProfileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update PrizeCard set receiverProfileId = ?,Used = 1 where id = ? and receiverProfileId is null and Used = 0 and Del = 0";
+        try {
+          return   runner.update(sql,receiverProfileId,id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return 0;
+    }
+
+
+    /**
+     * 查询用户是否已经领取过礼品卡
+     */
+    public PrizeCard loadAnnualCardByReceiver(Integer receiverProfileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = 100 and Del = 0 limit 1";
+        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
+
+        try {
+            return runner.query(sql,h,receiverProfileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return null;
+    }
 }

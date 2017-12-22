@@ -2,8 +2,25 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.iquanwai.platon.biz.po.PrizeCard;
 
+import java.util.List;
+
 public interface PrizeCardService {
     PrizeCard loadNoOwnerPrizeCard(Integer profileId);
 
     boolean exchangePrizeCard(Integer profileId, Integer prizeCardId);
+
+    /**
+     * 查询年度礼品卡
+     * @param profileId
+     * @return
+     */
+    List<PrizeCard> getAnnualPrizeCards(Integer profileId);
+
+    /**
+     * 领取礼品卡
+     * @param id
+     * @param profileId
+     * @return
+     */
+    String  receiveAnnualPrizeCards(Integer id,Integer profileId);
 }
