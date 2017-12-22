@@ -87,7 +87,6 @@ public class PrizeCardController {
             }
             currentId = profile.getId();
         }
-        System.out.println();
         Profile profile = accountService.getProfile(currentId);
         List<PrizeCard> prizeCards =  prizeCardService.getAnnualPrizeCards(currentId);
         List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();

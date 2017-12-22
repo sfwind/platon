@@ -49,7 +49,7 @@ public class SubscribePushReceiver {
                 }
                 String callback = push.getCallbackUrl();
                 String templateMsg = template.get(push.getScene());
-                logger.info("前往问题页面:{}", scene);
+                logger.info("前往callback页面:{}", scene);
                 customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
         });
@@ -59,6 +59,9 @@ public class SubscribePushReceiver {
     public void initTemplate() {
         template.put("show_word", "" +
                 "Hi 欢迎来到【圈外商学院|一期一会】\n\n" +
+                "<a href='{callbackUrl}'>查看答案文稿</a>");
+        template.put("annual","" +
+                "Hi 欢迎11111111来到【圈外商学院|一期一会】\n\n" +
                 "<a href='{callbackUrl}'>查看答案文稿</a>");
     }
 }
