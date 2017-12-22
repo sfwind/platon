@@ -5,7 +5,6 @@ import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -159,14 +158,17 @@ public interface PlanService {
      */
     Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
-    void forceOpenCampOrder(String orderId);
-
     /**
-     * 课程强开
-     * startDate 课程开始日期
-     * closeDate 课程关闭日期
+     * 重新打开这个订单对应的小课
+     * @param orderId 订单id
      */
-    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
+    void magicOpenCampOrder(String orderId);
 
     Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
+
+    /**
+     * 解锁之前用不解锁的计划
+     * @param profileId 用户id
+     */
+    void unlockNeverUnlockPlans(Integer profileId);
 }

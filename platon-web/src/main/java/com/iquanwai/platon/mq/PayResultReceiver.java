@@ -3,6 +3,7 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
@@ -33,6 +34,8 @@ public class PayResultReceiver {
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private CourseReductionService courseReductionService;
+    @Autowired
+    private PlanService planService;
 
     @PostConstruct
     public void init(){
@@ -48,6 +51,8 @@ public class PayResultReceiver {
                 operationEvaluateService.recordPayAction(profile.getId());
                 // 优惠推广活动
                 courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
+                // 打开之前永不解锁的小课
+                planService.unlockNeverUnlockPlans(profile.getId());
             }
         });
     }
