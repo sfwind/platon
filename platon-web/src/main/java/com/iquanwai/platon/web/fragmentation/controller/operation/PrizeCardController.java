@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.PrizeCardDto;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -66,20 +67,19 @@ public class PrizeCardController {
 
     /**
      * 加载年度礼品卡
-     * @param loginUser
+     * @param guestUser
      * @param riseId
      * @return
      */
     @RequestMapping("/load/annual/{riseId}")
-    public ResponseEntity<Map<String,Object>> loadAnnualPrizeCards(LoginUser loginUser,@PathVariable String riseId){
-        Assert.notNull(loginUser,"登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
+    public ResponseEntity<Map<String,Object>> loadAnnualPrizeCards(GuestUser guestUser, @PathVariable String riseId){
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
         operationLogService.log(operationLog);
 
         Integer currentId;
         //判断是自己的礼品卡还是ta的礼品卡
         if(riseId.equals("0")){
-            currentId = loginUser.getId();
+            currentId = accountService.getProfile(guestUser.getOpenId()).getId();
         }else{
             Profile profile = accountService.getProfileByRiseId(riseId);
             if(profile == null){
@@ -87,6 +87,7 @@ public class PrizeCardController {
             }
             currentId = profile.getId();
         }
+
         Profile profile = accountService.getProfile(currentId);
         List<PrizeCard> prizeCards =  prizeCardService.getAnnualPrizeCards(currentId);
         List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
