@@ -100,7 +100,7 @@ public class PrizeCardController {
         return WebUtils.result(prizeCardDtos);
     }
 
-    @RequestMapping("/load/annual}")
+    @RequestMapping("/load/annual")
     public ResponseEntity<Map<String, Object>> loadPersonalAnnualPrizeCards(LoginUser loginUser) {
         System.out.println("openId:" + loginUser.getOpenId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
