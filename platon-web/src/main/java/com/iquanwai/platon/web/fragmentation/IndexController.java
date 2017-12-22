@@ -326,6 +326,8 @@ public class IndexController {
             } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
                 response.sendRedirect(CAMP_COUNT_DOWN_URL);
                 return null;
+            } else if (whiteListService.isStillLearningCamp(loginUser.getId())) {
+                return courseView(request, loginUser, moduleShow, RISE_VIEW);
             } else {
                 response.sendRedirect(CAMP_SALE_URL);
                 return null;

@@ -3,12 +3,15 @@ package com.iquanwai.platon.biz.domain.common.whitelist;
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.PromotionLevel;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -33,6 +36,8 @@ public class WhiteListServiceImpl implements WhiteListService {
     private AccountService accountService;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
 
 
     @Override
@@ -175,6 +180,14 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean isGoCampCountDownPage(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
+    }
+
+    @Override
+    public boolean isStillLearningCamp(Integer profileId) {
+        Integer learningYear = ConfigUtils.getLearningYear();
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
+        return riseClassMember != null;
     }
 
 }
