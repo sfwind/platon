@@ -73,9 +73,9 @@ public class PrizeCardController {
      */
     @RequestMapping("/load/annual/{riseId}")
     public ResponseEntity<Map<String,Object>> loadAnnualPrizeCards(GuestUser guestUser, @PathVariable String riseId){
+        System.out.println("openId:"+guestUser.getOpenId());
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
         operationLogService.log(operationLog);
-
         Integer currentId;
         //判断是自己的礼品卡还是ta的礼品卡
         if(riseId.equals("0")){
@@ -87,7 +87,7 @@ public class PrizeCardController {
             }
             currentId = profile.getId();
         }
-
+        System.out.println();
         Profile profile = accountService.getProfile(currentId);
         List<PrizeCard> prizeCards =  prizeCardService.getAnnualPrizeCards(currentId);
         List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
