@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -32,6 +33,8 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     private AccountService accountService;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private GeneratePlanService generatePlanService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -105,7 +108,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     /**
      * 领取礼品卡
      * @param id
-     * @param receiverOpenId
+     * @param profileId
      * @return
      */
     @Override
@@ -131,7 +134,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         if(prizeCardDao.updateAnnualPrizeCards(id,profileId) ==0){
             return "该礼品卡已经被领取";
         }
-        //TODO:进行开课
+        generatePlanService.createAnnualPlan(profileId);
         return "恭喜您获得该礼品卡";
     }
 }
