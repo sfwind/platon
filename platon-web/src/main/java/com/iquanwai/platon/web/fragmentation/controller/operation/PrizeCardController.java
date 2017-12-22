@@ -67,28 +67,26 @@ public class PrizeCardController {
 
     /**
      * 加载年度礼品卡
+     *
      * @param guestUser
      * @param riseId
      * @return
      */
     @RequestMapping("/load/annual/{riseId}")
-    public ResponseEntity<Map<String,Object>> loadAnnualPrizeCards(GuestUser guestUser, @PathVariable String riseId){
-        System.out.println("openId:"+guestUser.getOpenId());
+    public ResponseEntity<Map<String, Object>> loadAnnualPrizeCards(GuestUser guestUser, @PathVariable String riseId) {
+        System.out.println("openId:" + guestUser.getOpenId());
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
         operationLogService.log(operationLog);
         Integer currentId;
         //判断是自己的礼品卡还是ta的礼品卡
-        if(riseId.equals("0")){
-            currentId = accountService.getProfile(guestUser.getOpenId()).getId();
-        }else{
-            Profile profile = accountService.getProfileByRiseId(riseId);
-            if(profile == null){
-                return WebUtils.result(Lists.newArrayList());
-            }
-            currentId = profile.getId();
+        Profile targetProfile = accountService.getProfileByRiseId(riseId);
+        if (targetProfile == null) {
+            return WebUtils.result(Lists.newArrayList());
         }
+        currentId = targetProfile.getId();
+
         Profile profile = accountService.getProfile(currentId);
-        List<PrizeCard> prizeCards =  prizeCardService.getAnnualPrizeCards(currentId);
+        List<PrizeCard> prizeCards = prizeCardService.getAnnualPrizeCards(currentId);
         List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
 
         prizeCards.forEach(prizeCard -> {
@@ -97,25 +95,48 @@ public class PrizeCardController {
             prizeCardDto.setRiseId(profile.getRiseId());
             prizeCardDto.setUsed(prizeCard.getUsed());
             prizeCardDtos.add(prizeCardDto);
-
         });
 
         return WebUtils.result(prizeCardDtos);
     }
 
+    @RequestMapping("/load/annual}")
+    public ResponseEntity<Map<String, Object>> loadPersonalAnnualPrizeCards(LoginUser loginUser) {
+        System.out.println("openId:" + loginUser.getOpenId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
+        operationLogService.log(operationLog);
+        Integer currentProfileId = loginUser.getId();
+
+        Profile profile = accountService.getProfile(currentProfileId);
+        List<PrizeCard> prizeCards = prizeCardService.getAnnualPrizeCards(currentProfileId);
+        List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
+
+        prizeCards.forEach(prizeCard -> {
+            PrizeCardDto prizeCardDto = new PrizeCardDto();
+            prizeCardDto.setId(prizeCard.getId());
+            prizeCardDto.setRiseId(profile.getRiseId());
+            prizeCardDto.setUsed(prizeCard.getUsed());
+            prizeCardDtos.add(prizeCardDto);
+        });
+
+        return WebUtils.result(prizeCardDtos);
+    }
+
+
     /**
      * 领取礼品卡
+     *
      * @param loginUser
      * @param cardId
      * @return
      */
     @RequestMapping("/annual/receive/{cardId}")
-    public ResponseEntity<Map<String,Object>> receiveAnnualCards(LoginUser loginUser,@PathVariable  Integer cardId){
+    public ResponseEntity<Map<String, Object>> receiveAnnualCards(LoginUser loginUser, @PathVariable Integer cardId) {
         //TODO:判断是否进行关注
-        Assert.notNull(loginUser,"登录用户不能为空");
+        Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
         operationLogService.log(operationLog);
-        String result = prizeCardService.receiveAnnualPrizeCards(cardId,loginUser.getId());
+        String result = prizeCardService.receiveAnnualPrizeCards(cardId, loginUser.getId());
         return WebUtils.result(result);
     }
 }
