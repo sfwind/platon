@@ -131,13 +131,6 @@ public interface AccountService {
     List<Coupon> loadCoupons(Integer profileId);
 
     /**
-     * 插入优惠券
-     *
-     * @param coupon 优惠券
-     */
-    void insertCoupon(Coupon coupon);
-
-    /**
      * 获取用户当前的RiseClassMember记录
      *
      * @param profileId 用户id
@@ -221,4 +214,10 @@ public interface AccountService {
      *
      * */
     void updateWeixinId(Integer profileId, String weixinId);
+
+    /**
+     * 获取用户的有效会员类别
+     *
+     * */
+    RiseMember getValidRiseMember(Integer profileId);
 }

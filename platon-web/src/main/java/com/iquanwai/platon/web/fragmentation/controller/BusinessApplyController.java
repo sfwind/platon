@@ -4,11 +4,13 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySubmitDto;
@@ -69,6 +71,7 @@ public class BusinessApplyController {
                 .function("申请")
                 .action("检查是否能够申请");
         operationLogService.log(operationLog);
+
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
         Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
@@ -89,6 +92,13 @@ public class BusinessApplyController {
                 .function("申请")
                 .action("提交申请");
         operationLogService.log(operationLog);
+
+        RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+            return WebUtils.error("您已经是商学院用户,无需重复申请");
+        }
+
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
         Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
