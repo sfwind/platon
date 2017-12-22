@@ -41,6 +41,7 @@ public class Profile {
     private String workingYear; //参加工作年份
     private String weixinId; //微信id
     private String receiver;//收件人
+    private String married;//婚恋情况
 
 
     //默认头像
