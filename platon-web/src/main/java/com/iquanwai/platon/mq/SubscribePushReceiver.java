@@ -60,8 +60,7 @@ public class SubscribePushReceiver {
         template.put("show_word", "" +
                 "Hi 欢迎来到【圈外商学院|一期一会】\n\n" +
                 "<a href='{callbackUrl}'>查看答案文稿</a>");
-        template.put("annual","" +
-                "Hi 欢迎11111111来到【圈外商学院|一期一会】\n\n" +
-                "<a href='{callbackUrl}'>查看答案文稿</a>");
+        template.put("annual",
+                "<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
     }
 }
