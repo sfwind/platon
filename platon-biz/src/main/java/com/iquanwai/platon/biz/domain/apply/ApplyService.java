@@ -29,6 +29,14 @@ public interface ApplyService {
     BusinessSchoolApplication loadCheckingApply(Integer profileId);
 
     /**
+     * 获取还未申请的订单
+     *
+     * @param profileId 用户id
+     * @return 审批订单
+     */
+    BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId);
+
+    /**
      * 提交商学院申请
      *
      * @param profileId        用户id

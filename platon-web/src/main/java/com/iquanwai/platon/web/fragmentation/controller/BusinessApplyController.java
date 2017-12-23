@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
@@ -110,10 +111,10 @@ public class BusinessApplyController {
         }
 
         if (application == null) {
-//            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
-//            if (order == null) {
-//                return WebUtils.error("您还没有成功支付哦");
-//            }
+            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
+            if (order == null) {
+                return WebUtils.error("您还没有成功支付哦");
+            }
 
             List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
                 BusinessApplySubmit submit = new BusinessApplySubmit();
@@ -122,8 +123,7 @@ public class BusinessApplyController {
                 submit.setUserValue(applySubmitVO.getUserValue());
                 return submit;
             }).collect(Collectors.toList());
-//            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
-            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, null);
+            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
             return WebUtils.success();
         } else {
             return WebUtils.error("您的申请正在审核中哦");
