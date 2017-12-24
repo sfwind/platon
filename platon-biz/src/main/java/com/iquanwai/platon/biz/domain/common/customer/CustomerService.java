@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.iquanwai.platon.biz.po.AnnualSummary;
+
 import java.io.InputStream;
 
 public interface CustomerService {
@@ -14,4 +16,6 @@ public interface CustomerService {
      * 更新学员昵称
      */
     int updateNickName(Integer profileId, String nickName);
+
+    AnnualSummary loadUserAnnualSummary(Integer profileId);
 }

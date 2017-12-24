@@ -28,6 +28,7 @@ public class ConfigUtils {
     static {
         loadLocalConfig();
         zkConfigUtils = new ZKConfigUtils();
+
     }
 
     private static void loadLocalConfig() {
