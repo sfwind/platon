@@ -16,7 +16,7 @@ public class AnnualSummaryDao extends PracticeDBUtil {
 
     public AnnualSummary loadUserAnnualSummary(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM AnnualSummary WHERE ProfileId = ? Del =0";
+        String sql = "SELECT * FROM AnnualSummary WHERE ProfileId = ? AND Del =0";
         BeanHandler<AnnualSummary> h = new BeanHandler<>(AnnualSummary.class);
         try {
             return runner.query(sql, h, profileId);
