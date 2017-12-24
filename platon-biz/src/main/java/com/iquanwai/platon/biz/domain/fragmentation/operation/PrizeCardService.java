@@ -23,4 +23,7 @@ public interface PrizeCardService {
      * @return
      */
     String  receiveAnnualPrizeCards(Integer id,Integer profileId);
+
+    void generateAnnualPrizeCards(Integer profileId);
+
 }

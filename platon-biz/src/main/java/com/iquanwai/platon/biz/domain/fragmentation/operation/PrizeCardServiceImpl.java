@@ -8,7 +8,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -136,5 +135,18 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         }
         generatePlanService.createAnnualPlan(profileId);
         return "恭喜您获得该礼品卡";
+    }
+
+    /**
+     * 根据年终回顾生成礼品卡
+     * @param profileId
+     */
+    @Override
+    public void generateAnnualPrizeCards(Integer profileId) {
+        //TODO:根据年终回顾的数据生成礼品卡数量
+        int sum = 1;
+        for (int i = 0;i<sum;i++){
+            prizeCardDao.insertAnnualPrizeCard(profileId);
+        }
     }
 }

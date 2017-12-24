@@ -121,4 +121,21 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return null;
     }
+
+
+    /**
+     * 插入年度礼品卡
+     */
+    public Integer insertAnnualPrizeCard(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = " insert into PrizeCard(profileId,Category) values (?,100)";
+
+        try {
+           Long result =  runner.insert(sql,new ScalarHandler<>(),profileId);
+           return result.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return 0;
+    }
 }
