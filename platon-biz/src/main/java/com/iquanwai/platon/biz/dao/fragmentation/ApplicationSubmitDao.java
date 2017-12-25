@@ -121,7 +121,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
         String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0 "
-                + "order by Feedback desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
+                + "order by Feedback desc, PublishTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ApplicationSubmit> submits = run.query(sql, h, applicationId);
             return submits;
