@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.iquanwai.platon.biz.po.GroupPromotion;
 
+import java.util.List;
+
 public interface GroupPromotionService {
     /**
      * 查看一个用户是否有资格参加组团学习活动<br/>
@@ -29,4 +31,19 @@ public interface GroupPromotionService {
      * 查看一个用户是否已经参加团队学习活动
      */
     boolean hasParticipateGroup(Integer profileId);
+
+    /**
+     * 查看当前人员所在团队是否达到活动人数要求
+     */
+    List<GroupPromotion> loadGroupPromotions(Integer profileId);
+
+    /**
+     * 查看一个用户是否是团队 Leader
+     */
+    boolean isGroupLeader(Integer profileId);
+
+    /**
+     * 获取某个用户所在小组的团长昵称
+     */
+    String loadLeaderName(Integer profileId);
 }

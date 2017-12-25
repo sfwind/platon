@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.fragmentation.dto.GroupPromotionCountDownDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.joda.time.DateTime;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -32,14 +33,12 @@ public class GroupPromotionController {
     @Autowired
     private QRCodeService qrCodeService;
 
-    private DateTime groupPromotionOpenDateTime;
+    // 推广成功人数
+    private static final int GROUP_PROMOTION_SUCCESS_COUNT = 3;
+    private static final DateTime groupPromotionOpenDateTime = new DateTime(2018, 1, 7, 0, 0);
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @PostConstruct
-    public void init() {
-        groupPromotionOpenDateTime = new DateTime(2018, 1, 7, 0, 0);
-    }
 
     @RequestMapping(value = "/participate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
@@ -93,8 +92,15 @@ public class GroupPromotionController {
     public ResponseEntity<Map<String, Object>> loadGroupPromotionCountDown(LoginUser loginUser) {
         boolean hasParticipate = groupPromotionService.hasParticipateGroup(loginUser.getId());
         if (hasParticipate) {
+            List<GroupPromotion> groupPromotions = groupPromotionService.loadGroupPromotions(loginUser.getId());
+            GroupPromotionCountDownDto countDownDto = new GroupPromotionCountDownDto();
+            countDownDto.setIsGroupSuccess(groupPromotions.size() >= GROUP_PROMOTION_SUCCESS_COUNT);
+            countDownDto.setIsLeader(groupPromotionService.isGroupLeader(loginUser.getId()));
+            countDownDto.setLeaderName(groupPromotionService.loadLeaderName(loginUser.getId()));
+            countDownDto.setRemainderCount(GROUP_PROMOTION_SUCCESS_COUNT - groupPromotions.size());
             // 已经参加了团队学习，返回相差时间
-            return WebUtils.result(String.format("%02d", DateUtils.interval(groupPromotionOpenDateTime.toDate())));
+            countDownDto.setCountDownDay(String.format("%02d", DateUtils.interval(groupPromotionOpenDateTime.toDate())));
+            return WebUtils.result(countDownDto);
         } else {
             return WebUtils.error("无当前页面访问权限");
         }

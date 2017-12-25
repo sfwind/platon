@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.core.support.Assert;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,6 +137,39 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     public boolean hasParticipateGroup(Integer profileId) {
         GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
         return groupPromotion != null;
+    }
+
+    @Override
+    public List<GroupPromotion> loadGroupPromotions(Integer profileId) {
+        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
+        String groupCode = groupPromotion.getGroupCode();
+        return groupPromotionDao.loadByGroupCode(groupCode);
+    }
+
+    @Override
+    public boolean isGroupLeader(Integer profileId) {
+        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
+        return groupPromotion.getLeader();
+    }
+
+    @Override
+    public String loadLeaderName(Integer profileId) {
+        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
+        Assert.notNull(groupPromotion);
+
+        if (groupPromotion.getLeader()) {
+            Integer leaderProfileId = groupPromotion.getProfileId();
+            Profile leader = accountService.getProfile(leaderProfileId);
+            return leader != null ? leader.getNickname() : null;
+        } else {
+            String groupCode = groupPromotion.getGroupCode();
+            List<GroupPromotion> groupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
+            GroupPromotion leaderGroupPromotion = groupPromotions.stream().filter(promotion -> promotion.getLeader()).findAny().orElse(null);
+            Assert.notNull(leaderGroupPromotion);
+            Integer leaderProfileId = leaderGroupPromotion.getProfileId();
+            Profile leader = accountService.getProfile(leaderProfileId);
+            return leader != null ? leader.getNickname() : null;
+        }
     }
 
     // 新用户接收消息
