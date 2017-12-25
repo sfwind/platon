@@ -337,8 +337,6 @@ public class PracticeController {
                     }
                     return dto;
                 }).collect(Collectors.toList());
-        page.setTotal(applicationSubmits.size());
-//        riseWorkInfoDtos = riseWorkInfoDtos.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
 
         RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = new RiseRefreshListDto<>();
         riseRefreshListDto.setList(riseWorkInfoDtos);
