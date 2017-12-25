@@ -133,7 +133,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public int count(Integer applicationId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0";
+        String sql = "SELECT count(*) FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0";
         try {
             Long result = run.query(sql, new ScalarHandler<>(), applicationId);
             return result.intValue();
