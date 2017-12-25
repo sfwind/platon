@@ -85,8 +85,6 @@ public interface PracticeService {
 
     void initCommentEvaluation(Integer submitId, Integer commentId);
 
-    Boolean loadEvaluated(Integer commentId);
-
     void updateEvaluation(Integer commentId, Integer useful, String reason);
 
     /**
@@ -141,13 +139,11 @@ public interface PracticeService {
     boolean vote(Integer type, Integer referencedId, Integer profileId, String openId,Integer device);
 
     /**
-     * 查询应用练习提交记录
+     * 查询同学的应用练习提交记录
      *
      * @param applicationId 应用练习id
      */
-    List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
-
-    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId);
+    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId, Page page);
 
     /**
      * 查询评论
