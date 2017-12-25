@@ -115,7 +115,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
 
         //辅修课程id
-        List<CourseSchedule> minorSchedule = courseSchedules.stream()
+        List<CourseSchedule> minorSchedule = courseAllSchedules.stream()
                 .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .collect(Collectors.toList());
 
@@ -131,7 +131,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             schedulePlan.setMinorSelected(true);
         }
 
-        //试听课程
+        //TODO:试听课程代码18年删除
         AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
         Integer auditionProblemId = null;
         List<ImprovementPlan> trialProblem = Lists.newArrayList();
