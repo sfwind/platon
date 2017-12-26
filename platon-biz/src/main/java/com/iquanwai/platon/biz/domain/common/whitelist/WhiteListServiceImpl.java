@@ -182,8 +182,18 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public boolean isGoGroupPromotionCountDownPage(Integer profileId) {
         GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
-        Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
-        return groupPromotion != null && campOpenDate.compareTo(new Date()) > 0;
+        if (groupPromotion != null) {
+            List<GroupPromotion> groupPromotions = groupPromotionDao.loadByGroupCode(groupPromotion.getGroupCode());
+            Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
+            if (groupPromotion.getLeader()) {
+                // 如果是团长，并且入团人员满足的话，进入倒计时
+                return groupPromotions.size() >= 3 && campOpenDate.compareTo(new Date()) >= 0;
+            } else {
+                // 如果不是团长，进入倒计时
+                return campOpenDate.compareTo(new Date()) >= 0;
+            }
+        }
+        return false;
     }
 
 }
