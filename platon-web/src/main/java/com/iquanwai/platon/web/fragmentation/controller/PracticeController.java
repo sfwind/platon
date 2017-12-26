@@ -2,7 +2,6 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -276,7 +275,6 @@ public class PracticeController {
                 .memo(applicationId.toString());
         operationLogService.log(operationLog);
 
-        // TODO 后期如果数据量增加，容易出现效率问题
         RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
         return WebUtils.result(riseRefreshListDto);
     }
@@ -306,11 +304,12 @@ public class PracticeController {
     }
 
     private RiseRefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
-        List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId);
+        List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId, page);
         List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
                 .map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setContent(item.getContent());
+                    //TODO: 性能瓶颈 可以放入redis维护
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
                     dto.setPublishTime(item.getPublishTime());
@@ -324,9 +323,10 @@ public class PracticeController {
                         dto.setRole(account.getRole());
                         dto.setSignature(account.getSignature());
                     }
+                    //TODO: 性能瓶颈 可以放入redis维护
                     dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
                     dto.setPriority(item.getPriority());
-                    // 查询我对它的点赞状态
+                    //TODO: 性能瓶颈 未来可以一次拉取后设置
                     HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(),
                             loginUser.getId());
                     if (myVote != null && myVote.getDel() == 0) {
@@ -337,8 +337,6 @@ public class PracticeController {
                     }
                     return dto;
                 }).collect(Collectors.toList());
-        page.setTotal(applicationSubmits.size());
-        riseWorkInfoDtos = riseWorkInfoDtos.stream().skip(page.getOffset()).limit(page.getPageSize()).collect(Collectors.toList());
 
         RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = new RiseRefreshListDto<>();
         riseRefreshListDto.setList(riseWorkInfoDtos);

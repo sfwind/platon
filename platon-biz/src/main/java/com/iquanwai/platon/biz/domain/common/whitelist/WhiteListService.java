@@ -69,4 +69,11 @@ public interface WhiteListService {
     boolean isGoCampCountDownPage(Integer profileId);
 
     boolean isGoGroupPromotionCountDownPage(Integer profileId);
+
+    /**
+     * 判断一个人是否有正在学习的小课训练营
+     * @param profileId
+     * @return
+     */
+    boolean isStillLearningCamp(Integer profileId);
 }

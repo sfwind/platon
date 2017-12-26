@@ -4,13 +4,16 @@ import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.po.PromotionLevel;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -38,6 +41,9 @@ public class WhiteListServiceImpl implements WhiteListService {
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private GroupPromotionDao groupPromotionDao;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
+
 
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
@@ -194,6 +200,14 @@ public class WhiteListServiceImpl implements WhiteListService {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isStillLearningCamp(Integer profileId) {
+        Integer learningYear = ConfigUtils.getLearningYear();
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
+        return riseClassMember != null;
     }
 
 }

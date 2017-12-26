@@ -331,6 +331,8 @@ public class IndexController {
             } else if (whiteListService.isGoGroupPromotionCountDownPage(loginUser.getId())) {
                 response.sendRedirect(GROUP_PROMOTION_COUNT_DOWN);
                 return null;
+            } else if (whiteListService.isStillLearningCamp(loginUser.getId())) {
+                return courseView(request, loginUser, moduleShow, RISE_VIEW);
             } else {
                 response.sendRedirect(CAMP_SALE_URL);
                 return null;

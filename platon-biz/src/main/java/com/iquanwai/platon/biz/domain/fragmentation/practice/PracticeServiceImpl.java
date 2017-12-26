@@ -364,17 +364,6 @@ public class PracticeServiceImpl implements PracticeService {
             // 用户存在历史草稿，直接更新
             return applicationSubmitDraftDao.updateApplicationSubmitDraft(submitDraft.getId(), content);
         }
-        // ApplicationSubmitDraft applicationSubmitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, applicationId, planId);
-        // if (applicationSubmitDraft != null) {
-        //     return applicationSubmitDraft.getId();
-        // } else {
-        //     ApplicationSubmitDraft draft = new ApplicationSubmitDraft();
-        //     draft.setOpenid(openId);
-        //     draft.setProfileId(profileId);
-        //     draft.setApplicationId(applicationId);
-        //     draft.setPlanId(planId);
-        //     return applicationSubmitDraftDao.insertSubmitDraft(draft);
-        // }
     }
 
     @Override
@@ -488,9 +477,9 @@ public class PracticeServiceImpl implements PracticeService {
         return true;
     }
 
-    @Override
-    public List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId) {
-        return applicationSubmitDao.load(applicationId).stream().map(applicationSubmit -> {
+
+    private List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId, Page page) {
+        return applicationSubmitDao.loadSubmits(applicationId, page).stream().map(applicationSubmit -> {
             String content = CommonUtils.replaceHttpsDomainName(applicationSubmit.getContent());
             if (!content.equals(applicationSubmit.getContent())) {
                 applicationSubmitDao.updateContent(applicationSubmit.getId(), content);
@@ -501,76 +490,80 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId) {
-        List<ApplicationSubmit> submits = loadApplicationSubmits(applicationId); // 所有应用练习
-        List<Integer> submitsIdList = submits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
-        // applicationSubmit Id 序列 -> votes
-        List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
-        List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
-        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitsIdList); // 所有评论
-        List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
-        // 已被点评
-        List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
-        // 未被点评，有点赞
-        List<ApplicationSubmit> votedSubmits = Lists.newArrayList();
-        // 未被点评、无点赞
-        List<ApplicationSubmit> restSubmits = Lists.newArrayList();
-        submits.forEach(submit -> {
-            if (submit.getFeedback()) {
-                feedbackSubmits.add(submit);
-            } else if (referenceIds.contains(submit.getId())) {
-                votedSubmits.add(submit);
-            } else {
-                restSubmits.add(submit);
-            }
-        });
-        // 已被点评作业内部排序：最新被点评到最旧被点评，点评时间越新该条作业越靠前
-        feedbackSubmits.sort((left, right) -> {
-            Date leftFeedbackDate = new Date(0);
-            Date rightFeedbackDate = new Date(0);
-            for (Comment comment : comments) {
-                Integer commentProfileId = comment.getCommentProfileId();
-                Date commentAddTime = comment.getAddTime();
-                if (left.getId() == comment.getReferencedId()) {
-                    for (UserRole userRole : userRoles) {
-                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
-                            leftFeedbackDate = commentAddTime.compareTo(leftFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
-                        }
-                    }
-                } else if (right.getId() == comment.getReferencedId()) {
-                    for (UserRole userRole : userRoles) {
-                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
-                            rightFeedbackDate = commentAddTime.compareTo(rightFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
-                        }
-                    }
-                }
-            }
-            return rightFeedbackDate.compareTo(leftFeedbackDate);
-        });
-        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列，提交日期越新，越靠前。
-        votedSubmits.sort((left, right) -> {
-            int leftVoteCnt = 0;
-            int rightVoteCnt = 0;
-            for (Integer id : referenceIds) {
-                if (id.equals(left.getId())) {
-                    leftVoteCnt++;
-                } else if (id.equals(right.getId())) {
-                    rightVoteCnt++;
-                }
-            }
-            if (leftVoteCnt == rightVoteCnt) {
-                return right.getPublishTime().compareTo(left.getPublishTime());
-            } else {
-                return rightVoteCnt - leftVoteCnt;
-            }
-        });
-        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列，提交日期越新，越靠前。
-        restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
-        List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
-        applicationSubmits.addAll(feedbackSubmits);
-        applicationSubmits.addAll(votedSubmits);
-        applicationSubmits.addAll(restSubmits);
-        return applicationSubmits;
+    public List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId, Page page) {
+        // 加载时间
+        List<ApplicationSubmit> submits = loadApplicationSubmits(applicationId, page);
+        int count = applicationSubmitDao.count(applicationId);
+        page.setTotal(count);
+
+//        List<Integer> submitsIdList = submits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
+//        // applicationSubmit Id 序列 -> votes
+//        List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
+//        List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
+//        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitsIdList); // 所有评论
+//        List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
+//        // 已被点评
+//        List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
+//        // 未被点评，有点赞
+//        List<ApplicationSubmit> votedSubmits = Lists.newArrayList();
+//        // 未被点评、无点赞
+//        List<ApplicationSubmit> restSubmits = Lists.newArrayList();
+//        submits.forEach(submit -> {
+//            if (submit.getFeedback()) {
+//                feedbackSubmits.add(submit);
+//            } else if (referenceIds.contains(submit.getId())) {
+//                votedSubmits.add(submit);
+//            } else {
+//                restSubmits.add(submit);
+//            }
+//        });
+//        // 已被点评作业内部排序：最新被点评到最旧被点评，点评时间越新该条作业越靠前
+//        feedbackSubmits.sort((left, right) -> {
+//            Date leftFeedbackDate = new Date(0);
+//            Date rightFeedbackDate = new Date(0);
+//            for (Comment comment : comments) {
+//                Integer commentProfileId = comment.getCommentProfileId();
+//                Date commentAddTime = comment.getAddTime();
+//                if (left.getId() == comment.getReferencedId()) {
+//                    for (UserRole userRole : userRoles) {
+//                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
+//                            leftFeedbackDate = commentAddTime.compareTo(leftFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
+//                        }
+//                    }
+//                } else if (right.getId() == comment.getReferencedId()) {
+//                    for (UserRole userRole : userRoles) {
+//                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
+//                            rightFeedbackDate = commentAddTime.compareTo(rightFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
+//                        }
+//                    }
+//                }
+//            }
+//            return rightFeedbackDate.compareTo(leftFeedbackDate);
+//        });
+//        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列，提交日期越新，越靠前。
+//        votedSubmits.sort((left, right) -> {
+//            int leftVoteCnt = 0;
+//            int rightVoteCnt = 0;
+//            for (Integer id : referenceIds) {
+//                if (id.equals(left.getId())) {
+//                    leftVoteCnt++;
+//                } else if (id.equals(right.getId())) {
+//                    rightVoteCnt++;
+//                }
+//            }
+//            if (leftVoteCnt == rightVoteCnt) {
+//                return right.getPublishTime().compareTo(left.getPublishTime());
+//            } else {
+//                return rightVoteCnt - leftVoteCnt;
+//            }
+//        });
+//        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列，提交日期越新，越靠前。
+//        restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
+//        List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
+//        applicationSubmits.addAll(feedbackSubmits);
+//        applicationSubmits.addAll(votedSubmits);
+//        applicationSubmits.addAll(restSubmits);
+        return submits;
     }
 
     @Override
@@ -740,28 +733,6 @@ public class PracticeServiceImpl implements PracticeService {
             if (comments.size() == 1) {
                 commentEvaluationDao.initCommentEvaluation(submitId, commentId);
             }
-        }
-    }
-
-    @Override
-    public Boolean loadEvaluated(Integer commentId) {
-        CommentEvaluation evaluation = commentEvaluationDao.loadByCommentId(commentId);
-        // 数据库如果没有这条评论记录，默认为已评
-        if (evaluation == null) {
-            return true;
-        }
-        Integer evaluated = evaluation.getEvaluated();
-        if (evaluated != null) {
-            switch (evaluated) {
-                case 0:
-                    return false;
-                case 1:
-                    return true;
-                default:
-                    return false;
-            }
-        } else {
-            return false;
         }
     }
 
