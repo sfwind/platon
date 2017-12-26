@@ -30,7 +30,7 @@ public interface GroupPromotionService {
     /**
      * 查看一个用户是否已经参加团队学习活动
      */
-    boolean hasParticipateGroup(Integer profileId);
+    GroupPromotion hasParticipateGroup(Integer profileId);
 
     /**
      * 查看当前人员所在团队是否达到活动人数要求

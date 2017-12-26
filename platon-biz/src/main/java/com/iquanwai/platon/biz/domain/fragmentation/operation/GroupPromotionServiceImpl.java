@@ -141,9 +141,8 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     }
 
     @Override
-    public boolean hasParticipateGroup(Integer profileId) {
-        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
-        return groupPromotion != null;
+    public GroupPromotion hasParticipateGroup(Integer profileId) {
+        return groupPromotionDao.loadByProfileId(profileId);
     }
 
     @Override

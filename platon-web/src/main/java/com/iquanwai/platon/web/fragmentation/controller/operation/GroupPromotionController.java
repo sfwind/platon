@@ -41,8 +41,8 @@ public class GroupPromotionController {
 
     @RequestMapping(value = "/participate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
-        boolean hasParticipateGroup = groupPromotionService.hasParticipateGroup(loginUser.getId());
-        if (hasParticipateGroup) {
+        GroupPromotion groupPromotion = groupPromotionService.hasParticipateGroup(loginUser.getId());
+        if (groupPromotion != null) {
             return WebUtils.success();
         }
 
@@ -74,9 +74,9 @@ public class GroupPromotionController {
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createGroupPromotion(LoginUser loginUser) {
-        boolean hasParticipateGroup = groupPromotionService.hasParticipateGroup(loginUser.getId());
-        if (hasParticipateGroup) {
-            return WebUtils.error("用户无参加活动权限");
+        GroupPromotion existGroupPromotion = groupPromotionService.hasParticipateGroup(loginUser.getId());
+        if (existGroupPromotion != null) {
+            return WebUtils.result(existGroupPromotion.getGroupCode());
         }
 
         GroupPromotion groupPromotion = groupPromotionService.createGroup(loginUser.getId());
@@ -89,8 +89,8 @@ public class GroupPromotionController {
 
     @RequestMapping(value = "/count/down")
     public ResponseEntity<Map<String, Object>> loadGroupPromotionCountDown(LoginUser loginUser) {
-        boolean hasParticipate = groupPromotionService.hasParticipateGroup(loginUser.getId());
-        if (hasParticipate) {
+        GroupPromotion existGroupPromotion = groupPromotionService.hasParticipateGroup(loginUser.getId());
+        if (existGroupPromotion != null) {
             List<GroupPromotion> groupPromotions = groupPromotionService.loadGroupPromotions(loginUser.getId());
             GroupPromotionCountDownDto countDownDto = new GroupPromotionCountDownDto();
             countDownDto.setIsGroupSuccess(groupPromotions.size() >= GROUP_PROMOTION_SUCCESS_COUNT);
@@ -104,7 +104,6 @@ public class GroupPromotionController {
             if (groupPromotion != null) {
                 countDownDto.setGroupCode(groupPromotion.getGroupCode());
             }
-
             return WebUtils.result(countDownDto);
         } else {
             return WebUtils.error("无当前页面访问权限");
