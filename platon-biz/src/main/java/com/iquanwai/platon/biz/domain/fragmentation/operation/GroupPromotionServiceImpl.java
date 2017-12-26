@@ -234,7 +234,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                 Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                 templateMessage.setData(data);
                 templateMessage.setTemplate_id(ConfigUtils.getApplySuccessNotice());
-                templateMessage.setUrl(ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true");
+                templateMessage.setUrl("https://static.iqycamp.com/images/team_learning_XiaoY.jpg?imageslim");
                 data.put("first", new TemplateMessage.Keyword("你已加入实验，成功解锁前7天自我认知学习和游戏内容。\n"));
                 data.put("keyword1", new TemplateMessage.Keyword("认识自己|用冰山模型，分析出真实的你"));
                 data.put("keyword2", new TemplateMessage.Keyword("2017.01.07 - 2017.01.14"));
