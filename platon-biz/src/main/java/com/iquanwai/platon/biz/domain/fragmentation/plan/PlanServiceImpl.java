@@ -730,7 +730,6 @@ public class PlanServiceImpl implements PlanService {
 
         for (Integer problemId : problemIds) {
             // 小课训练营开课时间更改为默认的一个月
-            Date closeDate = DateUtils.afterMonths(monthlyCampConfig.getOpenDate(), 1);
             Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate);
 
             if (planId != null) {
