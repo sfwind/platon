@@ -153,6 +153,15 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     }
 
     @Override
+    public GroupPromotion loadByOpenId(String openId) {
+        Profile profile = accountService.getProfile(openId);
+        if (profile != null) {
+            return groupPromotionDao.loadByProfileId(profile.getId());
+        }
+        return null;
+    }
+
+    @Override
     public boolean isGroupLeader(Integer profileId) {
         GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
         return groupPromotion.getLeader();
@@ -214,7 +223,6 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
             data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
             data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请在下方留言。"));
             templateMessageService.sendMessage(templateMessage);
-
         } else {
             List<GroupPromotion> oldPromotionUsers = currentGroupPromotions.stream()
                     .filter(groupPromotion -> !groupPromotion.getProfileId().equals(newProfileId)).collect(Collectors.toList());

@@ -53,7 +53,7 @@ public class GroupPromotionController {
             if (participateResult) {
                 return WebUtils.success();
             } else {
-                return WebUtils.error("用户参团失败，请练习管理员");
+                return WebUtils.error("用户参团失败，请联系管理员");
             }
         } else {
             return WebUtils.error("用户无参加活动权限");

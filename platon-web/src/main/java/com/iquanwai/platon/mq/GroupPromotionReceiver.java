@@ -1,7 +1,9 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
+import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.GroupPromotionService;
+import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,8 @@ public class GroupPromotionReceiver {
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private GroupPromotionService groupPromotionService;
+    @Autowired
+    private GroupPromotionDao groupPromotionDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -38,11 +42,16 @@ public class GroupPromotionReceiver {
             String[] sceneArray = scene.split("_");
             String groupCode = sceneArray[1];
 
-            boolean participateResult = groupPromotionService.participateGroup(openId, groupCode);
-            if (participateResult) {
-                logger.info("{} 入团成功", openId);
+            GroupPromotion groupPromotion = groupPromotionService.loadByOpenId(openId);
+            if (groupPromotion != null) {
+                logger.info("已经参加过活动：{}", openId);
             } else {
-                logger.info("{} 入团失败", openId);
+                boolean participateResult = groupPromotionService.participateGroup(openId, groupCode);
+                if (participateResult) {
+                    logger.info("{} 入团成功", openId);
+                } else {
+                    logger.info("{} 入团失败", openId);
+                }
             }
         });
     }

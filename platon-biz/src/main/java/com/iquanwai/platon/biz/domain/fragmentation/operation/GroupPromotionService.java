@@ -37,6 +37,8 @@ public interface GroupPromotionService {
      */
     List<GroupPromotion> loadGroupPromotions(Integer profileId);
 
+    GroupPromotion loadByOpenId(String openId);
+
     /**
      * 查看一个用户是否是团队 Leader
      */
