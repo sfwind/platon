@@ -183,30 +183,22 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         Profile newProfile = accountService.getProfile(newProfileId);
         List<GroupPromotion> currentGroupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
 
-        String ordinarySuccessMessage = "你已加入实验，解锁前7天自我认知学习和游戏内容。 \n1月7日晚20点正式开始，添加AI助手，回复“实验”，探寻另一个你~";
+        String ordinarySuccessMessage = "你已加入实验，解锁前7天自我认知学习和游戏内容。 \n\n1月7日晚20点正式开始，添加AI助手，回复“实验”，探寻另一个你~";
         // 距离目标完成人数
         int remainderCount = GROUP_PROMOTION_SUCCESS_COUNT - currentGroupPromotions.size();
-        if (remainderCount < 0) {
-            customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ordinarySuccessMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-            customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ConfigUtils.getTeamPromotionCodeImage(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-            return;
-        }
-
         GroupPromotion leaderPromotion = currentGroupPromotions.stream().filter(GroupPromotion::getLeader).findAny().orElse(null);
         Assert.notNull(leaderPromotion, "团队创建人不能为空");
         Profile leaderProfile = accountService.getProfile(leaderPromotion.getProfileId());
-        // 给新人发送消息
-        String newProfileMessage;
-        if (remainderCount > 0) {
-            newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入解锁7天实验，请等待解锁成功通知。你可以<a href='"
-                    + ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true" + "'>邀请更多好友加入</a>。"
-                    + "\n\n添加AI助手，回复“实验”，探寻另一个你~";
-        } else {
-            newProfileMessage = ordinarySuccessMessage;
-        }
-        customerMessageService.sendCustomerMessage(newProfile.getOpenid(), newProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ConfigUtils.getTeamPromotionCodeImage(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
 
+        // 给新人发送消息
+        if (remainderCount > 0) {
+            String newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入解锁7天实验，请等待解锁成功通知。你可以<a href='"
+                    + ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true" + "'>邀请更多好友加入</a>。";
+            customerMessageService.sendCustomerMessage(newProfile.getOpenid(), newProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        } else {
+            customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ordinarySuccessMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ConfigUtils.getTeamPromotionCodeImage(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        }
 
         // 给不是自己的老人发送消息
         if (remainderCount > 0) {
@@ -242,6 +234,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                 data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
                 data.put("remark", new TemplateMessage.Keyword("\n点击详情，添加AI助手探寻另一个你~"));
                 templateMessageService.sendMessage(templateMessage);
+                customerMessageService.sendCustomerMessage(profile.getOpenid(), ConfigUtils.getTeamPromotionCodeImage(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
             });
         }
     }
