@@ -10,5 +10,6 @@ public class GroupPromotionCountDownDto {
     private String leaderName; // 发起人名称
     private Integer remainderCount; // 剩余人数
     private String countDownDay; // 倒计时剩余天数
+    private String groupCode; // 团队编号
 
 }

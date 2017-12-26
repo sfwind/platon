@@ -99,6 +99,12 @@ public class GroupPromotionController {
             countDownDto.setRemainderCount(GROUP_PROMOTION_SUCCESS_COUNT - groupPromotions.size());
             // 已经参加了团队学习，返回相差时间
             countDownDto.setCountDownDay(String.format("%02d", DateUtils.interval(groupPromotionOpenDateTime.toDate())));
+
+            GroupPromotion groupPromotion = groupPromotions.stream().findAny().orElse(null);
+            if (groupPromotion != null) {
+                countDownDto.setGroupCode(groupPromotion.getGroupCode());
+            }
+
             return WebUtils.result(countDownDto);
         } else {
             return WebUtils.error("无当前页面访问权限");
