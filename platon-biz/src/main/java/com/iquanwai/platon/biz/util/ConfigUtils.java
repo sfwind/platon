@@ -389,5 +389,20 @@ public class ConfigUtils {
     public static String getApplySuccessNotice() {
         return getValue("apply.success.notice");
     }
+
+    /**
+     * 组团学习模板消息图片链接
+     */
+    public static String getTeamPromotionCodeUrl() {
+        return getValue("team.promotion.code.url");
+    }
+
+    /**
+     * 组团学习推送图片 MessageId
+     */
+    public static String getTeamPromotionCodeImage() {
+        return getValue("team.promotion.code.image");
+    }
+
 }
 

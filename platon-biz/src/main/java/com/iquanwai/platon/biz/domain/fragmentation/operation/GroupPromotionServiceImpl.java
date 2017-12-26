@@ -188,6 +188,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         int remainderCount = GROUP_PROMOTION_SUCCESS_COUNT - currentGroupPromotions.size();
         if (remainderCount < 0) {
             customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ordinarySuccessMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+            customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ConfigUtils.getTeamPromotionCodeImage(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
             return;
         }
 
@@ -205,6 +206,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
             newProfileMessage = ordinarySuccessMessage;
         }
         customerMessageService.sendCustomerMessage(newProfile.getOpenid(), newProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(newProfile.getOpenid(), ConfigUtils.getTeamPromotionCodeImage(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
 
 
         // 给不是自己的老人发送消息
@@ -234,7 +236,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                 Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                 templateMessage.setData(data);
                 templateMessage.setTemplate_id(ConfigUtils.getApplySuccessNotice());
-                templateMessage.setUrl("https://static.iqycamp.com/images/team_learning_XiaoY.jpg?imageslim");
+                templateMessage.setUrl(ConfigUtils.getTeamPromotionCodeUrl());
                 data.put("first", new TemplateMessage.Keyword("你已加入实验，成功解锁前7天自我认知学习和游戏内容。\n"));
                 data.put("keyword1", new TemplateMessage.Keyword("认识自己|用冰山模型，分析出真实的你"));
                 data.put("keyword2", new TemplateMessage.Keyword("2017.01.07 - 2017.01.14"));
