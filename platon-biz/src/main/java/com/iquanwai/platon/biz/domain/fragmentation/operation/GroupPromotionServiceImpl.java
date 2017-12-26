@@ -195,11 +195,10 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         GroupPromotion leaderPromotion = currentGroupPromotions.stream().filter(GroupPromotion::getLeader).findAny().orElse(null);
         Assert.notNull(leaderPromotion, "团队创建人不能为空");
         Profile leaderProfile = accountService.getProfile(leaderPromotion.getProfileId());
-
         // 给新人发送消息
         String newProfileMessage;
         if (remainderCount > 0) {
-            newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "加入解锁7天实验，请等待解锁成功通知。你可以<a href='"
+            newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入解锁7天实验，请等待解锁成功通知。你可以<a href='"
                     + ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true" + "'>邀请更多好友加入</a>。"
                     + "\n\n添加AI助手，回复“实验”，探寻另一个你~";
         } else {
