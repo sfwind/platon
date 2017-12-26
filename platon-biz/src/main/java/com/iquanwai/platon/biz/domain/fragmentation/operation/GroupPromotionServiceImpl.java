@@ -194,7 +194,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
 
         GroupPromotion leaderPromotion = currentGroupPromotions.stream().filter(GroupPromotion::getLeader).findAny().orElse(null);
         Assert.notNull(leaderPromotion, "团队创建人不能为空");
-        Profile leaderProfile = accountService.getProfile(leaderPromotion.getProfileId());g
+        Profile leaderProfile = accountService.getProfile(leaderPromotion.getProfileId());
 
         // 给新人发送消息
         String newProfileMessage;
