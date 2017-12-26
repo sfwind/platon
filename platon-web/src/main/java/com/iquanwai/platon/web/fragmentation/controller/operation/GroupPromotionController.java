@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.GroupPromotionCountDownDto;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.joda.time.DateTime;
@@ -61,10 +62,10 @@ public class GroupPromotionController {
     }
 
     @RequestMapping(value = "/following")
-    public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
+    public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, GuestUser guestUser) {
         // 页面可能无 ProfileId
         try {
-            accountService.getAccount(loginUser.getOpenId(), false);
+            accountService.getAccount(guestUser.getOpenId(), false);
             return WebUtils.success();
         } catch (NotFollowingException e) {
             String qrCodeBase64 = qrCodeService.loadQrBase64("groupPromotion_" + groupCode);
