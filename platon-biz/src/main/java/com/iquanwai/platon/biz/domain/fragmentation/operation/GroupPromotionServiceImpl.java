@@ -223,7 +223,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
             data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
             data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请在下方留言。"));
             templateMessageService.sendMessage(templateMessage);
-        } else {
+        } else if (remainderCount == 0) {
             List<GroupPromotion> oldPromotionUsers = currentGroupPromotions.stream()
                     .filter(groupPromotion -> !groupPromotion.getProfileId().equals(newProfileId)).collect(Collectors.toList());
             List<Integer> oldPromotionUsersProfileIds = oldPromotionUsers.stream().map(GroupPromotion::getProfileId).collect(Collectors.toList());
