@@ -209,7 +209,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         // 给不是自己的老人发送消息
         if (remainderCount > 0) {
             TemplateMessage templateMessage = new TemplateMessage();
-            templateMessage.setTouser(newProfile.getOpenid());
+            templateMessage.setTouser(leaderProfile.getOpenid());
             Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
             templateMessage.setData(data);
             templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
