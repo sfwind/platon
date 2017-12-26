@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
@@ -7,6 +8,8 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.GroupPromotion;
@@ -14,6 +17,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -34,6 +39,8 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     private GeneratePlanService generatePlanService;
     @Autowired
     private CustomerMessageService customerMessageService;
+    @Autowired
+    private TemplateMessageService templateMessageService;
     @Autowired
     private GroupPromotionDao groupPromotionDao;
     @Autowired
@@ -177,7 +184,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         Profile newProfile = accountService.getProfile(newProfileId);
         List<GroupPromotion> currentGroupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
 
-        String ordinarySuccessMessage = "你已组团完毕，成功领取168元7天学习资格。1月7日晚20点课程正式开始，开课后记得评价你的好友，告诉ta了解你眼中的ta哦~";
+        String ordinarySuccessMessage = "你已加入实验，解锁前7天自我认知学习和游戏内容。 \n1月7日晚20点正式开始，添加AI助手，回复“实验”，探寻另一个你~";
         // 距离目标完成人数
         int remainderCount = GROUP_PROMOTION_SUCCESS_COUNT - currentGroupPromotions.size();
         if (remainderCount < 0) {
@@ -192,28 +199,50 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         // 给新人发送消息
         String newProfileMessage;
         if (remainderCount > 0) {
-            newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入开启7天学习资格";
+            newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "加入解锁7天实验，请等待解锁成功通知。邀请更多好友加入("
+                    + ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true)\n" + "添加AI助手，回复“实验”，探寻另一个你~";
         } else {
             newProfileMessage = ordinarySuccessMessage;
         }
         customerMessageService.sendCustomerMessage(newProfile.getOpenid(), newProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
-        // 给不是自己的老人发送消息
-        String oldProfileMessage;
-        if (remainderCount > 0) {
-            oldProfileMessage = newProfile.getNickname() + "已接受邀请，加入学习。还差" + remainderCount + "人加入领取7天学习资格，分享邀请链接，和你的好友一起7天学习。如有疑问XXXX";
-        } else {
-            oldProfileMessage = "你已组团完毕，成功领取168元7天学习资格。1月7日晚20点课程正式开始，开课后记得评价你的好友，告诉ta了解你眼中的ta哦~";
-        }
-        List<GroupPromotion> oldPromotionUsers = currentGroupPromotions.stream()
-                .filter(groupPromotion -> !groupPromotion.getProfileId().equals(newProfileId)).collect(Collectors.toList());
-        List<Integer> oldPromotionUsersProfileIds = oldPromotionUsers.stream().map(GroupPromotion::getProfileId).collect(Collectors.toList());
-        List<Profile> profiles = profileDao.queryAccounts(oldPromotionUsersProfileIds);
-        profiles.forEach(profile -> {
-            String openId = profile.getOpenid();
-            customerMessageService.sendCustomerMessage(openId, oldProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        });
 
+        // 给不是自己的老人发送消息
+        if (remainderCount > 0) {
+            TemplateMessage templateMessage = new TemplateMessage();
+            templateMessage.setTouser(newProfile.getOpenid());
+            Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+            templateMessage.setData(data);
+            templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+            templateMessage.setUrl(ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true");
+            data.put("first", new TemplateMessage.Keyword(newProfile.getNickname() + "已接受邀请。还差最后" + remainderCount + "人加入，" + GROUP_PROMOTION_SUCCESS_COUNT + "人免费解锁前7天实验。\n"));
+            data.put("keyword1", new TemplateMessage.Keyword("自我认知实验"));
+            data.put("keyword2", new TemplateMessage.Keyword("截止1月7日晚20:00"));
+            data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+            data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请联系AI助手圈外小Y（ID：quanwai666）"));
+            templateMessageService.sendMessage(templateMessage);
+
+        } else {
+            List<GroupPromotion> oldPromotionUsers = currentGroupPromotions.stream()
+                    .filter(groupPromotion -> !groupPromotion.getProfileId().equals(newProfileId)).collect(Collectors.toList());
+            List<Integer> oldPromotionUsersProfileIds = oldPromotionUsers.stream().map(GroupPromotion::getProfileId).collect(Collectors.toList());
+            List<Profile> profiles = profileDao.queryAccounts(oldPromotionUsersProfileIds);
+            TemplateMessage templateMessage = new TemplateMessage();
+
+            profiles.forEach(profile -> {
+                templateMessage.setTouser(profile.getOpenid());
+                Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+                templateMessage.setData(data);
+                templateMessage.setTemplate_id(ConfigUtils.getApplySuccessNotice());
+                templateMessage.setUrl(ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true");
+                data.put("first", new TemplateMessage.Keyword("你已加入实验，成功解锁前7天自我认知学习和游戏内容。\n"));
+                data.put("keyword1", new TemplateMessage.Keyword("认识自己|用冰山模型，分析出真实的你"));
+                data.put("keyword2", new TemplateMessage.Keyword("2017.01.07 - 2017.01.14"));
+                data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
+                data.put("remark", new TemplateMessage.Keyword("\n点击详情，添加AI助手探寻另一个你~"));
+                templateMessageService.sendMessage(templateMessage);
+            });
+        }
     }
 
 }

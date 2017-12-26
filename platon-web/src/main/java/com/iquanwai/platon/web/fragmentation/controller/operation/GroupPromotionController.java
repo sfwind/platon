@@ -39,7 +39,6 @@ public class GroupPromotionController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-
     @RequestMapping(value = "/participate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
         boolean hasParticipateGroup = groupPromotionService.hasParticipateGroup(loginUser.getId());
