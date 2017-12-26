@@ -212,7 +212,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
             data.put("keyword1", new TemplateMessage.Keyword("自我认知实验"));
             data.put("keyword2", new TemplateMessage.Keyword("截止1月7日晚20:00"));
             data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-            data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请联系AI助手"));
+            data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请在下方留言。"));
             templateMessageService.sendMessage(templateMessage);
 
         } else {
