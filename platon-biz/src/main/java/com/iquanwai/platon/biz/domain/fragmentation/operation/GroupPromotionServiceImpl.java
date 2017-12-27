@@ -168,6 +168,12 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
     }
 
     @Override
+    public GroupPromotion loadGroupLeader(String groupCode) {
+        List<GroupPromotion> groupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
+        return groupPromotions.stream().filter(GroupPromotion::getLeader).findAny().orElse(null);
+    }
+
+    @Override
     public String loadLeaderName(Integer profileId) {
         GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
         Assert.notNull(groupPromotion);

@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.GroupPromotionCountDownDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -108,6 +109,22 @@ public class GroupPromotionController {
         } else {
             return WebUtils.error("无当前页面访问权限");
         }
+    }
+
+    @RequestMapping(value = "/leader")
+    public ResponseEntity<Map<String, Object>> loadGroupLeader(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
+        GroupPromotion groupPromotion = groupPromotionService.loadGroupLeader(groupCode);
+        if (groupPromotion != null) {
+            int leaderProfileId = groupPromotion.getProfileId();
+            Profile profile = accountService.getProfile(leaderProfileId);
+            if (profile != null) {
+                Profile resultProfile = new Profile();
+                resultProfile.setNickname(profile.getNickname());
+                resultProfile.setHeadimgurl(profile.getNickname());
+                return WebUtils.result(resultProfile);
+            }
+        }
+        return WebUtils.error("团队创建人不存在");
     }
 
 }

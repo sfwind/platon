@@ -45,6 +45,11 @@ public interface GroupPromotionService {
     boolean isGroupLeader(Integer profileId);
 
     /**
+     * 根据 groupCode 获取 Leader 相关信息
+     */
+    GroupPromotion loadGroupLeader(String groupCode);
+
+    /**
      * 获取某个用户所在小组的团长昵称
      */
     String loadLeaderName(Integer profileId);
