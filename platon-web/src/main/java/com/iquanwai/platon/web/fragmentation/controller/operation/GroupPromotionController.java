@@ -120,7 +120,7 @@ public class GroupPromotionController {
             if (profile != null) {
                 Profile resultProfile = new Profile();
                 resultProfile.setNickname(profile.getNickname());
-                resultProfile.setHeadimgurl(profile.getNickname());
+                resultProfile.setHeadimgurl(profile.getHeadimgurl());
                 return WebUtils.result(resultProfile);
             }
         }
