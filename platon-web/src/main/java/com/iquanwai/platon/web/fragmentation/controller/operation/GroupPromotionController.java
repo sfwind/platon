@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.GroupPromotionCountDownDto;
@@ -26,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/rise/operation/group")
 public class GroupPromotionController {
-
     @Autowired
     private GroupPromotionService groupPromotionService;
     @Autowired
@@ -36,7 +36,7 @@ public class GroupPromotionController {
 
     // 推广成功人数
     private static final int GROUP_PROMOTION_SUCCESS_COUNT = 3;
-    private static final DateTime groupPromotionOpenDateTime = new DateTime(2018, 1, 7, 0, 0);
+    private static final DateTime GROUP_PROMOTION_OPEN_DATE_TIME = new DateTime(2018, 1, 7, 0, 0);
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,7 +57,13 @@ public class GroupPromotionController {
                 return WebUtils.error("用户参团失败，请联系管理员");
             }
         } else {
-            return WebUtils.error("用户无参加活动权限");
+            RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
+            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                    riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+                return WebUtils.error("你已经是商学院会员，拥有1月训练营学习资格，无需试学");
+            } else {
+                return WebUtils.error("用户无参加活动权限");
+            }
         }
     }
 
@@ -99,7 +105,7 @@ public class GroupPromotionController {
             countDownDto.setLeaderName(groupPromotionService.loadLeaderName(loginUser.getId()));
             countDownDto.setRemainderCount(GROUP_PROMOTION_SUCCESS_COUNT - groupPromotions.size());
             // 已经参加了团队学习，返回相差时间
-            countDownDto.setCountDownDay(String.format("%02d", DateUtils.interval(groupPromotionOpenDateTime.toDate())));
+            countDownDto.setCountDownDay(String.format("%02d", DateUtils.interval(GROUP_PROMOTION_OPEN_DATE_TIME.toDate())));
 
             GroupPromotion groupPromotion = groupPromotions.stream().findAny().orElse(null);
             if (groupPromotion != null) {

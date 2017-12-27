@@ -234,15 +234,19 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                     .filter(groupPromotion -> !groupPromotion.getProfileId().equals(newProfileId)).collect(Collectors.toList());
             List<Integer> oldPromotionUsersProfileIds = oldPromotionUsers.stream().map(GroupPromotion::getProfileId).collect(Collectors.toList());
             List<Profile> profiles = profileDao.queryAccounts(oldPromotionUsersProfileIds);
-            TemplateMessage templateMessage = new TemplateMessage();
 
             profiles.forEach(profile -> {
+                TemplateMessage templateMessage = new TemplateMessage();
                 templateMessage.setTouser(profile.getOpenid());
                 Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                 templateMessage.setData(data);
                 templateMessage.setTemplate_id(ConfigUtils.getApplySuccessNotice());
                 templateMessage.setUrl(ConfigUtils.getTeamPromotionCodeUrl());
-                data.put("first", new TemplateMessage.Keyword("你已加入7天试学，请等待开学通知。\n"));
+                if(profile.getId() == leaderProfile.getId()){
+                    data.put("first", new TemplateMessage.Keyword(newProfile.getNickname() + "已接受邀请。你已成功邀请到2位好友，成功解锁前7天试学。\n"));
+                }else{
+                    data.put("first", new TemplateMessage.Keyword("你已加入7天试学，请等待开学通知。\n"));
+                }
                 data.put("keyword1", new TemplateMessage.Keyword("认识自己|用冰山模型，分析出真实的你"));
                 data.put("keyword2", new TemplateMessage.Keyword("2017.01.07 - 2017.01.14"));
                 data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
