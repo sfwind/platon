@@ -145,4 +145,13 @@ public class PrizeCardController {
         operationLogService.log(operationLog);
        return WebUtils.result(prizeCardService.loadAnnualCounts(loginUser.getId()));
     }
+
+    @RequestMapping("/card/preview/{cardId}")
+    public ResponseEntity<Map<String,Object>> receivePreviewCard(LoginUser loginUser,@PathVariable Integer cardId){
+        Assert.notNull(loginUser,"登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取预先礼品卡").action("领取预先礼品卡");
+        operationLogService.log(operationLog);
+        String result = prizeCardService.isPreviewCardReceived(cardId,loginUser.getId());
+        return WebUtils.result(result);
+    }
 }

@@ -221,4 +221,12 @@ public interface AccountService {
      *
      * */
     void updateWeixinId(Integer profileId, String weixinId);
+
+
+    /**
+     * 是否参加过商学院、训练营、试听课、"一带二"活动
+     * @return
+     */
+    boolean isPreviewNewUser(Integer profileId);
+
 }

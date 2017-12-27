@@ -138,4 +138,23 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return 0;
     }
+
+
+    /**
+     * 领取预先生成的礼品卡
+     * @param id
+     * @param profileId
+     * @return
+     */
+    public Integer updatePreviewCard(Integer id,Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update PrizeCard set ReceiverProfileId = ? where id = ? and ReceiverProfileId = null and del = 0";
+
+        try {
+           return runner.update(sql,profileId,id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return 0;
+    }
 }

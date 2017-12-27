@@ -27,4 +27,13 @@ public interface PrizeCardService {
     void generateAnnualPrizeCards(Integer profileId);
 
     Integer loadAnnualCounts(Integer profileId);
+
+    /**
+     * 是否成功领取预先生成的礼品卡
+     * @param id
+     * @param profileId
+     * @return
+     */
+    String isPreviewCardReceived(Integer id,Integer profileId);
+
 }

@@ -112,7 +112,6 @@ public class PrizeCardServiceImpl implements PrizeCardService {
      */
     @Override
     public String receiveAnnualPrizeCards(Integer id, Integer profileId) {
-
         //判断是否是新用户
         Profile profile = accountService.getProfile(profileId);
         if(profile!=null){
@@ -163,5 +162,22 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
 
         return prizeCards.size();
+    }
+
+    @Override
+    public String isPreviewCardReceived(Integer id, Integer profileId) {
+        if(!accountService.isPreviewNewUser(profileId)){
+            return "亲,请给新用户一点机会吧~";
+        }
+        //判断礼品卡是否已经被领取
+        if(prizeCardDao.load(PrizeCard.class,id).getUsed()){
+            return "该礼品卡已经被领取";
+        }
+        //领取礼品卡
+        if(prizeCardDao.updatePreviewCard(id,profileId) ==0){
+            return "该礼品卡已经被领取";
+        }
+        generatePlanService.createAnnualPlan(profileId);
+        return "恭喜您获得该礼品卡";
     }
 }

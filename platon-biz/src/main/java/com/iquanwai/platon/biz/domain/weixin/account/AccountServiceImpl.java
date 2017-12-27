@@ -581,5 +581,17 @@ public class AccountServiceImpl implements AccountService {
     public void updateWeixinId(Integer profileId, String weixinId) {
         profileDao.updateWeixinId(profileId, weixinId);
     }
+
+    @Override
+    public boolean isPreviewNewUser(Integer profileId) {
+       //TODO:判断是否是商学院用户
+        //TODO:判断是否是训练营用户
+        //TODO:判断参加过试听课
+        //TODO:判断是否参加"一带二"活动
+
+
+
+        return false;
+    }
 }
 
