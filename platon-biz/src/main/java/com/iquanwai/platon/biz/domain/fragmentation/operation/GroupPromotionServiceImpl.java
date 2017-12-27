@@ -198,7 +198,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         Profile newProfile = accountService.getProfile(newProfileId);
         List<GroupPromotion> currentGroupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
 
-        String ordinarySuccessMessage = "你已加入实验，解锁前7天自我认知学习和游戏内容。 \n\n1月7日晚20点正式开始，添加AI助手，回复“实验”，探寻另一个你~";
+        String ordinarySuccessMessage = "你已加入试学，解锁前7天自我认知学习和游戏内容。 \n\n1月7日晚20点正式开始，添加AI助手，回复“试学”，探寻另一个你~";
         // 距离目标完成人数
         int remainderCount = GROUP_PROMOTION_SUCCESS_COUNT - currentGroupPromotions.size();
         GroupPromotion leaderPromotion = currentGroupPromotions.stream().filter(GroupPromotion::getLeader).findAny().orElse(null);
@@ -207,7 +207,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
 
         // 给新人发送消息
         if (remainderCount > 0) {
-            String newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入解锁7天实验，请等待解锁成功通知。你可以<a href='"
+            String newProfileMessage = "你已接受" + leaderProfile.getNickname() + "邀请，还差" + remainderCount + "人加入解锁7天试学，请等待解锁成功通知。你可以<a href='"
                     + ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true" + "'>邀请更多好友加入</a>。";
             customerMessageService.sendCustomerMessage(newProfile.getOpenid(), newProfileMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         } else {
@@ -223,8 +223,8 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
             templateMessage.setData(data);
             templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
             templateMessage.setUrl(ConfigUtils.domainName() + "/pay/static/camp/group?groupCode=" + groupCode + "&share=true");
-            data.put("first", new TemplateMessage.Keyword(newProfile.getNickname() + "已接受邀请。还差最后" + remainderCount + "人加入，" + GROUP_PROMOTION_SUCCESS_COUNT + "人免费解锁前7天实验。\n"));
-            data.put("keyword1", new TemplateMessage.Keyword("自我认知实验"));
+            data.put("first", new TemplateMessage.Keyword(newProfile.getNickname() + "已接受邀请。还差最后" + remainderCount + "人加入，" + GROUP_PROMOTION_SUCCESS_COUNT + "人免费解锁前7天试学。\n"));
+            data.put("keyword1", new TemplateMessage.Keyword("《认识自己》7天试学"));
             data.put("keyword2", new TemplateMessage.Keyword("截止1月7日晚20:00"));
             data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
             data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请在下方留言。"));
@@ -242,7 +242,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                 templateMessage.setData(data);
                 templateMessage.setTemplate_id(ConfigUtils.getApplySuccessNotice());
                 templateMessage.setUrl(ConfigUtils.getTeamPromotionCodeUrl());
-                data.put("first", new TemplateMessage.Keyword("你已加入实验，成功解锁前7天自我认知学习和游戏内容。\n"));
+                data.put("first", new TemplateMessage.Keyword("你已加入7天试学，请等待开学通知。\n"));
                 data.put("keyword1", new TemplateMessage.Keyword("认识自己|用冰山模型，分析出真实的你"));
                 data.put("keyword2", new TemplateMessage.Keyword("2017.01.07 - 2017.01.14"));
                 data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
