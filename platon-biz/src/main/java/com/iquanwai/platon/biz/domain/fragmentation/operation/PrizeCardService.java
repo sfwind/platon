@@ -26,4 +26,5 @@ public interface PrizeCardService {
 
     void generateAnnualPrizeCards(Integer profileId);
 
+    Integer loadAnnualCounts(Integer profileId);
 }

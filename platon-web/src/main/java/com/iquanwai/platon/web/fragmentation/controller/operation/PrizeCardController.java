@@ -78,7 +78,6 @@ public class PrizeCardController {
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
         operationLogService.log(operationLog);
         Integer currentId;
-        //判断是自己的礼品卡还是ta的礼品卡
         Profile targetProfile = accountService.getProfileByRiseId(riseId);
         if (targetProfile == null) {
             return WebUtils.result(Lists.newArrayList());
@@ -132,11 +131,18 @@ public class PrizeCardController {
      */
     @RequestMapping("/annual/receive/{cardId}")
     public ResponseEntity<Map<String, Object>> receiveAnnualCards(LoginUser loginUser, @PathVariable Integer cardId) {
-        //TODO:判断是否进行关注
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
         operationLogService.log(operationLog);
         String result = prizeCardService.receiveAnnualPrizeCards(cardId, loginUser.getId());
         return WebUtils.result(result);
+    }
+
+    @RequestMapping("/annual/load/count")
+    public ResponseEntity<Map<String,Object>> loadAnnualCounts(LoginUser loginUser){
+        Assert.notNull(loginUser,"登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡数量").action("加载礼品卡数量");
+        operationLogService.log(operationLog);
+       return WebUtils.result(prizeCardService.loadAnnualCounts(loginUser.getId()));
     }
 }

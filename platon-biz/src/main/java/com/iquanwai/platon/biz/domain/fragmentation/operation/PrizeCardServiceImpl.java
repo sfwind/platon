@@ -143,10 +143,25 @@ public class PrizeCardServiceImpl implements PrizeCardService {
      */
     @Override
     public void generateAnnualPrizeCards(Integer profileId) {
-        //TODO:根据年终回顾的数据生成礼品卡数量
-        int sum = 1;
-        for (int i = 0;i<sum;i++){
-            prizeCardDao.insertAnnualPrizeCard(profileId);
-        }
+       List<PrizeCard> prizeCards  = prizeCardDao.getAnnualPrizeCards(profileId);
+        //TODO：如果之前没有生成过，则进行生成
+       if(prizeCards.size() == 0){
+           int sum = 1;
+           for (int i = 0;i<sum;i++){
+               prizeCardDao.insertAnnualPrizeCard(profileId);
+           }
+       }
+    }
+
+    /**
+     * 返回该用户获得的礼品卡数量
+     * @param profileId
+     * @return
+     */
+    @Override
+    public Integer loadAnnualCounts(Integer profileId) {
+        List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
+
+        return prizeCards.size();
     }
 }
