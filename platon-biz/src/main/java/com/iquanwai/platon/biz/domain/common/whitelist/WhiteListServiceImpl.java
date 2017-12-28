@@ -193,7 +193,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
             if (groupPromotion.getLeader()) {
                 // 如果是团长，并且入团人员满足的话，进入倒计时
-                return groupPromotions.size() >= 3 && campOpenDate.compareTo(new Date()) >= 0;
+                return groupPromotions.size() >= 2 && campOpenDate.compareTo(new Date()) >= 0;
             } else {
                 // 如果不是团长，进入倒计时
                 return campOpenDate.compareTo(new Date()) >= 0;
