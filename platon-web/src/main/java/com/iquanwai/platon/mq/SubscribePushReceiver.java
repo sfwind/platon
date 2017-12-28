@@ -43,7 +43,6 @@ public class SubscribePushReceiver {
         rabbitMQFactory.initReceiver(QUEUE, TOPIC, (message) -> {
             JSONObject msg = JSON.parseObject(message.getMessage().toString());
             String scene = msg.getString("scene");
-            logger.info("scene:"+scene);
             if (scene != null && scene.startsWith(PREFIX)) {
                 String[] split = scene.split("_");
                 Integer pushId = Integer.parseInt(split[2]);
@@ -53,32 +52,41 @@ public class SubscribePushReceiver {
                     logger.error("缺少push对象:{}", message);
                     return;
                 }
-                String callback = push.getCallbackUrl();
-                String templateMsg = template.get(push.getScene());
+                String callback;
+                String templateMsg;
+                if(push.getScene().startsWith("prize_card_cardId")){
+                   Profile profile = accountService.getProfile(openId);
+                   Integer cardId =
+
+                }
+                else{
+                    callback = push.getCallbackUrl();
+                    templateMsg = template.get(push.getScene());
+                }
+
+
                 logger.info("前往callback页面:{}", scene);
                 customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
-            else if(scene!=null && scene.startsWith("prize_card_cardId_")){
-                String openId = msg.getString("openid");
-                Profile profile = accountService.getProfile(openId);
-                Integer cardId = Integer.valueOf(scene.substring(18));
-                String result = prizeCardService.isPreviewCardReceived(cardId,profile.getId());
-                //TODO:OperationLog=>打点
-                if(result.equals("恭喜您获得该礼品卡")){
-                    //TODO:发送成功领取的通知
-                    String templeateMsg = template.get("prize_card_receive_success");
-                   // SubscribePush push = accountService.loadSubscribePush(pushId);
-                  //  String callback = push.getCallbackUrl();
-                    logger.info("===========领取成功=======");
-                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                }
-                else{
-                    //TODO:领取失败
-                    String templeateMsg = template.get("prize_card_receive_failure");
-                    logger.info("===========领取失败=======");
-                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                }
-            }
+//            else if(scene!=null && scene.startsWith("prize_card_cardId_")){
+//                String openId = msg.getString("openid");
+//                Profile profile = accountService.getProfile(openId);
+//                Integer cardId = Integer.valueOf(scene.substring(18));
+//                String result = prizeCardService.isPreviewCardReceived(cardId,profile.getId());
+//                //TODO:OperationLog=>打点
+//                if(result.equals("恭喜您获得该礼品卡")){
+//                    //TODO:发送成功领取的通知
+//                    String templeateMsg = template.get("prize_card_receive_success");
+//                    logger.info("===========领取成功=======");
+//                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                }
+//                else{
+//                    //TODO:领取失败
+//                    String templeateMsg = template.get("prize_card_receive_failure");
+//                    logger.info("===========领取失败=======");
+//                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                }
+//            }
         });
         initTemplate();
     }
