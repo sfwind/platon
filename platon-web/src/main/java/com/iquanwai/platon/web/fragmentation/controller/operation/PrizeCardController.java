@@ -152,6 +152,11 @@ public class PrizeCardController {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取预先礼品卡").action("领取预先礼品卡");
         operationLogService.log(operationLog);
         String result = prizeCardService.isPreviewCardReceived(cardId,loginUser.getId());
-        return WebUtils.result(result);
+        if(result.equals("恭喜您获得该礼品卡")){
+            return WebUtils.success();
+        }
+        else {
+            return WebUtils.error(result);
+        }
     }
 }
