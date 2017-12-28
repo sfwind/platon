@@ -67,9 +67,9 @@ public class SubscribePushReceiver {
                 if(sceneStrArr.length == 3){
                     String cardId = sceneStrArr[2];
                     String result = prizeCardService.isPreviewCardReceived(cardId, profile.getId());
-                    //TODO:OperationLog=>打点
-                    if("恭喜您获得该礼品卡".equals(result)){
-                        //TODO:发送成功领取的通知
+                    OperationLog operationLog = OperationLog.create().module("礼品卡管理").function("发送模板消息").action("发送模板消息");
+                    operationLogService.log(operationLog);
+                    if ("恭喜您获得该礼品卡".equals(result)) {
                         String templeateMsg = template.get("prize_card_receive_success");
                         // SubscribePush push = accountService.loadSubscribePush(pushId);
                         //  String callback = push.getCallbackUrl();
