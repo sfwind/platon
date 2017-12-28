@@ -7,9 +7,12 @@ import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +37,8 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private GeneratePlanService generatePlanService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -96,6 +101,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 查询年度礼品卡
+     *
      * @param profileId
      * @return
      */
@@ -106,6 +112,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 领取礼品卡
+     *
      * @param id
      * @param profileId
      * @return
@@ -114,22 +121,22 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     public String receiveAnnualPrizeCards(Integer id, Integer profileId) {
         //判断是否是新用户
         Profile profile = accountService.getProfile(profileId);
-        if(profile!=null){
-            if(improvementPlanDao.loadAllPlans(profile.getId()).size()>0){
+        if (profile != null) {
+            if (improvementPlanDao.loadAllPlans(profile.getId()).size() > 0) {
                 return "亲,请给新用户一点机会吧~";
             }
         }
         //判断礼品卡是否已经被领取
-        if(prizeCardDao.load(PrizeCard.class,id).getUsed()){
+        if (prizeCardDao.load(PrizeCard.class, id).getUsed()) {
             return "该礼品卡已经被领取";
         }
 
         //判断是否重复领取
-        if(prizeCardDao.loadAnnualCardByReceiver(profileId) !=null){
+        if (prizeCardDao.loadAnnualCardByReceiver(profileId) != null) {
             return "您已经领过一张了，请不要重复领取";
         }
         //领取礼品卡
-        if(prizeCardDao.updateAnnualPrizeCards(id,profileId) ==0){
+        if (prizeCardDao.updateAnnualPrizeCards(id, profileId) == 0) {
             return "该礼品卡已经被领取";
         }
         generatePlanService.createAnnualPlan(profileId);
@@ -138,22 +145,24 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 根据年终回顾生成礼品卡
+     *
      * @param profileId
      */
     @Override
     public void generateAnnualPrizeCards(Integer profileId) {
-       List<PrizeCard> prizeCards  = prizeCardDao.getAnnualPrizeCards(profileId);
+        List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
         //TODO：如果之前没有生成过，则进行生成
-       if(prizeCards.size() == 0){
-           int sum = 1;
-           for (int i = 0;i<sum;i++){
-               prizeCardDao.insertAnnualPrizeCard(profileId);
-           }
-       }
+        if (prizeCards.size() == 0) {
+            int sum = 1;
+            for (int i = 0; i < sum; i++) {
+                prizeCardDao.insertAnnualPrizeCard(profileId);
+            }
+        }
     }
 
     /**
      * 返回该用户获得的礼品卡数量
+     *
      * @param profileId
      * @return
      */
@@ -165,20 +174,33 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     }
 
     @Override
-    public String isPreviewCardReceived(Integer id, Integer profileId) {
-        if(!accountService.isPreviewNewUser(profileId)){
+    public String isPreviewCardReceived(String cardId, Integer profileId) {
+        if (!accountService.isPreviewNewUser(profileId)) {
             return "亲,请给新用户一点机会吧~";
         }
         //判断礼品卡是否已经被领取
-        if(prizeCardDao.load(PrizeCard.class,id).getUsed()){
+        PrizeCard prizeCard = prizeCardDao.loadCardByCardNo(cardId);
+        if (prizeCard == null) {
+            return "该礼品卡不存在";
+        }
+        if (prizeCard.getUsed()) {
             return "该礼品卡已经被领取";
         }
         //领取礼品卡
-        if(prizeCardDao.updatePreviewCard(id,profileId) ==0){
+        if (prizeCardDao.updatePreviewCard(prizeCard.getId(), profileId) == 0) {
             return "该礼品卡已经被领取";
         }
         //暂时不开课
         //generatePlanService.createAnnualPlan(profileId);
         return "恭喜您获得该礼品卡";
+    }
+
+    @Override
+    public void sendReceiveCardMsgSuccessful(String openid, String nickname) {
+        String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n" +
+                " 你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
+
+        customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 }
