@@ -4,8 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.*;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
@@ -83,6 +82,13 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
+    @Autowired
+    private AuditionClassMemberDao auditionClassMemberDao;
+
+    @Autowired
+    private GroupPromotionDao groupPromotionDao;
+    @Autowired
+    private PrizeCardDao prizeCardDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -578,6 +584,27 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public RiseMember getValidRiseMember(Integer profileId) {
         return riseMemberDao.loadValidRiseMember(profileId);
+    }
+
+    @Override
+    public boolean isPreviewNewUser(Integer profileId) {
+        //判断是否参加过商学院和训练营
+        if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
+            return false;
+        }
+        //判断是否参加过试听课
+        if (auditionClassMemberDao.loadByProfileId(profileId) != null) {
+            return false;
+        }
+        //判断是否参加"一带二"活动
+        if (groupPromotionDao.loadByProfileId(profileId) != null) {
+            return false;
+        }
+        //判断是否领取过礼品卡
+        if (prizeCardDao.loadAnnualCardByReceiver(profileId) != null) {
+            return false;
+        }
+        return true;
     }
 }
 

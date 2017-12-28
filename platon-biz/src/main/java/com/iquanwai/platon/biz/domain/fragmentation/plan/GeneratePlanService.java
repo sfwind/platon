@@ -29,6 +29,16 @@ public interface GeneratePlanService {
     Integer createTeamLearningPlan(Integer profileId);
 
     /**
+     * 创建年度总结活动的小课<br/>
+     * 有课解锁，没课开课
+     *
+     * @param profileId 用户id
+     * @return 小课id
+     *
+     */
+    Integer createAnnualPlan(Integer profileId);
+
+    /**
      * 生成学习计划
      * @param profileId profileId
      * @param problemId 小课id
