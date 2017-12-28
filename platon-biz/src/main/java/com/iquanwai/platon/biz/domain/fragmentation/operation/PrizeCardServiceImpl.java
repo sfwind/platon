@@ -139,7 +139,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         if (prizeCardDao.updateAnnualPrizeCards(id, profileId) == 0) {
             return "该礼品卡已经被领取";
         }
-        generatePlanService.createAnnualPlan(profileId);
+        generatePlanService.createTeamLearningPlan(profileId);
         return "恭喜您获得该礼品卡";
     }
 
@@ -191,7 +191,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             return "该礼品卡已经被领取";
         }
         //暂时不开课
-        generatePlanService.createAnnualPlan(profileId);
+        generatePlanService.createTeamLearningPlan(profileId);
         return "恭喜您获得该礼品卡";
     }
 
