@@ -157,4 +157,20 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return 0;
     }
+
+    /**
+     * 查询用户是否已经领取过礼品卡
+     */
+    public PrizeCard loadCardByCardNo(String cardNo){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = 100 and Del = 0 limit 1";
+        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
+
+        try {
+            return runner.query(sql,h,cardNo);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return null;
+    }
 }

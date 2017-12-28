@@ -30,10 +30,10 @@ public interface PrizeCardService {
 
     /**
      * 是否成功领取预先生成的礼品卡
-     * @param id
+     * @param cardId
      * @param profileId
      * @return
      */
-    String isPreviewCardReceived(Integer id,Integer profileId);
+    String isPreviewCardReceived(String cardId,Integer profileId);
 
 }

@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribePush;
 import com.iquanwai.platon.biz.util.Constants;
@@ -58,26 +57,29 @@ public class SubscribePushReceiver {
                 logger.info("前往callback页面:{}", scene);
                 customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
-            else if(scene!=null && scene.startsWith("prize_card_cardId_")){
+            else if(scene!=null && scene.startsWith("prize_card_")){
                 String openId = msg.getString("openid");
                 Profile profile = accountService.getProfile(openId);
-                Integer cardId = Integer.valueOf(scene.substring(18));
-                String result = prizeCardService.isPreviewCardReceived(cardId,profile.getId());
-                //TODO:OperationLog=>打点
-                if(result.equals("恭喜您获得该礼品卡")){
-                    //TODO:发送成功领取的通知
-                    String templeateMsg = template.get("prize_card_receive_success");
-                   // SubscribePush push = accountService.loadSubscribePush(pushId);
-                  //  String callback = push.getCallbackUrl();
-                    logger.info("===========领取成功=======");
-                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                String[] sceneStrArr = scene.split("_");
+                if(sceneStrArr.length == 3){
+                    String cardId = sceneStrArr[2];
+                    String result = prizeCardService.isPreviewCardReceived(cardId, profile.getId());
+                    //TODO:OperationLog=>打点
+                    if("恭喜您获得该礼品卡".equals(result)){
+                        //TODO:发送成功领取的通知
+                        String templeateMsg = template.get("prize_card_receive_success");
+                        // SubscribePush push = accountService.loadSubscribePush(pushId);
+                        //  String callback = push.getCallbackUrl();
+                        logger.info("===========领取成功=======");
+                        customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    }else{
+                        //TODO:领取失败
+                        String templeateMsg = template.get("prize_card_receive_failure");
+                        logger.info("===========领取失败=======");
+                        customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    }
                 }
-                else{
-                    //TODO:领取失败
-                    String templeateMsg = template.get("prize_card_receive_failure");
-                    logger.info("===========领取失败=======");
-                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                }
+
             }
         });
         initTemplate();

@@ -165,16 +165,20 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     }
 
     @Override
-    public String isPreviewCardReceived(Integer id, Integer profileId) {
+    public String isPreviewCardReceived(String cardId, Integer profileId) {
         if(!accountService.isPreviewNewUser(profileId)){
             return "亲,请给新用户一点机会吧~";
         }
         //判断礼品卡是否已经被领取
-        if(prizeCardDao.load(PrizeCard.class,id).getUsed()){
+        PrizeCard prizeCard = prizeCardDao.loadCardByCardNo(cardId);
+        if(prizeCard == null){
+            return "该礼品卡不存在";
+        }
+        if(prizeCard.getUsed()) {
             return "该礼品卡已经被领取";
         }
         //领取礼品卡
-        if(prizeCardDao.updatePreviewCard(id,profileId) ==0){
+        if(prizeCardDao.updatePreviewCard(prizeCard.getId(), profileId) ==0){
             return "该礼品卡已经被领取";
         }
         //暂时不开课

@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -139,19 +140,19 @@ public class PrizeCardController {
     }
 
     @RequestMapping("/annual/load/count")
-    public ResponseEntity<Map<String,Object>> loadAnnualCounts(LoginUser loginUser){
-        Assert.notNull(loginUser,"登录用户不能为空");
+    public ResponseEntity<Map<String, Object>> loadAnnualCounts(LoginUser loginUser) {
+        Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡数量").action("加载礼品卡数量");
         operationLogService.log(operationLog);
-       return WebUtils.result(prizeCardService.loadAnnualCounts(loginUser.getId()));
+        return WebUtils.result(prizeCardService.loadAnnualCounts(loginUser.getId()));
     }
 
-    @RequestMapping("/card/preview/{cardId}")
-    public ResponseEntity<Map<String,Object>> receivePreviewCard(LoginUser loginUser,@PathVariable Integer cardId){
-        Assert.notNull(loginUser,"登录用户不能为空");
+    @RequestMapping("/card/preview")
+    public ResponseEntity<Map<String, Object>> receivePreviewCard(LoginUser loginUser, @RequestParam("cardId") String cardId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取预先礼品卡").action("领取预先礼品卡");
         operationLogService.log(operationLog);
-        String result = prizeCardService.isPreviewCardReceived(cardId,loginUser.getId());
+        String result = prizeCardService.isPreviewCardReceived(cardId, loginUser.getId());
         return WebUtils.result(result);
     }
 }
