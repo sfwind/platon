@@ -191,14 +191,14 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             return "该礼品卡已经被领取";
         }
         //暂时不开课
-        //generatePlanService.createAnnualPlan(profileId);
+        generatePlanService.createAnnualPlan(profileId);
         return "恭喜您获得该礼品卡";
     }
 
     @Override
     public void sendReceiveCardMsgSuccessful(String openid, String nickname) {
-        String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n" +
-                " 你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
+        String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
+                "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
 
         customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);

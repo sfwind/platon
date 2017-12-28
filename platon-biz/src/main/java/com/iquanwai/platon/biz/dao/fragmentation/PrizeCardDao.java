@@ -72,18 +72,19 @@ public class PrizeCardDao extends PracticeDBUtil {
 
     /**
      * 获得年度礼品卡
+     *
      * @param profileId
      * @return
      */
-    public List<PrizeCard> getAnnualPrizeCards(Integer profileId){
+    public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from PrizeCard where profileId = ? and Category = 100 and Del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
         try {
-           return runner.query(sql,h,profileId);
+            return runner.query(sql, h, profileId);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
     }
@@ -91,16 +92,17 @@ public class PrizeCardDao extends PracticeDBUtil {
 
     /**
      * 领取年度礼品卡
+     *
      * @param id
      * @return
      */
-    public Integer updateAnnualPrizeCards(Integer id,Integer receiverProfileId){
+    public Integer updateAnnualPrizeCards(Integer id, Integer receiverProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update PrizeCard set receiverProfileId = ?,Used = 1 where id = ? and receiverProfileId is null and Used = 0 and Del = 0";
         try {
-          return   runner.update(sql,receiverProfileId,id);
+            return runner.update(sql, receiverProfileId, id);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return 0;
     }
@@ -109,15 +111,15 @@ public class PrizeCardDao extends PracticeDBUtil {
     /**
      * 查询用户是否已经领取过礼品卡
      */
-    public PrizeCard loadAnnualCardByReceiver(Integer receiverProfileId){
+    public PrizeCard loadAnnualCardByReceiver(Integer receiverProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = 100 and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
-            return runner.query(sql,h,receiverProfileId);
+            return runner.query(sql, h, receiverProfileId);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return null;
     }
@@ -126,15 +128,15 @@ public class PrizeCardDao extends PracticeDBUtil {
     /**
      * 插入年度礼品卡
      */
-    public Integer insertAnnualPrizeCard(Integer profileId){
+    public Integer insertAnnualPrizeCard(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = " insert into PrizeCard(profileId,Category) values (?,100)";
 
         try {
-           Long result =  runner.insert(sql,new ScalarHandler<>(),profileId);
-           return result.intValue();
+            Long result = runner.insert(sql, new ScalarHandler<>(), profileId);
+            return result.intValue();
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return 0;
     }
@@ -142,18 +144,19 @@ public class PrizeCardDao extends PracticeDBUtil {
 
     /**
      * 领取预先生成的礼品卡
+     *
      * @param id
      * @param profileId
      * @return
      */
-    public Integer updatePreviewCard(Integer id,Integer profileId){
+    public Integer updatePreviewCard(Integer id, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update PrizeCard set ReceiverProfileId = ?,used =1  where id = ? and ReceiverProfileId is null and del = 0";
 
         try {
-           return runner.update(sql,profileId,id);
+            return runner.update(sql, profileId, id);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return 0;
     }
@@ -161,15 +164,15 @@ public class PrizeCardDao extends PracticeDBUtil {
     /**
      * 查询用户是否已经领取过礼品卡
      */
-    public PrizeCard loadCardByCardNo(String cardNo){
+    public PrizeCard loadCardByCardNo(String cardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from PrizeCard where PrizeCardNo = ? and category = 100 and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
-            return runner.query(sql,h,cardNo);
+            return runner.query(sql, h, cardNo);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return null;
     }
