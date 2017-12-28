@@ -60,7 +60,7 @@ public class GroupPromotionController {
             RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
             if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
                     riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-                return WebUtils.error("你已经是商学院会员，拥有1月训练营学习资格，无需试学");
+                return WebUtils.error("你已经是商学院会员，拥有1月训练营学习资格，无需参加免费体验");
             } else {
                 return WebUtils.error("用户无参加活动权限");
             }
