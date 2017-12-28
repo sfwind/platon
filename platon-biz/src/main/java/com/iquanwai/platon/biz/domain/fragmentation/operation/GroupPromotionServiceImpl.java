@@ -198,7 +198,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
         Profile newProfile = accountService.getProfile(newProfileId);
         List<GroupPromotion> currentGroupPromotions = groupPromotionDao.loadByGroupCode(groupCode);
 
-        String ordinarySuccessMessage = "你已加入互助模式，解锁前7天自我认知学习和游戏内容。 \n\n1月7日晚20点正式开始，添加AI助手，回复“认知”，探寻另一个你~";
+        String ordinarySuccessMessage = "你已加入互助模式，解锁前7天自我认知学习和游戏内容。 \n\n1月7日晚20点正式开始，添加AI助手，回复“互助”，探寻另一个你~";
         // 距离目标完成人数
         int remainderCount = GROUP_PROMOTION_SUCCESS_COUNT - currentGroupPromotions.size();
         GroupPromotion leaderPromotion = currentGroupPromotions.stream().filter(GroupPromotion::getLeader).findAny().orElse(null);
