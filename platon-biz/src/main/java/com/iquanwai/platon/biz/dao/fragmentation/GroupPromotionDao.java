@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import org.apache.commons.dbutils.QueryRunner;
@@ -16,7 +17,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class GroupPromotionDao extends PracticeDBUtil {
+public class GroupPromotionDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 

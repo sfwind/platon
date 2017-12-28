@@ -148,7 +148,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public Integer updatePreviewCard(Integer id,Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PrizeCard set ReceiverProfileId = ? where id = ? and ReceiverProfileId = null and del = 0";
+        String sql = "update PrizeCard set ReceiverProfileId = ?,used =1  where id = ? and ReceiverProfileId is null and del = 0";
 
         try {
            return runner.update(sql,profileId,id);
@@ -157,8 +157,4 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return 0;
     }
-
-
-
-
 }

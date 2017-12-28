@@ -591,7 +591,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean isPreviewNewUser(Integer profileId) {
         //判断是否参加过商学院和训练营
-        if (riseMemberDao.loadRiseMembersByProfileId(profileId) != null) {
+        if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
             return false;
         }
         //判断是否参加过试听课
