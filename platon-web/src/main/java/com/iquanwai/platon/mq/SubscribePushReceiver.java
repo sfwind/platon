@@ -3,8 +3,10 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.SubscribePush;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
@@ -62,5 +64,8 @@ public class SubscribePushReceiver {
                 "<a href='{callbackUrl}'>查看答案文稿</a>");
         template.put("annual",
                 "<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
+
+        template.put("previewCard","<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
+
     }
 }

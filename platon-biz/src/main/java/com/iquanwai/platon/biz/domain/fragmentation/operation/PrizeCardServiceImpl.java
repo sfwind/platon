@@ -177,7 +177,8 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         if(prizeCardDao.updatePreviewCard(id,profileId) ==0){
             return "该礼品卡已经被领取";
         }
-        generatePlanService.createAnnualPlan(profileId);
+        //暂时不开课
+        //generatePlanService.createAnnualPlan(profileId);
         return "恭喜您获得该礼品卡";
     }
 }
