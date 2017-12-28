@@ -1,9 +1,14 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.web.fragmentation.controller.operation.dto.PrizeCardDto;
+import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +31,8 @@ public class PrizeCardController {
     private PrizeCardService prizeCardService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -56,4 +64,94 @@ public class PrizeCardController {
         }
     }
 
+
+    /**
+     * 加载年度礼品卡
+     *
+     * @param guestUser
+     * @param riseId
+     * @return
+     */
+    @RequestMapping("/load/annual/{riseId}")
+    public ResponseEntity<Map<String, Object>> loadAnnualPrizeCards(GuestUser guestUser, @PathVariable String riseId) {
+        System.out.println("openId:" + guestUser.getOpenId());
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
+        operationLogService.log(operationLog);
+        Integer currentId;
+        Profile targetProfile = accountService.getProfileByRiseId(riseId);
+        if (targetProfile == null) {
+            return WebUtils.result(Lists.newArrayList());
+        }
+        currentId = targetProfile.getId();
+
+        Profile profile = accountService.getProfile(currentId);
+        List<PrizeCard> prizeCards = prizeCardService.getAnnualPrizeCards(currentId);
+        List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
+
+        prizeCards.forEach(prizeCard -> {
+            PrizeCardDto prizeCardDto = new PrizeCardDto();
+            prizeCardDto.setId(prizeCard.getId());
+            prizeCardDto.setRiseId(profile.getRiseId());
+            prizeCardDto.setUsed(prizeCard.getUsed());
+            prizeCardDtos.add(prizeCardDto);
+        });
+
+        return WebUtils.result(prizeCardDtos);
+    }
+
+    @RequestMapping("/load/annual")
+    public ResponseEntity<Map<String, Object>> loadPersonalAnnualPrizeCards(LoginUser loginUser) {
+        System.out.println("openId:" + loginUser.getOpenId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡").action("加载礼品卡");
+        operationLogService.log(operationLog);
+        Integer currentProfileId = loginUser.getId();
+
+        Profile profile = accountService.getProfile(currentProfileId);
+        List<PrizeCard> prizeCards = prizeCardService.getAnnualPrizeCards(currentProfileId);
+        List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
+
+        prizeCards.forEach(prizeCard -> {
+            PrizeCardDto prizeCardDto = new PrizeCardDto();
+            prizeCardDto.setId(prizeCard.getId());
+            prizeCardDto.setRiseId(profile.getRiseId());
+            prizeCardDto.setUsed(prizeCard.getUsed());
+            prizeCardDtos.add(prizeCardDto);
+        });
+
+        return WebUtils.result(prizeCardDtos);
+    }
+
+
+    /**
+     * 领取礼品卡
+     *
+     * @param loginUser
+     * @param cardId
+     * @return
+     */
+    @RequestMapping("/annual/receive/{cardId}")
+    public ResponseEntity<Map<String, Object>> receiveAnnualCards(LoginUser loginUser, @PathVariable Integer cardId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
+        operationLogService.log(operationLog);
+        String result = prizeCardService.receiveAnnualPrizeCards(cardId, loginUser.getId());
+        return WebUtils.result(result);
+    }
+
+    @RequestMapping("/annual/load/count")
+    public ResponseEntity<Map<String,Object>> loadAnnualCounts(LoginUser loginUser){
+        Assert.notNull(loginUser,"登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("加载礼品卡数量").action("加载礼品卡数量");
+        operationLogService.log(operationLog);
+       return WebUtils.result(prizeCardService.loadAnnualCounts(loginUser.getId()));
+    }
+
+    @RequestMapping("/card/preview/{cardId}")
+    public ResponseEntity<Map<String,Object>> receivePreviewCard(LoginUser loginUser,@PathVariable Integer cardId){
+        Assert.notNull(loginUser,"登录用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取预先礼品卡").action("领取预先礼品卡");
+        operationLogService.log(operationLog);
+        String result = prizeCardService.isPreviewCardReceived(cardId,loginUser.getId());
+        return WebUtils.result(result);
+    }
 }

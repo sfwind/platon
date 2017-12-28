@@ -3,7 +3,9 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PrizeCard;
@@ -28,6 +30,10 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     private CouponDao couponDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private GeneratePlanService generatePlanService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -88,4 +94,91 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         return exchangeResult;
     }
 
+    /**
+     * 查询年度礼品卡
+     * @param profileId
+     * @return
+     */
+    @Override
+    public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
+        return prizeCardDao.getAnnualPrizeCards(profileId);
+    }
+
+    /**
+     * 领取礼品卡
+     * @param id
+     * @param profileId
+     * @return
+     */
+    @Override
+    public String receiveAnnualPrizeCards(Integer id, Integer profileId) {
+        //判断是否是新用户
+        Profile profile = accountService.getProfile(profileId);
+        if(profile!=null){
+            if(improvementPlanDao.loadAllPlans(profile.getId()).size()>0){
+                return "亲,请给新用户一点机会吧~";
+            }
+        }
+        //判断礼品卡是否已经被领取
+        if(prizeCardDao.load(PrizeCard.class,id).getUsed()){
+            return "该礼品卡已经被领取";
+        }
+
+        //判断是否重复领取
+        if(prizeCardDao.loadAnnualCardByReceiver(profileId) !=null){
+            return "您已经领过一张了，请不要重复领取";
+        }
+        //领取礼品卡
+        if(prizeCardDao.updateAnnualPrizeCards(id,profileId) ==0){
+            return "该礼品卡已经被领取";
+        }
+        generatePlanService.createAnnualPlan(profileId);
+        return "恭喜您获得该礼品卡";
+    }
+
+    /**
+     * 根据年终回顾生成礼品卡
+     * @param profileId
+     */
+    @Override
+    public void generateAnnualPrizeCards(Integer profileId) {
+       List<PrizeCard> prizeCards  = prizeCardDao.getAnnualPrizeCards(profileId);
+        //TODO：如果之前没有生成过，则进行生成
+       if(prizeCards.size() == 0){
+           int sum = 1;
+           for (int i = 0;i<sum;i++){
+               prizeCardDao.insertAnnualPrizeCard(profileId);
+           }
+       }
+    }
+
+    /**
+     * 返回该用户获得的礼品卡数量
+     * @param profileId
+     * @return
+     */
+    @Override
+    public Integer loadAnnualCounts(Integer profileId) {
+        List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
+
+        return prizeCards.size();
+    }
+
+    @Override
+    public String isPreviewCardReceived(Integer id, Integer profileId) {
+        if(!accountService.isPreviewNewUser(profileId)){
+            return "亲,请给新用户一点机会吧~";
+        }
+        //判断礼品卡是否已经被领取
+        if(prizeCardDao.load(PrizeCard.class,id).getUsed()){
+            return "该礼品卡已经被领取";
+        }
+        //领取礼品卡
+        if(prizeCardDao.updatePreviewCard(id,profileId) ==0){
+            return "该礼品卡已经被领取";
+        }
+        //暂时不开课
+        //generatePlanService.createAnnualPlan(profileId);
+        return "恭喜您获得该礼品卡";
+    }
 }

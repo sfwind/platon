@@ -82,6 +82,7 @@
             <mvc:exclude-mapping path="/rise/bible/guest/**"/>
             <mvc:exclude-mapping path="/rise/customer/check/subscribe/**"/>
             <mvc:exclude-mapping path="/heartbeat"/>
+            <mvc:exclude-mapping path="/rise/operation/prize/load/annual/**" />
             <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
         </mvc:interceptor>
         <mvc:interceptor>

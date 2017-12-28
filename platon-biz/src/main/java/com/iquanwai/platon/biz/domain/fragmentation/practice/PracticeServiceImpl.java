@@ -165,7 +165,7 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setProfileId(profileId);
             warmupSubmitDao.insert(warmupSubmit);
         }
-        if (practicePlan.getStatus() == 0) {
+        if (PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
             practicePlanDao.complete(practicePlan.getId());
             certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
         }
@@ -1006,9 +1006,9 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public Integer loadCompletedApplicationCnt(Integer planId) {
         List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
-        Long completedCnt = practicePlans.stream().filter(practicePlan ->
-                (practicePlan.getType() == 11 || practicePlan.getType() == 12) && practicePlan.getStatus() == 1
-        ).count();
+        Long completedCnt = practicePlans.stream()
+                .filter(practicePlan -> (practicePlan.getType() == 11 || practicePlan.getType() == 12) && PracticePlan.STATUS.COMPLETED.equals(practicePlan.getStatus()))
+                .count();
         return completedCnt.intValue();
     }
 
