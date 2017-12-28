@@ -44,7 +44,7 @@ public class GroupPromotionController {
     public ResponseEntity<Map<String, Object>> participateGroup(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
         GroupPromotion groupPromotion = groupPromotionService.hasParticipateGroup(loginUser.getId());
         if (groupPromotion != null) {
-            return WebUtils.success();
+            return WebUtils.error("你已成功加入认识自己互助学习！");
         }
 
         // 能点击参团必然是已经成功关注的人员
