@@ -56,7 +56,7 @@ public class SubscribePushReceiver {
                 String templateMsg;
                 if (push.getScene().startsWith("prize_card_cardId")) {
                     Profile profile = accountService.getProfile(openId);
-                    Integer cardId = Integer.valueOf(push.getScene().substring(17));
+                    Integer cardId = Integer.valueOf(push.getScene().substring(18));
                     String result = prizeCardService.isPreviewCardReceived(cardId, profile.getId());
                     //TODO:打点
                     if (result.equals("恭喜您获得该礼品卡")) {
