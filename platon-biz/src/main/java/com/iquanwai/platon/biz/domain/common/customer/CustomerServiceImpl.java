@@ -84,4 +84,9 @@ public class CustomerServiceImpl implements CustomerService {
         return annualSummaryDao.loadUserAnnualSummary(profileId);
     }
 
+    @Override
+    public AnnualSummary loadUserAnnualSummary(String riseId) {
+        return annualSummaryDao.loadUserAnnualSummary(riseId);
+    }
+
 }

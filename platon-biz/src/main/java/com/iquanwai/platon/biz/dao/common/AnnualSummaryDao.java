@@ -25,4 +25,16 @@ public class AnnualSummaryDao extends PracticeDBUtil {
         }
         return null;
     }
+
+    public AnnualSummary loadUserAnnualSummary(String riseId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM AnnualSummary WHERE RiseId = ? AND Del =0";
+        BeanHandler<AnnualSummary> h = new BeanHandler<>(AnnualSummary.class);
+        try {
+            return runner.query(sql, h, riseId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
 }

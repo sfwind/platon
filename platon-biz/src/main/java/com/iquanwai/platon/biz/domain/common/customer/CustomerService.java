@@ -17,5 +17,17 @@ public interface CustomerService {
      */
     int updateNickName(Integer profileId, String nickName);
 
+    /**
+     * 获取年度报告
+     * @param profileId 用户id
+     * @return 年度报告
+     */
     AnnualSummary loadUserAnnualSummary(Integer profileId);
+
+    /**
+     * 获取年度报告
+     * @param riseId 圈外id
+     * @return 年度报告
+     */
+    AnnualSummary loadUserAnnualSummary(String riseId);
 }
