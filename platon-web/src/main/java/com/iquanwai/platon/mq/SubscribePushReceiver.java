@@ -54,12 +54,6 @@ public class SubscribePushReceiver {
                     logger.error("缺少push对象:{}", message);
                     return;
                 }
-                String callback = push.getCallbackUrl();
-                String templateMsg = template.get(push.getScene());
-                logger.info("前往callback页面:{}", scene);
-                customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-
-
                 if (push.getScene().startsWith("prize_card_")) {
                     String[] sceneStrArr = push.getScene().split("_");
                     Profile profile = accountService.getProfile(openId);
@@ -79,8 +73,8 @@ public class SubscribePushReceiver {
                         }
                     }
                 } else {
-                    callback = push.getCallbackUrl();
-                    templateMsg = template.get(push.getScene());
+                    String callback = push.getCallbackUrl();
+                    String templateMsg = template.get(push.getScene());
                     logger.info("前往callback页面:{}", scene);
                     customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
