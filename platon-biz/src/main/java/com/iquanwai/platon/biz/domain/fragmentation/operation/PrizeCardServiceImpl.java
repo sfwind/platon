@@ -197,9 +197,9 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     @Override
     public void sendReceiveCardMsgSuccessful(String openid, String nickname) {
-        String templeateMsg = "你好{nickname},欢迎来到圈外商学院！\n 你已成功领取商学院体验卡！扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
+        String templateMsg = "你好{nickname},欢迎来到圈外商学院！\n 你已成功领取商学院体验卡！扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
 
-        customerMessageService.sendCustomerMessage(openid, templeateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 }
