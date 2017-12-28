@@ -54,39 +54,29 @@ public class SubscribePushReceiver {
                 }
                 String callback;
                 String templateMsg;
-                if(push.getScene().startsWith("prize_card_cardId")){
-                   Profile profile = accountService.getProfile(openId);
-                   Integer cardId =
-
-                }
-                else{
+                if (push.getScene().startsWith("prize_card_cardId")) {
+                    Profile profile = accountService.getProfile(openId);
+                    Integer cardId = Integer.valueOf(push.getScene().substring(17));
+                    String result = prizeCardService.isPreviewCardReceived(cardId, profile.getId());
+                    //TODO:打点
+                    if (result.equals("恭喜您获得该礼品卡")) {
+                        //TODO:发送成功领取的通知
+                        String templeateMsg = template.get("prize_card_receive_success");
+                        logger.info("===========领取成功=======");
+                        customerMessageService.sendCustomerMessage(openId, templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    } else {
+                        //TODO:领取失败
+                        String templeateMsg = template.get("prize_card_receive_failure");
+                        logger.info("===========领取失败=======");
+                        customerMessageService.sendCustomerMessage(openId, templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                    }
+                } else {
                     callback = push.getCallbackUrl();
                     templateMsg = template.get(push.getScene());
+                    logger.info("前往callback页面:{}", scene);
+                    customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                 }
-
-
-                logger.info("前往callback页面:{}", scene);
-                customerMessageService.sendCustomerMessage(openId, templateMsg.replace("{callbackUrl}", callback), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             }
-//            else if(scene!=null && scene.startsWith("prize_card_cardId_")){
-//                String openId = msg.getString("openid");
-//                Profile profile = accountService.getProfile(openId);
-//                Integer cardId = Integer.valueOf(scene.substring(18));
-//                String result = prizeCardService.isPreviewCardReceived(cardId,profile.getId());
-//                //TODO:OperationLog=>打点
-//                if(result.equals("恭喜您获得该礼品卡")){
-//                    //TODO:发送成功领取的通知
-//                    String templeateMsg = template.get("prize_card_receive_success");
-//                    logger.info("===========领取成功=======");
-//                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-//                }
-//                else{
-//                    //TODO:领取失败
-//                    String templeateMsg = template.get("prize_card_receive_failure");
-//                    logger.info("===========领取失败=======");
-//                    customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-//                }
-//            }
         });
         initTemplate();
     }
@@ -97,7 +87,7 @@ public class SubscribePushReceiver {
                 "<a href='{callbackUrl}'>查看答案文稿</a>");
         template.put("annual",
                 "<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
-        template.put("prize_card_receive_success","你好，欢迎来到圈外商学院！\n 你成功领取");
-        template.put("prize_card_receive_failure","领取失败");
+        template.put("prize_card_receive_success", "你好，欢迎来到圈外商学院！\n 你成功领取");
+        template.put("prize_card_receive_failure", "领取失败");
     }
 }
