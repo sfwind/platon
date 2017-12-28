@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.*;
+import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
@@ -83,6 +84,8 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
+    @Autowired
+    private AuditionClassMemberDao auditionClassMemberDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -584,14 +587,15 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public boolean isPreviewNewUser(Integer profileId) {
-       //TODO:判断是否是商学院用户
-        //TODO:判断是否是训练营用户
-        //TODO:判断参加过试听课
+        if(riseMemberDao.loadRiseMembersByProfileId(profileId)!=null){
+            return false;
+        }
+        if(auditionClassMemberDao.loadByProfileId(profileId)!=null){
+            return false;
+        }
         //TODO:判断是否参加"一带二"活动
 
-
-
-        return false;
+        return true;
     }
 }
 
