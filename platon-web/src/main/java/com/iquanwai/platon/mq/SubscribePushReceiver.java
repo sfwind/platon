@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribePush;
 import com.iquanwai.platon.biz.util.Constants;
@@ -33,6 +35,8 @@ public class SubscribePushReceiver {
     private CustomerMessageService customerMessageService;
     @Autowired
     private PrizeCardService prizeCardService;
+    @Autowired
+    private OperationLogService operationLogService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static Map<String, String> template = Maps.newHashMap();
@@ -42,7 +46,6 @@ public class SubscribePushReceiver {
         rabbitMQFactory.initReceiver(QUEUE, TOPIC, (message) -> {
             JSONObject msg = JSON.parseObject(message.getMessage().toString());
             String scene = msg.getString("scene");
-            logger.info("scene:"+scene);
             if (scene != null && scene.startsWith(PREFIX)) {
                 String[] split = scene.split("_");
                 Integer pushId = Integer.parseInt(split[2]);
@@ -91,7 +94,7 @@ public class SubscribePushReceiver {
                 "<a href='{callbackUrl}'>查看答案文稿</a>");
         template.put("annual",
                 "<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
-        template.put("prize_card_receive_success","你好，欢迎来到圈外商学院！\n 你成功领取");
-        template.put("prize_card_receive_failure","领取失败");
+        template.put("prize_card_receive_success", "你好{NickName},欢迎来到圈外商学院！\n 你已成功领取商学院体验卡！扫码加小Y，回复\"体验\",让他带你开启7天线上学习之旅吧！");
+        template.put("prize_card_receive_failure", "领取失败");
     }
 }

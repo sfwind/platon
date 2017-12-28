@@ -152,7 +152,12 @@ public class PrizeCardController {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId()).module("礼品卡管理").function("领取预先礼品卡").action("领取预先礼品卡");
         operationLogService.log(operationLog);
-        String result = prizeCardService.isPreviewCardReceived(cardId, loginUser.getId());
-        return WebUtils.result(result);
+        String result = prizeCardService.isPreviewCardReceived(cardId,loginUser.getId());
+        if("恭喜您获得该礼品卡".equals(result)){
+            return WebUtils.success();
+        }
+        else {
+            return WebUtils.error(result);
+        }
     }
 }

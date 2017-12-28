@@ -223,13 +223,6 @@ public class ConfigUtils {
         return getIntValue("rise.trial.problem.id");
     }
 
-    /**
-     * 获取新一期一带二 ProblemId
-     */
-    public static Integer getTeamLearningProblemId(){
-        return getIntValue("rise.team.learning.problem.id");
-    }
-
     public static Double getRiseCourseFee() {
         return getDoubleValue("rise.course.fee");
     }
@@ -389,7 +382,27 @@ public class ConfigUtils {
     public static String replaceDomainName(String url, String domainName) {
         String urlPattern = "^((http://)|(https://))?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}(/)";
         //替换
-        return url.replaceAll(urlPattern, "http://" + domainName+"/");
+        return url.replaceAll(urlPattern, "http://" + domainName + "/");
     }
+
+    // 报名成功通知 messageId
+    public static String getApplySuccessNotice() {
+        return getValue("apply.success.notice");
+    }
+
+    /**
+     * 组团学习模板消息图片链接
+     */
+    public static String getTeamPromotionCodeUrl() {
+        return getValue("team.promotion.code.url");
+    }
+
+    /**
+     * 组团学习推送图片 MessageId
+     */
+    public static String getTeamPromotionCodeImage() {
+        return getValue("team.promotion.code.image");
+    }
+
 }
 

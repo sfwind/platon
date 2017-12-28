@@ -729,7 +729,8 @@ public class PlanServiceImpl implements PlanService {
         }
 
         for (Integer problemId : problemIds) {
-            Integer planId = generatePlanService.magicUnlockProblem(profileId, problemId, closeDate, false);
+            // 小课训练营开课时间更改为默认的一个月
+            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate);
 
             if (planId != null) {
                 // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
