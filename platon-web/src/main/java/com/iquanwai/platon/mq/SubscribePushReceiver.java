@@ -65,7 +65,6 @@ public class SubscribePushReceiver {
         template.put("annual",
                 "<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
 
-        template.put("previewCard","<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
-
+        template.put("preview","<a href='{callbackUrl}'>点击查看</a>");
     }
 }
