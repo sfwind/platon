@@ -57,13 +57,7 @@ public class GroupPromotionController {
                 return WebUtils.error("用户参团失败，请联系管理员");
             }
         } else {
-            RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
-            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                    riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-                return WebUtils.error("你已经是商学院会员，拥有1月训练营学习资格，无需参加免费体验");
-            } else {
-                return WebUtils.error("用户无参加活动权限");
-            }
+            return WebUtils.error("您已学习过商学院课程,无需重复体验");
         }
     }
 
@@ -95,13 +89,7 @@ public class GroupPromotionController {
                 return WebUtils.error("创建团队失败");
             }
         } else {
-            RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
-            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                    riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-                return WebUtils.error("你已经是商学院会员，拥有1月训练营学习资格，无需试学");
-            } else {
-                return WebUtils.error("用户无参加活动权限");
-            }
+            return WebUtils.error("您已学习过商学院课程,无需重复体验");
         }
     }
 
