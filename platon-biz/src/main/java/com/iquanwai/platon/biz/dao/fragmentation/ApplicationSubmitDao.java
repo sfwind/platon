@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -41,8 +42,9 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     /**
      * 查询用户提交记录
+     *
      * @param applicationId 应用练习id
-     * @param planId 计划id
+     * @param planId        计划id
      */
     public ApplicationSubmit load(Integer applicationId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
@@ -115,10 +117,11 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         }
     }
 
-    public List<ApplicationSubmit> load(Integer applicationId) {
+    public List<ApplicationSubmit> loadSubmits(Integer applicationId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
-        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0";
+        String sql = "SELECT * FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0 "
+                + "order by Feedback desc, PublishTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
             List<ApplicationSubmit> submits = run.query(sql, h, applicationId);
             return submits;
@@ -126,6 +129,18 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
+    }
+
+    public int count(Integer applicationId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String sql = "SELECT count(*) FROM ApplicationSubmit where ApplicationId=? and Length>=15 and Del=0";
+        try {
+            Long result = run.query(sql, new ScalarHandler<>(), applicationId);
+            return result.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
     }
 
     public void requestComment(Integer id) {

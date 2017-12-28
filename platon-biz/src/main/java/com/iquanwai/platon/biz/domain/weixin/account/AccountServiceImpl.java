@@ -487,13 +487,6 @@ public class AccountServiceImpl implements AccountService {
         return targetCoupons;
     }
 
-    @Override
-    public void insertCoupon(Coupon coupon) {
-        if (coupon != null) {
-            coupon.setUsed(0);
-            couponDao.insertCoupon(coupon);
-        }
-    }
 
     @Override
     public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
@@ -586,6 +579,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void updateWeixinId(Integer profileId, String weixinId) {
         profileDao.updateWeixinId(profileId, weixinId);
+    }
+
+    @Override
+    public RiseMember getValidRiseMember(Integer profileId) {
+        return riseMemberDao.loadValidRiseMember(profileId);
     }
 
     @Override

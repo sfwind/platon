@@ -104,7 +104,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
 
         // 2. 非会员用户每周最多收到 2 条消息
         if (profile.getRiseMember() != 1) {
-            Date distanceDate = DateUtils.beforeDays(new Date(), 2);
+            Date distanceDate = DateUtils.beforeDays(new Date(), 7);
             Long result = customerMessageLogs.stream().filter(messageLog -> messageLog.getPublishTime().compareTo(distanceDate) > 0).count();
             authority = result.intValue() < 2;
             if (!authority) {

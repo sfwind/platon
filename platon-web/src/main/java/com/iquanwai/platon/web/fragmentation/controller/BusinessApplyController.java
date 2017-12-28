@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
@@ -69,6 +70,13 @@ public class BusinessApplyController {
                 .function("申请")
                 .action("检查是否能够申请");
         operationLogService.log(operationLog);
+
+        RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+            return WebUtils.error("您已经是商学院用户,无需重复申请");
+        }
+
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
         Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
@@ -89,6 +97,13 @@ public class BusinessApplyController {
                 .function("申请")
                 .action("提交申请");
         operationLogService.log(operationLog);
+
+        RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+            return WebUtils.error("您已经是商学院用户,无需重复申请");
+        }
+
         BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
         Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
@@ -96,10 +111,10 @@ public class BusinessApplyController {
         }
 
         if (application == null) {
-//            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
-//            if (order == null) {
-//                return WebUtils.error("您还没有成功支付哦");
-//            }
+            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
+            if (order == null) {
+                return WebUtils.error("您还没有成功支付哦");
+            }
 
             List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
                 BusinessApplySubmit submit = new BusinessApplySubmit();
@@ -108,8 +123,7 @@ public class BusinessApplyController {
                 submit.setUserValue(applySubmitVO.getUserValue());
                 return submit;
             }).collect(Collectors.toList());
-//            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
-            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, null);
+            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
             return WebUtils.success();
         } else {
             return WebUtils.error("您的申请正在审核中哦");
