@@ -36,4 +36,6 @@ public interface PrizeCardService {
      */
     String isPreviewCardReceived(String cardId,Integer profileId);
 
+    void sendReceiveCardMsgSuccessful(String openid, String nickname);
+
 }

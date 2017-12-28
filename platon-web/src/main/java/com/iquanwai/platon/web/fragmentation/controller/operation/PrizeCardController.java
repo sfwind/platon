@@ -4,13 +4,16 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.PrizeCardDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.http.util.Asserts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,5 +162,21 @@ public class PrizeCardController {
         else {
             return WebUtils.error(result);
         }
+    }
+
+    @RequestMapping("/card/send/message")
+    public ResponseEntity<Map<String,Object>> sendMessage(LoginUser loginUser){
+        Asserts.notNull(loginUser, "登录用户不能为空");
+
+        OperationLog operationLog = OperationLog.create().module("礼品卡管理").function("发送模板消息").action("发送成功领取消息");
+        operationLogService.log(operationLog);
+        Profile profile = accountService.getProfile(loginUser.getOpenId());
+
+        if(profile==null){
+            return WebUtils.error("找不到该用户");
+        }
+
+        prizeCardService.sendReceiveCardMsgSuccessful(loginUser.getOpenId(), loginUser.getWeixinName());
+        return WebUtils.success();
     }
 }

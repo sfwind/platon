@@ -404,5 +404,10 @@ public class ConfigUtils {
         return getValue("team.promotion.code.image");
     }
 
+
+    public static String getXiaoYQRCode() {
+        return getValue("xiao.y.mediaid");
+    }
+
 }
 

@@ -32,11 +32,11 @@ public class SubscribePushReceiver {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private CustomerMessageService customerMessageService;
-    @Autowired
     private PrizeCardService prizeCardService;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static Map<String, String> template = Maps.newHashMap();
@@ -67,19 +67,19 @@ public class SubscribePushReceiver {
                 if(sceneStrArr.length == 3){
                     String cardId = sceneStrArr[2];
                     String result = prizeCardService.isPreviewCardReceived(cardId, profile.getId());
-                    OperationLog operationLog = OperationLog.create().module("礼品卡管理").function("发送模板消息").action("发送模板消息");
+                    OperationLog operationLog = OperationLog.create().module("礼品卡管理").function("礼品卡引流").action("领取礼品卡");
                     operationLogService.log(operationLog);
                     if ("恭喜您获得该礼品卡".equals(result)) {
                         String templeateMsg = template.get("prize_card_receive_success");
                         // SubscribePush push = accountService.loadSubscribePush(pushId);
                         //  String callback = push.getCallbackUrl();
                         logger.info("===========领取成功=======");
-                        customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+                        prizeCardService.sendReceiveCardMsgSuccessful(openId, profile.getNickname());
                     }else{
                         //TODO:领取失败
                         String templeateMsg = template.get("prize_card_receive_failure");
                         logger.info("===========领取失败=======");
-                        customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                        customerMessageService.sendCustomerMessage(openId,templeateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
                     }
                 }
 
@@ -94,7 +94,5 @@ public class SubscribePushReceiver {
                 "<a href='{callbackUrl}'>查看答案文稿</a>");
         template.put("annual",
                 "<a href='{callbackUrl}'>点击查看他的年终回顾并领取礼品卡</a>");
-        template.put("prize_card_receive_success", "你好{NickName},欢迎来到圈外商学院！\n 你已成功领取商学院体验卡！扫码加小Y，回复\"体验\",让他带你开启7天线上学习之旅吧！");
-        template.put("prize_card_receive_failure", "领取失败");
     }
 }
