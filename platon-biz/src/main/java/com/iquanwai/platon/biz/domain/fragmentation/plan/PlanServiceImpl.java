@@ -716,7 +716,9 @@ public class PlanServiceImpl implements PlanService {
                 .map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
         for (Integer problemId : problemIds) {
-            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), monthlyCampConfig.getCloseDate());
+            // 小课训练营开课时间更改为默认的一个月
+            Date closeDate = DateUtils.afterMonths(monthlyCampConfig.getOpenDate(), 1);
+            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate);
 
             // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
             Profile profile = accountService.getProfile(profileId);
