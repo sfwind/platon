@@ -86,11 +86,22 @@ public class GroupPromotionController {
             return WebUtils.result(existGroupPromotion.getGroupCode());
         }
 
-        GroupPromotion groupPromotion = groupPromotionService.createGroup(loginUser.getId());
-        if (groupPromotion != null) {
-            return WebUtils.result(groupPromotion.getGroupCode());
+        boolean checkGroupPromotionAuthority = groupPromotionService.checkGroupPromotionAuthority(loginUser.getOpenId());
+        if (checkGroupPromotionAuthority) {
+            GroupPromotion groupPromotion = groupPromotionService.createGroup(loginUser.getId());
+            if (groupPromotion != null) {
+                return WebUtils.result(groupPromotion.getGroupCode());
+            } else {
+                return WebUtils.error("创建团队失败");
+            }
         } else {
-            return WebUtils.error("创建团队失败");
+            RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
+            if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                    riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+                return WebUtils.error("你已经是商学院会员，拥有1月训练营学习资格，无需试学");
+            } else {
+                return WebUtils.error("用户无参加活动权限");
+            }
         }
     }
 
