@@ -43,7 +43,7 @@ public class SendMessageController {
         String nickName = profile.getNickname();
 
         customerMessageService.sendCustomerMessage(loginUser.getOpenId(),templeateMsg.replace("{NickName}",nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        //customerMessageService.sendCustomerMessage(loginUser.getOpenId(),"",Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        customerMessageService.sendCustomerMessage(loginUser.getOpenId(),"LiCBL-QjQYIpExWSJt9gU8F0MPqfOzK1OdaVhMIPgS8",Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         return WebUtils.success();
     }
 }

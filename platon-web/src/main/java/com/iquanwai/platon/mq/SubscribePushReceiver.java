@@ -69,7 +69,7 @@ public class SubscribePushReceiver {
                         String templeateMsg = template.get("prize_card_receive_success");
                         logger.info("===========领取成功=======");
                         customerMessageService.sendCustomerMessage(openId, templeateMsg.replace("{NickName}",nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-                       // customerMessageService.sendCustomerMessage(openId,"",Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+                        customerMessageService.sendCustomerMessage(openId,"LiCBL-QjQYIpExWSJt9gU8F0MPqfOzK1OdaVhMIPgS8",Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
                     } else {
                         String templeateMsg = template.get("prize_card_receive_failure");
                         logger.info("===========领取失败=======");
