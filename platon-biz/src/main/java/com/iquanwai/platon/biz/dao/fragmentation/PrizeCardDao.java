@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.util.PrizeCardConstant;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -78,7 +79,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where profileId = ? and Category = 99 and Del = 0";
+        String sql = "select * from PrizeCard where profileId = ? and Category = "+ PrizeCardConstant.ANNUAL_PRIZE_CARD+" and Del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
         try {
@@ -95,7 +96,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public PrizeCard loadAnnualCardByReceiver(Integer receiverProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = 100 and Del = 0 limit 1";
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = "+PrizeCardConstant.OFFLINE_PRIZE_CARD+" and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
@@ -112,7 +113,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public Integer insertAnnualPrizeCard(Integer profileId,String PrizeCardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = " insert into PrizeCard(profileId,PrizeCardNo,Category) values (?,?,99)";
+        String sql = " insert into PrizeCard(profileId,PrizeCardNo,Category) values (?,?,"+PrizeCardConstant.ANNUAL_PRIZE_CARD+")";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(), profileId,PrizeCardNo);
             return result.intValue();
@@ -147,7 +148,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public PrizeCard loadCardByCardNo(String cardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = 100 and Del = 0 limit 1";
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = "+PrizeCardConstant.OFFLINE_PRIZE_CARD+" and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
@@ -184,7 +185,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public List<PrizeCard> loadReceiveAnnualCard(Integer receiverProfileId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where ReceiverProfileId = ? and Category = 99 and del = 0";
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and Category = "+PrizeCardConstant.ANNUAL_PRIZE_CARD+" and del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
         try {
