@@ -15,7 +15,7 @@ public interface PrizeCardService {
      * @param profileId
      * @return
      */
-    boolean  receiveAnnualPrizeCards(String cardNo,Integer profileId);
+    String  receiveAnnualPrizeCards(String cardNo,Integer profileId);
 
     List<PrizeCard> generateAnnualPrizeCards(Integer profileId);
 

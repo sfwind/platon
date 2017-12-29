@@ -150,12 +150,13 @@ public class PrizeCardController {
         }
         //返回领取结果
         else{
-           if(prizeCardService.receiveAnnualPrizeCards(prizeCardNo,profile.getId())){
+            String result = prizeCardService.receiveAnnualPrizeCards(prizeCardNo,profile.getId());
+           if("领取成功".equals(result)){
                prizeCardService.sendReceivedAnnualMsgSuccessful(profile.getOpenid(),profile.getNickname());
                return WebUtils.success();
             }
             else{
-               return WebUtils.error("领取失败");
+               return WebUtils.error(result);
            }
         }
     }

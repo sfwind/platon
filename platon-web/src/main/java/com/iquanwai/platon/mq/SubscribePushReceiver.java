@@ -102,10 +102,10 @@ public class SubscribePushReceiver {
         Profile profile = accountService.getProfile(openId);
         if (sceneStrArr.length == 4) {
             String cardId = sceneStrArr[3];
-            boolean result = prizeCardService.receiveAnnualPrizeCards(cardId, profile.getId());
+            String result = prizeCardService.receiveAnnualPrizeCards(cardId, profile.getId());
             OperationLog operationLog = OperationLog.create().module("礼品卡管理").function("年度礼品卡引流").action("领取年度礼品卡");
             operationLogService.log(operationLog);
-            if (result) {
+            if ("领取成功".equals(result)) {
                 logger.info("===========领取成功=======");
                 prizeCardService.sendReceivedAnnualMsgSuccessful(openId, profile.getNickname());
             } else {
