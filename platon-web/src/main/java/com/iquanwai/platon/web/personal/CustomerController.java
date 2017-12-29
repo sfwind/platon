@@ -506,4 +506,21 @@ public class CustomerController {
             return WebUtils.success();
         }
     }
+
+    @RequestMapping(value = "/annual/summary")
+    public ResponseEntity<Map<String, Object>> getAnnualSummary(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create()
+                .openid(loginUser.getOpenId())
+                .module("用户信息")
+                .function("学习")
+                .action("年度报告");
+        operationLogService.log(operationLog);
+        AnnualSummary annualSummary = customerService.loadUserAnnualSummary(loginUser.getId());
+        if (annualSummary == null) {
+            return WebUtils.error("您还没有年度报告");
+        } else {
+            return WebUtils.result(annualSummary);
+        }
+    }
 }

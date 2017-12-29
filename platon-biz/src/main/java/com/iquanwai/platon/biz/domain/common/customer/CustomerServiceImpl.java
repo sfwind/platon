@@ -1,6 +1,8 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
@@ -22,6 +24,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private ProfileDao profileDao;
+    @Autowired
+    private AnnualSummaryDao annualSummaryDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -73,6 +77,16 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public int updateNickName(Integer profileId, String nickName) {
         return profileDao.updateNickName(profileId, nickName);
+    }
+
+    @Override
+    public AnnualSummary loadUserAnnualSummary(Integer profileId) {
+        return annualSummaryDao.loadUserAnnualSummary(profileId);
+    }
+
+    @Override
+    public AnnualSummary loadUserAnnualSummary(String riseId) {
+        return annualSummaryDao.loadUserAnnualSummary(riseId);
     }
 
 }
