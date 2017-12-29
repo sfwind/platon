@@ -152,7 +152,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         //如果之前已经生成，则不再生成
         if(prizeCards.size()>0) {
             if(prizeCards.size()!=ANNUAL_CARD_SUM){
-
+                throw  new PrizeCardException();
             }
             return prizeCards;
         }
