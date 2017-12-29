@@ -96,12 +96,9 @@ public class PrizeCardController {
 
     /**
      * 生成礼品卡，返回该用户对应的礼品卡信息
-     *
-     * @return
      */
-    @RequestMapping(value = "/annual/summary/card",method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestBody PrizeCardDto requestCardDto) {
-        String riseId = requestCardDto.getRiseId();
+    @RequestMapping(value = "/annual/summary/card", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestParam("riseId") String riseId) {
         Assert.notNull(guestUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("生成礼品卡").action("生成礼品卡");
         operationLogService.log(operationLog);
@@ -126,40 +123,35 @@ public class PrizeCardController {
 
     /**
      * 领取礼品卡
-     * @param guestUser
-     * @return
      */
-    @RequestMapping(value = "/annual/summary/card/receive",method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> receiveAnnualCard(GuestUser guestUser, @RequestBody PrizeCardDto  requestCardDto) {
-        String prizeCardNo = requestCardDto.getPrizeCardNo();
-       //没有关注则弹出二维码
-        if(guestUser == null || guestUser.getSubscribe() == null || guestUser.getSubscribe() == 0){
+    @RequestMapping(value = "/annual/summary/card/receive", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> receiveAnnualCard(GuestUser guestUser, @RequestParam("prizeCardNo") String prizeCardNo) {
+        //没有关注则弹出二维码
+        if (guestUser == null || guestUser.getSubscribe() == null || guestUser.getSubscribe() == 0) {
             //没有注册
             String callback = "callback";
-            String key = "annual_prize_card_"+prizeCardNo;
-            String qrCode = accountService.createSubscribePush(guestUser!=null?guestUser.getOpenId():null,callback,key);
-            return WebUtils.error(201,qrCode);
+            String key = "annual_prize_card_" + prizeCardNo;
+            String qrCode = accountService.createSubscribePush(guestUser != null ? guestUser.getOpenId() : null, callback, key);
+            return WebUtils.error(201, qrCode);
         }
 
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
         operationLogService.log(operationLog);
 
         Profile profile = accountService.getProfile(guestUser.getOpenId());
-        if(profile==null){
-            return WebUtils.error(223,"找不到该用户");
+        if (profile == null) {
+            return WebUtils.error(223, "找不到该用户");
         }
         //返回领取结果
-        else{
-            String result = prizeCardService.receiveAnnualPrizeCards(prizeCardNo,profile.getId());
-           if("领取成功".equals(result)){
-               prizeCardService.sendReceivedAnnualMsgSuccessful(profile.getOpenid(),profile.getNickname());
-               return WebUtils.success();
+        else {
+            String result = prizeCardService.receiveAnnualPrizeCards(prizeCardNo, profile.getId());
+            if ("领取成功".equals(result)) {
+                prizeCardService.sendReceivedAnnualMsgSuccessful(profile.getOpenid(), profile.getNickname());
+                return WebUtils.success();
+            } else {
+                return WebUtils.error(result);
             }
-            else{
-               return WebUtils.error(result);
-           }
         }
     }
-
 
 }

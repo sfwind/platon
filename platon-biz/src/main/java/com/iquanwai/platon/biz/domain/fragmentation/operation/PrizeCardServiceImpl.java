@@ -109,58 +109,50 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 领取年度礼品卡
-     *
-     * @param cardNo
-     * @param profileId
-     * @return
      */
     @Override
-    public String receiveAnnualPrizeCards(String  cardNo, Integer profileId) {
+    public String receiveAnnualPrizeCards(String cardNo, Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        if(riseMembers.size()>0){
+        if (riseMembers.size() > 0) {
             logger.info("用户不在可领取范围内");
             return "您不在可领取范围内";
         }
-        if(groupPromotionDao.loadByProfileId(profileId)!=null){
+        if (groupPromotionDao.loadByProfileId(profileId) != null) {
             logger.info("用户已经参加一带二活动");
             return "您已经参加一带二活动";
         }
-        if(prizeCardDao.loadReceiveAnnualCard(profileId).size()>0){
+        if (prizeCardDao.loadReceiveAnnualCard(profileId).size() > 0) {
             logger.info("用户已经领取过一张");
             return "您已经领取过一张";
         }
         Profile profile = accountService.getProfile(profileId);
-        if(profile==null){
+        if (profile == null) {
             logger.info("用户不存在");
             return "用户不存在";
         }
         //成功更新认为领取成功
-        if(prizeCardDao.updateAnnualCard(cardNo,profile.getOpenid(),profileId)==1){
+        if (prizeCardDao.updateAnnualCard(cardNo, profile.getOpenid(), profileId) == 1) {
             //开课
             generatePlanService.createTeamLearningPlan(profileId);
-            return  "领取成功";
-        }
-        else{
+            return "领取成功";
+        } else {
             return "领取失败";
         }
     }
 
     /**
      * 生成年终回顾的礼品卡并返回
-     *
-     * @param profileId
      */
     @Override
     public List<PrizeCard> generateAnnualPrizeCards(Integer profileId) {
         List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
         //如果之前已经生成，则不再生成
-        if(prizeCards.size()>0) {
+        if (prizeCards.size() > 0) {
             return prizeCards;
         }
-        for(int i =0 ;i<ANNUAL_CARD_SUM;i++) {
+        for (int i = 0; i < ANNUAL_CARD_SUM; i++) {
             prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
         }
-
         return prizeCardDao.getAnnualPrizeCards(profileId);
     }
 
@@ -197,8 +189,6 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 发送领取成功模板消息
-     * @param openid
-     * @param nickName
      */
     @Override
     public void sendReceivedAnnualMsgSuccessful(String openid, String nickName) {

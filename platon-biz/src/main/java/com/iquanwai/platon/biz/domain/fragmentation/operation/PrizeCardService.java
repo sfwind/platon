@@ -19,10 +19,6 @@ public interface PrizeCardService {
 
     List<PrizeCard> generateAnnualPrizeCards(Integer profileId);
 
-
-
-
-
     /**
      * 是否成功领取预先生成的礼品卡
      * @param cardId
