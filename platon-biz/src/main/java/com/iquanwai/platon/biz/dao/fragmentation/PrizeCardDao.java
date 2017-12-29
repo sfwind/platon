@@ -78,7 +78,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where profileId = ? and Category = 100 and Del = 0";
+        String sql = "select * from PrizeCard where profileId = ? and Category = 99 and Del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
         try {
@@ -87,24 +87,6 @@ public class PrizeCardDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
-    }
-
-
-    /**
-     * 领取年度礼品卡
-     *
-     * @param id
-     * @return
-     */
-    public Integer updateAnnualPrizeCards(Integer id, Integer receiverProfileId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PrizeCard set receiverProfileId = ?,Used = 1 where id = ? and receiverProfileId is null and Used = 0 and Del = 0";
-        try {
-            return runner.update(sql, receiverProfileId, id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return 0;
     }
 
 
@@ -128,12 +110,11 @@ public class PrizeCardDao extends PracticeDBUtil {
     /**
      * 插入年度礼品卡
      */
-    public Integer insertAnnualPrizeCard(Integer profileId) {
+    public Integer insertAnnualPrizeCard(Integer profileId,String PrizeCardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = " insert into PrizeCard(profileId,Category) values (?,100)";
-
+        String sql = " insert into PrizeCard(profileId,PrizeCardNo,Category) values (?,?,99)";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), profileId);
+            Long result = runner.insert(sql, new ScalarHandler<>(), profileId,PrizeCardNo);
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -176,4 +157,26 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return null;
     }
+
+    /**
+     * 更新年度礼品卡
+     * @param prizeCardNo
+     * @param openId
+     * @param profileId
+     * @return
+     */
+    public Integer updateAnnualCard(String prizeCardNo,String openId,Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update PrizeCard set ReceiverOpenId = ?,ReceiverProfileId = ?,Used = 1 where PrizeCardNo = ? and ReceiverProfileId is null and del = 0 ";
+
+        try {
+           return runner.update(sql,openId,profileId,prizeCardNo);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return 0;
+    }
+
+
+
 }

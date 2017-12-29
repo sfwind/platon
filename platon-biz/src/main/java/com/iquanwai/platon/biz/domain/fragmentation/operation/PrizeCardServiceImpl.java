@@ -3,14 +3,17 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -34,13 +37,18 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private ImprovementPlanDao improvementPlanDao;
-    @Autowired
     private GeneratePlanService generatePlanService;
     @Autowired
     private CustomerMessageService customerMessageService;
 
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private GroupPromotionDao groupPromotionDao;
+
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final static Integer ANNUAL_CARD_SUM = 3;
 
     @Override
     public PrizeCard loadNoOwnerPrizeCard(Integer profileId) {
@@ -100,77 +108,58 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     }
 
     /**
-     * 查询年度礼品卡
+     * 领取年度礼品卡
      *
+     * @param cardNo
      * @param profileId
      * @return
      */
     @Override
-    public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
-        return prizeCardDao.getAnnualPrizeCards(profileId);
-    }
-
-    /**
-     * 领取礼品卡
-     *
-     * @param id
-     * @param profileId
-     * @return
-     */
-    @Override
-    public String receiveAnnualPrizeCards(Integer id, Integer profileId) {
-        //判断是否是新用户
+    public boolean receiveAnnualPrizeCards(String  cardNo, Integer profileId) {
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        if(riseMembers.size()>0){
+            logger.info("用户不在可领取范围内");
+            return false;
+        }
+        if(groupPromotionDao.loadByProfileId(profileId)!=null){
+            logger.info("用户已经参加一带二活动");
+            return false;
+        }
+        if(prizeCardDao.getAnnualPrizeCards(profileId).size()>0){
+            logger.info("用户已经领取过一张");
+            return false;
+        }
         Profile profile = accountService.getProfile(profileId);
-        if (profile != null) {
-            if (improvementPlanDao.loadAllPlans(profile.getId()).size() > 0) {
-                return "亲,请给新用户一点机会吧~";
-            }
+        if(profile==null){
+            logger.info("用户不存在");
+            return false;
         }
-        //判断礼品卡是否已经被领取
-        if (prizeCardDao.load(PrizeCard.class, id).getUsed()) {
-            return "该礼品卡已经被领取";
+        //成功更新认为领取成功
+        if(prizeCardDao.updateAnnualCard(cardNo,profile.getOpenid(),profileId)==1){
+            return  true;
         }
-
-        //判断是否重复领取
-        if (prizeCardDao.loadAnnualCardByReceiver(profileId) != null) {
-            return "您已经领过一张了，请不要重复领取";
-        }
-        //领取礼品卡
-        if (prizeCardDao.updateAnnualPrizeCards(id, profileId) == 0) {
-            return "该礼品卡已经被领取";
-        }
-        generatePlanService.createTeamLearningPlan(profileId);
-        return "恭喜您获得该礼品卡";
-    }
-
-    /**
-     * 根据年终回顾生成礼品卡
-     *
-     * @param profileId
-     */
-    @Override
-    public void generateAnnualPrizeCards(Integer profileId) {
-        List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
-        //TODO：如果之前没有生成过，则进行生成
-        if (prizeCards.size() == 0) {
-            int sum = 1;
-            for (int i = 0; i < sum; i++) {
-                prizeCardDao.insertAnnualPrizeCard(profileId);
-            }
+        else{
+            return false;
         }
     }
 
     /**
-     * 返回该用户获得的礼品卡数量
+     * 生成年终回顾的礼品卡并返回
      *
      * @param profileId
-     * @return
      */
     @Override
-    public Integer loadAnnualCounts(Integer profileId) {
+    public List<PrizeCard> generateAnnualPrizeCards(Integer profileId) {
         List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
+        //如果之前已经生成，则不再生成
+        if(prizeCards.size()>0) {
+            return prizeCards;
+        }
+        for(int i =0 ;i<ANNUAL_CARD_SUM;i++) {
+            prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
+        }
 
-        return prizeCards.size();
+        return prizeCardDao.getAnnualPrizeCards(profileId);
     }
 
     @Override
@@ -201,6 +190,20 @@ public class PrizeCardServiceImpl implements PrizeCardService {
                 "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
 
         customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+    }
+
+    /**
+     * 发送领取成功模板消息
+     * @param openid
+     * @param nickName
+     */
+    @Override
+    public void sendReceivedAnnualMsgSuccessful(String openid, String nickName) {
+        String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
+                "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
+
+        customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
 }
