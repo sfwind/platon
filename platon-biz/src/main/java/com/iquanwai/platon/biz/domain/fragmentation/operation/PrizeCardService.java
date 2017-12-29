@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
+import com.iquanwai.platon.biz.exception.PrizeCardException;
 import com.iquanwai.platon.biz.po.PrizeCard;
 
 import java.util.List;
@@ -17,11 +18,7 @@ public interface PrizeCardService {
      */
     String  receiveAnnualPrizeCards(String cardNo,Integer profileId);
 
-    List<PrizeCard> generateAnnualPrizeCards(Integer profileId);
-
-
-
-
+    List<PrizeCard> generateAnnualPrizeCards(Integer profileId) throws PrizeCardException;
 
     /**
      * 是否成功领取预先生成的礼品卡
