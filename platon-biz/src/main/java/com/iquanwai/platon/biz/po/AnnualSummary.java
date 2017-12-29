@@ -49,4 +49,5 @@ public class AnnualSummary {
     private Integer firstClassmate;
     private Integer secondClassmate;
     private Integer thirdClassmate;
+    private Integer forthClassmate;
 }

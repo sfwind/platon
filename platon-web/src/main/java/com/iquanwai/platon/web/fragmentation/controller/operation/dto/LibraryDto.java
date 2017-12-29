@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation.dto;
 
+import com.google.common.collect.Lists;
 import lombok.Data;
 
 import java.util.List;
@@ -11,6 +12,11 @@ public class LibraryDto {
     private Integer allRightCount;
     private List<HeadPicDto> assts;
     private List<HeadPicDto> classmates;
+
+    public LibraryDto(){
+        this.assts = Lists.newArrayList();
+        this.classmates = Lists.newArrayList();
+    }
 
     @Data
     public static class HeadPicDto {
