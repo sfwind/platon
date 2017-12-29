@@ -115,7 +115,7 @@ public class AnnualController {
             this.createHeadPic(annualSummary.getThirdAsst()).append(assts);
 
             this.createHeadPic(annualSummary.getFirstClassmate()).append(classmates);
-            this.createHeadPic(annualSummary.getThirdClassmate()).append(classmates);
+            this.createHeadPic(annualSummary.getSecondClassmate()).append(classmates);
             this.createHeadPic(annualSummary.getThirdClassmate()).append(classmates);
             this.createHeadPic(annualSummary.getForthClassmate()).append(classmates);
 
