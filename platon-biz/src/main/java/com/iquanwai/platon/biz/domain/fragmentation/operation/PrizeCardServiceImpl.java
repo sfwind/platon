@@ -125,7 +125,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             logger.info("用户已经参加一带二活动");
             return "您已经参加一带二活动";
         }
-        if(prizeCardDao.getAnnualPrizeCards(profileId).size()>0){
+        if(prizeCardDao.loadReceiveAnnualCard(profileId).size()>0){
             logger.info("用户已经领取过一张");
             return "您已经领取过一张";
         }

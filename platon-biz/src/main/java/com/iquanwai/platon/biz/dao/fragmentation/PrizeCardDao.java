@@ -177,6 +177,21 @@ public class PrizeCardDao extends PracticeDBUtil {
         return 0;
     }
 
+    /**
+     * 查找领取者已经领取的年度礼品卡
+     * @param receiverProfileId
+     * @return
+     */
+    public List<PrizeCard> loadReceiveAnnualCard(Integer receiverProfileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and Category = 99 and del = 0";
+        ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
-
+        try {
+           return runner.query(sql,h,receiverProfileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return Lists.newArrayList();
+    }
 }
