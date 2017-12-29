@@ -52,19 +52,25 @@ public class AnnualController {
         Assert.notNull(guestUser, "登录用户不能为空");
 
         AnnualUserDto dto = new AnnualUserDto();
-        String currentOpenId = guestUser.getOpenId();
-        Profile currentProfile = accountService.getProfile(currentOpenId);
-        Assert.notNull(currentProfile, "查看的用户不能为空");
-        dto.setCurrentRiseId(currentProfile.getRiseId());
-        if (riseId == null) {
-            dto.setMasterRiseId(currentProfile.getRiseId());
-            dto.setMasterNickName(currentProfile.getNickname());
-            dto.setMasterHeadImageUrl(currentProfile.getHeadimgurl());
-        } else {
+        if (riseId != null) {
+            String currentOpenId = guestUser.getOpenId();
+            Profile currentProfile = accountService.getProfile(currentOpenId);
+            if (currentProfile != null) {
+                dto.setCurrentRiseId(currentProfile.getRiseId());
+            } else {
+                dto.setCurrentRiseId(null);
+            }
+            dto.setMasterRiseId(riseId);
             Profile masterProfile = accountService.getProfileByRiseId(riseId);
-            dto.setMasterRiseId(masterProfile.getRiseId());
-            dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
             dto.setMasterNickName(masterProfile.getNickname());
+            dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
+        } else {
+            String currentOpenId = guestUser.getOpenId();
+            Profile masterProfile = accountService.getProfileByRiseId(currentOpenId);
+            dto.setCurrentRiseId(masterProfile.getRiseId());
+            dto.setMasterRiseId(masterProfile.getRiseId());
+            dto.setMasterNickName(masterProfile.getNickname());
+            dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
         }
         return WebUtils.result(dto);
     }
