@@ -110,38 +110,33 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 领取年度礼品卡
-     *
-     * @param cardNo
-     * @param profileId
-     * @return
      */
     @Override
-    public String receiveAnnualPrizeCards(String  cardNo, Integer profileId) {
+    public String receiveAnnualPrizeCards(String cardNo, Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        if(riseMembers.size()>0){
+        if (riseMembers.size() > 0) {
             logger.info("用户不在可领取范围内");
             return "您不在可领取范围内";
         }
-        if(groupPromotionDao.loadByProfileId(profileId)!=null){
+        if (groupPromotionDao.loadByProfileId(profileId) != null) {
             logger.info("用户已经参加一带二活动");
             return "您已经参加一带二活动";
         }
-        if(prizeCardDao.loadReceiveAnnualCard(profileId).size()>0){
+        if (prizeCardDao.loadReceiveAnnualCard(profileId).size() > 0) {
             logger.info("用户已经领取过一张");
             return "您已经领取过一张";
         }
         Profile profile = accountService.getProfile(profileId);
-        if(profile==null){
+        if (profile == null) {
             logger.info("用户不存在");
             return "用户不存在";
         }
         //成功更新认为领取成功
-        if(prizeCardDao.updateAnnualCard(cardNo,profile.getOpenid(),profileId)==1){
+        if (prizeCardDao.updateAnnualCard(cardNo, profile.getOpenid(), profileId) == 1) {
             //开课
             generatePlanService.createTeamLearningPlan(profileId);
-            return  "领取成功";
-        }
-        else{
+            return "领取成功";
+        } else {
             return "领取失败";
         }
     }

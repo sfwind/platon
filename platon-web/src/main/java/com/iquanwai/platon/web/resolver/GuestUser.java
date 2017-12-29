@@ -20,7 +20,7 @@ public class GuestUser {
     private Integer subscribe;	// 用户是否订阅该公众号标识，值为0时，代表此用户没有关注该公众号，拉取不到其余信息。
 
     public static GuestUser defaultUser() {
-        return new GuestUser(ConfigUtils.getDefaultOpenid(), "风之伤",
+        return new GuestUser(ConfigUtils.getDefaultOpenid(), "三十文",
                 Profile.DEFAULT_AVATAR, null,1);
     }
 
