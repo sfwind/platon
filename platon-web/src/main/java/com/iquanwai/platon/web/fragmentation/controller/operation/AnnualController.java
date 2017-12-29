@@ -50,15 +50,12 @@ public class AnnualController {
         operationLogService.log(operationLog);
         AnnualUserDto dto = new AnnualUserDto();
         if (riseId != null) {
-            Profile profileByRiseId = accountService.getProfileByRiseId(riseId);
-            dto.setMasterRiseId(profileByRiseId.getRiseId());
-            dto.setMasterHeadImageUrl(profileByRiseId.getHeadimgurl());
-            dto.setMasterNickName(profileByRiseId.getNickname());
+            Profile masterProfile = accountService.getProfileByRiseId(riseId);
+            dto.setMasterRiseId(masterProfile.getRiseId());
+            dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
+            dto.setMasterNickName(masterProfile.getNickname());
         }
-        if (guestUser != null && guestUser.getOpenId() != null) {
-            Profile profile = accountService.getProfile(guestUser.getOpenId());
-            dto.setCurrentRiseId(profile.getRiseId());
-        }
+        dto.setCurrentRiseId(riseId);
         return WebUtils.result(dto);
     }
 
