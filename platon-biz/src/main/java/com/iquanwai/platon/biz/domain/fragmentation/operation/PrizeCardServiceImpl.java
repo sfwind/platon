@@ -9,7 +9,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.exception.PrizeCardException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -18,6 +17,7 @@ import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.apache.http.util.Asserts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,13 +147,10 @@ public class PrizeCardServiceImpl implements PrizeCardService {
      * @param profileId
      */
     @Override
-    public List<PrizeCard> generateAnnualPrizeCards(Integer profileId) throws PrizeCardException {
+    public List<PrizeCard> generateAnnualPrizeCards(Integer profileId){
         List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
         //如果之前已经生成，则不再生成
         if(prizeCards.size()>0) {
-            if(prizeCards.size()!=ANNUAL_CARD_SUM){
-                throw  new PrizeCardException();
-            }
             return prizeCards;
         }
         for(int i =0 ;i<ANNUAL_CARD_SUM;i++) {
@@ -161,9 +158,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         }
 
         prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
-        if(prizeCards.size()!=ANNUAL_CARD_SUM){
-            throw new PrizeCardException();
-        }
+
         return prizeCards;
     }
 

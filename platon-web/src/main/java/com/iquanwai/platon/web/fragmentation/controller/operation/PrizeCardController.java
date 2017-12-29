@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.exception.PrizeCardException;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -99,7 +98,7 @@ public class PrizeCardController {
      * 生成礼品卡，返回该用户对应的礼品卡信息
      */
     @RequestMapping(value = "/annual/summary/card", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestParam("riseId") String riseId) throws PrizeCardException{
+    public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestParam("riseId") String riseId){
         Assert.notNull(guestUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("生成礼品卡").action("生成礼品卡");
         operationLogService.log(operationLog);
