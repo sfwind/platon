@@ -11,7 +11,6 @@ import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Account;
@@ -70,8 +69,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                     int profileId = profile.getId();
                     // 用户没有付费并且没有参加试听才有资格
                     List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-                    AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
-                    if (riseMembers.size() == 0 && auditionClassMember == null) {
+                    if (riseMembers.size() == 0) {
                         return true;
                     }
                 }
