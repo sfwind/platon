@@ -55,7 +55,11 @@ public class AnnualController {
             dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
             dto.setMasterNickName(masterProfile.getNickname());
         }
-        dto.setCurrentRiseId(riseId);
+        if (guestUser != null) {
+            String currentOpenId = guestUser.getOpenId();
+            Profile currentProfile = accountService.getProfile(currentOpenId);
+            dto.setCurrentRiseId(currentProfile == null ? null : currentProfile.getRiseId());
+        }
         return WebUtils.result(dto);
     }
 
