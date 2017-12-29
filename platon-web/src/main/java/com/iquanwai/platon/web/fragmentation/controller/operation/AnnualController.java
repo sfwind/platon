@@ -66,7 +66,7 @@ public class AnnualController {
             dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
         } else {
             String currentOpenId = guestUser.getOpenId();
-            Profile masterProfile = accountService.getProfileByRiseId(currentOpenId);
+            Profile masterProfile = accountService.getProfile(currentOpenId);
             dto.setCurrentRiseId(masterProfile.getRiseId());
             dto.setMasterRiseId(masterProfile.getRiseId());
             dto.setMasterNickName(masterProfile.getNickname());
