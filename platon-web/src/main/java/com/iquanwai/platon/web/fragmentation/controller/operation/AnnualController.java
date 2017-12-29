@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,17 +49,23 @@ public class AnnualController {
                 .function("年度报告")
                 .action("获取用户");
         operationLogService.log(operationLog);
+        Assert.notNull(guestUser, "登录用户不能为空");
+
         AnnualUserDto dto = new AnnualUserDto();
-        if (riseId != null) {
+        if (riseId == null) {
+            String currentOpenId = guestUser.getOpenId();
+            Profile currentProfile = accountService.getProfile(currentOpenId);
+            Assert.notNull(currentProfile, "查看的用户不能为空");
+            dto.setCurrentRiseId(currentProfile.getRiseId());
+            dto.setMasterRiseId(currentProfile.getRiseId());
+            dto.setMasterNickName(currentProfile.getNickname());
+            dto.setMasterHeadImageUrl(currentProfile.getHeadimgurl());
+        } else {
             Profile masterProfile = accountService.getProfileByRiseId(riseId);
+            dto.setCurrentRiseId(riseId);
             dto.setMasterRiseId(masterProfile.getRiseId());
             dto.setMasterHeadImageUrl(masterProfile.getHeadimgurl());
             dto.setMasterNickName(masterProfile.getNickname());
-        }
-        if (guestUser != null) {
-            String currentOpenId = guestUser.getOpenId();
-            Profile currentProfile = accountService.getProfile(currentOpenId);
-            dto.setCurrentRiseId(currentProfile == null ? null : currentProfile.getRiseId());
         }
         return WebUtils.result(dto);
     }
