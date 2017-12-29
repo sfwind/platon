@@ -152,7 +152,7 @@ public class ReportServiceImpl implements ReportService {
             Optional<ApplicationPractice> first = applicationPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
             first.ifPresent(practice -> {
                 Integer point = PointRepoImpl.score.get(practice.getDifficulty());
-                if (item.getStatus() == 1) {
+                if (PracticePlan.STATUS.COMPLETED.equals(item.getStatus())) {
                     report.setApplicationScore(report.getApplicationScore() + point);
                 }
                 report.setApplicationTotalScore(report.getApplicationTotalScore() + point);
@@ -163,7 +163,7 @@ public class ReportServiceImpl implements ReportService {
     private void calculateCompleteCount(ImprovementReport report, List<PracticePlan> applicationPlanList) {
         // 数量计算
         Integer totalApplication = applicationPlanList.size();
-        Long totalCompleteApp = applicationPlanList.stream().filter(item -> item.getStatus() == 1).count();
+        Long totalCompleteApp = applicationPlanList.stream().filter(item -> PracticePlan.STATUS.COMPLETED.equals(item.getStatus())).count();
         report.setApplicationShouldCount(totalApplication);
         report.setApplicationCompleteCount(totalCompleteApp.intValue());
     }

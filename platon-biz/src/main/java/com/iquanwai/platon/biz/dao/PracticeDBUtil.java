@@ -54,7 +54,7 @@ public class PracticeDBUtil {
         ResultSetHandler<List<T>> h = new BeanListHandler<T>(type);
 
         try {
-            List<T> t = run.query("SELECT * FROM "+type.getSimpleName()+" ", h);
+            List<T> t = run.query("SELECT * FROM "+type.getSimpleName(), h);
             return t;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

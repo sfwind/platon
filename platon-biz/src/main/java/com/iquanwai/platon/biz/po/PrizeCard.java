@@ -9,6 +9,7 @@ public class PrizeCard {
     private Integer profileId;
     private String prizeCardNo;
     private Boolean used;
+    private Integer category;
+    private String receiverProfileId;
     private Boolean del;
-
 }

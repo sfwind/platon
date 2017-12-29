@@ -71,11 +71,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> runningProblems = Lists.newArrayList();
         //用户的课程计划
         List<CourseSchedule> courseAllSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-        List<CourseSchedule> courseSchedules = courseAllSchedules.stream()
-                .filter(CourseSchedule::getSelected).collect(Collectors.toList());
 
         //用户的本月计划
-        List<CourseSchedule> currentMonthCourseSchedules = getCurrentMonthSchedule(courseSchedules);
+        List<CourseSchedule> currentMonthCourseSchedules = getCurrentMonthSchedule(courseAllSchedules);
         //已完成的课程
         List<ImprovementPlan> completeProblem = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.CLOSE)
@@ -99,7 +97,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setCompleteProblem(completeProblem);
 
         //主修课程id
-        List<CourseSchedule> majorSchedule = courseSchedules.stream()
+        List<CourseSchedule> majorSchedule = courseAllSchedules.stream()
                 .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)
                 .collect(Collectors.toList());
 
@@ -115,7 +113,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
 
         //辅修课程id
-        List<CourseSchedule> minorSchedule = courseSchedules.stream()
+        List<CourseSchedule> minorSchedule = courseAllSchedules.stream()
                 .filter(courseSchedule -> courseSchedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .collect(Collectors.toList());
 
@@ -131,7 +129,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             schedulePlan.setMinorSelected(true);
         }
 
-        //试听课程
+        //TODO:试听课程代码18年删除
         AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
         Integer auditionProblemId = null;
         List<ImprovementPlan> trialProblem = Lists.newArrayList();
@@ -514,7 +512,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     private List<CourseSchedule> getCurrentMonthSchedule(List<CourseSchedule> courseSchedules) {
-        CourseSchedule courseSchedule = courseSchedules.stream().findFirst().orElse(null);
+        CourseSchedule courseSchedule = courseSchedules.stream()
+                .filter(CourseSchedule::getSelected).findFirst().orElse(null);
 
         Integer category = courseSchedule != null ? accountService.loadUserScheduleCategory(courseSchedule.getProfileId()) : null;
         //当前学习中的月份
