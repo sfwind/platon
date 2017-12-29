@@ -136,6 +136,8 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         }
         //成功更新认为领取成功
         if(prizeCardDao.updateAnnualCard(cardNo,profile.getOpenid(),profileId)==1){
+            //开课
+            generatePlanService.createTeamLearningPlan(profileId);
             return  true;
         }
         else{
