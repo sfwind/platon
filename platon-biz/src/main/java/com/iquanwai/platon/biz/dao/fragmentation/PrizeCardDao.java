@@ -7,6 +7,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -70,57 +71,109 @@ public class PrizeCardDao extends PracticeDBUtil {
 
 
     /**
-     * 根据profileId获得用户还未使用的礼品卡
+     * 获得年度礼品卡
      *
      * @param profileId
      * @return
      */
-    public List<PrizeCard> getPrizeCardsByProfileId(Integer profileId) {
+    public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where profileId = ? and Category = 100 and Del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
-        String sql = "select * from PrizeCard where ProfileId = ? and ReceiverOpenId is null and del = 0";
 
         try {
             return runner.query(sql, h, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-
         return Lists.newArrayList();
     }
 
+
     /**
-     * 设置礼品卡为领取状态
-     * @param openId
+     * 领取年度礼品卡
+     *
      * @param id
      * @return
      */
-    public Integer setCardReceived(String openId,Integer id){
+    public Integer updateAnnualPrizeCards(Integer id, Integer receiverProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PrizeCard set ReceiverOpenId = ? where id = ? and ReceiverOpenId is null";
+        String sql = "update PrizeCard set receiverProfileId = ?,Used = 1 where id = ? and receiverProfileId is null and Used = 0 and Del = 0";
+        try {
+            return runner.update(sql, receiverProfileId, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
+    }
+
+
+    /**
+     * 查询用户是否已经领取过礼品卡
+     */
+    public PrizeCard loadAnnualCardByReceiver(Integer receiverProfileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = 100 and Del = 0 limit 1";
+        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
-           return runner.update(sql,openId,id);
+            return runner.query(sql, h, receiverProfileId);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
-        return -1;
+        return null;
+    }
+
+
+    /**
+     * 插入年度礼品卡
+     */
+    public Integer insertAnnualPrizeCard(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = " insert into PrizeCard(profileId,Category) values (?,100)";
+
+        try {
+            Long result = runner.insert(sql, new ScalarHandler<>(), profileId);
+            return result.intValue();
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
+    }
+
+
+    /**
+     * 领取预先生成的礼品卡
+     *
+     * @param id
+     * @param profileId
+     * @return
+     */
+    public Integer updatePreviewCard(Integer id, Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update PrizeCard set ReceiverProfileId = ?,used =1  where id = ? and ReceiverProfileId is null and del = 0";
+
+        try {
+            return runner.update(sql, profileId, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
     }
 
     /**
-     * 设置礼品卡分享过
-     * @param id
+     * 查询用户是否已经领取过礼品卡
      */
-    public void setCardShared(Integer id){
+    public PrizeCard loadCardByCardNo(String cardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update PrizeCard set shared = 1 where id = ?";
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = 100 and Del = 0 limit 1";
+        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
-            runner.update(sql,id);
+            return runner.query(sql, h, cardNo);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
-
+        return null;
     }
-
 }

@@ -98,8 +98,8 @@ public class CustomerController {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
-                .function("RISE")
-                .action("查询帐号信息");
+                .function("账号")
+                .action("查询账号信息");
         operationLogService.log(operationLog);
 
         Profile profile = accountService.getProfile(loginUser.getId());
@@ -150,6 +150,7 @@ public class CustomerController {
         profileDto.setBindMobile(bindMobile);
         profileDto.setPhone(account.getMobileNo());
         profileDto.setWeixinId(account.getWeixinId());
+        profileDto.setReceiver(account.getReceiver());
         return WebUtils.result(profileDto);
     }
 
@@ -343,8 +344,8 @@ public class CustomerController {
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
-                .function("RISE")
-                .action("查询小课信息");
+                .function("课程")
+                .action("查询课程信息");
         operationLogService.log(operationLog);
         List<RiseCertificate> riseCertificates = certificateService.getCertificates(loginUser.getId());
         //清空profileId
@@ -375,7 +376,7 @@ public class CustomerController {
         Profile profile = accountService.getProfile(loginUser.getId());
         list.setRiseId(profile.getRiseId());
         list.setPoint(profile.getPoint());
-        // 当前已收藏小课
+        // 当前已收藏课程
         List<Problem> problemCollections = problemService.loadProblemCollections(loginUser.getId());
         list.setProblemCollections(problemCollections);
         return WebUtils.result(list);
@@ -387,7 +388,7 @@ public class CustomerController {
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("用户信息")
-                .function("RISE")
+                .function("会员")
                 .action("查询rise会员信息")
                 .memo(riseMember != null ? new Gson().toJson(riseMember) : "none");
         operationLogService.log(operationLog);

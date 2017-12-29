@@ -4,8 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.*;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
@@ -83,6 +82,13 @@ public class AccountServiceImpl implements AccountService {
     private QRCodeService qrCodeService;
     @Autowired
     private SubscribePushDao subscribePushDao;
+    @Autowired
+    private AuditionClassMemberDao auditionClassMemberDao;
+
+    @Autowired
+    private GroupPromotionDao groupPromotionDao;
+    @Autowired
+    private PrizeCardDao prizeCardDao;
 
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
@@ -105,6 +111,10 @@ public class AccountServiceImpl implements AccountService {
             //先从数据库查询account对象
             Account account = followUserDao.queryByOpenid(openid);
             if (account != null) {
+                if (account.getSubscribe() == 0) {
+                    // 曾经关注，现在取关的人
+                    throw new NotFollowingException();
+                }
                 return account;
             }
             //从微信处获取
@@ -420,11 +430,12 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.load(Profile.class, profileId);
         if (profile == null) {
             return new ImmutablePair<>(false, "系统错误,请联系小Q");
-        } else {
-            if (phone.equals(profile.getMobileNo())) {
-                return new ImmutablePair<>(false, "该手机号已绑定");
-            }
         }
+//        else {
+//            if (phone.equals(profile.getMobileNo())) {
+//                return new ImmutablePair<>(false, "该手机号已绑定");
+//            }
+//        }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
         smsDto.setType(SMSDto.NORMAL);
@@ -476,13 +487,6 @@ public class AccountServiceImpl implements AccountService {
         return targetCoupons;
     }
 
-    @Override
-    public void insertCoupon(Coupon coupon) {
-        if (coupon != null) {
-            coupon.setUsed(0);
-            couponDao.insertCoupon(coupon);
-        }
-    }
 
     @Override
     public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
@@ -539,7 +543,7 @@ public class AccountServiceImpl implements AccountService {
             // 训练营用户
         } else if (memberTypeId == RiseMember.CAMP) {
             return 3;
-            // 小课用户
+            // 课程单买用户
         } else if (memberTypeId == RiseMember.COURSE) {
             return 2;
         }
@@ -575,6 +579,32 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void updateWeixinId(Integer profileId, String weixinId) {
         profileDao.updateWeixinId(profileId, weixinId);
+    }
+
+    @Override
+    public RiseMember getValidRiseMember(Integer profileId) {
+        return riseMemberDao.loadValidRiseMember(profileId);
+    }
+
+    @Override
+    public boolean isPreviewNewUser(Integer profileId) {
+        //判断是否参加过商学院和训练营
+        if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
+            return false;
+        }
+        //判断是否参加过试听课
+        if (auditionClassMemberDao.loadByProfileId(profileId) != null) {
+            return false;
+        }
+        //判断是否参加"一带二"活动
+        if (groupPromotionDao.loadByProfileId(profileId) != null) {
+            return false;
+        }
+        //判断是否领取过礼品卡
+        if (prizeCardDao.loadAnnualCardByReceiver(profileId) != null) {
+            return false;
+        }
+        return true;
     }
 }
 

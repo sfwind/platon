@@ -60,7 +60,7 @@ public class ReportServiceImpl implements ReportService {
         if (plan.getStatus() == ImprovementPlan.CLOSE) {
             studyDays = plan.getCloseTime() == null ? -1 : (DateUtils.interval(plan.getStartDate(), plan.getCloseTime()) + 1);
         } else {
-            studyDays = DateUtils.interval(plan.getStartDate()) + 1;
+            studyDays = DateUtils.interval(plan.getStartDate());
         }
         if (studyDays > 30) {
             // 最多显示30天
@@ -134,7 +134,7 @@ public class ReportServiceImpl implements ReportService {
         calculateAppScores(report, applicationPlanList);
     }
 
-    private void calculateAppScores(ImprovementReport report,List<PracticePlan> applicationPlanList) {
+    private void calculateAppScores(ImprovementReport report, List<PracticePlan> applicationPlanList) {
         List<Integer> applicationIds = applicationPlanList.stream().map(item -> Integer.valueOf(item.getPracticeId())).collect(Collectors.toList());
 
         List<ApplicationPractice> applicationPractices;
@@ -152,7 +152,7 @@ public class ReportServiceImpl implements ReportService {
             Optional<ApplicationPractice> first = applicationPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
             first.ifPresent(practice -> {
                 Integer point = PointRepoImpl.score.get(practice.getDifficulty());
-                if (item.getStatus() == 1) {
+                if (PracticePlan.STATUS.COMPLETED.equals(item.getStatus())) {
                     report.setApplicationScore(report.getApplicationScore() + point);
                 }
                 report.setApplicationTotalScore(report.getApplicationTotalScore() + point);
@@ -163,7 +163,7 @@ public class ReportServiceImpl implements ReportService {
     private void calculateCompleteCount(ImprovementReport report, List<PracticePlan> applicationPlanList) {
         // 数量计算
         Integer totalApplication = applicationPlanList.size();
-        Long totalCompleteApp = applicationPlanList.stream().filter(item -> item.getStatus() == 1).count();
+        Long totalCompleteApp = applicationPlanList.stream().filter(item -> PracticePlan.STATUS.COMPLETED.equals(item.getStatus())).count();
         report.setApplicationShouldCount(totalApplication);
         report.setApplicationCompleteCount(totalCompleteApp.intValue());
     }
@@ -204,7 +204,7 @@ public class ReportServiceImpl implements ReportService {
         submitMap.forEach((series, submits) -> {
             // 综合小节内题目的得分
             seriesScores.putIfAbsent(series, 0);
-            submits.forEach(item-> seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore()));
+            submits.forEach(item -> seriesScores.computeIfPresent(series, (key, oldValue) -> oldValue + item.getScore()));
         });
         totalMap.forEach((series, practice) -> {
             // 综合小节内题目的得分

@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Created by nethunder on 2017/8/16.
- * description: RISE小课减免活动相关
+ * description: 课程减免活动相关
  */
 @Repository
 public class CourseReductionActivityDao extends PracticeDBUtil {

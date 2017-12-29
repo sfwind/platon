@@ -17,7 +17,7 @@ public class EssenceCardDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
     /**
      * 根据 ProblemId 和 KnowledgeId 获取 EssenceCard
-     * 如果是小课的总结，则默认的 knowledgeId 为 0
+     * 如果是课程的总结，则默认的 knowledgeId 为 0
      */
     public EssenceCard loadEssenceCard(Integer problemId, Integer chapterId) {
         QueryRunner runner = new QueryRunner(getDataSource());

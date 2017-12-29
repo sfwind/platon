@@ -176,7 +176,7 @@ public class ProfileDao extends DBUtil {
 
     public boolean submitPersonalCenterProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=? where id=?";
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?,Receiver=?,Married = ? where id=?";
         try {
             run.update(updateSql,
                     profile.getIndustry(),
@@ -184,6 +184,8 @@ public class ProfileDao extends DBUtil {
                     profile.getWorkingYear(),
                     profile.getCity(),
                     profile.getProvince(),
+                    profile.getReceiver(),
+                    profile.getMarried(),
                     profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -194,7 +196,7 @@ public class ProfileDao extends DBUtil {
 
     public boolean submitPersonalCenterProfileWithMoreDetail(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?,RealName=?,Address=? where id=?";
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?,RealName=?,Address=?,Receiver=?,Married = ? where id=?";
         try {
             run.update(updateSql,
                     profile.getIndustry(),
@@ -204,6 +206,8 @@ public class ProfileDao extends DBUtil {
                     profile.getProvince(),
                     profile.getRealName(),
                     profile.getAddress(),
+                    profile.getReceiver(),
+                    profile.getMarried(),
                     profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

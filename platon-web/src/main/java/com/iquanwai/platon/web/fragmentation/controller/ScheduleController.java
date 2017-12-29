@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleModifyDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.MonthCourseScheduleDto;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +65,7 @@ public class ScheduleController {
     public ResponseEntity<Map<String, Object>> loadPersonalCourseSchedulePlan(LoginUser loginUser) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
                 .action("获取个人学习计划");
         operationLogService.log(operationLog);
@@ -72,16 +74,16 @@ public class ScheduleController {
     }
 
     /**
-     * 更新单门小课的年月信息
+     * 更新单门课程的年月信息
      */
     @RequestMapping(value = "/update/problem", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> modifyProblemSchedule(LoginUser loginUser, @RequestBody CourseScheduleDto courseScheduleDto) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        Assert.notNull(courseScheduleDto, "小课更改参数不能为空");
+        Assert.notNull(courseScheduleDto, "课程更改参数不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
-                .action("小课计划更改")
+                .action("课程计划更改")
                 .memo(courseScheduleDto.getProblemId().toString());
         operationLogService.log(operationLog);
 
@@ -92,21 +94,21 @@ public class ScheduleController {
         if (updateResult) {
             return WebUtils.success();
         } else {
-            return WebUtils.error("小课计划调整出错，请联系管理员！");
+            return WebUtils.error("课程计划调整出错，请联系管理员！");
         }
     }
 
     /**
-     * 单门小课更新是否选择
+     * 单门课程更新是否选择
      */
     @RequestMapping(value = "/update/selected", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> updateProblemScheduleSelectedStatus(LoginUser loginUser, @RequestBody CourseScheduleDto courseScheduleDto) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        Assert.notNull(courseScheduleDto, "小课更改参数不能为空");
+        Assert.notNull(courseScheduleDto, "课程更改参数不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
-                .action("小课计划更改");
+                .action("课程计划更改");
         operationLogService.log(operationLog);
         Integer courseScheduleId = courseScheduleDto.getId();
         Boolean selected = courseScheduleDto.getSelected();
@@ -115,16 +117,16 @@ public class ScheduleController {
     }
 
     /**
-     * 全量更新小课的选择情况
+     * 全量更新课程的选择情况
      */
     @RequestMapping(value = "/update/all", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> modifyCourseSchedule(LoginUser loginUser, @RequestBody CourseScheduleModifyDto courseScheduleModifyDto) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        Assert.notNull(courseScheduleModifyDto, "小课更改参数不能为空");
+        Assert.notNull(courseScheduleModifyDto, "课程更改参数不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
-                .action("小课计划整体更改");
+                .action("课程计划整体更改");
         operationLogService.log(operationLog);
         List<MonthCourseScheduleDto> monthCourseScheduleDtos = courseScheduleModifyDto.getMonthCourseSchedules();
 
@@ -141,7 +143,7 @@ public class ScheduleController {
     public ResponseEntity<Map<String, Object>> loadScheduleQuestions(LoginUser loginUser) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
                 .action("获取学习计划题目");
         operationLogService.log(operationLog);
@@ -167,7 +169,7 @@ public class ScheduleController {
     public ResponseEntity<Map<String, Object>> loadCoursePlan(LoginUser loginUser) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
                 .action("获取个人学习进度");
         operationLogService.log(operationLog);
@@ -179,7 +181,7 @@ public class ScheduleController {
     public ResponseEntity<Map<String, Object>> loadBusinessCountDown(LoginUser loginUser) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("学习计划")
                 .action("倒计时查询");
         operationLogService.log(operationLog);
@@ -197,6 +199,17 @@ public class ScheduleController {
         } else {
             // 非商学院
             return WebUtils.error("请先报名商学院哦");
+        }
+    }
+
+    @RequestMapping(value = "/camp/count/down", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadMonthlyCampCountDown(LoginUser loginUser) {
+        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+        if (riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new Date()) > 0) {
+            int interval = DateUtils.interval(riseMember.getOpenDate());
+            return WebUtils.result(String.format("%02d", interval));
+        } else {
+            return WebUtils.error("无当前页面访问权限");
         }
     }
 }

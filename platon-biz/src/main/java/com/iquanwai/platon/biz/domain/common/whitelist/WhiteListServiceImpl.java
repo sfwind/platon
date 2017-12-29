@@ -2,19 +2,25 @@ package com.iquanwai.platon.biz.domain.common.whitelist;
 
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.po.PromotionLevel;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,6 +39,10 @@ public class WhiteListServiceImpl implements WhiteListService {
     private AccountService accountService;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
+    @Autowired
+    private GroupPromotionDao groupPromotionDao;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
 
 
     @Override
@@ -52,7 +62,6 @@ public class WhiteListServiceImpl implements WhiteListService {
                 .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
                         && new DateTime(item.getOpenDate()).isAfterNow() && !item.getExpired());
     }
-
 
     @Override
     public boolean isGoToScheduleNotice(Integer profileId, List<RiseMember> riseMembers) {
@@ -85,12 +94,11 @@ public class WhiteListServiceImpl implements WhiteListService {
         }
     }
 
-
     @Override
     public boolean checkRiseMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long riseCount = riseMembers.stream().filter(riseMember ->
-                // 商学院会员（半年、一年）、小课单买用户
+                // 商学院会员（半年、一年）、课程单买用户
                 riseMember.getMemberTypeId() == RiseMember.HALF
                         || riseMember.getMemberTypeId() == RiseMember.ANNUAL
                         || riseMember.getMemberTypeId() == RiseMember.ELITE
@@ -106,7 +114,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         Long riseCount = riseMembers.stream()
                 .filter(riseMember -> !riseMember.getExpired())
                 .filter(riseMember ->
-                        // 商学院会员（半年、一年）、小课单买用户
+                        // 商学院会员（半年、一年）、课程单买用户
                         riseMember.getMemberTypeId() == RiseMember.HALF
                                 || riseMember.getMemberTypeId() == RiseMember.ANNUAL
                                 || riseMember.getMemberTypeId() == RiseMember.ELITE
@@ -119,10 +127,21 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        Long campCount = riseMembers.stream().filter(riseMember ->
-                // 专业版会员（半年、一年）、小课训练营
-                riseMember.getMemberTypeId() == RiseMember.CAMP
+        Long risememberCount = riseMembers.stream().filter(riseMember ->
+                // 半年/一年 精英版
+                riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                        riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
         ).count();
+        // 如果转化成商学院 跳转训练营售卖页
+        if (risememberCount > 0) {
+            return false;
+        }
+
+        // 训练营
+        Long campCount = riseMembers.stream()
+                .filter(riseMember -> riseMember.getMemberTypeId() == RiseMember.CAMP
+                        && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) <= 0)
+                .count();
         return campCount.intValue() > 0;
     }
 
@@ -158,6 +177,37 @@ public class WhiteListServiceImpl implements WhiteListService {
     public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
         // 去新课程计划表则不显示
         return !this.isGoToNewSchedulePlans(profileId, riseMembers);
+    }
+
+    @Override
+    public boolean isGoCampCountDownPage(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
+    }
+
+    @Override
+    public boolean isGoGroupPromotionCountDownPage(Integer profileId) {
+        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
+        if (groupPromotion != null) {
+            List<GroupPromotion> groupPromotions = groupPromotionDao.loadByGroupCode(groupPromotion.getGroupCode());
+            Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
+            if (groupPromotion.getLeader()) {
+                // 如果是团长，并且入团人员满足的话，进入倒计时
+                return groupPromotions.size() >= 3 && campOpenDate.compareTo(new Date()) >= 0;
+            } else {
+                // 如果不是团长，进入倒计时
+                return campOpenDate.compareTo(new Date()) >= 0;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isStillLearningCamp(Integer profileId) {
+        Integer learningYear = ConfigUtils.getLearningYear();
+        Integer learningMonth = ConfigUtils.getLearningMonth();
+        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
+        return riseClassMember != null;
     }
 
 }

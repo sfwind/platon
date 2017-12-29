@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
- * 小课相关的请求处理类
+ * 课程相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/problem")
@@ -53,7 +53,7 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
 
         List<Problem> problemList = problemService.loadProblems();
-        //非天使用户去除试用版小课
+        //非天使用户去除试用课程
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
             problemList = problemList.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
@@ -75,29 +75,29 @@ public class ProblemController {
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
 
-        // 获取每门小课已经选择的人数
+        // 获取每门课程已经选择的人数
         for (Problem problem : problems) {
             problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
         }
 
-        //非天使用户去除试用版小课
+        //非天使用户去除试用版课程
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
         // 用户的所有计划
         List<ImprovementPlan> userProblems = planService.getPlans(loginUser.getId());
-        // 用户选过的小课
+        // 用户选过的课程
         List<Integer> doneProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus() == 3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
-        // 用户进行中的小课
+        // 用户进行中的课程
         List<Integer> doingProblemIds = userProblems.stream().filter(improvementPlan -> improvementPlan.getStatus() != 3).map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 获取所有分类
         List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
-        // 可以展示的小课
+        // 可以展示的课程
         Map<Integer, List<Problem>> showProblems = Maps.newHashMap();
         problems.forEach(item -> {
             List<Problem> temp = showProblems.computeIfAbsent(item.getCatalogId(), k -> Lists.newArrayList());
             if (doneProblemIds.contains(item.getId())) {
-                // 用户没做过这个小课
+                // 用户没做过这个课程
                 item.setStatus(2);
             } else if (doingProblemIds.contains(item.getId())) {
                 item.setStatus(1);
@@ -145,9 +145,8 @@ public class ProblemController {
         result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
-                .function("小课列表")
-                .action("加载小课信息")
-                .memo("");
+                .function("课程列表")
+                .action("加载课程信息");
         operationLogService.log(operationLog);
 
         return WebUtils.result(result);
@@ -183,11 +182,11 @@ public class ProblemController {
     @RequestMapping("/list/{catalog}")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser, @PathVariable(value = "catalog") Integer catalogId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(catalogId, "小课分类不能为空");
+        Assert.notNull(catalogId, "课程分类不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
-                .function("小课类别")
-                .action("加载小课类别")
+                .function("课程类别")
+                .action("加载课程类别")
                 .memo(catalogId.toString());
         operationLogService.log(operationLog);
 
@@ -196,7 +195,7 @@ public class ProblemController {
         if (problemCatalog != null) {
             // 所有问题
             List<Problem> problems = problemService.loadProblems();
-            //非天使用户去除试用版小课
+            //非天使用户去除试用课程
             if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
                 problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
             }
@@ -234,15 +233,14 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
-                .function("小课信息")
-                .action("加载所有小课信息")
-                .memo("");
+                .function("课程信息")
+                .action("加载所有课程信息");
         operationLogService.log(operationLog);
 
         List<ProblemCatalog> problemCatalogs = problemService.getProblemCatalogs();
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
-        //非天使用户去除试用版小课
+        //非天使用户去除试用课程
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
             problems = problems.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
         }
@@ -292,7 +290,7 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
-        // 设置当前小课已学习人数
+        // 设置当前课程已学习人数
         problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
@@ -326,8 +324,8 @@ public class ProblemController {
         // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
-                .function("查询小课信息")
-                .action("打开小课介绍页")
+                .function("查询课程信息")
+                .action("打开课程介绍页")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(dto);
@@ -349,9 +347,9 @@ public class ProblemController {
     @RequestMapping(value = "/submit/extension", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> updateProblemExtension(LoginUser loginUser, @RequestBody ProblemExtension problemExtension) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemExtension.getProblemId(), "小课 Id 不能为空");
+        Assert.notNull(problemExtension.getProblemId(), "课程 Id 不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课").function("小课扩展").action("更新小课扩展");
+                .module("课程").function("课程扩展").action("更新课程扩展");
         operationLogService.log(operationLog);
         Integer result = problemService.insertProblemExtension(problemExtension);
         if (result > 0) {
@@ -364,9 +362,9 @@ public class ProblemController {
     @RequestMapping(value = "/submit/activity", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> updateProblemActivity(LoginUser loginUser, @RequestBody ProblemActivity problemActivity) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemActivity.getProblemId(), "小课 Id 不能为空");
+        Assert.notNull(problemActivity.getProblemId(), "课程 Id 不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课").function("小课扩展").action("更新小课活动");
+                .module("课程").function("课程扩展").action("更新课程活动");
         operationLogService.log(operationLog);
         Integer result = problemService.insertProblemActivity(problemActivity);
         if (result > 0) {
@@ -380,7 +378,7 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemExtension(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "请求 ProblemId 不能为空");
-        OperationLog operationLog = OperationLog.create().module("小课").action("小课扩展").function("获取小课扩展数据").openid(loginUser.getOpenId());
+        OperationLog operationLog = OperationLog.create().module("课程").action("课程扩展").function("获取课程扩展数据").openid(loginUser.getOpenId());
         operationLogService.log(operationLog);
         ProblemExtension extension = problemService.loadProblemExtensionByProblemId(problemId);
         List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
@@ -390,7 +388,7 @@ public class ProblemController {
             extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.OFFLINE.equals(activity.getType())).collect(Collectors.toList()));
             return WebUtils.result(extension);
         } else {
-            return WebUtils.error("当前小课暂无延伸学习相关内容");
+            return WebUtils.error("当前课程暂无延伸学习相关内容");
         }
     }
 
@@ -399,13 +397,13 @@ public class ProblemController {
         Assert.notNull(loginUser, "登录用户不能为空");
         Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
         OperationLog operationLog = OperationLog.create()
-                .module("小课")
-                .action("小课卡包")
-                .function("获取小课卡包")
+                .module("课程")
+                .action("课程卡包")
+                .function("获取课程卡包")
                 .openid(loginUser.getOpenId());
         operationLogService.log(operationLog);
         if (essenceCards == null) {
-            return WebUtils.error("未找到当前小课相关卡包信息");
+            return WebUtils.error("未找到当前课程相关卡包信息");
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
@@ -422,8 +420,8 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课卡包")
-                .function("小课卡包")
+                .module("课程卡包")
+                .function("课程卡包")
                 .action("点开卡包卡片")
                 .memo(chapterId.toString());
         operationLogService.log(operationLog);
@@ -438,9 +436,9 @@ public class ProblemController {
     @RequestMapping(value = "/collect/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> collectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "小课不能为空");
+        Assert.notNull(problemId, "课程不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课学习").function("小课收藏").action("点击收藏").memo(Integer.toString(problemId));
+                .module("课程学习").function("课程收藏").action("点击收藏").memo(Integer.toString(problemId));
         operationLogService.log(operationLog);
 
         int result = problemService.collectProblem(loginUser.getId(), problemId);
@@ -454,9 +452,9 @@ public class ProblemController {
     @RequestMapping(value = "/discollect/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> disCollectProblem(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        Assert.notNull(problemId, "小课不能为空");
+        Assert.notNull(problemId, "课程不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("小课学习").function("小课取消收藏").action("取消收藏").memo(Integer.toString(problemId));
+                .module("课程学习").function("课程取消收藏").action("取消收藏").memo(Integer.toString(problemId));
         operationLogService.log(operationLog);
 
         int result = problemService.disCollectProblem(loginUser.getId(), problemId);

@@ -97,7 +97,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "很抱歉，你连博物馆的门都没进去就失败了，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】重新挑战\n" +
                         "【{closeKey}】结束挑战\n", 1)
-                .addAnswer(12, "能上【圈外同学】课程的手机", "守卫掏出了自己的课程手机上起了【圈外同学】小课，说：“哥们，一起来！”\n" +
+                .addAnswer(12, "能上【圈外同学】课程的手机", "守卫掏出了自己的课程手机上起了【圈外同学】课程课程，说：“哥们，一起来！”\n" +
                         "----------------------\n" +
                         "很抱歉，你连博物馆的门都没进去就失败了，不过你可以回复【数字编号】继续闯关\n\n" +
                         "【{replayKey}】重新挑战\n" +
@@ -144,7 +144,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "当你从旁边经过的时候，Jack从水里冒了出来：年轻人，想要过去，先回答我一个问题，我已经在水下思考几百年了，你知道什么是\"冰山模型\"吗？\n" +
                         "--------------------",
                 CURRENT_ACTION.QUESTION4)
-                .addAnswer(41, "我在圈外同学小课里看到过：冰山模型全面地描述了一个人所有的内在价值要素", null, null)
+                .addAnswer(41, "我在圈外同学课程里看到过：冰山模型全面地描述了一个人所有的内在价值要素", null, null)
                 .addAnswer(42, "冰山模型和泰坦尼克号的模型原本是一对", "原来你也不知道啊，那你下来陪我一起想吧（你被拉入了水中）\n" +
                         "----------------------\n" +
                         "你被Jack拖入水中，不过你可以回复【数字编号】继续闯关\n\n" +
@@ -156,7 +156,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "【{replayKey}】再次挑战\n" +
                         "【{closeKey}】结束挑战\n", 8);
         theatreScript.addQuestion(
-                "“啊！原来学过圈外小课的人都知道”，Jack长叹一口气，慢慢地沉了下去。。。你继续往前走\n\n" +
+                "“啊！原来学过圈外课程的人都知道”，Jack长叹一口气，慢慢地沉了下去。。。你继续往前走\n\n" +
                         "摆脱了Jack的你继续往前走，几分钟后发现前面有一扇长满青苔的石门。\n\n" +
                         "你隐隐约约听到门的背后有一男一女正在说话，你急忙想推开门，可是发现怎么也推不开，你发现门上有一行字：说出圈外正在打造什么？\n" +
                         "--------------------",
@@ -210,7 +210,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "突然这个时候，在阴暗角落冲出了一只怒吼中的霸王龙，在强大的恐龙面前，你的战斗力太弱了，这时你想：\n" +
                         "--------------------",
                 CURRENT_ACTION.QUESTION8)
-                .addAnswer(81, "果然不上圈外同学小课，战斗力跟不上啊", null, null)
+                .addAnswer(81, "果然不上圈外同学课程，战斗力跟不上啊", null, null)
                 .addAnswer(82, "你后退一步，把采铜馆长推了出去", "霸王龙就像没看到采铜馆长一般，直向你奔来，一尾巴把你甩飞到墙上，抠都抠不下来\n" +
                         "----------------------\n" +
                         "回复\n\n" +
@@ -220,7 +220,7 @@ public class TheatreServiceImpl implements TheatreService {
                         "----------------------\n" +
                         "【{replayKey}】重新挑战\n" +
                         "【{closeKey}】结束挑战\n", 16);
-        theatreScript.addQuestion("你意识到了自己因为没上圈外同学小课而战斗力不足，懊恼不已。\n\n" +
+        theatreScript.addQuestion("你意识到了自己因为没上圈外同学课程而战斗力不足，懊恼不已。\n\n" +
                         "采铜馆长好像看穿了你的想法并用意念对你说：“去那边3本书里挑一本我编写的秘法宝典，这个可以大幅度增加你的战斗力。”\n\n" +
                         "你听完以后火速地跑过去，选出了这本书：\n" +
                         "--------------------",
@@ -450,7 +450,7 @@ public class TheatreServiceImpl implements TheatreService {
                 if (liveRedeemCode == null) {
                     logger.info("用户未获得兑换码就结束游戏:{}", profile.getId());
                     String stringBuilder = "你已经挑战过了圈外博物馆啦，但很可惜你失败了。\n" +
-                            "快点学一些圈外小课提升自己的战斗力吧！";
+                            "快点学一些圈外课程提升自己的战斗力吧！";
                     customerMessageService.sendCustomerMessage(profile.getOpenid(), stringBuilder, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
                 } else {
@@ -574,7 +574,7 @@ public class TheatreServiceImpl implements TheatreService {
             if (liveRedeemCode == null) {
                 // 没有获得
                 String message = "你已经挑战过了圈外博物馆啦，但很可惜你失败了。\n" +
-                        "快点学一些圈外小课提升自己的战斗力吧！";
+                        "快点学一些圈外课程提升自己的战斗力吧！";
                 customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             } else {
                 // 获得过直播券

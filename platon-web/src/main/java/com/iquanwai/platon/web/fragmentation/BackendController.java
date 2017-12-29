@@ -162,10 +162,10 @@ public class BackendController {
 
     @RequestMapping(value = "/open/course", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> forceOpen(@RequestBody ForceOpenPlanParams params) {
-        OperationLog operationLog = OperationLog.create().openid("后台小课强开")
+        OperationLog operationLog = OperationLog.create().openid("后台课程强开")
                 .module("后台功能")
-                .function("小课强开")
-                .action("小课强开");
+                .function("课程强开")
+                .action("课程强开");
         operationLogService.log(operationLog);
         List<Integer> profileIds = params.getProfileIds();
         Integer problemId = params.getProblemId();

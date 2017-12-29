@@ -43,9 +43,6 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return -1;
     }
 
-    /**
-     * 根据 ProblemId 获取所有相关推荐小课
-     */
     public RiseCertificate loadByCertificateNo(String certificateNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from RiseCertificate where CertificateNo = ?";
@@ -122,7 +119,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
      */
     public RiseCertificate loadSingleGraduateByProfileId(Integer year, Integer month, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where ProfileId = ? AND Year = ? and Month = ? and Type in (3, 5) and Del = 0";
+        String sql = "select * from RiseCertificate where ProfileId = ? AND Year = ? and Month = ? and Type in (5) and Del = 0";
         ResultSetHandler<RiseCertificate> h = new BeanHandler<>(RiseCertificate.class);
         try {
             return runner.query(sql, h, profileId, year, month);

@@ -25,7 +25,7 @@ public class ZKConfigUtils {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static String zkAddress = "106.14.26.18:2181";
+    private static String zkAddress = "101.132.185.195:2181";
 
     private static Cache<String, String> CONFIG_CACHE;
 

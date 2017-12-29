@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.apply;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 
 import java.util.List;
 
@@ -28,10 +29,19 @@ public interface ApplyService {
     BusinessSchoolApplication loadCheckingApply(Integer profileId);
 
     /**
+     * 获取还未申请的订单
+     *
+     * @param profileId 用户id
+     * @return 审批订单
+     */
+    BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId);
+
+    /**
      * 提交商学院申请
      *
      * @param profileId        用户id
      * @param userApplySubmits 用户的申请记录
+     * @param orderId          订单id
      */
-    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits);
+    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, String orderId);
 }

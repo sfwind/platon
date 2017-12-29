@@ -107,7 +107,7 @@ public class TutorialController {
     public ResponseEntity<Map<String, Object>> getOpenStatus(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("RISE")
+                .module("商学院")
                 .function("数据")
                 .action("查看打开状态");
         operationLogService.log(operationLog);

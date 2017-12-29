@@ -9,9 +9,33 @@ public interface PrizeCardService {
 
     boolean exchangePrizeCard(Integer profileId, Integer prizeCardId);
 
-    List<PrizeCard> loadPrizeCards(Integer profileId);
+    /**
+     * 查询年度礼品卡
+     * @param profileId
+     * @return
+     */
+    List<PrizeCard> getAnnualPrizeCards(Integer profileId);
 
-    Integer setReceived(String openId,Integer id);
+    /**
+     * 领取礼品卡
+     * @param id
+     * @param profileId
+     * @return
+     */
+    String  receiveAnnualPrizeCards(Integer id,Integer profileId);
 
-    void setShared(Integer id);
+    void generateAnnualPrizeCards(Integer profileId);
+
+    Integer loadAnnualCounts(Integer profileId);
+
+    /**
+     * 是否成功领取预先生成的礼品卡
+     * @param cardId
+     * @param profileId
+     * @return
+     */
+    String isPreviewCardReceived(String cardId,Integer profileId);
+
+    void sendReceiveCardMsgSuccessful(String openid, String nickname);
+
 }

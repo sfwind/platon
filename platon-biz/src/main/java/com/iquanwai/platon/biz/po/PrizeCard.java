@@ -9,10 +9,7 @@ public class PrizeCard {
     private Integer profileId;
     private String prizeCardNo;
     private Boolean used;
+    private Integer category;
+    private String receiverProfileId;
     private Boolean del;
-
-    //礼品卡新增字段（2017/12/08）
-    private Double amount;
-    private String receiverOpenId;
-    private Boolean shared;
 }

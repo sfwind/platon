@@ -53,7 +53,7 @@ public class CacheServiceImpl implements CacheService {
     private Map<Integer, ProblemCatalog> problemCatalogMap = Maps.newHashMap();
     //缓存问题子分类
     private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
-    //缓存小课训练营配置
+    //缓存训练营配置
     private MonthlyCampConfig monthlyCampConfig;
     // 商学院学习计划每月主题
     private Map<Integer, List<CourseScheduleTopic>> courseScheduleTopicMap;
@@ -148,7 +148,7 @@ public class CacheServiceImpl implements CacheService {
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
 
-        // 缓存小课训练营配置缓存
+        // 缓存训练营配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
         // 缓存商学院学习计划每月主题

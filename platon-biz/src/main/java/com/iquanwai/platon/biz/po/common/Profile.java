@@ -29,7 +29,7 @@ public class Profile {
     private Boolean openRise; // 是否打开过rise
     private String unionid;	//只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。详见：获取用户个人信息（UnionID机制）
     private Date expireDate; // 过期时间
-    private Integer riseMember; //0-免费用户,1-会员,2-小课用户,3-训练营用户
+    private Integer riseMember; //0-免费用户,1-会员,2-课程单买用户,3-训练营用户
     private Boolean openNavigator; //是否打开导航栏指引
     private Boolean openApplication; // 是否打开过应用练习
     private Boolean openConsolidation; //  是否打开过巩固练习
@@ -40,6 +40,8 @@ public class Profile {
     private String address; // 详细地址
     private String workingYear; //参加工作年份
     private String weixinId; //微信id
+    private String receiver;//收件人
+    private String married;//婚恋情况
 
 
     //默认头像

@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PreDestroy;
 import java.io.File;
@@ -106,21 +107,29 @@ public class ConfigUtils {
         return getValue("app.domainname");
     }
 
-    public static String staticResourceUrl() {
+    public static String staticResourceUrl(String domainName) {
         String url = getValue("static.resource.url");
         //测试环境防浏览器缓存，添加随机参数
         if (url.endsWith("?")) {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
         }
 
+        if (!StringUtils.isEmpty(domainName)) {
+            url = replaceDomainName(url, domainName);
+        }
+
         return url;
     }
 
-    public static String staticNoteResourceUrl() {
+    public static String staticNoteResourceUrl(String domainName) {
         String url = getValue("static.note.resource.url");
         //测试环境防浏览器缓存，添加随机参数
         if (url.endsWith("?")) {
             url = url.concat("_t=").concat(new Random().nextInt() + "");
+        }
+
+        if (!StringUtils.isEmpty(domainName)) {
+            url = replaceDomainName(url, domainName);
         }
 
         return url;
@@ -208,7 +217,7 @@ public class ConfigUtils {
     }
 
     /**
-     * 获取限免小课 ProblemId
+     * 获取限免课程 ProblemId
      */
     public static Integer getTrialProblemId() {
         return getIntValue("rise.trial.problem.id");
@@ -297,7 +306,7 @@ public class ConfigUtils {
     }
 
     /**
-     * 读取热门小课配置
+     * 读取热门课程配置
      */
     public static List<Integer> loadHotProblemList() {
         String idStr = getValue("problem.hot.list");
@@ -368,6 +377,36 @@ public class ConfigUtils {
      */
     public static String getCampProblemBanner() {
         return getValue("camp.problem.banner");
+    }
+
+    public static String replaceDomainName(String url, String domainName) {
+        String urlPattern = "^((http://)|(https://))?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}(/)";
+        //替换
+        return url.replaceAll(urlPattern, "http://" + domainName + "/");
+    }
+
+    // 报名成功通知 messageId
+    public static String getApplySuccessNotice() {
+        return getValue("apply.success.notice");
+    }
+
+    /**
+     * 组团学习模板消息图片链接
+     */
+    public static String getTeamPromotionCodeUrl() {
+        return getValue("team.promotion.code.url");
+    }
+
+    /**
+     * 组团学习推送图片 MessageId
+     */
+    public static String getTeamPromotionCodeImage() {
+        return getValue("team.promotion.code.image");
+    }
+
+
+    public static String getXiaoYQRCode() {
+        return getValue("xiao.y.mediaid");
     }
 
 }
