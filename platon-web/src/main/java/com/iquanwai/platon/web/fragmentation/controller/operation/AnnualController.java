@@ -53,6 +53,7 @@ public class AnnualController {
             Profile profileByRiseId = accountService.getProfileByRiseId(riseId);
             dto.setMasterRiseId(profileByRiseId.getRiseId());
             dto.setMasterHeadImageUrl(profileByRiseId.getHeadimgurl());
+            dto.setMasterNickName(profileByRiseId.getNickname());
         }
         if (guestUser != null && guestUser.getOpenId() != null) {
             Profile profile = accountService.getProfile(guestUser.getOpenId());
@@ -96,19 +97,14 @@ public class AnnualController {
             dto.setAllRightCount(annualSummary.getAllRightCount());
             List<LibraryDto.HeadPicDto> assts = Lists.newArrayList();
             List<LibraryDto.HeadPicDto> classmates = Lists.newArrayList();
-            try {
-                Lists.newArrayList(annualSummary.getAsstsProfileIds().split(","))
-                        .forEach(item -> this.createHeadPic(item).append(assts));
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
+            this.createHeadPic(annualSummary.getFirstAsst()).append(assts);
+            this.createHeadPic(annualSummary.getSecondAsst()).append(assts);
+            this.createHeadPic(annualSummary.getThirdAsst()).append(assts);
 
-            try {
-                Lists.newArrayList(annualSummary.getClassmatesProfileIds().split(","))
-                        .forEach(item -> this.createHeadPic(item).append(classmates));
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
+            this.createHeadPic(annualSummary.getFirstClassmate()).append(classmates);
+            this.createHeadPic(annualSummary.getThirdClassmate()).append(classmates);
+            this.createHeadPic(annualSummary.getThirdClassmate()).append(classmates);
+
             dto.setAssts(assts);
             dto.setClassmates(classmates);
             return WebUtils.result(dto);
@@ -133,8 +129,8 @@ public class AnnualController {
         }
     }
 
-    private LibraryDto.HeadPicDto createHeadPic(String profileId) {
-        Profile profile = accountService.getProfile(Integer.parseInt(profileId));
+    private LibraryDto.HeadPicDto createHeadPic(Integer profileId) {
+        Profile profile = accountService.getProfile(profileId);
         LibraryDto.HeadPicDto headPicDto = new LibraryDto.HeadPicDto();
         headPicDto.setHeadImageUrl(profile.getHeadimgurl());
         headPicDto.setNickName(profile.getNickname());

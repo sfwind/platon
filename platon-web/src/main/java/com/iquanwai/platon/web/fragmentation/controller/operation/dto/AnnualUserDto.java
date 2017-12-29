@@ -6,5 +6,6 @@ import lombok.Data;
 public class AnnualUserDto {
     private String currentRiseId;
     private String masterRiseId;
+    private String masterNickName;
     private String masterHeadImageUrl;
 }

@@ -40,9 +40,13 @@ public class AnnualSummary {
     /**
      * 助教id
      */
-    private String asstsProfileIds;
+    private Integer firstAsst;
+    private Integer secondAsst;
+    private Integer thirdAsst;
     /**
      * 同学ids
      */
-    private String classmatesProfileIds;
+    private Integer firstClassmate;
+    private Integer secondClassmate;
+    private Integer thirdClassmate;
 }
