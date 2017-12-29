@@ -6,5 +6,5 @@ import lombok.Data;
 public class PrizeCardDto {
     private String prizeCardNo;//卡号
     private String riseId;//拥有者
-    private Boolean used;//是否已领取
+    private Boolean received;//是否已领取
 }

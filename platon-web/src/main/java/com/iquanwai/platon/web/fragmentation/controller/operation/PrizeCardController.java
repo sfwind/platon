@@ -99,7 +99,7 @@ public class PrizeCardController {
      *
      * @return
      */
-    @RequestMapping(value = "/card/generate/annual",method = RequestMethod.POST)
+    @RequestMapping(value = "/annual/summary/card",method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestBody PrizeCardDto requestCardDto) {
         String riseId = requestCardDto.getRiseId();
         Assert.notNull(guestUser, "登录用户不能为空");
@@ -116,7 +116,8 @@ public class PrizeCardController {
         prizeCards.forEach(prizeCard -> {
             PrizeCardDto prizeCardDto = new PrizeCardDto();
             BeanUtils.copyProperties(prizeCard, prizeCardDto);
-            prizeCardDto.setRiseId(riseId);
+            prizeCardDto.setReceived(prizeCard.getUsed());
+            prizeCardDto.setRiseId(null);
             prizeCardDtos.add(prizeCardDto);
         });
         return WebUtils.result(prizeCardDtos);
@@ -128,7 +129,7 @@ public class PrizeCardController {
      * @param guestUser
      * @return
      */
-    @RequestMapping(value = "/card/receive/annual",method = RequestMethod.POST)
+    @RequestMapping(value = "/annual/summary/card/receive",method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> receiveAnnualCard(GuestUser guestUser, @RequestBody PrizeCardDto  requestCardDto) {
         String prizeCardNo = requestCardDto.getPrizeCardNo();
        //没有关注则弹出二维码
@@ -137,7 +138,7 @@ public class PrizeCardController {
             String callback = "callback";
             String key = "annual_prize_card_"+prizeCardNo;
             String qrCode = accountService.createSubscribePush(guestUser!=null?guestUser.getOpenId():null,callback,key);
-            return WebUtils.error(222,qrCode);
+            return WebUtils.error(201,qrCode);
         }
 
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
