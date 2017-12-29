@@ -109,6 +109,7 @@ public class SubscribePushReceiver {
                 logger.info("===========领取成功=======");
                 prizeCardService.sendReceivedAnnualMsgSuccessful(openId, profile.getNickname());
             } else {
+                prizeCardService.sendReceivedAnnualFailureMsg(openId,result);
                 logger.info("===========领取失败=======");
             }
         }

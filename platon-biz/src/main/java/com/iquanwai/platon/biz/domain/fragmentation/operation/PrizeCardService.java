@@ -31,5 +31,7 @@ public interface PrizeCardService {
 
     void sendReceivedAnnualMsgSuccessful(String openid,String nickName);
 
+    void sendReceivedAnnualFailureMsg(String openid,String result);
+
 
 }

@@ -206,4 +206,9 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
     }
+
+    @Override
+    public void sendReceivedAnnualFailureMsg(String openid, String result) {
+        customerMessageService.sendCustomerMessage(openid,result,Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+    }
 }
