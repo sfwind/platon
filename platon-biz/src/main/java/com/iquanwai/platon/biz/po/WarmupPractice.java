@@ -3,7 +3,7 @@ package com.iquanwai.platon.biz.po;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupComment;
 import lombok.Data;
-import org.apache.commons.beanutils.BeanUtils;
+import org.modelmapper.ModelMapper;
 
 import java.util.List;
 
@@ -35,20 +35,13 @@ public class WarmupPractice implements Cloneable{
 
     @Override
     public WarmupPractice clone() throws CloneNotSupportedException {
-        WarmupPractice dest = new WarmupPractice();
-        try {
-            BeanUtils.copyProperties(dest, this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ModelMapper modelMapper = new ModelMapper();
+        WarmupPractice dest = modelMapper.map(this, WarmupPractice.class);
+
         List<Choice> choices = Lists.newArrayList();
         this.choiceList.forEach(choice ->{
-            Choice newOne = new Choice();
-            try {
-                BeanUtils.copyProperties(newOne, choice);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            ModelMapper modelMapper2 = new ModelMapper();
+            Choice newOne = modelMapper2.map(choice, Choice.class);
             choices.add(newOne);
         });
         dest.setChoiceList(choices);

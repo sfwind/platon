@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -273,14 +274,12 @@ public class AccountServiceImpl implements AccountService {
                         // 插入profile表
                         Profile profile = getProfileFromDB(accountNew.getOpenid());
                         if (profile == null) {
-                            profile = new Profile();
                             try {
-                                BeanUtils.copyProperties(profile, accountNew);
-                                logger.info("插入Profile表信息:{}", profile);
+                                ModelMapper modelMapper = new ModelMapper();
+                                profile = modelMapper.map(accountNew, Profile.class);
+                                logger.info("插入Profile表信息:{}", profile);                                logger.info("插入Profile表信息:{}", profile);
                                 profile.setRiseId(CommonUtils.randomString(7));
                                 profileDao.insertProfile(profile);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                logger.error("beanUtils copy props error", e);
                             } catch (SQLException err) {
                                 profile.setRiseId(CommonUtils.randomString(7));
                                 try {

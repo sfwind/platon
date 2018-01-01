@@ -24,8 +24,7 @@ public class ImprovementPlan {
     private Integer point; //积分
     private Integer warmupComplete; //巩固练习完成数量
     private Integer applicationComplete; //应用练习完成数量
-    @Deprecated
-    private Integer total; //任务总数
+    private Integer total; //总节数
     @Deprecated
     private Integer keycnt; //钥匙数量
     private Integer currentSeries; //当前访问的节数
