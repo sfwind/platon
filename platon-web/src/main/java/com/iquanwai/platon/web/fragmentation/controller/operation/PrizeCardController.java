@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -108,6 +109,7 @@ public class PrizeCardController {
         }
 
         List<PrizeCard> prizeCards = prizeCardService.generateAnnualPrizeCards(profile.getId());
+        prizeCards.sort((o1, o2) -> o1.getUsed() ? -1 : 1);
         List<PrizeCardDto> prizeCardDtos = Lists.newArrayList();
 
         prizeCards.forEach(prizeCard -> {
