@@ -137,7 +137,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             generatePlanService.createTeamLearningPlan(profileId);
             return "领取成功";
         } else {
-            return "领取失败";
+            return "您晚了一步,礼品卡已被其他人领取";
         }
     }
 

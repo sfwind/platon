@@ -98,7 +98,7 @@ public class PrizeCardController {
      * 生成礼品卡，返回该用户对应的礼品卡信息
      */
     @RequestMapping(value = "/annual/summary/card", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestParam("riseId") String riseId){
+    public ResponseEntity<Map<String, Object>> generatePrizeCards(GuestUser guestUser, @RequestParam("riseId") String riseId) {
         Assert.notNull(guestUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("生成礼品卡").action("生成礼品卡");
         operationLogService.log(operationLog);
@@ -135,12 +135,13 @@ public class PrizeCardController {
             return WebUtils.error(201, qrCode);
         }
 
-        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
+        OperationLog operationLog = OperationLog.create()
+                .openid(guestUser.getOpenId()).module("礼品卡管理").function("领取礼品卡").action("领取礼品卡");
         operationLogService.log(operationLog);
 
         Profile profile = accountService.getProfile(guestUser.getOpenId());
         if (profile == null) {
-            return WebUtils.error(223, "找不到该用户");
+            return WebUtils.error("找不到该用户");
         }
         //返回领取结果
         else {
@@ -149,6 +150,7 @@ public class PrizeCardController {
                 prizeCardService.sendReceivedAnnualMsgSuccessful(profile.getOpenid(), profile.getNickname());
                 return WebUtils.success();
             } else {
+                prizeCardService.sendReceivedAnnualFailureMsg(profile.getOpenid(), result);
                 return WebUtils.error(result);
             }
         }
