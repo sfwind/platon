@@ -2,7 +2,10 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.po.AnnualSummary;
+import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
@@ -18,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -26,6 +30,8 @@ public class CustomerServiceImpl implements CustomerService {
     private ProfileDao profileDao;
     @Autowired
     private AnnualSummaryDao annualSummaryDao;
+    @Autowired
+    private PrizeCardDao prizeCardDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -86,7 +92,11 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public AnnualSummary loadUserAnnualSummary(String riseId) {
-        return annualSummaryDao.loadUserAnnualSummary(riseId);
+        Profile profile = profileDao.queryByRiseId(riseId);
+        AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(riseId);
+        List<PrizeCard> prizeCards = prizeCardDao.loadShareAnnualCard(profile.getId());
+        annualSummary.setCardCount(prizeCards.size());
+        return annualSummary;
     }
 
 }

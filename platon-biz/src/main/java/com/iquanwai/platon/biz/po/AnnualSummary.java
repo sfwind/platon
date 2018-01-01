@@ -50,4 +50,9 @@ public class AnnualSummary {
     private Integer secondClassmate;
     private Integer thirdClassmate;
     private Integer forthClassmate;
+    /**
+     * 获得几张礼品卡
+     */
+    private Integer cardCount;
+
 }

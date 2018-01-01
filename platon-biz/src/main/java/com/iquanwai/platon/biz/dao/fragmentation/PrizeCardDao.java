@@ -79,7 +79,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public List<PrizeCard> getAnnualPrizeCards(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where profileId = ? and Category = "+ PrizeCardConstant.ANNUAL_PRIZE_CARD+" and Del = 0";
+        String sql = "select * from PrizeCard where profileId = ? and Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD + " and Del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
         try {
@@ -96,7 +96,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public PrizeCard loadAnnualCardByReceiver(Integer receiverProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = "+PrizeCardConstant.OFFLINE_PRIZE_CARD+" and Del = 0 limit 1";
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and category = " + PrizeCardConstant.OFFLINE_PRIZE_CARD + " and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
@@ -111,11 +111,11 @@ public class PrizeCardDao extends PracticeDBUtil {
     /**
      * 插入年度礼品卡
      */
-    public Integer insertAnnualPrizeCard(Integer profileId,String PrizeCardNo) {
+    public Integer insertAnnualPrizeCard(Integer profileId, String PrizeCardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = " insert into PrizeCard(profileId,PrizeCardNo,Category) values (?,?,"+PrizeCardConstant.ANNUAL_PRIZE_CARD+")";
+        String sql = " insert into PrizeCard(profileId,PrizeCardNo,Category) values (?,?," + PrizeCardConstant.ANNUAL_PRIZE_CARD + ")";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), profileId,PrizeCardNo);
+            Long result = runner.insert(sql, new ScalarHandler<>(), profileId, PrizeCardNo);
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -148,7 +148,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public PrizeCard loadCardByCardNo(String cardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = "+PrizeCardConstant.OFFLINE_PRIZE_CARD+" and Del = 0 limit 1";
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = " + PrizeCardConstant.OFFLINE_PRIZE_CARD + " and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
@@ -161,37 +161,52 @@ public class PrizeCardDao extends PracticeDBUtil {
 
     /**
      * 更新年度礼品卡
+     *
      * @param prizeCardNo
      * @param openId
      * @param profileId
      * @return
      */
-    public Integer updateAnnualCard(String prizeCardNo,String openId,Integer profileId){
+    public Integer updateAnnualCard(String prizeCardNo, String openId, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update PrizeCard set ReceiverOpenId = ?,ReceiverProfileId = ?,Used = 1 where PrizeCardNo = ? and ReceiverProfileId is null and del = 0 ";
 
         try {
-           return runner.update(sql,openId,profileId,prizeCardNo);
+            return runner.update(sql, openId, profileId, prizeCardNo);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return 0;
     }
 
     /**
      * 查找领取者已经领取的年度礼品卡
+     *
      * @param receiverProfileId
      * @return
      */
-    public List<PrizeCard> loadReceiveAnnualCard(Integer receiverProfileId){
+    public List<PrizeCard> loadReceiveAnnualCard(Integer receiverProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where ReceiverProfileId = ? and Category = "+PrizeCardConstant.ANNUAL_PRIZE_CARD+" and del = 0";
+        String sql = "select * from PrizeCard where ReceiverProfileId = ? and Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD + " and del = 0";
         ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
 
         try {
-           return runner.query(sql,h,receiverProfileId);
+            return runner.query(sql, h, receiverProfileId);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<PrizeCard> loadShareAnnualCard(Integer sharePrifileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where ProfileId = ? and Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD + " and del = 0";
+        ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
+
+        try {
+            return runner.query(sql, h, sharePrifileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
     }
