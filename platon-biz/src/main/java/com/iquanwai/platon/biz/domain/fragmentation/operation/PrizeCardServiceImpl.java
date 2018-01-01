@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.RedisUtil;
+import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
@@ -9,6 +10,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -17,7 +19,6 @@ import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
-import org.apache.http.util.Asserts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,15 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private GroupPromotionDao groupPromotionDao;
+    @Autowired
+    private AnnualSummaryDao annualSummaryDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final static Integer ANNUAL_CARD_SUM = 3;
+    private final static Integer ANNUAL_CARD_MAX = 5;
+    private final static Integer ANNUAL_CARD_MIDDLE = 4;
+    private final static Integer ANNUAL_CARD_MIN = 3;
+
 
     @Override
     public PrizeCard loadNoOwnerPrizeCard(Integer profileId) {
@@ -153,10 +159,27 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         if(prizeCards.size()>0) {
             return prizeCards;
         }
-        for(int i =0 ;i<ANNUAL_CARD_SUM;i++) {
-            prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
+        AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(profileId);
+        if(annualSummary==null){
+            return Lists.newArrayList();
         }
+        Double percent = annualSummary.getDefeatPercentage();
 
+        if(percent>=0.8){
+            for(int i =0 ;i<ANNUAL_CARD_MAX;i++) {
+                prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
+            }
+        }
+        else if(percent<0.5){
+            for(int i =0 ;i<ANNUAL_CARD_MIN;i++) {
+                prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
+            }
+        }
+        else{
+            for(int i =0 ;i<ANNUAL_CARD_MIDDLE;i++) {
+                prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
+            }
+        }
         prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
 
         return prizeCards;
@@ -211,4 +234,5 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     public void sendReceivedAnnualFailureMsg(String openid, String result) {
         customerMessageService.sendCustomerMessage(openid,result,Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
+
 }
