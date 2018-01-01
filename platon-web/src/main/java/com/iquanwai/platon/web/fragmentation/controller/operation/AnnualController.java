@@ -48,6 +48,12 @@ public class AnnualController {
             "https://static.iqycamp.com/images/classmate3_2.png?imageslim",
     };
 
+    private final static String[] CLASSMATES = {
+            "曾静、蔡垒磊、崔勇",
+            "Eason、Cherry Xu、王斐",
+            "Eason、曾静、蔡垒磊",
+    };
+
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getSummaryUser(GuestUser guestUser, @RequestParam(required = false) String riseId) {
         OperationLog operationLog = OperationLog.create().openid(guestUser != null ? guestUser.getOpenId() : "")
@@ -96,6 +102,7 @@ public class AnnualController {
             dto.setRegisterDate(DateUtils.parseDateToFormat5(annualSummary.getRegisterDate()));
             dto.setRegisterSequence(annualSummary.getRegisterSequence());
             dto.setClassmateUrl(getClassmate(riseId));
+            dto.setClassmates(getClassmates(riseId));
             return WebUtils.result(dto);
         }
     }
@@ -103,6 +110,11 @@ public class AnnualController {
     private String getClassmate(String riseId) {
         int hash = riseId.hashCode();
         return CLASSMATE_URL[hash % 3];
+    }
+
+    private String getClassmates(String riseId) {
+        int hash = riseId.hashCode();
+        return CLASSMATES[hash % 3];
     }
 
     @RequestMapping(value = "/summary/library", method = RequestMethod.GET)

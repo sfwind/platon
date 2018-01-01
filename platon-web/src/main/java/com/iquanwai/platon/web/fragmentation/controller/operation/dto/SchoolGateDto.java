@@ -7,4 +7,5 @@ public class SchoolGateDto {
     private String registerDate;
     private Integer registerSequence;
     private String classmateUrl;
+    private String classmates;
 }
