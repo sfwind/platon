@@ -44,8 +44,8 @@ public class AnnualController {
 
     private final static String[] CLASSMATE_URL = {
             "https://static.iqycamp.com/images/classmate1.png?imageslim",
-            "https://static.iqycamp.com/images/classmate2.png?imageslim",
-            "https://static.iqycamp.com/images/classmate3.png?imageslim",
+            "https://static.iqycamp.com/images/classmate2_1.png?imageslim",
+            "https://static.iqycamp.com/images/classmate3_1.png?imageslim",
     };
 
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
