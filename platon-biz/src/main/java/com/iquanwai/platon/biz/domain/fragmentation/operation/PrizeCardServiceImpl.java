@@ -116,15 +116,15 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         if (riseMembers.size() > 0) {
             logger.info("用户不在可领取范围内");
-            return "你已经在圈外商学院学习过，把体验的机会留给需要的小伙伴吧！";
+            return "优秀如你，已经早早开始了在圈外商学院的学习，请把体验的机会留给尚未体验过的小伙伴吧～";
         }
         if (groupPromotionDao.loadByProfileId(profileId) != null) {
             logger.info("用户已经参加一带二活动");
-            return "您已经获得体验资格，把机会留给需要的小伙伴吧！";
+            return "你已经获得体验资格，把机会留给需要的小伙伴吧！";
         }
         if (prizeCardDao.loadReceiveAnnualCard(profileId).size() > 0) {
             logger.info("用户已经领取过一张");
-            return "您已经获得体验资格，把机会留给需要的小伙伴吧！";
+            return "你已经获得体验资格，把机会留给需要的小伙伴吧！";
         }
         Profile profile = accountService.getProfile(profileId);
         if (profile == null) {
@@ -137,7 +137,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             generatePlanService.createTeamLearningPlan(profileId);
             return "领取成功";
         } else {
-            return "您晚了一步,礼品卡已被其他人领取";
+            return "你晚来一步,礼品卡已被其他小伙伴领取";
         }
     }
 

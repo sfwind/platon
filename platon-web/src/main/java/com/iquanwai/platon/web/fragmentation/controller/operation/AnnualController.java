@@ -108,12 +108,12 @@ public class AnnualController {
     }
 
     private String getClassmate(String riseId) {
-        int hash = riseId.hashCode();
+        int hash = Math.abs(riseId.hashCode());
         return CLASSMATE_URL[hash % 3];
     }
 
     private String getClassmates(String riseId) {
-        int hash = riseId.hashCode();
+        int hash = Math.abs(riseId.hashCode());
         return CLASSMATES[hash % 3];
     }
 
