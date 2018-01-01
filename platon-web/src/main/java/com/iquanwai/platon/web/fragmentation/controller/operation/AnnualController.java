@@ -42,6 +42,10 @@ public class AnnualController {
     @Autowired
     private CustomerService customerService;
 
+    private final static String[] CLASSMATE_URL = {
+      "https://static.iqycamp.com/images/class_partner.png?imageslim"
+    };
+
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getSummaryUser(GuestUser guestUser, @RequestParam(required = false) String riseId) {
         OperationLog operationLog = OperationLog.create().openid(guestUser != null ? guestUser.getOpenId() : "")
@@ -89,8 +93,14 @@ public class AnnualController {
         } else {
             dto.setRegisterDate(DateUtils.parseDateToFormat5(annualSummary.getRegisterDate()));
             dto.setRegisterSequence(annualSummary.getRegisterSequence());
+            dto.setClassmateUrl(getClassmate(riseId));
             return WebUtils.result(dto);
         }
+    }
+
+    private String getClassmate(String riseId) {
+        int hash = riseId.hashCode();
+        return CLASSMATE_URL[hash%1];
     }
 
     @RequestMapping(value = "/summary/library", method = RequestMethod.GET)

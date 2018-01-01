@@ -6,4 +6,5 @@ import lombok.Data;
 public class SchoolGateDto {
     private String registerDate;
     private Integer registerSequence;
+    private String classmateUrl;
 }
