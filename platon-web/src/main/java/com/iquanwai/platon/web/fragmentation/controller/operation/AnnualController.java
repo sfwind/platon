@@ -49,9 +49,9 @@ public class AnnualController {
     };
 
     private final static String[] CLASSMATES = {
-            "曾静、蔡垒磊、崔勇",
+            "曾进、蔡垒磊、崔勇",
             "Eason、Cherry Xu、王斐",
-            "Eason、曾静、蔡垒磊",
+            "Eason、曾进、蔡垒磊",
     };
 
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
