@@ -43,8 +43,9 @@ public class AnnualController {
     private CustomerService customerService;
 
     private final static String[] CLASSMATE_URL = {
-      "https://static.iqycamp.com/images/classmate1.png?imageslim",
-      "https://static.iqycamp.com/images/classmate2.png?imageslim",
+            "https://static.iqycamp.com/images/classmate1.png?imageslim",
+            "https://static.iqycamp.com/images/classmate2.png?imageslim",
+            "https://static.iqycamp.com/images/classmate3.png?imageslim",
     };
 
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
@@ -101,7 +102,7 @@ public class AnnualController {
 
     private String getClassmate(String riseId) {
         int hash = riseId.hashCode();
-        return CLASSMATE_URL[hash%2];
+        return CLASSMATE_URL[hash % 3];
     }
 
     @RequestMapping(value = "/summary/library", method = RequestMethod.GET)
