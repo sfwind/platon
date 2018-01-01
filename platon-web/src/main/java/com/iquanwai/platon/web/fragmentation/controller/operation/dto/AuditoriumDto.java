@@ -6,4 +6,5 @@ import lombok.Data;
 public class AuditoriumDto {
     private Integer point;
     private Integer defeatPercentage;
+    private Integer cardCount;
 }

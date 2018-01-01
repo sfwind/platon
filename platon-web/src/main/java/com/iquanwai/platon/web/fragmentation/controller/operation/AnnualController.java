@@ -161,6 +161,7 @@ public class AnnualController {
         if (annualSummary == null) {
             return WebUtils.result(dto);
         } else {
+            dto.setCardCount(annualSummary.getCardCount());
             dto.setPoint(annualSummary.getPoint());
             dto.setDefeatPercentage(Double.valueOf(annualSummary.getDefeatPercentage() * 100).intValue());
             return WebUtils.result(dto);
