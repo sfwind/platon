@@ -94,8 +94,10 @@ public class CustomerServiceImpl implements CustomerService {
     public AnnualSummary loadUserAnnualSummary(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(riseId);
-        List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profile.getId());
-        annualSummary.setCardCount(prizeCards.size());
+        if (annualSummary != null) {
+            List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profile.getId());
+            annualSummary.setCardCount(prizeCards.size());
+        }
         return annualSummary;
     }
 
