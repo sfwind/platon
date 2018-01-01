@@ -197,17 +197,4 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
-
-    public List<PrizeCard> loadShareAnnualCard(Integer sharePrifileId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where ProfileId = ? and Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD + " and del = 0";
-        ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
-
-        try {
-            return runner.query(sql, h, sharePrifileId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
 }
