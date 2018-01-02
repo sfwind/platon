@@ -129,40 +129,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             schedulePlan.setMinorSelected(true);
         }
 
-        //TODO:试听课程代码18年删除
-        AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
-        Integer auditionProblemId = null;
-        List<ImprovementPlan> trialProblem = Lists.newArrayList();
-        if (auditionClassMember != null) {
-            trialProblem = improvementPlans.stream()
-                    .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
-                            || improvementPlan.getStatus() == ImprovementPlan.COMPLETE)
-                    .filter(improvementPlan -> improvementPlan.getProblemId().equals(auditionClassMember.getProblemId()))
-                    .collect(Collectors.toList());
-            //如果试听课正在进行中,加入试听课列表
-            if (CollectionUtils.isNotEmpty(trialProblem)) {
-                auditionProblemId = auditionClassMember.getProblemId();
-            }
-        }
-        List<ImprovementPlan> minorProblem = getMinorListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds);
-        // 如果试听课正在进行中,则在辅修课中过滤试听课
-        if (auditionProblemId != null) {
-            int problemId = auditionProblemId;
-            minorProblem = minorProblem.stream().filter(improvementPlan -> improvementPlan.getProblemId() != problemId)
-                    .collect(Collectors.toList());
-        }
-        runningProblems.addAll(minorProblem);
 
-        if (CollectionUtils.isNotEmpty(trialProblem)) {
-            trialProblem = trialProblem.stream().map(improvementPlan -> {
-                Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-                improvementPlan.setProblem(problem.simple());
-                improvementPlan.setTypeDesc("试听课");
-                improvementPlan.setType(ImprovementPlan.TYPE_TRIAL);
-                return improvementPlan;
-            }).collect(Collectors.toList());
-            runningProblems.addAll(trialProblem);
-        }
+        List<ImprovementPlan> minorProblem = getMinorListProblem(improvementPlans, minorSchedule, currentMonthMinorProblemIds);
+        runningProblems.addAll(minorProblem);
 
         runningProblems.forEach(item -> {
             if(item.getCloseDate() != null) {
