@@ -3,18 +3,12 @@ package com.iquanwai.platon.biz.domain.common.whitelist;
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.GroupPromotion;
-import com.iquanwai.platon.biz.po.PromotionLevel;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
-import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.PromotionConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +26,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Autowired
     private WhiteListDao whiteListDao;
     @Autowired
-    private PromotionLevelDao promotionLevelDao;
-    @Autowired
     private RiseMemberDao riseMemberDao;
-    @Autowired
-    private AccountService accountService;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
@@ -48,12 +38,6 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
         return whiteListDao.loadWhiteList(function, profileId) != null;
-    }
-
-    @Override
-    public boolean isInBibleWhiteList(Integer profileId) {
-        PromotionLevel level = promotionLevelDao.loadByProfileId(profileId, PromotionConstants.Activities.BIBLE);
-        return level != null && level.getValid() == 1;
     }
 
     @Override
