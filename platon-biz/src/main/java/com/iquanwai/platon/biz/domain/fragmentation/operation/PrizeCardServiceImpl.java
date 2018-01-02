@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Date;
 import java.util.List;
@@ -256,4 +255,27 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         customerMessageService.sendCustomerMessage(openid,result,Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
+    @Override
+    public void sendAnnualOwnerMsg(String cardNum,String receiver) {
+       PrizeCard prizeCard =  prizeCardDao.loadAnnualCardOwner(cardNum);
+       if(prizeCard == null){
+           return;
+       }
+      Profile profile =  accountService.getProfile(prizeCard.getProfileId());
+       if(profile == null){
+           return;
+       }
+       //发送模板消息
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        templateMessage.setTouser(profile.getOpenid());
+        Map<String,TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        data.put("forcePush",new TemplateMessage.Keyword("true"));
+        data.put("keyword1",new TemplateMessage.Keyword("【圈外商学院年度报告】邀请函分享\n"));
+        data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+        data.put("keyword3",new TemplateMessage.Keyword("圈外同学公众号"));
+        data.put("first",new TemplateMessage.Keyword(receiver+"领取了你的商学院邀请函，开启了7天线上体验之旅！"));
+        templateMessageService.sendMessage(templateMessage);
+    }
 }

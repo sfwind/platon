@@ -197,4 +197,22 @@ public class PrizeCardDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    /**
+     * 获取礼品卡主人
+     * @param cardNum
+     * @return
+     */
+    public PrizeCard loadAnnualCardOwner(String cardNum){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and and Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD+" and del = 0";
+        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
+
+        try {
+            return runner.query(sql,h,cardNum);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return null;
+    }
 }
