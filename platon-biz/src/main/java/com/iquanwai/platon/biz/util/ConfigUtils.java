@@ -410,5 +410,9 @@ public class ConfigUtils {
         return getValue("xiao.y.mediaid");
     }
 
+    public static String getTrialNotice() {
+        return getValue("product.trial.msg");
+    }
+
 }
 

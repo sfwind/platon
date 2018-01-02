@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.operation;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
@@ -10,6 +11,8 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.PrizeCard;
@@ -23,9 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PrizeCardServiceImpl implements PrizeCardService {
@@ -49,6 +54,8 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     private GroupPromotionDao groupPromotionDao;
     @Autowired
     private AnnualSummaryDao annualSummaryDao;
+    @Autowired
+    private TemplateMessageService templateMessageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -226,8 +233,23 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
                 "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
 
-        customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+      //  if(!customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT)){
+        if(true){
+            TemplateMessage templateMessage = new TemplateMessage();
+            templateMessage.setTemplate_id(ConfigUtils.getTrialNotice());
+            templateMessage.setTouser(openid);
+            Map<String,TemplateMessage.Keyword> data = Maps.newHashMap();
+            templateMessage.setData(data);
+
+            data.put("keyword1",new TemplateMessage.Keyword("圈外商学院体验邀请函\n"));
+            data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+            data.put("remark",new TemplateMessage.Keyword("你已成功领取商学院体验卡！\n" +
+                    "点击这里，扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！"));
+            data.put("url",new TemplateMessage.Keyword("https://static.iqycamp.com/images/qrcode_xiaoy_20171117.jpeg"));
+            templateMessageService.sendMessage(templateMessage);
+        }else {
+            customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+        }
     }
 
     @Override
