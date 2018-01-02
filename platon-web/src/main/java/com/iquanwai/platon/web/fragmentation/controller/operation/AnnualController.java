@@ -46,12 +46,14 @@ public class AnnualController {
             "https://static.iqycamp.com/images/classmate1_2.png?imageslim",
             "https://static.iqycamp.com/images/classmate2_2.png?imageslim",
             "https://static.iqycamp.com/images/classmate3_2.png?imageslim",
+            "https://static.iqycamp.com/images/classmate4_2.png?imageslim",
     };
 
     private final static String[] CLASSMATES = {
             "曾进、蔡垒磊、崔勇",
             "Eason、Cherry Xu、王斐",
             "Eason、曾进、蔡垒磊",
+            "曾进、Cherry Xu、孙海光",
     };
 
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
@@ -109,12 +111,12 @@ public class AnnualController {
 
     private String getClassmate(String riseId) {
         int hash = Math.abs(riseId.hashCode());
-        return CLASSMATE_URL[hash % 3];
+        return CLASSMATE_URL[hash % 4];
     }
 
     private String getClassmates(String riseId) {
         int hash = Math.abs(riseId.hashCode());
-        return CLASSMATES[hash % 3];
+        return CLASSMATES[hash % 4];
     }
 
     @RequestMapping(value = "/summary/library", method = RequestMethod.GET)
@@ -161,6 +163,7 @@ public class AnnualController {
         if (annualSummary == null) {
             return WebUtils.result(dto);
         } else {
+            dto.setCardCount(annualSummary.getCardCount());
             dto.setPoint(annualSummary.getPoint());
             dto.setDefeatPercentage(Double.valueOf(annualSummary.getDefeatPercentage() * 100).intValue());
             return WebUtils.result(dto);
