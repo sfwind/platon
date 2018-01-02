@@ -245,7 +245,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
             data.put("remark",new TemplateMessage.Keyword("\n你已成功领取商学院体验卡！\n" +
                     "\n点击这里，扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！"));
-            templateMessage.setUrl("https://static.iqycamp.com/images/qrcode_xiaoy_20171117.jpeg");
+            templateMessage.setUrl("https://static.iqycamp.com/images/qrcode/XIAOY_2018_01_02.jpg");
             templateMessageService.sendMessage(templateMessage);
         }else {
             customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
