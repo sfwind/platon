@@ -241,9 +241,9 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             Map<String,TemplateMessage.Keyword> data = Maps.newHashMap();
             templateMessage.setData(data);
             data.put("forcePush",new TemplateMessage.Keyword("true"));
-            data.put("keyword1",new TemplateMessage.Keyword("圈外商学院体验邀请函\n"));
+            data.put("keyword1",new TemplateMessage.Keyword("圈外商学院体验邀请函"));
             data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-            data.put("remark",new TemplateMessage.Keyword("你已成功领取商学院体验卡！\n" +
+            data.put("remark",new TemplateMessage.Keyword("\n 你已成功领取商学院体验卡！\n" +
                     "点击这里，扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！"));
             data.put("url",new TemplateMessage.Keyword("https://static.iqycamp.com/images/qrcode_xiaoy_20171117.jpeg"));
             templateMessageService.sendMessage(templateMessage);
