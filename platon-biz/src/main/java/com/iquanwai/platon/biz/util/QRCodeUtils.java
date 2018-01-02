@@ -344,7 +344,6 @@ public class QRCodeUtils {
 
     public static void image2FS(Image image, String path){
         try {
-            // TODO:改成ftp
             ImageIO.write((RenderedImage) image, "jpg", new File(path));
         } catch (IOException e) {
 //            e.printStackTrace();

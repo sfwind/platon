@@ -380,7 +380,6 @@ public class TheatreServiceImpl implements TheatreService {
                 // 不是最后一题，推送下一题
                 Question nextQuestion = theatreScript.nextQuestion(question);
                 if (nextQuestion == null) {
-                    // TODO ERROR
                     logger.error("异常，没有下一题了,{}", question);
                 } else {
                     if (CURRENT_ACTION.QUESTION5 == question.getAction()) {

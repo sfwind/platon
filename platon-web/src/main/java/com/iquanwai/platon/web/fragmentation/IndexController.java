@@ -143,50 +143,10 @@ public class IndexController {
         }
     }
 
-    @RequestMapping(value = "/rise/static/guest/note/**", method = RequestMethod.GET)
-    public ModelAndView getGuestIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        return courseView(request, null, new ModuleShow(), NOTE_VIEW);
-    }
-
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         logger.info("问题／答案页面,{},{}", request.getRequestURI(), request.getParameter("date"));
         return courseView(request, null, new ModuleShow(), RISE_VIEW);
-    }
-
-    @RequestMapping(value = {"/rise/static/note/**"}, method = RequestMethod.GET)
-    public ModelAndView getBibleIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
-        logger.info("note jsp");
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
-        String openid = null;
-        Account account = null;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
-            try {
-                account = accountService.getAccount(openid, false);
-                logger.info("account:{}", account);
-            } catch (NotFollowingException e) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL);
-                logger.error("用户{}未关注", openid);
-                return null;
-            }
-        }
-
-        if (!checkAccessToken(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
-            WebUtils.auth(request, response);
-            return null;
-        }
-
-        //如果不在白名单中,直接403报错
-        boolean result = whiteListService.isInBibleWhiteList(loginUser.getId());
-        if (!result) {
-            response.sendRedirect(FORBID_URL);
-            return null;
-        }
-
-        return courseView(request, loginUser, new ModuleShow(), NOTE_VIEW);
     }
 
     /**

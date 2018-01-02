@@ -11,11 +11,6 @@ public interface WhiteListService {
     boolean isInWhiteList(String function, Integer profileId);
 
     /**
-     * TODO 待删除，临时逻辑
-     */
-    boolean isInBibleWhiteList(Integer profileId);
-
-    /**
      * 进入倒计时页面
      * <p/>
      * 开营时间 OpenDate:2017-11-05<br/>
