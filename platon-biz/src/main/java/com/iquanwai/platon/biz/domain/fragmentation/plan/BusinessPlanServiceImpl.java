@@ -489,6 +489,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         int learningMonth = ConfigUtils.getLearningMonth();
 
         return courseSchedules.stream()
+                .filter(CourseSchedule::getSelected)
                 .filter(schedule -> schedule.getMonth() == learningMonth && schedule.getCategory().equals(category))
                 .collect(Collectors.toList());
     }
