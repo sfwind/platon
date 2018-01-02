@@ -277,7 +277,7 @@ public class AccountServiceImpl implements AccountService {
                             try {
                                 ModelMapper modelMapper = new ModelMapper();
                                 profile = modelMapper.map(accountNew, Profile.class);
-                                logger.info("插入Profile表信息:{}", profile);                                logger.info("插入Profile表信息:{}", profile);
+                                logger.info("插入Profile表信息:{}", profile);
                                 profile.setRiseId(CommonUtils.randomString(7));
                                 profileDao.insertProfile(profile);
                             } catch (SQLException err) {
