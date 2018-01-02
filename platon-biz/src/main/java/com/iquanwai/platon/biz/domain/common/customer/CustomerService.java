@@ -30,4 +30,9 @@ public interface CustomerService {
      * @return 年度报告
      */
     AnnualSummary loadUserAnnualSummary(String riseId);
+
+    /**
+     * 查看一个人是否有权限查看年度总结报告
+     */
+    Boolean hasAnnualSummaryAuthority(Integer profileId);
 }

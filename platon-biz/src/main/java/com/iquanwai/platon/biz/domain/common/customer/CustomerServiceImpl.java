@@ -101,4 +101,9 @@ public class CustomerServiceImpl implements CustomerService {
         return annualSummary;
     }
 
+    @Override
+    public Boolean hasAnnualSummaryAuthority(Integer profileId) {
+        return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
+    }
+
 }
