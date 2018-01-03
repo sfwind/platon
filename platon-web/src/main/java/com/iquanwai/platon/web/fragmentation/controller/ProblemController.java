@@ -291,7 +291,7 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         // 设置当前课程已学习人数
-        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
+//        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
         problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
         RiseCourseDto dto = new RiseCourseDto();

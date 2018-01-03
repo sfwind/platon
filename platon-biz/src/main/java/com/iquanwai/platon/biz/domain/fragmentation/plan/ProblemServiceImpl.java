@@ -76,6 +76,7 @@ public class ProblemServiceImpl implements ProblemService {
         } else {
             chapters = problemScheduleRepository.loadDefaultRoadMap(problemId);
         }
+        chapters.sort((o1, o2) -> o1.getChapter() - o2.getChapter());
         problem.setChapterList(chapters);
 
         return problem;
