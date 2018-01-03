@@ -185,8 +185,8 @@ public class BackendController {
 
 
     @RequestMapping("/annual/summary/generate/card")
-    public ResponseEntity<Map<String,Object>> generateCardsByAnnSummary(){
-        prizeCardService.genPrizeCardsByAnnSummary();
+    public ResponseEntity<Map<String, Object>> generateCardsByAnnSummary() {
+        ThreadPool.execute(() -> prizeCardService.genPrizeCardsByAnnSummary());
 
         return WebUtils.success();
     }
