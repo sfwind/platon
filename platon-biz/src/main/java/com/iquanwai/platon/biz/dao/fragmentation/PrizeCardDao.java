@@ -21,53 +21,16 @@ public class PrizeCardDao extends PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public PrizeCard loadPersonalPrizeCard(Integer profileId) {
+    public List<PrizeCard> loadUnreceivedPrizeCard(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM PrizeCard WHERE ProfileId = ? AND Del = 0";
-        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
+        ResultSetHandler<List<PrizeCard>> h = new BeanListHandler<>(PrizeCard.class);
         try {
             return runner.query(sql, h, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-        return null;
-    }
-
-    // 获取数据库中尚未被领取的奖品卡片
-    public PrizeCard loadNoOwnerPrizeCard() {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM PrizeCard WHERE ProfileId IS NULL AND Del = 0 LIMIT 1";
-        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
-        try {
-            return runner.query(sql, h);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
-    }
-
-    // 更新礼品卡对应的用户信息
-    public int updateProfileId(Integer profileId, Integer prizeCardId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE PrizeCard SET ProfileId = ? WHERE Id = ?";
-        try {
-            return runner.update(sql, profileId, prizeCardId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
-    // 用户领取之后，更新所有权信息
-    public int updateUsedInfo(Integer prizeCardId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE PrizeCard SET Used = 1 WHERE Id = ?";
-        try {
-            return runner.update(sql, prizeCardId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
+        return Lists.newArrayList();
     }
 
 
@@ -111,11 +74,11 @@ public class PrizeCardDao extends PracticeDBUtil {
     /**
      * 插入年度礼品卡
      */
-    public Integer insertAnnualPrizeCard(Integer profileId, String PrizeCardNo) {
+    public Integer insertAnnualPrizeCard(Integer profileId, String prizeCardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = " insert into PrizeCard(profileId,PrizeCardNo,Category) values (?,?," + PrizeCardConstant.ANNUAL_PRIZE_CARD + ")";
         try {
-            Long result = runner.insert(sql, new ScalarHandler<>(), profileId, PrizeCardNo);
+            Long result = runner.insert(sql, new ScalarHandler<>(), profileId, prizeCardNo);
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -148,7 +111,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public PrizeCard loadCardByCardNo(String cardNo) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where PrizeCardNo = ? and category = " + PrizeCardConstant.OFFLINE_PRIZE_CARD + " and Del = 0 limit 1";
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and Del = 0 limit 1";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
@@ -198,21 +161,4 @@ public class PrizeCardDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    /**
-     * 获取礼品卡主人
-     * @param cardNum
-     * @return
-     */
-    public PrizeCard loadAnnualCardOwner(String cardNum){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where PrizeCardNo = ? and  Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD+" and del = 0";
-        ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
-
-        try {
-            return runner.query(sql,h,cardNum);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
-        }
-        return null;
-    }
 }

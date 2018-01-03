@@ -69,7 +69,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         InputStream cropInputStream = new ByteArrayInputStream(os.toByteArray());
 
-        String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName;
+        String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName + ".jpeg";
         boolean uploadResult = QiNiuUtils.uploadFile(targetFileName, cropInputStream);
 
         return uploadResult ? ConfigUtils.getPicturePrefix() + targetFileName : null;
