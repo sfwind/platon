@@ -67,8 +67,6 @@ public class PrizeCardController {
         Pair<Integer, String> result = prizeCardService.isPreviewCardReceived(cardId, loginUser.getId());
         if (result.getLeft() == 0) {
             return WebUtils.success();
-        } else if (result.getLeft() == 1) {
-            return WebUtils.error(201, result.getRight());
         } else {
             return WebUtils.error(result.getRight());
         }
