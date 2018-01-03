@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PrizeCardServiceImpl implements PrizeCardService {
@@ -276,5 +277,23 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         data.put("keyword3", new TemplateMessage.Keyword("圈外同学公众号"));
         data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！\n"));
         templateMessageService.sendMessage(templateMessage);
+    }
+
+    /**
+     * 根据年终回顾生成礼品卡(临时方案)
+     */
+    @Override
+    public void genPrizeCardsByAnnSummary() {
+        //获得年终回顾的数据
+        List<AnnualSummary> annualSummaries = annualSummaryDao.loadAll(AnnualSummary.class);
+        List<AnnualSummary> realAnnualSummaries = annualSummaries.stream().filter(annualSummary -> annualSummary.getDel()==0).collect(Collectors.toList());
+
+        realAnnualSummaries.stream().forEach(annualSummary -> {
+            Integer profileId = annualSummary.getProfileId();
+            if(profileId != null){
+                //生成礼品卡
+                generateAnnualPrizeCards(profileId);
+            }
+        });
     }
 }
