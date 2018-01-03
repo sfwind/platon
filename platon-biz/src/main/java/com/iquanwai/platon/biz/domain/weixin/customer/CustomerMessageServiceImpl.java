@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.weixin.customer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +41,6 @@ public class CustomerMessageServiceImpl implements CustomerMessageService {
             result = restfulHelper.post(SEND_CUSTOMER_MESSAGE_URL, json);
         }
 
-        return StringUtils.isNoneEmpty(result);
+        return StringUtils.isNoneEmpty(result) && !CommonUtils.isErrorNoException(result);
     }
 }

@@ -239,7 +239,6 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             templateMessage.setTouser(openid);
             Map<String,TemplateMessage.Keyword> data = Maps.newHashMap();
             templateMessage.setData(data);
-            data.put("forcePush",new TemplateMessage.Keyword("true"));
             data.put("keyword1",new TemplateMessage.Keyword("圈外商学院体验邀请函"));
             data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
             data.put("remark",new TemplateMessage.Keyword("\n你已成功领取商学院体验卡！\n" +

@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
  * Created by justin on 16/8/7.
  */
 public class CommonUtils {
-    public static String placeholderReplace(String content, Map<String, String> replacer){
-        if(StringUtils.isNotEmpty(content) && replacer!=null) {
+    public static String placeholderReplace(String content, Map<String, String> replacer) {
+        if (StringUtils.isNotEmpty(content) && replacer != null) {
             for (Map.Entry<String, String> entry : replacer.entrySet()) {
                 content = StringUtils.replace(content, "{" + entry.getKey() + "}", entry.getValue());
             }
@@ -31,8 +31,8 @@ public class CommonUtils {
         return content;
     }
 
-    public static Map<String, Object> jsonToMap(String json){
-        if(StringUtils.isEmpty(json)){
+    public static Map<String, Object> jsonToMap(String json) {
+        if (StringUtils.isEmpty(json)) {
             return Maps.newHashMap();
         }
         Map<String, Object> gsonMap = new Gson().fromJson(json,
@@ -41,8 +41,8 @@ public class CommonUtils {
         return gsonMap;
     }
 
-    public static String mapToJson(Map<String, Object> map){
-        if(MapUtils.isEmpty(map)){
+    public static String mapToJson(Map<String, Object> map) {
+        if (MapUtils.isEmpty(map)) {
             return "";
         }
         String json = new Gson().toJson(map,
@@ -52,25 +52,43 @@ public class CommonUtils {
     }
 
     public static boolean isError(String json) throws WeixinException {
-        if(StringUtils.isEmpty(json)){
+        if (StringUtils.isEmpty(json)) {
             return false;
         }
         Map<String, Object> gsonMap = jsonToMap(json);
-        if(gsonMap.get("errcode")!=null && gsonMap.get("errmsg")!=null){
+        if (gsonMap.get("errcode") != null && gsonMap.get("errmsg") != null) {
             Integer errcode;
             try {
                 errcode = ((Double) gsonMap.get("errcode")).intValue();
-            }catch (Exception e){
+            } catch (Exception e) {
                 errcode = Integer.valueOf((String) gsonMap.get("errcode"));
             }
-            if(errcode.equals(ErrorConstants.ACCESS_TOKEN_EXPIRED)){
+            if (errcode.equals(ErrorConstants.ACCESS_TOKEN_EXPIRED)) {
                 throw new WeixinException(ErrorConstants.ACCESS_TOKEN_EXPIRED, "accessToken过期了");
             }
-            if(errcode.equals(ErrorConstants.ACCESS_TOKEN_INVALID)){
+            if (errcode.equals(ErrorConstants.ACCESS_TOKEN_INVALID)) {
                 throw new WeixinException(ErrorConstants.ACCESS_TOKEN_INVALID, "accessToken失效了");
             }
 
-            return errcode!=0;
+            return errcode != 0;
+        }
+        return false;
+    }
+
+    public static boolean isErrorNoException(String json) {
+        if (StringUtils.isEmpty(json)) {
+            return false;
+        }
+        Map<String, Object> gsonMap = jsonToMap(json);
+        if (gsonMap.get("errcode") != null && gsonMap.get("errmsg") != null) {
+            Integer errcode;
+            try {
+                errcode = ((Double) gsonMap.get("errcode")).intValue();
+            } catch (Exception e) {
+                errcode = Integer.valueOf((String) gsonMap.get("errcode"));
+            }
+
+            return errcode != 0;
         }
         return false;
     }
@@ -82,7 +100,7 @@ public class CommonUtils {
         List<String> list = new ArrayList(map.keySet());
         Collections.sort(list);
 
-        List<String> kvList = Lists.transform(list, input -> input+"="+map.get(input));
+        List<String> kvList = Lists.transform(list, input -> input + "=" + map.get(input));
 
         String digest = StringUtils.join(kvList.iterator(), "&");
         return MessageDigestHelper.getSHA1String(digest);
@@ -111,8 +129,8 @@ public class CommonUtils {
     }
 
     //保留两位小数
-    public static Double substract(Double a, Double b){
-        if(a==null||b==null){
+    public static Double substract(Double a, Double b) {
+        if (a == null || b == null) {
             return null;
         }
 
@@ -120,7 +138,7 @@ public class CommonUtils {
                 setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
     }
 
-    public static String removeStyle(String content){
+    public static String removeStyle(String content) {
         if (content == null) {
             return null;
         }
@@ -138,7 +156,7 @@ public class CommonUtils {
         }
         Matcher m2 = p2.matcher(okContent);
         String result = null;
-        if(m2.find()){
+        if (m2.find()) {
             result = m2.replaceAll("");
         } else {
             result = okContent;
@@ -146,14 +164,14 @@ public class CommonUtils {
         return result;
     }
 
-    public static String removeHTMLTag(String html){
-        if(html==null){
+    public static String removeHTMLTag(String html) {
+        if (html == null) {
             return "";
         }
         return StringUtils.removePattern(html, "<[^>]*>");
     }
 
-    public static String replaceHttpsDomainName(String content){
+    public static String replaceHttpsDomainName(String content) {
         String temp = StringUtils.replace(content, "http://www.iqycamp.com", "https://www.iqycamp.com");
         return StringUtils.replace(temp, "http://static.iqycamp.com", "https://static.iqycamp.com");
     }
@@ -170,6 +188,7 @@ public class CommonUtils {
 
     /**
      * 过滤emoji 或者 其他非文字类型的字符
+     *
      * @param source
      * @return
      */
