@@ -259,12 +259,15 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     public void sendAnnualOwnerMsg(String cardNum, String receiver) {
         PrizeCard prizeCard = prizeCardDao.loadAnnualCardOwner(cardNum);
         if (prizeCard == null) {
+            logger.info("礼品卡为空");
             return;
         }
         Profile profile = accountService.getProfile(prizeCard.getProfileId());
         if (profile == null) {
+            logger.info("人员为空");
             return;
         }
+        logger.info("开始发送模板消息");
         //发送模板消息
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
