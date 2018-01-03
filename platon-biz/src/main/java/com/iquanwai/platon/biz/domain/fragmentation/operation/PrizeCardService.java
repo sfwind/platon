@@ -50,4 +50,9 @@ public interface PrizeCardService {
      * @param cardNum
      */
     void sendAnnualOwnerMsg(String cardNum, String receiver);
+
+    /**
+     * 根据年终回顾的数据生成礼品卡
+     */
+    void genPrizeCardsByAnnSummary();
 }

@@ -54,5 +54,8 @@ public class AnnualSummary {
      * 获得几张礼品卡
      */
     private Integer cardCount;
-
+    /**
+     * del字段
+     */
+    private Integer del;
 }
