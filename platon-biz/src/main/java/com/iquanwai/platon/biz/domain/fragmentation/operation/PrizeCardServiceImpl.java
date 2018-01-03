@@ -231,8 +231,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     public void sendReceivedAnnualMsgSuccessful(String openid, String nickName) {
         String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
                 "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
-
-       if(!customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT)){
+            //发送模板消息
             TemplateMessage templateMessage = new TemplateMessage();
             templateMessage.setTemplate_id(ConfigUtils.getTrialNotice());
             templateMessage.setTouser(openid);
@@ -245,9 +244,9 @@ public class PrizeCardServiceImpl implements PrizeCardService {
                     "\n点击这里，扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！"));
             templateMessage.setUrl("https://static.iqycamp.com/images/qrcode/XIAOY_2018_01_02.jpg");
             templateMessageService.sendMessage(templateMessage);
-        }else {
+            //发送文字消息
+            customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-        }
     }
 
     @Override
