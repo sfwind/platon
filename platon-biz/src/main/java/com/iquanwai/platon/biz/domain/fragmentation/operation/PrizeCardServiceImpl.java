@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Date;
 import java.util.List;
@@ -160,30 +159,28 @@ public class PrizeCardServiceImpl implements PrizeCardService {
      * @param profileId
      */
     @Override
-    public List<PrizeCard> generateAnnualPrizeCards(Integer profileId){
+    public List<PrizeCard> generateAnnualPrizeCards(Integer profileId) {
         List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
         //如果之前已经生成，则不再生成
-        if(prizeCards.size()>0) {
+        if (prizeCards.size() > 0) {
             return prizeCards;
         }
         AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(profileId);
-        if(annualSummary==null){
+        if (annualSummary == null) {
             return Lists.newArrayList();
         }
         Double percent = annualSummary.getDefeatPercentage();
 
-        if(percent>=0.8){
-            for(int i =0 ;i<ANNUAL_CARD_MAX;i++) {
+        if (percent >= 0.8) {
+            for (int i = 0; i < ANNUAL_CARD_MAX; i++) {
                 prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
             }
-        }
-        else if(percent<0.5){
-            for(int i =0 ;i<ANNUAL_CARD_MIN;i++) {
+        } else if (percent < 0.5) {
+            for (int i = 0; i < ANNUAL_CARD_MIN; i++) {
                 prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
             }
-        }
-        else{
-            for(int i =0 ;i<ANNUAL_CARD_MIDDLE;i++) {
+        } else {
+            for (int i = 0; i < ANNUAL_CARD_MIDDLE; i++) {
                 prizeCardDao.insertAnnualPrizeCard(profileId, CommonUtils.randomString(8));
             }
         }
@@ -255,4 +252,29 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         customerMessageService.sendCustomerMessage(openid,result,Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
+    @Override
+    public void sendAnnualOwnerMsg(String cardNum, String receiver) {
+        PrizeCard prizeCard = prizeCardDao.loadAnnualCardOwner(cardNum);
+        if (prizeCard == null) {
+            logger.info("礼品卡为空");
+            return;
+        }
+        Profile profile = accountService.getProfile(prizeCard.getProfileId());
+        if (profile == null) {
+            logger.info("人员为空");
+            return;
+        }
+        logger.info("开始发送模板消息");
+        //发送模板消息
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
+        templateMessage.setTouser(profile.getOpenid());
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        data.put("keyword1", new TemplateMessage.Keyword("【圈外商学院年度报告】邀请函分享\n"));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+        data.put("keyword3", new TemplateMessage.Keyword("圈外同学公众号"));
+        data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！"));
+        templateMessageService.sendMessage(templateMessage);
+    }
 }

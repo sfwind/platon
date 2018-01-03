@@ -150,6 +150,7 @@ public class PrizeCardController {
             String result = prizeCardService.receiveAnnualPrizeCards(prizeCardNo, profile.getId());
             if ("领取成功".equals(result)) {
                 prizeCardService.sendReceivedAnnualMsgSuccessful(profile.getOpenid(), profile.getNickname());
+                prizeCardService.sendAnnualOwnerMsg(prizeCardNo,profile.getNickname());
                 return WebUtils.success();
             } else {
                 prizeCardService.sendReceivedAnnualFailureMsg(profile.getOpenid(), result);

@@ -33,5 +33,9 @@ public interface PrizeCardService {
 
     void sendReceivedAnnualFailureMsg(String openid,String result);
 
-
+    /**
+     * 通知老用户卡已经被领取
+     * @param cardNum
+     */
+    void sendAnnualOwnerMsg(String cardNum,String receiver);
 }
