@@ -205,7 +205,7 @@ public class PrizeCardDao extends PracticeDBUtil {
      */
     public PrizeCard loadAnnualCardOwner(String cardNum){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from PrizeCard where PrizeCardNo = ? and and Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD+" and del = 0";
+        String sql = "select * from PrizeCard where PrizeCardNo = ? and  Category = " + PrizeCardConstant.ANNUAL_PRIZE_CARD+" and del = 0";
         ResultSetHandler<PrizeCard> h = new BeanHandler<>(PrizeCard.class);
 
         try {
