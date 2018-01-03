@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.common.CustomerMessageLogDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.exception.WeixinException;
 import com.iquanwai.platon.biz.po.CustomerMessageLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
@@ -52,7 +53,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
             String json = new Gson().toJson(templateMessage);
             body = restfulHelper.post(SEND_MESSAGE_URL, json);
         }
-        return StringUtils.isNoneEmpty(body);
+        return StringUtils.isNoneEmpty(body) && !CommonUtils.isErrorNoException(body);
     }
 
     @Override

@@ -222,7 +222,6 @@ public class PrizeCardServiceImpl implements PrizeCardService {
 
     /**
      * 发送领取成功模板消息
-     *
      * @param openid
      * @param nickName
      */
@@ -230,55 +229,27 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     public void sendReceivedAnnualMsgSuccessful(String openid, String nickName) {
         String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
                 "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
-        //发送文字消息
-        if (customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT)) {
-            customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-        }//发送模板消息
-        else {
+
+       if(!customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT)){
             TemplateMessage templateMessage = new TemplateMessage();
             templateMessage.setTemplate_id(ConfigUtils.getTrialNotice());
             templateMessage.setTouser(openid);
-            Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+            Map<String,TemplateMessage.Keyword> data = Maps.newHashMap();
             templateMessage.setData(data);
-            data.put("forcePush", new TemplateMessage.Keyword("true"));
-            data.put("keyword1", new TemplateMessage.Keyword("圈外商学院体验邀请函"));
-            data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-            data.put("remark", new TemplateMessage.Keyword("\n你已成功领取商学院体验卡！\n" +
+            data.put("keyword1",new TemplateMessage.Keyword("圈外商学院体验邀请函"));
+            data.put("keyword2",new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+            data.put("remark",new TemplateMessage.Keyword("\n你已成功领取商学院体验卡！\n" +
                     "\n点击这里，扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！"));
             templateMessage.setUrl("https://static.iqycamp.com/images/qrcode/XIAOY_2018_01_02.jpg");
             templateMessageService.sendMessage(templateMessage);
+        }else {
+            customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         }
     }
 
     @Override
     public void sendReceivedAnnualFailureMsg(String openid, String result) {
-        customerMessageService.sendCustomerMessage(openid, result, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(openid,result,Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
-    @Override
-    public void sendAnnualOwnerMsg(String cardNum, String receiver) {
-        PrizeCard prizeCard = prizeCardDao.loadAnnualCardOwner(cardNum);
-        if (prizeCard == null) {
-            logger.info("礼品卡为空");
-            return;
-        }
-        Profile profile = accountService.getProfile(prizeCard.getProfileId());
-        if (profile == null) {
-            logger.info("人员为空");
-            return;
-        }
-        logger.info("开始发送模板消息");
-        //发送模板消息
-        TemplateMessage templateMessage = new TemplateMessage();
-        templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-        templateMessage.setTouser(profile.getOpenid());
-        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-        templateMessage.setData(data);
-        data.put("forcePush", new TemplateMessage.Keyword("true"));
-        data.put("keyword1", new TemplateMessage.Keyword("【圈外商学院年度报告】邀请函分享\n"));
-        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("keyword3", new TemplateMessage.Keyword("圈外同学公众号"));
-        data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！"));
-        templateMessageService.sendMessage(templateMessage);
-    }
 }
