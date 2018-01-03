@@ -288,10 +288,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         List<AnnualSummary> annualSummaries = annualSummaryDao.loadAll(AnnualSummary.class);
         List<AnnualSummary> realAnnualSummaries = annualSummaries.stream().filter(annualSummary -> annualSummary.getDel()==0).collect(Collectors.toList());
 
-        System.out.println(realAnnualSummaries.toString());
-
         realAnnualSummaries.stream().forEach(annualSummary -> {
-            System.out.println("进入生成礼品卡界面");
             Integer profileId = annualSummary.getProfileId();
             if(profileId != null){
                 //生成礼品卡
