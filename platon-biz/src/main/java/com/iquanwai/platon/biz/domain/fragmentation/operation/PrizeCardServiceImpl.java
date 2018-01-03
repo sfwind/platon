@@ -274,7 +274,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         data.put("keyword1", new TemplateMessage.Keyword("【圈外商学院年度报告】邀请函分享"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("圈外同学公众号"));
-        data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！\n\n"));
+        data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！\n"));
         templateMessageService.sendMessage(templateMessage);
     }
 }
