@@ -47,6 +47,7 @@ public class AnnualController {
             "https://static.iqycamp.com/images/classmate2_2.png?imageslim",
             "https://static.iqycamp.com/images/classmate3_2.png?imageslim",
             "https://static.iqycamp.com/images/classmate4_2.png?imageslim",
+            "https://static.iqycamp.com/images/classmate5_2.png?imageslim",
     };
 
     private final static String[] CLASSMATES = {
@@ -54,6 +55,7 @@ public class AnnualController {
             "Eason、Cherry Xu、王斐",
             "Eason、曾进、蔡垒磊",
             "曾进、Cherry Xu、孙海光",
+            "生菜、Eason、蔡垒磊",
     };
 
     @RequestMapping(value = "/summary/user", method = RequestMethod.GET)
@@ -111,12 +113,12 @@ public class AnnualController {
 
     private String getClassmate(String riseId) {
         int hash = Math.abs(riseId.hashCode());
-        return CLASSMATE_URL[hash % 4];
+        return CLASSMATE_URL[hash % 5];
     }
 
     private String getClassmates(String riseId) {
         int hash = Math.abs(riseId.hashCode());
-        return CLASSMATES[hash % 4];
+        return CLASSMATES[hash % 5];
     }
 
     @RequestMapping(value = "/summary/library", method = RequestMethod.GET)
