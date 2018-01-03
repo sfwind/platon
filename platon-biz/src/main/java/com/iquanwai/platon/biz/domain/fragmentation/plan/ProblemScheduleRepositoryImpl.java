@@ -67,7 +67,7 @@ public class ProblemScheduleRepositoryImpl implements ProblemScheduleRepository 
         problemScheduleMap.keySet().forEach(chapterSequence -> {
             Chapter chapter = new Chapter();
             List<UserProblemSchedule> scheduleList = problemScheduleMap.get(chapterSequence);
-            List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSection() - o2.getSection())
+            List<Section> sectionList = scheduleList.stream().sorted((o1, o2) -> o1.getSeries() - o2.getSeries())
                     .map(problemSchedule -> {
                         //构建小节
                         Section section = new Section();
