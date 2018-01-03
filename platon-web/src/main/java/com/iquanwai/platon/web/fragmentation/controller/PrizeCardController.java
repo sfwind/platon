@@ -68,9 +68,9 @@ public class PrizeCardController {
         if (result.getLeft() == 0) {
             return WebUtils.success();
         } else if (result.getLeft() == 1) {
-            return WebUtils.error(-1, result.getRight());
+            return WebUtils.error(201, result.getRight());
         } else {
-            return WebUtils.error(result);
+            return WebUtils.error(result.getRight());
         }
     }
 
