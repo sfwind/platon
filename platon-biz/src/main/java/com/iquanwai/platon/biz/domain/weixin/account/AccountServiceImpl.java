@@ -609,7 +609,7 @@ public class AccountServiceImpl implements AccountService {
         Integer profileId = profile.getId();
         String headImgUrl = profile.getHeadimgurl();
         Date headImgUrlCheckTime = profile.getHeadImgUrlCheckTime();
-        if (headImgUrl.indexOf("wx.qlogo.cn") > 0 && DateUtils.interval(headImgUrlCheckTime) >= 7) {
+        if (headImgUrl.indexOf("wx.qlogo.cn") > 0 && (headImgUrlCheckTime == null || DateUtils.interval(headImgUrlCheckTime) >= 7)) {
             JSONObject json = new JSONObject();
             json.put("profileId", profileId);
             json.put("openId", profile.getOpenid());
