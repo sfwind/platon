@@ -71,4 +71,11 @@ public interface WhiteListService {
      * @return
      */
     boolean isStillLearningCamp(Integer profileId);
+
+    /**
+     * 判断参加一带二活动或者领取礼品卡的人是否到学习时间
+     * @param profileId
+     * @return
+     */
+    boolean isProOrCardOnDate(Integer profileId);
 }

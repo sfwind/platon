@@ -269,20 +269,35 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     }
 
     /**
-     * 根据年终回顾生成礼品卡(临时方案)
+     * 只有参加一带二活动或者礼品卡活动的人才具有复购资格
+     *
+     * @param profileId
+     * @return
      */
     @Override
-    public void genPrizeCardsByAnnSummary() {
-        //获得年终回顾的数据
-        List<AnnualSummary> annualSummaries = annualSummaryDao.loadAll(AnnualSummary.class);
-        List<AnnualSummary> realAnnualSummaries = annualSummaries.stream().filter(annualSummary -> annualSummary.getDel()==0).collect(Collectors.toList());
-
-        realAnnualSummaries.stream().forEach(annualSummary -> {
-            Integer profileId = annualSummary.getProfileId();
-            if(profileId != null){
-                //生成礼品卡
-                generateAnnualPrizeCards(profileId);
-            }
-        });
+    public boolean checkJanPay(Integer profileId) {
+        //判断是否参加了一带二或者礼品卡活动
+        if ((prizeCardDao.loadAnnualCardByReceiver(profileId) == null) && (prizeCardDao.loadReceiveAnnualCard(profileId).size() == 0) && (groupPromotionDao.loadByProfileId(profileId) == null)) {
+            return false;
+        }
+        return true;
     }
+
+    /**
+     * 根据年终回顾生成礼品卡(临时方案)
+     */
+//    @Override
+//    public void genPrizeCardsByAnnSummary() {
+//        //获得年终回顾的数据
+//        List<AnnualSummary> annualSummaries = annualSummaryDao.loadAll(AnnualSummary.class);
+//        List<AnnualSummary> realAnnualSummaries = annualSummaries.stream().filter(annualSummary -> annualSummary.getDel()==0).collect(Collectors.toList());
+//
+//        realAnnualSummaries.stream().forEach(annualSummary -> {
+//            Integer profileId = annualSummary.getProfileId();
+//            if(profileId != null){
+//                //生成礼品卡
+//                generateAnnualPrizeCards(profileId);
+//            }
+//        });
+//    }
 }

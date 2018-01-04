@@ -1,10 +1,7 @@
 package com.iquanwai.platon.biz.domain.common.whitelist;
 
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.po.GroupPromotion;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -33,7 +30,8 @@ public class WhiteListServiceImpl implements WhiteListService {
     private GroupPromotionDao groupPromotionDao;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
-
+    @Autowired
+    private PrizeCardDao prizeCardDao;
 
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
@@ -162,6 +160,25 @@ public class WhiteListServiceImpl implements WhiteListService {
         Integer learningMonth = ConfigUtils.getLearningMonth();
         RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
         return riseClassMember != null;
+    }
+
+    /**
+     * 判断是否有学习资格
+     *
+     * @param profileId
+     * @return
+     */
+    @Override
+    public boolean isProOrCardOnDate(Integer profileId) {
+        if (prizeCardDao.loadReceiveAnnualCard(profileId).size() == 0 && prizeCardDao.loadAnnualCardByReceiver(profileId) == null && groupPromotionDao.loadByProfileId(profileId) == null) {
+            return false;
+        }
+        Date campOpenDate = new DateTime(2018, 1, 2, 0, 0).toDate();
+        //如果已经到学习时间
+        if (campOpenDate.compareTo(new Date()) < 0) {
+            return true;
+        }
+        return false;
     }
 
 }
