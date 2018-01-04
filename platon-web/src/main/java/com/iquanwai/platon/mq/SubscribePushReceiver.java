@@ -3,7 +3,7 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
+import com.iquanwai.platon.biz.domain.common.customer.PrizeCardService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -65,7 +65,7 @@ public class SubscribePushReceiver {
                         operationLogService.log(operationLog);
                         if (result.getLeft() == 0) {
                             logger.info("===========领取成功=======");
-                            prizeCardService.sendReceiveCardMsgSuccessful(openId, profile.getNickname());
+                            prizeCardService.sendReceivedAnnualMsgSuccessful(openId, profile.getNickname());
                         } else {
                             logger.info("===========领取失败=======");
                             prizeCardService.sendReceivedAnnualFailureMsg(openId, result.getRight());

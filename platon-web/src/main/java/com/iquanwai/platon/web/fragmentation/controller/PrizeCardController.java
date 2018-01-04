@@ -1,7 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
+import com.iquanwai.platon.biz.domain.common.customer.PrizeCardService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.PrizeCard;
@@ -99,7 +99,7 @@ public class PrizeCardController {
             return WebUtils.error("找不到该用户");
         }
 
-        prizeCardService.sendReceiveCardMsgSuccessful(loginUser.getOpenId(), loginUser.getWeixinName());
+        prizeCardService.sendReceivedAnnualMsgSuccessful(loginUser.getOpenId(), loginUser.getWeixinName());
         return WebUtils.success();
     }
 

@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.fragmentation.operation;
+package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.po.PrizeCard;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,6 +27,10 @@ public interface PrizeCardService {
      * */
     boolean ownerCheck(String cardNo, String openid);
 
+    /**
+     * 自动生成年终回顾礼品卡
+     * @param profileId
+     * */
     List<PrizeCard> generateAnnualPrizeCards(Integer profileId);
 
     /**
@@ -38,10 +42,18 @@ public interface PrizeCardService {
      */
     Pair<Integer, String> isPreviewCardReceived(String cardId, Integer profileId);
 
-    void sendReceiveCardMsgSuccessful(String openid, String nickname);
-
+    /**
+     * 领取卡片成功消息
+     * @param nickName
+     * @param openid
+     * */
     void sendReceivedAnnualMsgSuccessful(String openid, String nickName);
 
+    /**
+     * 领取卡片失败消息
+     * @param result
+     * @param openid
+     * */
     void sendReceivedAnnualFailureMsg(String openid, String result);
 
     /**
@@ -50,9 +62,4 @@ public interface PrizeCardService {
      * @param cardNum
      */
     void sendAnnualOwnerMsg(String cardNum, String receiver);
-
-    /**
-     * 根据年终回顾的数据生成礼品卡
-     */
-    void genPrizeCardsByAnnSummary();
 }
