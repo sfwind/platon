@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.fragmentation.operation;
+package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -70,23 +70,42 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             Integer category = prizeCard.getCategory();
             PrizeCardConfig prizeCardConfig = prizeCardConfigDao.loadPrizeCardConfig(category);
             if (prizeCardConfig != null) {
-                //判断是否被领取
+                //判断礼品卡是否被领取
                 if (prizeCard.getReceiverProfileId() == null) {
                     prizeCard.setBackground(prizeCardConfig.getCoverPic());
                     prizeCard.setUrl(prizeCardConfig.getDetailUrl());
                 } else {
                     prizeCard.setBackground(prizeCardConfig.getReceivedCoverPic());
                 }
+                //判断礼品卡是否过期
+                if (prizeCard.getExpiredTime().before(new Date())) {
+                    prizeCard.setExpired(true);
+                    prizeCard.setBackground(prizeCardConfig.getExpiredCoverPic());
+                } else {
+                    prizeCard.setExpired(false);
+                }
+                prizeCard.setExpiredDate(DateUtils.parseDateToFormat5(prizeCard.getExpiredTime()));
             }
         });
 
-        //已领取的卡片排序靠后
+        //已过期<已领取<未领取
         prizeCards.sort((o1, o2) -> {
-            if (o1.getReceiverProfileId() == null) {
-                return -1;
-            } else {
-                return 1;
+            int count1 = 0;
+            int count2 = 0;
+            if(o1.isExpired()){
+                count1 = count1 + 10;
             }
+            if(o2.isExpired()){
+                count2 = count2 + 10;
+            }
+            if(o1.getReceiverProfileId() != null){
+                count1 = count1 + 1;
+            }
+            if(o2.getReceiverProfileId() != null){
+                count2 = count2 + 1;
+            }
+
+            return count1 - count2;
         });
 
         return prizeCards;
@@ -177,7 +196,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     @Override
     public Pair<Integer, String> isPreviewCardReceived(String cardId, Integer profileId) {
         if (!accountService.isPreviewNewUser(profileId)) {
-            return new ImmutablePair<>(-1, "亲,请给新用户一点机会吧~");
+            return new ImmutablePair<>(-1, "亲，请给新用户一点机会吧~");
         }
         //判断礼品卡是否已经被领取
         PrizeCard prizeCard = prizeCardDao.loadCardByCardNo(cardId);
@@ -186,6 +205,9 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         }
         if (prizeCard.getUsed()) {
             return new ImmutablePair<>(-1, "该礼品卡已经被领取");
+        }
+        if (prizeCard.getExpiredTime().before(new Date())) {
+            return new ImmutablePair<>(-2, "抱歉，商学院体验卡已过期。");
         }
         //领取礼品卡
         if (prizeCardDao.updatePreviewCard(prizeCard.getId(), profileId) == 0) {
@@ -200,27 +222,18 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         return new ImmutablePair<>(0, "恭喜您获得该礼品卡");
     }
 
-    @Override
-    public void sendReceiveCardMsgSuccessful(String openid, String nickname) {
-        String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
-                "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
-
-        customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
-        customerMessageService.sendCustomerMessage(openid, ConfigUtils.getXiaoYQRCode(), Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
-    }
-
     /**
      * 发送领取成功模板消息
      *
      * @param openid
-     * @param nickName
+     * @param nickname
      */
     @Override
-    public void sendReceivedAnnualMsgSuccessful(String openid, String nickName) {
+    public void sendReceivedAnnualMsgSuccessful(String openid, String nickname) {
         String templateMsg = "你好{nickname}，欢迎来到圈外商学院！\n\n" +
                 "你已成功领取商学院体验卡！\n\n扫码加小Y，回复\"体验\"，让他带你开启7天线上学习之旅吧！";
 
-        if (!customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickName), Constants.WEIXIN_MESSAGE_TYPE.TEXT)) {
+        if (!customerMessageService.sendCustomerMessage(openid, templateMsg.replace("{nickname}", nickname), Constants.WEIXIN_MESSAGE_TYPE.TEXT)) {
             TemplateMessage templateMessage = new TemplateMessage();
             templateMessage.setTemplate_id(ConfigUtils.getTrialNotice());
             templateMessage.setTouser(openid);
@@ -266,23 +279,5 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         data.put("keyword3", new TemplateMessage.Keyword("圈外同学公众号"));
         data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！\n"));
         templateMessageService.sendMessage(templateMessage);
-    }
-
-    /**
-     * 根据年终回顾生成礼品卡(临时方案)
-     */
-    @Override
-    public void genPrizeCardsByAnnSummary() {
-        //获得年终回顾的数据
-        List<AnnualSummary> annualSummaries = annualSummaryDao.loadAll(AnnualSummary.class);
-        List<AnnualSummary> realAnnualSummaries = annualSummaries.stream().filter(annualSummary -> annualSummary.getDel()==0).collect(Collectors.toList());
-
-        realAnnualSummaries.stream().forEach(annualSummary -> {
-            Integer profileId = annualSummary.getProfileId();
-            if(profileId != null){
-                //生成礼品卡
-                generateAnnualPrizeCards(profileId);
-            }
-        });
     }
 }
