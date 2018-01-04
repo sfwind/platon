@@ -501,7 +501,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return courseSchedules.stream()
                 .filter(CourseSchedule::getSelected)
                 .filter(schedule -> schedule.getMonth() == thisMonth && schedule.getCategory().equals(category))
-                .filter(schedule -> schedule.getType() == CourseScheduleDefault.Type.MAJOR)
+                .filter(schedule -> schedule.getType() == CourseScheduleDefault.Type.MINOR)
                 .map(CourseSchedule::getProblemId)
                 .collect(Collectors.toList());
     }
