@@ -586,7 +586,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setType(ImprovementPlan.TYPE_MINOR);
-                improvementPlan.setTypeDesc(learningMonth + "月辅修");
+                improvementPlan.setTypeDesc(currentMonth + "月辅修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
