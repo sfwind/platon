@@ -292,7 +292,7 @@ public class ProblemController {
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         // 设置当前课程已学习人数
 //        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
-        problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
+//        problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
@@ -311,13 +311,13 @@ public class ProblemController {
         dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
         dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
 
-        if (loginUser.getRiseMember() == 1) {
-            // 是会员，才会继续
-            String monthStr = problemService.loadProblemScheduleMonth(loginUser.getId(), problemId);
-            if (monthStr != null) {
-                dto.setTogetherClassMonth(monthStr);
-            }
-        }
+//        if (isMember) {
+//            // 是会员，才会继续
+//            String monthStr = problemService.loadProblemScheduleMonth(loginUser.getId(), problemId);
+//            if (monthStr != null) {
+//                dto.setTogetherClassMonth(monthStr);
+//            }
+//        }
 
         dto.setProblemCollected(problemService.hasCollectedProblem(loginUser.getId(), problemId));
 

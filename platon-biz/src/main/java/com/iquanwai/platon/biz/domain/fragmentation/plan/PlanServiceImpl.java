@@ -670,36 +670,15 @@ public class PlanServiceImpl implements PlanService {
         // 不显示按钮
         int buttonStatus = -1;
 
-        if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-            // 走限免课的逻辑
-            if (plan == null) {
-                if (isRiseMember) {
-                    // 选择该课程
-                    buttonStatus = 2;
-                } else {
-                    // 不是会员，显示是否
-                    boolean hasTrialAuthority = operationEvaluateService.checkTrialAuthority(profileId);
-                    // 7 - 下一步 8 - 免费获取 | 加入商学院
-                    buttonStatus = hasTrialAuthority ? 7 : 8;
-                }
-            } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
-                // 课程已开始，去上课
-                buttonStatus = 3;
-            } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
-                // 课程已完成，去复习
-                buttonStatus = 4;
-            }
-        } else {
-            if (plan == null) {
-                // 2 - 选择该课程 1 - 加入商学院
-                buttonStatus = isRiseMember ? 2 : 1;
-            } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
-                // 课程已开始，去上课
-                buttonStatus = 3;
-            } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
-                // 课程已开始，去复习
-                buttonStatus = 4;
-            }
+        if (plan == null) {
+            // 2 - 选择该课程 1 - 加入商学院
+            buttonStatus = isRiseMember ? 2 : 1;
+        } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
+            // 课程已开始，去上课
+            buttonStatus = 3;
+        } else if (plan.getStatus().equals(ImprovementPlan.COMPLETE) || plan.getStatus().equals(ImprovementPlan.CLOSE)) {
+            // 课程已开始，去复习
+            buttonStatus = 4;
         }
         return buttonStatus;
     }
