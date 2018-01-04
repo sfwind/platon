@@ -68,7 +68,11 @@ public class SubscribePushReceiver {
                             prizeCardService.sendReceivedAnnualMsgSuccessful(openId, profile.getNickname());
                         } else {
                             logger.info("===========领取失败=======");
-                            prizeCardService.sendReceivedAnnualFailureMsg(openId, result.getRight());
+                            if(result.getLeft() == -2){
+                                prizeCardService.sendReceivedAnnualFailureMsg(openId, "抱歉，商学院体验卡已过期。如果想了解圈外商学院，请点击下方菜单“商学院”吧！");
+                            }else{
+                                prizeCardService.sendReceivedAnnualFailureMsg(openId, result.getRight());
+                            }
                         }
                     }
                 } else if (push.getScene().startsWith("annual_prize_card")) {

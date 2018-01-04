@@ -196,7 +196,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     @Override
     public Pair<Integer, String> isPreviewCardReceived(String cardId, Integer profileId) {
         if (!accountService.isPreviewNewUser(profileId)) {
-            return new ImmutablePair<>(-1, "亲,请给新用户一点机会吧~");
+            return new ImmutablePair<>(-1, "亲，请给新用户一点机会吧~");
         }
         //判断礼品卡是否已经被领取
         PrizeCard prizeCard = prizeCardDao.loadCardByCardNo(cardId);
@@ -207,7 +207,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
             return new ImmutablePair<>(-1, "该礼品卡已经被领取");
         }
         if (prizeCard.getExpiredTime().before(new Date())) {
-            return new ImmutablePair<>(-1, "抱歉，商学院体验卡已过期。如果想了解圈外商学院，请点击下方菜单“商学院”吧！");
+            return new ImmutablePair<>(-2, "抱歉，商学院体验卡已过期。");
         }
         //领取礼品卡
         if (prizeCardDao.updatePreviewCard(prizeCard.getId(), profileId) == 0) {

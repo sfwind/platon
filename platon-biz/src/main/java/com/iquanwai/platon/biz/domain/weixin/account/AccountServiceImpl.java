@@ -591,10 +591,6 @@ public class AccountServiceImpl implements AccountService {
         if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
             return false;
         }
-        //判断是否参加过试听课
-        if (auditionClassMemberDao.loadByProfileId(profileId) != null) {
-            return false;
-        }
         //判断是否参加"一带二"活动
         if (groupPromotionDao.loadByProfileId(profileId) != null) {
             return false;
