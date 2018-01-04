@@ -299,7 +299,7 @@ public class ProblemController {
 
         Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
 
-        Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), isMember, problemId, plan, autoOpen);
+        Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
 
         if (plan != null) {
             dto.setPlanId(plan.getId());

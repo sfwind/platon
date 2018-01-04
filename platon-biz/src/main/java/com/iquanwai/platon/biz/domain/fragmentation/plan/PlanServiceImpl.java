@@ -56,13 +56,9 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
-    private RiseCourseDao riseCourseDao;
-    @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
-    @Autowired
-    private OperationEvaluateService operationEvaluateService;
     @Autowired
     private CardRepository cardRepository;
     @Autowired
@@ -379,11 +375,6 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public ImprovementPlan getLatestPlan(Integer profileId) {
-        return improvementPlanDao.getLastPlan(profileId);
-    }
-
-    @Override
     public List<ImprovementPlan> getPlans(Integer profileId) {
         return improvementPlanDao.loadAllPlans(profileId);
     }
@@ -666,13 +657,24 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Integer problemIntroductionButtonStatus(Integer profileId, Boolean isRiseMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen) {
+    public Integer problemIntroductionButtonStatus(Integer profileId, Integer problemId, ImprovementPlan plan, Boolean autoOpen) {
         // 不显示按钮
         int buttonStatus = -1;
 
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (plan == null) {
-            // 2 - 选择该课程 1 - 加入商学院
-            buttonStatus = isRiseMember ? 2 : 1;
+            // 2 - 去上课 1 - 加入商学院 5 - 选择该课程
+            if(riseMember == null){
+                buttonStatus = 1;
+            }else{
+                if(riseMember.getMemberTypeId() == RiseMember.HALF_ELITE || riseMember.getMemberTypeId() == RiseMember.ELITE){
+                    buttonStatus = 2;
+                }else if(riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL){
+                    buttonStatus = 5;
+                }else{
+                    buttonStatus = 1;
+                }
+            }
         } else if (plan.getStatus().equals(ImprovementPlan.RUNNING)) {
             // 课程已开始，去上课
             buttonStatus = 3;
@@ -719,54 +721,6 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
         }
-    }
-
-    /**
-     * 对于精英版会员，是否有权限继续选课
-     */
-    @Override
-    public Pair<Boolean, String> loadProblemChooseAccess(Integer profileId) {
-        Boolean access = true;
-        String message = "";
-        Profile profile = accountService.getProfile(profileId);
-        if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
-            // 是精英会员用户才会有选课上限分析，专业版后期没有继续招募
-            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-            Integer memberTypeId = riseMember.getMemberTypeId();
-            Date startTime3 = riseMember.getAddTime(); // 会员开始时间
-            switch (memberTypeId) {
-                case RiseMember.ELITE:
-                    //精英版一年，按照加入时间
-                    if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
-                        access = true;
-                    } else {
-                        List<ImprovementPlan> plans3 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime3);
-                        Long countLong3 = plans3.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                        if (countLong3.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
-                            access = false;
-                            message = "亲爱的商学院会员，你的选课数量已达36门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
-                        }
-                    }
-                    break;
-                case RiseMember.HALF_ELITE:
-                    //精英版半年，限制18门
-                    if (startTime3.compareTo(ConfigUtils.getRiseMemberSplitDate()) <= 0) {
-                        access = true;
-                    } else {
-                        Date startTime4 = riseMember.getAddTime(); // 会员开始时间
-                        List<ImprovementPlan> plans4 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime4);
-                        Long countLong4 = plans4.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                        if (countLong4.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
-                            access = false;
-                            message = "亲爱的商学院会员，你的选课数量已达18门。如需升级或续费，请在“我的”-“帮助”中加小Q联系";
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        return new MutablePair<>(access, message);
     }
 
     @Override
