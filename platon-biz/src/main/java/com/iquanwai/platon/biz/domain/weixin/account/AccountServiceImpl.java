@@ -154,7 +154,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Profile getProfile(String openid) {
         Profile profile = getProfileFromDB(openid);
-        checkHeadImgUrlEffectiveness(profile);
+        // checkHeadImgUrlEffectiveness(profile);
         return profile;
     }
 
@@ -172,7 +172,7 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
-            checkHeadImgUrlEffectiveness(profile);
+            // checkHeadImgUrlEffectiveness(profile);
         }
         return profile;
     }
@@ -191,7 +191,7 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
-            checkHeadImgUrlEffectiveness(profile);
+            // checkHeadImgUrlEffectiveness(profile);
         });
         return profiles;
     }
@@ -616,7 +616,6 @@ public class AccountServiceImpl implements AccountService {
                 logger.error(e.getLocalizedMessage(), e);
             }
         }
-
     }
 }
 
