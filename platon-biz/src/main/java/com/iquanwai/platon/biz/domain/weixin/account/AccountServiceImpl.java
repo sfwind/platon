@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.RedisUtil;
@@ -18,6 +19,8 @@ import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
+import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -35,6 +38,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -45,6 +49,7 @@ import java.util.Map;
  */
 @Service
 public class AccountServiceImpl implements AccountService {
+
     @Autowired
     public RestfulHelper restfulHelper;
     @Autowired
@@ -59,16 +64,8 @@ public class AccountServiceImpl implements AccountService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
-
-    private List<Region> provinceList;
-
-    private List<Region> cityList;
     @Autowired
     private UserRoleDao userRoleDao;
-
-    private Map<String, Integer> userRoleMap = Maps.newHashMap();
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PointRepo pointRepo;
     @Autowired
@@ -85,23 +82,28 @@ public class AccountServiceImpl implements AccountService {
     private SubscribePushDao subscribePushDao;
     @Autowired
     private AuditionClassMemberDao auditionClassMemberDao;
-
     @Autowired
     private GroupPromotionDao groupPromotionDao;
     @Autowired
     private PrizeCardDao prizeCardDao;
+    @Autowired
+    private RabbitMQFactory rabbitMQFactory;
 
+    private List<Region> provinceList;
+    private List<Region> cityList;
+    private Map<String, Integer> userRoleMap = Maps.newHashMap();
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
+    // 用户头像失效校验 publisher
+    private RabbitMQPublisher headImgUrlCheckPublisher;
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
     public void init() {
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
-
-        userRoleList.stream().filter(userRole1 -> !userRole1.getDel())
-                .forEach(userRole -> userRoleMap.put(userRole.getOpenid(), userRole.getRoleId()));
-
+        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getOpenid(), userRole.getRoleId()));
         logger.info("role init complete");
+        headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
     }
 
     @Override
@@ -130,11 +132,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Profile getProfile(String openid) {
-        return getProfileFromDB(openid);
-    }
-
-    @Override
     public Profile getProfileByRiseId(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
 
@@ -155,9 +152,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Profile getProfile(String openid) {
+        Profile profile = getProfileFromDB(openid);
+        checkHeadImgUrlEffectiveness(profile);
+        return profile;
+    }
+
+    @Override
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
-
         if (profile != null) {
             profile.setRiseMember(riseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
@@ -169,9 +172,28 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
+            checkHeadImgUrlEffectiveness(profile);
         }
-
         return profile;
+    }
+
+    @Override
+    public List<Profile> getProfiles(List<Integer> profileIds) {
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
+        profiles.forEach(profile -> {
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
+            }
+            profile.setRiseMember(riseMember(profile.getId()));
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if (role == null) {
+                profile.setRole(0);
+            } else {
+                profile.setRole(role);
+            }
+            checkHeadImgUrlEffectiveness(profile);
+        });
+        return profiles;
     }
 
     private Profile getProfileFromDB(String openid) {
@@ -191,25 +213,6 @@ public class AccountServiceImpl implements AccountService {
         }
 
         return profile;
-    }
-
-    @Override
-    public List<Profile> getProfiles(List<Integer> profileIds) {
-        List<Profile> profiles = profileDao.queryAccounts(profileIds);
-        profiles.forEach(profile -> {
-            if (profile.getHeadimgurl() != null) {
-                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
-            }
-            profile.setRiseMember(riseMember(profile.getId()));
-            Integer role = userRoleMap.get(profile.getOpenid());
-            if (role == null) {
-                profile.setRole(0);
-            } else {
-                profile.setRole(role);
-            }
-        });
-
-        return profiles;
     }
 
     @Override
@@ -430,11 +433,6 @@ public class AccountServiceImpl implements AccountService {
         if (profile == null) {
             return new ImmutablePair<>(false, "系统错误,请联系小Q");
         }
-//        else {
-//            if (phone.equals(profile.getMobileNo())) {
-//                return new ImmutablePair<>(false, "该手机号已绑定");
-//            }
-//        }
         smsDto.setPhone(phone);
         smsDto.setProfileId(profileId);
         smsDto.setType(SMSDto.NORMAL);
@@ -486,7 +484,6 @@ public class AccountServiceImpl implements AccountService {
         return targetCoupons;
     }
 
-
     @Override
     public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
         RiseClassMember activeRiseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
@@ -536,8 +533,7 @@ public class AccountServiceImpl implements AccountService {
             return 0;
         }
         // 精英或者专业版用户
-        if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
-                || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
+        if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             return 1;
             // 训练营用户
         } else if (memberTypeId == RiseMember.CAMP) {
@@ -549,7 +545,6 @@ public class AccountServiceImpl implements AccountService {
 
         return 0;
     }
-
 
     @Override
     public String createSubscribePush(String openid, String callback, String scene) {
@@ -604,6 +599,28 @@ public class AccountServiceImpl implements AccountService {
             return false;
         }
         return true;
+    }
+
+    // 生成用来发送更新 mq 的信息
+    private void checkHeadImgUrlEffectiveness(Profile profile) {
+        if (profile == null) {
+            return;
+        }
+        Integer profileId = profile.getId();
+        String headImgUrl = profile.getHeadimgurl();
+        Date headImgUrlCheckTime = profile.getHeadImgUrlCheckTime();
+        if (headImgUrl.indexOf("wx.qlogo.cn") > 0 && DateUtils.interval(headImgUrlCheckTime) >= 7) {
+            JSONObject json = new JSONObject();
+            json.put("profileId", profileId);
+            json.put("openId", profile.getOpenid());
+            json.put("headImgUrl", headImgUrl);
+            try {
+                headImgUrlCheckPublisher.publish(json.toString());
+            } catch (ConnectException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
+        }
+
     }
 }
 

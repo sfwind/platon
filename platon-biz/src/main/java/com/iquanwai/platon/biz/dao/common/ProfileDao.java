@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -68,14 +69,10 @@ public class ProfileDao extends DBUtil {
 
     public int insertProfile(Profile profile) throws SQLException {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName, RiseId, UnionId)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName, RiseId, UnionId)" + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
-            Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    profile.getOpenid(), profile.getNickname(), profile.getCity(), profile.getCountry(), profile.getProvince(),
-                    profile.getHeadimgurl(), profile.getMobileNo(), profile.getEmail(), profile.getIndustry(),
-                    profile.getFunction(), profile.getWorkingLife(), profile.getRealName(), profile.getRiseId(), profile.getUnionid());
+            Long insertRs = runner.insert(sql, new ScalarHandler<>(), profile.getOpenid(), profile.getNickname(), profile.getCity(), profile.getCountry(), profile.getProvince(), profile.getHeadimgurl(), profile.getMobileNo(), profile.getEmail(), profile.getIndustry(), profile.getFunction(), profile.getWorkingLife(), profile.getRealName(), profile.getRiseId(), profile.getUnionid());
             return insertRs.intValue();
         } catch (SQLException e) {
             if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
@@ -178,15 +175,7 @@ public class ProfileDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?,Receiver=?,Married = ? where id=?";
         try {
-            run.update(updateSql,
-                    profile.getIndustry(),
-                    profile.getFunction(),
-                    profile.getWorkingYear(),
-                    profile.getCity(),
-                    profile.getProvince(),
-                    profile.getReceiver(),
-                    profile.getMarried(),
-                    profile.getId());
+            run.update(updateSql, profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(), profile.getCity(), profile.getProvince(), profile.getReceiver(), profile.getMarried(), profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
@@ -198,17 +187,7 @@ public class ProfileDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?,RealName=?,Address=?,Receiver=?,Married = ? where id=?";
         try {
-            run.update(updateSql,
-                    profile.getIndustry(),
-                    profile.getFunction(),
-                    profile.getWorkingYear(),
-                    profile.getCity(),
-                    profile.getProvince(),
-                    profile.getRealName(),
-                    profile.getAddress(),
-                    profile.getReceiver(),
-                    profile.getMarried(),
-                    profile.getId());
+            run.update(updateSql, profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(), profile.getCity(), profile.getProvince(), profile.getRealName(), profile.getAddress(), profile.getReceiver(), profile.getMarried(), profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
@@ -220,14 +199,7 @@ public class ProfileDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=?, RealName=? where id=?";
         try {
-            run.update(updateSql,
-                    profile.getIndustry(),
-                    profile.getFunction(),
-                    profile.getWorkingLife(),
-                    profile.getCity(),
-                    profile.getProvince(),
-                    profile.getRealName(),
-                    profile.getId());
+            run.update(updateSql, profile.getIndustry(), profile.getFunction(), profile.getWorkingLife(), profile.getCity(), profile.getProvince(), profile.getRealName(), profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
@@ -249,8 +221,7 @@ public class ProfileDao extends DBUtil {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set MobileNo=? where Id=?";
         try {
-            run.update(updateSql,
-                    mobileNo, id);
+            run.update(updateSql, mobileNo, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -275,9 +246,9 @@ public class ProfileDao extends DBUtil {
 
     public int updateHeadImgUrl(Integer profileId, String headImgUrl) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE Profile SET HeadImgUrl = ? WHERE Id = ?";
+        String sql = "UPDATE Profile SET HeadImgUrl = ?, HeadImgUrlCheckTime = ? WHERE Id = ?";
         try {
-            return runner.update(sql, headImgUrl, profileId);
+            return runner.update(sql, headImgUrl, new Date(), profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
