@@ -173,6 +173,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         if (prizeCardDao.loadReceiveAnnualCard(profileId).size() == 0 && prizeCardDao.loadAnnualCardByReceiver(profileId) == null && groupPromotionDao.loadByProfileId(profileId) == null) {
             return false;
         }
+        //TODO:正式上线之前需要将日期修改成7号
         Date campOpenDate = new DateTime(2018, 1, 2, 0, 0).toDate();
         //如果已经到学习时间
         if (campOpenDate.compareTo(new Date()) < 0) {

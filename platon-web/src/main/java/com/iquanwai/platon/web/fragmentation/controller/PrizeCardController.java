@@ -181,7 +181,7 @@ public class PrizeCardController {
      * @param loginUser
      * @return
      */
-    @RequestMapping("/prize/jan/pay/check")
+    @RequestMapping("/jan/pay/check")
     public ResponseEntity<Map<String,Object>> janPayCheck(LoginUser loginUser){
         Assert.notNull(loginUser,"登录用户不能为空");
 
