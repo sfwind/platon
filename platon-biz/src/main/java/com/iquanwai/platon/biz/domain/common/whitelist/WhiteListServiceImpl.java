@@ -174,7 +174,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             return false;
         }
         //TODO:正式上线之前需要将日期修改成7号和14号
-        Date campOpenDate = new DateTime(2018, 1, 6, 0, 0).toDate();
+        Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
         Date campCloseDate = new DateTime(2018,1,14,0,0).toDate();
         //如果已经到学习时间
         if (campOpenDate.compareTo(new Date()) < 0 && campCloseDate.compareTo(new Date()) >= 0 ) {
