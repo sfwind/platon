@@ -154,6 +154,10 @@ public class DateUtils {
         return new DateTime(date).getMonthOfYear();
     }
 
+    public static Integer getDay(Date date) {
+        return new DateTime(date).getDayOfMonth();
+    }
+
     public static Date endDateOfMonth(Integer month) {
         DateTime date = new DateTime().monthOfYear().setCopy(month).dayOfMonth().withMaximumValue();
         return date.toDate();
