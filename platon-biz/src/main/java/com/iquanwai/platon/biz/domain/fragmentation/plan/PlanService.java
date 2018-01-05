@@ -44,12 +44,6 @@ public interface PlanService {
     void unlockCampPlan(Integer profileId, Integer planId);
 
     /**
-     * 获取学员最近的训练
-     * @param profileId 学员id
-     */
-    ImprovementPlan getLatestPlan(Integer profileId);
-
-    /**
      * 获取学员所有的训练
      * @param profileId 学员id
      */
@@ -156,15 +150,13 @@ public interface PlanService {
     /**
      * 小课介绍页的按钮状态
      */
-    Integer problemIntroductionButtonStatus(Integer profileId, Boolean isMember, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
+    Integer problemIntroductionButtonStatus(Integer profileId, Integer problemId, ImprovementPlan plan, Boolean autoOpen);
 
     /**
      * 重新打开这个订单对应的小课
      * @param orderId 订单id
      */
     void magicOpenCampOrder(String orderId);
-
-    Pair<Boolean, String> loadProblemChooseAccess(Integer profileId);
 
     /**
      * 解锁之前用不解锁的计划

@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.PrizeCardService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -42,8 +41,6 @@ public class BackendController {
     private CertificateService certificateService;
     @Autowired
     private GeneratePlanService generatePlanService;
-    @Autowired
-    private PrizeCardService prizeCardService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -182,13 +179,5 @@ public class BackendController {
 
         return WebUtils.success();
     }
-
-
-//    @RequestMapping("/annual/summary/generate/card")
-//    public ResponseEntity<Map<String, Object>> generateCardsByAnnSummary() {
-//        ThreadPool.execute(() -> prizeCardService.genPrizeCardsByAnnSummary());
-//
-//        return WebUtils.success();
-//    }
 
 }
