@@ -330,9 +330,11 @@ public class PlanServiceImpl implements PlanService {
         int month = DateUtils.getMonth(openDate);
         if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
                 && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
-            // 未到开营日的主修课不能提前选择
-            return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
-                    + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+            if(new Date().before(openDate)){
+                // 未到开营日的主修课不能提前选择
+                return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
+                        + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+            }
         }
 
         Profile profile = accountService.getProfile(profileId);

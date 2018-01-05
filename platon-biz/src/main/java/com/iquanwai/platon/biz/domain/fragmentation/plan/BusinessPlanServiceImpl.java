@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
 public class BusinessPlanServiceImpl implements BusinessPlanService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static Integer NO_MINOR = 24;
-    private static Integer ONE_MINOR = 25;
-    private static Integer TWO_MINOR = 26;
-    private static Integer ALL_MINOR = 37;
+    private static final int NO_MINOR = 24;
+    private static final int ONE_MINOR = 25;
+    private static final int TWO_MINOR = 26;
+    private static final int ALL_MINOR = 37;
 
     @Autowired
     private CacheService cacheService;
