@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -67,17 +66,15 @@ public class PlanServiceImpl implements PlanService {
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private ProblemScheduleRepository problemScheduleRepository;
+    @Autowired
+    private CourseScheduleDao courseScheduleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     // 精英会员年费版最大选课数
     private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
     // 精英会员半年版最大选课数
-    private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
-    // 主修最大进行课程数
-    // private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
-    // 辅修最大进行课程数
-    // private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
+    private static final int MAX_HALF_ELITE_PROBLEM_LIMIT = 18;
     // 普通人最大进行课程数
     private static final int MAX_NORMAL_RUNNING_PROBLEM_NUMBER = 3;
 
@@ -309,10 +306,66 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId) {
+        CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
+        if (courseSchedule == null) {
+            return new MutablePair<>(-1, "请先去学习计划中勾选该课程");
+        }
         if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-            // 会员已经有三门再学
-            return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
-                    + "门课程。先完成进行中的一门，再选新课哦");
+            //当月主修课可以强开
+            if (!(courseSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
+                    && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)) {
+                // 会员已经有三门再学
+                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
+                        + "门课程。先完成进行中的一门，再选新课哦");
+            }
+        }
+
+        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+        Date openDate = monthlyCampConfig.getOpenDate();
+        int year = DateUtils.getYear(openDate);
+        int month = DateUtils.getMonth(openDate);
+        if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
+                && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+            if(new Date().before(openDate)){
+                // 未到开营日的主修课不能提前选择
+                return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
+                        + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+            }
+        }
+
+        Profile profile = accountService.getProfile(profileId);
+        if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
+            // 是精英会员用户才会有选课上限分析
+            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+            Integer memberTypeId = riseMember.getMemberTypeId();
+            switch (memberTypeId) {
+                case RiseMember.ELITE:
+                    //商学院用户，限制36门
+                    Date startTime1 = riseMember.getAddTime(); // 会员开始时间
+                    if (startTime1.compareTo(ConfigUtils.getRiseMemberSplitDate()) > 0) {
+                        List<ImprovementPlan> startPlans1 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime1);
+                        Long countLong1 = startPlans1.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                        if (countLong1.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
+                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达" + MAX_ELITE_PROBLEM_LIMIT +
+                                    "门。");
+                        }
+                    }
+                    break;
+                case RiseMember.HALF_ELITE:
+                    Date startTime2 = riseMember.getAddTime(); // 会员开始时间
+                    //精英版半年，限制18门
+                    if (startTime2.compareTo(ConfigUtils.getRiseMemberSplitDate()) > 0) {
+                        List<ImprovementPlan> startPlans2 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime2);
+                        Long countLong2 = startPlans2.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
+                        if (countLong2.intValue() >= MAX_HALF_ELITE_PROBLEM_LIMIT) {
+                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达" + MAX_HALF_ELITE_PROBLEM_LIMIT
+                                    + "门。如需升级或续费，请联系班主任");
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         Problem problem = cacheService.getProblem(problemId);
@@ -321,19 +374,6 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return new MutablePair<>(1, "");
-    }
-
-    private int getProblemType(List<CourseSchedule> courseSchedules, Integer problemId) {
-        int type = 0;
-        CourseSchedule courseScheduleInPlan = courseSchedules.stream()
-                .filter(courseSchedule1 -> courseSchedule1.getProblemId().equals(problemId))
-                .findAny().orElse(null);
-
-        if (courseScheduleInPlan != null) {
-            type = courseScheduleInPlan.getType();
-        }
-
-        return type;
     }
 
     @Override
@@ -664,14 +704,14 @@ public class PlanServiceImpl implements PlanService {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (plan == null) {
             // 2 - 去上课 1 - 加入商学院 5 - 选择该课程
-            if(riseMember == null){
+            if (riseMember == null) {
                 buttonStatus = 1;
-            }else{
-                if(riseMember.getMemberTypeId() == RiseMember.HALF_ELITE || riseMember.getMemberTypeId() == RiseMember.ELITE){
+            } else {
+                if (riseMember.getMemberTypeId() == RiseMember.HALF_ELITE || riseMember.getMemberTypeId() == RiseMember.ELITE) {
                     buttonStatus = 2;
-                }else if(riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL){
+                } else if (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL) {
                     buttonStatus = 5;
-                }else{
+                } else {
                     buttonStatus = 1;
                 }
             }
@@ -700,13 +740,13 @@ public class PlanServiceImpl implements PlanService {
                 .filter(monthlyCampSchedule -> monthlyCampSchedule.getYear().equals(sellingYear) && monthlyCampSchedule.getMonth().equals(sellingMonth))
                 .map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
-        Date closeDate = null;
+        Date closeDate;
         if (new DateTime(monthlyCampConfig.getOpenDate()).isAfterNow()) {
-            // 开营时间在现在之后 11-12 > 11-11 14:20
-            closeDate = new DateTime(monthlyCampConfig.getOpenDate()).plusDays(30).toDate();
+            // 开营时间在现在之后
+            closeDate = DateUtils.afterDays(monthlyCampConfig.getOpenDate(), 30);
         } else {
-            // 开营时间在现在之前 11-12 < 11-12 14:00
-            closeDate = new DateTime().plusDays(30).toDate();
+            // 开营时间在现在之前
+            closeDate = DateUtils.afterDays(new Date(), 30);
         }
 
         for (Integer problemId : problemIds) {
@@ -729,7 +769,6 @@ public class PlanServiceImpl implements PlanService {
         List<Integer> planIds = plans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
         List<PracticePlan> unlockPractices = practicePlanDao.loadNeverUnlockPlan(planIds);
         List<Integer> unlockPlanIds = unlockPractices.stream().map(PracticePlan::getPlanId).distinct().collect(Collectors.toList());
-
 
 
         plans.stream().filter(item -> unlockPlanIds.contains(item.getId())).forEach(item -> {

@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
 public class BusinessPlanServiceImpl implements BusinessPlanService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static Integer NO_MINOR = 24;
-    private static Integer ONE_MINOR = 25;
-    private static Integer TWO_MINOR = 26;
-    private static Integer ALL_MINOR = 37;
+    private static final int NO_MINOR = 24;
+    private static final int ONE_MINOR = 25;
+    private static final int TWO_MINOR = 26;
+    private static final int ALL_MINOR = 37;
 
     @Autowired
     private CacheService cacheService;
@@ -478,12 +478,12 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(CourseSchedule::getSelected).findFirst().orElse(null);
 
         Integer category = courseSchedule != null ? accountService.loadUserScheduleCategory(courseSchedule.getProfileId()) : null;
-        //当前学习中的月份
-        int learningMonth = ConfigUtils.getLearningMonth();
+        //当前月份
+        int currentMonth = DateUtils.getMonth(new Date());
 
         return courseSchedules.stream()
                 .filter(CourseSchedule::getSelected)
-                .filter(schedule -> schedule.getMonth() == learningMonth && schedule.getCategory().equals(category))
+                .filter(schedule -> schedule.getMonth() == currentMonth && schedule.getCategory().equals(category))
                 .filter(schedule -> schedule.getType() == CourseScheduleDefault.Type.MAJOR)
                 .map(CourseSchedule::getProblemId)
                 .collect(Collectors.toList());
@@ -603,8 +603,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private List<ImprovementPlan> getMajorListProblem(List<ImprovementPlan> improvementPlans,
                                                       List<CourseSchedule> courseSchedules,
                                                       List<Integer> currentMonthProblemIds) {
-        //当前学习中的月份
-        int learningMonth = ConfigUtils.getLearningMonth();
+        //当前月份
+        int currentMonth = DateUtils.getMonth(new Date());
         // 选出进行中的主修课程
         List<ImprovementPlan> problems = improvementPlans.stream()
                 .filter(improvementPlan -> improvementPlan.getStatus() == ImprovementPlan.RUNNING
@@ -637,7 +637,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             if (!inRunning && !inClose) {
                 ImprovementPlan improvementPlan = new ImprovementPlan();
                 improvementPlan.setType(ImprovementPlan.TYPE_MAJOR);
-                improvementPlan.setTypeDesc(learningMonth + "月主修");
+                improvementPlan.setTypeDesc(currentMonth + "月主修");
                 Problem problem = cacheService.getProblem(currentMonthProblemId).simple();
                 improvementPlan.setProblem(problem);
                 improvementPlan.setProblemId(problem.getId());
@@ -658,11 +658,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> improvementPlanList = Lists.newArrayList();
 
         MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        int learningMonth = ConfigUtils.getLearningMonth();
+        int currentMonth = DateUtils.getMonth(new Date());
         int openMonth = DateUtils.getMonth(monthlyCampConfig.getOpenDate());
         int openYear = DateUtils.getYear(monthlyCampConfig.getOpenDate());
         // 判断是否跨年
-        int year = openMonth >= learningMonth ? openYear : openYear - 1;
+        int year = openMonth >= currentMonth ? openYear : openYear - 1;
 
         // 过去几个月的主修课id
         List<CourseSchedule> courseScheduleList = courseSchedules.stream().filter(courseSchedule -> {
@@ -670,7 +670,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 return false;
             }
             return courseSchedule.getYear() < year ||
-                    (courseSchedule.getYear() == year && courseSchedule.getMonth() < learningMonth);
+                    (courseSchedule.getYear() == year && courseSchedule.getMonth() < currentMonth);
         }).sorted((o1, o2) -> o2.getMonth() - o1.getMonth()).collect(Collectors.toList());
 
         //如果之前月份的主修课没有开始,加到推荐列表
