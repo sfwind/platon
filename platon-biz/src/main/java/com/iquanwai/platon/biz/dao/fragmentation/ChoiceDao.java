@@ -23,7 +23,7 @@ public class ChoiceDao extends PracticeDBUtil {
     public List<Choice> getQuestionChoices(Integer questionId){
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Choice>> h = new BeanListHandler<>(Choice.class);
-        String sql = "SELECT * FROM Choice where QuestionId = ?";
+        String sql = "SELECT * FROM Choice where QuestionId = ? And Del = 0";
         try {
             return run.query(sql, h, questionId);
         } catch (SQLException e) {
