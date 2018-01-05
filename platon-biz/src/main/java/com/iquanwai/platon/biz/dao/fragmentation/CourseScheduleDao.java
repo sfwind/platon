@@ -63,50 +63,6 @@ public class CourseScheduleDao extends PracticeDBUtil {
         }
     }
 
-    public List<CourseSchedule> getCertainMonthSchedule(Integer profileId, Integer year, Integer month) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Year = ? AND Month = ? AND Del = 0";
-        try {
-            return runner.query(sql, new BeanListHandler<CourseSchedule>(CourseSchedule.class), profileId, year, month);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
-
-    public CourseSchedule getById(Integer id) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM CourseSchedule WHERE Id = ? ";
-        try {
-            return runner.query(sql, new BeanHandler<CourseSchedule>(CourseSchedule.class), id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
-    }
-
-    public Integer deleteById(Integer id) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE CourseSchedule SET Del = 1 WHERE Id = ? ";
-        try {
-            return runner.update(sql, id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
-    public Integer reopenById(Integer id) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE CourseSchedule SET Del = 0 WHERE Id = ? ";
-        try {
-            return runner.update(sql, id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
     public List<CourseSchedule> getAllScheduleByProfileId(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Del = 0";
@@ -138,29 +94,6 @@ public class CourseScheduleDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
-    }
-
-    public int modifyScheduleYearMonth(Integer id, Integer month, Integer selected) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "UPDATE CourseSchedule SET Month = ?, Selected = ? WHERE Id = ? AND Del = 0";
-        try {
-            return runner.update(sql, month, selected, id);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
-
-    public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ? AND YEAR = ? AND Month = ?";
-        ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
-        try {
-            return runner.query(sql, h, profileId, problemId, year, month);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
     }
 
     public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId) {
