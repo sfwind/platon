@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -75,7 +74,7 @@ public class PlanServiceImpl implements PlanService {
     // 精英会员年费版最大选课数
     private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
     // 精英会员半年版最大选课数
-    private static final int MAX_HALF_ELTITE_PROBLEM_LIMIT = 18;
+    private static final int MAX_HALF_ELITE_PROBLEM_LIMIT = 18;
     // 主修最大进行课程数
     // private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
     // 辅修最大进行课程数
@@ -332,7 +331,8 @@ public class PlanServiceImpl implements PlanService {
         if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
                 && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
             // 未到开营日的主修课不能提前选择
-            return new MutablePair<>(-1, "主修课需要等到" + DateUtils.parseDateTimeToString(openDate) + "才能开启");
+            return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
+                    + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
         }
 
         Profile profile = accountService.getProfile(profileId);
@@ -347,8 +347,9 @@ public class PlanServiceImpl implements PlanService {
                     if (startTime1.compareTo(ConfigUtils.getRiseMemberSplitDate()) > 0) {
                         List<ImprovementPlan> startPlans1 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime1);
                         Long countLong1 = startPlans1.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                        if (countLong1.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
-                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达36门。");
+                        if (countLong1.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
+                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达" + MAX_ELITE_PROBLEM_LIMIT +
+                                    "门。");
                         }
                     }
                     break;
@@ -358,8 +359,9 @@ public class PlanServiceImpl implements PlanService {
                     if (startTime2.compareTo(ConfigUtils.getRiseMemberSplitDate()) > 0) {
                         List<ImprovementPlan> startPlans2 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime2);
                         Long countLong2 = startPlans2.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                        if (countLong2.intValue() >= MAX_HALF_ELTITE_PROBLEM_LIMIT) {
-                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达18门。如需升级或续费，请联系班主任");
+                        if (countLong2.intValue() >= MAX_HALF_ELITE_PROBLEM_LIMIT) {
+                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达" + MAX_HALF_ELITE_PROBLEM_LIMIT
+                                    + "门。如需升级或续费，请联系班主任");
                         }
                     }
                     break;
@@ -740,13 +742,13 @@ public class PlanServiceImpl implements PlanService {
                 .filter(monthlyCampSchedule -> monthlyCampSchedule.getYear().equals(sellingYear) && monthlyCampSchedule.getMonth().equals(sellingMonth))
                 .map(MonthlyCampSchedule::getProblemId).collect(Collectors.toList());
 
-        Date closeDate = null;
+        Date closeDate;
         if (new DateTime(monthlyCampConfig.getOpenDate()).isAfterNow()) {
-            // 开营时间在现在之后 11-12 > 11-11 14:20
-            closeDate = new DateTime(monthlyCampConfig.getOpenDate()).plusDays(30).toDate();
+            // 开营时间在现在之后
+            closeDate = DateUtils.afterDays(monthlyCampConfig.getOpenDate(), 30);
         } else {
-            // 开营时间在现在之前 11-12 < 11-12 14:00
-            closeDate = new DateTime().plusDays(30).toDate();
+            // 开营时间在现在之前
+            closeDate = DateUtils.afterDays(new Date(), 30);
         }
 
         for (Integer problemId : problemIds) {
