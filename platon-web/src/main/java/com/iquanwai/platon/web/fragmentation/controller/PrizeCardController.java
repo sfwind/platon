@@ -196,7 +196,7 @@ public class PrizeCardController {
         if (prizeCardService.checkJanPay(profile.getId())) {
             return WebUtils.success();
         } else {
-            return WebUtils.error("您没有复购资格");
+            return WebUtils.error(222,"没有复购资格");
         }
     }
 }
