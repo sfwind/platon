@@ -13,10 +13,7 @@ import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.RiseClassMember;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
@@ -81,7 +78,7 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private SubscribePushDao subscribePushDao;
     @Autowired
-    private AuditionClassMemberDao auditionClassMemberDao;
+    private CourseScheduleDao courseScheduleDao;
     @Autowired
     private GroupPromotionDao groupPromotionDao;
     @Autowired
@@ -560,6 +557,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Integer loadUserScheduleCategory(Integer profileId) {
+        CourseSchedule courseSchedule = courseScheduleDao.loadOldestCourseSchedule(profileId);
+        if (courseSchedule != null) {
+            return courseSchedule.getCategory();
+        }
         // 老用户
         CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.SCHEDULE_LESS);
         if (status != null) {

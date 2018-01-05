@@ -75,10 +75,6 @@ public class PlanServiceImpl implements PlanService {
     private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
     // 精英会员半年版最大选课数
     private static final int MAX_HALF_ELITE_PROBLEM_LIMIT = 18;
-    // 主修最大进行课程数
-    // private static final int MAX_MAJOR_RUNNING_PROBLEM_NUMBER = 1;
-    // 辅修最大进行课程数
-    // private static final int MAX_MINOR_RUNNING_PROBLEM_NUMBER = 2;
     // 普通人最大进行课程数
     private static final int MAX_NORMAL_RUNNING_PROBLEM_NUMBER = 3;
 
