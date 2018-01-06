@@ -293,7 +293,11 @@ public class IndexController {
                 return null;
             } else if (whiteListService.isStillLearningCamp(loginUser.getId())) {
                 return courseView(request, loginUser, moduleShow, RISE_VIEW);
-            } else {
+                //参加一带二活动的人可以进入学习页面
+            } else if(whiteListService.isProOrCardOnDate(loginUser.getId())){
+                return courseView(request, loginUser, moduleShow, RISE_VIEW);
+            }
+            else {
                 response.sendRedirect(CAMP_SALE_URL);
                 return null;
             }

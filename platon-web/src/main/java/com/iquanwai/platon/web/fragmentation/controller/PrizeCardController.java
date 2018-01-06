@@ -174,4 +174,29 @@ public class PrizeCardController {
             }
         }
     }
+
+
+    /**
+     * 检查是否能够参加一月份的复购
+     *
+     * @param loginUser
+     * @return
+     */
+    @RequestMapping("/jan/pay/check")
+    public ResponseEntity<Map<String, Object>> janPayCheck(LoginUser loginUser) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+
+        OperationLog operationLog = OperationLog.create().module("训练营管理").function("一月训练营").action("复购资格检查");
+        operationLogService.log(operationLog);
+
+        Profile profile = accountService.getProfile(loginUser.getOpenId());
+        if (profile == null) {
+            return WebUtils.error("用户不能为空");
+        }
+        if (prizeCardService.checkJanPay(profile.getId())) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error(222,"没有复购资格");
+        }
+    }
 }
