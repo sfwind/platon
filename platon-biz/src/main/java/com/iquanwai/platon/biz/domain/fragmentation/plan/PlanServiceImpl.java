@@ -306,35 +306,35 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId) {
-        CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
-        if (courseSchedule == null) {
-            return new MutablePair<>(-1, "请先去学习计划中勾选该课程");
-        }
-        if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-            //当月主修课可以强开
-            if (!(courseSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
-                    && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)) {
-                // 会员已经有三门再学
-                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
-                        + "门课程。先完成进行中的一门，再选新课哦");
-            }
-        }
-
-        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        Date openDate = monthlyCampConfig.getOpenDate();
-        int year = DateUtils.getYear(openDate);
-        int month = DateUtils.getMonth(openDate);
-        if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
-                && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
-            if(new Date().before(openDate)){
-                // 未到开营日的主修课不能提前选择
-                return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
-                        + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
-            }
-        }
-
         Profile profile = accountService.getProfile(profileId);
+        //商学院用户
         if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
+            CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
+            if (courseSchedule == null) {
+                return new MutablePair<>(-1, "请先去学习计划中勾选该课程");
+            }
+            if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
+                //当月主修课可以强开
+                if (!(courseSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
+                        && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)) {
+                    // 会员已经有三门再学
+                    return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
+                            + "门课程。先完成进行中的一门，再选新课哦");
+                }
+            }
+
+            MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
+            Date openDate = monthlyCampConfig.getOpenDate();
+            int year = DateUtils.getYear(openDate);
+            int month = DateUtils.getMonth(openDate);
+            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
+                    && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+                if(new Date().before(openDate)){
+                    // 未到开营日的主修课不能提前选择
+                    return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
+                            + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+                }
+            }
             // 是精英会员用户才会有选课上限分析
             RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
             Integer memberTypeId = riseMember.getMemberTypeId();
@@ -365,6 +365,12 @@ public class PlanServiceImpl implements PlanService {
                     break;
                 default:
                     break;
+            }
+        }else{
+            //非商学院用户
+            if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
+                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
+                        + "门课程。先完成进行中的一门，再选新课哦");
             }
         }
 
