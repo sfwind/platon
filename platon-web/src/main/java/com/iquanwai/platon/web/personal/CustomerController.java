@@ -404,12 +404,12 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> notifyExpire(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
-        // TODO 临时关闭快要过期和已经过期全局提醒
-        // boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSevenDays(loginUser.getId());
-        // boolean expiredRiseMember = riseMemberService.expiredRiseMember(loginUser.getId());
-        // riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
-        // riseMember.setExpired(expiredRiseMember);
-        riseMember.setShowGlobalNotify(customerService.hasAnnualSummaryAuthority(loginUser.getId()));
+        boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSevenDays(loginUser.getId());
+        boolean expiredRiseMember = riseMemberService.expiredRiseMember(loginUser.getId());
+        riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
+        riseMember.setExpired(expiredRiseMember);
+        riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSevenDays);
+        // riseMember.setShowGlobalNotify(customerService.hasAnnualSummaryAuthority(loginUser.getId()));
         return WebUtils.result(riseMember);
     }
 
