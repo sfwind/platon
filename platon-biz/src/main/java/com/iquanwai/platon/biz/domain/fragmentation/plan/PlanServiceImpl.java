@@ -306,9 +306,11 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId) {
-        Profile profile = accountService.getProfile(profileId);
+        // 是精英会员用户才会有选课上限分析
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        Integer memberTypeId = riseMember.getMemberTypeId();
         //商学院用户
-        if (profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
+        if (memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
             if (courseSchedule == null) {
                 return new MutablePair<>(-1, "请先去学习计划中勾选该课程");
@@ -335,9 +337,6 @@ public class PlanServiceImpl implements PlanService {
                             + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
                 }
             }
-            // 是精英会员用户才会有选课上限分析
-            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-            Integer memberTypeId = riseMember.getMemberTypeId();
             switch (memberTypeId) {
                 case RiseMember.ELITE:
                     //商学院用户，限制36门
