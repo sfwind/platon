@@ -194,50 +194,49 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        //点击商学院,非年费用户和课程单买用户跳转售卖页
-        if (request.getRequestURI().startsWith(INDEX_BUSINESS_SCHOOL_URL)) {
-            //
-            Boolean isElite = riseMembers.stream().anyMatch(item -> (!item.getExpired() && item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE));
-            Profile profile = accountService.getProfile(loginUser.getId());
-            Boolean modifyPlanSchedule = accountService.hasStatusId(loginUser.getId(), CustomerStatus.SCHEDULE_LESS);
+        //是否买过或曾经买过 商学院/专业版
+        Boolean isMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE ||
+                item.getMemberTypeId() == RiseMember.HALF_ELITE) || item.getMemberTypeId() == RiseMember.ANNUAL ||
+                item.getMemberTypeId() == RiseMember.HALF);
+        Profile profile = accountService.getProfile(loginUser.getId());
 
-            // 不是白名单
-            if (!modifyPlanSchedule && isElite && isInfoComplete(profile)) {
-                // 未填写信息的已购买商学院的 “新” 会员
-                response.sendRedirect(PROFILE_SUBMIT);
-                return null;
-            } else if (whiteListService.isGoToCountDownNotice(loginUser.getId(), riseMembers)) {
-                // 填完身份信息之后，开始学习日期未到
-                response.sendRedirect(BUSINESS_COUNT_DOWN_URL);
-                return null;
-            } else if (whiteListService.isGoToScheduleNotice(loginUser.getId(), riseMembers)) {
-                // 进入课程计划提示页面
-                response.sendRedirect(SCHEDULE_NOTICE);
-                return null;
-            } else if (whiteListService.isGoToNewSchedulePlans(loginUser.getId(), riseMembers)) {
-                // 进入新的学习页面
-                response.sendRedirect(NEW_SCHEDULE_PLAN);
-                return null;
-            } else if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)
-                    && !whiteListService.checkRunningRiseMenuWhiteList(loginUser.getId())) {
-                // 已经申请成功，有购买权限，非默认可购买的人(专业版)
-                response.sendRedirect(APPLY_SUCCESS);
-                return null;
-            } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
-                // 加载首屏广告信息
-                activityMessageService.loginMsg(loginUser.getId());
-            } else {
-                response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
-                return null;
-            }
+        // 不是白名单
+        if (isMember && isInfoComplete(profile)) {
+            // 未填写信息的已购买商学院的 “新” 会员
+            response.sendRedirect(PROFILE_SUBMIT);
+            return null;
+        } else if (whiteListService.isGoToCountDownNotice(loginUser.getId(), riseMembers)) {
+            // 填完身份信息之后，开始学习日期未到
+            response.sendRedirect(BUSINESS_COUNT_DOWN_URL);
+            return null;
+        } else if (whiteListService.isGoToScheduleNotice(loginUser.getId(), riseMembers)) {
+            // 进入课程计划提示页面
+            response.sendRedirect(SCHEDULE_NOTICE);
+            return null;
+        } else if (whiteListService.isGoToNewSchedulePlans(loginUser.getId(), riseMembers)) {
+            // 进入新的学习页面
+            response.sendRedirect(NEW_SCHEDULE_PLAN);
+            return null;
+        } else if (accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)
+                && !whiteListService.checkRunningRiseMenuWhiteList(loginUser.getId())) {
+            // 已经申请成功，有购买权限，非默认可购买的人(专业版)
+            response.sendRedirect(APPLY_SUCCESS);
+            return null;
+        } else if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+            // 加载首屏广告信息
+            activityMessageService.loginMsg(loginUser.getId());
+        } else {
+            response.sendRedirect(BUSINESS_SCHOOL_SALE_URL);
+            return null;
         }
+
 
         return courseView(request, loginUser, moduleShow, RISE_VIEW);
     }
 
     //个人信息是否完整
     private boolean isInfoComplete(Profile profile) {
-        return profile.getAddress() == null ||
+        return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
                 (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
     }
 
@@ -281,26 +280,22 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        //点击训练营,非训练营用户跳转售卖页
-        if (request.getRequestURI().startsWith(INDEX_CAMP_URL)) {
-            if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
-                activityMessageService.loginMsg(loginUser.getId());
-            } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
-                response.sendRedirect(CAMP_COUNT_DOWN_URL);
-                return null;
-            } else if (whiteListService.isGoGroupPromotionCountDownPage(loginUser.getId())) {
-                response.sendRedirect(GROUP_PROMOTION_COUNT_DOWN);
-                return null;
-            } else if (whiteListService.isStillLearningCamp(loginUser.getId())) {
-                return courseView(request, loginUser, moduleShow, RISE_VIEW);
-                //参加一带二活动的人可以进入学习页面
-            } else if(whiteListService.isProOrCardOnDate(loginUser.getId())){
-                return courseView(request, loginUser, moduleShow, RISE_VIEW);
-            }
-            else {
-                response.sendRedirect(CAMP_SALE_URL);
-                return null;
-            }
+        if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
+            activityMessageService.loginMsg(loginUser.getId());
+        } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
+            response.sendRedirect(CAMP_COUNT_DOWN_URL);
+            return null;
+        } else if (whiteListService.isGoGroupPromotionCountDownPage(loginUser.getId())) {
+            response.sendRedirect(GROUP_PROMOTION_COUNT_DOWN);
+            return null;
+        } else if (whiteListService.isStillLearningCamp(loginUser.getId())) {
+            return courseView(request, loginUser, moduleShow, RISE_VIEW);
+            //参加一带二活动的人可以进入学习页面
+        } else if (whiteListService.isProOrCardOnDate(loginUser.getId())) {
+            return courseView(request, loginUser, moduleShow, RISE_VIEW);
+        } else {
+            response.sendRedirect(CAMP_SALE_URL);
+            return null;
         }
 
         return courseView(request, loginUser, moduleShow, RISE_VIEW);
