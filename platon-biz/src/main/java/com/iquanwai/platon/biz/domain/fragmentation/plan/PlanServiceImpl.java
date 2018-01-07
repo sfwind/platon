@@ -121,7 +121,8 @@ public class PlanServiceImpl implements PlanService {
         // 所有的综合练习是否完成
         List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
         // 拿到未完成的综合训练
-        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
+        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW
+                && practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED)
                 .collect(Collectors.toList());
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
@@ -205,7 +206,8 @@ public class PlanServiceImpl implements PlanService {
                 if ((practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) &&
+                        practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED) {
                     return false;
                 }
             }
@@ -723,7 +725,6 @@ public class PlanServiceImpl implements PlanService {
                 } else if (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL) {
                     buttonStatus = 5;
                 } else {
-                    // 加入商学院
                     buttonStatus = 1;
                 }
             }
