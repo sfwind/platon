@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.MemberTypeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -82,6 +83,24 @@ public class RiseMemberServiceImpl implements RiseMemberService {
             }
         }
         return false;
+    }
+
+    /**
+     * 获取有效的商学院用户
+     * @return
+     */
+    @Override
+    public List<RiseMember> getValidElites() {
+
+        List<RiseMember> riseMembers = riseMemberDao.loadValidRiseMembers();
+        List<RiseMember> validRiseMembers = Lists.newArrayList();
+        riseMembers.forEach(riseMember -> {
+            Integer typeId = riseMember.getMemberTypeId();
+            if(typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)){
+                validRiseMembers.add(riseMember);
+            }
+        });
+        return validRiseMembers;
     }
 
 

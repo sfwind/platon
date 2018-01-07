@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.po.RiseMember;
 
+import java.util.List;
+
 /**
  * Created by justin on 17/5/11.
  */
@@ -29,4 +31,10 @@ public interface RiseMemberService {
      * @return
      */
     Boolean isValidElite(Integer profileId);
+
+    /**
+     * 获取所有有效的商学院用户
+     * @return
+     */
+    List<RiseMember> getValidElites();
 }
