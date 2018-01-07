@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseCertificateDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -73,6 +74,8 @@ public class CertificateServiceImpl implements CertificateService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private RiseMemberService riseMemberService;
     @Autowired
     private PointRepo pointRepo;
     @Autowired
@@ -288,10 +291,14 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId) {
-        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
-        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
+//        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
+//        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
 
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseClassMemberProfileIds, problemId);
+        //找出所有的商学院会员
+        List<RiseMember> riseMembers = riseMemberService.getValidElites();
+        List<Integer> riseMemberProfileIds = riseMembers.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseMemberProfileIds, problemId);
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
@@ -344,22 +351,21 @@ public class CertificateServiceImpl implements CertificateService {
                 if (generateFullAttendanceCoupon) {
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
-
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
-                    if (riseClassMember != null) {
+                   // RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
+                   // if (riseClassMember != null) {
                         FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
                         if (existFullAttendanceReward == null) {
                             // 如果允许生成训练营结业证书，则生成证书
                             FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                             fullAttendanceReward.setProfileId(profileId);
-                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
-                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+//                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
+//                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+//                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                             fullAttendanceReward.setYear(year);
                             fullAttendanceReward.setMonth(month);
                             fullAttendanceReward.setAmount(199.00);
                             fullAttendanceRewardDao.insert(fullAttendanceReward);
-                        }
+                  //      }
                     }
                 }
             }
@@ -411,18 +417,18 @@ public class CertificateServiceImpl implements CertificateService {
                             logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
-
-                            if (riseClassMember != null) {
-                                logger.info("riseClassMember不为空");
+                            //RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
+                            //判断是否是商学院用户
+                            if (riseMemberService.isValidElite(profileId)) {
+                                logger.info("该用户是商学院用户");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
-                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
-                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+//                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
+//                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+//                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                                     fullAttendanceReward.setYear(year);
                                     fullAttendanceReward.setMonth(month);
                                     fullAttendanceReward.setAmount(199.00);
