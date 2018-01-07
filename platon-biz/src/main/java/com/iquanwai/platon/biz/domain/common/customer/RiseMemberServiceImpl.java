@@ -67,4 +67,22 @@ public class RiseMemberServiceImpl implements RiseMemberService {
         return tag;
     }
 
+    /**
+     * 判断是否是商学院会员
+     * @param profileId
+     * @return
+     */
+    @Override
+    public Boolean isValidElite(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if(riseMember!=null){
+            Integer typeId = riseMember.getMemberTypeId();
+            if(typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

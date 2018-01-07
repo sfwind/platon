@@ -22,4 +22,11 @@ public interface RiseMemberService {
      * 会员身份过期
      */
     Boolean expiredRiseMember(Integer profileId);
+
+    /**
+     * 判断是否是有效的商学院会员
+     * @param profileId
+     * @return
+     */
+    Boolean isValidElite(Integer profileId);
 }

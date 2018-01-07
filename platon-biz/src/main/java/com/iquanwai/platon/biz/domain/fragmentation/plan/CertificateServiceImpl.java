@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseCertificateDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -73,6 +74,8 @@ public class CertificateServiceImpl implements CertificateService {
     private TemplateMessageService templateMessageService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private RiseMemberService riseMemberService;
     @Autowired
     private PointRepo pointRepo;
     @Autowired
@@ -411,18 +414,20 @@ public class CertificateServiceImpl implements CertificateService {
                             logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
+                            //RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
+                            //判断是否是商学院用户
 
-                            if (riseClassMember != null) {
+
+                            if (riseMemberService.isValidElite(profileId)) {
                                 logger.info("riseClassMember不为空");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
-                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
-                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+//                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
+//                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+//                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                                     fullAttendanceReward.setYear(year);
                                     fullAttendanceReward.setMonth(month);
                                     fullAttendanceReward.setAmount(199.00);
