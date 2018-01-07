@@ -315,37 +315,37 @@ public class CertificateServiceImpl implements CertificateService {
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                     // 如果存在有没有完成的题数，则不予发送优惠券
                     generateFullAttendanceCoupon = false;
-//                } else {
-//                    // 完成所有练习之后，对应用题完成情况进行复查
-//                    List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-//                            .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
-//                            .collect(Collectors.toList());
-//                    List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
-//                    List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
-//                    Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
-//
-//                    // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
-//                    Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
-//
-//                    // Plan 中每节都是优质完成应用题的小节数
-//                    Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
-//                        List<Integer> practiceIds = applicationPracticePlans.stream()
-//                                .filter(practicePlan -> practicePlan.getSeries().equals(series))
-//                                .map(PracticePlan::getPracticeId)
-//                                .map(Integer::parseInt)
-//                                .collect(Collectors.toList());
-//                        // 每个 Series 中每一节都是优质完成
-//                        // 返回不合格完成应用题数，全勤奖去除字数限制
-//                        Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
-//                            ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
-//                            return applicationSubmit == null;
-//                        }).count();
-//                        return seriesApplicationCheckLong.intValue() == 0; // 不合格数为0的话，说明当前小节全部完成，参与计数
-//                    }).count();
-//
-//                    if (planApplicationCheckLong.intValue() != seriesSet.size()) {
-//                        generateFullAttendanceCoupon = false;
-//                    }
+                } else {
+                    // 完成所有练习之后，对应用题完成情况进行复查
+                    List<PracticePlan> applicationPracticePlans = practicePlans.stream()
+                            .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
+                            .collect(Collectors.toList());
+                    List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                    List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
+                    Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
+
+                    // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
+                    Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
+
+                    // Plan 中每节都是优质完成应用题的小节数
+                    Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
+                        List<Integer> practiceIds = applicationPracticePlans.stream()
+                                .filter(practicePlan -> practicePlan.getSeries().equals(series))
+                                .map(PracticePlan::getPracticeId)
+                                .map(Integer::parseInt)
+                                .collect(Collectors.toList());
+                        // 每个 Series 中每一节都是优质完成
+                        // 返回不合格完成应用题数，全勤奖去除字数限制
+                        Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
+                            ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
+                            return applicationSubmit == null;
+                        }).count();
+                        return seriesApplicationCheckLong.intValue() == 0; // 不合格数为0的话，说明当前小节全部完成，参与计数
+                    }).count();
+
+                    if (planApplicationCheckLong.intValue() != seriesSet.size()) {
+                        generateFullAttendanceCoupon = false;
+                    }
                 }
 
                 if (generateFullAttendanceCoupon) {
