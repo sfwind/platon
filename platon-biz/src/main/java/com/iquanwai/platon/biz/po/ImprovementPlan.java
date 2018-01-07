@@ -24,8 +24,7 @@ public class ImprovementPlan {
     private Integer point; //积分
     private Integer warmupComplete; //巩固练习完成数量
     private Integer applicationComplete; //应用练习完成数量
-    @Deprecated
-    private Integer total; //任务总数
+    private Integer total; //总节数
     @Deprecated
     private Integer keycnt; //钥匙数量
     private Integer currentSeries; //当前访问的节数
@@ -37,13 +36,13 @@ public class ImprovementPlan {
     private Boolean del; //是否删除
 
     // ----------------- 非db字段------------------
-    private Problem problem; //非db字段 小课
+    private Problem problem; //非db字段 课程
     private Boolean free; //是否免费
     private List<Section> sections; //非db字段
     private Integer deadline; //非db字段 离截止日期天数
     private Boolean hasProblemScore; //是否已打分
     private Boolean doneAllIntegrated; //是否做完所有综合练习
-    private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 小课已过期
+    private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 课程已过期
 
     /**
      * -1：课程结束，report不能点击 plan的status=3 and 没有完成练习<br/>

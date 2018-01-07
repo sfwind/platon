@@ -53,7 +53,7 @@ public class CacheServiceImpl implements CacheService {
     private Map<Integer, ProblemCatalog> problemCatalogMap = Maps.newHashMap();
     //缓存问题子分类
     private Map<Integer, ProblemSubCatalog> problemSubCatalogMap = Maps.newHashMap();
-    //缓存小课训练营配置
+    //缓存训练营配置
     private MonthlyCampConfig monthlyCampConfig;
     // 商学院学习计划每月主题
     private Map<Integer, List<CourseScheduleTopic>> courseScheduleTopicMap;
@@ -82,6 +82,7 @@ public class CacheServiceImpl implements CacheService {
                     if (audio == null) {
                         logger.info("{} is not exist", problem.getAudioId());
                     } else {
+                    //添加对因数据问题导致audio为空的判断
                         problem.setAudio(audio.getUrl());
                         problem.setAudioWords(audio.getWords());
                     }
@@ -94,29 +95,31 @@ public class CacheServiceImpl implements CacheService {
         logger.info("problem init complete");
 
         // 缓存热身训练,本地不缓存
-        List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
-        warmupPractices.forEach(warmupPractice -> {
-            warmupPractice.setChoiceList(Lists.newArrayList());
-            //添加非复习知识点
-            if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
-                warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
-            }
-            if (ConfigUtils.isHttps()) {
-                warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
-            }
-            warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
-        });
-        List<Choice> choices = choiceDao.loadAll(Choice.class);
-        choices.forEach(choice -> {
-            Integer questionId = choice.getQuestionId();
-            WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
-            if (warmupPractice != null) {
-                warmupPractice.getChoiceList().add(choice);
-            }
-        });
-        //选项按sequence排序
-        warmupPractices.forEach(warmupPractice ->
-                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
+        if (!ConfigUtils.isDebug()) {
+            List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
+            warmupPractices.forEach(warmupPractice -> {
+                warmupPractice.setChoiceList(Lists.newArrayList());
+                //添加非复习知识点
+                if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
+                    warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+                }
+                if (ConfigUtils.isHttps()) {
+                    warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
+                }
+                warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
+            });
+            List<Choice> choices = choiceDao.loadAll(Choice.class);
+            choices.stream().filter(choice -> choice.getDel()==0).forEach(choice -> {
+                Integer questionId = choice.getQuestionId();
+                WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
+                if (warmupPractice != null) {
+                    warmupPractice.getChoiceList().add(choice);
+                }
+            });
+            //选项按sequence排序
+            warmupPractices.forEach(warmupPractice ->
+                    warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
+        }
         logger.info("warmup practice init complete");
 
         // 缓存问题主分类
@@ -145,7 +148,7 @@ public class CacheServiceImpl implements CacheService {
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
 
-        // 缓存小课训练营配置缓存
+        // 缓存训练营配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
         // 缓存商学院学习计划每月主题

@@ -300,7 +300,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         return remainTrial;
     }
 
-    // 发送普通限免小课信息
+    // 发送普通限免课程信息
     private void sendNormalTrialMsg(Integer promotedUserId, Integer targetProfileId, Integer remainCount, Boolean freeLimit) {
         Profile targetProfile = accountService.getProfile(targetProfileId);
         Profile promoterProfile = accountService.getProfile(promotedUserId);
@@ -312,10 +312,10 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
 
         if(!freeLimit){
             if (remainCount != 0) {
-                data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力小课，只剩"
+                data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力课程，只剩"
                         + remainCount + "个好友啦！\n"));
             } else {
-                data.put("first", new TemplateMessage.Keyword("你已获得免费领取洞察力小课资格啦！\n"));
+                data.put("first", new TemplateMessage.Keyword("你已获得免费领取洞察力课程资格啦！\n"));
             }
             data.put("keyword1", new TemplateMessage.Keyword("洞察力天赋检测"));
             data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -331,7 +331,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessageService.sendMessage(templateMessage);
     }
 
-    // 发送成功获得限免小课试用信息
+    // 发送成功获得限免课程试用信息
     private void sendSuccessTrialMsg(Integer promotedUserId, Integer targetProfileId) {
         // 发送模板消息
         // 被推荐人
@@ -345,14 +345,14 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true");
         templateMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
         data.put("first", new TemplateMessage.Keyword("恭喜！你的好友"+promoterProfile.getNickname() + "扫码完成测试，总计"+
-                TRIAL_NUM + "位好友完成测评，你已获得免费领取洞察力小课资格啦！\n"));
+                TRIAL_NUM + "位好友完成测评，你已获得免费领取洞察力课程资格啦！\n"));
         data.put("keyword1", new TemplateMessage.Keyword("找到本质问题，减少无效努力"));
         data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));
         data.put("remark", new TemplateMessage.Keyword("\n点击卡片领取！"));
         templateMessageService.sendMessage(templateMessage);
 
 
-        // 非会员，限免小课 TODO  删除这边时候，记得开放上面 TODO
+        // 非会员，限免课程 TODO  删除这边时候，记得开放上面 TODO
         // 发送我的消息，发送图片
         if (!profile.getRiseMember().equals(Constants.RISE_MEMBER.MEMBERSHIP)) {
             TemplateMessage tempMessage = new TemplateMessage();
@@ -365,7 +365,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             tempDate.put("keyword1", new TemplateMessage.Keyword("【圈外同学】迷你训练营"));
             tempDate.put("keyword2", new TemplateMessage.Keyword("点击“详情”，按照步骤操作入群"));
             tempDate.put("keyword3", new TemplateMessage.Keyword("2017年9月19日-2017年9月20日"));
-            tempDate.put("remark", new TemplateMessage.Keyword("\n迷你训练营为【圈外同学】¥299的“小课训练营”的精华版，本次免费开放，等你来加入～\n" +
+            tempDate.put("remark", new TemplateMessage.Keyword("\n迷你训练营为【圈外同学】¥299的“训练营”的精华版，本次免费开放，等你来加入～\n" +
                     "名额限500人，先到先得～"));
             templateMessageService.sendMessage(tempMessage);
 

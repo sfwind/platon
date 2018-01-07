@@ -1,6 +1,11 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.po.AnnualSummary;
+import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
@@ -16,12 +21,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private ProfileDao profileDao;
+    @Autowired
+    private AnnualSummaryDao annualSummaryDao;
+    @Autowired
+    private PrizeCardDao prizeCardDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -59,7 +69,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         InputStream cropInputStream = new ByteArrayInputStream(os.toByteArray());
 
-        String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName;
+        String targetFileName = "headImage" + "-" + CommonUtils.randomString(8) + "-" + fileName + ".jpeg";
         boolean uploadResult = QiNiuUtils.uploadFile(targetFileName, cropInputStream);
 
         return uploadResult ? ConfigUtils.getPicturePrefix() + targetFileName : null;
@@ -73,6 +83,27 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public int updateNickName(Integer profileId, String nickName) {
         return profileDao.updateNickName(profileId, nickName);
+    }
+
+    @Override
+    public AnnualSummary loadUserAnnualSummary(Integer profileId) {
+        return annualSummaryDao.loadUserAnnualSummary(profileId);
+    }
+
+    @Override
+    public AnnualSummary loadUserAnnualSummary(String riseId) {
+        Profile profile = profileDao.queryByRiseId(riseId);
+        AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(riseId);
+        if (annualSummary != null) {
+            List<PrizeCard> prizeCards = prizeCardDao.getAnnualPrizeCards(profile.getId());
+            annualSummary.setCardCount(prizeCards.size());
+        }
+        return annualSummary;
+    }
+
+    @Override
+    public Boolean hasAnnualSummaryAuthority(Integer profileId) {
+        return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
     }
 
 }

@@ -24,16 +24,14 @@ public interface PromotionConstants {
         int SCAN_CARD = 11; // 扫测试卡，入 level 表
         int CLICK_HREF = 12; // 点击链接，入 level 表
         int FINISH_EVALUATE = 13; // 完成测评
-        int BUY_COURSE = 14; // 付费购买小课
-        int ACCESS_TRIAL = 15; // 完成推广人数要求，获得学习限免小课资格
+        int BUY_COURSE = 14; // 付费购买课程
+        int ACCESS_TRIAL = 15; // 完成推广人数要求，获得学习限免课程资格
     }
 
     interface CourseReductionAction {
         int SCAN_CODE = 20; // 扫二维码
-        int PAY_COURSE = 21; // 购买小课
+        int PAY_COURSE = 21; // 购买课程
         int PAY_MEMBER = 22; // 购买会员
-        // TODO 会删除
-        int PAY_ZHANG_PENG = 23; // 购买张鹏小课
     }
 
     interface CaitongLiveAction {

@@ -13,38 +13,38 @@ public interface ProblemService {
     Integer MAX_RECOMMENDATION_SIZE = 6;
 
     /**
-     * 获取所有小课
+     * 获取所有课程
      */
     List<Problem> loadProblems();
 
     /**
-     * 根据问题id获取问题
+     * 根据课程id获取问题
      *
-     * @param problemId 问题id
+     * @param problemId 课程id
      */
     Problem getProblem(Integer problemId);
 
     /**
-     * 根据问题id获取问题
+     * 根据课程id获取问题
      *
-     * @param problemId 问题id
+     * @param problemId 课程id
      */
     Problem getProblemForSchedule(Integer problemId, Integer profileId);
 
     /**
-     * 获得问题的目录分类
+     * 获得课程的目录分类
      */
     List<ProblemCatalog> getProblemCatalogs();
 
     /**
-     * 获得问题的分类
+     * 获得课程的分类
      *
      * @param catalogId 分类
      */
     ProblemCatalog getProblemCatalog(Integer catalogId);
 
     /**
-     * 获得问题的子分类
+     * 获得课程的子分类
      *
      * @param subCatalogId 子分类
      */
@@ -54,18 +54,10 @@ public interface ProblemService {
      * 给问题打分
      *
      * @param openId        用户id
-     * @param problemId     小课id
-     * @param problemScores 小课打分
+     * @param problemId     课程id
+     * @param problemScores 课程打分
      */
     void gradeProblem(Integer problemId, String openId, Integer profileId, List<ProblemScore> problemScores);
-
-    /**
-     * 用户是否已对问题评分
-     *
-     * @param profileId 用户id
-     * @param problemId 小课id
-     */
-    boolean hasProblemScore(Integer profileId, Integer problemId);
 
     /**
      * 更新 ProblemExtension 数据

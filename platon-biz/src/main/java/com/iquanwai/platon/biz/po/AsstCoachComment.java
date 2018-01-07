@@ -11,5 +11,5 @@ public class AsstCoachComment {
     private String openid; //评论人openid
     private Integer profileId; //评论人id
     private Integer count; //评论次数
-    private Integer problemId; //小课id
+    private Integer problemId; //课程id
 }

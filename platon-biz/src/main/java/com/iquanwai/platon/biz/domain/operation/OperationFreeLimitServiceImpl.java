@@ -208,7 +208,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setData(data);
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
+        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免课程《找到本质问题，减少无效努力》\n"));
         data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
@@ -223,7 +223,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
         templateMessage.setData(data);
-        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免小课《找到本质问题，减少无效努力》\n"));
+        data.put("first", new TemplateMessage.Keyword("太棒了！" + profile.getNickname() + "通过你分享的卡片，学习了限免课程《找到本质问题，减少无效努力》\n"));
         data.put("keyword1", new TemplateMessage.Keyword("知识传播大使召集令"));
         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
         data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
@@ -247,7 +247,7 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
         data.put("keyword1", new TemplateMessage.Keyword(profile.getNickname()));
         data.put("keyword2", new TemplateMessage.Keyword("¥50代金券"));
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-        data.put("remark", new TemplateMessage.Keyword("\n点击下方“上课啦”并升级会员/报名小课，立即使用代金券，开学！"));
+        data.put("remark", new TemplateMessage.Keyword("\n点击下方“上课啦”并升级会员/报名课程，立即使用代金券，开学！"));
         templateMessageService.sendMessage(templateMessage);
     }
 

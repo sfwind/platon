@@ -11,16 +11,10 @@ public interface WhiteListService {
     boolean isInWhiteList(String function, Integer profileId);
 
     /**
-     * TODO 待删除，临时逻辑
-     */
-    boolean isInBibleWhiteList(Integer profileId);
-
-    /**
      * 进入倒计时页面
      * <p/>
      * 开营时间 OpenDate:2017-11-05<br/>
      * 则在2017-11-05 00:00:01 起可以开营
-     *
      * @param profileId 用户id
      * @return 是否进入到倒计时页面
      */
@@ -28,7 +22,6 @@ public interface WhiteListService {
 
     /**
      * 进入课程计划提示页面
-     *
      * @param profileId 用户id
      * @return 是否进入
      */
@@ -36,38 +29,53 @@ public interface WhiteListService {
 
     /**
      * 点击商学院白名单
-     *
      * @param profileId 用户id
      */
-    boolean  checkRiseMenuWhiteList(Integer profileId);
+    boolean checkRiseMenuWhiteList(Integer profileId);
 
     /**
      * 当前是否有未失效的身份
-     * @param profileId
-     * @return
      */
     boolean checkRunningRiseMenuWhiteList(Integer profileId);
 
     /**
      * 点击小课训练营白名单
-     *
      * @param profileId 用户id
      */
     boolean checkCampMenuWhiteList(Integer profileId);
 
     /**
      * 进入新的学习页面
-     *
-     * @param profileId   用户id
+     * @param profileId 用户id
      * @param riseMembers 会员信息
-     * @return
      */
     boolean isGoToNewSchedulePlans(Integer profileId, List<RiseMember> riseMembers);
 
     /**
      * 是否显示发现页面
-     *
      * @param profileId 用户id
      */
     Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers);
+
+    /**
+     * 是否进入倒计时页面 <br/>
+     * 只有未开课的小课训练营的用户才能进
+     */
+    boolean isGoCampCountDownPage(Integer profileId);
+
+    boolean isGoGroupPromotionCountDownPage(Integer profileId);
+
+    /**
+     * 判断一个人是否有正在学习的小课训练营
+     * @param profileId
+     * @return
+     */
+    boolean isStillLearningCamp(Integer profileId);
+
+    /**
+     * 判断参加一带二活动或者领取礼品卡的人是否到学习时间
+     * @param profileId
+     * @return
+     */
+    boolean isProOrCardOnDate(Integer profileId);
 }

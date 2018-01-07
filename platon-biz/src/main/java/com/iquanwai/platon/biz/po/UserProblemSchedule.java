@@ -8,9 +8,9 @@ import lombok.Data;
 @Data
 public class UserProblemSchedule {
     private int id;
-    private Integer section; //小课第几节
+    private Integer section; //课程第几节
     private Integer knowledgeId; //知识点id
-    private Integer chapter; //小课第几章
+    private Integer chapter; //课程第几章
     private Integer series; //序号
     private Integer planId; //计划id
 

@@ -9,10 +9,10 @@ import java.util.Map;
  * Created by justin on 17/1/1.
  */
 public interface CacheService {
-    /** 获取所有的小课 */
+    /** 获取所有的课程 */
     List<Problem> getProblems();
 
-    /** 获取某个小课 */
+    /** 获取某个课程 */
     Problem getProblem(Integer problemId);
 
     /** 获取某个知识点 */
@@ -31,7 +31,7 @@ public interface CacheService {
     List<ProblemCatalog> loadProblemCatalogs();
 
     /**
-     * 获取当月训练营小课配置
+     * 获取当月训练营配置
      * */
     MonthlyCampConfig loadMonthlyCampConfig();
 

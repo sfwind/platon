@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.fragmentation.signature;
+package com.iquanwai.platon.web.fragmentation.controller.signature;
 
 import com.iquanwai.platon.biz.domain.weixin.signature.JsSignature;
 import com.iquanwai.platon.biz.domain.weixin.signature.JsSignatureService;

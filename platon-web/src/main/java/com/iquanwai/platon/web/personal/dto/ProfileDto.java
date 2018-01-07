@@ -22,4 +22,6 @@ public class ProfileDto {
     private String address;
     private String phone;
     private String weixinId;
+    private String receiver;//收件人
+    private String married;//婚恋情况
 }

@@ -24,8 +24,9 @@ public class BusinessSchoolApplication {
     private String comment;
     private Date submitTime;
     private Date dealTime;
-
+    private String orderId;
     private String originMemberTypeName;
+    private Integer lastVerified;
 
     public static final int APPLYING = 0;
     public static final int APPROVE = 1;

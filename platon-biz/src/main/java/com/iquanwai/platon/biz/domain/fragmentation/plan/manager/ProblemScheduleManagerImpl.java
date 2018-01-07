@@ -49,9 +49,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             userProblemScheduleDao.batchInsert(problemSchedules);
         }
 
-        List<Chapter> chapterList = getChapters(problemSchedules);
-
-        return chapterList;
+        return getChapters(problemSchedules);
     }
 
     private List<Chapter> getChapters(List<UserProblemSchedule> problemSchedules) {
@@ -93,6 +91,8 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             }
             chapterList.add(chapter);
         });
+
+        chapterList.sort((o1, o2) -> o1.getChapter() - o2.getChapter());
         return chapterList;
     }
 
@@ -105,8 +105,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
                 .map(problemSchedule -> getUserProblemSchedule(problemSchedule, null))
                 .collect(Collectors.toList());
 
-        List<Chapter> chapterList = getChapters(problemSchedules);
-        return chapterList;
+        return getChapters(problemSchedules);
     }
 
     private String chapterName(List<Section> sectionList) {

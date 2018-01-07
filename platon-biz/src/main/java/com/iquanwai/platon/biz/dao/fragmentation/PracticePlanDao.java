@@ -10,6 +10,7 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -20,6 +21,21 @@ import java.util.List;
 @Repository
 public class PracticePlanDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    public List<PracticePlan> loadNeverUnlockPlan(List<Integer> planIds) {
+        if (CollectionUtils.isEmpty(planIds)) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM PracticePlan WHERE PlanId in (" + produceQuestionMark(planIds.size()) + ") AND Status = 2 And Del=0";
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
+        try {
+            return runner.query(sql, h, planIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 
     public void batchInsert(List<PracticePlan> planList) {
         QueryRunner runner = new QueryRunner(getDataSource());
@@ -115,6 +131,19 @@ public class PracticePlanDao extends PracticeDBUtil {
     public void batchUnlockByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE PracticePlan SET UnLocked = 1 WHERE PlanId = ?";
+        try {
+            runner.update(sql, planId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    /**
+     * 将某个 plan 下的所有不能解锁的小节都设置为未完成
+     */
+    public void revertNeverUnlockPracticePlan(Integer planId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE PracticePlan SET Status = 0 WHERE PlanId = ? and Status = 2";
         try {
             runner.update(sql, planId);
         } catch (SQLException e) {

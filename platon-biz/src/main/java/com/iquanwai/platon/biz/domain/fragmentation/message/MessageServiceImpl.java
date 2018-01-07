@@ -40,7 +40,6 @@ public class MessageServiceImpl implements MessageService {
 
 
     @Override
-    //TODO:改造成消息队列
     public void sendMessage(String message, String toUser, String fromUser, String url) {
         NotifyMessage notifyMessage = new NotifyMessage();
         notifyMessage.setFromUser(fromUser);

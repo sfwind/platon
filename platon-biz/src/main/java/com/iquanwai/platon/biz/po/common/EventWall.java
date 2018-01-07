@@ -25,7 +25,7 @@ public class EventWall {
     private Boolean showTime; //是否显示时间
     private Integer visibility; // 会员可见性
     private Integer problemId;
-    private Integer visibleProblemId; // 针对小课用户的可见性
+    private Integer visibleProblemId; // 针对课程用户的可见性
 
 
     public static final int LIVE = 1;// 直播
@@ -38,7 +38,7 @@ public class EventWall {
         int NO_PAY_NO_PLAN = 1; //非付费
         int NOT_ELITE = 2; // 非精英
         int ELITE = 3; // 精英版
-        int CAMP = 4; // 小课训练营
+        int CAMP = 4; // 训练营
         int RISE_MEMBER = 5; // 付费用户
     }
 }

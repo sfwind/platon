@@ -16,7 +16,7 @@ public class  ApplicationPractice {
     @Deprecated
     private Integer sceneId; //子场景id
     private Integer difficulty; //难易度（1-容易，2-普通，3-困难）
-    private Integer problemId; //小课id
+    private Integer problemId; //课程id
     private Integer sequence; //出现顺序
     private Boolean del; //是否删除(0-否,1-是)
     private String practiceUid; //任务唯一编号

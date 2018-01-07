@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,22 +67,40 @@ public class WebUtils {
     /**
      * 默认授权方式，静默授权
      */
-    public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String url = ConfigUtils.adapterDomainName()+request.getRequestURI();
-        if(!StringUtils.isEmpty(request.getQueryString())){
-            url = url +"?"+request.getQueryString();
+    public static void auth(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String domainName = request.getHeader("Host-Test");
+        String url;
+        if(domainName != null){
+            url = "http://" + domainName + request.getRequestURI();
+        }else{
+            url = ConfigUtils.adapterDomainName() + request.getRequestURI();
         }
-        response.sendRedirect(ConfigUtils.adapterDomainName()+"/wx/oauth/auth?callbackUrl="+url);
+
+        if (!StringUtils.isEmpty(request.getQueryString())) {
+            url = url + "?" + request.getQueryString();
+        }
+        url = URLEncoder.encode(url, "UTF-8");
+
+        response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth?callbackUrl=" + url);
     }
 
     /**
      * 提示性授权
      */
-    public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        String url = ConfigUtils.adapterDomainName()+request.getRequestURI();
-        if(!StringUtils.isEmpty(request.getQueryString())){
-            url = url +"?"+request.getQueryString();
+    public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String domainName = request.getHeader("Host-Test");
+        String url;
+        if(domainName != null){
+            url = "http://" + domainName + request.getRequestURI();
+        }else{
+            url = ConfigUtils.adapterDomainName() + request.getRequestURI();
         }
-        response.sendRedirect(ConfigUtils.adapterDomainName()+"/wx/oauth/auth/ask?callbackUrl="+url);
+
+        if (!StringUtils.isEmpty(request.getQueryString())) {
+            url = url + "?" + request.getQueryString();
+        }
+        url = URLEncoder.encode(url, "UTF-8");
+
+        response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth/ask?callbackUrl=" + url);
     }
 }

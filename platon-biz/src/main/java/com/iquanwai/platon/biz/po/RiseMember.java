@@ -26,6 +26,8 @@ public class RiseMember {
 
     private Boolean expiredInSevenDays; // 会员过期将在7日内过期
 
+    private Boolean showGlobalNotify; // 是否展示全局通知
+
     public RiseMember simple() {
         RiseMember riseMember = new RiseMember();
         riseMember.setMemberTypeId(memberTypeId);
@@ -57,11 +59,11 @@ public class RiseMember {
      */
     public static final int HALF_ELITE = 4;
     /**
-     * 训练营小课
+     * 训练营
      */
     public static final int CAMP = 5;
     /**
-     * 单买小课
+     * 单买课程
      */
     public static final int COURSE = 6;
 }

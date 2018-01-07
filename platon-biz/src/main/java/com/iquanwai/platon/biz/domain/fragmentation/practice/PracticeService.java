@@ -85,8 +85,6 @@ public interface PracticeService {
 
     void initCommentEvaluation(Integer submitId, Integer commentId);
 
-    Boolean loadEvaluated(Integer commentId);
-
     void updateEvaluation(Integer commentId, Integer useful, String reason);
 
     /**
@@ -141,13 +139,11 @@ public interface PracticeService {
     boolean vote(Integer type, Integer referencedId, Integer profileId, String openId,Integer device);
 
     /**
-     * 查询应用练习提交记录
+     * 查询同学的应用练习提交记录
      *
      * @param applicationId 应用练习id
      */
-    List<ApplicationSubmit> loadApplicationSubmits(Integer applicationId);
-
-    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId);
+    List<ApplicationSubmit> loadAllOtherApplicationSubmits(Integer applicationId, Page page);
 
     /**
      * 查询评论
@@ -195,14 +191,14 @@ public interface PracticeService {
     WarmupPractice getWarmupPractice(Integer warmupId);
 
     /**
-     * 提交小课分享文章
+     * 提交课程分享文章
      */
     Integer submitSubjectArticle(SubjectArticle subjectArticle);
 
     /**
-     * 加载小课分享区文章
+     * 加载课程分享区文章
      *
-     * @param problemId 小课id
+     * @param problemId 课程id
      * @param page      分页对象
      */
     List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
@@ -215,14 +211,14 @@ public interface PracticeService {
     SubjectArticle loadSubjectArticle(Integer submitId);
 
     /**
-     * 获取小课所有标签
+     * 获取课程所有标签
      *
-     * @param problemId 小课id
+     * @param problemId 课程id
      */
     List<LabelConfig> loadProblemLabels(Integer problemId);
 
     /**
-     * 更新小课分享的标签
+     * 更新课程分享的标签
      *
      * @param moduleId  模块
      * @param articleId 文章id
@@ -231,7 +227,7 @@ public interface PracticeService {
     List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
 
     /**
-     * 获取小课分享的标签
+     * 获取课程分享的标签
      *
      * @param moduleId  模块
      * @param articleId 文章id
@@ -263,7 +259,7 @@ public interface PracticeService {
      * 求点评
      *
      * @param submitId 文章提交id
-     * @param moduleId 模块id（2-应用练习,3-小课分享）
+     * @param moduleId 模块id（2-应用练习,3-课程分享）
      */
     boolean requestComment(Integer submitId, Integer moduleId, Integer profileId);
 
@@ -271,7 +267,7 @@ public interface PracticeService {
     /**
      * 求点评次数
      *
-     * @param problemId 小课id
+     * @param problemId 课程id
      * @param profileId 学员id
      */
     Integer hasRequestComment(Integer problemId, Integer profileId);

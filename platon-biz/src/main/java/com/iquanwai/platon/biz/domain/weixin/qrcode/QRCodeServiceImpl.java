@@ -43,7 +43,7 @@ public class QRCodeServiceImpl implements QRCodeService {
         InputStream inputStream = showQRCode(response.getTicket());
         try {
             return ImageUtils.getBufferedImageByInputStream(inputStream);
-        }finally {
+        } finally {
             try {
                 inputStream.close();
             } catch (IOException e) {
@@ -74,7 +74,7 @@ public class QRCodeServiceImpl implements QRCodeService {
         BASE64Encoder encoder = new BASE64Encoder();
         try {
             return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
-        }finally {
+        } finally {
             try {
                 inputStream.close();
                 outputStream.close();

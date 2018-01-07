@@ -37,7 +37,7 @@ public class OrderReceiver {
 
     private void activeAction(String message) {
         logger.info("receive monthly camp message: {}", message);
-        planService.forceOpenCampOrder(message);
+        planService.magicOpenCampOrder(message);
     }
 
 }

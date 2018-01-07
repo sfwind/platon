@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -21,15 +22,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.*;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +48,9 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private PointManager pointRepo;
+    private PointManager pointManager;
+    @Autowired
+    private RiseMemberService riseMemberService;
     @Autowired
     private CouponDao couponDao;
     @Autowired
@@ -211,7 +215,7 @@ public class CertificateServiceImpl implements CertificateService {
                         RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
                         if (existRiseCertificate == null) {
                             Problem problem = cacheService.getProblem(problemId);
-                            // 如果允许生成小课训练营结业证书，则生成证书
+                            // 如果允许生成训练营结业证书，则生成证书
                             RiseCertificate riseCertificate = new RiseCertificate();
                             riseCertificate.setProfileId(profileId);
                             riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
@@ -260,10 +264,14 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId) {
-        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
-        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
+//        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
+//        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
 
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseClassMemberProfileIds, problemId);
+        //找出所有的商学院会员
+        List<RiseMember> riseMembers = riseMemberService.getValidElites();
+        List<Integer> riseMemberProfileIds = riseMembers.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseMemberProfileIds, problemId);
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
@@ -275,7 +283,7 @@ public class CertificateServiceImpl implements CertificateService {
                 // 完成所有练习
                 Long unCompleteNecessaryCountLong = practicePlans.stream()
                         .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                        .filter(practicePlan -> practicePlan.getStatus() == 0)
+                        .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                     // 如果存在有没有完成的题数，则不予发送优惠券
@@ -316,22 +324,21 @@ public class CertificateServiceImpl implements CertificateService {
                 if (generateFullAttendanceCoupon) {
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
-
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
-                    if (riseClassMember != null) {
+                   // RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
+                   // if (riseClassMember != null) {
                         FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
                         if (existFullAttendanceReward == null) {
-                            // 如果允许生成小课训练营结业证书，则生成证书
+                            // 如果允许生成训练营结业证书，则生成证书
                             FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                             fullAttendanceReward.setProfileId(profileId);
-                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
-                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+//                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
+//                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+//                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                             fullAttendanceReward.setYear(year);
                             fullAttendanceReward.setMonth(month);
                             fullAttendanceReward.setAmount(199.00);
                             fullAttendanceRewardDao.insert(fullAttendanceReward);
-                        }
+                  //      }
                     }
                 }
             }
@@ -349,29 +356,30 @@ public class CertificateServiceImpl implements CertificateService {
         int planId;
         int profileId;
         int problemId;
-        PracticePlan plan = practicePlanDao.load(PracticePlan.class,practicePlanId);
-        if (plan!=null) {
+        PracticePlan plan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (plan != null) {
             logger.info("plan不为空");
             planId = plan.getPlanId();
-           ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class,planId);
-            if (improvementPlan!=null) {
+            ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+            if (improvementPlan != null) {
                 logger.info("improvementPlan不为空");
                 profileId = improvementPlan.getProfileId();
                 problemId = improvementPlan.getProblemId();
-                logger.info("当前主修的problemId为："+businessPlanService.getLearningProblemId(profileId));
-                logger.info("您目前的problemId为："+problemId);
+                Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
+                logger.info("当前主修的problemId为：" + learningProblemId);
+                logger.info("您目前的problemId为：" + problemId);
                 //判断是否是当前主修的problemId
-                if (businessPlanService.getLearningProblemId(profileId).equals(problemId)) {
+                if (learningProblemId.equals(problemId)) {
                     logger.info("当前课程是训练营课程");
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
                     //获得学习内容完成情况列表
                     List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-                    logger.info("practiceplans的大小："+practicePlans.size());
+                    logger.info("practiceplans的大小：" + practicePlans.size());
                     if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
                                 .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                                .filter(practicePlan -> practicePlan.getStatus() == 0)
+                                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
                                 .count();
                         if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                             //如果存在没有完成的题目，不不予发送优惠券
@@ -382,18 +390,18 @@ public class CertificateServiceImpl implements CertificateService {
                             logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
-
-                            if (riseClassMember != null) {
-                                logger.info("riseClassMember不为空");
+                            //RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
+                            //判断是否是商学院用户
+                            if (riseMemberService.isValidElite(profileId)) {
+                                logger.info("该用户是商学院用户");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
-                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
-                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
+//                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
+//                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
+//                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                                     fullAttendanceReward.setYear(year);
                                     fullAttendanceReward.setMonth(month);
                                     fullAttendanceReward.setAmount(199.00);
@@ -582,7 +590,7 @@ public class CertificateServiceImpl implements CertificateService {
         templateMessage.setData(data);
 
         data.put("keyword1", new TemplateMessage.Keyword(
-                "您的" + riseCertificate.getMonth() + "月小课训练营" + amount + "元优惠券奖励已到账"));
+                "您的" + riseCertificate.getMonth() + "月训练营" + amount + "元优惠券奖励已到账"));
         data.put("keyword2", new TemplateMessage.Keyword("点击详情，了解优惠券领取位置及使用方式"));
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
 
@@ -605,7 +613,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀班长\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀班长\n" +
                             "点击详情，领取优秀班长荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -624,7 +632,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀组长\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀组长\n" +
                             "点击详情，领取优秀组长荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -643,7 +651,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀学员\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀学员\n" +
                             "点击详情，领取优秀学员荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -654,7 +662,7 @@ public class CertificateServiceImpl implements CertificateService {
                             "累计3次荣膺优秀学员：成为助教资格＋圈外同学奖学金\n" +
                             "累计6次荣膺优秀学员：圈圈1V1半小时咨询"));
 
-                    pointRepo.riseCustomerPoint(profile.getId(), PRIZE_POINT);
+                    pointManager.riseCustomerPoint(profile.getId(), PRIZE_POINT);
                 } catch (Exception e) {
                     logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
                 }
@@ -664,14 +672,14 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您所在的小组荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀团队\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您所在的小组荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀团队\n" +
                             "点击详情，领取优秀团队荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                     data.put("keyword3", new TemplateMessage.Keyword(profile.getNickname()));
                     data.put("remark", new TemplateMessage.Keyword("\n被评为优秀团队的小组，除了荣誉证书外，小组内的每位小伙伴还将额外获得200个积分"));
 
-                    pointRepo.riseCustomerPoint(profile.getId(), PRIZE_POINT);
+                    pointManager.riseCustomerPoint(profile.getId(), PRIZE_POINT);
                 } catch (Exception e) {
                     logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
                 }
@@ -680,12 +688,12 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月小课训练营\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月训练营\n" +
                             "点击详情，领取结课证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                     data.put("keyword3", new TemplateMessage.Keyword(profile.getNickname()));
-                    data.put("remark", new TemplateMessage.Keyword("\n荣誉证书也可以在［商学院/训练营］－［我的］－［我的小课］中查询"));
+                    data.put("remark", new TemplateMessage.Keyword("\n荣誉证书也可以在［商学院/训练营］－［我的］－［我的课程］中查询"));
 
                 } catch (Exception e) {
                     logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
@@ -695,7 +703,7 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月小课训练营优秀助教\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀助教\n" +
                             "点击详情，领取优秀助教荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -718,7 +726,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中担任班长一职，表现突出，荣膺\"优秀班长\"称号" +
+                        riseCertificate.getMonth() + "月训练营中担任班长一职，表现突出，荣膺\"优秀班长\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.CLASS_LEADER);
@@ -726,7 +734,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
+                        riseCertificate.getMonth() + "月训练营中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.GROUP_LEADER);
@@ -734,7 +742,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中成绩名列前茅，荣膺\"优秀学员\"称号" +
+                        riseCertificate.getMonth() + "月训练营中成绩名列前茅，荣膺\"优秀学员\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_MEMBER);
@@ -742,9 +750,9 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
                 String monthStr = NumberToHanZi.formatInteger(riseCertificate.getMonth());
                 String groupNoStr = NumberToHanZi.formatInteger(riseCertificate.getGroupNo());
-                riseCertificate.setName(monthStr + "月小课" + groupNoStr + "组");
+                riseCertificate.setName(monthStr + "月训练营" + groupNoStr + "组");
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中小组表现优异，荣膺\"优秀小组\"称号" +
+                        riseCertificate.getMonth() + "月训练营中小组表现优异，荣膺\"优秀小组\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_GROUP);
@@ -752,7 +760,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.ORDINARY:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中完成课程学习" +
+                        riseCertificate.getMonth() + "月训练营中完成课程学习" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ORDINARY);
@@ -760,7 +768,7 @@ public class CertificateServiceImpl implements CertificateService {
             case Constants.CERTIFICATE.TYPE.ASST_COACH:
                 riseCertificate.setName(profile.getRealName());
                 riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月小课训练营中表现卓越，荣膺\"优秀助教\"称号" +
+                        riseCertificate.getMonth() + "月训练营中表现卓越，荣膺\"优秀助教\"称号" +
                         "\n\n" +
                         "特发此证，以资鼓励");
                 riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ASST_COACH);
