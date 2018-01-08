@@ -23,24 +23,12 @@ public class QuanwaiEmployeeDao extends DBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<QuanwaiEmployee> loadAllEmployees() {
-        QueryRunner runner = new QueryRunner();
-        String sql = "SELECT * FROM QuanwaiEmployee WHERE Del = 0";
-        ResultSetHandler<List<QuanwaiEmployee>> h = new BeanListHandler<>(QuanwaiEmployee.class);
-        try {
-            return runner.query(sql, h);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
-
     public QuanwaiEmployee loadEmployee(Integer profileId) {
         QueryRunner runner = new QueryRunner();
         String sql = "SELECT * FROM QuanwaiEmployee WHERE ProfileId = ? and del = 0";
         ResultSetHandler<QuanwaiEmployee> h = new BeanHandler<>(QuanwaiEmployee.class);
         try {
-            return runner.query(sql, h);
+            return runner.query(sql, h, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
