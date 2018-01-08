@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -50,6 +51,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private AccountService accountService;
     @Autowired
     private UserProblemScheduleDao userProblemScheduleDao;
+    @Autowired
+    private QuanwaiEmployeeDao quanwaiEmployeeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -78,18 +81,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             return this.generatePlan(profileId, TEAM_LEARNING_PROBLEM_ID, TEAM_LEARNING_MAX_SERIES, startDate, DateUtils.afterDays(startDate, 7));
         }
     }
-
-    @Override
-    public Integer createAnnualPlan(Integer profileId) {
-        Integer annualProblemId = TEAM_LEARNING_PROBLEM_ID;
-        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, annualProblemId);
-        if (plan != null) {
-            return this.magicUnlockProblem(profileId, annualProblemId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH), false);
-        } else {
-            return this.generatePlan(profileId, annualProblemId, TEAM_LEARNING_MAX_SERIES, new Date(), DateUtils.afterDays(new Date(), 7));
-        }
-    }
-
 
     @Override
     public Integer generatePlan(Integer profileId, Integer problemId, Integer maxSeries, Date startDate, Date closeDate) {
@@ -146,7 +137,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     @Override
     public Integer generatePlan(Integer profileId, Integer problemId) {
-        return this.generatePlan(profileId, problemId, null, null, null);
+        //员工没有选课限制
+        if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
+            return forceOpenProblem(profileId, problemId, null, null);
+        }else{
+            return generatePlan(profileId, problemId);
+        }
     }
 
     private List<PracticePlan> createKnowledge(int planId, List<ProblemSchedule> problemScheduleList) {
@@ -460,6 +456,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             if (startDate != null && startDate.before(new Date())) {
                 sendOpenPlanMsg(profile.getOpenid(), problemId);
             }
+            practicePlanDao.batchUnlockByPlanId(resultPlanId);
         } else {
             // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
             forceReopenPlan(improvementPlan.getId());
