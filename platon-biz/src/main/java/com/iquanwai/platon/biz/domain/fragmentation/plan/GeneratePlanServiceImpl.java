@@ -90,14 +90,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             logger.error("problemId {} is invalid", problemId);
         }
         //生成训练计划
-        int planId;
-
-        if (startDate != null && closeDate != null) {
-            planId = createPlan(problem, profileId, startDate, closeDate);
-
-        } else {
-            planId = createPlan(problem, profileId);
-        }
+        int planId = createPlan(problem, profileId, startDate, closeDate);
 
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
@@ -139,9 +132,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     public Integer generatePlan(Integer profileId, Integer problemId) {
         //员工没有选课限制
         if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
-            return forceOpenProblem(profileId, problemId, new Date(), null, true);
+            return forceOpenProblem(profileId, problemId, null, null, true);
         } else {
-            return generatePlan(profileId, problemId);
+            return generatePlan(profileId, problemId, null, null, null);
         }
     }
 
@@ -346,7 +339,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private int createPlan(Problem problem, Integer profileId, Date startDate, Date closeDate) {
         Assert.notNull(problem, "problem不能为空");
         Assert.notNull(profileId, "profileId不能为空");
-        // 查询是否是riseMember
+        if (startDate == null) {
+            startDate = new Date();
+        }
+        if (closeDate == null) {
+            closeDate = DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH);
+        }
         Profile profile = accountService.getProfile(profileId);
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
@@ -370,17 +368,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setCloseDate(closeDate);
         improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);
         return improvementPlanDao.insert(improvementPlan);
-    }
-
-    /**
-     * 创建小课plan记录
-     *
-     * @param problem   小课信息
-     * @param profileId 用户id
-     * @return planId
-     */
-    private int createPlan(Problem problem, Integer profileId) {
-        return this.createPlan(problem, profileId, new Date(), DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
     }
 
     @Override
@@ -445,7 +432,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         if (improvementPlan == null) {
             // 没课开课
-            resultPlanId = generatePlan(profileId, problemId);
+            resultPlanId = generatePlan(profileId, problemId, null, null, null);
         } else {
             resultPlanId = improvementPlan.getId();
             // 已经开过课，则永远不发模板消息
@@ -475,7 +462,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         if (improvementPlan == null) {
             // 没课开课
-            resultPlanId = generatePlan(profileId, problemId);
+            resultPlanId = generatePlan(profileId, problemId, null, null, null);
         } else {
             resultPlanId = improvementPlan.getId();
             // 已经开过课，则永远不发模板消息
