@@ -215,6 +215,12 @@ public class PracticeServiceImpl implements PracticeService {
         Boolean isNewApplication = false; // 该 ApplicationPractice 是否是新生成的
         // 查询该应用练习
         ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, id);
+        if(planId == null){
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, applicationPractice.getProblemId());
+            Assert.notNull(improvementPlan, profileId+"没有开课"+applicationPractice.getProblemId());
+            planId = improvementPlan.getId();
+        }
+
         // 查询该用户是否提交
         ApplicationSubmit submit = applicationSubmitDao.load(id, planId, profileId);
         if (submit == null && create) {
