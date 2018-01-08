@@ -104,15 +104,4 @@ public interface GeneratePlanService {
      * @return 小课id
      */
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
-
-    /**
-     * 课程强开,练习强行解锁
-     *
-     * @param profileId 用户id
-     * @param problemId 问题id
-     * @param startDate 课程开始日期
-     * @param closeDate 课程关闭日期
-     * @return 小课id
-     */
-    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 }

@@ -139,8 +139,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     public Integer generatePlan(Integer profileId, Integer problemId) {
         //员工没有选课限制
         if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
-            return forceOpenProblem(profileId, problemId, new Date(), null);
-        }else{
+            return forceOpenProblem(profileId, problemId, new Date(), null, true);
+        } else {
             return generatePlan(profileId, problemId);
         }
     }
@@ -495,19 +495,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             sendOpenPlanMsg(profile.getOpenid(), problemId);
         }
         return resultPlanId;
-    }
-
-
-    @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
-        // 开始时间不是今天,则不发开课通知
-        boolean sendMsg = false;
-        if(startDate != null) {
-            if(DateUtils.isSameDate(startDate, new Date())){
-                sendMsg = true;
-            }
-        }
-        return this.forceOpenProblem(profileId, problemId, startDate, closeDate, sendMsg);
     }
 
     private boolean isDone(List<PracticePlan> runningPractices) {
