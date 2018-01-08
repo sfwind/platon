@@ -113,10 +113,4 @@ public interface GeneratePlanService {
      */
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
 
-    /**
-     * 课程强开
-     * startDate 课程开始日期
-     * closeDate 课程关闭日期
-     */
-    Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate);
 }

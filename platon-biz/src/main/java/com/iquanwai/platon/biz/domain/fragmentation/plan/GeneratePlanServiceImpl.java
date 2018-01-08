@@ -501,12 +501,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
 
-    @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
-        // 开始时间不是今天,则不发开课通知
-        return this.forceOpenProblem(profileId, problemId, startDate, closeDate, startDate != null && startDate.before(new Date()));
-    }
-
     private boolean isDone(List<PracticePlan> runningPractices) {
         if (CollectionUtils.isNotEmpty(runningPractices)) {
             // 练习题
