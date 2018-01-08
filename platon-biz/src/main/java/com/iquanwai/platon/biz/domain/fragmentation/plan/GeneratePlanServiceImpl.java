@@ -512,12 +512,18 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     private boolean isDone(List<PracticePlan> runningPractices) {
         if (CollectionUtils.isNotEmpty(runningPractices)) {
+            // 练习题
             for (PracticePlan practicePlan : runningPractices) {
                 //巩固练习或理解练习未完成时,返回false
-                if ((practicePlan.getType() == PracticePlan.WARM_UP ||
+                // 是否必做
+                Boolean isRequest = practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW;
+                // 是否未完成
+                Boolean isNotComplete = !PracticePlan.STATUS.COMPLETED.equals(practicePlan.getStatus());
+                if (isRequest && isNotComplete) {
+                    // 必做并且未完成
                     return false;
                 }
             }
