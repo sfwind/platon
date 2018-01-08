@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -50,6 +51,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private AccountService accountService;
     @Autowired
     private UserProblemScheduleDao userProblemScheduleDao;
+    @Autowired
+    private QuanwaiEmployeeDao quanwaiEmployeeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -72,24 +75,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Date startDate = monthlyCampConfig.getOpenDate() != null && new Date().before(monthlyCampConfig.getOpenDate()) ? monthlyCampConfig.getOpenDate() : new Date();
         ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, TEAM_LEARNING_PROBLEM_ID);
         if (plan != null) {
-            return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH), false);
+            return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH));
         } else {
             // TODO 修改maxSeries和closeDate
             return this.generatePlan(profileId, TEAM_LEARNING_PROBLEM_ID, TEAM_LEARNING_MAX_SERIES, startDate, DateUtils.afterDays(startDate, 7));
         }
     }
-
-    @Override
-    public Integer createAnnualPlan(Integer profileId) {
-        Integer annualProblemId = TEAM_LEARNING_PROBLEM_ID;
-        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, annualProblemId);
-        if (plan != null) {
-            return this.magicUnlockProblem(profileId, annualProblemId, DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH), false);
-        } else {
-            return this.generatePlan(profileId, annualProblemId, TEAM_LEARNING_MAX_SERIES, new Date(), DateUtils.afterDays(new Date(), 7));
-        }
-    }
-
 
     @Override
     public Integer generatePlan(Integer profileId, Integer problemId, Integer maxSeries, Date startDate, Date closeDate) {
@@ -99,14 +90,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             logger.error("problemId {} is invalid", problemId);
         }
         //生成训练计划
-        int planId;
-
-        if (startDate != null && closeDate != null) {
-            planId = createPlan(problem, profileId, startDate, closeDate);
-
-        } else {
-            planId = createPlan(problem, profileId);
-        }
+        int planId = createPlan(problem, profileId, startDate, closeDate);
 
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
@@ -146,7 +130,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
     @Override
     public Integer generatePlan(Integer profileId, Integer problemId) {
-        return this.generatePlan(profileId, problemId, null, null, null);
+        //员工没有选课限制
+        if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
+            return forceOpenProblem(profileId, problemId, null, null, true);
+        } else {
+            return generatePlan(profileId, problemId, null, null, null);
+        }
     }
 
     private List<PracticePlan> createKnowledge(int planId, List<ProblemSchedule> problemScheduleList) {
@@ -350,7 +339,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private int createPlan(Problem problem, Integer profileId, Date startDate, Date closeDate) {
         Assert.notNull(problem, "problem不能为空");
         Assert.notNull(profileId, "profileId不能为空");
-        // 查询是否是riseMember
+        if (startDate == null) {
+            startDate = new Date();
+        }
+        if (closeDate == null) {
+            closeDate = DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH);
+        }
         Profile profile = accountService.getProfile(profileId);
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
@@ -376,24 +370,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return improvementPlanDao.insert(improvementPlan);
     }
 
-    /**
-     * 创建小课plan记录
-     *
-     * @param problem   小课信息
-     * @param profileId 用户id
-     * @return planId
-     */
-    private int createPlan(Problem problem, Integer profileId) {
-        return this.createPlan(problem, profileId, new Date(), DateUtils.afterDays(new Date(), PROBLEM_MAX_LENGTH));
+    @Override
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate) {
+        return this.magicUnlockProblem(profileId, problemId, null, closeDate);
     }
 
     @Override
-    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
-        return this.magicUnlockProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
-    }
-
-    @Override
-    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
         Integer resultPlanId = null;
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null) {
@@ -442,47 +425,79 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
+    public Integer magicOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
         Integer resultPlanId;
-
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
+
         if (improvementPlan == null) {
-            // 用户从来没有开过课程，新开课程
-            resultPlanId = generatePlan(profileId, problemId);
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(resultPlanId, startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
-            }
-            // 开始时间不是今天,则不发开课通知
-            if (startDate != null && startDate.before(new Date())) {
-                sendOpenPlanMsg(profile.getOpenid(), problemId);
-            }
+            // 没课开课
+            resultPlanId = generatePlan(profileId, problemId, null, null, null);
         } else {
-            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
-            forceReopenPlan(improvementPlan.getId());
-            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
-            }
             resultPlanId = improvementPlan.getId();
+            // 已经开过课，则永远不发模板消息
+            sendWelcomeMsg = false;
+            // 解锁
+            this.magicUnlockProblem(profileId, problemId, startDate, closeDate);
+        }
+
+        if (startDate != null) {
+            improvementPlanDao.updateStartDate(resultPlanId, startDate);
+        }
+        if (closeDate != null) {
+            improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
+        }
+        if (sendWelcomeMsg) {
+            sendOpenPlanMsg(profile.getOpenid(), problemId);
+        }
+        return resultPlanId;
+    }
+
+
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+        Integer resultPlanId;
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Profile profile = accountService.getProfile(profileId);
+
+        if (improvementPlan == null) {
+            // 没课开课
+            resultPlanId = generatePlan(profileId, problemId, null, null, null);
+        } else {
+            resultPlanId = improvementPlan.getId();
+            // 已经开过课，则永远不发模板消息
+            sendWelcomeMsg = false;
+            // 强制解锁
+            forceReopenPlan(resultPlanId);
+        }
+
+        practicePlanDao.batchUnlockByPlanId(resultPlanId);
+        if (startDate != null) {
+            improvementPlanDao.updateStartDate(resultPlanId, startDate);
+        }
+        if (closeDate != null) {
+            improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
+        }
+        if (sendWelcomeMsg) {
+            sendOpenPlanMsg(profile.getOpenid(), problemId);
         }
         return resultPlanId;
     }
 
     private boolean isDone(List<PracticePlan> runningPractices) {
         if (CollectionUtils.isNotEmpty(runningPractices)) {
+            // 练习题
             for (PracticePlan practicePlan : runningPractices) {
                 //巩固练习或理解练习未完成时,返回false
-                if ((practicePlan.getType() == PracticePlan.WARM_UP ||
+                // 是否必做
+                Boolean isRequest = practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW;
+                // 是否未完成
+                Boolean isNotComplete = !PracticePlan.STATUS.COMPLETED.equals(practicePlan.getStatus());
+                if (isRequest && isNotComplete) {
+                    // 必做并且未完成
                     return false;
                 }
             }

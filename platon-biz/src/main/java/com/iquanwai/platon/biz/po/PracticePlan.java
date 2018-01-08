@@ -31,8 +31,17 @@ public class PracticePlan {
     public static String APPLICATION_NOTICE = "从了解知识到能够运用<br/>还差一个内化的距离<br/>来一个应用练习吧";
 
     public interface STATUS {
+        /**
+         * 未完成
+         */
         Integer UNCOMPLETED = 0;
+        /**
+         * 已完成
+         */
         Integer COMPLETED = 1;
+        /**
+         * 永不解锁
+         */
         Integer NEVER_UNLOCK = 2;
     }
 }

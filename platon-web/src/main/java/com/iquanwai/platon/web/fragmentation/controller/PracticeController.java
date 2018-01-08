@@ -57,26 +57,6 @@ public class PracticeController {
     @RequestMapping("/application/start/{applicationId}")
     public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser, @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(loginUser, "用户不能为空");
-        // 兼容性代码，在每日首页中传planId过来，只需要检查planId的正确性
-        if (planId != null) {
-            // 传了planId
-            // 检查这个planId是不是他的
-            ImprovementPlan plan = planService.getPlan(planId);
-            if (plan == null || !plan.getProfileId().equals(loginUser.getId())) {
-                return WebUtils.error("参数错误，可以联系小Q反馈哦");
-            }
-        } else {
-            // 没有planId，消息中心中查询
-            // 通过applicationId反查,查看是哪个PlanId,
-            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitByApplicationId(applicationId, loginUser.getId());
-            if (applicationSubmit == null) {
-                // 没有提交过，查询当前的planId
-                // TODO 这里要仔细检查
-                return WebUtils.error("参数错误，可以联系小Q反馈哦");
-            } else {
-                planId = applicationSubmit.getPlanId();
-            }
-        }
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
                 loginUser.getOpenId(), loginUser.getId(), planId, false).getLeft();
