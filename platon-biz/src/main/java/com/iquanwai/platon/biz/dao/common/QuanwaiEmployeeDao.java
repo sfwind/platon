@@ -21,7 +21,7 @@ public class QuanwaiEmployeeDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public QuanwaiEmployee loadEmployee(Integer profileId) {
-        QueryRunner runner = new QueryRunner();
+        QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM QuanwaiEmployee WHERE ProfileId = ? and del = 0";
         ResultSetHandler<QuanwaiEmployee> h = new BeanHandler<>(QuanwaiEmployee.class);
         try {
