@@ -75,7 +75,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Date startDate = monthlyCampConfig.getOpenDate() != null && new Date().before(monthlyCampConfig.getOpenDate()) ? monthlyCampConfig.getOpenDate() : new Date();
         ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, TEAM_LEARNING_PROBLEM_ID);
         if (plan != null) {
-            return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH), false);
+            return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH));
         } else {
             // TODO 修改maxSeries和closeDate
             return this.generatePlan(profileId, TEAM_LEARNING_PROBLEM_ID, TEAM_LEARNING_MAX_SERIES, startDate, DateUtils.afterDays(startDate, 7));
@@ -139,7 +139,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     public Integer generatePlan(Integer profileId, Integer problemId) {
         //员工没有选课限制
         if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
-            return forceOpenProblem(profileId, problemId, null, null);
+            return forceOpenProblem(profileId, problemId, new Date(), null);
         }else{
             return generatePlan(profileId, problemId);
         }
@@ -384,12 +384,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     @Override
-    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate, Boolean sendWelcomeMsg) {
-        return this.magicUnlockProblem(profileId, problemId, null, closeDate, sendWelcomeMsg);
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date closeDate) {
+        return this.magicUnlockProblem(profileId, problemId, null, closeDate);
     }
 
     @Override
-    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+    public Integer magicUnlockProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
         Integer resultPlanId = null;
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null) {
@@ -438,38 +438,76 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     @Override
-    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
+    public Integer magicOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
         Integer resultPlanId;
-
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         Profile profile = accountService.getProfile(profileId);
+
         if (improvementPlan == null) {
-            // 用户从来没有开过课程，新开课程
+            // 没课开课
             resultPlanId = generatePlan(profileId, problemId);
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(resultPlanId, startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
-            }
-            // 开始时间不是今天,则不发开课通知
-            if (startDate != null && startDate.before(new Date())) {
-                sendOpenPlanMsg(profile.getOpenid(), problemId);
-            }
-            practicePlanDao.batchUnlockByPlanId(resultPlanId);
         } else {
-            // 用户已经学习过，或者以前使用过，或者正在学习，直接进行课程解锁
-            forceReopenPlan(improvementPlan.getId());
-            practicePlanDao.batchUnlockByPlanId(improvementPlan.getId());
-            if (startDate != null) {
-                improvementPlanDao.updateStartDate(improvementPlan.getId(), startDate);
-            }
-            if (closeDate != null) {
-                improvementPlanDao.updateCloseDate(improvementPlan.getId(), closeDate);
-            }
             resultPlanId = improvementPlan.getId();
+            // 已经开过课，则永远不发模板消息
+            sendWelcomeMsg = false;
+            // 解锁
+            this.magicUnlockProblem(profileId, problemId, startDate, closeDate);
+        }
+
+        if (startDate != null) {
+            improvementPlanDao.updateStartDate(resultPlanId, startDate);
+        }
+        if (closeDate != null) {
+            improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
+        }
+        if (sendWelcomeMsg) {
+            sendOpenPlanMsg(profile.getOpenid(), problemId);
         }
         return resultPlanId;
+    }
+
+
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg) {
+        Integer resultPlanId;
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Profile profile = accountService.getProfile(profileId);
+
+        if (improvementPlan == null) {
+            // 没课开课
+            resultPlanId = generatePlan(profileId, problemId);
+        } else {
+            resultPlanId = improvementPlan.getId();
+            // 已经开过课，则永远不发模板消息
+            sendWelcomeMsg = false;
+            // 强制解锁
+            forceReopenPlan(resultPlanId);
+        }
+
+        practicePlanDao.batchUnlockByPlanId(resultPlanId);
+        if (startDate != null) {
+            improvementPlanDao.updateStartDate(resultPlanId, startDate);
+        }
+        if (closeDate != null) {
+            improvementPlanDao.updateCloseDate(resultPlanId, closeDate);
+        }
+        if (sendWelcomeMsg) {
+            sendOpenPlanMsg(profile.getOpenid(), problemId);
+        }
+        return resultPlanId;
+    }
+
+
+    @Override
+    public Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate) {
+        // 开始时间不是今天,则不发开课通知
+        boolean sendMsg = false;
+        if(startDate != null) {
+            if(DateUtils.isSameDate(startDate, new Date())){
+                sendMsg = true;
+            }
+        }
+        return this.forceOpenProblem(profileId, problemId, startDate, closeDate, sendMsg);
     }
 
     private boolean isDone(List<PracticePlan> runningPractices) {

@@ -423,7 +423,7 @@ public class PlanServiceImpl implements PlanService {
         if (profileId.equals(improvementPlan.getProfileId())
                 && ImprovementPlan.CLOSE == improvementPlan.getStatus()
                 && improvementPlan.getCompleteTime() == null) {
-            generatePlanService.magicUnlockProblem(profileId, improvementPlan.getProblemId(), null, false);
+            generatePlanService.magicUnlockProblem(profileId, improvementPlan.getProblemId(), null);
         }
     }
 
@@ -763,8 +763,8 @@ public class PlanServiceImpl implements PlanService {
         }
 
         for (Integer problemId : problemIds) {
-            // 小课训练营开课时间更改为默认的一个月
-            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate);
+
+            Integer planId = generatePlanService.magicOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate, true);
 
             if (planId != null) {
                 // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
@@ -794,7 +794,7 @@ public class PlanServiceImpl implements PlanService {
             }
 
             // 解锁
-            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate, false);
+            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
         });
     }
 }
