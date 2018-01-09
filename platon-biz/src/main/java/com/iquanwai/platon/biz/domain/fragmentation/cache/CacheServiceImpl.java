@@ -39,6 +39,8 @@ public class CacheServiceImpl implements CacheService {
     @Autowired
     private AudioDao audioDao;
     @Autowired
+    private VideoDao videoDao;
+    @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
     @Autowired
     private CourseScheduleTopicDao courseScheduleTopicDao;
@@ -64,10 +66,10 @@ public class CacheServiceImpl implements CacheService {
     @PostConstruct
     public void init() {
         // 缓存知识点,本地不缓存
-        if (!ConfigUtils.isDebug()) {
-            List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
-            knowledgeList.forEach(this::initKnowledge);
-        }
+//        if (!ConfigUtils.isDebug()) {
+        List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
+        knowledgeList.forEach(this::initKnowledge);
+//        }
         logger.info("knowledge init complete");
 
         // 缓存问题
@@ -79,7 +81,12 @@ public class CacheServiceImpl implements CacheService {
                 problem.setCategoryPic(problemSubCatalog.getPic());
             }
             if (ConfigUtils.isHttps()) {
-                if (problem.getAudioId() != null) {
+                if (problem.getVideoId() != null) {
+                    Video video = videoDao.load(Video.class, problem.getVideoId());
+                    if (video != null) {
+                        problem.setVideoUrl(video.getUrl());
+                    }
+                } else if (problem.getAudioId() != null) {
                     Audio audio = audioDao.load(Audio.class, problem.getAudioId());
                     //添加对因数据问题导致audio为空的判断
                     if (audio != null) {
@@ -95,31 +102,31 @@ public class CacheServiceImpl implements CacheService {
         logger.info("problem init complete");
 
         // 缓存热身训练,本地不缓存
-        if (!ConfigUtils.isDebug()) {
-            List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
-            warmupPractices.forEach(warmupPractice -> {
-                warmupPractice.setChoiceList(Lists.newArrayList());
-                //添加非复习知识点
-                if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
-                    warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
-                }
-                if (ConfigUtils.isHttps()) {
-                    warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
-                }
-                warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
-            });
-            List<Choice> choices = choiceDao.loadAll(Choice.class);
-            choices.stream().filter(choice -> choice.getDel()==0).forEach(choice -> {
-                Integer questionId = choice.getQuestionId();
-                WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
-                if (warmupPractice != null) {
-                    warmupPractice.getChoiceList().add(choice);
-                }
-            });
-            //选项按sequence排序
-            warmupPractices.forEach(warmupPractice ->
-                    warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
-        }
+//        if (!ConfigUtils.isDebug()) {
+        List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
+        warmupPractices.forEach(warmupPractice -> {
+            warmupPractice.setChoiceList(Lists.newArrayList());
+            //添加非复习知识点
+            if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
+                warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            }
+            if (ConfigUtils.isHttps()) {
+                warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
+            }
+            warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
+        });
+        List<Choice> choices = choiceDao.loadAll(Choice.class);
+        choices.stream().filter(choice -> choice.getDel() == 0).forEach(choice -> {
+            Integer questionId = choice.getQuestionId();
+            WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
+            if (warmupPractice != null) {
+                warmupPractice.getChoiceList().add(choice);
+            }
+        });
+        //选项按sequence排序
+        warmupPractices.forEach(warmupPractice ->
+                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
+//        }
         logger.info("warmup practice init complete");
 
         // 缓存问题主分类
@@ -157,32 +164,39 @@ public class CacheServiceImpl implements CacheService {
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
-        if (knowledge.getAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
-            if (audio != null) {
-                knowledge.setAudioWords(audio.getWords());
-                knowledge.setAudio(audio.getUrl());
+        if (knowledge.getVideoId() != null) {
+            Video video = videoDao.load(Video.class, knowledge.getVideoId());
+            if (video != null) {
+                knowledge.setVideoUrl(video.getUrl());
             }
-        }
-        if (knowledge.getKeynoteAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getKeynoteAudioId());
-            if (audio != null) {
-                knowledge.setKeynoteAudioWords(audio.getWords());
-                knowledge.setKeynoteAudio(audio.getUrl());
+        } else {
+            if (knowledge.getAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
+                if (audio != null) {
+                    knowledge.setAudioWords(audio.getWords());
+                    knowledge.setAudio(audio.getUrl());
+                }
             }
-        }
-        if (knowledge.getMeansAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getMeansAudioId());
-            if (audio != null) {
-                knowledge.setMeansAudioWords(audio.getWords());
-                knowledge.setMeansAudio(audio.getUrl());
+            if (knowledge.getKeynoteAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getKeynoteAudioId());
+                if (audio != null) {
+                    knowledge.setKeynoteAudioWords(audio.getWords());
+                    knowledge.setKeynoteAudio(audio.getUrl());
+                }
             }
-        }
-        if (knowledge.getAnalysisAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getAnalysisAudioId());
-            if (audio != null) {
-                knowledge.setAnalysisAudioWords(audio.getWords());
-                knowledge.setAnalysisAudio(audio.getUrl());
+            if (knowledge.getMeansAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getMeansAudioId());
+                if (audio != null) {
+                    knowledge.setMeansAudioWords(audio.getWords());
+                    knowledge.setMeansAudio(audio.getUrl());
+                }
+            }
+            if (knowledge.getAnalysisAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getAnalysisAudioId());
+                if (audio != null) {
+                    knowledge.setAnalysisAudioWords(audio.getWords());
+                    knowledge.setAnalysisAudio(audio.getUrl());
+                }
             }
         }
     }
