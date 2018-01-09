@@ -4,12 +4,10 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySubmitDto;
@@ -44,6 +42,11 @@ public class BusinessApplyController {
     @Autowired
     private AccountService accountService;
 
+    /**
+     * 加载商学院申请题目
+     *
+     * @param loginUser 用户信息
+     */
     @RequestMapping(value = "/load/questions", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadBusinessApplyQuestions(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -63,6 +66,11 @@ public class BusinessApplyController {
         return WebUtils.result(result);
     }
 
+    /**
+     * 检查是否可以申请商学院
+     *
+     * @param loginUser 用户
+     */
     @RequestMapping(value = "/check/submit/apply", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> checkApplySubmit(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -71,25 +79,22 @@ public class BusinessApplyController {
                 .action("检查是否能够申请");
         operationLogService.log(operationLog);
 
-        RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-            return WebUtils.error("您已经是商学院用户,无需重复申请");
+        try {
+            // 检查是否可以申请
+            applyService.checkApplyPrivilege(loginUser.getId());
+        } catch (ApplyException e) {
+            return WebUtils.error(e.getMessage());
         }
 
-        BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
-        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
-        if (applyPass) {
-            return WebUtils.error("您已经有报名权限,无需重复申请");
-        }
-
-        if (application == null) {
-            return WebUtils.success();
-        } else {
-            return WebUtils.error("您的申请正在审核中哦");
-        }
+        return WebUtils.success();
     }
 
+    /**
+     * 商学院申请信息提交
+     *
+     * @param loginUser      用户
+     * @param applySubmitDto 申请信息
+     */
     @RequestMapping(value = "/submit/apply", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitApply(LoginUser loginUser, @RequestBody ApplySubmitDto applySubmitDto) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -98,35 +103,26 @@ public class BusinessApplyController {
                 .action("提交申请");
         operationLogService.log(operationLog);
 
-        RiseMember riseMember = accountService.getValidRiseMember(loginUser.getId());
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-            return WebUtils.error("您已经是商学院用户,无需重复申请");
+        try {
+            // 检查是否可以申请
+            applyService.checkApplyPrivilege(loginUser.getId());
+        } catch (ApplyException e) {
+            return WebUtils.error(e.getMessage());
         }
-
-        BusinessSchoolApplication application = applyService.loadCheckingApply(loginUser.getId());
-        Boolean applyPass = accountService.hasStatusId(loginUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
-        if (applyPass) {
-            return WebUtils.error("您已经有报名权限,无需重复申请");
+        // 检查是否有可用申请订单
+        BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
+        if (order == null) {
+            return WebUtils.error("您还没有成功支付哦");
         }
-
-        if (application == null) {
-            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
-            if (order == null) {
-                return WebUtils.error("您还没有成功支付哦");
-            }
-
-            List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
-                BusinessApplySubmit submit = new BusinessApplySubmit();
-                submit.setQuestionId(applySubmitVO.getQuestionId());
-                submit.setChoiceId(applySubmitVO.getChoiceId());
-                submit.setUserValue(applySubmitVO.getUserValue());
-                return submit;
-            }).collect(Collectors.toList());
-            applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
-            return WebUtils.success();
-        } else {
-            return WebUtils.error("您的申请正在审核中哦");
-        }
+        // 提交申请信息
+        List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
+            BusinessApplySubmit submit = new BusinessApplySubmit();
+            submit.setQuestionId(applySubmitVO.getQuestionId());
+            submit.setChoiceId(applySubmitVO.getChoiceId());
+            submit.setUserValue(applySubmitVO.getUserValue());
+            return submit;
+        }).collect(Collectors.toList());
+        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
+        return WebUtils.success();
     }
 }
