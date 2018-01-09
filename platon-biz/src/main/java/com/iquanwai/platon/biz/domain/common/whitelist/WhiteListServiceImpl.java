@@ -64,12 +64,12 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean checkRiseMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long riseCount = riseMembers.stream().filter(riseMember ->
-                // 商学院会员（半年、一年）、课程单买用户
-                riseMember.getMemberTypeId() == RiseMember.HALF
-                        || riseMember.getMemberTypeId() == RiseMember.ANNUAL
-                        || riseMember.getMemberTypeId() == RiseMember.ELITE
-                        || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
-                        || riseMember.getMemberTypeId() == RiseMember.COURSE
+                        // 商学院会员（半年、一年）、课程单买用户
+                        riseMember.getMemberTypeId() == RiseMember.HALF
+                                || riseMember.getMemberTypeId() == RiseMember.ANNUAL
+                                || riseMember.getMemberTypeId() == RiseMember.ELITE
+                                || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                                || riseMember.getMemberTypeId() == RiseMember.COURSE
         ).count();
         return riseCount.intValue() > 0;
     }
@@ -94,9 +94,9 @@ public class WhiteListServiceImpl implements WhiteListService {
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
         Long risememberCount = riseMembers.stream().filter(riseMember ->
-                // 半年/一年 精英版
-                riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                        riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+                        // 半年/一年 精英版
+                        riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
         ).count();
         // 如果转化成商学院 跳转训练营售卖页
         if (risememberCount > 0) {
@@ -164,6 +164,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     /**
      * 判断是否有学习资格
+     * TODO:2月1号删除此方法
      *
      * @param profileId
      * @return
@@ -173,11 +174,10 @@ public class WhiteListServiceImpl implements WhiteListService {
         if (prizeCardDao.loadReceiveAnnualCard(profileId).size() == 0 && prizeCardDao.loadAnnualCardByReceiver(profileId) == null && groupPromotionDao.loadByProfileId(profileId) == null) {
             return false;
         }
-        //TODO:正式上线之前需要将日期修改成7号和2月1号
         Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
-        Date campCloseDate = new DateTime(2018,2,1,0,0).toDate();
+        Date campCloseDate = new DateTime(2018, 2, 1, 0, 0).toDate();
         //如果已经到学习时间
-        if (campOpenDate.compareTo(new Date()) < 0 && campCloseDate.compareTo(new Date()) >= 0 ) {
+        if (campOpenDate.compareTo(new Date()) < 0 && campCloseDate.compareTo(new Date()) >= 0) {
             return true;
         }
         return false;

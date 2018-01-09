@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
+import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
@@ -74,6 +75,8 @@ public class PlanServiceImpl implements PlanService {
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
+    @Autowired
+    private QuanwaiEmployeeDao quanwaiEmployeeDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -317,6 +320,11 @@ public class PlanServiceImpl implements PlanService {
         // 是精英会员用户才会有选课上限分析
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         Integer memberTypeId = riseMember.getMemberTypeId();
+        //员工没有选课限制
+        if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
+            return new MutablePair<>(1, "");
+        }
+
         //商学院用户
         if (memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
@@ -339,7 +347,7 @@ public class PlanServiceImpl implements PlanService {
             int month = DateUtils.getMonth(openDate);
             if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
                     && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
-                if(new Date().before(openDate)){
+                if (new Date().before(openDate)) {
                     // 未到开营日的主修课不能提前选择
                     return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
                             + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
@@ -373,7 +381,7 @@ public class PlanServiceImpl implements PlanService {
                 default:
                     break;
             }
-        }else{
+        } else {
             //非商学院用户
             if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
                 return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
@@ -423,7 +431,7 @@ public class PlanServiceImpl implements PlanService {
         if (profileId.equals(improvementPlan.getProfileId())
                 && ImprovementPlan.CLOSE == improvementPlan.getStatus()
                 && improvementPlan.getCompleteTime() == null) {
-            generatePlanService.magicUnlockProblem(profileId, improvementPlan.getProblemId(), null, false);
+            generatePlanService.magicUnlockProblem(profileId, improvementPlan.getProblemId(), null);
         }
     }
 
@@ -763,8 +771,8 @@ public class PlanServiceImpl implements PlanService {
         }
 
         for (Integer problemId : problemIds) {
-            // 小课训练营开课时间更改为默认的一个月
-            Integer planId = generatePlanService.forceOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate);
+
+            Integer planId = generatePlanService.magicOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate, true);
 
             if (planId != null) {
                 // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
@@ -794,7 +802,7 @@ public class PlanServiceImpl implements PlanService {
             }
 
             // 解锁
-            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate, false);
+            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
         });
     }
 

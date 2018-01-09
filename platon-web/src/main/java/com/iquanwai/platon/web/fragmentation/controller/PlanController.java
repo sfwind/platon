@@ -11,7 +11,12 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.UserProblemSchedule;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -26,14 +31,17 @@ import com.iquanwai.platon.web.fragmentation.dto.plan.AuditionChooseDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -143,7 +151,7 @@ public class PlanController {
 
         Pair<Boolean, String> campChosenCheck = planService.checkChooseCampProblem(loginUser.getId(), problemId);
         if (campChosenCheck.getLeft()) {
-            Integer resultPlanId = generatePlanService.forceOpenProblem(loginUser.getId(), problemId, null, null);
+            Integer resultPlanId = generatePlanService.magicOpenProblem(loginUser.getId(), problemId, null, null, true);
             return WebUtils.result(String.valueOf(resultPlanId));
         } else {
             return WebUtils.error("课程开启失败，请后台联系管理员");
@@ -635,8 +643,7 @@ public class PlanController {
             if (ownedAudition != null) {
                 // 已经拥有试听课
                 // 没有试听课的状态，第一次学习试听课
-                planId = generatePlanService.magicUnlockProblem(loginUser.getId(), auditionId,
-                        DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH), false);
+                planId = generatePlanService.magicUnlockProblem(loginUser.getId(), auditionId, DateUtils.afterDays(new Date(), GeneratePlanService.PROBLEM_MAX_LENGTH));
                 generatePlanService.sendOpenPlanMsg(loginUser.getOpenId(), auditionId);
             } else {
                 // 没有试听课，判断是不是会员

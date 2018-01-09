@@ -170,9 +170,10 @@ public class BackendController {
         Integer problemId = params.getProblemId();
         Date startDate = params.getStartDate();
         Date closeDate = params.getCloseDate();
+        Boolean sendWelcomeMsg = params.getSendWelcomeMsg();
 
         profileIds.forEach(profileId -> ThreadPool.execute(() -> {
-            Integer result = generatePlanService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+            Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
             logger.info("开课: profileId:{},planId:{}", profileId, result);
         }));
 

@@ -78,7 +78,7 @@ public class PracticePlanDao extends PracticeDBUtil {
     public PracticePlan loadPracticePlan(Integer planId, Integer practiceId, Integer type) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=?";
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=? and Del = 0";
         try {
             PracticePlan practicePlan = run.query(sql, h,
                     planId, practiceId, type);
@@ -93,7 +93,7 @@ public class PracticePlanDao extends PracticeDBUtil {
     public PracticePlan loadChallengePractice(Integer planId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=?";
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=? and Del = 0";
         try {
             PracticePlan practicePlan = run.query(sql, h,
                     planId, PracticePlan.CHALLENGE);
@@ -166,7 +166,7 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12)";
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12) and Del = 0";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId);
             return practicePlans;

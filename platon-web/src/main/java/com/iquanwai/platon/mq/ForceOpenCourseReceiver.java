@@ -42,7 +42,7 @@ public class ForceOpenCourseReceiver {
         Date startDate = json.getDate("startDate");
         Date closeDate = json.getDate("closeDate");
 
-        generatePlanService.forceOpenProblem(profileId, problemId, startDate, closeDate);
+        generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, true);
     }
 
 }

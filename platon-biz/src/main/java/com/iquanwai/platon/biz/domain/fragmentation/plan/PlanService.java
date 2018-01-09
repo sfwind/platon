@@ -14,12 +14,14 @@ public interface PlanService {
 
     /**
      * 构建详细的训练计划
+     *
      * @param improvementPlan 训练计划
      */
     void buildPlanDetail(ImprovementPlan improvementPlan);
 
     /**
      * 获取学员进行中的训练
+     *
      * @param profileId 学员id
      */
     List<ImprovementPlan> getRunningPlan(Integer profileId);
@@ -27,7 +29,7 @@ public interface PlanService {
     /**
      * 检查是否能够选新课
      *
-      @param plans  用户的课程数据
+     * @param plans 用户的课程数据
      * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId);
@@ -35,8 +37,8 @@ public interface PlanService {
     /**
      * 检查是否能够选训练营
      *
-      @param problemId  课程id
-     * @param profileId  用户id
+     * @param problemId 课程id
+     * @param profileId 用户id
      * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
@@ -45,30 +47,35 @@ public interface PlanService {
 
     /**
      * 获取学员所有的训练
+     *
      * @param profileId 学员id
      */
     List<ImprovementPlan> getPlans(Integer profileId);
 
     /**
      * 获取简略的训练计划(不含练习)
+     *
      * @param planId 训练计划id
      */
     ImprovementPlan getPlan(Integer planId);
 
     /**
      * 获取章节信息
+     *
      * @param plan 训练计划
      */
     List<UserProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
      * 获取知识点
+     *
      * @param knowledgeId 知识点id
      */
     Knowledge getKnowledge(Integer knowledgeId);
 
     /**
      * 训练计划结束
+     *
      * @param planId 训练计划id
      * @param status 训练状态
      */
@@ -77,13 +84,15 @@ public interface PlanService {
 
     /**
      * 结束训练计划校验
+     *
      * @param improvementPlan 训练计划
      */
     boolean completeCheck(ImprovementPlan improvementPlan);
 
     /**
      * 当前节练习是否可以做
-     * @param series 节序号
+     *
+     * @param series          节序号
      * @param improvementPlan 训练计划
      * @return -3 课程已过期
      */
@@ -91,6 +100,7 @@ public interface PlanService {
 
     /**
      * 查询是否有该课程
+     *
      * @param profileId 用户id
      * @param problemId 课程id
      */
@@ -98,6 +108,7 @@ public interface PlanService {
 
     /**
      * 查询是否有该课程
+     *
      * @param profileId 用户id
      * @param problemId 课程id
      */
@@ -105,12 +116,14 @@ public interface PlanService {
 
     /**
      * 判断课程是否完成,当理解练习和巩固练习都完成时,课程判定为完成
+     *
      * @param practicePlanId 练习id
      */
     void checkPlanComplete(Integer practicePlanId);
 
     /**
      * 查看是否可以完成训练
+     *
      * @param plan 计划
      * @return left:是否完成全部必做
      * right:最小完成天数,0-已过，1+未过
@@ -119,6 +132,7 @@ public interface PlanService {
 
     /**
      * 记录用户当前所进行的小节序号
+     *
      * @param planId 训练id
      * @param series 第几小节
      */
@@ -154,6 +168,7 @@ public interface PlanService {
 
     /**
      * 重新打开这个订单对应的小课
+     *
      * @param orderId 订单id
      */
     void magicOpenCampOrder(String orderId);
@@ -172,6 +187,7 @@ public interface PlanService {
 
     /**
      * 解锁之前用不解锁的计划
+     *
      * @param profileId 用户id
      */
     void unlockNeverUnlockPlans(Integer profileId);
