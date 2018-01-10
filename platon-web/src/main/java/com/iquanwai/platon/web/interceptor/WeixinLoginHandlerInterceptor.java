@@ -18,27 +18,29 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.Map;
 
-/**
- * Created by justin on 16/8/26.
- */
 public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private LoginUserService loginUserService;
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 前端debug开启时,不校验
         if (!ConfigUtils.isDebug()) {
-            // 前端debug开启时,不校验
             if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
                 return true;
             }
             LoginUserService.Platform platform = loginUserService.checkPlatform(request);
+            if (platform == LoginUserService.Platform.WE_MINI) {
+                // TODO 如果是小程序登录，不进行校验
+                return true;
+            }
             String value = loginUserService.getToken(request);
             if (StringUtils.isEmpty(value)) {
                 switch (platform) {
-                    case Wechat:
+                    case WE_MOBILE:
                         WebUtils.auth(request, response);
                         return false;
                     case PC: {
@@ -70,7 +72,6 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             }
         }
         return true;
-
     }
 
 }

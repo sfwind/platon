@@ -1,25 +1,17 @@
 package com.iquanwai.platon.biz.temp;
 
-import com.iquanwai.platon.biz.TestBase;
-import com.iquanwai.platon.biz.dao.common.MaterialPrintDao;
 import com.iquanwai.platon.biz.util.ImageUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * Created by 三十文
  */
-public class MailPrint extends TestBase {
+public class MailPrint {
 
-    @Autowired
-    private MaterialPrintDao materialPrintDao;
-
-    public void drawMail() throws IOException, FontFormatException {
+    public void drawMail(String nickname, String profileId) throws IOException, FontFormatException {
         String folder = "/Users/xfduan/Downloads/quanquan";
 
         BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/quanquan_mail.jpg?imageslim");
@@ -28,8 +20,9 @@ public class MailPrint extends TestBase {
                 InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
         ) {
             font = Font.createFont(Font.TRUETYPE_FONT, in);
-            ImageUtils.writeText(targetImage, 455, 940, "亲爱的三十文，", font.deriveFont(40f), new Color(0, 0, 0));
-            ImageUtils.writeToFile(targetImage, "jpg", new File(folder + File.separator + "三十文.jpg"));
+            ImageUtils.writeText(targetImage, 455, 940, "亲爱的", font.deriveFont(40f), new Color(0, 0, 0));
+            ImageUtils.writeText(targetImage, 595, 940, nickname + "，", font.deriveFont(64f), new Color(0, 0, 0));
+            ImageUtils.writeToFile(targetImage, "jpg", new File(folder + File.separator + profileId + "-" + nickname + ".jpg"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -37,7 +30,15 @@ public class MailPrint extends TestBase {
 
     public static void main(String[] args) throws IOException, FontFormatException {
         MailPrint mailPrint = new MailPrint();
-        mailPrint.drawMail();
+        BufferedReader reader = new BufferedReader(new FileReader(new File("/Users/xfduan/Desktop/hello.txt")));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] person = line.split(",");
+            String nickname = person[0];
+            String profileId = person[1];
+            mailPrint.drawMail(nickname, profileId);
+        }
+        System.out.println("打印成功");
     }
 
 }

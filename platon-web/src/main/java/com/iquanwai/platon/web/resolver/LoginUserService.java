@@ -33,18 +33,24 @@ import java.util.stream.Collectors;
  */
 @Service
 public class LoginUserService {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public static final String PC_TOKEN_COOKIE_NAME = "_qt";
-    public static final String WECHAT_TOKEN_COOKIE_NAME = "_act";
-    public static final String ACCESS_ASK_TOKEN_COOKIE_NAME = "_ask";
-
+    @Autowired
+    private OAuthService oAuthService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private PlanService planService;
+    @Autowired
+    private CallbackDao callbackDao;
 
     public enum Platform {
         /** PC端 */
         PC(1),
         /** 移动端 */
-        Wechat(2);
+        WE_MOBILE(2),
+        /** 小程序 */
+        WE_MINI(3);
+
         private int value;
 
         Platform(int value) {
@@ -56,6 +62,14 @@ public class LoginUserService {
         }
     }
 
+    public static final String PC_TOKEN_COOKIE_NAME = "_qt";
+    public static final String WE_CHAT_TOKEN_COOKIE_NAME = "_act";
+    public static final String ACCESS_ASK_TOKEN_COOKIE_NAME = "_ask";
+    private static final String PLATFORM_HEADER = "platform";
+    private static final String PLATFORM_WE_MINI = "we-mini";
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());¬
+
     /**
      * 缓存已经登录的用户
      */
@@ -64,19 +78,8 @@ public class LoginUserService {
     private static List<String> waitPCRefreshOpenids = Lists.newArrayList(); //待更新openid
     private static List<String> waitWechatRefreshOpenids = Lists.newArrayList(); //待更新openid
 
-    @Autowired
-    private OAuthService oAuthService;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
-    private PlanService planService;
-    @Autowired
-    private CallbackDao callbackDao;
-
-
     /**
      * 登录，就是缓存起来
-     *
      * @param sessionId sessionId
      * @param loginUser 用户
      */
@@ -86,7 +89,7 @@ public class LoginUserService {
                 loginUser.setDevice(Constants.Device.PC);
                 pcLoginUserMap.put(sessionId, new SoftReference<>(loginUser));
                 break;
-            case Wechat:
+            case WE_MOBILE:
                 loginUser.setDevice(Constants.Device.MOBILE);
                 wechatLoginUserMap.put(sessionId, new SoftReference<>(loginUser));
                 break;
@@ -97,7 +100,6 @@ public class LoginUserService {
 
     /**
      * 根据sessionId判断用户是否登录
-     *
      * @param sessionId SessionId
      * @return 是否登录
      */
@@ -105,7 +107,6 @@ public class LoginUserService {
         LoginUser loginUser = this.loadUser(platform, sessionId);
         if (loginUser != null) {
             // 只在未登录的时候打印
-//            logger.info("cookie:{},已登录,user:{},nickName:{}", sessionId, loginUser.getOpenId(), loginUser.getWeixinName());
             return true;
         } else {
             // 只有没登录时会打印一次
@@ -127,7 +128,7 @@ public class LoginUserService {
             case PC:
                 callback = callbackDao.queryByPcAccessToken(sessionId);
                 break;
-            case Wechat:
+            case WE_MOBILE:
                 callback = callbackDao.queryByAccessToken(sessionId);
                 break;
             default:
@@ -145,7 +146,7 @@ public class LoginUserService {
                     case PC:
                         pcLoginUserMap.remove(sessionId);
                         break;
-                    case Wechat:
+                    case WE_MOBILE:
                         wechatLoginUserMap.remove(sessionId);
                         break;
                     default:
@@ -162,7 +163,6 @@ public class LoginUserService {
 
     /**
      * 获取PCLoginUser
-     *
      * @return -1:没有cookie <br/>
      * -2:accessToken无效<br/>
      * -3:没有关注<br/>
@@ -170,14 +170,14 @@ public class LoginUserService {
      */
     public Pair<Integer, LoginUser> getLoginUser(HttpServletRequest request) {
         String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
-        String wechatToken = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
+        String wechatToken = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
         if (StringUtils.isEmpty(pcToken) && StringUtils.isEmpty(wechatToken)) {
             return new MutablePair<>(-1, null);
         } else {
             if (!StringUtils.isEmpty(pcToken)) {
                 return getLoginUser(Platform.PC, pcToken);
             } else {
-                return getLoginUser(Platform.Wechat, wechatToken);
+                return getLoginUser(Platform.WE_MOBILE, wechatToken);
             }
         }
     }
@@ -206,35 +206,41 @@ public class LoginUserService {
         switch (platform) {
             case PC:
                 return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
-            case Wechat:
-                return CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
+            case WE_MOBILE:
+                return CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
             default:
                 return null;
         }
     }
 
     public Platform checkPlatform(HttpServletRequest request) {
-        String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
-        String wechatToken = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
-        if (StringUtils.isEmpty(pcToken) && StringUtils.isEmpty(wechatToken)) {
-            // pcToken和wechatToken都为null则是移动
-            return Platform.Wechat;
+        String platform = request.getHeader(PLATFORM_HEADER);
+        if (PLATFORM_WE_MINI.equals(platform)) {
+            // 小程序
+            return Platform.WE_MINI;
+        } else {
+            String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
+            String wechatToken = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
+            if (StringUtils.isEmpty(pcToken) && StringUtils.isEmpty(wechatToken)) {
+                // pcToken和wechatToken都为null则是移动
+                return Platform.WE_MOBILE;
+            }
+            if (!StringUtils.isEmpty(pcToken)) {
+                return Platform.PC;
+            }
+            if (!StringUtils.isEmpty(wechatToken)) {
+                return Platform.WE_MOBILE;
+            }
+            // 两个都存在就默认为移动
+            return Platform.WE_MOBILE;
         }
-        if (!StringUtils.isEmpty(pcToken)) {
-            return Platform.PC;
-        }
-        if (!StringUtils.isEmpty(wechatToken)) {
-            return Platform.Wechat;
-        }
-        // 两个都存在就默认为移动
-        return Platform.Wechat;
     }
 
     public String openId(Platform platform, String accessToken) {
         switch (platform) {
             case PC:
                 return oAuthService.pcOpenId(accessToken);
-            case Wechat:
+            case WE_MOBILE:
                 return oAuthService.openId(accessToken);
             default:
                 return null;
@@ -243,8 +249,7 @@ public class LoginUserService {
 
     /**
      * 获取PCLoginUser
-     *
-     * @return -1:没有cookie <br/>
+     * -1:没有cookie <br/>
      * -2:accessToken无效,没有点页面<br/>
      * -3:没有关注，一般不会走到这个<br/>
      * -4:一般是没有关注服务号
@@ -254,7 +259,6 @@ public class LoginUserService {
         // 先检查有没有缓存
         LoginUser loginUser = this.loadUser(platform, accessToken);
         if (loginUser != null) {
-//            logger.debug("已缓存,_qt:{}", accessToken);
             return new MutablePair<>(1, loginUser);
         }
 
@@ -279,6 +283,11 @@ public class LoginUserService {
         loginUser = getLoginUser(openid, platform);
         logger.info("user:{}", loginUser);
         return new MutablePair<>(1, loginUser);
+    }
+
+    public LoginUser getWeMiniLoginUser(String state) {
+
+
     }
 
     public Role getUserRole(Integer profileId) {
@@ -313,7 +322,7 @@ public class LoginUserService {
                     }
                 }
                 return loginUser;
-            case Wechat:
+            case WE_MOBILE:
                 if (wechatLoginUserMap.get(accessToken) != null) {
                     loginUser = wechatLoginUserMap.get(accessToken).get();
                 }

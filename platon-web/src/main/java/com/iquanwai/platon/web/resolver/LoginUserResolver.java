@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.resolver;
 
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,8 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 public class LoginUserResolver implements HandlerMethodArgumentResolver {
     @Autowired
     private LoginUserService loginUserService;
-    @Autowired
-    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -38,13 +35,19 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         }
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
 
+        if (LoginUserService.Platform.WE_MINI.equals(loginUserService.checkPlatform(request))) {
+            // 如果是小程序发送请求
+            String state = request.getHeader("_sk");
+            
+        }
+
         if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
-            //前端调试开启时，如果debug=true,返回mockuser
+            //前端调试开启时，如果debug=true，返回mockuser
             if ("true".equalsIgnoreCase(request.getParameter("debug"))) {
                 return LoginUser.defaultUser();
             } else {
-                //返回模拟的openid user
-                return loginUserService.getLoginUser(request.getParameter("debug"), LoginUserService.Platform.Wechat);
+                // 返回模拟的openid user
+                return loginUserService.getLoginUser(request.getParameter("debug"), LoginUserService.Platform.WE_MOBILE);
             }
         }
         String accessToken = loginUserService.getToken(request);
@@ -65,7 +68,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             if (loginUser == null) {
                 return null;
             }
-//            logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
+            // logger.info("用户:{}，在resolver重新登录,cookie:{}", openId, accessToken);
             if (loginUser.getId() != null) {
                 loginUserService.login(platform, accessToken, loginUser);
             }
