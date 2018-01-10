@@ -39,6 +39,8 @@ public class CacheServiceImpl implements CacheService {
     @Autowired
     private AudioDao audioDao;
     @Autowired
+    private VideoDao videoDao;
+    @Autowired
     private MonthlyCampConfigDao monthlyCampConfigDao;
     @Autowired
     private CourseScheduleTopicDao courseScheduleTopicDao;
@@ -79,7 +81,13 @@ public class CacheServiceImpl implements CacheService {
                 problem.setCategoryPic(problemSubCatalog.getPic());
             }
             if (ConfigUtils.isHttps()) {
-                if (problem.getAudioId() != null) {
+                if (problem.getVideoId() != null) {
+                    Video video = videoDao.load(Video.class, problem.getVideoId());
+                    if (video != null) {
+                        problem.setVideoUrl(video.getUrl());
+                        problem.setVideoPoster(video.getPicUrl());
+                    }
+                } else if (problem.getAudioId() != null) {
                     Audio audio = audioDao.load(Audio.class, problem.getAudioId());
                     //添加对因数据问题导致audio为空的判断
                     if (audio != null) {
@@ -109,7 +117,7 @@ public class CacheServiceImpl implements CacheService {
                 warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
             });
             List<Choice> choices = choiceDao.loadAll(Choice.class);
-            choices.stream().filter(choice -> choice.getDel()==0).forEach(choice -> {
+            choices.stream().filter(choice -> choice.getDel() == 0).forEach(choice -> {
                 Integer questionId = choice.getQuestionId();
                 WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
                 if (warmupPractice != null) {
@@ -157,32 +165,40 @@ public class CacheServiceImpl implements CacheService {
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
-        if (knowledge.getAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
-            if (audio != null) {
-                knowledge.setAudioWords(audio.getWords());
-                knowledge.setAudio(audio.getUrl());
+        if (knowledge.getVideoId() != null) {
+            Video video = videoDao.load(Video.class, knowledge.getVideoId());
+            if (video != null) {
+                knowledge.setVideoUrl(video.getUrl());
+                knowledge.setVideoPoster(video.getPicUrl());
             }
-        }
-        if (knowledge.getKeynoteAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getKeynoteAudioId());
-            if (audio != null) {
-                knowledge.setKeynoteAudioWords(audio.getWords());
-                knowledge.setKeynoteAudio(audio.getUrl());
+        } else {
+            if (knowledge.getAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getAudioId());
+                if (audio != null) {
+                    knowledge.setAudioWords(audio.getWords());
+                    knowledge.setAudio(audio.getUrl());
+                }
             }
-        }
-        if (knowledge.getMeansAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getMeansAudioId());
-            if (audio != null) {
-                knowledge.setMeansAudioWords(audio.getWords());
-                knowledge.setMeansAudio(audio.getUrl());
+            if (knowledge.getKeynoteAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getKeynoteAudioId());
+                if (audio != null) {
+                    knowledge.setKeynoteAudioWords(audio.getWords());
+                    knowledge.setKeynoteAudio(audio.getUrl());
+                }
             }
-        }
-        if (knowledge.getAnalysisAudioId() != null) {
-            Audio audio = audioDao.load(Audio.class, knowledge.getAnalysisAudioId());
-            if (audio != null) {
-                knowledge.setAnalysisAudioWords(audio.getWords());
-                knowledge.setAnalysisAudio(audio.getUrl());
+            if (knowledge.getMeansAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getMeansAudioId());
+                if (audio != null) {
+                    knowledge.setMeansAudioWords(audio.getWords());
+                    knowledge.setMeansAudio(audio.getUrl());
+                }
+            }
+            if (knowledge.getAnalysisAudioId() != null) {
+                Audio audio = audioDao.load(Audio.class, knowledge.getAnalysisAudioId());
+                if (audio != null) {
+                    knowledge.setAnalysisAudioWords(audio.getWords());
+                    knowledge.setAnalysisAudio(audio.getUrl());
+                }
             }
         }
     }

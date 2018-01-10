@@ -28,6 +28,9 @@ public class Knowledge {
     private Integer keynoteAudioId;
     private String keynoteAudioWords;
     private String audio; //语音链接
+    private Integer videoId;//视频id
+    private String videoUrl;//视频url
+    private String videoPoster;//视频第一帧
     private Integer audioId; // 语音id
     private String audioWords;
     private Integer appear; //非db字段,是否出现过
