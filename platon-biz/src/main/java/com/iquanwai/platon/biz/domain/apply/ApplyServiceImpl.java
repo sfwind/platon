@@ -159,15 +159,16 @@ public class ApplyServiceImpl implements ApplyService {
         // 一个月之内被拒绝过
         List<BusinessSchoolApplication> rejectLists = applyList
                 .stream()
-                .filter(item -> item.getStatus() == BusinessSchoolApplication.REJECT &&
-                        new DateTime(item.getSubmitTime()).plusMonths(1).isAfterNow()).collect(Collectors.toList());
+                .filter(item -> item.getStatus() == BusinessSchoolApplication.REJECT)
+                .filter(item -> new DateTime(item.getDealTime()).withTimeAtStartOfDay().plusMonths(1).isAfter(new DateTime().withTimeAtStartOfDay()))
+                .collect(Collectors.toList());
         if (rejectLists.size() > 0) {
             Integer maxWaitDays = rejectLists
                     .stream()
-                    .map(item -> DateUtils.interval(item.getSubmitTime()))
-                    .max((Comparator.comparingInt(o -> o))).orElse(1);
+                    .map(item -> DateUtils.interval(new DateTime(item.getDealTime()).withTimeAtStartOfDay().plusMonths(1).toDate(), new DateTime().withTimeAtStartOfDay().toDate()))
+                    .max((Comparator.comparingInt(o -> o)))
+                    .orElse(0);
             throw new ApplyException("还有 " + maxWaitDays + " 天才能再次申请哦");
         }
     }
-
 }
