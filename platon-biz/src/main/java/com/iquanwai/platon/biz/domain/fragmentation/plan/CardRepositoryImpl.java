@@ -70,7 +70,7 @@ public class CardRepositoryImpl implements CardRepository {
     @PostConstruct
     public void init() {
         // 初始化所有背景图的 bufferedImages 缓存
-        if (!ConfigUtils.isDebug()) {
+//        if (!ConfigUtils.isDebug()) {
             JSONObject base64ImageJson = JSONObject.parseObject(ConfigUtils.getEssenceCardBackImgs());
             for (int i = 0; i < base64ImageJson.size(); i++) {
                 String url = base64ImageJson.getString(Integer.toString(i + 1));
@@ -92,7 +92,7 @@ public class CardRepositoryImpl implements CardRepository {
             essenceNormalTop = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/fragment/essence_normal_top.png?imageslim");
             caitongBGImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_background.jpg?imageslim");
             caitongHead = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/caitong_head_image.jpg?imageslim");
-        }
+//        }
         logger.info("pic loading complete");
     }
 
@@ -309,6 +309,8 @@ public class CardRepositoryImpl implements CardRepository {
 
     @Override
     public String loadTargetThumbnailByChapterId(int chapterId, int totalSize) {
+        System.out.println("当前chapterId:"+chapterId);
+        System.out.println("map:"+thumbnailMap);
         if (chapterId == totalSize) {
             return thumbnailMap.get(thumbnailMap.size());
         } else {
