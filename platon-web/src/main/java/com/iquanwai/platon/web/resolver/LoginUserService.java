@@ -68,7 +68,7 @@ public class LoginUserService {
     private static final String PLATFORM_HEADER = "platform";
     private static final String PLATFORM_WE_MINI = "we-mini";
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());¬
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * 缓存已经登录的用户
@@ -283,11 +283,6 @@ public class LoginUserService {
         loginUser = getLoginUser(openid, platform);
         logger.info("user:{}", loginUser);
         return new MutablePair<>(1, loginUser);
-    }
-
-    public LoginUser getWeMiniLoginUser(String state) {
-
-
     }
 
     public Role getUserRole(Integer profileId) {
