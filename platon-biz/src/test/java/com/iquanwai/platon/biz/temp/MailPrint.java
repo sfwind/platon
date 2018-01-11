@@ -12,9 +12,9 @@ import java.io.*;
 public class MailPrint {
 
     public void drawMail(String nickname, String profileId) throws IOException, FontFormatException {
-        String folder = "/Users/xfduan/Downloads/quanquan";
+        String folder = "/Users/xfduan/Downloads/quanquan_mail_type5";
 
-        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/quanquan_mail.jpg?imageslim");
+        BufferedImage targetImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/quanquan_mail_type5.jpg?imageslim");
         Font font;
         try (
                 InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
@@ -34,9 +34,10 @@ public class MailPrint {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] person = line.split(",");
-            String nickname = person[0];
-            String profileId = person[1];
+            String nickname = person[1];
+            String profileId = person[0];
             mailPrint.drawMail(nickname, profileId);
+            System.out.println(nickname + "打印成功");
         }
         System.out.println("打印成功");
     }
