@@ -22,6 +22,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+
     @Override
     public boolean supportsParameter(MethodParameter methodParameter) {
         return LoginUser.class.isAssignableFrom(methodParameter.getParameterType());
@@ -37,7 +38,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
         if (LoginUserService.Platform.WE_MINI.equals(loginUserService.checkPlatform(request))) {
             // 如果是小程序发送请求
-            String state = request.getHeader("_sk");
+            String state = request.getHeader("sk");
             
         }
 

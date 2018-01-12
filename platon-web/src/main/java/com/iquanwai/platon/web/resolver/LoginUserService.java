@@ -74,7 +74,8 @@ public class LoginUserService {
      * 缓存已经登录的用户
      */
     private static Map<String, SoftReference<LoginUser>> pcLoginUserMap = Maps.newHashMap(); // pc的登录缓存
-    private static Map<String, SoftReference<LoginUser>> wechatLoginUserMap = Maps.newHashMap();// 微信的登录缓存
+    private static Map<String, SoftReference<LoginUser>> wechatLoginUserMap = Maps.newHashMap(); // 微信的登录缓存
+    private static Map<String, SoftReference<LoginUser>> weMiniLoginUserMap = Maps.newHashMap(); // 小程序的登录缓存
     private static List<String> waitPCRefreshOpenids = Lists.newArrayList(); //待更新openid
     private static List<String> waitWechatRefreshOpenids = Lists.newArrayList(); //待更新openid
 
@@ -96,7 +97,6 @@ public class LoginUserService {
             default:
         }
     }
-
 
     /**
      * 根据sessionId判断用户是否登录
