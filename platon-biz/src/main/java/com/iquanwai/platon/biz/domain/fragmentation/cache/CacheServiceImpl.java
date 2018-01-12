@@ -66,10 +66,10 @@ public class CacheServiceImpl implements CacheService {
     @PostConstruct
     public void init() {
         // 缓存知识点,本地不缓存
-//        if (!ConfigUtils.isDebug()) {
+        if (!ConfigUtils.isDebug()) {
         List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
         knowledgeList.forEach(this::initKnowledge);
-//        }
+        }
         logger.info("knowledge init complete");
 
         // 缓存问题
@@ -104,7 +104,7 @@ public class CacheServiceImpl implements CacheService {
         logger.info("problem init complete");
 
         // 缓存热身训练,本地不缓存
-//        if (!ConfigUtils.isDebug()) {
+        if (!ConfigUtils.isDebug()) {
         List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
         warmupPractices.forEach(warmupPractice -> {
             warmupPractice.setChoiceList(Lists.newArrayList());
@@ -128,7 +128,7 @@ public class CacheServiceImpl implements CacheService {
         //选项按sequence排序
         warmupPractices.forEach(warmupPractice ->
                 warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
-//        }
+        }
         logger.info("warmup practice init complete");
 
         // 缓存问题主分类
