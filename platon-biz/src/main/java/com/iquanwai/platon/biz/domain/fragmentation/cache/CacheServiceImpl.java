@@ -67,8 +67,8 @@ public class CacheServiceImpl implements CacheService {
     public void init() {
         // 缓存知识点,本地不缓存
         if (!ConfigUtils.isDebug()) {
-            List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
-            knowledgeList.forEach(this::initKnowledge);
+        List<Knowledge> knowledgeList = knowledgeDao.loadAll(Knowledge.class);
+        knowledgeList.forEach(this::initKnowledge);
         }
         logger.info("knowledge init complete");
 
@@ -86,6 +86,7 @@ public class CacheServiceImpl implements CacheService {
                     if (video != null) {
                         problem.setVideoUrl(video.getUrl());
                         problem.setVideoPoster(video.getPicUrl());
+                        problem.setVideoWords(video.getWords());
                     }
                 } else if (problem.getAudioId() != null) {
                     Audio audio = audioDao.load(Audio.class, problem.getAudioId());
@@ -104,29 +105,29 @@ public class CacheServiceImpl implements CacheService {
 
         // 缓存热身训练,本地不缓存
         if (!ConfigUtils.isDebug()) {
-            List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
-            warmupPractices.forEach(warmupPractice -> {
-                warmupPractice.setChoiceList(Lists.newArrayList());
-                //添加非复习知识点
-                if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
-                    warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
-                }
-                if (ConfigUtils.isHttps()) {
-                    warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
-                }
-                warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
-            });
-            List<Choice> choices = choiceDao.loadAll(Choice.class);
-            choices.stream().filter(choice -> choice.getDel() == 0).forEach(choice -> {
-                Integer questionId = choice.getQuestionId();
-                WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
-                if (warmupPractice != null) {
-                    warmupPractice.getChoiceList().add(choice);
-                }
-            });
-            //选项按sequence排序
-            warmupPractices.forEach(warmupPractice ->
-                    warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
+        List<WarmupPractice> warmupPractices = warmupPracticeDao.loadAll(WarmupPractice.class);
+        warmupPractices.forEach(warmupPractice -> {
+            warmupPractice.setChoiceList(Lists.newArrayList());
+            //添加非复习知识点
+            if (!Knowledge.isReview(warmupPractice.getKnowledgeId())) {
+                warmupPractice.setKnowledge(knowledgeMap.get(warmupPractice.getKnowledgeId()));
+            }
+            if (ConfigUtils.isHttps()) {
+                warmupPractice.setPic(StringUtils.replace(warmupPractice.getPic(), "http:", "https:"));
+            }
+            warmupPracticeMap.put(warmupPractice.getId(), warmupPractice);
+        });
+        List<Choice> choices = choiceDao.loadAll(Choice.class);
+        choices.stream().filter(choice -> choice.getDel() == 0).forEach(choice -> {
+            Integer questionId = choice.getQuestionId();
+            WarmupPractice warmupPractice = warmupPracticeMap.get(questionId);
+            if (warmupPractice != null) {
+                warmupPractice.getChoiceList().add(choice);
+            }
+        });
+        //选项按sequence排序
+        warmupPractices.forEach(warmupPractice ->
+                warmupPractice.getChoiceList().sort((o1, o2) -> o1.getSequence() - o2.getSequence()));
         }
         logger.info("warmup practice init complete");
 
@@ -170,6 +171,7 @@ public class CacheServiceImpl implements CacheService {
             if (video != null) {
                 knowledge.setVideoUrl(video.getUrl());
                 knowledge.setVideoPoster(video.getPicUrl());
+                knowledge.setVideoWords(video.getWords());
             }
         } else {
             if (knowledge.getAudioId() != null) {
