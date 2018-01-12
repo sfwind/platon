@@ -309,8 +309,6 @@ public class CardRepositoryImpl implements CardRepository {
 
     @Override
     public String loadTargetThumbnailByChapterId(int chapterId, int totalSize) {
-        System.out.println("当前chapterId:"+chapterId);
-        System.out.println("map:"+thumbnailMap);
         if (chapterId == totalSize) {
             return thumbnailMap.get(thumbnailMap.size());
         } else {
