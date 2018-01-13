@@ -55,7 +55,7 @@ public class FreeLimitSubscribeReceiver {
             logger.info(scene);
             return;
         }
-        String openId = json.get("openid").toString();
+        String openId = json.get("openId").toString();
         String event = json.get("event").toString();
 
         String[] sceneParams = scene.split("_");

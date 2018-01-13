@@ -28,7 +28,7 @@ public class CallbackDao extends DBUtil {
                 "VALUES(?, ?, ?, ?, ?)";
         try {
             Future<Integer> result = asyncRun.update(insertSql,
-                    callback.getOpenid(), callback.getAccessToken(), callback.getCallbackUrl(),
+                    callback.getOpenId(), callback.getAccessToken(), callback.getCallbackUrl(),
                     callback.getRefreshToken(), callback.getState());
             return result.get();
         } catch (SQLException e) {
@@ -67,6 +67,18 @@ public class CallbackDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
 
+        return null;
+    }
+
+    public Callback queryByState(String state) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Callback WHERE State = ?";
+        ResultSetHandler<Callback> h = new BeanHandler<>(Callback.class);
+        try {
+            return runner.query(sql, h, state);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
         return null;
     }
 

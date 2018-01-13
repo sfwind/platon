@@ -9,9 +9,16 @@ import org.apache.ibatis.type.Alias;
 @Data
 @Alias("callback")
 public class Callback {
-    private String callbackUrl;
+
+    private Integer id;
     private String state;
+    private String callbackUrl;
     private String accessToken;
+    private String pcAccessToken;
     private String refreshToken;
-    private String openid;
+    private String unionId;
+    private String openId;
+    private String pcOpenId;
+    private String weMiniOpenId;
+
 }

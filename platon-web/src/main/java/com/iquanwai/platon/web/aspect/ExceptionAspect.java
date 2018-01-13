@@ -71,7 +71,7 @@ public class ExceptionAspect {
         OperationLog operationLog = OperationLog.create().openid(openid).module("后端报错")
                 .function("后端报错").action("bug").memo(memo);
         operationLogService.log(operationLog);
-        logger.error("openid:" + openid + ",uri:" + req.getRequestURI() +
+        logger.error("openId:" + openid + ",uri:" + req.getRequestURI() +
                 ",queryString:" + req.getQueryString() +
                 ",userAgent:" + req.getHeader("user-agent") +
                 ",ip:" + req.getHeader("X-Forwarded-For") +

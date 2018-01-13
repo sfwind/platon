@@ -48,7 +48,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         if (callback == null) {
             return null;
         }
-        String openid = callback.getOpenid();
+        String openid = callback.getOpenId();
         Account account;
         try {
             account = accountService.getAccount(openid, false);

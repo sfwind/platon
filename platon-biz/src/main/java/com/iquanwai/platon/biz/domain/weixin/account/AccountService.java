@@ -88,8 +88,8 @@ public interface AccountService {
      */
     void submitCertificateProfile(Profile profile);
 
-    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
-    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openId={openId}&lang=zh_CN";
+    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openId={openId}&lang=zh_CN";
 
     void reloadRegion();
 
@@ -101,38 +101,33 @@ public interface AccountService {
 
     /**
      * 发送验证码
-     *
-     * @param phone     手机号码
+     * @param phone 手机号码
      * @param profileId 用户id
-     * @param areaCode  区号
+     * @param areaCode 区号
      */
     Pair<Boolean, String> sendValidCode(String phone, Integer profileId, String areaCode);
 
     /**
      * 验证验证码
-     *
      * @param profileId 用户id
-     * @param code      用户输入的验证码
+     * @param code 用户输入的验证码
      */
     boolean validCode(String code, Integer profileId);
 
     /**
      * 是否是rise会员
-     *
      * @param profileId profileId
      */
     Boolean isRiseMember(Integer profileId);
 
     /**
      * 获取优惠券信息
-     *
      * @param profileId 用户id
      */
     List<Coupon> loadCoupons(Integer profileId);
 
     /**
      * 获取用户当前的RiseClassMember记录
-     *
      * @param profileId 用户id
      * @return 当前的学号记录
      */
@@ -140,7 +135,6 @@ public interface AccountService {
 
     /**
      * 打开每日学习提醒
-     *
      * @param profileId 用户id
      * @return 是否操作成功
      */
@@ -148,7 +142,6 @@ public interface AccountService {
 
     /**
      * 关闭每日学习提醒
-     *
      * @param profileId 用户id
      * @return 是否操作成功
      */
@@ -156,42 +149,37 @@ public interface AccountService {
 
     /**
      * 是否有对应status
-     *
      * @param profileId 用户id
-     * @param statusId  statusId
+     * @param statusId statusId
      * @return 是否有对应statusId
      */
     Boolean hasStatusId(Integer profileId, Integer statusId);
 
     /**
      * 添加CustomerStatusId
-     *
      * @param profileId 用户id
-     * @param statusId  statusId
+     * @param statusId statusId
      * @return 是否创建成功
      */
     Boolean addStatusId(Integer profileId, Integer statusId);
 
     /**
      * 获取所有该用户会员信息
-     *
      * @param profileId 用户id
      */
     List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId);
 
     /**
      * 创建关注推送消息
-     *
-     * @param openid   openId
+     * @param openid openId
      * @param callback 回调地址
-     * @param scene    场景值
+     * @param scene 场景值
      * @return base64图片
      */
     String createSubscribePush(String openid, String callback, String scene);
 
     /**
      * 获取关注事件推送消息
-     *
      * @param id 推送id
      * @return 事件消息
      */
@@ -199,7 +187,6 @@ public interface AccountService {
 
     /**
      * 获取用户的课程表类型
-     *
      * @param profileId 用户id
      * @return 课程表类型: <br/>
      * <ul>
@@ -211,19 +198,16 @@ public interface AccountService {
 
     /**
      * 更新微信id
-     *
-     * */
+     */
     void updateWeixinId(Integer profileId, String weixinId);
 
     /**
      * 获取用户的有效会员类别
-     *
-     * */
+     */
     RiseMember getValidRiseMember(Integer profileId);
 
     /**
      * 是否参加过商学院、训练营、试听课、"一带二"活动
-     * @return
      */
     boolean isPreviewNewUser(Integer profileId);
 

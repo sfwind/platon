@@ -50,7 +50,7 @@ public class AuditionSignupReceiver {
                 return;
             }
 
-            String openid = json.getString("openid");
+            String openid = json.getString("openId");
             customerMessageService.sendCustomerMessage(openid, "<a href='"+ConfigUtils.domainName()+AUDITION_SUCCESS+"'>"+"点击这里完成预约</a>",
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 

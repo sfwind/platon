@@ -177,7 +177,7 @@ public class PlanController {
      */
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request, @RequestParam Integer planId) {
-        LOGGER.info(request.getHeader("User-Agent") + ", openid:" + loginUser.getOpenId());
+        LOGGER.info(request.getHeader("User-Agent") + ", openId:" + loginUser.getOpenId());
 
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);

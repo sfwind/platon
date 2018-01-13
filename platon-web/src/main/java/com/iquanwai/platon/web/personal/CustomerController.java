@@ -205,7 +205,7 @@ public class CustomerController {
         operationLogService.log(operationLog);
         int updateResult = customerService.updateHeadImageUrl(loginUser.getId(), headImgUrl);
         if (updateResult > 0) {
-            loginUserService.updateWeixinUser(loginUser.getOpenId());
+            loginUserService.updateLoginUserByOpenId(loginUser.getOpenId());
             return WebUtils.success();
         } else {
             return WebUtils.error("头像更新失败");
@@ -224,7 +224,7 @@ public class CustomerController {
 
         int result = customerService.updateNickName(loginUser.getId(), nickName);
         if (result > 0) {
-            loginUserService.updateWeixinUser(loginUser.getOpenId());
+            loginUserService.updateLoginUserByOpenId(loginUser.getOpenId());
             return WebUtils.result("昵称更新成功");
         } else {
             return WebUtils.result("昵称更新失败");

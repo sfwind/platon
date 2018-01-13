@@ -145,7 +145,7 @@ public class ConfigUtils {
     }
 
     public static String getDefaultOpenid() {
-        return getValue("default.openid");
+        return getValue("default.openId");
     }
 
     public static Integer getDefaultProfileId() {
