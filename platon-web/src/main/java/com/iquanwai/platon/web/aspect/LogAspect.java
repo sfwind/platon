@@ -18,7 +18,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -62,7 +61,7 @@ public class LogAspect {
         if(ConfigUtils.logDetail()||endTimeMillis-startTimeMillis>=1000) {
             if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {Gson gson = new Gson();
             String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
-            LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
+            LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
             if (loginUser != null) {
                 userName = loginUser.getWeixinName();
             }

@@ -36,7 +36,6 @@ public class LoginUserService {
     @Autowired
     private ProfileDao profileDao;
 
-
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String PC_TOKEN_COOKIE_NAME = "_qt";
