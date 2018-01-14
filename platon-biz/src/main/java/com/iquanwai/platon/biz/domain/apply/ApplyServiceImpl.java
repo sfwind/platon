@@ -17,6 +17,7 @@ import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -58,8 +59,22 @@ public class ApplyServiceImpl implements ApplyService {
 
     @Override
     public List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId) {
-        List<BusinessApplyQuestion> questions = businessApplyQuestionDao.loadAll(BusinessApplyQuestion.class).stream().filter(item -> !item.getDel()).collect(Collectors.toList());
-        List<BusinessApplyChoice> choices = businessApplyChoiceDao.loadAll(BusinessApplyChoice.class).stream().filter(item -> !item.getDel()).collect(Collectors.toList());
+        Integer category;
+        if (ConfigUtils.getPayApplyFlag()) {
+            category = BusinessApplyQuestion.PAY_CATEGORY;
+        } else {
+            // 非付费
+            category = BusinessApplyQuestion.NO_PAY_CATEGORY;
+        }
+        List<BusinessApplyQuestion> questions = businessApplyQuestionDao.loadAll(BusinessApplyQuestion.class)
+                .stream()
+                .filter(item -> !item.getDel())
+                .filter(item -> category.equals(item.getCategory()))
+                .collect(Collectors.toList());
+        List<BusinessApplyChoice> choices = businessApplyChoiceDao.loadAll(BusinessApplyChoice.class)
+                .stream()
+                .filter(item -> !item.getDel())
+                .collect(Collectors.toList());
 
         Map<Integer, List<BusinessApplyChoice>> choiceQuestionMap = choices.stream().collect(Collectors.groupingBy(BusinessApplyChoice::getQuestionId));
         questions.sort((o1, o2) -> {
