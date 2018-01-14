@@ -123,7 +123,10 @@ public class ApplyServiceImpl implements ApplyService {
         optional.ifPresent(riseMember -> application.setOriginMemberType(riseMember.getMemberTypeId()));
 
         Integer applyId = businessSchoolApplicationDao.insert(application);
-        businessSchoolApplicationOrderDao.applied(orderId);
+        if (orderId != null) {
+            // 有orderId则更新
+            businessSchoolApplicationOrderDao.applied(orderId);
+        }
         userApplySubmits.forEach(item -> {
             item.setApplyId(applyId);
             if (item.getChoiceId() != null) {
