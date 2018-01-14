@@ -20,6 +20,7 @@ import java.util.List;
  * Created by nethunder on 2017/3/8.
  */
 @Repository
+@Deprecated
 public class SubjectArticleDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 

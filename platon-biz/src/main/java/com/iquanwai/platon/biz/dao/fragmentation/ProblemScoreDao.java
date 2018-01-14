@@ -21,17 +21,16 @@ public class ProblemScoreDao extends PracticeDBUtil {
 
     public void gradeProblem(List<ProblemScore> problemScores) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO ProblemScore(OpenId, ProfileId, ProblemId, Question, Choice) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO ProblemScore(ProfileId, ProblemId, Question, Choice) VALUES (?,?,?,?)";
         try {
             Object[][] param = new Object[problemScores.size()][];
             for (int i = 0; i < problemScores.size(); i++) {
                 ProblemScore problemScore = problemScores.get(i);
-                param[i] = new Object[5];
-                param[i][0] = problemScore.getOpenid();
-                param[i][1] = problemScore.getProfileId();
-                param[i][2] = problemScore.getProblemId();
-                param[i][3] = problemScore.getQuestion();
-                param[i][4] = problemScore.getChoice();
+                param[i] = new Object[4];
+                param[i][0] = problemScore.getProfileId();
+                param[i][1] = problemScore.getProblemId();
+                param[i][2] = problemScore.getQuestion();
+                param[i][3] = problemScore.getChoice();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {

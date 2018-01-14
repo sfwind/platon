@@ -45,19 +45,18 @@ public class HomeworkVoteDao extends PracticeDBUtil {
      */
     public void vote(HomeworkVote homeworkVote) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "INSERT INTO HomeworkVote(Type,ReferencedId,VoteOpenId,VoteProfileId,VotedOpenId,VotedProfileId,Device) " +
-                "VALUES(?, ?, ?, ?, ?, ?, ?)";
+        String insertSql = "INSERT INTO HomeworkVote(Type,ReferencedId,VoteProfileId,VotedProfileId,Device) " +
+                "VALUES(?, ?, ?, ?, ?)";
         try {
             run.insert(insertSql, new ScalarHandler<>(), homeworkVote.getType(), homeworkVote.getReferencedId(),
-                    homeworkVote.getVoteOpenId(), homeworkVote.getVoteProfileId(), homeworkVote.getVotedOpenid(),
-                    homeworkVote.getVotedProfileId(), homeworkVote.getDevice());
+                    homeworkVote.getVoteProfileId(), homeworkVote.getVotedProfileId(), homeworkVote.getDevice());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
 
     /**
-     * voteOpenid对某条记录的点赞记录
+     * voteProfileId对某条记录的点赞记录
      *
      * @param type         1:挑战任务，2：体系化大作业
      * @param referencedId 被依赖的id

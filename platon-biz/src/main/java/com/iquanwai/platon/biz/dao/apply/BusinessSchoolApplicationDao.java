@@ -57,9 +57,9 @@ public class BusinessSchoolApplicationDao extends DBUtil {
 
     public Integer insert(BusinessSchoolApplication businessSchoolApplication) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, ProfileId, Openid, Status, CheckTime, IsDuplicate, Deal, OriginMemberType,SubmitTime,DealTime,Comment,OrderId,LastVerified) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, Openid, Status, CheckTime, IsDuplicate, Deal, OriginMemberType,SubmitTime,DealTime,Comment,OrderId,LastVerified) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
-            return runner.insert(sql, new ScalarHandler<Long>(), businessSchoolApplication.getSubmitId(), businessSchoolApplication.getProfileId(), businessSchoolApplication.getOpenid(),
+            return runner.insert(sql, new ScalarHandler<Long>(), businessSchoolApplication.getSubmitId(), businessSchoolApplication.getProfileId(),
                     businessSchoolApplication.getStatus(), businessSchoolApplication.getCheckTime(), businessSchoolApplication.getIsDuplicate(),
                     businessSchoolApplication.getDeal(), businessSchoolApplication.getOriginMemberType(), businessSchoolApplication.getSubmitTime(), businessSchoolApplication.getDealTime(),
                     businessSchoolApplication.getComment(), businessSchoolApplication.getOrderId(), businessSchoolApplication.getLastVerified()).intValue();

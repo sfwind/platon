@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -48,8 +47,6 @@ public class PracticeController {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private PictureService pictureService;
-    @Autowired
     private PracticeDiscussService practiceDiscussService;
     //分页文章数量
     private static final int PAGE_SIZE = 10;
@@ -59,7 +56,7 @@ public class PracticeController {
         Assert.notNull(loginUser, "用户不能为空");
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), loginUser.getId(), planId, false).getLeft();
+                loginUser.getId(), planId, false).getLeft();
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -82,7 +79,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                loginUser.getOpenId(), loginUser.getId(), improvementPlan.getId(), false);
+                loginUser.getId(), improvementPlan.getId(), false);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -100,7 +97,7 @@ public class PracticeController {
                                                                @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         // 先生成，之后走之前逻辑
-        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId, loginUser.getOpenId(),
+        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
                 loginUser.getId(), planId, true);
         Integer submitId = challengePractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
@@ -134,7 +131,7 @@ public class PracticeController {
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
         Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), loginUser.getId(), planId, true);
+                loginUser.getId(), planId, true);
 
         ApplicationPractice applicationPractice = applicationPracticeBooleanPair.getLeft();
         Boolean isNewApplication = applicationPracticeBooleanPair.getRight();
@@ -223,7 +220,7 @@ public class PracticeController {
             device = Constants.Device.MOBILE;
         }
         if (status == 1) {
-            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId, device);
+            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), device);
             if (result) {
                 return WebUtils.success();
             } else {
@@ -285,7 +282,7 @@ public class PracticeController {
 
     private RiseRefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
         List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId, page);
-        List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
+        List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getProfileId().equals(loginUser.getId()))
                 .map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setContent(item.getContent());
@@ -465,7 +462,7 @@ public class PracticeController {
         }
 
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment(), device);
+                dto.getComment(), device);
 
 
         if (result.getLeft() > 0) {
@@ -512,7 +509,7 @@ public class PracticeController {
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
+                dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
 
         if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
@@ -805,11 +802,8 @@ public class PracticeController {
         page.setPage(offset);
         List<KnowledgeDiscuss> discusses = practiceDiscussService.loadKnowledgeDiscusses(knowledgeId, page);
 
-        //清空openid
         discusses.forEach(knowledgeDiscuss -> {
-            knowledgeDiscuss.setIsMine(loginUser.getOpenId().equals(knowledgeDiscuss.getOpenid()));
-            knowledgeDiscuss.setRepliedOpenid(null);
-            knowledgeDiscuss.setOpenid(null);
+            knowledgeDiscuss.setIsMine(loginUser.getId().equals(knowledgeDiscuss.getProfileId()));
             knowledgeDiscuss.setReferenceId(knowledgeDiscuss.getKnowledgeId());
         });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -829,7 +823,7 @@ public class PracticeController {
             return WebUtils.result("您提交的讨论字数过长");
         }
 
-        practiceDiscussService.discussKnowledge(loginUser.getOpenId(), loginUser.getId(), discussDto.getReferenceId(),
+        practiceDiscussService.discussKnowledge(loginUser.getId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

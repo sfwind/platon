@@ -12,7 +12,6 @@ import java.util.List;
 @Data
 public class ImprovementPlan {
     private Integer id;
-    private String openid; //openid
     private Integer problemId; //问题id
     private Date startDate; //开始日期
     @Deprecated

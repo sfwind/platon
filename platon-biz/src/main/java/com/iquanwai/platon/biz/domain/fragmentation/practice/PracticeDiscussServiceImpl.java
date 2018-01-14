@@ -42,19 +42,17 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void discuss(String openid, Integer profileId, Integer warmupPracticeId, String comment, Integer repliedId) {
+    public void discuss(Integer profileId, Integer warmupPracticeId, String comment, Integer repliedId) {
         WarmupPracticeDiscuss warmupPracticeDiscuss = new WarmupPracticeDiscuss();
         warmupPracticeDiscuss.setWarmupPracticeId(warmupPracticeId);
         warmupPracticeDiscuss.setComment(comment);
         warmupPracticeDiscuss.setDel(0);
-        warmupPracticeDiscuss.setOpenid(openid);
         warmupPracticeDiscuss.setProfileId(profileId);
         if (repliedId != null) {
             WarmupPracticeDiscuss repliedDiscuss = warmupPracticeDiscussDao.load(WarmupPracticeDiscuss.class, repliedId);
             if (repliedDiscuss != null) {
                 warmupPracticeDiscuss.setRepliedId(repliedId);
                 warmupPracticeDiscuss.setRepliedComment(repliedDiscuss.getComment());
-                warmupPracticeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
                 warmupPracticeDiscuss.setRepliedProfileId(repliedDiscuss.getProfileId());
                 warmupPracticeDiscuss.setRepliedDel(0);
                 warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
@@ -79,19 +77,17 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
 
     @Override
-    public void discussKnowledge(String openid, Integer profileId, Integer knowledgeId, String comment, Integer repliedId) {
+    public void discussKnowledge(Integer profileId, Integer knowledgeId, String comment, Integer repliedId) {
         KnowledgeDiscuss knowledgeDiscuss = new KnowledgeDiscuss();
         knowledgeDiscuss.setKnowledgeId(knowledgeId);
         knowledgeDiscuss.setComment(comment);
         knowledgeDiscuss.setDel(0);
-        knowledgeDiscuss.setOpenid(openid);
         knowledgeDiscuss.setProfileId(profileId);
         if (repliedId != null) {
             KnowledgeDiscuss repliedDiscuss = knowledgeDiscussDao.load(KnowledgeDiscuss.class, repliedId);
             if (repliedDiscuss != null) {
                 knowledgeDiscuss.setRepliedId(repliedId);
                 knowledgeDiscuss.setRepliedComment(repliedDiscuss.getComment());
-                knowledgeDiscuss.setRepliedOpenid(repliedDiscuss.getOpenid());
                 knowledgeDiscuss.setRepliedProfileId(repliedDiscuss.getProfileId());
             }
         }
@@ -139,8 +135,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             // 清空用户id
             discuss.setProfileId(null);
             discuss.setRepliedProfileId(null);
-            discuss.setOpenid(null);
-            discuss.setRepliedOpenid(null);
             //讨论的第一条
             if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() == discuss.getId()) {
                 ModelMapper modelMapper = new ModelMapper();

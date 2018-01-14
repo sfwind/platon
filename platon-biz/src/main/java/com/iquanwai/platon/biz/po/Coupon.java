@@ -11,7 +11,6 @@ import java.util.Date;
 public class Coupon {
 
     private Integer id;
-    private String openId;
     private Integer profileId;
     private Integer amount; // 优惠券金额
     private Integer used; // 是否使用 0-否 1-是

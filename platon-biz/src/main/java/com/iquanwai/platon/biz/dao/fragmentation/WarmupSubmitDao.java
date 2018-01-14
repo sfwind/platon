@@ -25,10 +25,10 @@ public class WarmupSubmitDao extends PracticeDBUtil {
 
     public void insert(WarmupSubmit warmupSubmit) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into WarmupSubmit(Openid, ProfileId, QuestionId, PlanId, Content, IsRight, Score) " +
-                "values(?,?,?,?,?,?,?)";
+        String sql = "insert into WarmupSubmit(ProfileId, QuestionId, PlanId, Content, IsRight, Score) " +
+                "values(?,?,?,?,?,?)";
         try {
-            runner.insert(sql, new ScalarHandler<>(), warmupSubmit.getOpenid(), warmupSubmit.getProfileId(),
+            runner.insert(sql, new ScalarHandler<>(), warmupSubmit.getProfileId(),
                     warmupSubmit.getQuestionId(),
                     warmupSubmit.getPlanId(), warmupSubmit.getContent(),
                     warmupSubmit.getIsRight(), warmupSubmit.getScore());

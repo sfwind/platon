@@ -90,8 +90,7 @@ public class WarmupController {
         WarmupResult warmupResult;
         try {
             warmupResult = practiceService.answerWarmupPractice(
-                    warmupPracticeDto.getPractice(), practicePlanId,
-                    loginUser.getOpenId(), loginUser.getId());
+                    warmupPracticeDto.getPractice(), practicePlanId, loginUser.getId());
         } catch (AnswerException e) {
             return WebUtils.error("您已做完这套练习");
         }
@@ -223,7 +222,7 @@ public class WarmupController {
             return WebUtils.result("您提交的讨论字数过长");
         }
 
-        practiceDiscussService.discuss(loginUser.getOpenId(), loginUser.getId(), discussDto.getReferenceId(),
+        practiceDiscussService.discuss(loginUser.getId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
