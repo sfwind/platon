@@ -249,25 +249,32 @@ public class LoginUserService {
     // new
     public LoginUser getLoginUserByRequest(HttpServletRequest request) {
         LoginUser.Platform platform = getPlatformType(request);
+        logger.info("获取 loginUser ：" + platform);
         Callback callback;
         switch (platform) {
             case PC:
+                logger.info("pc");
                 String pcAccessToken = CookieUtils.getCookie(request, PC_TOKEN_COOKIE_NAME);
                 if (StringUtils.isEmpty(pcAccessToken)) return null;
                 callback = callbackDao.queryByPcAccessToken(pcAccessToken);
                 break;
             case WE_MOBILE:
+                logger.info("mobile");
                 String weMobileAccessToken = CookieUtils.getCookie(request, WE_CHAT_TOKEN_COOKIE_NAME);
                 if (StringUtils.isEmpty(weMobileAccessToken)) return null;
                 callback = callbackDao.queryByAccessToken(weMobileAccessToken);
                 break;
             case WE_MINI:
+                logger.info("mini");
                 String weMiniState = request.getHeader(WE_MINI_STATE_HEADER_NAME);
                 if (StringUtils.isEmpty(weMiniState)) return null;
                 callback = callbackDao.queryByState(weMiniState);
                 break;
             default:
                 callback = null;
+        }
+        if (callback == null) {
+            return null;
         }
         LoginUser loginUser = getLoginUserByCallback(callback);
         // 填充设备信息
