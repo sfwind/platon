@@ -40,6 +40,8 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         }
 
         LoginUser.Platform platform = loginUserService.getPlatformType(request);
+        logger.info("platform get 结果：" + platform);
+        logger.info("platform 小程序 结果：" + LoginUser.Platform.WE_MINI);
         // 如果是小程序请求，直接通过，避免拦截 code 换取请求
         if (LoginUser.Platform.WE_MINI.equals(platform)) {
             return true;
