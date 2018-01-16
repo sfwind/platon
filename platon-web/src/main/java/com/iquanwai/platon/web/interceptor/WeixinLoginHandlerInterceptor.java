@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.Map;
 
 public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
@@ -42,6 +43,13 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         // 如果是小程序请求，直接通过，避免拦截 code 换取请求
         if (LoginUser.Platform.WE_MINI.equals(platform)) {
             return true;
+        }
+
+        logger.info("进入接口拦截器");
+
+        Enumeration<String> headers = request.getHeaderNames();
+        while (headers.hasMoreElements()) {
+            System.out.println("header = " + headers.nextElement() + "  value = " + request.getHeader(headers.nextElement()));
         }
 
         LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
