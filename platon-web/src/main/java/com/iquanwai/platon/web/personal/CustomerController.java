@@ -91,7 +91,7 @@ public class CustomerController {
         Profile profile = new Profile();
         profile.setNickname(loginUser.getWeixinName());
         profile.setHeadimgurl(loginUser.getHeadimgUrl());
-        return WebUtils.result(loginUser);
+        return WebUtils.result(profile);
     }
 
     @RequestMapping("/event/list")
