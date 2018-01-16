@@ -46,11 +46,13 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         }
 
         logger.info("进入接口拦截器");
+        String platformHeader = request.getHeader("platform");
+        logger.info("platform value:" + platformHeader);
 
         Enumeration<String> headers = request.getHeaderNames();
         while (headers.hasMoreElements()) {
             String header = headers.nextElement();
-            System.out.println("header : " +  header + " value: "  + request.getHeader(header));
+            logger.info("header : " +  header + " value: "  + request.getHeader(header));
         }
 
         LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
