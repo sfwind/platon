@@ -283,15 +283,20 @@ public class LoginUserService {
     // new
     public LoginUser.Platform getPlatformType(HttpServletRequest request) {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
+        logger.info(platformHeader);
         Assert.notNull(platformHeader);
         switch (platformHeader) {
             case LoginUser.PlatformHeaderValue.PC_HEADER:
+                logger.info("进入 pc");
                 return LoginUser.Platform.PC;
             case LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER:
+                logger.info("进入 mobile");
                 return LoginUser.Platform.WE_MOBILE;
             case LoginUser.PlatformHeaderValue.WE_MINI_HEADER:
+                logger.info("进入 mini");
                 return LoginUser.Platform.WE_MINI;
             default:
+                logger.info("默认 pc");
                 return LoginUser.Platform.PC;
         }
     }
