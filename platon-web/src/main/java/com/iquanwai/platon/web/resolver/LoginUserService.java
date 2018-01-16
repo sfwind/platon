@@ -284,6 +284,7 @@ public class LoginUserService {
     public LoginUser.Platform getPlatformType(HttpServletRequest request) {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
         logger.info(platformHeader);
+        logger.info(platformHeader.equals(LoginUser.PlatformHeaderValue.WE_MINI_HEADER) ? "true" : "false");
         Assert.notNull(platformHeader);
         switch (platformHeader) {
             case LoginUser.PlatformHeaderValue.PC_HEADER:
