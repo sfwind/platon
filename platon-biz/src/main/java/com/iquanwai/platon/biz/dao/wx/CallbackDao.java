@@ -28,7 +28,7 @@ public class CallbackDao extends DBUtil {
                 "VALUES(?, ?, ?, ?, ?)";
         try {
             Future<Integer> result = asyncRun.update(insertSql,
-                    callback.getOpenId(), callback.getAccessToken(), callback.getCallbackUrl(),
+                    callback.getOpenid(), callback.getAccessToken(), callback.getCallbackUrl(),
                     callback.getRefreshToken(), callback.getState());
             return result.get();
         } catch (SQLException e) {
@@ -47,8 +47,7 @@ public class CallbackDao extends DBUtil {
         ResultSetHandler<Callback> h = new BeanHandler<>(Callback.class);
 
         try {
-            Callback callback = run.query("SELECT * FROM Callback where PcAccessToken=?", h, accessToken);
-            return callback;
+            return run.query("SELECT * FROM Callback where PcAccessToken = ?", h, accessToken);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

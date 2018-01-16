@@ -27,7 +27,7 @@ public class OAuthServiceImpl implements OAuthService {
             logger.error("accessToken {} is invalid", accessToken);
             return null;
         }
-        return callback.getOpenId();
+        return callback.getOpenid();
     }
 
     @Override
@@ -41,7 +41,7 @@ public class OAuthServiceImpl implements OAuthService {
             logger.error("pcAccessToken {} is invalid", act);
             return null;
         }
-        return callback.getOpenId();
+        return callback.getOpenid();
     }
 
 }
