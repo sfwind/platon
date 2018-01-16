@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
@@ -48,19 +47,10 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
         logger.info("进入接口拦截器");
 
-        Map map = new HashMap();
-        Enumeration paramNames = request.getParameterNames();
-        while (paramNames.hasMoreElements()) {
-            String paramName = (String) paramNames.nextElement();
-
-            String[] paramValues = request.getParameterValues(paramName);
-            if (paramValues.length == 1) {
-                String paramValue = paramValues[0];
-                if (paramValue.length() != 0) {
-                    System.out.println("参数：" + paramName + "=" + paramValue);
-                    map.put(paramName, paramValue);
-                }
-            }
+        Enumeration<String> headers = request.getHeaderNames();
+        while (headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            System.out.println("header : " +  header + " value: "  + request.getHeader(header));
         }
 
         LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
