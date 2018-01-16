@@ -70,8 +70,8 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
      */
     private void writeUnLoginPage(HttpServletResponse response) throws IOException {
         Map<String, Object> map = Maps.newHashMap();
-        PrintWriter out = response.getWriter();
         response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
         map.put("code", 401);
         map.put("msg", "没有登录");
         out.write(CommonUtils.mapToJson(map));
