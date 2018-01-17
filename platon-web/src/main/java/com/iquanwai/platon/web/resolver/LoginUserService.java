@@ -12,7 +12,6 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,19 +20,12 @@ import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.ref.SoftReference;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class LoginUserService {
-
-    public static void main(String[] args) {
-        DateTime date = new DateTime(new Date()).plusYears(2);
-        System.out.println(date.toDate().getTime());
-    }
-
     @Autowired
     private AccountService accountService;
     @Autowired
