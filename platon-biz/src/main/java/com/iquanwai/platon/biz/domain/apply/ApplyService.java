@@ -50,9 +50,9 @@ public interface ApplyService {
      *
      * @param profileId        用户id
      * @param userApplySubmits 用户的申请记录
-     * @param orderId          订单id
+     * @param valid            是否有效
      */
-    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, String orderId);
+    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid);
 
     /**
      * 检查是否有申请权限

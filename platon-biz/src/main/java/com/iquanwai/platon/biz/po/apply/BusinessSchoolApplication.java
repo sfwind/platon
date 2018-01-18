@@ -27,6 +27,7 @@ public class BusinessSchoolApplication {
     private String orderId;
     private String originMemberTypeName;
     private Integer lastVerified;
+    private Boolean valid;
 
     public static final int APPLYING = 0;
     public static final int APPROVE = 1;
