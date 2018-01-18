@@ -115,7 +115,7 @@ public class ApplyServiceImpl implements ApplyService {
     public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid) {
         Profile profile = accountService.getProfile(profileId);
         //获取上次审核的结果
-        BusinessSchoolApplication lastBussinessApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
+        BusinessSchoolApplication lastBusinessApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
 
         BusinessSchoolApplication application = new BusinessSchoolApplication();
         application.setProfileId(profileId);
@@ -127,8 +127,8 @@ public class ApplyServiceImpl implements ApplyService {
         application.setValid(valid);
         application.setDeal(false);
 
-        if (lastBussinessApplication != null) {
-            application.setLastVerified(lastBussinessApplication.getStatus());
+        if (lastBusinessApplication != null) {
+            application.setLastVerified(lastBusinessApplication.getStatus());
         } else {
             application.setLastVerified(0);
         }

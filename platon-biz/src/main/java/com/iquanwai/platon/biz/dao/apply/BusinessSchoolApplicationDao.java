@@ -24,7 +24,7 @@ public class BusinessSchoolApplicationDao extends DBUtil {
 
     public BusinessSchoolApplication loadCheckingApplication(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM BusinessSchoolApplication WHERE ProfileId = ? AND Del = 0 AND Deal = 0 Order by Id desc";
+        String sql = "SELECT * FROM BusinessSchoolApplication WHERE ProfileId = ? AND Del = 0 AND Deal = 0 AND Valid = 1 Order by Id desc";
         try {
             return runner.query(sql, new BeanHandler<>(BusinessSchoolApplication.class), profileId);
         } catch (SQLException e) {
@@ -35,7 +35,7 @@ public class BusinessSchoolApplicationDao extends DBUtil {
 
     public List<BusinessSchoolApplication> loadApplyList(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM BusinessSchoolApplication WHERE ProfileId = ? AND Del = 0 Order by Id desc";
+        String sql = "SELECT * FROM BusinessSchoolApplication WHERE ProfileId = ? AND Del = 0 AND Valid = 1 Order by Id desc";
         try {
             return runner.query(sql, new BeanListHandler<>(BusinessSchoolApplication.class), profileId);
         } catch (SQLException e) {
@@ -78,7 +78,7 @@ public class BusinessSchoolApplicationDao extends DBUtil {
      */
     public BusinessSchoolApplication getLastVerifiedByProfileId(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = " select * from BusinessSchoolApplication where profileId = ? and status != 0 and del = 0  order by UpdateTime desc";
+        String sql = " select * from BusinessSchoolApplication where profileId = ? and status != 0 and del = 0 and Valid = 1  order by UpdateTime desc";
 
         try {
             return runner.query(sql, new BeanHandler<>(BusinessSchoolApplication.class), profileId);
