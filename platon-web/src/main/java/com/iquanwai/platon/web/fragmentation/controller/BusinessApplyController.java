@@ -114,7 +114,7 @@ public class BusinessApplyController {
             return WebUtils.error(e.getMessage());
         }
 //        String orderId = null;
-//        if (、ConfigUtils.getPayApplyFlag()) {
+//        if (ConfigUtils.getPayApplyFlag()) {
 //            // 检查是否有可用申请订单
 //            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
 //            if (order == null) {
