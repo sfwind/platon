@@ -249,31 +249,25 @@ public class LoginUserService {
     public LoginUser getLoginUserByRequest(HttpServletRequest request) {
         LoginUser.Platform platform = getPlatformType(request);
         logger.info("获取 loginUser ：" + platform);
-        Callback callback;
+        Callback callback = new Callback();
         switch (platform) {
             case PC:
                 logger.info("pc");
-                String pcAccessToken = CookieUtils.getCookie(request, PC_TOKEN_COOKIE_NAME);
-                if (StringUtils.isEmpty(pcAccessToken)) return null;
-                callback = callbackDao.queryByPcAccessToken(pcAccessToken);
+                String pcState = CookieUtils.getCookie(request, PC_TOKEN_COOKIE_NAME);
+                if (StringUtils.isEmpty(pcState)) return null;
                 break;
             case WE_MOBILE:
                 logger.info("mobile");
-                String weMobileAccessToken = CookieUtils.getCookie(request, WE_CHAT_TOKEN_COOKIE_NAME);
-                if (StringUtils.isEmpty(weMobileAccessToken)) return null;
-                callback = callbackDao.queryByAccessToken(weMobileAccessToken);
+                String weMobileState = CookieUtils.getCookie(request, WE_CHAT_TOKEN_COOKIE_NAME);
+                if (StringUtils.isEmpty(weMobileState)) return null;
                 break;
             case WE_MINI:
                 logger.info("mini");
                 String weMiniState = request.getHeader(WE_MINI_STATE_HEADER_NAME);
                 if (StringUtils.isEmpty(weMiniState)) return null;
-                callback = callbackDao.queryByState(weMiniState);
                 break;
             default:
                 callback = null;
-        }
-        if (callback == null) {
-            return null;
         }
         LoginUser loginUser = getLoginUserByCallback(callback);
         // 填充设备信息
@@ -315,8 +309,26 @@ public class LoginUserService {
     // new
     private LoginUser getLoginUserByCallback(Callback callback) {
         String state = callback.getState();
-        String unionId = callback.getUnionId();
         LoginUser loginUser;
+
+        if (loginUserCacheMap.containsKey(state)) {
+            loginUser = loginUserCacheMap.get(state).get();
+            if (loginUser == null) {
+                // 软连接，存储对象被回收
+                callback = callbackDao.queryByState(state);
+                Profile profile = profileDao.queryByUnionId(callback.getUnionId());
+                loginUser = buildLoginUserDetail(profile);
+                loginUserCacheMap.put(state, new SoftReference<>(loginUser));
+            }
+        } else {
+            // 缓存中不存在，直接从数据库中读取数据
+            callback = callbackDao.queryByState(state);
+            Profile profile = profileDao.queryByUnionId(callback.getUnionId());
+            loginUser = buildLoginUserDetail(profile);
+            loginUserCacheMap.put(state, new SoftReference<>(loginUser));
+        }
+
+        String unionId = loginUser.getUnionId();
 
         if (waitRefreshUnionIds.contains(unionId)) {
             waitRefreshUnionIds.remove(unionId);
@@ -325,22 +337,8 @@ public class LoginUserService {
             loginUser = buildLoginUserDetail(profile);
             // 将最新数据放进缓存
             loginUserCacheMap.put(state, new SoftReference<>(loginUser));
-        } else {
-            if (loginUserCacheMap.containsKey(state)) {
-                loginUser = loginUserCacheMap.get(state).get();
-                if (loginUser == null) {
-                    // 软连接，存储对象被回收
-                    Profile profile = profileDao.queryByUnionId(unionId);
-                    loginUser = buildLoginUserDetail(profile);
-                    loginUserCacheMap.put(state, new SoftReference<>(loginUser));
-                }
-            } else {
-                // 缓存中不存在，直接从数据库中读取数据
-                Profile profile = profileDao.queryByUnionId(unionId);
-                loginUser = buildLoginUserDetail(profile);
-                loginUserCacheMap.put(state, new SoftReference<>(loginUser));
-            }
         }
+
         return loginUser;
     }
 
@@ -430,6 +428,7 @@ public class LoginUserService {
         Role role = this.getUserRole(profile.getId());
         LoginUser loginUser = new LoginUser();
         loginUser.setId(profile.getId());
+        loginUser.setUnionId(profile.getUnionid());
         loginUser.setOpenId(profile.getOpenid());
         loginUser.setWeixinName(profile.getNickname());
         loginUser.setHeadimgUrl(profile.getHeadimgurl());

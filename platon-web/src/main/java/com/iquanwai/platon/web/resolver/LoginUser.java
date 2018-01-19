@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginUser {
     private Integer id;
+    private String unionId;
     private String openId;
     private String weixinName;
     private String headimgUrl;
@@ -29,7 +30,7 @@ public class LoginUser {
     private Boolean openWelcome; //是否打开过欢迎页
 
     public static LoginUser defaultUser() {
-        return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultOpenid(), "风之伤",
+        return new LoginUser(ConfigUtils.getDefaultProfileId(), ConfigUtils.getDefaultUnionId(), ConfigUtils.getDefaultOpenid(), "风之伤",
                 Profile.DEFAULT_AVATAR, null, 5, null, true, true, 0, true, true, 1, true);
     }
 
