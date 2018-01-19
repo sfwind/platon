@@ -42,7 +42,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         }
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        String value = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
+        String value = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
         Callback callback = callbackDao.queryByAccessToken(value);
         if (callback == null) {
             return null;

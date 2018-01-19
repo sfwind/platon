@@ -33,7 +33,7 @@ public class WeixinAskHandleInterceptor extends HandlerInterceptorAdapter {
             if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
                 return true;
             }
-            String value = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
+            String value = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
             logger.info("ask interceptor:{}", value);
             if (StringUtils.isEmpty(value)) {
                 WebUtils.auth(request, response);

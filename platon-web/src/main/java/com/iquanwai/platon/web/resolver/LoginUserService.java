@@ -37,8 +37,8 @@ public class LoginUserService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public static final String PC_TOKEN_COOKIE_NAME = "_qt";
-    public static final String WE_CHAT_TOKEN_COOKIE_NAME = "_act";
+    public static final String PC_STATE_COOKIE_NAME = "_qt";
+    public static final String WE_CHAT_STATE_COOKIE_NAME = "_act";
 
     public static final String WE_MINI_STATE_HEADER_NAME = "sk";
 
@@ -149,8 +149,8 @@ public class LoginUserService {
     //  */
     // @Deprecated
     // public Pair<Integer, LoginUser> getLoginUser(HttpServletRequest request) {
-    //     String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
-    //     String wechatToken = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
+    //     String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
+    //     String wechatToken = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
     //     if (StringUtils.isEmpty(pcToken) && StringUtils.isEmpty(wechatToken)) {
     //         return new MutablePair<>(-1, null);
     //     } else {
@@ -202,9 +202,9 @@ public class LoginUserService {
     //     LoginUser.Platform platform = getPlatformType(request);
     //     switch (platform) {
     //         case PC:
-    //             return CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
+    //             return CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
     //         case WE_MOBILE:
-    //             return CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
+    //             return CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
     //         default:
     //             return null;
     //     }
@@ -217,8 +217,8 @@ public class LoginUserService {
     //         // 小程序
     //         return LoginUser.Platform.WE_MINI;
     //     } else {
-    //         String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_TOKEN_COOKIE_NAME);
-    //         String wechatToken = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_TOKEN_COOKIE_NAME);
+    //         String pcToken = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
+    //         String wechatToken = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
     //         if (StringUtils.isEmpty(pcToken) && StringUtils.isEmpty(wechatToken)) {
     //             // pcToken和wechatToken都为null则是移动
     //             return LoginUser.Platform.WE_MOBILE;
@@ -253,12 +253,12 @@ public class LoginUserService {
         switch (platform) {
             case PC:
                 logger.info("pc");
-                String pcState = CookieUtils.getCookie(request, PC_TOKEN_COOKIE_NAME);
+                String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(pcState)) return null;
                 break;
             case WE_MOBILE:
                 logger.info("mobile");
-                String weMobileState = CookieUtils.getCookie(request, WE_CHAT_TOKEN_COOKIE_NAME);
+                String weMobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(weMobileState)) return null;
                 break;
             case WE_MINI:
