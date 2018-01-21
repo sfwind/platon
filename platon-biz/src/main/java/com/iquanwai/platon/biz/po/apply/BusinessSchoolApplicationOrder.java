@@ -9,7 +9,6 @@ import lombok.Data;
 public class BusinessSchoolApplicationOrder {
     private Integer id;
     private Integer profileId;
-    private String openid;
     private String orderId;
     private Boolean paid;
     private Boolean del;

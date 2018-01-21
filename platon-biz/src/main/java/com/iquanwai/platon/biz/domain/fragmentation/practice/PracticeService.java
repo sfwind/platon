@@ -187,50 +187,6 @@ public interface PracticeService {
     WarmupPractice getWarmupPractice(Integer warmupId);
 
     /**
-     * 提交课程分享文章
-     */
-    Integer submitSubjectArticle(SubjectArticle subjectArticle);
-
-    /**
-     * 加载课程分享区文章
-     *
-     * @param problemId 课程id
-     * @param page      分页对象
-     */
-    List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
-
-    /**
-     * 加载分享区文章
-     *
-     * @param submitId 提交id
-     */
-    SubjectArticle loadSubjectArticle(Integer submitId);
-
-    /**
-     * 获取课程所有标签
-     *
-     * @param problemId 课程id
-     */
-    List<LabelConfig> loadProblemLabels(Integer problemId);
-
-    /**
-     * 更新课程分享的标签
-     *
-     * @param moduleId  模块
-     * @param articleId 文章id
-     * @param labels    标签
-     */
-    List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
-
-    /**
-     * 获取课程分享的标签
-     *
-     * @param moduleId  模块
-     * @param articleId 文章id
-     */
-    List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
-
-    /**
      * 根据训练id获取知识
      *
      * @param practicePlanId 训练id

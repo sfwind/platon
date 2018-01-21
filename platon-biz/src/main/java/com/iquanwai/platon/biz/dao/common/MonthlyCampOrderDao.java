@@ -16,22 +16,7 @@ import java.sql.SQLException;
 @Repository
 public class MonthlyCampOrderDao extends DBUtil {
 
-    Logger logger = LoggerFactory.getLogger(getClass());
-
-    public int insert(MonthlyCampOrder monthlyCampOrder) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO MonthlyCampOrder (OrderId, Openid, ProfileId, Month) " +
-                "VALUES (?, ?, ?, ?)";
-        try {
-            Long result = runner.insert(sql, new ScalarHandler<>(),
-                    monthlyCampOrder.getOrderId(), monthlyCampOrder.getOpenId(),
-                    monthlyCampOrder.getProfileId(), monthlyCampOrder.getMonth());
-            return result.intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
-    }
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public MonthlyCampOrder loadTrainOrder(String orderId) {
         QueryRunner runner = new QueryRunner(getDataSource());
