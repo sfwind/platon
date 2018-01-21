@@ -7,9 +7,10 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
+import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionGroupDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySubmitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -63,7 +64,10 @@ public class BusinessApplyController {
             dto.setQuestions(collect.get(item));
             result.add(dto);
         });
-        return WebUtils.result(result);
+        ApplyQuestionGroupDto dto = new ApplyQuestionGroupDto();
+        dto.setPayApplyFlag(ConfigUtils.getPayApplyFlag());
+        dto.setQuestions(result);
+        return WebUtils.result(dto);
     }
 
     /**
@@ -109,11 +113,16 @@ public class BusinessApplyController {
         } catch (ApplyException e) {
             return WebUtils.error(e.getMessage());
         }
-        // 检查是否有可用申请订单
-        BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
-        if (order == null) {
-            return WebUtils.error("您还没有成功支付哦");
-        }
+//        String orderId = null;
+//        if (ConfigUtils.getPayApplyFlag()) {
+//            // 检查是否有可用申请订单
+//            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
+//            if (order == null) {
+//                return WebUtils.error("您还没有成功支付哦");
+//            }
+//            orderId = order.getOrderId();
+//        }
+
         // 提交申请信息
         List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {
             BusinessApplySubmit submit = new BusinessApplySubmit();
@@ -122,7 +131,8 @@ public class BusinessApplyController {
             submit.setUserValue(applySubmitVO.getUserValue());
             return submit;
         }).collect(Collectors.toList());
-        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, order.getOrderId());
+        // 如果不需要支付，则直接有效，否则先设置为无效
+        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, !ConfigUtils.getPayApplyFlag());
         return WebUtils.success();
     }
 }
