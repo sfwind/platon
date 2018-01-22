@@ -348,6 +348,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(profileId);
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
+        improvementPlan.setOpenid(profile.getOpenid());
         improvementPlan.setProfileId(profileId);
         improvementPlan.setWarmupComplete(0);
         improvementPlan.setApplicationComplete(0);
