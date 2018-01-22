@@ -255,16 +255,19 @@ public class LoginUserService {
                 logger.info("pc");
                 String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(pcState)) return null;
+                callback.setState(pcState);
                 break;
             case WE_MOBILE:
                 logger.info("mobile");
                 String weMobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(weMobileState)) return null;
+                callback.setState(weMobileState);
                 break;
             case WE_MINI:
                 logger.info("mini");
                 String weMiniState = request.getHeader(WE_MINI_STATE_HEADER_NAME);
                 if (StringUtils.isEmpty(weMiniState)) return null;
+                callback.setState(weMiniState);
                 break;
             default:
                 callback = null;
