@@ -117,10 +117,26 @@ public class LoginUserService {
     public LoginUser.Platform getPlatformType(HttpServletRequest request) {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
         if (platformHeader == null) {
-            return null;
+            // 如果请求中没有 platform header，可能是资源请求
+            logger.info("header 中没有 platform 参数");
+            String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
+            if (pcState != null) {
+                logger.info("pcState: {}", pcState);
+                platformHeader = LoginUser.PlatformHeaderValue.PC_HEADER;
+            }
+
+            String mobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
+            if (mobileState != null) {
+                logger.info("mobileState: {}", mobileState);
+                platformHeader = LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER;
+            }
+
+            if (platformHeader == null) {
+                logger.info("默认为 {}", LoginUser.PlatformHeaderValue.WE_MINI_HEADER);
+                platformHeader = LoginUser.PlatformHeaderValue.WE_MINI_HEADER;
+            }
         }
         logger.info(platformHeader);
-        logger.info(platformHeader.equals(LoginUser.PlatformHeaderValue.WE_MINI_HEADER) ? "true" : "false");
         switch (platformHeader) {
             case LoginUser.PlatformHeaderValue.PC_HEADER:
                 logger.info("进入 pc");

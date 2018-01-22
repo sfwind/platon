@@ -78,7 +78,6 @@ public class WebUtils {
             url = url + "?" + request.getQueryString();
         }
         url = URLEncoder.encode(url, "UTF-8");
-
         response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth?callbackUrl=" + url);
     }
 
