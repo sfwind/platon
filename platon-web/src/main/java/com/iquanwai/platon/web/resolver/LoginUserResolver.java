@@ -36,8 +36,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
 
         if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
-            return LoginUser.defaultUser();
             // TODO 临时关闭前端 debug 模式的 OpenId 获取用户身份
+            return LoginUser.defaultUser();
         }
 
         return loginUserService.getLoginUserByRequest(request);

@@ -58,16 +58,18 @@ public class LogAspect {
         outputParamMap.put("result", result);
 
         //超长请求也需要打印日志
-        if(ConfigUtils.logDetail()||endTimeMillis-startTimeMillis>=1000) {
-            if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {Gson gson = new Gson();
-            String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
-            LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
-            if (loginUser != null) {
-                userName = loginUser.getWeixinName();
+        if (ConfigUtils.logDetail() || endTimeMillis - startTimeMillis >= 1000) {
+            if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {
+                Gson gson = new Gson();
+                String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
+                LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
+                if (loginUser != null) {
+                    userName = loginUser.getWeixinName();
+                }
+                String str = gson.toJson(outputParamMap).length() > 1024 ? gson.toJson(outputParamMap).substring(0, 1024) : gson.toJson(outputParamMap);
+                logger.info("\n user：" + userName + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
+                        + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + str);
             }
-            String str = gson.toJson(outputParamMap).length() > 1024 ? gson.toJson(outputParamMap).substring(0, 1024) : gson.toJson(outputParamMap);logger.info("\n user：" + userName
-                    + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
-                    + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + str);}
         }
         return result;
     }
