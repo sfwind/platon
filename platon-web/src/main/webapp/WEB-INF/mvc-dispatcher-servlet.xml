@@ -94,7 +94,7 @@
             <mvc:mapping path="/rise/interlocution/follow/cancel/**"/>
             <mvc:mapping path="/rise/interlocution/load/quanquan/**"/>
             <mvc:mapping path="/rise/customer/check/subscribe/**"/>
-            <bean class="com.iquanwai.platon.web.interceptor.WeixinAskHandleInterceptor"/>
+            <bean class="com.iquanwai.platon.web.interceptor.WeixinSilentHandleInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>
 </beans>

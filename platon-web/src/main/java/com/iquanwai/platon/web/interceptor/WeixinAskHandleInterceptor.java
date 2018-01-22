@@ -1,14 +1,11 @@
 package com.iquanwai.platon.web.interceptor;
 
-import com.iquanwai.platon.biz.dao.wx.CallbackDao;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -21,11 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 public class WeixinAskHandleInterceptor extends HandlerInterceptorAdapter {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private CallbackDao callbackDao;
-    @Autowired
-    private AccountService accountService;
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (!ConfigUtils.isDebug()) {
@@ -36,7 +28,7 @@ public class WeixinAskHandleInterceptor extends HandlerInterceptorAdapter {
             String value = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
             logger.info("ask interceptor:{}", value);
             if (StringUtils.isEmpty(value)) {
-                WebUtils.auth(request, response);
+                WebUtils.askAuth(request, response);
                 return false;
             } else {
                return true;

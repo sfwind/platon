@@ -22,7 +22,7 @@ public class WeixinSilentHandleInterceptor extends HandlerInterceptorAdapter {
             if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
                 return true;
             }
-            String value = CookieUtils.getCookie(request, LoginUserService.ACCESS_ASK_TOKEN_COOKIE_NAME);
+            String value = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
             logger.info("Silent interceptor:{}", value);
             if (StringUtils.isEmpty(value)) {
                 WebUtils.auth(request, response);
