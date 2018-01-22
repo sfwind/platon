@@ -108,7 +108,7 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
     public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击学习页面");
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid = null;
         Account account = null;
         if (accessToken != null) {
@@ -124,7 +124,7 @@ public class IndexController {
         }
 
         if (!checkAccessToken(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
@@ -155,7 +155,7 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击商学院按钮");
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid = null;
         Account account = null;
         if (accessToken != null) {
@@ -177,7 +177,7 @@ public class IndexController {
         }
 
         if (!checkAccessToken(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
@@ -247,7 +247,7 @@ public class IndexController {
     public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击训练营按钮");
 
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid = null;
         Account account = null;
         if (accessToken != null) {
@@ -263,7 +263,7 @@ public class IndexController {
         }
 
         if (!checkAccessToken(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
@@ -303,7 +303,7 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
-        String accessToken = CookieUtils.getCookie(request, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid = null;
         Account account = null;
         if (accessToken != null) {
@@ -325,7 +325,7 @@ public class IndexController {
         }
 
         if (!checkAccessToken(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.ACCESS_TOKEN_COOKIE_NAME, response);
+            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
