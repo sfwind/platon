@@ -42,6 +42,7 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         LoginUser.Platform platform = loginUserService.getPlatformType(request);
         if (platform == null) {
             writeUnLoginPage(response);
+            return false;
         }
 
         logger.info("platform get 结果：" + platform);
