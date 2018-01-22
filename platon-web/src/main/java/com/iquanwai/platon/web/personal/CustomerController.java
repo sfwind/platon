@@ -212,8 +212,8 @@ public class CustomerController {
         }
     }
 
-    @RequestMapping(value = "/profile/nickName/update")
-    public ResponseEntity<Map<String, Object>> updateNickName(LoginUser loginUser, @RequestParam("nickName") String nickName) {
+    @RequestMapping(value = "/profile/nickname/update", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> updateNickName(LoginUser loginUser, @RequestBody NicknameDto nickname) {
         Assert.notNull(loginUser, "登录用户不能为空");
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -222,7 +222,7 @@ public class CustomerController {
                 .action("提交昵称");
         operationLogService.log(operationLog);
 
-        int result = customerService.updateNickName(loginUser.getId(), nickName);
+        int result = customerService.updateNickName(loginUser.getId(), nickname.getNickname());
         if (result > 0) {
             loginUserService.updateWeixinUser(loginUser.getOpenId());
             return WebUtils.result("昵称更新成功");

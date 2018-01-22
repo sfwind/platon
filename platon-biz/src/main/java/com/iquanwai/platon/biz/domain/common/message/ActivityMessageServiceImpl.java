@@ -85,12 +85,12 @@ public class ActivityMessageServiceImpl implements ActivityMessageService {
                     logger.info("活动已过期", profileId);
                 }
             }
-
+        } catch (Exception e) {
+            logger.error("加载首屏消息错误", e);
+        } finally {
             //保存30天最后登录时间
             redisUtil.set(LOGIN_REDIS_KEY + profileId,
                     DateUtils.parseDateTimeToString(new Date()), 60 * 60 * 24 * 30L);
-        } catch (Exception e) {
-            logger.error("加载首屏消息错误", e);
         }
     }
 }
