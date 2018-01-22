@@ -30,8 +30,6 @@ public class MessageServiceImpl implements MessageService {
     @Autowired
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
-    private SubjectArticleDao subjectArticleDao;
-    @Autowired
     private CommentDao commentDao;
     @Autowired
     private ApplicationPracticeDao applicationPracticeDao;
@@ -79,7 +77,7 @@ public class MessageServiceImpl implements MessageService {
             }
             //修改发送时间
             notifyMessage.setSendTime(notifyMessage.getSendTime().substring(0, 10));
-            //清空openid
+            //清空profileid
             notifyMessage.setToUser(null);
             notifyMessage.setFromUser(null);
             // 根据 PC 和移动端修改跳转 URL
@@ -119,16 +117,6 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         return null;
-    }
-
-    @Override
-    public SubjectArticle loadSubjectArticleByCommentId(Integer id) {
-        SubjectArticle subjectArticle = new SubjectArticle();
-        Comment comment = commentDao.load(Comment.class, id);
-        if (comment != null) {
-            subjectArticle = subjectArticleDao.load(SubjectArticle.class, comment.getReferencedId());
-        }
-        return subjectArticle;
     }
 
     @Setter

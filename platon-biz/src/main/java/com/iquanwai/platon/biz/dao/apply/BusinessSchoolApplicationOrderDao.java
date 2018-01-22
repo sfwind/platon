@@ -22,11 +22,11 @@ public class BusinessSchoolApplicationOrderDao extends DBUtil {
 
     public int insert(BusinessSchoolApplicationOrder businessSchoolApplicationOrder) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO BusinessSchoolApplicationOrder (OrderId, Openid, ProfileId) " +
-                "VALUES (?, ?, ?)";
+        String sql = "INSERT INTO BusinessSchoolApplicationOrder (OrderId, ProfileId) " +
+                "VALUES (?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    businessSchoolApplicationOrder.getOrderId(), businessSchoolApplicationOrder.getOpenid(),
+                    businessSchoolApplicationOrder.getOrderId(),
                     businessSchoolApplicationOrder.getProfileId());
             return result.intValue();
         } catch (SQLException e) {

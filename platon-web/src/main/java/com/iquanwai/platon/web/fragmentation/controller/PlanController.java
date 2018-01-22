@@ -186,8 +186,6 @@ public class PlanController {
         }
 
         planService.buildPlanDetail(improvementPlan);
-        // openid置为null
-        improvementPlan.setOpenid(null);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练计划")

@@ -9,7 +9,6 @@ import lombok.Data;
 public class WhiteList {
     private int id;
     private String function;
-    private String openid;
     private Integer profileId;
 
     //碎片化练习

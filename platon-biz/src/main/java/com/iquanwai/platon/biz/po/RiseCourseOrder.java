@@ -9,7 +9,6 @@ import lombok.Data;
 public class RiseCourseOrder {
     private Integer id;
     private Integer profileId;
-    private String openid;
     private Integer problemId;
     private String orderId;
 }

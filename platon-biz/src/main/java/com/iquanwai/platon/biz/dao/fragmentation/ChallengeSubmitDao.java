@@ -24,11 +24,11 @@ public class ChallengeSubmitDao extends PracticeDBUtil {
 
     public int insert(ChallengeSubmit challengeSubmit) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ChallengeSubmit(Openid, ProfileId, ChallengeId, PlanId) " +
-                "values(?,?,?,?)";
+        String sql = "insert into ChallengeSubmit(ProfileId, ChallengeId, PlanId) " +
+                "values(?,?,?)";
         try {
             Long insertRs = runner.insert(sql, new ScalarHandler<>(),
-                    challengeSubmit.getOpenid(), challengeSubmit.getProfileId(),
+                    challengeSubmit.getProfileId(),
                     challengeSubmit.getChallengeId(), challengeSubmit.getPlanId());
             return insertRs.intValue();
         } catch (SQLException e) {
