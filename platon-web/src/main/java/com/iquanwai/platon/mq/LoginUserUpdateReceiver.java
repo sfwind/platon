@@ -1,6 +1,5 @@
 package com.iquanwai.platon.mq;
 
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.slf4j.Logger;
@@ -17,8 +16,6 @@ import javax.annotation.PostConstruct;
 public class LoginUserUpdateReceiver {
     @Autowired
     private LoginUserService loginUserService;
-    @Autowired
-    private MQService mqService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -29,9 +26,9 @@ public class LoginUserUpdateReceiver {
 
     @PostConstruct
     public void init() {
-        rabbitMQFactory.initReceiver(null,TOPIC,(messageQueue)->{
+        rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
             logger.info("receive message {}", messageQueue.getMessage().toString());
-            loginUserService.updateWeixinUser(messageQueue.getMessage().toString());
+            loginUserService.updateLoginUserByUnionId(messageQueue.getMessage().toString());
         });
     }
 }

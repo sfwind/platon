@@ -135,7 +135,7 @@ public class InterlocutionController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/load/quanquan/{date}", method = RequestMethod.GET)
+        @RequestMapping(value = "/load/quanquan/{date}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadQuanquanAnswer(GuestUser loginUser, @PathVariable String date) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

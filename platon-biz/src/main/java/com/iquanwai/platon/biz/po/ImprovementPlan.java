@@ -14,8 +14,6 @@ public class ImprovementPlan {
     private Integer id;
     private Integer problemId; //问题id
     private Date startDate; //开始日期
-//    @Deprecated
-//    private String openid;
     @Deprecated
     private Date endDate; //结束日期(当日开始复习)
     private Date closeDate; //课程关闭时间（课程关闭日期）
@@ -49,7 +47,6 @@ public class ImprovementPlan {
      * -1：课程结束，report不能点击 plan的status=3 and 没有完成练习<br/>
      * 1:调用complete事件，plan的status=1时 status=2时 <br/>
      * 3：课程结束，report btn点击后直接跳转到report ， plan.status=3 and 完成练习
-     *
      **/
     private Integer reportStatus; // report的状态以及点击后的行为
     private Integer mustStudyDays; // 最小学习天数

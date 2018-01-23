@@ -47,8 +47,7 @@ public class CallbackDao extends DBUtil {
         ResultSetHandler<Callback> h = new BeanHandler<>(Callback.class);
 
         try {
-            Callback callback = run.query("SELECT * FROM Callback where PcAccessToken=?", h, accessToken);
-            return callback;
+            return run.query("SELECT * FROM Callback where PcAccessToken = ?", h, accessToken);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -67,6 +66,18 @@ public class CallbackDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
 
+        return null;
+    }
+
+    public Callback queryByState(String state) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Callback WHERE State = ?";
+        ResultSetHandler<Callback> h = new BeanHandler<>(Callback.class);
+        try {
+            return runner.query(sql, h, state);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
         return null;
     }
 

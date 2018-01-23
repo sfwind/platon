@@ -90,7 +90,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送海报
 //        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lK5OuF5bADXqYrx1wjyFWVE" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
-//        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+//        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenId(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.SCAN_CODE);

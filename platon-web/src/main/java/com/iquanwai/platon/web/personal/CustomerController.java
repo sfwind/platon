@@ -79,6 +79,20 @@ public class CustomerController {
     @Autowired
     private LoginUserService loginUserService;
 
+    @RequestMapping("/info")
+    public ResponseEntity<Map<String, Object>> getUserInfo(LoginUser loginUser) {
+        Assert.notNull(loginUser, "用户不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小程序")
+                .function("获取用户基本信息")
+                .action("查询");
+        operationLogService.log(operationLog);
+
+        Profile profile = new Profile();
+        profile.setNickname(loginUser.getWeixinName());
+        profile.setHeadimgurl(loginUser.getHeadimgUrl());
+        return WebUtils.result(profile);
+    }
 
     @RequestMapping("/event/list")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
@@ -205,7 +219,7 @@ public class CustomerController {
         operationLogService.log(operationLog);
         int updateResult = customerService.updateHeadImageUrl(loginUser.getId(), headImgUrl);
         if (updateResult > 0) {
-            loginUserService.updateWeixinUser(loginUser.getOpenId());
+            loginUserService.updateLoginUserByOpenId(loginUser.getOpenId());
             return WebUtils.success();
         } else {
             return WebUtils.error("头像更新失败");
@@ -224,7 +238,7 @@ public class CustomerController {
 
         int result = customerService.updateNickName(loginUser.getId(), nickname.getNickname());
         if (result > 0) {
-            loginUserService.updateWeixinUser(loginUser.getOpenId());
+            loginUserService.updateLoginUserByOpenId(loginUser.getOpenId());
             return WebUtils.result("昵称更新成功");
         } else {
             return WebUtils.result("昵称更新失败");

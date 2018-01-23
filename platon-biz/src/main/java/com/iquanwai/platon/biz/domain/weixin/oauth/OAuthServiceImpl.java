@@ -18,27 +18,27 @@ public class OAuthServiceImpl implements OAuthService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public String openId(String accessToken) {
-        if(accessToken==null){
+    public String openId(String mobileState) {
+        if (mobileState == null) {
             return null;
         }
-        Callback callback = callbackDao.queryByAccessToken(accessToken);
-        if(callback==null){
-            logger.error("accessToken {} is invalid", accessToken);
+        Callback callback = callbackDao.queryByState(mobileState);
+        if (callback == null) {
+            logger.error("accessToken {} is invalid", mobileState);
             return null;
         }
         return callback.getOpenid();
     }
 
     @Override
-    public String pcOpenId(String act){
-        if (act == null) {
+    public String pcOpenId(String pcState) {
+        if (pcState == null) {
             logger.info("error，pc _qt is null");
             return null;
         }
-        Callback callback = callbackDao.queryByPcAccessToken(act);
+        Callback callback = callbackDao.queryByState(pcState);
         if (callback == null) {
-            logger.error("pcAccessToken {} is invalid", act);
+            logger.error("pcAccessToken {} is invalid", pcState);
             return null;
         }
         return callback.getOpenid();
