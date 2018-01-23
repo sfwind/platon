@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
+import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.Map;
 
 public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
@@ -39,11 +39,8 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
+        logger.info("进入接口拦截器");
         LoginUser.Platform platform = loginUserService.getPlatformType(request);
-        if (platform == null) {
-            WebUtils.auth(request, response);
-            return false;
-        }
 
         logger.info("platform get 结果：" + platform);
         // 如果是小程序请求，直接通过，避免拦截 code 换取请求
@@ -51,33 +48,28 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
-        logger.info("进入接口拦截器");
-        String platformHeader = request.getHeader("platform");
-        logger.info("platform value:" + platformHeader);
-
-        Enumeration<String> headers = request.getHeaderNames();
-        while (headers.hasMoreElements()) {
-            String header = headers.nextElement();
-            logger.info("header : " + header + " value: " + request.getHeader(header));
-        }
-
-        LoginUser loginUser = loginUserService.getLoginUserByRequest(request);
-        if (loginUser != null) {
-            return true;
-        } else {
-            switch (platform) {
-                case PC:
+        switch (platform) {
+            case PC:
+                String pcCookie = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
+                if (pcCookie == null) {
                     writeUnLoginPage(response);
                     return false;
-                case WE_MOBILE:
+                } else {
+                    return true;
+                }
+            case WE_MOBILE:
+                String mobileCookie = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
+                if (mobileCookie == null) {
                     WebUtils.auth(request, response);
                     return false;
-                case WE_MINI:
+                } else {
                     return true;
-                default:
-                    writeUnLoginPage(response);
-                    return false;
-            }
+                }
+            case WE_MINI:
+                return true;
+            default:
+                writeUnLoginPage(response);
+                return false;
         }
     }
 
