@@ -482,7 +482,6 @@ public class CertificateServiceImpl implements CertificateService {
             int couponInsertResult;
             {
                 Coupon coupon = new Coupon();
-                coupon.setOpenId(profile.getOpenid());
                 coupon.setProfileId(profileId);
                 coupon.setAmount(fullAttendanceReward.getAmount().intValue());
                 coupon.setUsed(0);
@@ -530,7 +529,6 @@ public class CertificateServiceImpl implements CertificateService {
         // 添加 coupon 数据记录
         int couponInsertResult;
         Coupon coupon = new Coupon();
-        coupon.setOpenId(profile.getOpenid());
         coupon.setProfileId(profileId);
         coupon.setAmount(fullAttendanceReward.getAmount().intValue());
         coupon.setUsed(0);
@@ -622,7 +620,6 @@ public class CertificateServiceImpl implements CertificateService {
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
 
         Coupon coupon = new Coupon();
-        coupon.setOpenId(profile.getOpenid());
         coupon.setProfileId(profile.getId());
         coupon.setDescription(description);
         coupon.setUsed(0);

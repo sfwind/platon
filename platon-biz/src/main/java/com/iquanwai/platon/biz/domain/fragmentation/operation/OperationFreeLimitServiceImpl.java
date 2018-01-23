@@ -181,7 +181,6 @@ public class OperationFreeLimitServiceImpl implements OperationFreeLimitService 
                 } else if (successUsers.size() == SUCCESS_NUM) {
                     // 发送优惠券，Coupon 表新增数据
                     Coupon coupon = new Coupon();
-                    coupon.setOpenId(sourceProfile.getOpenid());
                     coupon.setProfileId(sourceProfile.getId());
                     coupon.setAmount(50);
                     coupon.setExpiredDate(DateUtils.afterDays(new Date(), 30));

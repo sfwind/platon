@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
@@ -48,8 +47,6 @@ public class PracticeController {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private PictureService pictureService;
-    @Autowired
     private PracticeDiscussService practiceDiscussService;
     //分页文章数量
     private static final int PAGE_SIZE = 10;
@@ -59,7 +56,7 @@ public class PracticeController {
         Assert.notNull(loginUser, "用户不能为空");
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), loginUser.getId(), planId, false).getLeft();
+                loginUser.getId(), planId, false).getLeft();
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -82,7 +79,7 @@ public class PracticeController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                loginUser.getOpenId(), loginUser.getId(), improvementPlan.getId(), false);
+                loginUser.getId(), improvementPlan.getId(), false);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
@@ -100,7 +97,7 @@ public class PracticeController {
                                                                @RequestBody SubmitDto submitDto) {
         Assert.notNull(loginUser, "用户不能为空");
         // 先生成，之后走之前逻辑
-        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId, loginUser.getOpenId(),
+        ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
                 loginUser.getId(), planId, true);
         Integer submitId = challengePractice.getSubmitId();
         Assert.notNull(loginUser, "用户不能为空");
@@ -134,7 +131,7 @@ public class PracticeController {
         Assert.notNull(loginUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
         Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
-                loginUser.getOpenId(), loginUser.getId(), planId, true);
+                loginUser.getId(), planId, true);
 
         ApplicationPractice applicationPractice = applicationPracticeBooleanPair.getLeft();
         Boolean isNewApplication = applicationPracticeBooleanPair.getRight();
@@ -223,7 +220,7 @@ public class PracticeController {
             device = Constants.Device.MOBILE;
         }
         if (status == 1) {
-            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), openId, device);
+            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), device);
             if (result) {
                 return WebUtils.success();
             } else {
@@ -285,7 +282,7 @@ public class PracticeController {
 
     private RiseRefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
         List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId, page);
-        List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getOpenid().equals(loginUser.getOpenId()))
+        List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getProfileId().equals(loginUser.getId()))
                 .map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setContent(item.getContent());
@@ -465,7 +462,7 @@ public class PracticeController {
         }
 
         Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment(), device);
+                dto.getComment(), device);
 
 
         if (result.getLeft() > 0) {
@@ -512,7 +509,7 @@ public class PracticeController {
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
         Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
-                loginUser.getOpenId(), dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
+                dto.getComment(), dto.getRepliedId(), loginUser.getDevice());
 
         if (result.getLeft() > 0) {
             Comment replyComment = practiceService.loadComment(dto.getRepliedId());
@@ -550,172 +547,6 @@ public class PracticeController {
         } else {
             return WebUtils.result("回复失败");
         }
-    }
-
-
-    @RequestMapping(value = "/subject/submit/{problemId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitSubjectArticle(LoginUser loginUser,
-                                                                    @PathVariable("problemId") Integer problemId,
-                                                                    @RequestBody RiseWorkInfoDto workInfoDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "难题不能为空");
-
-        boolean b = planService.hasProblemPlan(loginUser.getId(), problemId);
-        if (!b) {
-            return WebUtils.error("您并没有该课程，无法提交");
-        }
-        Integer submitId = practiceService.submitSubjectArticle(new SubjectArticle(
-                workInfoDto.getSubmitId(),
-                loginUser.getOpenId(),
-                loginUser.getId(),
-                problemId,
-                1,
-                0,
-                workInfoDto.getTitle(),
-                workInfoDto.getContent()
-        ));
-        OperationLog operationLog = OperationLog.create()
-                .module("训练")
-                .function("碎片化")
-                .action("移动课程输出区提交")
-                .memo(submitId + "");
-        operationLogService.log(operationLog);
-        if (submitId == -1) {
-            return WebUtils.error("提交失败,请保存提交内容，并联系管理员");
-        }
-        if (loginUser.getDevice() == Constants.Device.PC) {
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
-        } else {
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
-        }
-        workInfoDto.setPerfect(false);
-        workInfoDto.setAuthorType(1);
-        workInfoDto.setSubmitId(submitId);
-        workInfoDto.setHeadImage(loginUser.getHeadimgUrl());
-        workInfoDto.setUserName(loginUser.getWeixinName());
-        workInfoDto.setSubmitUpdateTime(DateUtils.parseDateToString(new Date()));
-        workInfoDto.setProblemId(problemId);
-        workInfoDto.setVoteCount(0);
-        workInfoDto.setVoteStatus(0);
-        workInfoDto.setCommentCount(0);
-        workInfoDto.setIsMine(true);
-        workInfoDto.setLabelList(practiceService.updateLabels(Constants.LabelArticleModule.SUBJECT, submitId, workInfoDto.getLabelList()));
-        return WebUtils.result(workInfoDto);
-    }
-
-    @RequestMapping(value = "/subject/list/{problemId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getSubjectList(LoginUser loginUser, @PathVariable("problemId") Integer problemId, @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "课程id不能为空");
-        page.setPageSize(PAGE_SIZE);
-        List<RiseWorkInfoDto> list = practiceService.loadSubjectArticles(problemId, page)
-                .stream().map(item -> {
-                    RiseWorkInfoDto dto = new RiseWorkInfoDto();
-                    dto.setSubmitId(item.getId());
-                    dto.setType(PracticePlan.CHALLENGE);
-                    dto.setContent(item.getContent());
-                    dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, item.getId()));
-                    Profile account = accountService.getProfile(item.getProfileId());
-                    if (account != null) {
-                        dto.setUserName(account.getNickname());
-                        dto.setHeadImage(account.getHeadimgurl());
-                        dto.setRole(account.getRole());
-                        dto.setSignature(account.getSignature());
-                    }
-                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getAddTime()));
-                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, item.getId()));
-                    // 查询我对它的点赞状态
-                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, item.getId(),
-                            loginUser.getId());
-                    if (myVote != null && myVote.getDel() == 0) {
-                        // 点赞中
-                        dto.setVoteStatus(1);
-                    } else {
-                        dto.setVoteStatus(0);
-                    }
-                    dto.setPerfect(item.getSequence() != null && item.getSequence() > 0);
-                    dto.setAuthorType(item.getAuthorType());
-                    dto.setIsMine(item.getProfileId().equals(loginUser.getId()));
-                    dto.setTitle(item.getTitle());
-                    dto.setRequest(item.getRequestFeedback());
-                    //设置剩余请求次数
-
-                    dto.setRequestCommentCount(practiceService.hasRequestComment(problemId,
-                            loginUser.getId()));
-                    dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, item.getId()));
-                    return dto;
-                }).collect(Collectors.toList());
-
-//        list.forEach(item -> {
-//            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
-//        });
-        RiseRefreshListDto<RiseWorkInfoDto> result = new RiseRefreshListDto<>();
-        result.setList(list);
-        result.setEnd(page.isLastPage());
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("碎片化")
-                .action("移动端加载课程论坛")
-                .memo(problemId + "");
-        operationLogService.log(operationLog);
-        return WebUtils.result(result);
-    }
-
-    @RequestMapping(value = "/subject/{submitId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadSubject(LoginUser loginUser, @PathVariable("submitId") Integer submitId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
-        if (subjectArticle != null) {
-            RiseWorkInfoDto dto = new RiseWorkInfoDto();
-            dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
-            dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
-            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getId()) != null ? 1 : 0);
-            dto.setSubmitId(submitId);
-            dto.setAuthorType(subjectArticle.getAuthorType());
-            dto.setContent(subjectArticle.getContent());
-            dto.setTitle(subjectArticle.getTitle());
-            Profile profile = accountService.getProfile(subjectArticle.getProfileId());
-            if (profile != null) {
-                dto.setHeadImage(profile.getHeadimgurl());
-                dto.setUserName(profile.getNickname());
-                dto.setRole(profile.getRole());
-                dto.setSignature(profile.getSignature());
-            }
-            dto.setIsMine(loginUser.getId().equals(subjectArticle.getProfileId()));
-            dto.setProblemId(subjectArticle.getProblemId());
-            dto.setPerfect(subjectArticle.getSequence() > 0);
-            dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getAddTime()));
-            dto.setRequest(subjectArticle.getRequestFeedback());
-            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
-                    loginUser.getId()));
-//        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
-//                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
-//                .collect(Collectors.toList()));
-            dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
-            OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                    .module("训练")
-                    .function("碎片化")
-                    .action("移动端加载课程分享文章")
-                    .memo(submitId.toString());
-            operationLogService.log(operationLog);
-            return WebUtils.result(dto);
-        } else {
-            return WebUtils.error("课程分享不存在");
-        }
-
-    }
-
-    @RequestMapping(value = "/label/{problemId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadLabels(LoginUser loginUser, @PathVariable Integer problemId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemId, "课程不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("标签")
-                .action("加载课程标签")
-                .memo(problemId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(practiceService.loadProblemLabels(problemId));
     }
 
     @RequestMapping("/knowledge/start/{practicePlanId}")
@@ -805,11 +636,8 @@ public class PracticeController {
         page.setPage(offset);
         List<KnowledgeDiscuss> discusses = practiceDiscussService.loadKnowledgeDiscusses(knowledgeId, page);
 
-        //清空openid
         discusses.forEach(knowledgeDiscuss -> {
-            knowledgeDiscuss.setIsMine(loginUser.getOpenId().equals(knowledgeDiscuss.getOpenid()));
-            knowledgeDiscuss.setRepliedOpenid(null);
-            knowledgeDiscuss.setOpenid(null);
+            knowledgeDiscuss.setIsMine(loginUser.getId().equals(knowledgeDiscuss.getProfileId()));
             knowledgeDiscuss.setReferenceId(knowledgeDiscuss.getKnowledgeId());
         });
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -829,7 +657,7 @@ public class PracticeController {
             return WebUtils.result("您提交的讨论字数过长");
         }
 
-        practiceDiscussService.discussKnowledge(loginUser.getOpenId(), loginUser.getId(), discussDto.getReferenceId(),
+        practiceDiscussService.discussKnowledge(loginUser.getId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

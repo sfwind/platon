@@ -25,11 +25,10 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
      */
     public Integer insertSubmitDraft(ApplicationSubmitDraft applicationSubmitDraft) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into ApplicationSubmitDraft (Openid, ProfileId, ApplicationId, PlanId, Content, Length)" +
-                " values (?, ?, ?, ?, ?, ?)";
+        String sql = "insert into ApplicationSubmitDraft (ProfileId, ApplicationId, PlanId, Content, Length)" +
+                " values (?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    applicationSubmitDraft.getOpenid(),
                     applicationSubmitDraft.getProfileId(),
                     applicationSubmitDraft.getApplicationId(),
                     applicationSubmitDraft.getPlanId(),

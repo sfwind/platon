@@ -25,13 +25,13 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
     public int insert(KnowledgeDiscuss discuss) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into KnowledgeDiscuss (" +
-                "KnowledgeId, Comment, Openid, ProfileId, Priority, RepliedId, RepliedOpenid, RepliedProfileId, RepliedComment, Del) VALUES (" +
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "KnowledgeId, Comment, ProfileId, Priority, RepliedId, RepliedProfileId, RepliedComment, Del) VALUES (" +
+                "?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    discuss.getKnowledgeId(), discuss.getComment(), discuss.getOpenid(),
+                    discuss.getKnowledgeId(), discuss.getComment(),
                     discuss.getProfileId(), discuss.getPriority(), discuss.getRepliedId(),
-                    discuss.getRepliedOpenid(), discuss.getRepliedProfileId(), discuss.getRepliedComment(), discuss.getDel());
+                    discuss.getRepliedProfileId(), discuss.getRepliedComment(), discuss.getDel());
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

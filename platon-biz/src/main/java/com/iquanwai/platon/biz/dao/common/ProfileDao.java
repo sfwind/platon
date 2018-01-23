@@ -56,6 +56,18 @@ public class ProfileDao extends DBUtil {
         return null;
     }
 
+    public Profile queryByUnionId(String unionId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Profile WHERE UnionId = ?";
+        ResultSetHandler<Profile> h = new BeanHandler<Profile>(Profile.class);
+        try {
+            return runner.query(sql, h, unionId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
     public void updatePoint(Integer id, int point) {
         QueryRunner runner = new QueryRunner(getDataSource());
         AsyncQueryRunner asyncRun = new AsyncQueryRunner(ThreadPool.getThreadExecutor(), runner);

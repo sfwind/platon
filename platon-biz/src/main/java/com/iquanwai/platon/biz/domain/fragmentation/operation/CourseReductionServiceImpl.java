@@ -90,7 +90,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
                 Constants.WEIXIN_MESSAGE_TYPE.TEXT);
         // 发送海报
 //        String mediaId = ConfigUtils.isDevelopment() == null || !ConfigUtils.isDevelopment() ? "oNP9rE2TKhmfaLkbdss_lK5OuF5bADXqYrx1wjyFWVE" : "DKejbjbUawA773Mq37YnIRIHbTMlMEQT_WTTuWYab4M17KELKS6Cwtguk5pLWnS4";
-//        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenid(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
+//        customerMessageService.sendCustomerMessage(subscribeEvent.getOpenId(), mediaId, Constants.WEIXIN_MESSAGE_TYPE.IMAGE);
         //直接入activity
         PromotionActivity promotionActivity = new PromotionActivity();
         promotionActivity.setAction(PromotionConstants.CourseReductionAction.SCAN_CODE);
@@ -113,7 +113,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
 
     @Override
     public void saveCourseReductionPayedLog(QuanwaiOrder quanwaiOrder) {
-        Profile profile = accountService.getProfile(quanwaiOrder.getOpenid());
+        Profile profile = accountService.getProfile(quanwaiOrder.getProfileId());
         Pair<CourseReductionActivity, PromotionLevel> pair = this.loadRecentCourseReduction(profile.getId(), Integer.parseInt(quanwaiOrder.getGoodsId()));
         if (pair != null) {
             logger.info("记录优惠使用情况:{}", quanwaiOrder);

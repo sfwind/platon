@@ -46,7 +46,7 @@ public class PayResultReceiver {
             if (quanwaiOrder == null) {
                 logger.error("获取支付成功mq消息异常");
             } else {
-                Profile profile = accountService.getProfile(quanwaiOrder.getOpenid());
+                Profile profile = accountService.getProfile(quanwaiOrder.getProfileId());
                 Assert.notNull(profile, "付费用户不能为空");
                 operationEvaluateService.recordPayAction(profile.getId());
                 // 优惠推广活动

@@ -53,11 +53,11 @@ public interface ProblemService {
     /**
      * 给问题打分
      *
-     * @param openId        用户id
+     * @param profileId        用户id
      * @param problemId     课程id
      * @param problemScores 课程打分
      */
-    void gradeProblem(Integer problemId, String openId, Integer profileId, List<ProblemScore> problemScores);
+    void gradeProblem(Integer problemId, Integer profileId, List<ProblemScore> problemScores);
 
     /**
      * 更新 ProblemExtension 数据

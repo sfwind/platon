@@ -120,7 +120,6 @@ public class ApplyServiceImpl implements ApplyService {
         BusinessSchoolApplication application = new BusinessSchoolApplication();
         application.setProfileId(profileId);
         application.setSubmitTime(new Date());
-        application.setOpenid(profile.getOpenid());
         application.setStatus(BusinessSchoolApplication.APPLYING);
 
         application.setIsDuplicate(false);

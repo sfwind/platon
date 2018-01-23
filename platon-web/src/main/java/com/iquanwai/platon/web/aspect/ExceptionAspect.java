@@ -30,12 +30,12 @@ public class ExceptionAspect {
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<Map<String, Object>> jsonErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        String act = CookieUtils.getCookie(req, OAuthService.ACCESS_TOKEN_COOKIE_NAME);
+        String act = CookieUtils.getCookie(req, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid = "";
         if (act != null) {
             openid = oAuthService.openId(act);
         } else {
-            String qt = CookieUtils.getCookie(req, OAuthService.PC_ACCESS_TOKEN_COOKIE_NAME);
+            String qt = CookieUtils.getCookie(req, OAuthService.PC_STATE_COOKIE_NAME);
             if (qt != null) {
                 openid = oAuthService.pcOpenId(qt);
             }
@@ -71,7 +71,7 @@ public class ExceptionAspect {
         OperationLog operationLog = OperationLog.create().openid(openid).module("后端报错")
                 .function("后端报错").action("bug").memo(memo);
         operationLogService.log(operationLog);
-        logger.error("openid:" + openid + ",uri:" + req.getRequestURI() +
+        logger.error("openId:" + openid + ",uri:" + req.getRequestURI() +
                 ",queryString:" + req.getQueryString() +
                 ",userAgent:" + req.getHeader("user-agent") +
                 ",ip:" + req.getHeader("X-Forwarded-For") +

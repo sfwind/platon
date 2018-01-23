@@ -9,10 +9,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
-
-/**
- * Created by xfduan on 2017/6/30.
- */
 @Service
 public class CustomerReceiver {
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -28,7 +24,7 @@ public class CustomerReceiver {
         rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
             String message = messageQueue.getMessage().toString();
             logger.info("receive message {}", message);
-            loginUserService.logout(message);
+            loginUserService.logoutLoginUser(message);
         });
     }
 }

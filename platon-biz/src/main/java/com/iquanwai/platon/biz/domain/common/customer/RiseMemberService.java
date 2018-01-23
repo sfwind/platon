@@ -16,9 +16,9 @@ public interface RiseMemberService {
     RiseMember getRiseMember(Integer profileId);
 
     /**
-     * 会员身份将在7日内过期
+     * 会员身份将在一定日期内过期
      */
-    Boolean expiredRiseMemberInSevenDays(Integer profileId);
+    Boolean expiredRiseMemberInSomeDays(Integer profileId, Integer dayCount);
 
     /**
      * 会员身份过期
