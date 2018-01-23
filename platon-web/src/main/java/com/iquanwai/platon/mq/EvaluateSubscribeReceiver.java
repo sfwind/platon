@@ -52,7 +52,7 @@ public class EvaluateSubscribeReceiver {
             return;
         }
 
-        String openId = json.getString("openId");
+        String openId = json.getString("openid");
 
         String[] sceneParams = scene.split("_");
         Assert.isTrue(sceneParams.length == 3, "场景值错误：" + scene);

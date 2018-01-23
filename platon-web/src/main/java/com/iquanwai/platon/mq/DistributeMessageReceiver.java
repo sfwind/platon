@@ -40,7 +40,7 @@ public class DistributeMessageReceiver {
 
     private void activeAction(String wechatMessage) {
         JSONObject jsonObject = JSONObject.parseObject(wechatMessage);
-        String openId = jsonObject.getString("openId");
+        String openId = jsonObject.getString("openid");
         String message = jsonObject.getString("message");
         Profile profile = accountService.getProfile(openId);
         String replyContent;

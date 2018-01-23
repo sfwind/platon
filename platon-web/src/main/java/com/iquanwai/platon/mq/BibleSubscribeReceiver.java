@@ -54,7 +54,7 @@ public class BibleSubscribeReceiver {
                 return;
             }
 
-            String openId = json.getString("openId");
+            String openId = json.getString("openid");
             String[] sceneParams = scene.split("_");
             Profile profile = accountService.getProfile(openId);
             Assert.notNull(profile, "扫码用户不能为空");

@@ -88,8 +88,8 @@ public interface AccountService {
      */
     void submitCertificateProfile(Profile profile);
 
-    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openId={openId}&lang=zh_CN";
-    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openId={openId}&lang=zh_CN";
+    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
 

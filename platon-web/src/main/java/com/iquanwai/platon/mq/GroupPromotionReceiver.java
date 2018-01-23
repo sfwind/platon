@@ -38,7 +38,7 @@ public class GroupPromotionReceiver {
                 return;
             }
 
-            String openId = json.getString("openId");
+            String openId = json.getString("openid");
             String[] sceneArray = scene.split("_");
             String groupCode = sceneArray[1];
 

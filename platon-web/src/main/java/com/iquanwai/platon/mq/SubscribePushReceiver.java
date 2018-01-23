@@ -49,7 +49,7 @@ public class SubscribePushReceiver {
             if (scene != null && scene.startsWith(PREFIX)) {
                 String[] split = scene.split("_");
                 Integer pushId = Integer.parseInt(split[2]);
-                String openId = msg.getString("openId");
+                String openId = msg.getString("openid");
                 SubscribePush push = accountService.loadSubscribePush(pushId);
                 if (push == null) {
                     logger.error("缺少push对象:{}", message);

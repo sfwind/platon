@@ -40,7 +40,7 @@ public class InterQuestionReceiver {
                 return;
             } else {
                 logger.info("前往问题页面:{}", scene);
-                String openId = json.get("openId").toString();
+                String openId = json.get("openid").toString();
                 String[] sceneParams = scene.split("_");
                 String date = sceneParams[2];
                 customerMessageService.sendCustomerMessage(openId, "Hi，欢迎来到【圈外商学院|一期一会】\n\n" +

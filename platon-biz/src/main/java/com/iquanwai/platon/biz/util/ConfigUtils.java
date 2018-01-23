@@ -149,7 +149,7 @@ public class ConfigUtils {
     }
 
     public static String getDefaultOpenid() {
-        return getValue("default.openId");
+        return getValue("default.openid");
     }
 
     public static Integer getDefaultProfileId() {
