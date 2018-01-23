@@ -36,13 +36,13 @@ public class RiseMemberServiceImpl implements RiseMemberService {
     }
 
     @Override
-    public Boolean expiredRiseMemberInSevenDays(Integer profileId) {
+    public Boolean expiredRiseMemberInSomeDays(Integer profileId, Integer dayCount) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember != null && (riseMember.getMemberTypeId().equals(RiseMember.HALF)
                 || riseMember.getMemberTypeId().equals(RiseMember.ANNUAL)
                 || riseMember.getMemberTypeId().equals(RiseMember.ELITE)
                 || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE))) {
-            return DateUtils.afterDays(new Date(), 7).compareTo(riseMember.getExpireDate()) > 0;
+            return DateUtils.afterDays(new Date(), dayCount).compareTo(riseMember.getExpireDate()) > 0;
         } else {
             return false;
         }
@@ -70,15 +70,13 @@ public class RiseMemberServiceImpl implements RiseMemberService {
 
     /**
      * 判断是否是商学院会员
-     * @param profileId
-     * @return
      */
     @Override
     public Boolean isValidElite(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if(riseMember!=null){
+        if (riseMember != null) {
             Integer typeId = riseMember.getMemberTypeId();
-            if(typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)){
+            if (typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)) {
                 return true;
             }
         }
@@ -87,7 +85,6 @@ public class RiseMemberServiceImpl implements RiseMemberService {
 
     /**
      * 获取有效的商学院用户
-     * @return
      */
     @Override
     public List<RiseMember> getValidElites() {
@@ -96,7 +93,7 @@ public class RiseMemberServiceImpl implements RiseMemberService {
         List<RiseMember> validRiseMembers = Lists.newArrayList();
         riseMembers.forEach(riseMember -> {
             Integer typeId = riseMember.getMemberTypeId();
-            if(typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)){
+            if (typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)) {
                 validRiseMembers.add(riseMember);
             }
         });

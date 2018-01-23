@@ -418,7 +418,7 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> notifyExpire(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
-        boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSevenDays(loginUser.getId());
+        boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSomeDays(loginUser.getId(), 15);
         boolean expiredRiseMember = riseMemberService.expiredRiseMember(loginUser.getId());
         riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
         riseMember.setExpired(expiredRiseMember);
