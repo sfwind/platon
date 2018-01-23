@@ -49,8 +49,14 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         } else {
             switch (platform) {
                 case PC:
-                    // 在 confucius 处理
-                    return true;
+                    String pcState = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
+                    Callback pcCallback = loginUserService.getCallbackByState(pcState);
+                    if (pcCallback == null) {
+                        writeUnLoginPage(response);
+                        return false;
+                    } else {
+                        return true;
+                    }
                 case WE_MOBILE:
                     String mobileState = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
                     Callback callback = loginUserService.getCallbackByState(mobileState);
