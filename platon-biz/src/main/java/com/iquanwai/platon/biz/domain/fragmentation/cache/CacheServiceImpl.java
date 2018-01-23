@@ -157,7 +157,7 @@ public class CacheServiceImpl implements CacheService {
         });
         problemSubCatalogs.forEach(item -> problemSubCatalogMap.put(item.getId(), item));
 
-        // 缓存训练营配置缓存
+        // 缓存专项课配置缓存
         monthlyCampConfig = monthlyCampConfigDao.loadActiveMonthlyCampConfig();
 
         // 缓存商学院学习计划每月主题
