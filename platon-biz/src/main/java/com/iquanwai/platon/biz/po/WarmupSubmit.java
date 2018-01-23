@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class WarmupSubmit {
     private int id;
-    private String openid; //提交人openid
     private Integer profileId; //提交人id
     private Integer questionId; //巩固练习id
     private Integer planId; //提升计划id

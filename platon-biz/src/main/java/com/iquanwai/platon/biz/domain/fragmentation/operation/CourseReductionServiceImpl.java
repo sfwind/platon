@@ -113,7 +113,7 @@ public class CourseReductionServiceImpl implements CourseReductionService {
 
     @Override
     public void saveCourseReductionPayedLog(QuanwaiOrder quanwaiOrder) {
-        Profile profile = accountService.getProfile(quanwaiOrder.getOpenid());
+        Profile profile = accountService.getProfile(quanwaiOrder.getProfileId());
         Pair<CourseReductionActivity, PromotionLevel> pair = this.loadRecentCourseReduction(profile.getId(), Integer.parseInt(quanwaiOrder.getGoodsId()));
         if (pair != null) {
             logger.info("记录优惠使用情况:{}", quanwaiOrder);

@@ -334,7 +334,7 @@ public class ProblemController {
     @RequestMapping("/grade/{problemId}")
     public ResponseEntity<Map<String, Object>> gradeScore(LoginUser loginUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores) {
         Assert.notNull(loginUser, "用户不能为空");
-        problemService.gradeProblem(problemId, loginUser.getOpenId(), loginUser.getId(), problemScores);
+        problemService.gradeProblem(problemId, loginUser.getId(), problemScores);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("评分")

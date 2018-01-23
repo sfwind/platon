@@ -9,8 +9,6 @@ import lombok.Data;
 public class PromotionLevel {
 
     private Integer id; // id
-    @Deprecated
-    private String openId; // 新人openId
     private Integer profileId; // 新人 profileId
     private Integer promoterId; // 推广人 profileId
     private String activity; // 活动类型

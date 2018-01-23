@@ -62,6 +62,16 @@ public class BusinessApplyQuestion {
     private List<BusinessApplyChoice> choices;
     private Boolean del;
 
+    /**
+     * 题目类型
+     * <p>
+     * 1-付费，2-非付费
+     */
+    private Integer category;
+
+    public static final int PAY_CATEGORY = 1;
+    public static final int NO_PAY_CATEGORY = 2;
+
 
     /**
      * 滚动单选

@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class ProblemScore {
     private Integer id;
-    private String openid;
     private Integer profileId;
     private Integer problemId;
     private Integer question;

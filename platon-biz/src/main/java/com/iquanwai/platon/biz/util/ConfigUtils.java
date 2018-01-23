@@ -418,5 +418,8 @@ public class ConfigUtils {
         return getValue("product.trial.msg");
     }
 
+    public static Boolean getPayApplyFlag(){
+        return getBooleanValue("pay.apply.flag");
+    }
 }
 

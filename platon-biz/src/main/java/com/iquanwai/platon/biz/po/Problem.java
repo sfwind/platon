@@ -26,6 +26,10 @@ public class Problem {
     private String audio; //语音
     private Integer audioId;
     private String audioWords;
+    private Integer videoId;
+    private String videoUrl;
+    private String videoPoster;//视频第一帧
+    private String videoWords;//视频文字
     private String who; //适合人群
     private String how; //如何学习
     private String why; //为什么学习
