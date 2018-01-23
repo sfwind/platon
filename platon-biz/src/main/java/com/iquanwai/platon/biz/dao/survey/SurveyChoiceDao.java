@@ -33,7 +33,7 @@ public class SurveyChoiceDao extends PracticeDBUtil {
         params.addAll(codeList);
         String sql = "SELECT * FROM SurveyChoice WHERE QuestionCode in (" + mask + ")";
         try {
-            runner.query(sql, h, params.toArray());
+            return runner.query(sql, h, params.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

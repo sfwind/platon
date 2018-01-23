@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class SurveyQuestionSubmit {
     private Integer id;
+    private Integer submitId;
     /**
      * 题目分类
      */
@@ -22,9 +23,9 @@ public class SurveyQuestionSubmit {
      */
     private Integer choiceId;
     /**
-     * 选项文本,冗余字段
+     * 多选id
      */
-    private String choiceText;
+    private String choiceIds;
     /**
      * 用户提交的文字
      */

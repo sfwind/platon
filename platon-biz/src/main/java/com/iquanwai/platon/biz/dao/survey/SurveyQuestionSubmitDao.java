@@ -29,17 +29,18 @@ public class SurveyQuestionSubmitDao extends PracticeDBUtil {
             return -1;
         }
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO SurveyQuestionSubmit(Category, QuestionCode, ChoiceId, ChoiceText, UserValue) VALUES(?,?,?,?,?)";
+        String sql = "INSERT INTO SurveyQuestionSubmit(Category, QuestionCode, ChoiceId, ChoiceIds, UserValue,SubmitId) VALUES(?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[submits.size()][];
             for (int i = 0; i < submits.size(); i++) {
                 SurveyQuestionSubmit submit = submits.get(i);
-                param[i] = new Object[2];
+                param[i] = new Object[6];
                 param[i][0] = submit.getCategory();
                 param[i][1] = submit.getQuestionCode();
                 param[i][2] = submit.getChoiceId();
-                param[i][3] = submit.getChoiceText();
+                param[i][3] = submit.getChoiceIds();
                 param[i][4] = submit.getUserValue();
+                param[i][5] = submit.getSubmitId();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {

@@ -20,6 +20,10 @@ public class SurveyQuestion {
      */
     private String questionCode;
     /**
+     * 题目题干
+     */
+    private String subject;
+    /**
      * 版本
      */
     private Integer version;
@@ -57,6 +61,10 @@ public class SurveyQuestion {
      * 是否删除
      */
     private Boolean del;
+    /**
+     * Memo
+     */
+    private String memo;
 
     //非DB字段
     /**

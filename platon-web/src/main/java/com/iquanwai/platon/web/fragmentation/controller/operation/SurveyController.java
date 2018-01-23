@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionGroupDto;
+import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveySubmitDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -13,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
@@ -50,7 +53,23 @@ public class SurveyController {
             return dto;
         }).collect(Collectors.toList());
         SurveyQuestionGroupDto dto = new SurveyQuestionGroupDto();
+        dto.setSurveyQuestions(dtos);
         return WebUtils.result(dto);
+    }
+
+    @RequestMapping(value = "submit/{category}", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> submitSurvey(GuestUser guestUser, @PathVariable(value = "category") String category, @RequestBody SurveySubmitDto submits) {
+        OperationLog operationLog = OperationLog.create().openid(guestUser != null ? guestUser.getOpenId() : "")
+                .module("问卷")
+                .function("提交问卷")
+                .action(category);
+        operationLogService.log(operationLog);
+        Integer result = surveyService.submitQuestions(guestUser.getOpenId(), category, submits.getUserSubmits());
+        if (result > 0) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("提交失败");
+        }
     }
 
 }
