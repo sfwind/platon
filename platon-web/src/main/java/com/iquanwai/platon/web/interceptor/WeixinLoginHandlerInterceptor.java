@@ -42,12 +42,6 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         logger.info("进入接口拦截器");
         LoginUser.Platform platform = loginUserService.getPlatformType(request);
 
-        logger.info("platform get 结果：" + platform);
-        // 如果是小程序请求，直接通过，避免拦截 code 换取请求
-        if (LoginUser.Platform.WE_MINI.equals(platform)) {
-            return true;
-        }
-
         switch (platform) {
             case PC:
                 String pcCookie = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
