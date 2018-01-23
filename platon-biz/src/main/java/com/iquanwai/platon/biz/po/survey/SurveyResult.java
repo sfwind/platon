@@ -9,12 +9,16 @@ import java.util.Date;
  * 问卷提交
  */
 @Data
-public class SurveySubmit {
+public class SurveyResult {
     private Integer id;
     /**
      * 题目分类
      */
     private String category;
+    /**
+     * 依赖的问卷id
+     */
+    private Integer referSurveyId;
     /**
      * 版本号
      */

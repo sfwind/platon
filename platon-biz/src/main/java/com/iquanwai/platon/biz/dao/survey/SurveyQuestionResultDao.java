@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.survey;
 
-import com.iquanwai.platon.biz.dao.PracticeDBUtil;
-import com.iquanwai.platon.biz.po.survey.SurveyQuestionSubmit;
+import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.po.survey.SurveyQuestionResult;
 import org.apache.commons.dbutils.QueryRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,7 @@ import java.util.List;
  * 问卷题目详情
  */
 @Repository
-public class SurveyQuestionSubmitDao extends PracticeDBUtil {
+public class SurveyQuestionResultDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
@@ -24,16 +24,16 @@ public class SurveyQuestionSubmitDao extends PracticeDBUtil {
      *
      * @param submits 题目答案
      */
-    public Integer batchInsert(List<SurveyQuestionSubmit> submits) {
+    public Integer batchInsert(List<SurveyQuestionResult> submits) {
         if (CollectionUtils.isEmpty(submits)) {
             return -1;
         }
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO SurveyQuestionSubmit(Category, QuestionCode, ChoiceId, ChoiceIds, UserValue,SubmitId) VALUES(?,?,?,?,?,?)";
+        String sql = "INSERT INTO SurveyQuestionResult(Category, QuestionCode, ChoiceId, ChoiceIds, UserValue,SubmitId) VALUES(?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[submits.size()][];
             for (int i = 0; i < submits.size(); i++) {
-                SurveyQuestionSubmit submit = submits.get(i);
+                SurveyQuestionResult submit = submits.get(i);
                 param[i] = new Object[6];
                 param[i][0] = submit.getCategory();
                 param[i][1] = submit.getQuestionCode();

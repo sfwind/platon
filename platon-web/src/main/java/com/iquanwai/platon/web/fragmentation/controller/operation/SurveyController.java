@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.survey.SurveyService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
+import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionGroupDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveySubmitDto;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.support.Assert;
 
 import java.util.Comparator;
 import java.util.List;
@@ -36,7 +38,8 @@ public class SurveyController {
 
     @RequestMapping(value = "load/{category}")
     public ResponseEntity<Map<String, Object>> loadQuestions(@PathVariable(value = "category") String category, GuestUser guestUser) {
-        OperationLog operationLog = OperationLog.create().openid(guestUser != null ? guestUser.getOpenId() : "")
+        Assert.notNull(guestUser);
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
                 .module("问卷")
                 .function("加载问卷题目")
                 .action("进入问卷");
@@ -59,16 +62,33 @@ public class SurveyController {
 
     @RequestMapping(value = "submit/{category}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> submitSurvey(GuestUser guestUser, @PathVariable(value = "category") String category, @RequestBody SurveySubmitDto submits) {
-        OperationLog operationLog = OperationLog.create().openid(guestUser != null ? guestUser.getOpenId() : "")
+        Assert.notNull(guestUser);
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
                 .module("问卷")
                 .function("提交问卷")
                 .action(category);
         operationLogService.log(operationLog);
-        Integer result = surveyService.submitQuestions(guestUser.getOpenId(), category, submits.getUserSubmits());
+        Integer result = surveyService.submitQuestions(guestUser.getOpenId(), category, submits.getReferId(), submits.getUserSubmits());
         if (result > 0) {
-            return WebUtils.success();
+            return WebUtils.result(result);
         } else {
             return WebUtils.error("提交失败");
+        }
+    }
+
+    @RequestMapping(value = "load/submit/{category}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadSubmit(GuestUser guestUser, @PathVariable(value = "category") String category) {
+        Assert.notNull(guestUser);
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
+                .module("问卷")
+                .function("查看问卷提交记录")
+                .action(category);
+        operationLogService.log(operationLog);
+        SurveyResult result = surveyService.loadSubmit(guestUser.getOpenId(), category);
+        if (result != null) {
+            return WebUtils.result(result.getId());
+        } else {
+            return WebUtils.error("没有提交记录");
         }
     }
 

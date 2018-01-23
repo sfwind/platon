@@ -7,5 +7,6 @@ import java.util.List;
 
 @Data
 public class SurveySubmitDto {
+    private Integer referId;
     private List<SurveySubmitVo> userSubmits;
 }

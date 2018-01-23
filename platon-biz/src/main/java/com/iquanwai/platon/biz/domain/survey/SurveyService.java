@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.survey;
 
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
+import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.po.survey.SurveySubmitVo;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +26,13 @@ public interface SurveyService {
      * @param submits 提交的信息
      * @return 提交结果
      */
-    Integer submitQuestions(String openId,String category, List<SurveySubmitVo> submits);
+    Integer submitQuestions(String openId,String category,Integer referId, List<SurveySubmitVo> submits);
+
+    /**
+     * 获取提交记录
+     * @param openId
+     * @param category
+     * @return
+     */
+    SurveyResult loadSubmit(String openId, String category);
 }

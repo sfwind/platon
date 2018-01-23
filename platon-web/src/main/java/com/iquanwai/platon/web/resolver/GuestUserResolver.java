@@ -54,7 +54,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
             account = accountService.getAccount(openid, false);
         } catch (NotFollowingException e) {
             // 用Ack去请求微信接口
-            account = accountService.getGuestFromWeixin(openid, value);
+            account = accountService.getGuestFromWeixin(openid, callback.getAccessToken());
         }
         if (account == null) {
             return null;

@@ -3,12 +3,12 @@ package com.iquanwai.platon.biz.domain.survey;
 
 import com.iquanwai.platon.biz.dao.survey.SurveyChoiceDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionDao;
-import com.iquanwai.platon.biz.dao.survey.SurveyQuestionSubmitDao;
-import com.iquanwai.platon.biz.dao.survey.SurveySubmitDao;
+import com.iquanwai.platon.biz.dao.survey.SurveyQuestionResultDao;
+import com.iquanwai.platon.biz.dao.survey.SurveyResultDao;
 import com.iquanwai.platon.biz.po.survey.SurveyChoice;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
-import com.iquanwai.platon.biz.po.survey.SurveyQuestionSubmit;
-import com.iquanwai.platon.biz.po.survey.SurveySubmit;
+import com.iquanwai.platon.biz.po.survey.SurveyQuestionResult;
+import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.po.survey.SurveySubmitVo;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -33,9 +33,9 @@ public class SurveyServiceImpl implements SurveyService {
     @Autowired
     private SurveyQuestionDao surveyQuestionDao;
     @Autowired
-    private SurveyQuestionSubmitDao surveyQuestionSubmitDao;
+    private SurveyQuestionResultDao surveyQuestionSubmitDao;
     @Autowired
-    private SurveySubmitDao surveySubmitDao;
+    private SurveyResultDao surveyResultDao;
 
     @Override
     public List<SurveyQuestion> loadQuestionsByCategory(String category) {
@@ -55,23 +55,24 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public Integer submitQuestions(String openId, String category, List<SurveySubmitVo> submits) {
+    public Integer submitQuestions(String openId, String category, Integer referId, List<SurveySubmitVo> submits) {
         SurveyQuestion surveyQuestion = surveyQuestionDao.loadOneQuestion(category);
-        SurveySubmit surveySubmit = new SurveySubmit();
-        surveySubmit.setCategory(category);
-        surveySubmit.setOpenid(openId);
+        SurveyResult surveyResult = new SurveyResult();
+        surveyResult.setCategory(category);
+        surveyResult.setOpenid(openId);
+        surveyResult.setReferSurveyId(referId);
         Integer version = null;
         if (surveyQuestion != null) {
             version = surveyQuestion.getVersion();
         }
-        surveySubmit.setVersion(version);
+        surveyResult.setVersion(version);
 
-        Integer result = surveySubmitDao.insert(surveySubmit);
+        Integer result = surveyResultDao.insert(surveyResult);
         if (result < 1) {
-            logger.error("提交问卷失败,openId:{},category:{},version:{}", openId, category, surveyQuestion);
+            logger.error("提交问卷失败,openId:{},category:{},version:{},referId:{}", openId, category, surveyQuestion, referId);
         }
-        List<SurveyQuestionSubmit> collect = submits.stream().map(item -> {
-            SurveyQuestionSubmit submit = new SurveyQuestionSubmit();
+        List<SurveyQuestionResult> collect = submits.stream().map(item -> {
+            SurveyQuestionResult submit = new SurveyQuestionResult();
             submit.setQuestionCode(item.getQuestionCode());
             submit.setCategory(category);
             submit.setChoiceId(item.getChoiceId());
@@ -81,7 +82,13 @@ public class SurveyServiceImpl implements SurveyService {
             }
             return submit;
         }).collect(Collectors.toList());
-        Integer finalResult = surveyQuestionSubmitDao.batchInsert(collect);
-        return finalResult;
+        surveyQuestionSubmitDao.batchInsert(collect);
+        return result;
     }
+
+    @Override
+    public SurveyResult loadSubmit(String openId, String category) {
+        return surveyResultDao.loadByOpenid(openId, category);
+    }
+
 }

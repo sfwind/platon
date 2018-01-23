@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.survey;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.PracticeDBUtil;
+import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.survey.SurveyChoice;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -19,7 +19,7 @@ import java.util.List;
  * 问卷选项dao
  */
 @Repository
-public class SurveyChoiceDao extends PracticeDBUtil {
+public class SurveyChoiceDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public List<SurveyChoice> loadChoicesByQuestionCode(List<String> codeList) {

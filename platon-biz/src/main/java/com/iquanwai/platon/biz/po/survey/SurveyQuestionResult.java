@@ -7,7 +7,7 @@ import lombok.Data;
  * 问卷题目提交表
  */
 @Data
-public class SurveyQuestionSubmit {
+public class SurveyQuestionResult {
     private Integer id;
     private Integer submitId;
     /**

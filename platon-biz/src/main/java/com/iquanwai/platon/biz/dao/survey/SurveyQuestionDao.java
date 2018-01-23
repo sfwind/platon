@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.survey;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.PracticeDBUtil;
+import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -18,7 +18,7 @@ import java.util.List;
  * 问卷题目dao
  */
 @Repository
-public class SurveyQuestionDao extends PracticeDBUtil {
+public class SurveyQuestionDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public List<SurveyQuestion> loadQuestionByCategory(String category) {
