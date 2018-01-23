@@ -104,8 +104,10 @@ public class LoginUserService {
                 callback = null;
         }
         LoginUser loginUser = getLoginUserByCallback(callback);
-        // 填充设备信息
-        loginUser.setDevice(platform.getValue());
+        if (loginUser != null) {
+            // 填充设备信息
+            loginUser.setDevice(platform.getValue());
+        }
         return loginUser;
     }
 
@@ -162,6 +164,7 @@ public class LoginUserService {
         LoginUser loginUser;
 
         if (loginUserCacheMap.containsKey(state)) {
+            logger.info("缓存中存在用户对象");
             loginUser = loginUserCacheMap.get(state).get();
             if (loginUser == null) {
                 // 软连接，存储对象被回收
@@ -171,8 +174,12 @@ public class LoginUserService {
                 loginUserCacheMap.put(state, new SoftReference<>(loginUser));
             }
         } else {
+            logger.info("缓存中不存在用户对象，从数据库获取");
             // 缓存中不存在，直接从数据库中读取数据
             callback = callbackDao.queryByState(state);
+            if (callback == null) {
+                return null;
+            }
             Profile profile = profileDao.queryByUnionId(callback.getUnionId());
             loginUser = buildLoginUserDetail(profile);
             loginUserCacheMap.put(state, new SoftReference<>(loginUser));
@@ -188,6 +195,7 @@ public class LoginUserService {
             loginUserCacheMap.put(state, new SoftReference<>(loginUser));
         }
 
+        logger.info("返回用户对象: {}, {}", loginUser.getId(), loginUser.hashCode());
         return loginUser;
     }
 
