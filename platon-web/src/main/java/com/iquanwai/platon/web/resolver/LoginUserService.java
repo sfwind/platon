@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.ref.SoftReference;
@@ -79,6 +80,8 @@ public class LoginUserService {
 
     public LoginUser getLoginUserByRequest(HttpServletRequest request) {
         LoginUser.Platform platform = getPlatformType(request);
+        // 接口请求，必须存在平台信息
+        Assert.notNull(platform);
         logger.info("获取 loginUser ：" + platform);
         Callback callback = new Callback();
         switch (platform) {
@@ -119,7 +122,7 @@ public class LoginUserService {
     public LoginUser.Platform getPlatformType(HttpServletRequest request) {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
         if (platformHeader == null) {
-            // 如果请求中没有 platform header，可能是资源请求
+            // 资源请求，没有 platform header，查看是否存在 cookie
             logger.info("header 中没有 platform 参数");
             String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
             if (pcState != null) {
@@ -132,26 +135,25 @@ public class LoginUserService {
                 logger.info("mobileState: {}", mobileState);
                 platformHeader = LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER;
             }
-
-            if (platformHeader == null) {
-                logger.info("默认为 {}", LoginUser.PlatformHeaderValue.WE_MINI_HEADER);
-                platformHeader = LoginUser.PlatformHeaderValue.WE_MINI_HEADER;
-            }
         }
-        logger.info(platformHeader);
-        switch (platformHeader) {
-            case LoginUser.PlatformHeaderValue.PC_HEADER:
-                logger.info("进入 pc");
-                return LoginUser.Platform.PC;
-            case LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER:
-                logger.info("进入 mobile");
-                return LoginUser.Platform.WE_MOBILE;
-            case LoginUser.PlatformHeaderValue.WE_MINI_HEADER:
-                logger.info("进入 mini");
-                return LoginUser.Platform.WE_MINI;
-            default:
-                logger.info("默认 pc");
-                return LoginUser.Platform.PC;
+        if (platformHeader != null) {
+            // header 中存在 platform 值，判断是哪个平台
+            switch (platformHeader) {
+                case LoginUser.PlatformHeaderValue.PC_HEADER:
+                    logger.info("进入 pc");
+                    return LoginUser.Platform.PC;
+                case LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER:
+                    logger.info("进入 mobile");
+                    return LoginUser.Platform.WE_MOBILE;
+                case LoginUser.PlatformHeaderValue.WE_MINI_HEADER:
+                    logger.info("进入 mini");
+                    return LoginUser.Platform.WE_MINI;
+                default:
+                    logger.info("默认 pc");
+                    return LoginUser.Platform.PC;
+            }
+        } else {
+            return null;
         }
     }
 

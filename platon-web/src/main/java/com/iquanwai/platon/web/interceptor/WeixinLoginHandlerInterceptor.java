@@ -5,7 +5,6 @@ import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
-import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,29 +41,13 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
         logger.info("进入接口拦截器");
         LoginUser.Platform platform = loginUserService.getPlatformType(request);
 
-        switch (platform) {
-            case PC:
-                String pcCookie = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
-                if (pcCookie == null) {
-                    writeUnLoginPage(response);
-                    return false;
-                } else {
-                    return true;
-                }
-            case WE_MOBILE:
-                String mobileCookie = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
-                if (mobileCookie == null) {
-                    WebUtils.auth(request, response);
-                    return false;
-                } else {
-                    return true;
-                }
-            case WE_MINI:
-                return true;
-            default:
-                writeUnLoginPage(response);
-                return false;
+        if (platform == null) {
+            WebUtils.auth(request, response);
+            return false;
+        } else {
+            return true;
         }
+
     }
 
     /**
