@@ -45,8 +45,6 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
-    private SubjectArticleDao subjectArticleDao;
-    @Autowired
     private ProblemScheduleManager problemScheduleManager;
 
     @Override
@@ -103,16 +101,10 @@ public class ReportServiceImpl implements ReportService {
         Long result = 0L;
         if (CollectionUtils.isNotEmpty(list)) {
             List<Integer> appList = list.stream().filter(item -> item.getType().equals(2)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
-            List<Integer> subjectList = list.stream().filter(item -> item.getType().equals(3)).map(HomeworkVote::getReferencedId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(appList)) {
                 // 查询点了多少应用练习
                 List<Integer> appRefs = applicationSubmitDao.loadBatchApplicationSubmits(plan.getProblemId(), appList).stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
                 result = result + appList.stream().filter(appRefs::contains).count();
-            }
-            if (CollectionUtils.isNotEmpty(subjectList)) {
-                // 查询点了多少精华分享
-                List<Integer> subRefs = subjectArticleDao.loadBatchSubjects(plan.getProblemId(), subjectList).stream().map(SubjectArticle::getId).collect(Collectors.toList());
-                result = result + subRefs.stream().filter(subRefs::contains).count();
             }
         }
         return result.intValue();

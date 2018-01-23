@@ -102,9 +102,8 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public void gradeProblem(Integer problem, String openId, Integer profileId, List<ProblemScore> problemScores) {
+    public void gradeProblem(Integer problem, Integer profileId, List<ProblemScore> problemScores) {
         problemScores.forEach(item -> {
-            item.setOpenid(openId);
             item.setProfileId(profileId);
             item.setProblemId(problem);
         });

@@ -57,12 +57,15 @@ public class BusinessSchoolApplicationDao extends DBUtil {
 
     public Integer insert(BusinessSchoolApplication businessSchoolApplication) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, ProfileId, Openid, Status, CheckTime, IsDuplicate, Deal, OriginMemberType,SubmitTime,DealTime,Comment,LastVerified,Valid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, ProfileId, Status, CheckTime, IsDuplicate, Deal, " +
+                "OriginMemberType,SubmitTime,DealTime,Comment,LastVerified,Valid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
-            return runner.insert(sql, new ScalarHandler<Long>(), businessSchoolApplication.getSubmitId(), businessSchoolApplication.getProfileId(), businessSchoolApplication.getOpenid(),
+            return runner.insert(sql, new ScalarHandler<Long>(), businessSchoolApplication.getSubmitId(), businessSchoolApplication.getProfileId(),
                     businessSchoolApplication.getStatus(), businessSchoolApplication.getCheckTime(), businessSchoolApplication.getIsDuplicate(),
-                    businessSchoolApplication.getDeal(), businessSchoolApplication.getOriginMemberType(), businessSchoolApplication.getSubmitTime(), businessSchoolApplication.getDealTime(),
-                    businessSchoolApplication.getComment(), businessSchoolApplication.getLastVerified(), businessSchoolApplication.getValid()).intValue();
+                    businessSchoolApplication.getDeal(), businessSchoolApplication.getOriginMemberType(),
+                    businessSchoolApplication.getSubmitTime(), businessSchoolApplication.getDealTime(),
+                    businessSchoolApplication.getComment(), businessSchoolApplication.getLastVerified(),
+                    businessSchoolApplication.getValid()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

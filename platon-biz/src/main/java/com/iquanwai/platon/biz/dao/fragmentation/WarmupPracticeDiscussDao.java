@@ -24,15 +24,14 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
 
     public int insert(WarmupPracticeDiscuss discuss){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Openid, Profileid, RepliedId, Comment, " +
-                "Priority, Del, RepliedOpenid, RepliedProfileid, RepliedComment, OriginDiscussId) " +
-                "values(?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Profileid, RepliedId, Comment, " +
+                "Priority, Del, RepliedProfileid, RepliedComment, OriginDiscussId) " +
+                "values(?,?,?,?,?,?,?,?,?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
-                    discuss.getWarmupPracticeId(), discuss.getOpenid(), discuss.getProfileId(),
+                    discuss.getWarmupPracticeId(), discuss.getProfileId(),
                     discuss.getRepliedId(), discuss.getComment(), discuss.getPriority(), discuss.getDel(),
-                    discuss.getRepliedOpenid(), discuss.getRepliedProfileId(),
-                    discuss.getRepliedComment(), discuss.getOriginDiscussId());
+                    discuss.getRepliedProfileId(), discuss.getRepliedComment(), discuss.getOriginDiscussId());
 
             return result.intValue();
         }catch (SQLException e) {

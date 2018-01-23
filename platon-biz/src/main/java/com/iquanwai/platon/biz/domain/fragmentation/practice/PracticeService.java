@@ -40,29 +40,27 @@ public interface PracticeService {
      *
      * @param warmupPracticeList 练习答案
      * @param practicePlanId     练习id
-     * @param openid             学员id
      */
     WarmupResult answerWarmupPractice(List<WarmupPractice> warmupPracticeList, Integer practicePlanId,
-                                      String openid, Integer profileId) throws AnswerException;
+                                      Integer profileId) throws AnswerException;
 
 
     /**
      * 获取小目标
      *
      * @param id     小目标id
-     * @param openid 学员id
+     * @param profileId 学员id
      */
-    ChallengePractice getChallengePractice(Integer id, String openid, Integer profileId, Integer planId, boolean create);
+    ChallengePractice getChallengePractice(Integer id, Integer profileId, Integer planId, boolean create);
 
     /**
      * 获取应用练习
      *
      * @param id     应用练习id
-     * @param openid openid
+     * @param profileId 用户id
      * @param planId 训练id
      */
-    Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, String openid,
-                                                              Integer profileId, Integer planId, boolean create);
+    Pair<ApplicationPractice, Boolean> getApplicationPractice(Integer id, Integer profileId, Integer planId, boolean create);
 
     /**
      * 提交应用训练
@@ -134,9 +132,9 @@ public interface PracticeService {
      *
      * @param type         点赞类型
      * @param referencedId 被点赞的id
-     * @param openId       点赞的人
+     * @param profileId    点赞的人
      */
-    boolean vote(Integer type, Integer referencedId, Integer profileId, String openId,Integer device);
+    boolean vote(Integer type, Integer referencedId, Integer profileId, Integer device);
 
     /**
      * 查询同学的应用练习提交记录
@@ -160,11 +158,10 @@ public interface PracticeService {
      *
      * @param moduleId 模块id
      * @param referId  关联id
-     * @param openId   评论人
      * @param content  评论内容
      * @param device 设备，默认是移动提交
      */
-    Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String openId, String content,Integer device);
+    Pair<Integer, String> comment(Integer moduleId, Integer referId, Integer profileId, String content,Integer device);
 
     /**
      * 获取回复应用练习的评论
@@ -176,63 +173,18 @@ public interface PracticeService {
      *
      * @param moduleId  模块id
      * @param referId   关联id
-     * @param openId    评论人
      * @param content   评论内容
      * @param repliedId 被回复评论id
      * @param device 提交设备
      */
     Pair<Integer, String> replyComment(Integer moduleId, Integer referId, Integer profileId,
-                                       String openId, String content, Integer repliedId,Integer device);
+                                       String content, Integer repliedId,Integer device);
 
     /*
      * 获取巩固练习
      * @param warmupId 训练id
      * */
     WarmupPractice getWarmupPractice(Integer warmupId);
-
-    /**
-     * 提交课程分享文章
-     */
-    Integer submitSubjectArticle(SubjectArticle subjectArticle);
-
-    /**
-     * 加载课程分享区文章
-     *
-     * @param problemId 课程id
-     * @param page      分页对象
-     */
-    List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
-
-    /**
-     * 加载分享区文章
-     *
-     * @param submitId 提交id
-     */
-    SubjectArticle loadSubjectArticle(Integer submitId);
-
-    /**
-     * 获取课程所有标签
-     *
-     * @param problemId 课程id
-     */
-    List<LabelConfig> loadProblemLabels(Integer problemId);
-
-    /**
-     * 更新课程分享的标签
-     *
-     * @param moduleId  模块
-     * @param articleId 文章id
-     * @param labels    标签
-     */
-    List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
-
-    /**
-     * 获取课程分享的标签
-     *
-     * @param moduleId  模块
-     * @param articleId 文章id
-     */
-    List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
 
     /**
      * 根据训练id获取知识
@@ -310,7 +262,7 @@ public interface PracticeService {
     Comment loadComment(Integer commentId);
 
     /**
-     * 根据 ApplicationSubmit 中的 id 和对应评论的 openid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
+     * 根据 ApplicationSubmit 中的 id 和对应评论的 profileid 以及 commentAddDate 来判断学员是否在助教评论之后更改过答案
      */
     Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
 

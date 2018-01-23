@@ -33,11 +33,11 @@ public class AsstCoachCommentDao extends PracticeDBUtil {
 
     public void insert(AsstCoachComment asstCoachComment){
         QueryRunner run = new QueryRunner(getDataSource());
-        String insertSql = "insert into AsstCoachComment(Openid, ProfileId, Count, ProblemId) " +
-                "VALUES (?,?,?,?)";
+        String insertSql = "insert into AsstCoachComment(ProfileId, Count, ProblemId) " +
+                "VALUES (?,?,?)";
         try {
             run.insert(insertSql, new ScalarHandler<>(),
-                    asstCoachComment.getOpenid(), asstCoachComment.getProfileId(),
+                    asstCoachComment.getProfileId(),
                     asstCoachComment.getCount(), asstCoachComment.getProblemId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

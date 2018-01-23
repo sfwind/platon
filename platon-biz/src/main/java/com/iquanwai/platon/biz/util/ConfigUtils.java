@@ -144,6 +144,10 @@ public class ConfigUtils {
         return getValue("ga.id");
     }
 
+    public static String getDefaultUnionId() {
+        return getValue("default.unionId");
+    }
+
     public static String getDefaultOpenid() {
         return getValue("default.openid");
     }

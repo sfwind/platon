@@ -93,11 +93,11 @@ public class CaitongLiveReceiver {
 //                                    logger.error("兑换码耗尽");
 //                                } else {
 //                                    theatreService.sendCodeToUser(profile, liveRedeemCode);
-//                                    customerMessageService.sendCustomerMessage(profile.getOpenid(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                                    customerMessageService.sendCustomerMessage(profile.getOpenId(), "如果你也想自己当勇士获得神秘宝藏，那就做回复【48】开始闯关吧", Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 //                                }
 //                            } else {
 //                                String message = "很抱歉，你朋友的奖励已经被大家抢光了。但是你可以选择回复【48】自己当勇士找到神秘宝藏。";
-//                                customerMessageService.sendCustomerMessage(profile.getOpenid(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//                                customerMessageService.sendCustomerMessage(profile.getOpenId(), message, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 //                            }
                         }
                     } else {

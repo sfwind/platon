@@ -44,10 +44,9 @@ public class FollowUserDao extends DBUtil {
         return -1;
     }
 
-    public Account queryByOpenid(String openid) {
+    public Account queryByOpenId(String openid) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<Account> h = new BeanHandler(Account.class);
-
         try {
             Account account = run.query("SELECT * FROM FollowUsers where Openid=?", h, openid);
             return account;
@@ -58,14 +57,26 @@ public class FollowUserDao extends DBUtil {
         return null;
     }
 
+    public Account queryByUnionId(String unionId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM FollowUsers WHERE UnionId = ?";
+        ResultSetHandler<Account> h = new BeanHandler<>(Account.class);
+        try {
+            return runner.query(sql, h, unionId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
     public List<Account> queryAccounts(List<String> openids) {
-        if(CollectionUtils.isEmpty(openids)){
+        if (CollectionUtils.isEmpty(openids)) {
             return Lists.newArrayList();
         }
         String questionMarks = produceQuestionMark(openids.size());
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Account>> h = new BeanListHandler(Account.class);
-        String sql = "SELECT * FROM FollowUsers where Openid in ("+ questionMarks +")";
+        String sql = "SELECT * FROM FollowUsers where Openid in (" + questionMarks + ")";
         try {
             return run.query(sql, h, openids.toArray());
         } catch (SQLException e) {
@@ -81,7 +92,7 @@ public class FollowUserDao extends DBUtil {
         String updateSql = "Update FollowUsers Set Nickname=?, Headimgurl=?, Unionid=? where Openid=?";
         try {
             Future<Integer> result = asyncRun.update(updateSql,
-                    account.getNickname(), account.getHeadimgurl(),account.getUnionid(), account.getOpenid());
+                    account.getNickname(), account.getHeadimgurl(), account.getUnionid(), account.getOpenid());
             return result.get();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

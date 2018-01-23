@@ -4,15 +4,17 @@ package com.iquanwai.platon.biz.util;
  * Created by nethunder on 2016/12/21.
  */
 public interface Constants {
-    interface Status{
+
+    interface Status {
         String OK = "1";
         String FAIL = "0";
     }
-    interface AccountError{
+
+    interface AccountError {
         Integer TIME_OUT = 100001;
     }
 
-    interface VoteType{
+    interface VoteType {
         int CHALLENGE = 1;
         int APPLICATION = 2;
         int SUBJECT = 3;
@@ -25,8 +27,8 @@ public interface Constants {
         int KNOWLEDGE = 4;
     }
 
-    interface CommentType{
-        int STUDENT  = 1;
+    interface CommentType {
+        int STUDENT = 1;
     }
 
     interface Module {
@@ -41,6 +43,7 @@ public interface Constants {
             int APPLICATION = 2;
             int SUBJECT = 3;
         }
+
         interface EventType {
             int PC_SUBMIT = 1;
             int MOBILE_SUBMIT = 2;
@@ -48,39 +51,52 @@ public interface Constants {
             int MOBILE_SHOW = 4;
         }
     }
-    interface Device{
+
+    interface Device {
         int PC = 1;
         int MOBILE = 2;
     }
-    interface LabelArticleModule{
+
+    /** 请求发送平台 */
+    interface PlatForm {
+        /** PC 网页 */
+        int PC = 1;
+        /** 手机网页 */
+        int WE_MOBILE = 2;
+        /** 微信小程序 */
+        int WE_MINI = 3;
+    }
+
+    interface LabelArticleModule {
         int CHALLENGE = 1;
         int APPLICATION = 2;
         int SUBJECT = 3;
     }
-    interface ValidCode{
+
+    interface ValidCode {
         int MOBILE_VALID = 1;
     }
 
-    interface WEIXIN_MESSAGE_TYPE{
+    interface WEIXIN_MESSAGE_TYPE {
         int TEXT = 1;
         int IMAGE = 2;
         int VOICE = 3;
     }
 
-    interface RISE_MEMBER{
+    interface RISE_MEMBER {
         int FREE = 0;
         int MEMBERSHIP = 1;
         int COURSE_USER = 2;
         int MONTHLY_CAMP = 3;
     }
 
-    interface HTTP_TIMEOUT{
+    interface HTTP_TIMEOUT {
         int CONNECTION_TIMEOUT = 3;
         int READ_TIMEOUT = 60;
     }
 
-    interface CERTIFICATE{
-        interface TYPE{
+    interface CERTIFICATE {
+        interface TYPE {
             int CLASS_LEADER = 1;
             int GROUP_LEADER = 2;
             int SUPERB_MEMBER = 3;
@@ -88,7 +104,8 @@ public interface Constants {
             int ORDINARY = 5;
             int ASST_COACH = 6;
         }
-        interface NAME{
+
+        interface NAME {
             String CLASS_LEADER = "优秀班长";
             String GROUP_LEADER = "优秀组长";
             String SUPERB_MEMBER = "优秀学员";

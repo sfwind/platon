@@ -467,7 +467,8 @@ public class PlanServiceImpl implements PlanService {
     private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
         TemplateMessage templateMessage = new TemplateMessage();
         templateMessage.setTemplate_id(ConfigUtils.courseCloseMsg());
-        templateMessage.setTouser(plan.getOpenid());
+        Profile profile = accountService.getProfile(plan.getProfileId());
+        templateMessage.setTouser(profile.getOpenid());
         templateMessage.setUrl("https://www.iquanwai.com/survey/wjx?activity=14941027");
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         Problem problem = cacheService.getProblem(plan.getProblemId());

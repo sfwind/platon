@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
-import com.iquanwai.platon.biz.po.ArticleLabel;
 import lombok.Data;
 
 import java.util.Date;
@@ -28,9 +27,6 @@ public class RiseWorkInfoDto {
     private Integer problemId; //课程id
     private Integer authorType; //作者类型
     private Boolean isMine; //是否是本人文章
-    private List<ArticleLabel> labelList; //标签列表
-    @Deprecated
-    private List<String> picList;
     private Integer role; //作者角色
     private String signature; //作者签名
     private Integer requestCommentCount; //求点评字数

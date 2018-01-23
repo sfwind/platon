@@ -588,7 +588,7 @@ public class TheatreServiceImpl implements TheatreService {
             promotionActivityDao.insertPromotionActivity(startAction);
             // 发送开场白以及第一题文案:
             // 不推送开场白
-//            customerMessageService.sendCustomerMessage(profile.getOpenid(), theatreScript.getPrologue(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+//            customerMessageService.sendCustomerMessage(profile.getOpenId(), theatreScript.getPrologue(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
             // 发送第一题文案
             Question firstQuestion = theatreScript.firstQuestion();
             this.sendQuestionToUser(profile, firstQuestion);

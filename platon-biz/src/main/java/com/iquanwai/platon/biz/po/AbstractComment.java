@@ -12,11 +12,9 @@ public abstract class AbstractComment {
     private int id;
     private Integer repliedId;    //被回复的讨论id
     private String comment;    //讨论内容
-    private String openid;    //回复人
     private Integer profileId; //用户id
     private Date addTime;    //回复时间
     private Integer priority; //排序优先级,1-大咖,圈外工作人员,助教,0-普通人
-    private String repliedOpenid;    //被回复人
     private Integer repliedProfileId;    //被回复人id
     private String repliedComment; //回复的讨论
     private Integer del; //是否删除(0-未删除，1-已删除)

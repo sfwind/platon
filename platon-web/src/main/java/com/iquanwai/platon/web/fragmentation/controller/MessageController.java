@@ -83,16 +83,7 @@ public class MessageController {
             }
             return WebUtils.result(dto);
         }
-        if (moduleId == 3) {
-            dto.setComment(getCommentDto(loginUser, commentId));
-            SubjectArticle subjectArticle = messageService.loadSubjectArticleByCommentId(commentId);
-            if (subjectArticle != null) {
-                dto.setId(subjectArticle.getId());
-                dto.setTopic(subjectArticle.getTitle());
-                dto.setDescription(subjectArticle.getContent());
-            }
-            return WebUtils.result(dto);
-        }
+
         return WebUtils.result("获取文章内容失败");
     }
 

@@ -90,7 +90,7 @@ public class AccountServiceImpl implements AccountService {
     private List<Region> cityList;
     private Map<String, Integer> userRoleMap = Maps.newHashMap();
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
-    // 用户头像失效校验 publisher
+    // 用户头像失效校验 mq
     private RabbitMQPublisher headImgUrlCheckPublisher;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -109,7 +109,7 @@ public class AccountServiceImpl implements AccountService {
             return getAccountFromWeixin(openid);
         } else {
             //先从数据库查询account对象
-            Account account = followUserDao.queryByOpenid(openid);
+            Account account = followUserDao.queryByOpenId(openid);
             if (account != null) {
                 if (account.getSubscribe() == 0) {
                     // 曾经关注，现在取关的人
@@ -266,7 +266,7 @@ public class AccountServiceImpl implements AccountService {
                 throw new NotFollowingException();
             }
             redisUtil.lock("lock:wx:user:insert", (lock) -> {
-                Account finalQuery = followUserDao.queryByOpenid(openid);
+                Account finalQuery = followUserDao.queryByOpenId(openid);
                 if (finalQuery == null) {
                     if (accountNew.getNickname() != null) {
                         logger.info("插入用户信息:{}", accountNew);
