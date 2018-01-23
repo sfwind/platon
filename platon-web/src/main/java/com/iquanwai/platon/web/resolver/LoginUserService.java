@@ -181,6 +181,7 @@ public class LoginUserService {
                 // 软连接，存储对象被回收
                 callback = callbackDao.queryByState(state);
                 Profile profile = profileDao.queryByUnionId(callback.getUnionId());
+                if (profile == null) return null;
                 loginUser = buildLoginUserDetail(profile);
                 loginUserCacheMap.put(state, new SoftReference<>(loginUser));
             }
@@ -192,6 +193,7 @@ public class LoginUserService {
                 return null;
             }
             Profile profile = profileDao.queryByUnionId(callback.getUnionId());
+            if (profile == null) return null;
             loginUser = buildLoginUserDetail(profile);
             loginUserCacheMap.put(state, new SoftReference<>(loginUser));
         }
@@ -201,6 +203,7 @@ public class LoginUserService {
             waitRefreshUnionIds.remove(unionId);
             logger.info("刷新 UnionId 为 {} 用户缓存", unionId);
             Profile profile = profileDao.queryByUnionId(unionId);
+            if (profile == null) return null;
             loginUser = buildLoginUserDetail(profile);
             // 将最新数据放进缓存
             loginUserCacheMap.put(state, new SoftReference<>(loginUser));
