@@ -40,7 +40,6 @@ public class LoginUserService {
     public static final String PC_STATE_COOKIE_NAME = "_qt";
     public static final String WE_CHAT_STATE_COOKIE_NAME = "_act";
     public static final String WE_MINI_STATE_HEADER_NAME = "sk";
-
     public static final String ACCESS_ASK_TOKEN_COOKIE_NAME = "_ask";
 
     private static final String PLATFORM_HEADER_NAME = "platform";
@@ -78,6 +77,10 @@ public class LoginUserService {
         }
     }
 
+    public Callback getCallbackByState(String state) {
+        return callbackDao.queryByState(state);
+    }
+
     public LoginUser getLoginUserByRequest(HttpServletRequest request) {
         LoginUser.Platform platform = getPlatformType(request);
         // 接口请求，必须存在平台信息
@@ -106,7 +109,7 @@ public class LoginUserService {
             default:
                 callback = null;
         }
-        LoginUser loginUser = getLoginUserByCallback(callback);
+        LoginUser loginUser = getLoginUserByState(callback.getState());
         if (loginUser != null) {
             // 填充设备信息
             loginUser.setDevice(platform.getValue());
@@ -157,12 +160,18 @@ public class LoginUserService {
         }
     }
 
+    public static List<LoginUser> getAllUsers() {
+        List<LoginUser> list = Lists.newArrayList();
+        list.addAll(loginUserCacheMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
+        return list;
+    }
+
     /**
      * 根据回调对象返回登录对象
-     * @param callback 回调
+     * @param state state
      */
-    private LoginUser getLoginUserByCallback(Callback callback) {
-        String state = callback.getState();
+    private LoginUser getLoginUserByState(String state) {
+        Callback callback;
         LoginUser loginUser;
 
         if (loginUserCacheMap.containsKey(state)) {
@@ -239,9 +248,4 @@ public class LoginUserService {
         return role;
     }
 
-    public static List<LoginUser> getAllUsers() {
-        List<LoginUser> list = Lists.newArrayList();
-        list.addAll(loginUserCacheMap.values().stream().map(SoftReference::get).collect(Collectors.toList()));
-        return list;
-    }
 }

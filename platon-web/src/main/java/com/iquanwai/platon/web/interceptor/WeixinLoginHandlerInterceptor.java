@@ -1,10 +1,12 @@
 package com.iquanwai.platon.web.interceptor;
 
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
+import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,26 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             WebUtils.auth(request, response);
             return false;
         } else {
-            return true;
+            switch (platform) {
+                case PC:
+                    // 在 confucius 处理
+                    return true;
+                case WE_MOBILE:
+                    String mobileState = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
+                    Callback callback = loginUserService.getCallbackByState(mobileState);
+                    if (callback == null) {
+                        WebUtils.auth(request, response);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                case WE_MINI:
+                    // 小程序请求不会走这里
+                    return true;
+                default:
+                    writeUnLoginPage(response);
+                    return false;
+            }
         }
 
     }
