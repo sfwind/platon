@@ -47,8 +47,6 @@ public class LogAspect {
         Map<?, ?> inputParamMap = request.getParameterMap();
         // 获取请求地址  
         String requestPath = request.getRequestURI();
-        String userName = null;
-
         // 执行完方法的返回值：调用proceed()方法，就会触发切入点方法执行  
         Map<String, Object> outputParamMap = Maps.newHashMap();
         long startTimeMillis = System.currentTimeMillis();
