@@ -222,7 +222,7 @@ public interface AccountService {
     RiseMember getValidRiseMember(Integer profileId);
 
     /**
-     * 是否参加过商学院、训练营、试听课、"一带二"活动
+     * 是否参加过商学院、专项课、试听课、"一带二"活动
      * @return
      */
     boolean isPreviewNewUser(Integer profileId);

@@ -11,13 +11,13 @@ import java.util.List;
  */
 @Data
 public class PlanListDto {
-    private List<PlanDto> currentCampPlans; // 正在进行的训练营课程
+    private List<PlanDto> currentCampPlans; // 正在进行的专项课课程
     private List<PlanDto> runningPlans;
     private List<PlanDto> completedPlans;
     private List<Problem> recommendations;
     private List<PlanDto> auditions;
     private Integer riseMember;
 
-    // 训练营宣传 banner
+    // 专项课宣传 banner
     private String campBanner;
 }
