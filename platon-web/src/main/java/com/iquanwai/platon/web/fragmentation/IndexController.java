@@ -108,11 +108,11 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
     public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) throws Exception {
         logger.info("点击学习页面");
-        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
+        String state = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid = null;
         Account account = null;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
+        if (state != null) {
+            openid = oAuthService.openId(state);
             try {
                 account = accountService.getAccount(openid, false);
                 logger.info("account:{}", account);
@@ -123,7 +123,7 @@ public class IndexController {
             }
         }
 
-        if (!checkAccessToken(request, openid) || account == null) {
+        if (!checkOpenid(request, openid) || account == null) {
             CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
@@ -176,7 +176,7 @@ public class IndexController {
             }
         }
 
-        if (!checkAccessToken(request, openid) || account == null) {
+        if (!checkOpenid(request, openid) || account == null) {
             CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
@@ -262,7 +262,7 @@ public class IndexController {
             }
         }
 
-        if (!checkAccessToken(request, openid) || account == null) {
+        if (!checkOpenid(request, openid) || account == null) {
             CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
@@ -324,7 +324,7 @@ public class IndexController {
             }
         }
 
-        if (!checkAccessToken(request, openid) || account == null) {
+        if (!checkOpenid(request, openid) || account == null) {
             CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
@@ -376,7 +376,7 @@ public class IndexController {
         return WebUtils.result(activityMsg);
     }
 
-    private boolean checkAccessToken(HttpServletRequest request, String openid) {
+    private boolean checkOpenid(HttpServletRequest request, String openid) {
         if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
             return true;
         }
