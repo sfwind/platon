@@ -1,10 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -55,7 +52,7 @@ public class FreeLimitSubscribeReceiver {
             logger.info(scene);
             return;
         }
-        String openId = json.get("openId").toString();
+        String openId = json.get("openid").toString();
         String event = json.get("event").toString();
 
         String[] sceneParams = scene.split("_");
