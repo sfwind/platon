@@ -5,6 +5,8 @@ import com.iquanwai.platon.biz.dao.survey.SurveyChoiceDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionResultDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyResultDao;
+import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.survey.SurveyChoice;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestionResult;
@@ -86,9 +88,16 @@ public class SurveyServiceImpl implements SurveyService {
         return result;
     }
 
+
+
     @Override
     public SurveyResult loadSubmit(String openId, String category) {
         return surveyResultDao.loadByOpenid(openId, category);
+    }
+
+    @Override
+    public SurveyResult loadSubmit(Integer id) {
+        return surveyResultDao.load(SurveyResult.class, id);
     }
 
 }

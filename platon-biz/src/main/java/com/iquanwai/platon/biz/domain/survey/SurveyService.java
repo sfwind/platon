@@ -35,4 +35,11 @@ public interface SurveyService {
      * @return
      */
     SurveyResult loadSubmit(String openId, String category);
+
+    /**
+     * 获取提交记录
+     */
+    SurveyResult loadSubmit(Integer id);
+
+
 }

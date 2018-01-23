@@ -72,4 +72,8 @@ public class SurveyQuestion {
      */
     private List<SurveyChoice> choices;
 
+
+
+    public static final String EVALUATION_OTHER="evaluation-other";
+
 }
