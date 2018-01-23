@@ -70,9 +70,8 @@
             <mvc:exclude-mapping path="/js/**"/>
             <mvc:exclude-mapping path="/rise/cache/**"/>
             <mvc:exclude-mapping path="/rise/b/**"/>
-            <mvc:exclude-mapping path="/rise/static/inter/quan/answer"/>
-            <mvc:exclude-mapping path="/rise/static/inter/question"/>
-            <mvc:exclude-mapping path="/rise/static/guest/note/**"/>
+            <!--<mvc:exclude-mapping path="/rise/static/inter/quan/answer"/>-->
+            <!--<mvc:exclude-mapping path="/rise/static/inter/question"/>-->
             <mvc:exclude-mapping path="/heartbeat"/>
             <mvc:exclude-mapping path="/rise/operation/prize/load/annual/**"/>
             <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
