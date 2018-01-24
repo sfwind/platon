@@ -96,6 +96,9 @@ public class SurveyController {
         Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0;
         dto.setSubscribe(subscribe);
         dto.setSurveyQuestions(dtos);
+        dto.setSubscribeQrCode(ConfigUtils.isDevelopment() ?
+                "https://static.iqycamp.com/images/fragment/self_test_qr_beta.jpeg?imageslim" :
+                "https://static.iqycamp.com/images/fragment/self_test_qr_pro.jpeg?imageslim");
         return WebUtils.result(dto);
     }
 

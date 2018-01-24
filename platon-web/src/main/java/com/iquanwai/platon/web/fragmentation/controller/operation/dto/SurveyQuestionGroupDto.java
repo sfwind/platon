@@ -12,4 +12,5 @@ import java.util.List;
 public class SurveyQuestionGroupDto {
     private List<SurveyQuestionDto> surveyQuestions;
     private Boolean subscribe;
+    private String subscribeQrCode;
 }
