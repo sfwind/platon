@@ -150,7 +150,7 @@ public class SurveyController {
         dto.setSubscribeQrCode(ConfigUtils.isDevelopment() ?
                 "https://static.iqycamp.com/images/fragment/self_test_qr_beta.jpeg?imageslim" :
                 "https://static.iqycamp.com/images/fragment/self_test_qr_pro.jpeg?imageslim");
-        dto.setResultId(result.getId());
+        dto.setResultId(result != null ? result.getId() : null);
         return WebUtils.result(dto);
     }
 
