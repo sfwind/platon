@@ -81,7 +81,6 @@ public class SurveyController {
                     }
                     return true;
                 })
-                .sorted((Comparator.comparingInt(SurveyQuestion::getSeries)))
                 .collect(Collectors.groupingBy(SurveyQuestion::getSeries));
         List<SurveyQuestionDto> dtos = questionMap
                 .keySet()
