@@ -114,6 +114,15 @@ public interface PlanService {
      */
     ImprovementPlan getPlanByProblemId(Integer profileId, Integer problemId);
 
+
+    /**
+     * 查询是否有该课程
+     *
+     * @param profileId 用户id
+     * @param problemId 课程id
+     */
+    ImprovementPlan getDetailByProblemId(Integer profileId, Integer problemId);
+
     /**
      * 判断课程是否完成,当理解练习和巩固练习都完成时,课程判定为完成
      *

@@ -283,7 +283,7 @@ public class CertificateServiceImpl implements CertificateService {
                 // 完成所有练习
                 Long unCompleteNecessaryCountLong = practicePlans.stream()
                         .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                        .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
+                        .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
                         .count();
                 if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                     // 如果存在有没有完成的题数，则不予发送优惠券
@@ -379,7 +379,7 @@ public class CertificateServiceImpl implements CertificateService {
                     if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
                                 .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
+                                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
                                 .count();
                         if ((unCompleteNecessaryCountLong.intValue()) > 0) {
                             //如果存在没有完成的题目，不不予发送优惠券

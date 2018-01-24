@@ -159,7 +159,7 @@ public class ReportServiceImpl implements ReportService {
     private void calculateCompleteCount(ImprovementReport report, List<PracticePlan> applicationPlanList) {
         // 数量计算
         Integer totalApplication = applicationPlanList.size();
-        Long totalCompleteApp = applicationPlanList.stream().filter(item -> PracticePlan.STATUS.COMPLETED.equals(item.getStatus())).count();
+        Long totalCompleteApp = applicationPlanList.stream().filter(item -> PracticePlan.STATUS.COMPLETED == item.getStatus()).count();
         report.setApplicationShouldCount(totalApplication);
         report.setApplicationCompleteCount(totalCompleteApp.intValue());
     }

@@ -374,7 +374,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null) {
             List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
-            if (practicePlans.stream().anyMatch(item -> PracticePlan.STATUS.NEVER_UNLOCK.equals(item.getStatus()))) {
+            if (practicePlans.stream().anyMatch(item -> PracticePlan.STATUS.NEVER_UNLOCK == item.getStatus())) {
                 // 有永不解锁的小节
                 practicePlanDao.revertNeverUnlockPracticePlan(improvementPlan.getId());
             }
@@ -488,7 +488,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW;
                 // 是否未完成
-                Boolean isNotComplete = !PracticePlan.STATUS.COMPLETED.equals(practicePlan.getStatus());
+                Boolean isNotComplete = PracticePlan.STATUS.COMPLETED != practicePlan.getStatus();
                 if (isRequest && isNotComplete) {
                     // 必做并且未完成
                     return false;

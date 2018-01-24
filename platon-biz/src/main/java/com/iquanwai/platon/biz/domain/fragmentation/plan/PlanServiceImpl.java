@@ -125,7 +125,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
         // 拿到未完成的综合训练
         List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW
-                && practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED)
+                && practicePlan.getStatus().equals(PracticePlan.STATUS.UNCOMPLETED))
                 .collect(Collectors.toList());
         // 未完成未空则代表全部完成
         improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
@@ -251,7 +251,7 @@ public class PlanServiceImpl implements PlanService {
         //如果练习未解锁,则解锁练习
         runningPractice.stream()
                 .filter(practicePlan -> !practicePlan.getUnlocked())
-                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
+                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
                 .forEach(practicePlan -> {
                     practicePlan.setUnlocked(true);
                     practicePlanDao.unlock(practicePlan.getId());
@@ -541,6 +541,25 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public ImprovementPlan getPlanByProblemId(Integer profileId, Integer problemId) {
         return improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+    }
+
+    @Override
+    public ImprovementPlan getDetailByProblemId(Integer profileId, Integer problemId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        if(improvementPlan !=null) {
+            improvementPlan.setProblem(cacheService.getProblem(improvementPlan.getProblemId()));
+            CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
+            improvementPlan.setMonth(courseSchedule.getMonth());
+            improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修":"辅修");
+            //设置截止时间
+            if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()));
+            }else{
+                improvementPlan.setDeadline(0);
+            }
+        }
+
+        return improvementPlan;
     }
 
     @Override

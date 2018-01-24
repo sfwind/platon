@@ -40,14 +40,14 @@ public class PracticePlan {
         /**
          * 未完成
          */
-        Integer UNCOMPLETED = 0;
+        int UNCOMPLETED = 0;
         /**
          * 已完成
          */
-        Integer COMPLETED = 1;
+        int COMPLETED = 1;
         /**
          * 永不解锁
          */
-        Integer NEVER_UNLOCK = 2;
+        int NEVER_UNLOCK = 2;
     }
 }

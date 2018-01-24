@@ -465,4 +465,17 @@ public class ProblemController {
         }
     }
 
+    @RequestMapping(value = "/get/my/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getMyProblem(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(problemId, "课程不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("课程学习").function("我的课程").action("获取我的课程").memo(Integer.toString(problemId));
+        operationLogService.log(operationLog);
+
+        ImprovementPlan improvementPlan = planService.getDetailByProblemId(loginUser.getId(), problemId);
+
+        return WebUtils.result(improvementPlan);
+    }
+
 }

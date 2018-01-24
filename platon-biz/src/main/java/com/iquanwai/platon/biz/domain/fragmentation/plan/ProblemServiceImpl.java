@@ -9,7 +9,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
@@ -46,13 +45,9 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
-    @Autowired
     private CardManager cardManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
-    @Autowired
-    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -209,22 +204,6 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public String loadProblemScheduleMonth(Integer profileId, Integer problemId) {
-        Integer category = accountService.loadUserScheduleCategory(profileId);
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
-
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
-                .filter(scheduleDefault -> problemId.equals(scheduleDefault.getProblemId())).findAny().orElse(null);
-        return courseScheduleDefault != null ? courseScheduleDefault.getMonth() + "" : null;
-    }
-
-    @Override
-    public int loadChosenPersonCount(Integer problemId) {
-        // return improvementPlanDao.loadChosenPersonCount(problemId);
-        return 0;
-    }
-
-    @Override
     public boolean hasCollectedProblem(Integer profileId, Integer problemId) {
         ProblemCollection collection = problemCollectionDao.loadUsefulCollection(profileId, problemId);
         return collection != null;
@@ -284,17 +263,6 @@ public class ProblemServiceImpl implements ProblemService {
             problems.add(problem);
         }
         return problems;
-    }
-
-    @Override
-    public Integer loadCoursePlanSchedule(Integer profileId, Integer problemId) {
-        Integer category = accountService.loadUserScheduleCategory(profileId);
-
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
-                .filter(scheduleDefault -> problemId.equals(scheduleDefault.getProblemId())).findAny().orElse(null);
-
-        return courseScheduleDefault != null ? courseScheduleDefault.getMonth() : null;
     }
 
     @Override
