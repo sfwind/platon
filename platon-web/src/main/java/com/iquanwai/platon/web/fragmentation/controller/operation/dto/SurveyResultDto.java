@@ -7,4 +7,5 @@ public class SurveyResultDto {
     private Boolean subscribe;
     private String subscribeQrCode;
     private Integer resultId;
+    private Boolean self;
 }

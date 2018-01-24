@@ -162,11 +162,13 @@ public class SurveyController {
                 .action(referId + "");
         operationLogService.log(operationLog);
         SurveyResult result = surveyService.loadSubmitByReferId(guestUser.getOpenId(), referId);
+        SurveyResult referResult = surveyService.loadSubmit(referId);
+        SurveyResultDto dto = new SurveyResultDto();
         if (result != null) {
-            return WebUtils.result(result.getId());
-        } else {
-            return WebUtils.error("没有提交记录");
+            dto.setResultId(result.getId());
         }
+        dto.setSelf(guestUser.getOpenId().equals(referResult.getOpenid()));
+        return WebUtils.result(dto);
     }
 
     @RequestMapping(value = "load/submit/upname/{id}", method = RequestMethod.GET)
