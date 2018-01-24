@@ -16,7 +16,6 @@ import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
-import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -113,7 +112,6 @@ public class ApplyServiceImpl implements ApplyService {
 
     @Override
     public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid) {
-        Profile profile = accountService.getProfile(profileId);
         //获取上次审核的结果
         BusinessSchoolApplication lastBusinessApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
 

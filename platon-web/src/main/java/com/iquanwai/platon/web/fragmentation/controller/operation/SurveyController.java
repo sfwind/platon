@@ -1,5 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.survey.SurveyService;
@@ -59,8 +61,25 @@ public class SurveyController {
                 .action("进入问卷");
         operationLogService.log(operationLog);
         List<SurveyQuestion> surveyQuestions = surveyService.loadQuestionsByCategory(category);
+        Profile profile = accountService.getProfile(guestUser.getOpenId());
         Map<Integer, List<SurveyQuestion>> questionMap = surveyQuestions
                 .stream()
+                .filter(item -> {
+                    if (profile != null && item.getMemo() != null) {
+                        try {
+                            JSONObject memo = JSON.parseObject(item.getMemo());
+                            if (memo.containsKey(SurveyQuestion.MEMO_TYPE.IDENTIFY) && memo.getBoolean(SurveyQuestion.MEMO_TYPE.IDENTIFY)) {
+                                if (profile.getMobileNo() != null || profile.getWeixinId() != null) {
+                                    // 有一个个人信息，则不显示
+                                    return false;
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error(e.getLocalizedMessage(), e);
+                        }
+                    }
+                    return true;
+                })
                 .sorted((Comparator.comparingInt(SurveyQuestion::getSeries)))
                 .collect(Collectors.groupingBy(SurveyQuestion::getSeries));
         List<SurveyQuestionDto> dtos = questionMap
