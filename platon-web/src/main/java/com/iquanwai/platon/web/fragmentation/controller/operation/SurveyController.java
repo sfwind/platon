@@ -16,6 +16,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionGroupDto;
+import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyResultDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveySubmitDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -93,12 +94,7 @@ public class SurveyController {
                     return dto;
                 }).collect(Collectors.toList());
         SurveyQuestionGroupDto dto = new SurveyQuestionGroupDto();
-        Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0;
-        dto.setSubscribe(subscribe);
         dto.setSurveyQuestions(dtos);
-        dto.setSubscribeQrCode(ConfigUtils.isDevelopment() ?
-                "https://static.iqycamp.com/images/fragment/self_test_qr_beta.jpeg?imageslim" :
-                "https://static.iqycamp.com/images/fragment/self_test_qr_pro.jpeg?imageslim");
         return WebUtils.result(dto);
     }
 
@@ -147,11 +143,15 @@ public class SurveyController {
                 .action(category);
         operationLogService.log(operationLog);
         SurveyResult result = surveyService.loadSubmit(guestUser.getOpenId(), category);
-        if (result != null) {
-            return WebUtils.result(result.getId());
-        } else {
-            return WebUtils.error("没有提交记录");
-        }
+
+        Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0;
+        SurveyResultDto dto = new SurveyResultDto();
+        dto.setSubscribe(subscribe);
+        dto.setSubscribeQrCode(ConfigUtils.isDevelopment() ?
+                "https://static.iqycamp.com/images/fragment/self_test_qr_beta.jpeg?imageslim" :
+                "https://static.iqycamp.com/images/fragment/self_test_qr_pro.jpeg?imageslim");
+        dto.setResultId(result.getId());
+        return WebUtils.result(dto);
     }
 
     @RequestMapping(value = "load/submit/refer/{refer}", method = RequestMethod.GET)

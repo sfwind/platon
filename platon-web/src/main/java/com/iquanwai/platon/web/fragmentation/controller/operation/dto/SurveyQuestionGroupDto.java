@@ -11,6 +11,4 @@ import java.util.List;
 @Data
 public class SurveyQuestionGroupDto {
     private List<SurveyQuestionDto> surveyQuestions;
-    private Boolean subscribe;
-    private String subscribeQrCode;
 }
