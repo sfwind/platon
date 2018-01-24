@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionGroupDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveySubmitDto;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.support.Assert;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -90,18 +92,17 @@ public class SurveyController {
                 // 其他人提交的
                 SurveyResult refer = surveyService.loadSubmit(submits.getReferId());
                 if (refer != null) {
+                    Profile profile = accountService.getProfile(refer.getOpenid());
                     // 价值观测试，需要发消息
                     TemplateMessage templateMessage = new TemplateMessage();
                     templateMessage.setTouser(refer.getOpenid());
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-                    templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/value/evaluation/self");
-                    data.put("first", new TemplateMessage.Keyword(guestUser.getWeixinName() + "已接受邀请\n"));
-                    data.put("keyword1", new TemplateMessage.Keyword("《认识自己》7天免费互助学习"));
-                    data.put("keyword2", new TemplateMessage.Keyword("截止1月7日晚20:00"));
-                    data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-                    data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请在下方留言。"));
+                    templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
+                    data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
+                    data.put("keyword1", new TemplateMessage.Keyword(guestUser.getWeixinName()));
+                    data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
+                    data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));
                     templateMessageService.sendMessage(templateMessage);
                 }
             }

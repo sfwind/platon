@@ -276,6 +276,10 @@ public class ConfigUtils {
         return getValue("share.card.msg");
     }
 
+    public static String getMessageReplyCode() {
+        return getValue("message.reply.code");
+    }
+
     /**
      * 1、领取卡券通知
      */
