@@ -93,6 +93,7 @@ public class SurveyController {
                     return dto;
                 }).collect(Collectors.toList());
         SurveyQuestionGroupDto dto = new SurveyQuestionGroupDto();
+        dto.setSubscribe(guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0);
         dto.setSurveyQuestions(dtos);
         return WebUtils.result(dto);
     }
@@ -112,17 +113,19 @@ public class SurveyController {
                 SurveyResult refer = surveyService.loadSubmit(submits.getReferId());
                 if (refer != null) {
                     Profile profile = accountService.getProfile(refer.getOpenid());
-                    // 价值观测试，需要发消息
-                    TemplateMessage templateMessage = new TemplateMessage();
-                    templateMessage.setTouser(refer.getOpenid());
-                    Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-                    templateMessage.setData(data);
-                    templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
-                    data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
-                    data.put("keyword1", new TemplateMessage.Keyword(guestUser.getWeixinName()));
-                    data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
-                    data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));
-                    templateMessageService.sendMessage(templateMessage);
+                    if (profile != null) {
+                        // 价值观测试，需要发消息
+                        TemplateMessage templateMessage = new TemplateMessage();
+                        templateMessage.setTouser(refer.getOpenid());
+                        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+                        templateMessage.setData(data);
+                        templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
+                        data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
+                        data.put("keyword1", new TemplateMessage.Keyword(guestUser.getWeixinName()));
+                        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
+                        data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));
+                        templateMessageService.sendMessage(templateMessage);
+                    }
                 }
             }
             return WebUtils.result(result);
