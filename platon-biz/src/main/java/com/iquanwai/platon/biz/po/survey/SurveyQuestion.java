@@ -73,7 +73,12 @@ public class SurveyQuestion {
     private List<SurveyChoice> choices;
 
 
+    public static final String EVALUATION_OTHER = "evaluation-other";
 
-    public static final String EVALUATION_OTHER="evaluation-other";
+    public interface MEMO_TYPE {
+        String IDENTIFY = "identity";
+        String PHONE = "phone";
+        String WECHAT_CODE = "wechat_code";
+    }
 
 }

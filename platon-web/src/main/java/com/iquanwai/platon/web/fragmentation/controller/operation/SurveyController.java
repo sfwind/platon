@@ -1,5 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.controller.operation;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.survey.SurveyService;
@@ -11,8 +13,10 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionGroupDto;
+import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyResultDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveySubmitDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.support.Assert;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,9 +62,25 @@ public class SurveyController {
                 .action("进入问卷");
         operationLogService.log(operationLog);
         List<SurveyQuestion> surveyQuestions = surveyService.loadQuestionsByCategory(category);
+        Profile profile = accountService.getProfile(guestUser.getOpenId());
         Map<Integer, List<SurveyQuestion>> questionMap = surveyQuestions
                 .stream()
-                .sorted((Comparator.comparingInt(SurveyQuestion::getSeries)))
+                .filter(item -> {
+                    if (profile != null && item.getMemo() != null) {
+                        try {
+                            JSONObject memo = JSON.parseObject(item.getMemo());
+                            if (memo.containsKey(SurveyQuestion.MEMO_TYPE.IDENTIFY) && memo.getBoolean(SurveyQuestion.MEMO_TYPE.IDENTIFY)) {
+                                if (profile.getMobileNo() != null || profile.getWeixinId() != null) {
+                                    // 有一个个人信息，则不显示
+                                    return false;
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error(e.getLocalizedMessage(), e);
+                        }
+                    }
+                    return true;
+                })
                 .collect(Collectors.groupingBy(SurveyQuestion::getSeries));
         List<SurveyQuestionDto> dtos = questionMap
                 .keySet()
@@ -90,19 +111,20 @@ public class SurveyController {
                 // 其他人提交的
                 SurveyResult refer = surveyService.loadSubmit(submits.getReferId());
                 if (refer != null) {
-                    // 价值观测试，需要发消息
-                    TemplateMessage templateMessage = new TemplateMessage();
-                    templateMessage.setTouser(refer.getOpenid());
-                    Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-                    templateMessage.setData(data);
-                    templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
-                    templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/value/evaluation/self");
-                    data.put("first", new TemplateMessage.Keyword(guestUser.getWeixinName() + "已接受邀请\n"));
-                    data.put("keyword1", new TemplateMessage.Keyword("《认识自己》7天免费互助学习"));
-                    data.put("keyword2", new TemplateMessage.Keyword("截止1月7日晚20:00"));
-                    data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-                    data.put("remark", new TemplateMessage.Keyword("\n点击详情分享邀请链接，邀请更多好友。如有疑问请在下方留言。"));
-                    templateMessageService.sendMessage(templateMessage);
+                    Profile profile = accountService.getProfile(refer.getOpenid());
+                    if (profile != null) {
+                        // 价值观测试，需要发消息
+                        TemplateMessage templateMessage = new TemplateMessage();
+                        templateMessage.setTouser(refer.getOpenid());
+                        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+                        templateMessage.setData(data);
+                        templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
+                        data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
+                        data.put("keyword1", new TemplateMessage.Keyword(guestUser.getWeixinName()));
+                        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
+                        data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));
+                        templateMessageService.sendMessage(templateMessage);
+                    }
                 }
             }
             return WebUtils.result(result);
@@ -120,11 +142,33 @@ public class SurveyController {
                 .action(category);
         operationLogService.log(operationLog);
         SurveyResult result = surveyService.loadSubmit(guestUser.getOpenId(), category);
+
+        Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0;
+        SurveyResultDto dto = new SurveyResultDto();
+        dto.setSubscribe(subscribe);
+        dto.setSubscribeQrCode(ConfigUtils.isDevelopment() ?
+                "https://static.iqycamp.com/images/fragment/self_test_qr_beta.jpeg?imageslim" :
+                "https://static.iqycamp.com/images/fragment/self_test_qr_pro.jpeg?imageslim");
+        dto.setResultId(result != null ? result.getId() : null);
+        return WebUtils.result(dto);
+    }
+
+    @RequestMapping(value = "load/submit/refer/{refer}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadSubmit(GuestUser guestUser, @PathVariable(value = "refer") Integer referId) {
+        Assert.notNull(guestUser);
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
+                .module("问卷")
+                .function("查看问卷提交记录")
+                .action(referId + "");
+        operationLogService.log(operationLog);
+        SurveyResult result = surveyService.loadSubmitByReferId(guestUser.getOpenId(), referId);
+        SurveyResult referResult = surveyService.loadSubmit(referId);
+        SurveyResultDto dto = new SurveyResultDto();
         if (result != null) {
-            return WebUtils.result(result.getId());
-        } else {
-            return WebUtils.error("没有提交记录");
+            dto.setResultId(result.getId());
         }
+        dto.setSelf(guestUser.getOpenId().equals(referResult.getOpenid()));
+        return WebUtils.result(dto);
     }
 
     @RequestMapping(value = "load/submit/upname/{id}", method = RequestMethod.GET)
