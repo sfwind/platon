@@ -93,7 +93,8 @@ public class SurveyController {
                     return dto;
                 }).collect(Collectors.toList());
         SurveyQuestionGroupDto dto = new SurveyQuestionGroupDto();
-        dto.setSubscribe(guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0);
+        Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0;
+        dto.setSubscribe(subscribe);
         dto.setSurveyQuestions(dtos);
         return WebUtils.result(dto);
     }
