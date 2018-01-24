@@ -127,6 +127,22 @@ public class SurveyController {
         }
     }
 
+    @RequestMapping(value = "load/submit/refer/{refer}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadSubmit(GuestUser guestUser, @PathVariable(value = "refer") Integer referId) {
+        Assert.notNull(guestUser);
+        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
+                .module("问卷")
+                .function("查看问卷提交记录")
+                .action(referId + "");
+        operationLogService.log(operationLog);
+        SurveyResult result = surveyService.loadSubmitByReferId(guestUser.getOpenId(), referId);
+        if (result != null) {
+            return WebUtils.result(result.getId());
+        } else {
+            return WebUtils.error("没有提交记录");
+        }
+    }
+
     @RequestMapping(value = "load/submit/upname/{id}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadSurveySubmitUpname(GuestUser guestUser, @PathVariable(value = "id") Integer id) {
         Assert.notNull(guestUser);

@@ -42,4 +42,15 @@ public class SurveyResultDao extends DBUtil {
         return null;
     }
 
+    public SurveyResult loadByOpenidAndReferId(String openId, Integer referId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from SurveyResult where Openid = ? AND ReferSurveyId = ? and Del = 0";
+        try {
+            return runner.query(sql, new BeanHandler<>(SurveyResult.class), openId, referId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
 }

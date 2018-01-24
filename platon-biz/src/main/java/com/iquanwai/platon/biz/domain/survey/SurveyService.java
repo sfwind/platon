@@ -26,13 +26,15 @@ public interface SurveyService {
      * @param submits 提交的信息
      * @return 提交结果
      */
-    Integer submitQuestions(String openId,String category,Integer referId, List<SurveySubmitVo> submits);
+    Integer submitQuestions(String openId, String category, Integer referId, List<SurveySubmitVo> submits);
+
+    /**
+     * 根据referId查询
+     */
+    SurveyResult loadSubmitByReferId(String openId, Integer referId);
 
     /**
      * 获取提交记录
-     * @param openId
-     * @param category
-     * @return
      */
     SurveyResult loadSubmit(String openId, String category);
 
