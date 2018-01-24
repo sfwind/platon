@@ -32,6 +32,17 @@ public class SurveyQuestionDao extends DBUtil {
         return Lists.newArrayList();
     }
 
+    public List<SurveyQuestion> loadByCategoryAndMemoNotNull(String category) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM SurveyQuestion WHERE Category = ? AND Memo is not null AND Del = 0";
+        try {
+            return runner.query(sql, new BeanListHandler<>(SurveyQuestion.class), category);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public SurveyQuestion loadOneQuestion(String category) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from SurveyQuestion where Category = ? and Del =0 limit 1";

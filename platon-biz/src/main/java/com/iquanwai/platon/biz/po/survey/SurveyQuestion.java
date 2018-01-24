@@ -77,6 +77,8 @@ public class SurveyQuestion {
 
     public interface MEMO_TYPE {
         String IDENTIFY = "identity";
+        String PHONE = "phone";
+        String WECHAT_CODE = "wechat_code";
     }
 
 }

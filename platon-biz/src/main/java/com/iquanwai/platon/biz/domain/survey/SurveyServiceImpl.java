@@ -1,10 +1,14 @@
 package com.iquanwai.platon.biz.domain.survey;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.dao.survey.SurveyChoiceDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionResultDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyResultDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyChoice;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestionResult;
@@ -36,6 +40,8 @@ public class SurveyServiceImpl implements SurveyService {
     private SurveyQuestionResultDao surveyQuestionSubmitDao;
     @Autowired
     private SurveyResultDao surveyResultDao;
+    @Autowired
+    private AccountService accountService;
 
     @Override
     public List<SurveyQuestion> loadQuestionsByCategory(String category) {
@@ -83,6 +89,25 @@ public class SurveyServiceImpl implements SurveyService {
             return submit;
         }).collect(Collectors.toList());
         surveyQuestionSubmitDao.batchInsert(collect);
+        Profile profile = accountService.getProfile(openId);
+        if (profile != null) {
+            for (SurveyQuestion question : surveyQuestionDao.loadByCategoryAndMemoNotNull(category)) {
+                try {
+                    JSONObject memo = JSON.parseObject(question.getMemo());
+                    if (SurveyQuestion.MEMO_TYPE.PHONE.equals(memo.getString("type"))) {
+                        // 电话 ignore validCode的时候会加进去
+                    } else if (SurveyQuestion.MEMO_TYPE.WECHAT_CODE.equals(memo.getString("type"))) {
+                        // 微信id
+                        collect.stream()
+                                .filter(item -> item.getQuestionCode().equals(question.getQuestionCode()))
+                                .findFirst()
+                                .ifPresent(surveySubmit -> accountService.updateWeixinId(profile.getId(), surveySubmit.getUserValue()));
+                    }
+                } catch (Exception e) {
+                    logger.error(e.getLocalizedMessage(), e);
+                }
+            }
+        }
         return result;
     }
 
