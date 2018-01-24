@@ -100,6 +100,7 @@ public class SurveyServiceImpl implements SurveyService {
                         // 微信id
                         collect.stream()
                                 .filter(item -> item.getQuestionCode().equals(question.getQuestionCode()))
+                                .filter(item -> item.getUserValue() != null)
                                 .findFirst()
                                 .ifPresent(surveySubmit -> accountService.updateWeixinId(profile.getId(), surveySubmit.getUserValue()));
                     }
