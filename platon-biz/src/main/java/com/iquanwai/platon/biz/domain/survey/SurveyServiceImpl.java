@@ -85,6 +85,7 @@ public class SurveyServiceImpl implements SurveyService {
             submit.setCategory(category);
             submit.setChoiceId(item.getChoiceId());
             submit.setUserValue(item.getUserValue());
+            submit.setSubmitId(result);
             if (CollectionUtils.isNotEmpty(item.getChoiceIds())) {
                 submit.setChoiceIds(String.join(",", item.getChoiceIds()));
             }
