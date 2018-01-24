@@ -31,7 +31,7 @@ public class SurveyChoiceDao extends DBUtil {
         String mask = produceQuestionMark(codeList.size());
         List<Object> params = Lists.newArrayList();
         params.addAll(codeList);
-        String sql = "SELECT * FROM SurveyChoice WHERE QuestionCode in (" + mask + ")";
+        String sql = "SELECT * FROM SurveyChoice WHERE QuestionCode in (" + mask + ") AND Del = 0";
         try {
             return runner.query(sql, h, params.toArray());
         } catch (SQLException e) {
