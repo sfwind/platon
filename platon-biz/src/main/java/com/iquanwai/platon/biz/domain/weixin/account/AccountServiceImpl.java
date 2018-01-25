@@ -222,7 +222,7 @@ public class AccountServiceImpl implements AccountService {
         url = CommonUtils.placeholderReplace(url, map);
 
         String body = restfulHelper.get(url);
-        if (body == null) {
+        if (StringUtils.isEmpty(body)) {
             return null;
         }
         logger.info("请求游客信息结果:{}", body);
