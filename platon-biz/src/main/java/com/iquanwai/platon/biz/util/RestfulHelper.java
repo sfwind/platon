@@ -65,7 +65,7 @@ public class RestfulHelper {
                 logger.error("execute " + requestUrl + " error", e);
             }
         }
-        return null;
+        return "";
     }
 
     public String postXML(String requestUrl, String xml) {
@@ -124,7 +124,7 @@ public class RestfulHelper {
                 logger.error("execute " + requestUrl + " error", e);
             }
         }
-        return null;
+        return "";
     }
 
     public ResponseBody getPlain(String requestUrl) {
