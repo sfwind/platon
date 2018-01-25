@@ -23,16 +23,6 @@
         <param-value>60000</param-value>
     </context-param>
 
-    <filter>
-        <filter-name>cat-filter</filter-name>
-        <filter-class>com.dianping.cat.servlet.CatFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>cat-filter</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-    </filter-mapping>
 
     <filter>
         <filter-name>characterEncodingFilter</filter-name>
@@ -53,6 +43,17 @@
     <filter-mapping>
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>cat-filter</filter-name>
+        <filter-class>com.dianping.cat.servlet.CatFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>cat-filter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
 
     <!--druid 数据库连接池后台-->
