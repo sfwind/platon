@@ -52,7 +52,9 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
             account = accountService.getGuestFromWeixin(callback.getOpenid(), callback.getAccessToken());
         }
         if (account == null) {
+            logger.info("account 为 null， 刷新用户的 accessToken");
             callback = loginUserService.getCallbackByRefreshToken(state, callback.getRefreshToken());
+            logger.info("新的 callback accessToken 为： {}", callback.getAccessToken());
             return accountService.getGuestFromWeixin(callback.getOpenid(), callback.getAccessToken());
         } else {
             GuestUser guestUser = new GuestUser();

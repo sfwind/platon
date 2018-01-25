@@ -222,6 +222,10 @@ public class AccountServiceImpl implements AccountService {
         url = CommonUtils.placeholderReplace(url, map);
 
         String body = restfulHelper.get(url);
+        if (StringUtils.isEmpty(body)) {
+            logger.info("使用 accessToken 请求用户信息过期，返回 account 为 null");
+            return null;
+        }
         logger.info("请求游客信息结果:{}", body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         Account account = new Account();

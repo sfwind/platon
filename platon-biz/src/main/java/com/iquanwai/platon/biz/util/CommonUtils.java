@@ -69,7 +69,6 @@ public class CommonUtils {
             if (errcode.equals(ErrorConstants.ACCESS_TOKEN_INVALID)) {
                 throw new WeixinException(ErrorConstants.ACCESS_TOKEN_INVALID, "accessToken失效了");
             }
-
             return errcode != 0;
         }
         return false;
@@ -188,9 +187,6 @@ public class CommonUtils {
 
     /**
      * 过滤emoji 或者 其他非文字类型的字符
-     *
-     * @param source
-     * @return
      */
     public static String filterEmoji(String source) {
         //到这里铁定包含
