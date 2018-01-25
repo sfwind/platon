@@ -98,12 +98,12 @@ public class WhiteListServiceImpl implements WhiteListService {
                         riseMember.getMemberTypeId() == RiseMember.ELITE ||
                                 riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
         ).count();
-        // 如果转化成商学院 跳转训练营售卖页
+        // 如果转化成商学院 跳转专项课售卖页
         if (risememberCount > 0) {
             return false;
         }
 
-        // 训练营
+        // 专项课
         Long campCount = riseMembers.stream()
                 .filter(riseMember -> riseMember.getMemberTypeId() == RiseMember.CAMP
                         && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) <= 0)

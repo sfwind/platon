@@ -38,7 +38,7 @@ public class EventWall {
         int NO_PAY_NO_PLAN = 1; //非付费
         int NOT_ELITE = 2; // 非精英
         int ELITE = 3; // 精英版
-        int CAMP = 4; // 训练营
+        int CAMP = 4; // 专项课
         int RISE_MEMBER = 5; // 付费用户
     }
 }
