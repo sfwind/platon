@@ -3,7 +3,6 @@ package com.iquanwai.platon.web.aspect;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -18,7 +17,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,8 +47,6 @@ public class LogAspect {
         Map<?, ?> inputParamMap = request.getParameterMap();
         // 获取请求地址  
         String requestPath = request.getRequestURI();
-        String userName = null;
-
         // 执行完方法的返回值：调用proceed()方法，就会触发切入点方法执行  
         Map<String, Object> outputParamMap = Maps.newHashMap();
         long startTimeMillis = System.currentTimeMillis();
@@ -59,16 +55,14 @@ public class LogAspect {
         outputParamMap.put("result", result);
 
         //超长请求也需要打印日志
-        if(ConfigUtils.logDetail()||endTimeMillis-startTimeMillis>=1000) {
-            if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {Gson gson = new Gson();
-            String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
-            LoginUser loginUser = loginUserService.getLoginUser(request).getRight();
-            if (loginUser != null) {
-                userName = loginUser.getWeixinName();
+        if (ConfigUtils.logDetail() || endTimeMillis - startTimeMillis >= 1000) {
+            if (requestPath == null || !requestPath.contains("rise/problem/cards/")) {
+                Gson gson = new Gson();
+                String optTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTimeMillis);
+                String str = gson.toJson(outputParamMap).length() > 1024 ? gson.toJson(outputParamMap).substring(0, 1024) : gson.toJson(outputParamMap);
+                logger.info("\nurl：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
+                        + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + str);
             }
-            String str = gson.toJson(outputParamMap).length() > 1024 ? gson.toJson(outputParamMap).substring(0, 1024) : gson.toJson(outputParamMap);logger.info("\n user：" + userName
-                    + "  url：" + requestPath + "; op_time：" + optTime + " pro_time：" + (endTimeMillis - startTimeMillis) + "ms ;"
-                    + " param：" + gson.toJson(inputParamMap) + ";" + "\n result：" + str);}
         }
         return result;
     }

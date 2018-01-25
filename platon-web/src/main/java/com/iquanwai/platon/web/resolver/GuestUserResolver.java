@@ -42,20 +42,19 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         }
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        String value = CookieUtils.getCookie(request, LoginUserService.WECHAT_TOKEN_COOKIE_NAME);
-//        logger.info("resolver:{}", value);
-        Callback callback = callbackDao.queryByAccessToken(value);
+        String state = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
+        Callback callback = callbackDao.queryByState(state);
         if (callback == null) {
             return null;
         }
+
         String openid = callback.getOpenid();
         Account account;
         try {
             account = accountService.getAccount(openid, false);
-        } catch (NotFollowingException e){
-            account = new Account();
-            account.setOpenid(openid);
-            account.setSubscribe(0);
+        } catch (NotFollowingException e) {
+            // 用Ack去请求微信接口
+            account = accountService.getGuestFromWeixin(openid, callback.getAccessToken());
         }
         if (account == null) {
             return null;

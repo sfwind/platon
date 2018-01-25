@@ -144,6 +144,10 @@ public class ConfigUtils {
         return getValue("ga.id");
     }
 
+    public static String getDefaultUnionId() {
+        return getValue("default.unionId");
+    }
+
     public static String getDefaultOpenid() {
         return getValue("default.openid");
     }
@@ -270,6 +274,10 @@ public class ConfigUtils {
      */
     public static String getShareCodeSuccessMsg() {
         return getValue("share.card.msg");
+    }
+
+    public static String getMessageReplyCode() {
+        return getValue("message.reply.code");
     }
 
     /**

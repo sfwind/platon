@@ -2,7 +2,6 @@ package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -51,11 +50,11 @@ public class AuditionSignupReceiver {
             }
 
             String openid = json.getString("openid");
-            customerMessageService.sendCustomerMessage(openid, "<a href='"+ConfigUtils.domainName()+AUDITION_SUCCESS+"'>"+"点击这里完成预约</a>",
+            customerMessageService.sendCustomerMessage(openid, "<a href='" + ConfigUtils.domainName() + AUDITION_SUCCESS + "'>" + "点击这里完成预约</a>",
                     Constants.WEIXIN_MESSAGE_TYPE.TEXT);
 
             Profile profile = accountService.getProfile(openid);
-            if(profile!=null){
+            if (profile != null) {
                 auditionService.setProfileIdForAuditionMember(openid, profile.getId());
             }
         });
