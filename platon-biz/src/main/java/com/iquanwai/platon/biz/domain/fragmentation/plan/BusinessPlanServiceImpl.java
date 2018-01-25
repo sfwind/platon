@@ -14,6 +14,8 @@ import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +108,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<ImprovementPlan> majorProblem = getMajorListProblem(improvementPlans, majorSchedule, currentMonthMajorProblemIds);
         runningProblems.addAll(majorProblem);
         //本月主修进度
-        schedulePlan.setMajorPercent(completePercent(improvementPlans, currentMonthMajorProblemIds));
+        Pair<Integer, Integer> majorSeriesPair = coursePair(improvementPlans, currentMonthMajorProblemIds);
+        schedulePlan.setMajorComplete(majorSeriesPair.getLeft());
+        schedulePlan.setMajorTotal(majorSeriesPair.getRight());
 
         //辅修课程
         List<CourseSchedule> minorSchedule = courseAllSchedules.stream()
@@ -137,7 +141,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         schedulePlan.setRunningProblem(runningProblems);
 
         //辅修课程进度
-        schedulePlan.setMinorPercent(completePercent(improvementPlans, currentMonthMinorProblemIds));
+        Pair<Integer, Integer> minorSeriesPair = coursePair(improvementPlans, currentMonthMinorProblemIds);
+        schedulePlan.setMinorComplete(minorSeriesPair.getLeft());
+        schedulePlan.setMinorTotal(minorSeriesPair.getRight());
 
         int currentMonth = DateUtils.getMonth(new Date());
         Integer category = accountService.loadUserScheduleCategory(profileId);
@@ -517,7 +523,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     //计算主修或辅修课程进度
-    private int completePercent(List<ImprovementPlan> improvementPlans, List<Integer> currentMonthProblemIds) {
+    private Pair<Integer, Integer> coursePair(List<ImprovementPlan> improvementPlans, List<Integer> currentMonthProblemIds) {
         List<ImprovementPlan> openProblems = improvementPlans.stream()
                 .filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
                 .collect(Collectors.toList());
@@ -541,11 +547,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .filter(improvementPlan -> currentMonthProblemIds.contains(improvementPlan.getProblemId()))
                 .collect(Collectors.summingInt(ImprovementPlan::getCompleteSeries));
 
-        if (completeSeries == 0 || totalSeries == 0) {
-            return 0;
-        }
-
-        return completeSeries * 100 / totalSeries;
+        return new ImmutablePair<>(completeSeries, totalSeries);
     }
 
     //辅修课程列表 = 进行中辅修课程+本月计划辅修课程
