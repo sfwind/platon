@@ -222,6 +222,9 @@ public class AccountServiceImpl implements AccountService {
         url = CommonUtils.placeholderReplace(url, map);
 
         String body = restfulHelper.get(url);
+        if (body == null) {
+            return null;
+        }
         logger.info("请求游客信息结果:{}", body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         Account account = new Account();
