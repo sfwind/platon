@@ -45,8 +45,7 @@ public class BackendController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto,
-                                                   LoginUser loginUser, GuestUser guestUser) {
+    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser, GuestUser guestUser) {
         String data = errorLogDto.getResult();
         StringBuilder sb = new StringBuilder();
         if (data.length() > 700) {
