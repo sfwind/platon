@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.resolver;
 
-import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
@@ -24,9 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 public class GuestUserResolver implements HandlerMethodArgumentResolver {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
-    private CallbackDao callbackDao;
-    @Autowired
     private AccountService accountService;
+    @Autowired
+    private LoginUserService loginUserService;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -43,21 +42,20 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         String state = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
-        Callback callback = callbackDao.queryByState(state);
-        if (callback == null) {
-            return null;
-        }
 
-        String openid = callback.getOpenid();
+        Callback callback = loginUserService.getCallbackByState(state);
         Account account;
         try {
-            account = accountService.getAccount(openid, false);
+            account = accountService.getAccount(callback.getOpenid(), false);
         } catch (NotFollowingException e) {
             // 用Ack去请求微信接口
-            account = accountService.getGuestFromWeixin(openid, callback.getAccessToken());
+            account = accountService.getGuestFromWeixin(callback.getOpenid(), callback.getAccessToken());
         }
         if (account == null) {
-            return null;
+            logger.info("account 为 null， 刷新用户的 accessToken");
+            callback = loginUserService.getCallbackByRefreshToken(state, callback.getRefreshToken());
+            logger.info("新的 callback accessToken 为： {}", callback.getAccessToken());
+            return accountService.getGuestFromWeixin(callback.getOpenid(), callback.getAccessToken());
         } else {
             GuestUser guestUser = new GuestUser();
             guestUser.setOpenId(account.getOpenid());

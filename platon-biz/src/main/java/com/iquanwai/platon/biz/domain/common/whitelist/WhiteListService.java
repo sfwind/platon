@@ -39,7 +39,7 @@ public interface WhiteListService {
     boolean checkRunningRiseMenuWhiteList(Integer profileId);
 
     /**
-     * 点击小课训练营白名单
+     * 点击专项课白名单
      * @param profileId 用户id
      */
     boolean checkCampMenuWhiteList(Integer profileId);
@@ -59,14 +59,14 @@ public interface WhiteListService {
 
     /**
      * 是否进入倒计时页面 <br/>
-     * 只有未开课的小课训练营的用户才能进
+     * 只有未开课的专项课的用户才能进
      */
     boolean isGoCampCountDownPage(Integer profileId);
 
     boolean isGoGroupPromotionCountDownPage(Integer profileId);
 
     /**
-     * 判断一个人是否有正在学习的小课训练营
+     * 判断一个人是否有正在学习的专项课
      * @param profileId
      * @return
      */
