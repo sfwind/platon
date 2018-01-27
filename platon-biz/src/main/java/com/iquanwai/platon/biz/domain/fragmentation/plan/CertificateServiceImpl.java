@@ -179,6 +179,7 @@ public class CertificateServiceImpl implements CertificateService {
         logger.info("riseClassMember 人员获取结束");
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
+            logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
             Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
             List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
             CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
