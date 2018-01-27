@@ -31,7 +31,7 @@ public interface CacheService {
     List<ProblemCatalog> loadProblemCatalogs();
 
     /**
-     * 获取当月训练营配置
+     * 获取当月专项课配置
      * */
     MonthlyCampConfig loadMonthlyCampConfig();
 

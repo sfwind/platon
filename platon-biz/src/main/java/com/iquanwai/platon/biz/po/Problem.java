@@ -44,9 +44,9 @@ public class Problem {
     private List<Chapter> chapterList; // 非db字段 课程表
     private String subCatalog; // 非db字段 子类名
     private String catalog; // 非db字段 类名
-//    private Integer chosenPersonCount; // 非db字段 该门小课学习的人数
-    private Integer monthlyCampMonth; // 非db字段 课程对应训练营月份
     private Integer problemType; //非db字段 课程类型 1-主修 2-辅修
+    private Integer chosenPersonCount; // 该门课程学习的人数
+    private Integer monthlyCampMonth; // 课程对应专项课月份
 
 
     public Problem simple() {
@@ -64,7 +64,6 @@ public class Problem {
         problem.setDone(this.done);
         problem.setSubCatalog(this.subCatalog);
         problem.setCatalog(this.catalog);
-//        problem.setChosenPersonCount(this.chosenPersonCount);
         problem.setAbbreviation(this.abbreviation);
         problem.setPublish(this.publish);
         problem.setLength(this.length);

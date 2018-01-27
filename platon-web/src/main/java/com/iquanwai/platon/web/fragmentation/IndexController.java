@@ -56,15 +56,15 @@ public class IndexController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     // 商学院按钮url
     private static final String INDEX_BUSINESS_SCHOOL_URL = "/rise/static/rise";
-    // 训练营按钮url
+    // 专项课按钮url
     private static final String INDEX_CAMP_URL = "/rise/static/camp";
     // 关注页面
     private static final String SUBSCRIBE_URL = "/subscribe";
     // 内测页面
     private static final String FORBID_URL = "/403.jsp";
-    // 训练营售卖页
+    // 专项课售卖页
     private static final String CAMP_SALE_URL = "/pay/camp";
-    // 训练营倒计时页面
+    // 专项课倒计时页面
     private static final String CAMP_COUNT_DOWN_URL = "/rise/static/camp/count/down";
     // 商学院售卖页
     private static final String BUSINESS_SCHOOL_SALE_URL = "/pay/rise";

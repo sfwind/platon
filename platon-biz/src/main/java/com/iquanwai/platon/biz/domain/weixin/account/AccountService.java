@@ -14,6 +14,11 @@ import java.util.List;
  * Created by justin on 16/8/10.
  */
 public interface AccountService {
+
+    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String REFRESH_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid={appid}&grant_type=refresh_token&refresh_token={refresh_token}";
+
     /**
      * 根据openid获取用户的详细信息
      */
@@ -87,9 +92,6 @@ public interface AccountService {
      * 查看证书时提交用户信息
      */
     void submitCertificateProfile(Profile profile);
-
-    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
-    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
 
@@ -207,7 +209,7 @@ public interface AccountService {
     RiseMember getValidRiseMember(Integer profileId);
 
     /**
-     * 是否参加过商学院、训练营、试听课、"一带二"活动
+     * 是否参加过商学院、专项课、试听课、"一带二"活动
      */
     boolean isPreviewNewUser(Integer profileId);
 

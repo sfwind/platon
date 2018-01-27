@@ -350,29 +350,6 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));
         data.put("remark", new TemplateMessage.Keyword("\n点击卡片领取！"));
         templateMessageService.sendMessage(templateMessage);
-
-
-        // 非会员，限免课程 TODO  删除这边时候，记得开放上面 TODO
-        // 发送我的消息，发送图片
-        if (!profile.getRiseMember().equals(Constants.RISE_MEMBER.MEMBERSHIP)) {
-            TemplateMessage tempMessage = new TemplateMessage();
-            tempMessage.setTouser(profile.getOpenid());
-            Map<String, TemplateMessage.Keyword> tempDate = Maps.newHashMap();
-            tempMessage.setData(tempDate);
-            tempMessage.setUrl("https://shimo.im/doc/892xxjNdSRA3UTSG?r=L8QE82/");
-            tempMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
-            tempDate.put("first", new TemplateMessage.Keyword("这么赞的训练营，我们真的只能免费这一次！【圈外同学】开放迷你训练营，你要不要来？\n"));
-            tempDate.put("keyword1", new TemplateMessage.Keyword("【圈外同学】迷你训练营"));
-            tempDate.put("keyword2", new TemplateMessage.Keyword("点击“详情”，按照步骤操作入群"));
-            tempDate.put("keyword3", new TemplateMessage.Keyword("2017年9月19日-2017年9月20日"));
-            tempDate.put("remark", new TemplateMessage.Keyword("\n迷你训练营为【圈外同学】¥299的“训练营”的精华版，本次免费开放，等你来加入～\n" +
-                    "名额限500人，先到先得～"));
-            templateMessageService.sendMessage(tempMessage);
-
-
-            String innerMessage = "【圈外同学】迷你训练营邀你免费入群体验——为期4日魔鬼训练营，敢来的戳这里入群～";
-            messageService.sendMessage(innerMessage, String.valueOf(profile.getId()), MessageService.SYSTEM_MESSAGE, "https://shimo.im/doc/892xxjNdSRA3UTSG?r=L8QE82/");
-        }
     }
 
     // 记录 PromotionLevel 层级关系

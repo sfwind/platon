@@ -10,6 +10,9 @@ import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.RestfulHelper;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,6 +37,8 @@ public class LoginUserService {
     private CallbackDao callbackDao;
     @Autowired
     private ProfileDao profileDao;
+    @Autowired
+    private RestfulHelper restfulHelper;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -79,6 +84,25 @@ public class LoginUserService {
 
     public Callback getCallbackByState(String state) {
         return callbackDao.queryByState(state);
+    }
+
+    public Callback getCallbackByRefreshToken(String state, String refreshToken) {
+        Callback callback = callbackDao.queryByState(state);
+        String url = AccountService.REFRESH_TOKEN_URL;
+        Map<String, String> map = Maps.newHashMap();
+        map.put("appid", ConfigUtils.getAppid());
+        map.put("refresh_token", refreshToken);
+        logger.info("请求用户 accessToken, state:{}", state);
+        url = CommonUtils.placeholderReplace(url, map);
+        String body = restfulHelper.get(url);
+        logger.info("请求用户 accessToken 结果: {}", body);
+        Map<String, Object> result = CommonUtils.jsonToMap(body);
+        String accessToken = result.get("access_token").toString();
+        String newRefreshToken = result.get("refresh_token").toString();
+        callback.setAccessToken(accessToken);
+        callback.setRefreshToken(newRefreshToken);
+        callbackDao.updateUserInfo(callback);
+        return callback;
     }
 
     public LoginUser getLoginUserByRequest(HttpServletRequest request) {

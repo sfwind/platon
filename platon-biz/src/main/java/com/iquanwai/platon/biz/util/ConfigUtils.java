@@ -276,6 +276,10 @@ public class ConfigUtils {
         return getValue("share.card.msg");
     }
 
+    public static String getMessageReplyCode() {
+        return getValue("message.reply.code");
+    }
+
     /**
      * 1、领取卡券通知
      */
@@ -378,7 +382,7 @@ public class ConfigUtils {
     }
 
     /**
-     * 获取训练营宣传 banner 连接
+     * 获取专项课宣传 banner 连接
      */
     public static String getCampProblemBanner() {
         return getValue("camp.problem.banner");

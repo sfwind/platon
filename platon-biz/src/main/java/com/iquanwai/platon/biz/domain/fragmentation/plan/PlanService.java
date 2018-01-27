@@ -35,7 +35,7 @@ public interface PlanService {
     Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId);
 
     /**
-     * 检查是否能够选训练营
+     * 检查是否能够选专项课
      *
      * @param problemId 课程id
      * @param profileId 用户id
@@ -159,7 +159,7 @@ public interface PlanService {
     List<ImprovementPlan> getPlanList(Integer profileId);
 
     /**
-     * 获取当前正在学习月份的能够学习的训练营课程内容
+     * 获取当前正在学习月份的能够学习的专项课课程内容
      */
     List<ImprovementPlan> getCurrentCampPlanList(Integer profileId);
 

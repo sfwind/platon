@@ -335,7 +335,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/region")
-    public ResponseEntity<Map<String, Object>> loadRegion(LoginUser loginUser) {
+    public ResponseEntity<Map<String, Object>> loadRegion(GuestUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<Region> provinces = accountService.loadAllProvinces();
         List<Region> cities = accountService.loadCities();

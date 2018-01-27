@@ -31,7 +31,7 @@ public class RestfulHelper {
     private Logger logger = LoggerFactory.getLogger(RestfulHelper.class);
 
     public String post(String requestUrl, String json) {
-        if(StringUtils.isNotEmpty(requestUrl) && StringUtils.isNotEmpty(json)) {
+        if (StringUtils.isNotEmpty(requestUrl) && StringUtils.isNotEmpty(json)) {
             String accessToken = accessTokenService.getAccessToken();
             String url = requestUrl.replace("{access_token}", accessToken);
             Request request = new Request.Builder()
@@ -46,7 +46,7 @@ public class RestfulHelper {
                     if (CommonUtils.isError(body)) {
                         logger.error("execute {} return error, error message is {}", url, body);
                     }
-                }catch (WeixinException e){
+                } catch (WeixinException e) {
                     //refresh token and try again
                     accessToken = accessTokenService.refreshAccessToken(false);
                     url = requestUrl.replace("{access_token}", accessToken);
@@ -69,8 +69,8 @@ public class RestfulHelper {
     }
 
     public String postXML(String requestUrl, String xml) {
-        logger.info("requestUrl: {}\nxml: {}",requestUrl, xml);
-        if(StringUtils.isNotEmpty(requestUrl) && StringUtils.isNotEmpty(xml)) {
+        logger.info("requestUrl: {}\nxml: {}", requestUrl, xml);
+        if (StringUtils.isNotEmpty(requestUrl) && StringUtils.isNotEmpty(xml)) {
             Request request = new Request.Builder()
                     .url(requestUrl)
                     .post(RequestBody.create(XML, xml))
@@ -79,9 +79,9 @@ public class RestfulHelper {
             try {
                 Response response = client.newCall(request).execute();
                 String body = response.body().string();
-//                if(CommonUtils.isError(body)){
-//                    logger.error("execute {} return error, error message is {}", requestUrl, body);
-//                }
+                // if(CommonUtils.isError(body)){
+                //     logger.error("execute {} return error, error message is {}", requestUrl, body);
+                // }
                 logger.info("body:{}", body);
                 return body;
             } catch (Exception e) {
@@ -93,9 +93,9 @@ public class RestfulHelper {
 
 
     public String get(String requestUrl) {
-        if(StringUtils.isNotEmpty(requestUrl)) {
+        if (StringUtils.isNotEmpty(requestUrl)) {
             String accessToken = accessTokenService.getAccessToken();
-            logger.info("accessToken is {}",accessToken);
+            logger.info("accessToken is {}", accessToken);
             String url = requestUrl.replace("{access_token}", accessToken);
             Request request = new Request.Builder()
                     .url(url)
@@ -108,13 +108,11 @@ public class RestfulHelper {
                     if (CommonUtils.isError(body)) {
                         logger.error("execute {} return error, error message is {}", url, body);
                     }
-                }catch (WeixinException e){
+                } catch (WeixinException e) {
                     //refresh token and try again
                     accessToken = accessTokenService.refreshAccessToken(false);
                     url = requestUrl.replace("{access_token}", accessToken);
-                    request = new Request.Builder()
-                            .url(url)
-                            .build();
+                    request = new Request.Builder().url(url).build();
                     response = client.newCall(request).execute();
                     body = response.body().string();
                     if (CommonUtils.isError(body)) {
@@ -130,7 +128,7 @@ public class RestfulHelper {
     }
 
     public ResponseBody getPlain(String requestUrl) {
-        if(StringUtils.isNotEmpty(requestUrl)) {
+        if (StringUtils.isNotEmpty(requestUrl)) {
             Request request = new Request.Builder()
                     .url(requestUrl)
                     .build();
@@ -147,11 +145,11 @@ public class RestfulHelper {
     }
 
     public String uploadImage(String requestUrl, File file, String imageType) {
-        if(StringUtils.isNotEmpty(requestUrl)) {
+        if (StringUtils.isNotEmpty(requestUrl)) {
             String accessToken = accessTokenService.getAccessToken();
             String url = requestUrl.replace("{access_token}", accessToken);
 
-            RequestBody fileBody = RequestBody.create(MediaType.parse("image/"+imageType), file);
+            RequestBody fileBody = RequestBody.create(MediaType.parse("image/" + imageType), file);
 
             RequestBody requestBody = new MultipartBody.Builder()
                     .addFormDataPart("media", file.getPath(), fileBody)
@@ -170,7 +168,7 @@ public class RestfulHelper {
                     if (CommonUtils.isError(body)) {
                         logger.error("execute {} return error, error message is {}", url, body);
                     }
-                }catch (WeixinException e){
+                } catch (WeixinException e) {
                     //refresh token and try again
                     accessToken = accessTokenService.refreshAccessToken(false);
                     url = requestUrl.replace("{access_token}", accessToken);

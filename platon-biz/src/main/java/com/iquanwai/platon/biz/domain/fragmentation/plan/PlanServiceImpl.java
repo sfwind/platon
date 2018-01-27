@@ -412,12 +412,12 @@ public class PlanServiceImpl implements PlanService {
 
         if (!problemIds.contains(problemId)) {
             tag = false;
-            checkStr = "报名训练营课程不是当前开发的训练营课程";
+            checkStr = "报名专项课不是当前开发的专项课";
         } else {
             Profile profile = accountService.getProfile(profileId);
             if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
                 tag = false;
-                checkStr = "非会员用户不能在此开启训练营课程";
+                checkStr = "非会员用户不能在此开启专项课";
             }
         }
         return new MutablePair<>(tag, checkStr);
