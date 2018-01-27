@@ -173,11 +173,18 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void generateCertificate(Integer year, Integer month, Integer problemId) {
+    public void generateCertificate(Integer year, Integer month) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
         List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
 
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseClassMemberProfileIds, problemId);
+        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        riseClassMemberProfileIds.forEach(classMemberProfileId -> {
+            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
+            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
+            improvementPlans.add(improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId()));
+        });
+
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
@@ -241,7 +248,7 @@ public class CertificateServiceImpl implements CertificateService {
                     if (riseClassMember != null) {
                         RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
                         if (existRiseCertificate == null) {
-                            Problem problem = cacheService.getProblem(problemId);
+                            Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
                             // 如果允许生成训练营结业证书，则生成证书
                             RiseCertificate riseCertificate = new RiseCertificate();
                             riseCertificate.setProfileId(profileId);
@@ -351,21 +358,21 @@ public class CertificateServiceImpl implements CertificateService {
                 if (generateFullAttendanceCoupon) {
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
-                   // RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
-                   // if (riseClassMember != null) {
-                        FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
-                        if (existFullAttendanceReward == null) {
-                            // 如果允许生成训练营结业证书，则生成证书
-                            FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
-                            fullAttendanceReward.setProfileId(profileId);
+                    // RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
+                    // if (riseClassMember != null) {
+                    FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
+                    if (existFullAttendanceReward == null) {
+                        // 如果允许生成训练营结业证书，则生成证书
+                        FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
+                        fullAttendanceReward.setProfileId(profileId);
 //                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
 //                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
 //                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
-                            fullAttendanceReward.setYear(year);
-                            fullAttendanceReward.setMonth(month);
-                            fullAttendanceReward.setAmount(199.00);
-                            fullAttendanceRewardDao.insert(fullAttendanceReward);
-                  //      }
+                        fullAttendanceReward.setYear(year);
+                        fullAttendanceReward.setMonth(month);
+                        fullAttendanceReward.setAmount(199.00);
+                        fullAttendanceRewardDao.insert(fullAttendanceReward);
+                        //      }
                     }
                 }
             }
@@ -375,8 +382,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 判断单个用户是否能够获得全勤券
-     *
-     * @param practicePlanId
      */
     @Override
     public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
@@ -517,10 +522,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 发送该用户对应的全勤优惠券
-     *
-     * @param year
-     * @param month
-     * @param profileId
      */
     private void sendSingleFullAttendanceCoupon(int year, int month, int profileId) {
         FullAttendanceReward fullAttendanceReward = fullAttendanceRewardDao.loadUnNotifiedByYearMonthProfileId(year, month, profileId);
@@ -814,7 +815,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
-     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
@@ -839,22 +839,22 @@ public class CertificateServiceImpl implements CertificateService {
 
         Integer year = riseCertificate.getYear();
         Integer month = riseCertificate.getMonth();
-        String problemName = null;
+        String problemName = riseCertificate.getProblemName();
 
-        Integer category = accountService.loadUserScheduleCategory(profile.getId());
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
-        Integer problemId = courseScheduleDefault.getProblemId();
-        if (problemId != null) {
-            Problem problem = cacheService.getProblem(problemId);
-            if (problem != null) {
-                problemName = problem.getProblem();
-            }
-        }
+        // Integer category = accountService.loadUserScheduleCategory(profile.getId());
+        // List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+        // CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
+        // Integer problemId = courseScheduleDefault.getProblemId();
+        // if (problemId != null) {
+        //     Problem problem = cacheService.getProblem(problemId);
+        //     if (problem != null) {
+        //         problemName = problem.getProblem();
+        //     }
+        // }
 
-        if (problemName == null) {
-            return new MutablePair<>(false, null);
-        }
+        // if (problemName == null) {
+        //     return new MutablePair<>(false, null);
+        // }
 
         Integer groupNo = riseCertificate.getGroupNo();
         String certificateNo = riseCertificate.getCertificateNo();

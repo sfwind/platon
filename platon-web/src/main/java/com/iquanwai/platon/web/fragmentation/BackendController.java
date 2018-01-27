@@ -118,9 +118,8 @@ public class BackendController {
     public ResponseEntity<Map<String, Object>> generateCertificate(@RequestBody RiseCertificate riseCertificate) {
         Integer month = riseCertificate.getMonth();
         Integer year = riseCertificate.getYear();
-        Integer problemId = riseCertificate.getProblemId();
         ThreadPool.execute(() ->
-                certificateService.generateCertificate(year, month, problemId)
+                certificateService.generateCertificate(year, month)
         );
         return WebUtils.result("正在进行中");
     }
