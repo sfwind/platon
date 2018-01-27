@@ -197,6 +197,7 @@ public class CertificateServiceImpl implements CertificateService {
         certificateNoSequence.add(1);
 
         riseClassMemberPlanIds.forEach(planId -> {
+            logger.info("开始处理证书学习计划：{}", planId);
             boolean generateCertificateTag = true;
 
             List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
