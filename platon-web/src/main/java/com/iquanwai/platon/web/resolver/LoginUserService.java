@@ -95,7 +95,6 @@ public class LoginUserService {
         logger.info("请求用户 accessToken, state:{}", state);
         url = CommonUtils.placeholderReplace(url, map);
         String body = restfulHelper.get(url);
-        logger.info("请求用户 accessToken 结果: {}", body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         String accessToken = result.get("access_token").toString();
         String newRefreshToken = result.get("refresh_token").toString();
@@ -109,23 +108,19 @@ public class LoginUserService {
         LoginUser.Platform platform = getPlatformType(request);
         // 接口请求，必须存在平台信息
         Assert.notNull(platform);
-        logger.info("获取 loginUser ：" + platform);
         Callback callback = new Callback();
         switch (platform) {
             case PC:
-                logger.info("pc");
                 String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(pcState)) return null;
                 callback.setState(pcState);
                 break;
             case WE_MOBILE:
-                logger.info("mobile");
                 String weMobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(weMobileState)) return null;
                 callback.setState(weMobileState);
                 break;
             case WE_MINI:
-                logger.info("mini");
                 String weMiniState = request.getHeader(WE_MINI_STATE_HEADER_NAME);
                 if (StringUtils.isEmpty(weMiniState)) return null;
                 callback.setState(weMiniState);
@@ -150,16 +145,13 @@ public class LoginUserService {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
         if (platformHeader == null) {
             // 资源请求，没有 platform header，查看是否存在 cookie
-            logger.info("header 中没有 platform 参数");
             String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
             if (pcState != null) {
-                logger.info("pcState: {}", pcState);
                 platformHeader = LoginUser.PlatformHeaderValue.PC_HEADER;
             }
 
             String mobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
             if (mobileState != null) {
-                logger.info("mobileState: {}", mobileState);
                 platformHeader = LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER;
             }
         }
@@ -167,16 +159,12 @@ public class LoginUserService {
             // header 中存在 platform 值，判断是哪个平台
             switch (platformHeader) {
                 case LoginUser.PlatformHeaderValue.PC_HEADER:
-                    logger.info("进入 pc");
                     return LoginUser.Platform.PC;
                 case LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER:
-                    logger.info("进入 mobile");
                     return LoginUser.Platform.WE_MOBILE;
                 case LoginUser.PlatformHeaderValue.WE_MINI_HEADER:
-                    logger.info("进入 mini");
                     return LoginUser.Platform.WE_MINI;
                 default:
-                    logger.info("默认 pc");
                     return LoginUser.Platform.PC;
             }
         } else {
@@ -199,7 +187,6 @@ public class LoginUserService {
         LoginUser loginUser;
 
         if (loginUserCacheMap.containsKey(state)) {
-            logger.info("缓存中存在用户对象");
             loginUser = loginUserCacheMap.get(state).get();
             if (loginUser == null) {
                 // 软连接，存储对象被回收
@@ -210,7 +197,6 @@ public class LoginUserService {
                 loginUserCacheMap.put(state, new SoftReference<>(loginUser));
             }
         } else {
-            logger.info("缓存中不存在用户对象，从数据库获取");
             // 缓存中不存在，直接从数据库中读取数据
             callback = callbackDao.queryByState(state);
             if (callback == null) {
@@ -232,8 +218,6 @@ public class LoginUserService {
             // 将最新数据放进缓存
             loginUserCacheMap.put(state, new SoftReference<>(loginUser));
         }
-
-        logger.info("返回用户对象: {}, {}", loginUser.getId(), loginUser.hashCode());
         return loginUser;
     }
 

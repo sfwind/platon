@@ -40,7 +40,6 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
-        logger.info("进入接口拦截器");
         LoginUser.Platform platform = loginUserService.getPlatformType(request);
 
         if (platform == null) {
