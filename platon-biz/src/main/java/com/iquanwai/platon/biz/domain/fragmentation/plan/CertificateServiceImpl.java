@@ -176,7 +176,7 @@ public class CertificateServiceImpl implements CertificateService {
     public void generateCertificate(Integer year, Integer month) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
         List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
-        logger.info("riseClassMember 人员获取结束");
+        logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
