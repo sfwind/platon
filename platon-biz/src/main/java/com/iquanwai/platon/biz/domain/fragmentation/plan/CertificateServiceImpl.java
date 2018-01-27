@@ -176,15 +176,19 @@ public class CertificateServiceImpl implements CertificateService {
     public void generateCertificate(Integer year, Integer month) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
         List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
-
+        logger.info("riseClassMember 人员获取结束");
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
             List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
             CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
-            improvementPlans.add(improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId()));
+            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
+            if (selfPlan != null) {
+                improvementPlans.add(selfPlan);
+            }
         });
 
+        logger.info("improvementPlan 获取结束");
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
