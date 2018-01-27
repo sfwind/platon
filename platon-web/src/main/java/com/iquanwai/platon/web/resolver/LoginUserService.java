@@ -38,9 +38,8 @@ public class LoginUserService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String PC_STATE_COOKIE_NAME = "_qt";
-    public static final String WE_CHAT_STATE_COOKIE_NAME = "_act";
+    public static final String MOBILE_STATE_COOKIE_NAME = "_act";
     public static final String WE_MINI_STATE_HEADER_NAME = "sk";
-    public static final String ACCESS_ASK_TOKEN_COOKIE_NAME = "_ask";
 
     private static final String PLATFORM_HEADER_NAME = "platform";
 
@@ -94,9 +93,9 @@ public class LoginUserService {
                 if (StringUtils.isEmpty(pcState)) return null;
                 callback.setState(pcState);
                 break;
-            case WE_MOBILE:
+            case MOBILE:
                 logger.info("mobile");
-                String weMobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
+                String weMobileState = CookieUtils.getCookie(request, MOBILE_STATE_COOKIE_NAME);
                 if (StringUtils.isEmpty(weMobileState)) return null;
                 callback.setState(weMobileState);
                 break;
@@ -125,7 +124,7 @@ public class LoginUserService {
     public LoginUser.Platform getPlatformType(HttpServletRequest request) {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
         if (platformHeader == null) {
-            // 资源请求，没有 platform header，查看是否存在 cookie
+            // 资源请求，没有 platform header，查看 cookie 值
             logger.info("header 中没有 platform 参数");
             String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
             if (pcState != null) {
@@ -133,7 +132,7 @@ public class LoginUserService {
                 platformHeader = LoginUser.PlatformHeaderValue.PC_HEADER;
             }
 
-            String mobileState = CookieUtils.getCookie(request, WE_CHAT_STATE_COOKIE_NAME);
+            String mobileState = CookieUtils.getCookie(request, MOBILE_STATE_COOKIE_NAME);
             if (mobileState != null) {
                 logger.info("mobileState: {}", mobileState);
                 platformHeader = LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER;
@@ -147,7 +146,7 @@ public class LoginUserService {
                     return LoginUser.Platform.PC;
                 case LoginUser.PlatformHeaderValue.WE_MOBILE_HEADER:
                     logger.info("进入 mobile");
-                    return LoginUser.Platform.WE_MOBILE;
+                    return LoginUser.Platform.MOBILE;
                 case LoginUser.PlatformHeaderValue.WE_MINI_HEADER:
                     logger.info("进入 mini");
                     return LoginUser.Platform.WE_MINI;

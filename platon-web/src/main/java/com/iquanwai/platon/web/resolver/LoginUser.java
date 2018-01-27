@@ -32,8 +32,7 @@ public class LoginUser {
     }
 
     public enum Platform {
-        PC(1), WE_MOBILE(2), WE_MINI(3);
-
+        PC(1), MOBILE(2), WE_MINI(3);
         private int value;
 
         Platform(int value) {
@@ -48,11 +47,11 @@ public class LoginUser {
     /** 三种平台对应 header 中 platform 的值 */
     public interface PlatformHeaderValue {
         /** pc */
-        public String PC_HEADER = "pc";
+        String PC_HEADER = "pc";
         /** 移动端 */
-        public String WE_MOBILE_HEADER = "we_mobile";
+        String WE_MOBILE_HEADER = "we_mobile";
         /** 小程序 */
-        public String WE_MINI_HEADER = "we_mini";
+        String WE_MINI_HEADER = "we_mini";
     }
 
 }

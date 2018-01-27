@@ -57,8 +57,8 @@ public class WeixinLoginHandlerInterceptor extends HandlerInterceptorAdapter {
                     } else {
                         return true;
                     }
-                case WE_MOBILE:
-                    String mobileState = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
+                case MOBILE:
+                    String mobileState = CookieUtils.getCookie(request, LoginUserService.MOBILE_STATE_COOKIE_NAME);
                     Callback callback = loginUserService.getCallbackByState(mobileState);
                     if (callback == null) {
                         WebUtils.auth(request, response);
