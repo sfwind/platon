@@ -93,21 +93,23 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public boolean checkCampMenuWhiteList(Integer profileId) {
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        Long risememberCount = riseMembers.stream().filter(riseMember ->
-                        // 半年/一年 精英版
-                        riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
-        ).count();
-        // 如果转化成商学院 跳转专项课售卖页
-        if (risememberCount > 0) {
-            return false;
-        }
+//        Long risememberCount = riseMembers.stream().filter(riseMember ->
+//                        // 半年/一年 精英版
+//                        riseMember.getMemberTypeId() == RiseMember.ELITE ||
+//                                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE
+//        ).count();
+//        // 如果转化成商学院 跳转专项课售卖页
+//        if (risememberCount > 0) {
+//            return false;
+//        }
 
-        // 专项课
         Long campCount = riseMembers.stream()
-                .filter(riseMember -> riseMember.getMemberTypeId() == RiseMember.CAMP
-                        && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) <= 0)
+                // 专项课
+                .filter(riseMember -> riseMember.getMemberTypeId() == RiseMember.CAMP)
+                // 已经开班
+                .filter(riseMember -> riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) <= 0)
                 .count();
+
         return campCount.intValue() > 0;
     }
 
