@@ -433,18 +433,16 @@ public class CertificateServiceImpl implements CertificateService {
                             logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            //RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
-                            //判断是否是商学院用户
-                            if (riseMemberService.isValidElite(profileId)) {
-                                logger.info("该用户是商学院用户");
+                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
+                            Boolean validElite = riseMemberService.isValidElite(profileId);
+                            //判断是否是当月训练营或者商学院用户
+                            if (riseClassMember != null || validElite) {
+                                logger.info("是商学院或者当月训练营用户");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
-//                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
-//                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-//                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                                     fullAttendanceReward.setYear(year);
                                     fullAttendanceReward.setMonth(month);
                                     fullAttendanceReward.setAmount(199.00);
