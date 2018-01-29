@@ -117,9 +117,10 @@ public class BackendController {
     public ResponseEntity<Map<String, Object>> generateCertificate(@RequestBody RiseCertificate riseCertificate) {
         Integer month = riseCertificate.getMonth();
         Integer year = riseCertificate.getYear();
-        Integer problemId = riseCertificate.getProblemId();
-        ThreadPool.execute(() ->
-                certificateService.generateCertificate(year, month, problemId)
+        ThreadPool.execute(() -> {
+                    logger.info("开始进入生成证书线程");
+                    certificateService.generateCertificate(year, month);
+                }
         );
         return WebUtils.result("正在进行中");
     }
@@ -134,9 +135,8 @@ public class BackendController {
     public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(@RequestBody FullAttendanceReward fullAttendanceReward) {
         Integer month = fullAttendanceReward.getMonth();
         Integer year = fullAttendanceReward.getYear();
-        Integer problemId = fullAttendanceReward.getProblemId();
         ThreadPool.execute(() ->
-                certificateService.generateFullAttendanceCoupon(year, month, problemId)
+                certificateService.generateFullAttendanceCoupon(year, month)
         );
         return WebUtils.result("正在进行中");
     }

@@ -100,5 +100,18 @@ public class RiseMemberServiceImpl implements RiseMemberService {
         return validRiseMembers;
     }
 
+    @Override
+    public Boolean isValidCamp(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+
+        if (riseMember != null) {
+            Integer typeId = riseMember.getMemberTypeId();
+            if (typeId.equals(RiseMember.CAMP)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

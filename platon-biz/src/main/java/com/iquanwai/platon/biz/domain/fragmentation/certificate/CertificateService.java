@@ -35,14 +35,14 @@ public interface CertificateService {
      */
     int updateDownloadTime(String certificateNo);
 
-    void generateCertificate(Integer year, Integer month, Integer problemId);
+    void generateCertificate(Integer year, Integer month);
 
     /**
      * 将 RiseCertificate 表中没有上传图片的，生成图片并且上传到七牛云
      */
     void uploadCertificateToQiNiu(Boolean isOnline);
 
-    void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);
+    void generateFullAttendanceCoupon(Integer year, Integer month);
 
     /**
      * 生成单个全勤奖

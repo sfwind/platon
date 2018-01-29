@@ -146,11 +146,22 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void generateCertificate(Integer year, Integer month, Integer problemId) {
+    public void generateCertificate(Integer year, Integer month) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
         List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
-
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseClassMemberProfileIds, problemId);
+        logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
+        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        riseClassMemberProfileIds.forEach(classMemberProfileId -> {
+            logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
+            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
+            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
+            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
+            if (selfPlan != null) {
+                improvementPlans.add(selfPlan);
+            }
+        });
+        logger.info("improvementPlan 获取结束");
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
@@ -158,92 +169,98 @@ public class CertificateServiceImpl implements CertificateService {
         certificateNoSequence.add(1);
 
         riseClassMemberPlanIds.forEach(planId -> {
-            boolean generateCertificateTag = true;
+            logger.info("开始处理证书学习计划：{}", planId);
+            try {
+                boolean generateCertificateTag = true;
 
-            List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-            if (practicePlans.size() != 0) {
-                // 应该完成的知识点、选择题中未完成的题数
-                Long unCompleteNecessaryCountLong = practicePlans.stream()
-                        .filter(practicePlan ->
-                                PracticePlan.WARM_UP == practicePlan.getType() || PracticePlan.WARM_UP_REVIEW == practicePlan.getType()
-                                        || PracticePlan.KNOWLEDGE == practicePlan.getType() || PracticePlan.KNOWLEDGE_REVIEW == practicePlan.getType())
-                        .filter(practicePlan ->
-                                practicePlan.getStatus() == 0)
-                        .count();
-                if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-                    // 必须完成知识点、选择题的题数大于 0，不发结课证书
-                    generateCertificateTag = false;
-                } else {
-                    // 所有必须完成的知识点、选择题都已经完成
-                    // 对应用题完成情况进行复查
-                    List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                            .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
-                            .collect(Collectors.toList());
-                    List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
-                    List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
-                    Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
-
-                    // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
-                    Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
-
-                    // Plan 中每节至少优质完成一道应用题的小节数
-                    Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
-                        List<Integer> practiceIds = applicationPracticePlans.stream()
-                                .filter(practicePlan -> practicePlan.getSeries().equals(series))
-                                .map(PracticePlan::getPracticeId)
-                                .map(Integer::parseInt)
-                                .collect(Collectors.toList());
-                        // 每个 Series 中至少存在一节内容完成
-                        Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
-                            ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
-                            return applicationSubmit != null && (applicationSubmit.getContent().contains("img") || applicationSubmit.getLength() > 10);
-                        }).count();
-                        return seriesApplicationCheckLong.intValue() > 0;
-                    }).count();
-
-                    if (planApplicationCheckLong.intValue() != seriesSet.size()) {
+                List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+                if (practicePlans.size() != 0) {
+                    // 应该完成的知识点、选择题中未完成的题数
+                    Long unCompleteNecessaryCountLong = practicePlans.stream()
+                            .filter(practicePlan ->
+                                    PracticePlan.WARM_UP == practicePlan.getType() || PracticePlan.WARM_UP_REVIEW == practicePlan.getType()
+                                            || PracticePlan.KNOWLEDGE == practicePlan.getType() || PracticePlan.KNOWLEDGE_REVIEW == practicePlan.getType())
+                            .filter(practicePlan ->
+                                    practicePlan.getStatus() == 0)
+                            .count();
+                    if ((unCompleteNecessaryCountLong.intValue()) > 0) {
+                        // 必须完成知识点、选择题的题数大于 0，不发结课证书
                         generateCertificateTag = false;
+                    } else {
+                        // 所有必须完成的知识点、选择题都已经完成
+                        // 对应用题完成情况进行复查
+                        List<PracticePlan> applicationPracticePlans = practicePlans.stream()
+                                .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
+                                .collect(Collectors.toList());
+                        List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                        List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
+                        Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
+
+                        // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
+                        Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
+
+                        // Plan 中每节至少优质完成一道应用题的小节数
+                        Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
+                            List<Integer> practiceIds = applicationPracticePlans.stream()
+                                    .filter(practicePlan -> practicePlan.getSeries().equals(series))
+                                    .map(PracticePlan::getPracticeId)
+                                    .map(Integer::parseInt)
+                                    .collect(Collectors.toList());
+                            // 每个 Series 中至少存在一节内容完成
+                            Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
+                                ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
+                                return applicationSubmit != null && (applicationSubmit.getContent().contains("img") || applicationSubmit.getLength() > 10);
+                            }).count();
+                            return seriesApplicationCheckLong.intValue() > 0;
+                        }).count();
+
+                        if (planApplicationCheckLong.intValue() != seriesSet.size()) {
+                            generateCertificateTag = false;
+                        }
                     }
-                }
 
-                if (generateCertificateTag) {
-                    ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
-                    Integer profileId = improvementPlan.getProfileId();
+                    if (generateCertificateTag) {
+                        ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
+                        Integer profileId = improvementPlan.getProfileId();
 
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
-                    if (riseClassMember != null) {
-                        RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
-                        if (existRiseCertificate == null) {
-                            Problem problem = cacheService.getProblem(problemId);
-                            // 如果允许生成训练营结业证书，则生成证书
-                            RiseCertificate riseCertificate = new RiseCertificate();
-                            riseCertificate.setProfileId(profileId);
-                            riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
-                            StringBuilder certificateNoBuilder = new StringBuilder("IQW");
-                            certificateNoBuilder.append(String.format("%02d", Constants.CERTIFICATE.TYPE.ORDINARY));
-                            certificateNoBuilder.append(riseClassMember.getMemberId());
-                            certificateNoBuilder.append(String.format("%02d", month));
-                            Integer noSequence = certificateNoSequence.get(0);
-                            certificateNoSequence.clear();
-                            certificateNoSequence.add(noSequence + 1);
-                            certificateNoBuilder.append(String.format("%03d", noSequence));
-                            certificateNoBuilder.append(String.format("%02d", RandomUtils.nextInt(0, 100)));
-                            riseCertificate.setCertificateNo(certificateNoBuilder.toString());
-                            riseCertificate.setYear(year);
-                            riseCertificate.setMonth(month);
-                            riseCertificate.setGroupNo(Integer.parseInt(riseClassMember.getGroupId()));
-                            riseCertificate.setProblemName(problem.getProblem());
-                            int generateId = riseCertificateDao.insert(riseCertificate);
+                        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
+                        if (riseClassMember != null) {
+                            RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
+                            if (existRiseCertificate == null) {
+                                Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+                                // 如果允许生成训练营结业证书，则生成证书
+                                RiseCertificate riseCertificate = new RiseCertificate();
+                                riseCertificate.setProfileId(profileId);
+                                riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
+                                StringBuilder certificateNoBuilder = new StringBuilder("IQW");
+                                certificateNoBuilder.append(String.format("%02d", Constants.CERTIFICATE.TYPE.ORDINARY));
+                                certificateNoBuilder.append(riseClassMember.getMemberId());
+                                certificateNoBuilder.append(String.format("%02d", month));
+                                Integer noSequence = certificateNoSequence.get(0);
+                                certificateNoSequence.clear();
+                                certificateNoSequence.add(noSequence + 1);
+                                certificateNoBuilder.append(String.format("%03d", noSequence));
+                                certificateNoBuilder.append(String.format("%02d", RandomUtils.nextInt(0, 100)));
+                                riseCertificate.setCertificateNo(certificateNoBuilder.toString());
+                                riseCertificate.setYear(year);
+                                riseCertificate.setMonth(month);
+                                riseCertificate.setGroupNo(Integer.parseInt(riseClassMember.getGroupId()));
+                                riseCertificate.setProblemName(problem.getProblem());
+                                int generateId = riseCertificateDao.insert(riseCertificate);
 
-                            if (generateId > 0) {
-                                Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
-                                if (pair.getLeft()) {
-                                    riseCertificateDao.updateImageUrl(generateId, ConfigUtils.getPicturePrefix() + pair.getRight());
+                                if (generateId > 0) {
+                                    Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
+                                    if (pair.getLeft()) {
+                                        riseCertificateDao.updateImageUrl(generateId, ConfigUtils.getPicturePrefix() + pair.getRight());
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            } catch (Exception e) {
+                logger.error("证书处理异常 planId: {}", planId);
+                logger.info(e.getLocalizedMessage(), e);
             }
         });
         logger.info("证书生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
@@ -263,84 +280,92 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId) {
-//        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
-//        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
+    public void generateFullAttendanceCoupon(Integer year, Integer month) {
+        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
+        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
 
-        //找出所有的商学院会员
-        List<RiseMember> riseMembers = riseMemberService.getValidElites();
-        List<Integer> riseMemberProfileIds = riseMembers.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+        logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
+        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        riseClassMemberProfileIds.forEach(classMemberProfileId -> {
+            logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
+            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
+            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
+            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
+            if (selfPlan != null) {
+                improvementPlans.add(selfPlan);
+            }
+        });
+        logger.info("improvementPlan 获取结束");
 
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseMemberProfileIds, problemId);
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
         riseClassMemberPlanIds.forEach(planId -> {
-            boolean generateFullAttendanceCoupon = true;
 
-            List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-            if (practicePlans.size() != 0) {
-                // 完成所有练习
-                Long unCompleteNecessaryCountLong = practicePlans.stream()
-                        .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-                        .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
-                        .count();
-                if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-                    // 如果存在有没有完成的题数，则不予发送优惠券
-                    generateFullAttendanceCoupon = false;
-                } else {
-                    // 完成所有练习之后，对应用题完成情况进行复查
-                    List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                            .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
-                            .collect(Collectors.toList());
-                    List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
-                    List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
-                    Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
+            try {
+                boolean generateFullAttendanceCoupon = true;
 
-                    // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
-                    Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
-
-                    // Plan 中每节都是优质完成应用题的小节数
-                    Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
-                        List<Integer> practiceIds = applicationPracticePlans.stream()
-                                .filter(practicePlan -> practicePlan.getSeries().equals(series))
-                                .map(PracticePlan::getPracticeId)
-                                .map(Integer::parseInt)
-                                .collect(Collectors.toList());
-                        // 每个 Series 中每一节都是优质完成
-                        // 返回不合格完成应用题数，全勤奖去除字数限制
-                        Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
-                            ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
-                            return applicationSubmit == null;
-                        }).count();
-                        return seriesApplicationCheckLong.intValue() == 0; // 不合格数为0的话，说明当前小节全部完成，参与计数
-                    }).count();
-
-                    if (planApplicationCheckLong.intValue() != seriesSet.size()) {
+                List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+                if (practicePlans.size() != 0) {
+                    // 完成所有练习
+                    Long unCompleteNecessaryCountLong = practicePlans.stream()
+                            .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
+                            .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
+                            .count();
+                    if ((unCompleteNecessaryCountLong.intValue()) > 0) {
+                        // 如果存在有没有完成的题数，则不予发送优惠券
                         generateFullAttendanceCoupon = false;
-                    }
-                }
+                    } else {
+                        // 完成所有练习之后，对应用题完成情况进行复查
+                        List<PracticePlan> applicationPracticePlans = practicePlans.stream()
+                                .filter(practicePlan -> PracticePlan.APPLICATION == practicePlan.getType() || PracticePlan.APPLICATION_REVIEW == practicePlan.getType())
+                                .collect(Collectors.toList());
+                        List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                        List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
+                        Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
 
-                if (generateFullAttendanceCoupon) {
-                    ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
-                    Integer profileId = improvementPlan.getProfileId();
-                   // RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
-                   // if (riseClassMember != null) {
+                        // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
+                        Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
+
+                        // Plan 中每节都是优质完成应用题的小节数
+                        Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
+                            List<Integer> practiceIds = applicationPracticePlans.stream()
+                                    .filter(practicePlan -> practicePlan.getSeries().equals(series))
+                                    .map(PracticePlan::getPracticeId)
+                                    .map(Integer::parseInt)
+                                    .collect(Collectors.toList());
+                            // 每个 Series 中每一节都是优质完成
+                            // 返回不合格完成应用题数，全勤奖去除字数限制
+                            Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
+                                ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
+                                return applicationSubmit == null;
+                            }).count();
+                            return seriesApplicationCheckLong.intValue() == 0; // 不合格数为0的话，说明当前小节全部完成，参与计数
+                        }).count();
+
+                        if (planApplicationCheckLong.intValue() != seriesSet.size()) {
+                            generateFullAttendanceCoupon = false;
+                        }
+                    }
+
+                    if (generateFullAttendanceCoupon) {
+                        ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
+                        Integer profileId = improvementPlan.getProfileId();
                         FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
                         if (existFullAttendanceReward == null) {
                             // 如果允许生成训练营结业证书，则生成证书
                             FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                             fullAttendanceReward.setProfileId(profileId);
-//                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
-//                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-//                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                             fullAttendanceReward.setYear(year);
                             fullAttendanceReward.setMonth(month);
                             fullAttendanceReward.setAmount(199.00);
                             fullAttendanceRewardDao.insert(fullAttendanceReward);
-                  //      }
+                        }
                     }
                 }
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage(), e);
             }
         });
         logger.info("全勤奖优惠券待发人员生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
@@ -348,8 +373,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 判断单个用户是否能够获得全勤券
-     *
-     * @param practicePlanId
      */
     @Override
     public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
@@ -390,18 +413,16 @@ public class CertificateServiceImpl implements CertificateService {
                             logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            //RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
-                            //判断是否是商学院用户
-                            if (riseMemberService.isValidElite(profileId)) {
-                                logger.info("该用户是商学院用户");
+                            Boolean validElite = riseMemberService.isValidElite(profileId);
+                            Boolean validCamp = riseMemberService.isValidCamp(profileId);
+                            //判断是否是当月训练营或者商学院用户
+                            if (validElite || validCamp) {
+                                logger.info("是商学院或者当月训练营用户");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
-//                                    fullAttendanceReward.setClassName(riseClassMember.getClassName());
-//                                    fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-//                                    fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                                     fullAttendanceReward.setYear(year);
                                     fullAttendanceReward.setMonth(month);
                                     fullAttendanceReward.setAmount(199.00);
@@ -449,20 +470,17 @@ public class CertificateServiceImpl implements CertificateService {
         fullAttendanceRewards.forEach(fullAttendanceReward -> {
             Integer profileId = fullAttendanceReward.getProfileId();
             Profile profile = accountService.getProfile(profileId);
-            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
 
             // 添加 coupon 数据记录
-            int couponInsertResult;
-            {
-                Coupon coupon = new Coupon();
-                coupon.setProfileId(profileId);
-                coupon.setAmount(fullAttendanceReward.getAmount().intValue());
-                coupon.setUsed(0);
-                buildCouponExpireDate(coupon, profile);
-                coupon.setCategory(FULL_ATTENDANCE_COUPON_CATEGORY);
-                coupon.setDescription(FULL_ATTENDANCE_COUPON_DESCRIPTION);
-                couponInsertResult = couponDao.insertCoupon(coupon);
-            }
+            Coupon coupon = new Coupon();
+            coupon.setProfileId(profileId);
+            coupon.setAmount(fullAttendanceReward.getAmount().intValue());
+            coupon.setUsed(0);
+            buildCouponExpireDate(coupon, profile);
+            coupon.setCategory(FULL_ATTENDANCE_COUPON_CATEGORY);
+            coupon.setDescription(FULL_ATTENDANCE_COUPON_DESCRIPTION);
+            int couponInsertResult = couponDao.insertCoupon(coupon);
+
 
             int notifiedUpdateResult = -1;
             // 成功插入优惠券更新表中字段值
@@ -490,10 +508,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 发送该用户对应的全勤优惠券
-     *
-     * @param year
-     * @param month
-     * @param profileId
      */
     private void sendSingleFullAttendanceCoupon(int year, int month, int profileId) {
         FullAttendanceReward fullAttendanceReward = fullAttendanceRewardDao.loadUnNotifiedByYearMonthProfileId(year, month, profileId);
@@ -787,7 +801,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
-     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
@@ -812,22 +825,22 @@ public class CertificateServiceImpl implements CertificateService {
 
         Integer year = riseCertificate.getYear();
         Integer month = riseCertificate.getMonth();
-        String problemName = null;
+        String problemName = riseCertificate.getProblemName();
 
-        Integer category = accountService.loadUserScheduleCategory(profile.getId());
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
-        Integer problemId = courseScheduleDefault.getProblemId();
-        if (problemId != null) {
-            Problem problem = cacheService.getProblem(problemId);
-            if (problem != null) {
-                problemName = problem.getProblem();
-            }
-        }
+        // Integer category = accountService.loadUserScheduleCategory(profile.getId());
+        // List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+        // CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
+        // Integer problemId = courseScheduleDefault.getProblemId();
+        // if (problemId != null) {
+        //     Problem problem = cacheService.getProblem(problemId);
+        //     if (problem != null) {
+        //         problemName = problem.getProblem();
+        //     }
+        // }
 
-        if (problemName == null) {
-            return new MutablePair<>(false, null);
-        }
+        // if (problemName == null) {
+        //     return new MutablePair<>(false, null);
+        // }
 
         Integer groupNo = riseCertificate.getGroupNo();
         String certificateNo = riseCertificate.getCertificateNo();
