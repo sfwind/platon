@@ -188,7 +188,6 @@ public class CertificateServiceImpl implements CertificateService {
                 improvementPlans.add(selfPlan);
             }
         });
-
         logger.info("improvementPlan 获取结束");
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
@@ -308,15 +307,24 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId) {
-//        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
-//        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
+    public void generateFullAttendanceCoupon(Integer year, Integer month) {
+        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
+        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
 
-        //找出所有的商学院会员
-        List<RiseMember> riseMembers = riseMemberService.getValidElites();
-        List<Integer> riseMemberProfileIds = riseMembers.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+        logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
+        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        riseClassMemberProfileIds.forEach(classMemberProfileId -> {
+            logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
+            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
+            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
+            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
+            if (selfPlan != null) {
+                improvementPlans.add(selfPlan);
+            }
+        });
+        logger.info("improvementPlan 获取结束");
 
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByProfileIds(riseMemberProfileIds, problemId);
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
@@ -369,21 +377,15 @@ public class CertificateServiceImpl implements CertificateService {
                 if (generateFullAttendanceCoupon) {
                     ImprovementPlan improvementPlan = improvementPlanMap.get(planId);
                     Integer profileId = improvementPlan.getProfileId();
-                    // RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
-                    // if (riseClassMember != null) {
                     FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadSingleByProfileId(year, month, profileId);
                     if (existFullAttendanceReward == null) {
                         // 如果允许生成训练营结业证书，则生成证书
                         FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                         fullAttendanceReward.setProfileId(profileId);
-//                            fullAttendanceReward.setClassName(riseClassMember.getClassName());
-//                            fullAttendanceReward.setGroupId(riseClassMember.getGroupId());
-//                            fullAttendanceReward.setMemberId(riseClassMember.getMemberId());
                         fullAttendanceReward.setYear(year);
                         fullAttendanceReward.setMonth(month);
                         fullAttendanceReward.setAmount(199.00);
                         fullAttendanceRewardDao.insert(fullAttendanceReward);
-                        //      }
                     }
                 }
             }
@@ -436,7 +438,7 @@ public class CertificateServiceImpl implements CertificateService {
                             Boolean validElite = riseMemberService.isValidElite(profileId);
                             Boolean validCamp = riseMemberService.isValidCamp(profileId);
                             //判断是否是当月训练营或者商学院用户
-                            if (validElite || validCamp ) {
+                            if (validElite || validCamp) {
                                 logger.info("是商学院或者当月训练营用户");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
