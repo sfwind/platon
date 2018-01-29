@@ -136,9 +136,8 @@ public class BackendController {
     public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(@RequestBody FullAttendanceReward fullAttendanceReward) {
         Integer month = fullAttendanceReward.getMonth();
         Integer year = fullAttendanceReward.getYear();
-        Integer problemId = fullAttendanceReward.getProblemId();
         ThreadPool.execute(() ->
-                certificateService.generateFullAttendanceCoupon(year, month, problemId)
+                certificateService.generateFullAttendanceCoupon(year, month)
         );
         return WebUtils.result("正在进行中");
     }

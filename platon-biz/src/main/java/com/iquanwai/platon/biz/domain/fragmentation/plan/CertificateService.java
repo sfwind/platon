@@ -42,7 +42,7 @@ public interface CertificateService {
      */
     void uploadCertificateToQiNiu(Boolean isOnline);
 
-    void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);
+    void generateFullAttendanceCoupon(Integer year, Integer month);
 
     /**
      * 生成单个全勤奖
