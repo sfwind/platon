@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
@@ -66,17 +67,23 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private AccountService accountService;
     @Autowired
+    private SubjectArticleDao subjectArticleDao;
+    @Autowired
+    private LabelConfigDao labelConfigDao;
+    @Autowired
+    private ArticleLabelDao articleLabelDao;
+    @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private AsstCoachCommentDao asstCoachCommentDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
+    private UserRoleDao userRoleDao;
+    @Autowired
     private CommentEvaluationDao commentEvaluationDao;
     @Autowired
     private CertificateService certificateService;
-    @Autowired
-    private SubjectArticleDao subjectArticleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -100,28 +107,6 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
         return warmupPractices;
-    }
-
-    @Override
-    public Integer submitSubjectArticle(SubjectArticle subjectArticle) {
-        String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
-        subjectArticle.setLength(content.length());
-        Integer submitId = subjectArticle.getId();
-        if (subjectArticle.getId() == null) {
-            // 第一次提交
-            submitId = subjectArticleDao.insert(subjectArticle);
-            // 生成记录表
-            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.SUBJECT, submitId);
-        } else {
-            // 更新之前的
-            subjectArticleDao.update(subjectArticle);
-        }
-        return submitId;
-    }
-
-    @Override
-    public List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels) {
-        return null;
     }
 
     @Override
@@ -762,6 +747,74 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
+    public Integer submitSubjectArticle(SubjectArticle subjectArticle) {
+        String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
+        subjectArticle.setLength(content.length());
+        Integer submitId = subjectArticle.getId();
+        if (subjectArticle.getId() == null) {
+            // 第一次提交
+            submitId = subjectArticleDao.insert(subjectArticle);
+            // 生成记录表
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.SUBJECT, submitId);
+        } else {
+            // 更新之前的
+            subjectArticleDao.update(subjectArticle);
+        }
+        return submitId;
+    }
+
+    @Override
+    public List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page) {
+        page.setTotal(subjectArticleDao.count(problemId));
+        return subjectArticleDao.loadArticles(problemId, page).stream().map(subjectArticle -> {
+            String content = CommonUtils.replaceHttpsDomainName(subjectArticle.getContent());
+            if (!content.equals(subjectArticle.getContent())) {
+                subjectArticleDao.updateContent(subjectArticle.getId(), content);
+                subjectArticle.setContent(content);
+            }
+            return subjectArticle;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public SubjectArticle loadSubjectArticle(Integer submitId) {
+        return subjectArticleDao.load(SubjectArticle.class, submitId);
+    }
+
+    @Override
+    public List<LabelConfig> loadProblemLabels(Integer problemId) {
+        return labelConfigDao.loadLabelConfigs(problemId);
+    }
+
+    @Override
+    public List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels) {
+        List<ArticleLabel> oldLabels = articleLabelDao.loadArticleLabels(moduleId, articleId);
+        List<ArticleLabel> shouldDels = Lists.newArrayList();
+        List<ArticleLabel> shouldReAdds = Lists.newArrayList();
+        labels = labels == null ? Lists.newArrayList() : labels;
+        List<Integer> userChoose = labels.stream().map(ArticleLabel::getLabelId).collect(Collectors.toList());
+        oldLabels.forEach(item -> {
+            if (userChoose.contains(item.getLabelId())) {
+                if (item.getDel()) {
+                    shouldReAdds.add(item);
+                }
+            } else {
+                shouldDels.add(item);
+            }
+            userChoose.remove(item.getLabelId());
+        });
+        userChoose.forEach(item -> articleLabelDao.insertArticleLabel(moduleId, articleId, item));
+        shouldDels.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 1));
+        shouldReAdds.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 0));
+        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
+    }
+
+    @Override
+    public List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId) {
+        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
+    }
+
+    @Override
     public List<Knowledge> loadKnowledges(Integer practicePlanId) {
         List<Knowledge> knowledges = Lists.newArrayList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
@@ -810,6 +863,22 @@ public class PracticeServiceImpl implements PracticeService {
                 improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount() - 1);
                 //求点评
                 applicationSubmitDao.requestComment(applicationSubmit.getId());
+                return true;
+            }
+        } else if (moduleId.equals(Constants.Module.SUBJECT)) {
+            SubjectArticle subjectArticle = subjectArticleDao.load(SubjectArticle.class, submitId);
+            if (subjectArticle.getRequestFeedback()) {
+                logger.warn("{} 已经是求点评状态", submitId);
+                return true;
+            }
+
+            Integer problemId = subjectArticle.getProblemId();
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+            if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
+                //更新求点评次数
+                improvementPlanDao.updateRequestComment(improvementPlan.getId(), improvementPlan.getRequestCommentCount() - 1);
+                //求点评
+                subjectArticleDao.requestComment(subjectArticle.getId());
                 return true;
             }
         }
