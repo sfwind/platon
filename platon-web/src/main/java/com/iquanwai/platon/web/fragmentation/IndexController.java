@@ -130,10 +130,16 @@ public class IndexController {
         }
 
         if (whiteListService.checkRiseMenuWhiteList(loginUser.getId())) {
+            // 商学院会员
             response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
             return null;
         } else if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
+            // 专项课
             response.sendRedirect(INDEX_CAMP_URL);
+            return null;
+        } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
+            // 专项课倒计时
+            response.sendRedirect(CAMP_COUNT_DOWN_URL);
             return null;
         } else {
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
