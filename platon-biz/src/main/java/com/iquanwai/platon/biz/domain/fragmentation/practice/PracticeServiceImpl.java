@@ -75,6 +75,8 @@ public class PracticeServiceImpl implements PracticeService {
     private CommentEvaluationDao commentEvaluationDao;
     @Autowired
     private CertificateService certificateService;
+    @Autowired
+    private SubjectArticleDao subjectArticleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -98,6 +100,28 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
         return warmupPractices;
+    }
+
+    @Override
+    public Integer submitSubjectArticle(SubjectArticle subjectArticle) {
+        String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
+        subjectArticle.setLength(content.length());
+        Integer submitId = subjectArticle.getId();
+        if (subjectArticle.getId() == null) {
+            // 第一次提交
+            submitId = subjectArticleDao.insert(subjectArticle);
+            // 生成记录表
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.SUBJECT, submitId);
+        } else {
+            // 更新之前的
+            subjectArticleDao.update(subjectArticle);
+        }
+        return submitId;
+    }
+
+    @Override
+    public List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels) {
+        return null;
     }
 
     @Override

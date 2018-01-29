@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
+import com.iquanwai.platon.biz.po.ArticleLabel;
 import lombok.Data;
 
 import java.util.Date;
@@ -32,4 +33,7 @@ public class RiseWorkInfoDto {
     private Integer requestCommentCount; //求点评字数
     private Boolean request; //是否已经求点评
     private Boolean feedback; //是否已经点评
+    private List<ArticleLabel> labelList; //标签列表
+    @Deprecated
+    private List<String> picList;
 }
