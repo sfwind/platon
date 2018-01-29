@@ -433,10 +433,10 @@ public class CertificateServiceImpl implements CertificateService {
                             logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            RiseClassMember riseClassMember = riseClassMemberDao.loadRiseClassMemberByProfileId(year, month, profileId);
                             Boolean validElite = riseMemberService.isValidElite(profileId);
+                            Boolean validCamp = riseMemberService.isValidCamp(profileId);
                             //判断是否是当月训练营或者商学院用户
-                            if (riseClassMember != null || validElite) {
+                            if (validElite || validCamp ) {
                                 logger.info("是商学院或者当月训练营用户");
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
