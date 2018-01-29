@@ -765,7 +765,7 @@ public class PlanServiceImpl implements PlanService {
 
         for (Integer problemId : problemIds) {
 
-            Integer planId = generatePlanService.magicOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate, true);
+            Integer planId = generatePlanService.magicOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate, false);
 
             if (planId != null) {
                 // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
