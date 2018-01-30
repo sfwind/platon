@@ -238,12 +238,14 @@ public class CacheServiceImpl implements CacheService {
     public WarmupPractice getWarmupPractice(Integer practiceId) {
         WarmupPractice warmupPractice = null;
         try {
-            warmupPractice = warmupPracticeMap.get(practiceId).clone();
-            if (warmupPractice == null) {
+            WarmupPractice warmupPracticeOrigin = warmupPracticeMap.get(practiceId);
+            if (warmupPracticeOrigin == null) {
                 warmupPractice = warmupPracticeDao.load(WarmupPractice.class, practiceId);
                 List<Choice> choices = choiceDao.getQuestionChoices(practiceId);
                 choices.sort((o1, o2) -> o1.getSequence() - o2.getSequence());
                 warmupPractice.setChoiceList(choices);
+            }else{
+                warmupPractice = warmupPracticeOrigin.clone();
             }
         } catch (CloneNotSupportedException e) {
             // ignore

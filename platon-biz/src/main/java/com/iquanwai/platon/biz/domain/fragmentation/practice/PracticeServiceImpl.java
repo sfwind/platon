@@ -167,7 +167,7 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmitDao.insert(warmupSubmit);
         }
         if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
-            practicePlanDao.complete(practicePlan.getId());
+            practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
             certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
         }
         improvementPlanDao.updateWarmupComplete(planId);
@@ -315,18 +315,10 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Boolean applicationSubmit(Integer id, String content) {
-        Integer type;
         ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
         if (submit == null) {
             logger.error("submitId {} is not existed", id);
             return false;
-        }
-        int applicationId = submit.getApplicationId();
-        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
-        if (applicationPractice != null && applicationPractice.getSequence() == 1) {
-            type = PracticePlan.APPLICATION_BASE;
-        } else {
-            type = PracticePlan.APPLICATION_UPGRADED;
         }
         boolean result;
         int length = CommonUtils.removeHTMLTag(content).length();
@@ -344,11 +336,12 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
             }
             logger.info("应用练习加分:{}", id);
-            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(), submit.getApplicationId(), type);
+            PracticePlan practicePlan = practicePlanDao.loadApplicationPractice(submit.getPlanId(), submit.getApplicationId());
             if (practicePlan != null) {
                 practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
                 certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
-                Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
+                Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class,
+                        submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
                 poinManager.risePoint(submit.getPlanId(), point);
                 // 修改status
@@ -486,73 +479,6 @@ public class PracticeServiceImpl implements PracticeService {
         int count = applicationSubmitDao.count(applicationId);
         page.setTotal(count);
 
-//        List<Integer> submitsIdList = submits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
-//        // applicationSubmit Id 序列 -> votes
-//        List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
-//        List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
-//        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitsIdList); // 所有评论
-//        List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
-//        // 已被点评
-//        List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
-//        // 未被点评，有点赞
-//        List<ApplicationSubmit> votedSubmits = Lists.newArrayList();
-//        // 未被点评、无点赞
-//        List<ApplicationSubmit> restSubmits = Lists.newArrayList();
-//        submits.forEach(submit -> {
-//            if (submit.getFeedback()) {
-//                feedbackSubmits.add(submit);
-//            } else if (referenceIds.contains(submit.getId())) {
-//                votedSubmits.add(submit);
-//            } else {
-//                restSubmits.add(submit);
-//            }
-//        });
-//        // 已被点评作业内部排序：最新被点评到最旧被点评，点评时间越新该条作业越靠前
-//        feedbackSubmits.sort((left, right) -> {
-//            Date leftFeedbackDate = new Date(0);
-//            Date rightFeedbackDate = new Date(0);
-//            for (Comment comment : comments) {
-//                Integer commentProfileId = comment.getCommentProfileId();
-//                Date commentAddTime = comment.getAddTime();
-//                if (left.getId() == comment.getReferencedId()) {
-//                    for (UserRole userRole : userRoles) {
-//                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
-//                            leftFeedbackDate = commentAddTime.compareTo(leftFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
-//                        }
-//                    }
-//                } else if (right.getId() == comment.getReferencedId()) {
-//                    for (UserRole userRole : userRoles) {
-//                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
-//                            rightFeedbackDate = commentAddTime.compareTo(rightFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
-//                        }
-//                    }
-//                }
-//            }
-//            return rightFeedbackDate.compareTo(leftFeedbackDate);
-//        });
-//        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列，提交日期越新，越靠前。
-//        votedSubmits.sort((left, right) -> {
-//            int leftVoteCnt = 0;
-//            int rightVoteCnt = 0;
-//            for (Integer id : referenceIds) {
-//                if (id.equals(left.getId())) {
-//                    leftVoteCnt++;
-//                } else if (id.equals(right.getId())) {
-//                    rightVoteCnt++;
-//                }
-//            }
-//            if (leftVoteCnt == rightVoteCnt) {
-//                return right.getPublishTime().compareTo(left.getPublishTime());
-//            } else {
-//                return rightVoteCnt - leftVoteCnt;
-//            }
-//        });
-//        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列，提交日期越新，越靠前。
-//        restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
-//        List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
-//        applicationSubmits.addAll(feedbackSubmits);
-//        applicationSubmits.addAll(votedSubmits);
-//        applicationSubmits.addAll(restSubmits);
         return submits;
     }
 
@@ -949,7 +875,8 @@ public class PracticeServiceImpl implements PracticeService {
     public Integer loadCompletedApplicationCnt(Integer planId) {
         List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
         Long completedCnt = practicePlans.stream()
-                .filter(practicePlan -> (practicePlan.getType() == 11 || practicePlan.getType() == 12) &&
+                .filter(practicePlan -> (practicePlan.getType() == PracticePlan.APPLICATION_BASE ||
+                        practicePlan.getType() == PracticePlan.APPLICATION_UPGRADED) &&
                         PracticePlan.STATUS.COMPLETED == practicePlan.getStatus())
                 .count();
         return completedCnt.intValue();

@@ -838,9 +838,9 @@ public class PlanServiceImpl implements PlanService {
         for (PracticePlan plan : practicePlans) {
             PlanSeriesStatus seriesStatus = new PlanSeriesStatus();
             seriesStatus.setPracticePlanId(plan.getId());
-            seriesStatus.setPlanId(plan.getPlanId());
+            seriesStatus.setPlanId(planId);
             seriesStatus.setPracticeId(plan.getPracticeId());
-            seriesStatus.setSeries(plan.getSeries());
+            seriesStatus.setSeries(series);
             seriesStatus.setSequence(plan.getSequence());
             seriesStatus.setType(plan.getType());
             seriesStatus.setUnlock(plan.getUnlocked());
