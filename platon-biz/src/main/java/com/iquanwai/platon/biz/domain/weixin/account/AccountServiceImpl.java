@@ -104,25 +104,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
-        if (realTime) {
-            return getAccountFromWeixin(openid);
-        } else {
-            //先从数据库查询account对象
-            Account account = followUserDao.queryByOpenId(openid);
-            if (account != null) {
-                if (account.getSubscribe() == 0) {
-                    // 曾经关注，现在取关的人
-                    throw new NotFollowingException();
-                }
-                return account;
-            }
-            //从微信处获取
-            return getAccountFromWeixin(openid);
-        }
-    }
-
-    @Override
     public UserRole getUserRole(Integer profileId) {
         List<UserRole> userRoles = userRoleDao.getRoles(profileId);
         return userRoles.size() > 0 ? userRoles.get(0) : null;
@@ -131,7 +112,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Profile getProfileByRiseId(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
-
         if (profile != null) {
             profile.setRiseMember(riseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
@@ -145,6 +125,24 @@ public class AccountServiceImpl implements AccountService {
             }
         }
 
+        return profile;
+    }
+
+    @Override
+    public Profile getProfileByUnionId(String unionId) {
+        Profile profile = profileDao.queryByUnionId(unionId);
+        if (profile != null) {
+            profile.setRiseMember(riseMember(profile.getId()));
+            if (profile.getHeadimgurl() != null) {
+                profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
+            }
+            Integer role = userRoleMap.get(profile.getOpenid());
+            if (role == null) {
+                profile.setRole(0);
+            } else {
+                profile.setRole(role);
+            }
+        }
         return profile;
     }
 
@@ -213,6 +211,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
+        if (realTime) {
+            return getAccountFromWeixin(openid);
+        } else {
+            //先从数据库查询account对象
+            Account account = followUserDao.queryByOpenId(openid);
+            if (account != null) {
+                if (account.getSubscribe() == 0) {
+                    // 曾经关注，现在取关的人
+                    throw new NotFollowingException();
+                }
+                return account;
+            }
+            //从微信处获取
+            return getAccountFromWeixin(openid);
+        }
+    }
+
+    @Override
     public Account getGuestFromWeixin(String openId, String accessToken) {
         String url = GUEST_INFO_URL;
         Map<String, String> map = Maps.newHashMap();
@@ -231,6 +248,11 @@ public class AccountServiceImpl implements AccountService {
             logger.error(e.getLocalizedMessage(), e);
         }
         return account;
+    }
+
+    @Override
+    public Account getAccountByUnionId(String unionId) {
+        return followUserDao.queryByUnionId(unionId);
     }
 
     private Account getAccountFromWeixin(String openid) throws NotFollowingException {

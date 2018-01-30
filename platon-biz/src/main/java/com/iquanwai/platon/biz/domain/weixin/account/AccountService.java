@@ -24,6 +24,8 @@ public interface AccountService {
      */
     UserRole getUserRole(Integer profileId);
 
+    Profile getProfileByUnionId(String unionId);
+
     /**
      * 根据openid获取用户详情
      */
@@ -42,6 +44,8 @@ public interface AccountService {
     List<Profile> getProfiles(List<Integer> profileIds);
 
     Account getGuestFromWeixin(String openId, String accessToken);
+
+    Account getAccountByUnionId(String unionId);
 
     /**
      * 获取所有的省份信息
