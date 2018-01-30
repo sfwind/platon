@@ -1,10 +1,12 @@
 package com.iquanwai.platon.web.resolver;
 
+import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -16,6 +18,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
     private LoginUserService loginUserService;
+    @Autowired
+    private UnionUserService unionUserService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -27,19 +31,32 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-        // 如果是 debug 状态，直接返回默认用户信息
         if (ConfigUtils.isDebug()) {
             return LoginUser.defaultUser();
         }
 
-        // 获取本次请求信息
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
+        Callback callback = unionUserService.getCallbackByRequest(request);
 
-        if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
-            // TODO 临时关闭前端 debug 模式的 OpenId 获取用户身份
-            return LoginUser.defaultUser();
-        }
+        if (callback == null) return null;
 
-        return loginUserService.getLoginUserByRequest(request);
+        // callback 为空的话，会在 interceptor 那层拦截掉
+        Assert.notNull(callback, "callback 不能为空");
+        Assert.notNull(callback.getUnionId(), "callback 的 UnionId 不能为空");
+
+        UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
+        LoginUser loginUser = adapterLoginUser(unionUser);
+        logger.info("获取 adapter loginUser 用户，id：{}", loginUser.getId());
+        return loginUser;
+    }
+
+    private LoginUser adapterLoginUser(UnionUser unionUser) {
+        LoginUser loginUser = new LoginUser();
+        loginUser.setId(unionUser.getId());
+        loginUser.setOpenId(unionUser.getOpenId());
+        loginUser.setHeadimgUrl(unionUser.getHeadImgUrl());
+        loginUser.setWeixinName(unionUser.getNickName());
+        loginUser.setUnionId(unionUser.getUnionId());
+        return loginUser;
     }
 }
