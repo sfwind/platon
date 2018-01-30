@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -31,6 +33,8 @@ import java.util.Set;
  * @date 2016-7-22 19:16:49
  */
 @Aspect
+@Component
+@Order(1)
 public class CatPageURIRewriteAspect implements InitializingBean {
 
     /**

@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.service;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.iquanwai.platon.biz.TestBase;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
@@ -33,6 +35,25 @@ public class OperationServiceTest extends TestBase {
         String s = uploadResourceService.uploadResource(qrBuffer);
         System.out.println(s);
 
+    }
+
+    @Test
+    public void testCat(){
+        Transaction t = null;
+        try {
+            t = Cat.newTransaction("URL", "/test");
+
+            t.setStatus(Transaction.SUCCESS);
+        } catch (Exception e) {
+            if (t != null) {
+                t.setStatus(e);
+            }
+            throw e;
+        } finally {
+            if (t != null) {
+                t.complete();
+            }
+        }
     }
 
 }
