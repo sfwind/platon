@@ -6,6 +6,8 @@ import com.iquanwai.platon.biz.dao.wx.CallbackDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import com.iquanwai.platon.web.util.CookieUtils;
 import org.slf4j.Logger;
@@ -145,6 +147,17 @@ public class UnionUserService {
             unionUser.setNickName(profile.getNickname());
             unionUser.setHeadImgUrl(profile.getHeadimgurl());
             return unionUser;
+        }
+    }
+
+    private void aa(Callback callback) {
+        // 链接打到 confucius
+        String requestUrl = ConfigUtils.domainName() + "/wx/oauth/init/user?state=" + callback.getState();
+        String body = restfulHelper.get(requestUrl);
+        Map<String, Object> result = CommonUtils.jsonToMap(body);
+        String code = result.get("code").toString();
+        if ("200".equals(code)) {
+            unionUser = unionUserService.getUnionUserByCallback(callback);
         }
     }
 
