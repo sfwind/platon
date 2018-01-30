@@ -28,6 +28,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
         // 如果是 debug 状态，直接返回默认用户信息
+        logger.info("test");
+
         if (ConfigUtils.isDebug()) {
             return LoginUser.defaultUser();
         }
@@ -35,6 +37,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         // 获取本次请求信息
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
 
+        logger.info("test");
         if (request.getParameter("debug") != null && ConfigUtils.isFrontDebug()) {
             // TODO 临时关闭前端 debug 模式的 OpenId 获取用户身份
             return LoginUser.defaultUser();

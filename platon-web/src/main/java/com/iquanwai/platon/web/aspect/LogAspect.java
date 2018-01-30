@@ -74,6 +74,7 @@ public class LogAspect {
         } catch (Exception e) {
             if (t != null) {
                 t.setStatus(e);
+                Cat.logError(e);
                 logger.info("cat error:{}", e);
             }
             throw e;

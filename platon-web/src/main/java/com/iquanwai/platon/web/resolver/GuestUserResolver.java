@@ -36,6 +36,8 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer
             modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
         //调试时，返回mock user
+        logger.info("test");
+
         if (ConfigUtils.isDebug()) {
             return GuestUser.defaultUser();
         }
