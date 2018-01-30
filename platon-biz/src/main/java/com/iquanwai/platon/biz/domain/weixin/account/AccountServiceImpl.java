@@ -222,6 +222,10 @@ public class AccountServiceImpl implements AccountService {
         url = CommonUtils.placeholderReplace(url, map);
 
         String body = restfulHelper.get(url);
+        if (StringUtils.isEmpty(body)) {
+            logger.info("使用 accessToken 请求用户信息过期，返回 account 为 null");
+            return null;
+        }
         logger.info("请求游客信息结果:{}", body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         Account account = new Account();
@@ -532,7 +536,7 @@ public class AccountServiceImpl implements AccountService {
         // 精英或者专业版用户
         if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             return 1;
-            // 训练营用户
+            // 专项课用户
         } else if (memberTypeId == RiseMember.CAMP) {
             return 3;
             // 课程单买用户
@@ -583,7 +587,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public boolean isPreviewNewUser(Integer profileId) {
-        //判断是否参加过商学院和训练营
+        //判断是否参加过商学院和专项课
         if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
             return false;
         }

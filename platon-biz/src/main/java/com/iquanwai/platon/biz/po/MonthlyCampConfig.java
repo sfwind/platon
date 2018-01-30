@@ -12,7 +12,7 @@ public class MonthlyCampConfig {
 
     private Integer id;
     /**
-     * 训练营的购买开关
+     * 专项课的购买开关
      */
     private Boolean purchaseSwitch;
     /**

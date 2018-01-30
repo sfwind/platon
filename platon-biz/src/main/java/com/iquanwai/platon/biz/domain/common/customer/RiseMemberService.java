@@ -37,4 +37,6 @@ public interface RiseMemberService {
      * @return
      */
     List<RiseMember> getValidElites();
+
+    Boolean isValidCamp(Integer profileId);
 }

@@ -58,7 +58,7 @@ public class RiseMember {
      */
     public static final int HALF_ELITE = 4;
     /**
-     * 训练营
+     * 专项课
      */
     public static final int CAMP = 5;
     /**

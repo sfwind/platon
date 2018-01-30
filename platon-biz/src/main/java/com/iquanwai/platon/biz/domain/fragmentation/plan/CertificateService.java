@@ -35,14 +35,14 @@ public interface CertificateService {
      */
     int updateDownloadTime(String certificateNo);
 
-    void generateCertificate(Integer year, Integer month, Integer problemId);
+    void generateCertificate(Integer year, Integer month);
 
     /**
      * 将 RiseCertificate 表中没有上传图片的，生成图片并且上传到七牛云
      */
     void uploadCertificateToQiNiu(Boolean isOnline);
 
-    void generateFullAttendanceCoupon(Integer year, Integer month, Integer problemId);
+    void generateFullAttendanceCoupon(Integer year, Integer month);
 
     /**
      * 生成单个全勤奖
@@ -50,7 +50,7 @@ public interface CertificateService {
     void generateSingleFullAttendanceCoupon(Integer practicePlanId);
 
     /**
-     * 发送训练营证书通知
+     * 发送专项课证书通知
      * @param year 开营年份
      * @param month 开营月份
      */
@@ -65,7 +65,7 @@ public interface CertificateService {
     List<RiseCertificate> getCertificates(Integer profileId);
 
     /**
-     * 发送训练营结课用户的商学院录取消息
+     * 发送专项课结课用户的商学院录取消息
      * @param year 开营年份
      * @param month 开营月份
      */

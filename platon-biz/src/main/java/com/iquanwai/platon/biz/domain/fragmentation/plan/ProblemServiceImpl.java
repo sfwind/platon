@@ -298,7 +298,7 @@ public class ProblemServiceImpl implements ProblemService {
         JSONArray bannerArray = JSONArray.parseArray(ConfigUtils.getExploreBannerString());
         List<ExploreBanner> banners = Lists.newArrayList();
 
-        // 训练营 Banner 放第一个
+        // 专项课 Banner 放第一个
         ExploreBanner campBanner = new ExploreBanner();
         campBanner.setImageUrl(ConfigUtils.getCampProblemBanner());
         campBanner.setLinkUrl(ConfigUtils.domainName() + "/pay/camp");

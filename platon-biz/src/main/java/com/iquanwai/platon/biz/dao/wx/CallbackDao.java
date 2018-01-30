@@ -42,6 +42,17 @@ public class CallbackDao extends DBUtil {
         return -1;
     }
 
+    public void updateUserInfo(Callback callback) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        try {
+            run.update("UPDATE Callback Set AccessToken = ?, RefreshToken = ?, Openid = ?, UnionId = ? where State = ?",
+                    callback.getAccessToken(), callback.getRefreshToken(), callback.getOpenid(), callback.getUnionId(), callback.getState());
+
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
+
     public Callback queryByPcAccessToken(String accessToken) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<Callback> h = new BeanHandler<>(Callback.class);
