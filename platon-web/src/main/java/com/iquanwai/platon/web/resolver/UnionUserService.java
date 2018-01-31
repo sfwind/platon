@@ -137,6 +137,10 @@ public class UnionUserService {
         }
     }
 
+    public void logout(String state) {
+        unionUserCacheMap.remove(state);
+    }
+
     /**
      * 根据 unionId 获取用户对象，如果 Profile 不存在，则返回 null，将用户获取功能统一交给 confucius
      * @param unionId 联合 UnionId

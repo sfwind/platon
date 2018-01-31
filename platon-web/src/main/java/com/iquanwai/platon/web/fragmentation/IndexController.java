@@ -124,7 +124,6 @@ public class IndexController {
         }
 
         if (!checkOpenid(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
@@ -177,7 +176,6 @@ public class IndexController {
         }
 
         if (!checkOpenid(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
@@ -263,7 +261,6 @@ public class IndexController {
         }
 
         if (!checkOpenid(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }
@@ -325,7 +322,6 @@ public class IndexController {
         }
 
         if (!checkOpenid(request, openid) || account == null) {
-            CookieUtils.removeCookie(OAuthService.MOBILE_STATE_COOKIE_NAME, response);
             WebUtils.auth(request, response);
             return null;
         }

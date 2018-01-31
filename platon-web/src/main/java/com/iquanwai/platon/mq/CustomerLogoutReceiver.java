@@ -1,7 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
-import com.iquanwai.platon.web.resolver.LoginUserService;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,21 +10,22 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 
 @Service
-public class CustomerReceiver {
-    private Logger logger = LoggerFactory.getLogger(getClass());
-    public static final String TOPIC = "customer";
+public class CustomerLogoutReceiver {
 
     @Autowired
-    private LoginUserService loginUserService;
+    private UnionUserService unionUserService;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
 
+    public static final String TOPIC = "customer_logout";
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @PostConstruct
     public void init() {
-        rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
-            String message = messageQueue.getMessage().toString();
+        rabbitMQFactory.initReceiver(null, TOPIC, mqDto -> {
+            String message = mqDto.getMessage().toString();
             logger.info("receive message {}", message);
-            loginUserService.logoutLoginUser(message);
+            unionUserService.logout(message);
         });
     }
 }
