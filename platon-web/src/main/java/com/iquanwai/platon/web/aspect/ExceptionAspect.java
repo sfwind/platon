@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.aspect;
 
+import com.dianping.cat.Cat;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -71,6 +72,11 @@ public class ExceptionAspect {
         OperationLog operationLog = OperationLog.create().openid(openid).module("后端报错")
                 .function("后端报错").action("bug").memo(memo);
         operationLogService.log(operationLog);
+        Cat.logError("openId:" + openid + ",uri:" + req.getRequestURI() +
+                ",queryString:" + req.getQueryString() +
+                ",userAgent:" + req.getHeader("user-agent") +
+                ",ip:" + req.getHeader("X-Forwarded-For") +
+                ",cookie:" + cookie, e);
         logger.error("openId:" + openid + ",uri:" + req.getRequestURI() +
                 ",queryString:" + req.getQueryString() +
                 ",userAgent:" + req.getHeader("user-agent") +
