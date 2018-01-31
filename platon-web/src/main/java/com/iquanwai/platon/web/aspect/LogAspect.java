@@ -1,19 +1,14 @@
 package com.iquanwai.platon.web.aspect;
 
-import com.dianping.cat.Cat;
-import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -25,10 +20,11 @@ import java.util.Map;
 /**
  * @ClassName: LogAspect
  * @Description: 日志记录AOP实现
+ * @deprecated
  */
-@Aspect
-@Component
-@Order(5)
+//@Aspect
+//@Component
+//@Order(5)
 public class LogAspect {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -58,34 +54,34 @@ public class LogAspect {
         Object result = null;
 
         // 这里集成cat
-        Transaction t = null;
+//        Transaction t = null;
+//
+//        try {
+//            Object catUri = request.getAttribute("cat-page-uri");
+//            String url = request.getRequestURI();
+//            if (catUri != null) {
+//                url = catUri.toString();
+//            }
+//            logger.info("cat url:{}", url);
+//            t = Cat.newTransaction("URL", url);
 
-        try {
-            Object catUri = request.getAttribute("cat-page-uri");
-            String url = request.getRequestURI();
-            if (catUri != null) {
-                url = catUri.toString();
-            }
-            logger.info("cat url:{}", url);
-            t = Cat.newTransaction("URL", url);
-
-            result = pjp.proceed();// result的值就是被拦截方法的返回值
-
-            t.setStatus(Transaction.SUCCESS);
-            logger.info("cat success:{}", url);
-        } catch (Exception e) {
-            if (t != null) {
-                t.setStatus(e);
-                Cat.logError(e);
-                logger.info("cat error:{}", e);
-            }
-            throw e;
-        } finally {
-            if (t != null) {
-                logger.info("cat final");
-                t.complete();
-            }
-        }
+        result = pjp.proceed();// result的值就是被拦截方法的返回值
+//
+//            t.setStatus(Transaction.SUCCESS);
+//            logger.info("cat success:{}", url);
+//        } catch (Exception e) {
+//            if (t != null) {
+//                t.setStatus(e);
+//                Cat.logError(e);
+//                logger.info("cat error:{}", e);
+//            }
+//            throw e;
+//        } finally {
+//            if (t != null) {
+//                logger.info("cat final");
+//                t.complete();
+//            }
+//        }
 
 
         long endTimeMillis = System.currentTimeMillis();
