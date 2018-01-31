@@ -82,13 +82,13 @@ public class StudyServiceImpl implements StudyService {
                 } else {
                     section.setStatus(status);
                 }
-                PracticePlan knowledge = practicePlans.stream()
-                        .filter(practicePlan -> practicePlan.getSeries().equals(section.getSeries()) && practicePlan.getSequence() == 1)
-                        .findAny().orElse(null);
-
-                if (knowledge != null) {
-                    section.setType(knowledge.getType());
-                    section.setPracticePlanId(knowledge.getId());
+                //拿到最后一个解锁的练习
+                PracticePlan practicePlan = practicePlans.stream()
+                        .filter(plan -> plan.getSeries().equals(section.getSeries()) && plan.getUnlocked())
+                        .reduce((o1, o2) -> o1.getSequence() < o2.getSequence() ? o2 : o1).orElse(null);
+                if (practicePlan != null) {
+                    section.setType(practicePlan.getType());
+                    section.setPracticePlanId(practicePlan.getId());
                 }
             });
         });
