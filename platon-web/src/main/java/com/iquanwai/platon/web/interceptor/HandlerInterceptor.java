@@ -3,7 +3,6 @@ package com.iquanwai.platon.web.interceptor;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
-import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
                 break;
             case MOBILE:
                 // 静默授权
-                WebUtils.auth(request, response);
+                writeUnLoginStatus(response);
                 break;
             case MINI:
                 writeUnLoginStatus(response);
