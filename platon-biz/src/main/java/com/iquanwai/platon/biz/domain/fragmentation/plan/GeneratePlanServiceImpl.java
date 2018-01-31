@@ -163,7 +163,11 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             PracticePlan practicePlan = new PracticePlan();
             Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
             practicePlan.setUnlocked(false);
-            practicePlan.setType(PracticePlan.KNOWLEDGE);
+            if(Knowledge.isReview(knowledgeId)){
+                practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
+            }else{
+                practicePlan.setType(PracticePlan.KNOWLEDGE);
+            }
             practicePlan.setPlanId(planId);
             practicePlan.setPracticeId(knowledgeId.toString());
             practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
@@ -225,7 +229,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
         practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
         practicePlan.setSeries(0);
-        // practicePlan.setSummary(false);
         selected.add(practicePlan);
 
         return selected;
