@@ -1,7 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
-import com.iquanwai.platon.web.resolver.LoginUserService;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,9 @@ import javax.annotation.PostConstruct;
 @Service
 public class LoginUserUpdateReceiver {
     @Autowired
-    private LoginUserService loginUserService;
+    private UnionUserService unionUserService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
     public static final String TOPIC = "login_user_reload";
 
     @Autowired
@@ -28,7 +27,7 @@ public class LoginUserUpdateReceiver {
     public void init() {
         rabbitMQFactory.initReceiver(null, TOPIC, (messageQueue) -> {
             logger.info("receive message {}", messageQueue.getMessage().toString());
-            loginUserService.updateLoginUserByUnionId(messageQueue.getMessage().toString());
+            unionUserService.updateLoginUserByUnionId(messageQueue.getMessage().toString());
         });
     }
 }

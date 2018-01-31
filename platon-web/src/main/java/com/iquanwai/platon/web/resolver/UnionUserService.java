@@ -137,6 +137,14 @@ public class UnionUserService {
         }
     }
 
+    /**
+     * 刷新用户 unionId
+     * @param unionId unionId
+     */
+    public void updateLoginUserByUnionId(String unionId) {
+        waitRefreshUnionIds.add(unionId);
+    }
+
     public void logout(String state) {
         unionUserCacheMap.remove(state);
     }
