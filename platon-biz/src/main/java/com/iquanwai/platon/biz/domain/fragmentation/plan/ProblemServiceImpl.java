@@ -68,7 +68,23 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Problem getProblemForSchedule(Integer practicePlanId, Integer profileId) {
+    public Problem getProblemForSchedule(Integer problemId, Integer profileId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        Problem problem = cacheService.getProblem(problemId);
+        List<Chapter> chapters;
+        if (improvementPlan != null) {
+            chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
+        } else {
+            chapters = problemScheduleManager.loadDefaultRoadMap(problemId);
+        }
+        problem.setChapterList(chapters);
+        problem.setProblemType(problemScheduleManager.getProblemType(problemId, profileId));
+
+        return problem;
+    }
+
+    @Override
+    public Problem getProblemForSchedule(Integer practicePlanId) {
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());

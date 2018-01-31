@@ -764,7 +764,7 @@ public class PlanController {
     @RequestMapping("/knowledge/review/{practicePlanId}")
     public ResponseEntity<Map<String, Object>> loadKnowledgeReview(LoginUser loginUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblemForSchedule(practicePlanId, loginUser.getId());
+        Problem problem = problemService.getProblemForSchedule(practicePlanId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
                 .function("知识回顾")

@@ -25,11 +25,13 @@ public interface ProblemService {
     Problem getProblem(Integer problemId);
 
     /**
-     * 根据练习id获取课程
+     * 根据课程id获取课程
      *
-     * @param practicePlanId 练习id
+     * @param problemId 课程id
      */
-    Problem getProblemForSchedule(Integer practicePlanId, Integer profileId);
+    Problem getProblemForSchedule(Integer problemId, Integer profileId);
+
+    Problem getProblemForSchedule(Integer practicePlanId);
 
     /**
      * 获得课程的目录分类
