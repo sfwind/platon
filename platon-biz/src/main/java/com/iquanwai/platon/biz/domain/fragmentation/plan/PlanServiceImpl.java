@@ -531,7 +531,8 @@ public class PlanServiceImpl implements PlanService {
             improvementPlan.setMonth(courseSchedule.getMonth());
             improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修":"辅修");
             //设置截止时间
-            if(improvementPlan.getStatus() == ImprovementPlan.RUNNING){
+            if(improvementPlan.getStatus() == ImprovementPlan.RUNNING ||
+                    improvementPlan.getStatus() == ImprovementPlan.COMPLETE){
                 improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()));
             }else{
                 improvementPlan.setDeadline(0);
