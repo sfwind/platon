@@ -297,7 +297,12 @@ public class ProblemController {
 
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
-        Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
+        Integer buttonStatus;
+        if(practicePlanId != null){
+            buttonStatus = 6;
+        }else{
+            buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
+        }
         if (practicePlanId != null) {
             practiceService.learnProblemIntroduction(loginUser.getId(), practicePlanId);
         }
