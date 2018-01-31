@@ -176,9 +176,19 @@ public class PlanServiceImpl implements PlanService {
         List<Section> sections = Lists.newArrayList();
         chapters.forEach(chapter -> chapter.getSections().forEach(section -> {
             List<Practice> practices = practiceMap.get(section.getSeries());
+            //添加小课介绍
+            if (section.getSeries() == 1) {
+                PracticePlan practicePlan = practicePlanDao.loadProblemIntroduction(improvementPlan.getId());
+                if(practicePlan!=null){
+                    practices.add(buildPractice(practicePlan));
+                }
+            }
             //添加小目标
             if (section.getSeries() == 1) {
-                practices.add(buildPractice(practicePlanDao.loadChallengePractice(improvementPlan.getId())));
+                PracticePlan practicePlan = practicePlanDao.loadChallengePractice(improvementPlan.getId());
+                if(practicePlan!=null){
+                    practices.add(buildPractice(practicePlan));
+                }
             }
             section.setPractices(practices);
             sections.add(section);

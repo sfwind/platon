@@ -105,6 +105,21 @@ public class PracticePlanDao extends PracticeDBUtil {
         return null;
     }
 
+    public PracticePlan loadProblemIntroduction(Integer planId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=? and Del = 0";
+        try {
+            PracticePlan practicePlan = run.query(sql, h,
+                    planId, PracticePlan.INTRODUCTION);
+            return practicePlan;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
     public PracticePlan loadApplicationPractice(Integer planId, Integer practiceId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
