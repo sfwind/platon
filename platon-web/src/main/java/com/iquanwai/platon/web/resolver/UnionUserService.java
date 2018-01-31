@@ -74,19 +74,25 @@ public class UnionUserService {
             if (unionUser == null) {
                 // 如果软连接对象过期，重新加载用户信息
                 unionUser = getUnionUserByUnionId(unionId);
-                if (unionUser == null) return null;
+                if (unionUser == null) {
+                    return getInitUnionUser(callback);
+                }
                 unionUserCacheMap.put(state, new SoftReference<>(unionUser));
             } else {
                 if (waitRefreshUnionIds.contains(unionId)) {
                     unionUser = getUnionUserByUnionId(unionId);
-                    if (unionUser == null) return null;
+                    if (unionUser == null) {
+                        return getInitUnionUser(callback);
+                    }
                     unionUserCacheMap.put(state, new SoftReference<>(unionUser));
                     waitRefreshUnionIds.remove(unionId);
                 }
             }
         } else {
             unionUser = getUnionUserByUnionId(unionId);
-            if (unionUser == null) return null;
+            if (unionUser == null) {
+                return getInitUnionUser(callback);
+            }
             unionUserCacheMap.put(state, new SoftReference<>(unionUser));
         }
         return unionUser;
@@ -150,15 +156,17 @@ public class UnionUserService {
         }
     }
 
-    private void aa(Callback callback) {
+    private UnionUser getInitUnionUser(Callback callback) {
+        UnionUser unionUser = null;
         // 链接打到 confucius
-        String requestUrl = ConfigUtils.domainName() + "/wx/oauth/init/user?state=" + callback.getState();
-        String body = restfulHelper.get(requestUrl);
+        String requestUrl = ConfigUtils.domainName() + "/internal/init/user?state=" + callback.getState();
+        String body = restfulHelper.getPure(requestUrl);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         String code = result.get("code").toString();
         if ("200".equals(code)) {
-            unionUser = unionUserService.getUnionUserByCallback(callback);
+            unionUser = getUnionUserByUnionId(callback.getUnionId());
         }
+        return unionUser;
     }
 
 }

@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.resolver;
 
 import com.iquanwai.platon.biz.po.common.Callback;
-import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.slf4j.Logger;
@@ -15,7 +14,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 
 /**
  * Created by 三十文
@@ -48,16 +46,6 @@ public class UnionUserResolver implements HandlerMethodArgumentResolver {
         Assert.notNull(callback.getUnionId(), "callback 的 UnionId 不能为空");
 
         UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
-        // 链接打到 confucius
-        if (unionUser == null) {
-            String requestUrl = ConfigUtils.domainName() + "/wx/oauth/init/user?state=" + callback.getState();
-            String body = restfulHelper.get(requestUrl);
-            Map<String, Object> result = CommonUtils.jsonToMap(body);
-            String code = result.get("code").toString();
-            if ("200".equals(code)) {
-                unionUser = unionUserService.getUnionUserByCallback(callback);
-            }
-        }
         if (unionUser != null) {
             logger.info("加载 UnionUserId: {}, UnionId: {}", unionUser.getId(), unionUser.getUnionId());
         }
