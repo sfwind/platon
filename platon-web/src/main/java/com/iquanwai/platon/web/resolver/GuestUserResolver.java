@@ -4,12 +4,10 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -23,8 +21,6 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
     private UnionUserService unionUserService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private RestfulHelper restfulHelper;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
