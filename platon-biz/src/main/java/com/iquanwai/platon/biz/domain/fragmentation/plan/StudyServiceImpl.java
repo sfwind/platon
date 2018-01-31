@@ -89,6 +89,7 @@ public class StudyServiceImpl implements StudyService {
                 if (practicePlan != null) {
                     section.setType(practicePlan.getType());
                     section.setPracticePlanId(practicePlan.getId());
+                    section.setPracticeId(practicePlan.getPracticeId());
                 }
             });
         });

@@ -22,5 +22,6 @@ public class Section {
     private Integer status; //-1锁定,0-未完成,1-已完成
 
     private Integer type; // 第一个练习的类型
-    private Integer practicePlanId; // 第一个练习的id
+    private Integer practicePlanId; //最近一个解锁练习的id
+    private String practiceId; //最近一个解锁练习的练习id
 }
