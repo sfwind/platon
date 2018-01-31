@@ -7,11 +7,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -29,9 +32,9 @@ import java.util.Set;
  * @author <a href="http://blog.warningrc.com">王宁</a>
  * @date 2016-7-22 19:16:49
  */
-//@Aspect
-//@Component
-//@Order(1)
+@Aspect
+@Component
+@Order(1)
 public class CatPageURIRewriteAspect implements InitializingBean {
 
     /**
