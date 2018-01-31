@@ -91,6 +91,7 @@ public class StudyServiceImpl implements StudyService {
                     section.setPracticePlanId(practicePlan.getId());
                     section.setPracticeId(practicePlan.getPracticeId());
                 } else {
+                    //如果所有练习都完成,返回第一个练习
                     practicePlan = practicePlans.stream()
                             .filter(plan -> plan.getSeries().equals(section.getSeries()) && plan.getSequence() == 1)
                             .findAny().orElse(null);
