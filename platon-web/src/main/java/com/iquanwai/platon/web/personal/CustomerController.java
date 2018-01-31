@@ -81,7 +81,11 @@ public class CustomerController {
 
     @RequestMapping("/info")
     public ResponseEntity<Map<String, Object>> getUserInfo(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
+        if (loginUser == null) {
+            logger.info("当前用户未登录");
+            return WebUtils.success();
+        }
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("小程序")
                 .function("获取用户基本信息")
