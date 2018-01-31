@@ -86,7 +86,14 @@ public class StudyServiceImpl implements StudyService {
                 PracticePlan practicePlan = practicePlans.stream()
                         .filter(plan -> plan.getSeries().equals(section.getSeries()) && plan.getUnlocked())
                         .reduce((o1, o2) -> o1.getSequence() < o2.getSequence() ? o2 : o1).orElse(null);
-                if (practicePlan != null) {
+                if (practicePlan != null && practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED) {
+                    section.setType(practicePlan.getType());
+                    section.setPracticePlanId(practicePlan.getId());
+                    section.setPracticeId(practicePlan.getPracticeId());
+                } else {
+                    practicePlan = practicePlans.stream()
+                            .filter(plan -> plan.getSeries().equals(section.getSeries()) && plan.getSequence() == 1)
+                            .findAny().orElse(null);
                     section.setType(practicePlan.getType());
                     section.setPracticePlanId(practicePlan.getId());
                     section.setPracticeId(practicePlan.getPracticeId());
