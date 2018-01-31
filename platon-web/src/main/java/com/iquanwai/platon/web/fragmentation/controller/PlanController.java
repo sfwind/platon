@@ -761,5 +761,18 @@ public class PlanController {
         }
     }
 
+    @RequestMapping("/knowledge/review/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadKnowledgeReview(LoginUser loginUser, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Problem problem = problemService.getProblemForSchedule(practicePlanId, loginUser.getId());
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("知识回顾")
+                .action("打开知识回顾页")
+                .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(problem);
+    }
+
 }
 

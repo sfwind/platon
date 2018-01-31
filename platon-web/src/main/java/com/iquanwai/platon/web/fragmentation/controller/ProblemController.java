@@ -275,19 +275,6 @@ public class ProblemController {
         return WebUtils.result(list);
     }
 
-    @RequestMapping("/get/{problemId}")
-    public ResponseEntity<Map<String, Object>> loadProblem(LoginUser loginUser, @PathVariable Integer problemId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
-                .function("阅读问题报告")
-                .action("打开问题报告页")
-                .memo(problemId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(problem);
-    }
-
     @RequestMapping("/open/{problemId}")
     public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
                                                                        @RequestParam(required = false) Boolean autoOpen,

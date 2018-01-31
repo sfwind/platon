@@ -48,6 +48,8 @@ public class ProblemServiceImpl implements ProblemService {
     private CardManager cardManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
+    @Autowired
+    private PracticePlanDao practicePlanDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -66,17 +68,12 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Problem getProblemForSchedule(Integer problemId, Integer profileId) {
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        Problem problem = cacheService.getProblem(problemId);
-        List<Chapter> chapters;
-        if (improvementPlan != null) {
-            chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
-        } else {
-            chapters = problemScheduleManager.loadDefaultRoadMap(problemId);
-        }
+    public Problem getProblemForSchedule(Integer practicePlanId, Integer profileId) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         problem.setChapterList(chapters);
-        problem.setProblemType(problemScheduleManager.getProblemType(problemId, profileId));
 
         return problem;
     }
