@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
@@ -178,7 +179,7 @@ public class PlanController {
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request, @RequestParam Integer planId) {
         LOGGER.info(request.getHeader("User-Agent") + ", openId:" + loginUser.getOpenId());
-
+        Cat.logEvent("PLAN","加载计划");
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
         if (improvementPlan == null) {

@@ -68,7 +68,9 @@ public class LogAspect {
             }
             logger.info("cat url:{}", url);
             t = Cat.newTransaction("URL", url);
+
             result = pjp.proceed();// result的值就是被拦截方法的返回值
+
             t.setStatus(Transaction.SUCCESS);
             logger.info("cat success:{}", url);
         } catch (Exception e) {
