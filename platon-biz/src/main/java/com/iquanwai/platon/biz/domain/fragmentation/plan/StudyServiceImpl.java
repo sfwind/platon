@@ -59,8 +59,12 @@ public class StudyServiceImpl implements StudyService {
                 .filter(practicePlan -> practicePlan.getSeries() == 0)
                 .map(practicePlan -> {
                     //设置过期状态
-                    if (close && !practicePlan.getUnlocked()) {
-                        practicePlan.setStatus(-3);
+                    if (!practicePlan.getUnlocked()) {
+                        if (close) {
+                            practicePlan.setStatus(-3);
+                        } else {
+                            practicePlan.setStatus(-1);
+                        }
                     }
                     return practicePlan;
                 }).collect(Collectors.toList());

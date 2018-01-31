@@ -43,6 +43,12 @@ public interface PlanService {
      */
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
 
+    /**
+     * 解锁专项课
+     *
+     * @param planId 计划id
+     * @param profileId 用户id
+     */
     void unlockCampPlan(Integer profileId, Integer planId);
 
     /**

@@ -275,20 +275,15 @@ public interface PracticeService {
      */
     void deleteComment(Integer commentId);
 
-
-    /**
-     * 根据应用练习
-     *
-     * @param applicationId 应用练习id
-     * @param profileId     用户id
-     * @return
-     */
-    ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
-
     /**
      * 根据 ApplicationSubmit 的 id 获取 ApplicationSubmit
      */
-    ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId);
+    ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId);
+
+    /**
+     * 完成课程介绍
+     */
+    void learnProblemIntroduction(Integer profileId, Integer practicePlanId);
 
     /**
      * 根据Id获取ApplicationSubmit对象

@@ -827,13 +827,13 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId) {
-        return applicationSubmitDao.load(applicationId, profileId);
+    public ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId) {
+        return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
     }
 
     @Override
-    public ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId) {
-        return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
+    public void learnProblemIntroduction(Integer profileId, Integer practicePlanId) {
+        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
     }
 
     @Override

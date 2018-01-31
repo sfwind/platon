@@ -89,22 +89,6 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
-        //解锁检查
-        Integer series = improvementPlan.getCompleteSeries();
-        Integer planId = improvementPlan.getId();
-
-        // TODO 解锁题目
-        // //已过期不能解锁
-        // if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
-        //     improvementPlan.setLockedStatus(-3);
-        // } else {
-        //     //解锁下一组
-        //     List<PracticePlan> nextSeriesPracticePlans = practicePlanDao.loadBySeries(planId,
-        //             series + 1);
-        //     if (CollectionUtils.isNotEmpty(nextSeriesPracticePlans)) {
-        //         unlock(nextSeriesPracticePlans, planId);
-        //     }
-        // }
         //写入字段
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
         calcDeadLine(improvementPlan);
@@ -243,21 +227,6 @@ public class PlanServiceImpl implements PlanService {
             }
         });
         return problemSchedules;
-    }
-
-    private void unlock(List<PracticePlan> runningPractice, Integer planId) {
-        Assert.notNull(planId, "训练计划不能为空");
-        Assert.notNull(runningPractice, "练习计划不能为空");
-        //如果练习未解锁,则解锁练习
-        runningPractice.stream()
-                .filter(practicePlan -> !practicePlan.getUnlocked())
-                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
-                .forEach(practicePlan -> {
-                    practicePlan.setUnlocked(true);
-                    practicePlanDao.unlock(practicePlan.getId());
-                });
-        Integer progress = runningPractice.get(0).getSeries();
-        improvementPlanDao.updateProgress(planId, progress - 1);
     }
 
     //映射

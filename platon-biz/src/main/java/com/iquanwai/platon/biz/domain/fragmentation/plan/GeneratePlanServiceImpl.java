@@ -218,7 +218,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> selected = Lists.newArrayList();
 
         PracticePlan practicePlan = new PracticePlan();
-        practicePlan.setUnlocked(true);
+        practicePlan.setUnlocked(false);
         practicePlan.setPlanId(planId);
         practicePlan.setType(PracticePlan.CHALLENGE);
         practicePlan.setPracticeId(problem.getId() + "");

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
@@ -12,7 +13,6 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -47,6 +47,8 @@ public class ProblemController {
     private WhiteListService whiteListService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private PracticeService practiceService;
 
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser) {
@@ -287,19 +289,18 @@ public class ProblemController {
     }
 
     @RequestMapping("/open/{problemId}")
-    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
+    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
+                                                                       @RequestParam(required = false) Boolean autoOpen,
+                                                                       @RequestParam(required = false) Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
-        // 设置当前课程已学习人数
-//        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
-//        problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
-
-//        Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
-
         Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
+        if (practicePlanId != null) {
+            practiceService.learnProblemIntroduction(loginUser.getId(), practicePlanId);
+        }
 
         if (plan != null) {
             dto.setPlanId(plan.getId());
@@ -310,14 +311,6 @@ public class ProblemController {
         Profile profile = accountService.getProfile(loginUser.getId());
         dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
         dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
-
-//        if (isMember) {
-//            // 是会员，才会继续
-//            String monthStr = problemService.loadProblemScheduleMonth(loginUser.getId(), problemId);
-//            if (monthStr != null) {
-//                dto.setTogetherClassMonth(monthStr);
-//            }
-//        }
 
         dto.setProblemCollected(problemService.hasCollectedProblem(loginUser.getId(), problemId));
 
