@@ -1,12 +1,11 @@
 package com.iquanwai.platon.mq;
 
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.common.file.PictureService;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
-import com.iquanwai.platon.web.resolver.LoginUserService;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +28,11 @@ public class CacheReloadReceiver {
     @Autowired
     private PictureService pictureService;
     @Autowired
-    private RiseMemberDao riseMemberDao;
-    @Autowired
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private MQService mqService;
+    @Autowired
+    private UnionUserService unionUserService;
 
     @PostConstruct
     public void init() {
@@ -50,7 +49,7 @@ public class CacheReloadReceiver {
                     break;
                 case "member":
                     // 返回当前登录人数
-                    Integer memberSize = LoginUserService.getAllUsers().size();
+                    Integer memberSize = unionUserService.getAllLoginUsers().size();
                     logger.info("当前登录人数:{}", memberSize);
                     break;
                 case "mqip": {

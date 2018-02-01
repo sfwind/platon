@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 public class UnionUserResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
-    private UnionUserService unionUserService;
+    private UnionUserServiceImpl unionUserService;
 
     @Autowired
     private RestfulHelper restfulHelper;

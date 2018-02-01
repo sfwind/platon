@@ -18,9 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 public class GuestUserResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
-    private UnionUserService unionUserService;
-    @Autowired
     private AccountService accountService;
+    @Autowired
+    private UnionUserService unionUserService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

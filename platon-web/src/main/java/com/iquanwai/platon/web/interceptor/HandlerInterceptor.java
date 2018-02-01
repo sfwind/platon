@@ -2,7 +2,7 @@ package com.iquanwai.platon.web.interceptor;
 
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.web.resolver.UnionUser;
-import com.iquanwai.platon.web.resolver.UnionUserService;
+import com.iquanwai.platon.web.resolver.UnionUserServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,44 +21,30 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private UnionUserService unionUserService;
+    private UnionUserServiceImpl unionUserService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         logger.info("进入拦截器");
 
         UnionUser.Platform platform = unionUserService.getPlatformType(request);
-        if (platform == null) {
-            logger.info("platform 为空");
+        if (platform == null || unionUserService.isDocumentRequest(request)) {
+            logger.info("platform 为空或者当前请求的是资源请求");
             return true;
         } else {
+            logger.info("platform: {}", platform);
             Callback callback = unionUserService.getCallbackByRequest(request);
-            return (callback != null && callback.getUnionId() != null) || handleUnLogin(platform, request, response);
+            return (callback != null && callback.getUnionId() != null) || handleUnLogin(response);
         }
     }
 
     /**
      * 对于 ajax 请求，不存在 callback 请求的处理
-     * @param platform 平台信息
-     * @param request 请求
      * @param response 响应
      * @return 是否通过拦截器
      */
-    private boolean handleUnLogin(UnionUser.Platform platform, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        switch (platform) {
-            case PC:
-                writeUnLoginStatus(response);
-                break;
-            case MOBILE:
-                // 静默授权
-                writeUnLoginStatus(response);
-                break;
-            case MINI:
-                writeUnLoginStatus(response);
-                break;
-            default:
-                break;
-        }
+    private boolean handleUnLogin(HttpServletResponse response) throws Exception {
+        writeUnLoginStatus(response);
         return false;
     }
 

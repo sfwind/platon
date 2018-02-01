@@ -41,12 +41,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by justin on 16/8/10.
- */
 @Service
 public class AccountServiceImpl implements AccountService {
-
     @Autowired
     public RestfulHelper restfulHelper;
     @Autowired
@@ -100,7 +96,22 @@ public class AccountServiceImpl implements AccountService {
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
         userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getOpenid(), userRole.getRoleId()));
         logger.info("role init complete");
-        headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
+        // headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
+    }
+
+    @Override
+    public boolean initUserByUnionId(String unionId, Boolean realTime) {
+        String requestUrl = ConfigUtils.domainName() + "/internal/init/user?unionId=" + unionId + "&realTime=" + realTime;
+        String body = restfulHelper.getPure(requestUrl);
+        Map<String, Object> result = CommonUtils.jsonToMap(body);
+        String code = result.get("code").toString();
+        return "200".equals(code);
+    }
+
+    @Override
+    public boolean checkIsFollow(String unionId) {
+        Account account = followUserDao.queryByUnionId(unionId);
+        return account.getSubscribe();
     }
 
     @Override
@@ -218,7 +229,7 @@ public class AccountServiceImpl implements AccountService {
             //先从数据库查询account对象
             Account account = followUserDao.queryByOpenId(openid);
             if (account != null) {
-                if (account.getSubscribe() == 0) {
+                if (!account.getSubscribe()) {
                     // 曾经关注，现在取关的人
                     throw new NotFollowingException();
                 }
@@ -281,9 +292,8 @@ public class AccountServiceImpl implements AccountService {
 
                 return new DateTime(time.longValue()).toDate();
             }, Date.class);
-
             BeanUtils.populate(accountNew, result);
-            if (accountNew.getSubscribe() != null && accountNew.getSubscribe() == 0) {
+            if (!accountNew.getSubscribe()) {
                 //未关注直接抛异常
                 throw new NotFollowingException();
             }

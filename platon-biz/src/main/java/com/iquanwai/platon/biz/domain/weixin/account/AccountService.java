@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
-
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
@@ -10,14 +9,19 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
-/**
- * Created by justin on 16/8/10.
- */
 public interface AccountService {
     /**
      * 根据openid获取用户的详细信息
      */
     Account getAccount(String openid, boolean realTime) throws NotFollowingException;
+
+    /**
+     * new
+     * 调用 confucius 接口，生成并补充新的用户信息
+     */
+    boolean initUserByUnionId(String unionId, Boolean realTime);
+
+    boolean checkIsFollow(String unionId);
 
     /**
      * 根据 profileId 获取用户角色信息
@@ -214,7 +218,6 @@ public interface AccountService {
 
     /**
      * 是否参加过商学院、专项课、试听课、"一带二"活动
-     * @return
      */
     boolean isPreviewNewUser(Integer profileId);
 

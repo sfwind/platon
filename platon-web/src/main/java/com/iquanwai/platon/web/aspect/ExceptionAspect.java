@@ -4,7 +4,7 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.resolver.UnionUser;
-import com.iquanwai.platon.web.resolver.UnionUserService;
+import com.iquanwai.platon.web.resolver.UnionUserServiceImpl;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class ExceptionAspect {
 
     @Autowired
-    private UnionUserService unionUserService;
+    private UnionUserServiceImpl unionUserService;
     @Autowired
     private OperationLogService operationLogService;
 
