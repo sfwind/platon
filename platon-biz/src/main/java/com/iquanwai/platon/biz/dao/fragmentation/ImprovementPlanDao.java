@@ -310,7 +310,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
 
     public List<ImprovementPlan> loadPlanIdsByPage(Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT Id, ProblemId FROM ImprovementPlan WHERE Del = 0 LIMIT" + page.getOffset() + ", " + page.getLimit() + ";";
+        String sql = "SELECT Id, ProblemId FROM ImprovementPlan WHERE Del = 0 LIMIT " + page.getOffset() + ", " + page.getLimit() + ";";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         try {
             return runner.query(sql, h);
