@@ -43,7 +43,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
 
         int type = practicePlan.getType(); // 当前题目类型
         int series = practicePlan.getSeries(); // 当前小节数
-        int sequence = practicePlan.getSequence();
+//        int sequence = practicePlan.getSequence();
 
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(practicePlan.getPlanId());
 
@@ -83,10 +83,17 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             // 如果完成的是巩固练习，解锁简单应用题
             case PracticePlan.WARM_UP:
             case PracticePlan.WARM_UP_REVIEW:
-                targetPracticePlan = practicePlans.stream()
+                List<PracticePlan> practicePlanList = practicePlans.stream()
                         .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
                                 || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
-                                && plan.getSeries() == series && plan.getSequence() == sequence + 1)
+                                && plan.getSeries() == series).collect(Collectors.toList());
+
+                practicePlanList.forEach(practicePlan1 -> practicePlanDao.unlock(practicePlan1.getId()));
+
+                targetPracticePlan = practicePlans.stream()
+                        .filter(plan -> (plan.getType() == PracticePlan.KNOWLEDGE
+                                || plan.getType() == PracticePlan.KNOWLEDGE_REVIEW)
+                                && plan.getSeries() == series + 1)
                         .findAny().orElse(null);
                 if (targetPracticePlan != null) {
                     practicePlanDao.unlock(targetPracticePlan.getId());
@@ -95,22 +102,22 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             // 如果是第一道应用题,则解锁下一道应用题和下一节的知识点
             case PracticePlan.APPLICATION_BASE:
             case PracticePlan.APPLICATION_UPGRADED:
-                targetPracticePlan = practicePlans.stream()
-                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
-                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
-                                && plan.getSeries() == series && plan.getSequence() == sequence + 1)
-                        .findAny().orElse(null);
-                if (targetPracticePlan != null) {
-                    practicePlanDao.unlock(targetPracticePlan.getId());
-                    targetPracticePlan = practicePlans.stream()
-                            .filter(plan -> (plan.getType() == PracticePlan.KNOWLEDGE
-                                    || plan.getType() == PracticePlan.KNOWLEDGE_REVIEW)
-                                    && plan.getSeries() == series + 1)
-                            .findAny().orElse(null);
-                    if (targetPracticePlan != null) {
-                        practicePlanDao.unlock(targetPracticePlan.getId());
-                    }
-                }
+//                targetPracticePlan = practicePlans.stream()
+//                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
+//                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
+//                                && plan.getSeries() == series && plan.getSequence() == sequence + 1)
+//                        .findAny().orElse(null);
+//                if (targetPracticePlan != null) {
+//                    practicePlanDao.unlock(targetPracticePlan.getId());
+//                    targetPracticePlan = practicePlans.stream()
+//                            .filter(plan -> (plan.getType() == PracticePlan.KNOWLEDGE
+//                                    || plan.getType() == PracticePlan.KNOWLEDGE_REVIEW)
+//                                    && plan.getSeries() == series + 1)
+//                            .findAny().orElse(null);
+//                    if (targetPracticePlan != null) {
+//                        practicePlanDao.unlock(targetPracticePlan.getId());
+//                    }
+//                }
                 break;
             default:
                 break;
