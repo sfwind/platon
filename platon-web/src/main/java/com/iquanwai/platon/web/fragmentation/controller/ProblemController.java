@@ -12,7 +12,6 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -141,7 +140,7 @@ public class ProblemController {
         result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
-        result.setRiseMember(loginUser.getRiseMember() != 0);
+        result.setRiseMember(accountService.getProfileRiseMember(loginUser.getId()) != 0);
         result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")

@@ -16,12 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
-    private LoginUserService loginUserService;
-    @Autowired
     private UnionUserService unionUserService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
 
     @Override
     public boolean supportsParameter(MethodParameter methodParameter) {

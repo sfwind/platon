@@ -173,6 +173,8 @@ public interface AccountService {
      */
     List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId);
 
+    Integer getProfileRiseMember(Integer profileId);
+
     /**
      * 创建关注推送消息
      * @param openid openId
