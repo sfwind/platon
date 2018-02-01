@@ -11,8 +11,6 @@
 <script>
     window.ENV = {
         reactMountPoint: "react-app",
-        userName: "${userName}",
-        headImage:"${headImage}",
         showForum:"${showForum}",
         showExplore:"${showExplore}",
         configUrl:'',
@@ -30,14 +28,12 @@
     if(display === 'http://www.iquanwai.com' || display === 'https://www.iquanwai.com') {
         var _hmt = _hmt || [];
         (function () {
-
             var hm = document.createElement("script");
             hm.src = "https://hm.baidu.com/hm.js?64c8a6d40ec075c726072cd243d008a3";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
     }
-
 </script>
 <%--性能数据收集脚本--%>
 <script>
