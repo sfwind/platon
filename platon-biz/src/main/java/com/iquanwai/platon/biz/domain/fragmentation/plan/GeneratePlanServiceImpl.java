@@ -168,6 +168,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             }else{
                 practicePlan.setType(PracticePlan.KNOWLEDGE);
             }
+
             practicePlan.setPlanId(planId);
             practicePlan.setPracticeId(knowledgeId.toString());
             practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);

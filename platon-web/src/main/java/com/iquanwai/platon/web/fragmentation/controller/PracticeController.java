@@ -144,16 +144,16 @@ public class PracticeController {
 
         // 当用户提交答案时，将 draft 草稿表一起更新
         practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getAnswer());
-        Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
+        Integer practicePlanId = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
 
-
-        if (result) {
+        if (practicePlanId != null) {
             // 提升提交数
             if (loginUser.getDevice() == Constants.Device.PC) {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
             } else {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
             }
+            planService.checkPlanComplete(practicePlanId);
         }
 
         Integer completedApplication = 0;
@@ -167,11 +167,7 @@ public class PracticeController {
                 .action("提交应用练习")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        if (result) {
-            return WebUtils.result(completedApplication);
-        } else {
-            return WebUtils.error("应用练习提交失败");
-        }
+        return WebUtils.result(completedApplication);
     }
 
     @RequestMapping(value = "/application/completed/count/{planId}", method = RequestMethod.GET)
@@ -197,6 +193,7 @@ public class PracticeController {
 
     /**
      * 点赞或者取消点赞
+     *
      * @param vote 1：点赞，2：取消点赞
      */
     @RequestMapping(value = "/vote", method = RequestMethod.POST)
@@ -235,7 +232,8 @@ public class PracticeController {
 
     /**
      * 应用任务列表页加载他人的任务信息
-     * @param loginUser 登陆人
+     *
+     * @param loginUser     登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}")
@@ -258,7 +256,8 @@ public class PracticeController {
 
     /**
      * 应用任务列表页加载他人的任务信息
-     * @param loginUser 登陆人
+     *
+     * @param loginUser     登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}/{pageIndex}")
@@ -441,10 +440,11 @@ public class PracticeController {
 
     /**
      * 评论
+     *
      * @param loginUser 登陆人
-     * @param moduleId 评论模块
-     * @param submitId 文章id
-     * @param dto 评论内容
+     * @param moduleId  评论模块
+     * @param submitId  文章id
+     * @param dto       评论内容
      */
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> comment(LoginUser loginUser,

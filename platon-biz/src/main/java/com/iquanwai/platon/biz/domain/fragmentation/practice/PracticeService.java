@@ -68,7 +68,7 @@ public interface PracticeService {
      * @param id      提交id
      * @param content 提交内容
      */
-    Boolean applicationSubmit(Integer id, String content);
+    Integer applicationSubmit(Integer id, String content);
 
 
     Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content);

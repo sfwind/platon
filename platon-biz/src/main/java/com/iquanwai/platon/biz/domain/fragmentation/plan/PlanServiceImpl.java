@@ -175,22 +175,24 @@ public class PlanServiceImpl implements PlanService {
         //组装小节
         List<Section> sections = Lists.newArrayList();
         chapters.forEach(chapter -> chapter.getSections().forEach(section -> {
+            List<Practice> newPractices = Lists.newArrayList();
             List<Practice> practices = practiceMap.get(section.getSeries());
             //添加小课介绍
             if (section.getSeries() == 1) {
                 PracticePlan practicePlan = practicePlanDao.loadProblemIntroduction(improvementPlan.getId());
                 if(practicePlan!=null){
-                    practices.add(buildPractice(practicePlan));
+                    newPractices.add(buildPractice(practicePlan));
                 }
             }
             //添加小目标
             if (section.getSeries() == 1) {
                 PracticePlan practicePlan = practicePlanDao.loadChallengePractice(improvementPlan.getId());
                 if(practicePlan!=null){
-                    practices.add(buildPractice(practicePlan));
+                    newPractices.add(buildPractice(practicePlan));
                 }
             }
-            section.setPractices(practices);
+            newPractices.addAll(practices);
+            section.setPractices(newPractices);
             sections.add(section);
         }));
         improvementPlan.setSections(sections);
@@ -564,7 +566,7 @@ public class PlanServiceImpl implements PlanService {
         if (complete && improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
-            improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
+            improvementPlanDao.updateStatus(planId, ImprovementPlan.CLOSE);
         }
     }
 

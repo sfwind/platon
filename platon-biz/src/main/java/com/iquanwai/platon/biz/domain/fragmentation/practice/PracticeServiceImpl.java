@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
@@ -79,8 +78,6 @@ public class PracticeServiceImpl implements PracticeService {
     private AsstCoachCommentDao asstCoachCommentDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
-    @Autowired
-    private UserRoleDao userRoleDao;
     @Autowired
     private CommentEvaluationDao commentEvaluationDao;
     @Autowired
@@ -314,11 +311,11 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Boolean applicationSubmit(Integer id, String content) {
+    public Integer applicationSubmit(Integer id, String content) {
         ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
         if (submit == null) {
             logger.error("submitId {} is not existed", id);
-            return false;
+            return null;
         }
         boolean result;
         int length = CommonUtils.removeHTMLTag(content).length();
@@ -346,9 +343,10 @@ public class PracticeServiceImpl implements PracticeService {
                 poinManager.risePoint(submit.getPlanId(), point);
                 // 修改status
                 applicationSubmitDao.updatePointStatus(id);
+                return practicePlan.getId();
             }
         }
-        return result;
+        return null;
     }
 
     @Override
