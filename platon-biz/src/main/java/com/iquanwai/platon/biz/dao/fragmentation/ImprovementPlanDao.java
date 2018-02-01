@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -306,4 +307,17 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public List<ImprovementPlan> loadPlanIdsByPage(Page page) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT Id, ProblemId FROM ImprovementPlan WHERE Del = 0 LIMIT" + page.getOffset() + ", " + page.getLimit() + ";";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+        try {
+            return runner.query(sql, h);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
 }

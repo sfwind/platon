@@ -206,4 +206,6 @@ public interface PlanService {
      * @param profileId 用户id
      */
     void unlockNeverUnlockPlans(Integer profileId);
+
+    void adjustPracticePlan();
 }

@@ -19,12 +19,14 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -180,14 +182,14 @@ public class PlanServiceImpl implements PlanService {
             //添加小课介绍
             if (section.getSeries() == 1) {
                 PracticePlan practicePlan = practicePlanDao.loadProblemIntroduction(improvementPlan.getId());
-                if(practicePlan!=null){
+                if (practicePlan != null) {
                     newPractices.add(buildPractice(practicePlan));
                 }
             }
             //添加小目标
             if (section.getSeries() == 1) {
                 PracticePlan practicePlan = practicePlanDao.loadChallengePractice(improvementPlan.getId());
-                if(practicePlan!=null){
+                if (practicePlan != null) {
                     newPractices.add(buildPractice(practicePlan));
                 }
             }
@@ -527,15 +529,15 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public ImprovementPlan getDetailByProblemId(Integer profileId, Integer problemId) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        if(improvementPlan !=null) {
+        if (improvementPlan != null) {
             improvementPlan.setProblem(cacheService.getProblem(improvementPlan.getProblemId()));
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
             improvementPlan.setMonth(courseSchedule.getMonth());
-            improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修":"辅修");
+            improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修" : "辅修");
             //设置截止时间
-            if(improvementPlan.getStatus() != ImprovementPlan.CLOSE){
+            if (improvementPlan.getStatus() != ImprovementPlan.CLOSE) {
                 improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()));
-            }else{
+            } else {
                 improvementPlan.setDeadline(0);
             }
         }
@@ -859,6 +861,61 @@ public class PlanServiceImpl implements PlanService {
         String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
         titleBuilder.append(knowledgeStr);
         return titleBuilder.toString();
+    }
+
+    @Override
+    public void adjustPracticePlan() {
+        int maxSize = 10000;
+
+        Page page = new Page();
+        page.setPageSize(maxSize);
+        page.setPage(0);
+
+        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        List<PracticePlan> insertPracticePlans = Lists.newArrayList();
+
+        do {
+            logger.info("开始进行第 {} 批次调用处理", page.getPage() + 1);
+            improvementPlans.clear();
+            insertPracticePlans.clear();
+
+            improvementPlans = improvementPlanDao.loadPlanIdsByPage(page);
+            for (ImprovementPlan improvementPlan : improvementPlans) {
+                logger.info("正在处理学习计划 PlanId：{}", improvementPlan.getId());
+
+                Integer planId = improvementPlan.getId();
+                Integer problemId = improvementPlan.getProblemId();
+                PracticePlan introduction = practicePlanDao.loadProblemIntroduction(planId);
+                if (introduction == null) {
+                    PracticePlan targetPlan = new PracticePlan();
+                    BeanUtils.copyProperties(getDefaultIntroductionPracticePlan(), targetPlan);
+                    targetPlan.setPlanId(planId);
+                    targetPlan.setPracticeId(problemId + "");
+                    insertPracticePlans.add(targetPlan);
+                }
+            }
+            // 塞入数据库
+            practicePlanDao.batchInsert(insertPracticePlans);
+            // 更新换页信息
+            page.setPage(page.getPage() + 1);
+        } while (improvementPlans.size() == maxSize);
+    }
+
+    /**
+     * 用来特殊处理 PracticePlan
+     */
+    private PracticePlan basePracticePlan;
+
+    private PracticePlan getDefaultIntroductionPracticePlan() {
+        if (basePracticePlan == null) {
+            basePracticePlan = new PracticePlan();
+            basePracticePlan.setType(PracticePlan.INTRODUCTION);
+            basePracticePlan.setSeries(0);
+            basePracticePlan.setSequence(1);
+            basePracticePlan.setStatus(0);
+            basePracticePlan.setUnlocked(true);
+        }
+        return basePracticePlan;
     }
 
 }
