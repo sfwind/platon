@@ -153,7 +153,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     @Override
     public boolean calculateProblemUnlocked(List<PracticePlan> practicePlans) {
         return practicePlans.stream()
-                .filter(plan -> plan.getType() != PracticePlan.APPLICATION_UPGRADED)
+                .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
+                        plan.getType()!= PracticePlan.APPLICATION_UPGRADED))
                 .map(PracticePlan::getUnlocked)
                 .reduce((lock1, lock2) -> lock1 && lock2)
                 .orElse(false);
