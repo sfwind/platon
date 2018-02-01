@@ -912,7 +912,7 @@ public class PlanServiceImpl implements PlanService {
             basePracticePlan.setType(PracticePlan.INTRODUCTION);
             basePracticePlan.setSeries(0);
             basePracticePlan.setSequence(1);
-            basePracticePlan.setStatus(0);
+            basePracticePlan.setStatus(1);
             basePracticePlan.setUnlocked(true);
         }
         return basePracticePlan;
