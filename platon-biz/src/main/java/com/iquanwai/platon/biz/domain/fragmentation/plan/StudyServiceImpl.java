@@ -76,7 +76,7 @@ public class StudyServiceImpl implements StudyService {
             List<Section> sections = chapter.getSections();
             sections.forEach(section -> {
                 int status = practicePlanStatusManager.calculateSectionStatus(practicePlans, section.getSeries());
-                if (close) {
+                if (close && status<0) {
                     //设置过期状态
                     section.setStatus(-3);
                 } else {
