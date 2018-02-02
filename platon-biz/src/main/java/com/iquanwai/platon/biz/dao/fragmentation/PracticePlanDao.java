@@ -45,7 +45,7 @@ public class PracticePlanDao extends PracticeDBUtil {
             Object[][] param = new Object[planList.size()][];
             for (int i = 0; i < planList.size(); i++) {
                 PracticePlan practicePlan = planList.get(i);
-                param[i] = new Object[9];
+                param[i] = new Object[8];
                 param[i][0] = practicePlan.getPracticeId();
                 param[i][1] = practicePlan.getPlanId();
                 param[i][2] = practicePlan.getType();
