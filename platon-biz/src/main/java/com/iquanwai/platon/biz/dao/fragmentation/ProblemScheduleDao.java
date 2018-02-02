@@ -34,12 +34,12 @@ public class ProblemScheduleDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public ProblemSchedule loadByKnowledgeId(Integer knowledgeId) {
+    public ProblemSchedule loadByKnowledgeId(Integer knowledgeId, Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ProblemSchedule WHERE KnowledgeId = ? AND Del = 0";
+        String sql = "SELECT * FROM ProblemSchedule WHERE KnowledgeId = ? AND problemId = ? AND Del = 0";
         ResultSetHandler<ProblemSchedule> h = new BeanHandler<>(ProblemSchedule.class);
         try {
-            return runner.query(sql, h, knowledgeId);
+            return runner.query(sql, h, knowledgeId, problemId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

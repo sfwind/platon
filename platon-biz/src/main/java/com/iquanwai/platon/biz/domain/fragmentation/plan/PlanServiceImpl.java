@@ -106,7 +106,7 @@ public class PlanServiceImpl implements PlanService {
             improvementPlan.setFree(false);
         }
         improvementPlan.setHasProblemScore(problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(),
-                        improvementPlan.getProblemId()) > 0);
+                improvementPlan.getProblemId()) > 0);
 
         if (improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做
@@ -833,6 +833,8 @@ public class PlanServiceImpl implements PlanService {
         }
 
         Integer planId = practicePlan.getPlanId();
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        Integer problemId = improvementPlan.getProblemId();
         Integer series = practicePlan.getSeries();
         List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(planId, series);
         PracticePlan planWithKnowledgeId = practicePlans.stream().filter(item -> item.getKnowledgeId() != null)
@@ -843,14 +845,16 @@ public class PlanServiceImpl implements PlanService {
         }
 
         int knowledgeId = planWithKnowledgeId.getKnowledgeId();
-        ProblemSchedule schedule = problemScheduleDao.loadByKnowledgeId(knowledgeId);
+        ProblemSchedule schedule = problemScheduleDao.loadByKnowledgeId(knowledgeId, problemId);
         StringBuilder titleBuilder = new StringBuilder();
-        titleBuilder.append(schedule.getChapter())
-                .append(".")
-                .append(schedule.getSection())
-                .append(" ");
-        String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
-        titleBuilder.append(knowledgeStr);
+        if (schedule != null) {
+            titleBuilder.append(schedule.getChapter())
+                    .append(".")
+                    .append(schedule.getSection())
+                    .append(" ");
+            String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
+            titleBuilder.append(knowledgeStr);
+        }
         return titleBuilder.toString();
     }
 
