@@ -105,16 +105,8 @@ public class PlanServiceImpl implements PlanService {
         } else {
             improvementPlan.setFree(false);
         }
-        improvementPlan.setHasProblemScore(
-                problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(), improvementPlan.getProblemId()) > 0);
-        // 所有的综合练习是否完成
-        List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
-        // 拿到未完成的综合训练
-        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW
-                && practicePlan.getStatus().equals(PracticePlan.STATUS.UNCOMPLETED))
-                .collect(Collectors.toList());
-        // 未完成未空则代表全部完成
-        improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
+        improvementPlan.setHasProblemScore(problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(),
+                        improvementPlan.getProblemId()) > 0);
 
         if (improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做

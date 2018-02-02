@@ -39,8 +39,8 @@ public class PracticePlanDao extends PracticeDBUtil {
 
     public void batchInsert(List<PracticePlan> planList) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence, Series, Summary) " +
-                "values(?,?,?,?,?,?,?,?,?)";
+        String sql = "insert into PracticePlan(PracticeId, PlanId, Type, Unlocked, Status, KnowledgeId, Sequence, Series) " +
+                "values(?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[planList.size()][];
             for (int i = 0; i < planList.size(); i++) {
@@ -54,7 +54,6 @@ public class PracticePlanDao extends PracticeDBUtil {
                 param[i][5] = practicePlan.getKnowledgeId();
                 param[i][6] = practicePlan.getSequence();
                 param[i][7] = practicePlan.getSeries();
-                param[i][8] = practicePlan.getSummary();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {

@@ -49,7 +49,6 @@ public class StudyServiceImpl implements StudyService {
         }
 
         boolean close = improvementPlan.getStatus() == ImprovementPlan.CLOSE;
-        boolean active = false;
 
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
         studyLine.setProblemId(problem.getId());

@@ -25,9 +25,6 @@ public class PracticePlan {
     public static final int KNOWLEDGE_REVIEW = 32; // 知识回顾
     public static final int WARM_UP = 1; // 选择题
     public static final int WARM_UP_REVIEW = 2; // 综合选择题
-    public static final int APPLICATION = 11; // 应用题
-    public static final int APPLICATION_REVIEW = 12; // 综合应用题
-
     public static final int APPLICATION_BASE = 11; // 简单应用题
     public static final int APPLICATION_UPGRADED = 12; // 困难应用题
 

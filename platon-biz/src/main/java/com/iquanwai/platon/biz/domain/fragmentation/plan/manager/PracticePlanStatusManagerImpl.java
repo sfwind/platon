@@ -132,8 +132,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .reduce((lock1, lock2) -> lock1 || lock2).orElse(false);
         boolean complete = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
-                .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE ||
-                        plan.getType() == PracticePlan.APPLICATION_UPGRADED))
+                .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
+                        plan.getType() != PracticePlan.APPLICATION_UPGRADED))
                         .map(PracticePlan::getStatus)
                         .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
 
