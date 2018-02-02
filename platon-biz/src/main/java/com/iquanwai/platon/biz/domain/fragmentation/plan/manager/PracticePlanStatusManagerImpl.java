@@ -131,12 +131,11 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .map(PracticePlan::getUnlocked)
                 .reduce((lock1, lock2) -> lock1 || lock2).orElse(false);
         boolean complete = practicePlans.stream()
-//                .sorted((o1, o2)->o2.getSequence()-o1.getSequence())
                 .filter(plan -> series.equals(plan.getSeries()))
-                //TODO:如果每节练习数不等于4,此处需修改
-                .filter(plan -> plan.getSequence() != 4)
-                .map(PracticePlan::getStatus)
-                .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
+                .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE ||
+                        plan.getType() == PracticePlan.APPLICATION_UPGRADED))
+                        .map(PracticePlan::getStatus)
+                        .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
 
         if (!unlocked) {
             return -1;

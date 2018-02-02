@@ -271,8 +271,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private boolean isOptional(Integer type) {
-        return type == PracticePlan.CHALLENGE ||
-                type == PracticePlan.APPLICATION || type == PracticePlan.APPLICATION_REVIEW;
+        return type == PracticePlan.APPLICATION_BASE || type == PracticePlan.APPLICATION_UPGRADED;
     }
 
     @Override

@@ -289,7 +289,7 @@ public class PracticeController {
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
                     dto.setPublishTime(item.getPublishTime());
-                    dto.setType(PracticePlan.APPLICATION);
+                    dto.setType(PracticePlan.APPLICATION_BASE);
                     dto.setSubmitId(item.getId());
                     dto.setFeedback(item.getFeedback());
                     Profile account = accountService.getProfile(item.getProfileId());

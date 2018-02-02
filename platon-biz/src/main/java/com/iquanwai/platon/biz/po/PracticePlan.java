@@ -16,8 +16,6 @@ public class PracticePlan {
     private Integer sequence; //节内顺序
     private Integer knowledgeId; //知识点id
     private Integer status; //题目状态（0-未完成，1-已完成）
-    @Deprecated
-    private Boolean summary; //是否已总结(0-否，1-是) 废弃
 
 
     public static final int INTRODUCTION = 20; // 课程介绍
