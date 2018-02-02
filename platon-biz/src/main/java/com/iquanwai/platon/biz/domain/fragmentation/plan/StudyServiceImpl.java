@@ -82,11 +82,13 @@ public class StudyServiceImpl implements StudyService {
                 } else {
                     section.setStatus(status);
                 }
-                //拿到最后一个解锁的练习
+                //拿到第一个未完成的练习
                 PracticePlan practicePlan = practicePlans.stream()
-                        .filter(plan -> plan.getSeries().equals(section.getSeries()) && plan.getUnlocked())
-                        .reduce((o1, o2) -> o1.getSequence() < o2.getSequence() ? o2 : o1).orElse(null);
-                if (practicePlan != null && practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED) {
+                        .filter(plan -> plan.getSeries().equals(section.getSeries()))
+                        .filter(PracticePlan::getUnlocked)
+                        .filter(plan -> plan.getStatus() == PracticePlan.STATUS.UNCOMPLETED)
+                        .reduce((o1, o2) -> o1.getSequence() < o2.getSequence() ? o1 : o2).orElse(null);
+                if (practicePlan != null) {
                     section.setType(practicePlan.getType());
                     section.setPracticePlanId(practicePlan.getId());
                     section.setPracticeId(practicePlan.getPracticeId());
