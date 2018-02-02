@@ -345,6 +345,14 @@ public class PlanServiceImpl implements PlanService {
                             + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
                 }
             }
+            // TODO 2018-02-04日删掉这段，之后增加商学院开营日控制配置，另外需要对主修课做限制
+            if (courseSchedule.getYear() == 2018 && courseSchedule.getMonth() == 2 && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+                if (new Date().before(DateUtils.parseStringToDate("2018-02-04"))) {
+                    // 未到开营日的主修课不能提前选择
+                    return new MutablePair<>(-1, "2月主修课将于"
+                            + "4号开放选课，请等待当天开课仪式通知吧!");
+                }
+            }
             switch (memberTypeId) {
                 case RiseMember.ELITE:
                     //商学院用户，限制36门
