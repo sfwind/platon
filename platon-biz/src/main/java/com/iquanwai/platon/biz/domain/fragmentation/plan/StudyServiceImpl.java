@@ -123,10 +123,10 @@ public class StudyServiceImpl implements StudyService {
         boolean unlocked = practicePlanStatusManager.calculateProblemUnlocked(practicePlans);
         //设置解锁状态
         int status = 0;
-        if (close) {
-            status = -3;
-        } else {
-            if (!unlocked) {
+        if(!unlocked){
+            if(close){
+                status = -3;
+            }else{
                 status = -1;
             }
         }
