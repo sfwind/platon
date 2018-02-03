@@ -76,12 +76,21 @@ public class StudyServiceImpl implements StudyService {
             List<Section> sections = chapter.getSections();
             sections.forEach(section -> {
                 int status = practicePlanStatusManager.calculateSectionStatus(practicePlans, section.getSeries());
-                if (close && status<0) {
+                if (close && status < 0) {
                     //设置过期状态
                     section.setStatus(-3);
                 } else {
                     section.setStatus(status);
                 }
+                // 该小节总共练习数
+                section.setTotalPractices((int) practicePlans.stream()
+                        .filter(plan -> plan.getSeries().equals(section.getSeries()))
+                        .count());
+                // 该小节已经完成练习数
+                section.setCompletePractices((int) practicePlans.stream()
+                        .filter(plan -> plan.getSeries().equals(section.getSeries()))
+                        .filter(plan -> plan.getStatus() == PracticePlan.STATUS.COMPLETED)
+                        .count());
                 //拿到第一个未完成的练习
                 PracticePlan practicePlan = practicePlans.stream()
                         .filter(plan -> plan.getSeries().equals(section.getSeries()))

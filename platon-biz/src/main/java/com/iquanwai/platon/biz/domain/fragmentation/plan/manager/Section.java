@@ -24,4 +24,8 @@ public class Section {
     private Integer type; // 第一个练习的类型
     private Integer practicePlanId; //最近一个解锁练习的id
     private String practiceId; //最近一个解锁练习的练习id
+
+
+    private Integer totalPractices; // 该小节总共多少道练习
+    private Integer completePractices; // 该小节已经完成的练习数
 }
