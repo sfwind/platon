@@ -35,11 +35,13 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
     private CustomerStatusDao customerStatusDao;
+    @Autowired
+    private CourseScheduleDao courseScheduleDao;
 
     @Override
     public List<Chapter> loadRoadMap(Integer planId) {
         List<UserProblemSchedule> problemSchedules = userProblemScheduleDao.loadUserProblemSchedule(planId);
-        if(CollectionUtils.isEmpty(problemSchedules)){
+        if (CollectionUtils.isEmpty(problemSchedules)) {
             ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
             List<ProblemSchedule> problemSchedules1 = problemScheduleDao.loadProblemSchedule(improvementPlan.getProblemId());
 
@@ -125,6 +127,12 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
 
     @Override
     public Integer getProblemType(Integer problemId, Integer profileId) {
+        //查询用户是否生成了课表
+        CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
+        if (courseSchedule != null) {
+            return courseSchedule.getType();
+        }
+
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         List<CourseScheduleDefault> courseSchedules;
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
