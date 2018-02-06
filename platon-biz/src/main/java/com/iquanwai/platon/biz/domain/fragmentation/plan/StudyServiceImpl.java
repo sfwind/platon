@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.PracticePlanStatusManager;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +36,8 @@ public class StudyServiceImpl implements StudyService {
     private PracticePlanStatusManager practicePlanStatusManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
+    @Autowired
+    private ProblemScoreDao problemScoreDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -116,17 +120,29 @@ public class StudyServiceImpl implements StudyService {
 
         studyLine.setReview(buildReviewPractice(practicePlans, close));
 
+        studyLine.setGrade(isNeedGrade(improvementPlan));
+
         return studyLine;
+    }
+
+    private Boolean isNeedGrade(ImprovementPlan improvementPlan) {
+        Assert.notNull(improvementPlan, "学习计划不能为空");
+        if (improvementPlan.getStatus() != ImprovementPlan.CLOSE) {
+            return false;
+        }
+
+        return problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(),
+                improvementPlan.getProblemId()) > 0;
     }
 
     private List<ReviewPractice> buildReviewPractice(List<PracticePlan> practicePlans, boolean close) {
         boolean unlocked = practicePlanStatusManager.calculateProblemUnlocked(practicePlans);
         //设置解锁状态
         int status = 0;
-        if(!unlocked){
-            if(close){
+        if (!unlocked) {
+            if (close) {
                 status = -3;
-            }else{
+            } else {
                 status = -1;
             }
         }
