@@ -120,7 +120,7 @@ public class StudyServiceImpl implements StudyService {
 
         studyLine.setReview(buildReviewPractice(practicePlans, close));
 
-        studyLine.setGrade(isNeedGrade(improvementPlan));
+        studyLine.setNeedGrade(isNeedGrade(improvementPlan));
 
         return studyLine;
     }
