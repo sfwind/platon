@@ -132,7 +132,7 @@ public class StudyServiceImpl implements StudyService {
         }
 
         return problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(),
-                improvementPlan.getProblemId()) > 0;
+                improvementPlan.getProblemId()) == 0;
     }
 
     private List<ReviewPractice> buildReviewPractice(List<PracticePlan> practicePlans, boolean close) {

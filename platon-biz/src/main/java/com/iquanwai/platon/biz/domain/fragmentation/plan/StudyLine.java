@@ -18,5 +18,5 @@ public class StudyLine {
     private String problemName; //课程名称
     private String headPic; //课程头图
     private Integer problemType; //课程类型 1-主修 2-辅修
-    private Boolean grade; //是否要打分
+    private Boolean needGrade; //是否要打分
 }
