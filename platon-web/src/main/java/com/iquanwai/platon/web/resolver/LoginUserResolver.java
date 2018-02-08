@@ -35,14 +35,19 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         Callback callback = unionUserService.getCallbackByRequest(request);
         if (callback == null) {
             // 特殊处理，被 interceptor 排除，但是却还想获取 user 的接口
+            logger.info("callback 为空");
             return null;
         }
 
+        logger.info("callback 不为空");
         UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
         LoginUser loginUser = null;
         if (unionUser != null) {
+            logger.info("unionUser id: {}", unionUser.getId());
             logger.info("加载 UnionUserId: {}, UnionId: {}", unionUser.getId(), unionUser.getUnionId());
             loginUser = adapterLoginUser(unionUser);
+        } else {
+            logger.info("unionUser 为空");
         }
         return loginUser;
     }
