@@ -203,31 +203,4 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public void batchInsertPracticePlan(List<PracticePlan> practicePlans) {
-        if (practicePlans.size() == 0) {
-            return;
-        }
-
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO fragmentCourse.PracticePlan (PlanId, Type, PracticeId, Series, Sequence, Status, Unlocked) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?);";
-        try {
-            Object[][] param = new Object[practicePlans.size()][];
-            for (int i = 0; i < practicePlans.size(); i++) {
-                PracticePlan practicePlan = practicePlans.get(i);
-                param[i] = new Object[7];
-                param[i][0] = practicePlan.getPlanId();
-                param[i][1] = practicePlan.getType();
-                param[i][2] = practicePlan.getPracticeId();
-                param[i][3] = practicePlan.getSeries();
-                param[i][4] = practicePlan.getSequence();
-                param[i][5] = practicePlan.getStatus();
-                param[i][6] = practicePlan.getUnlocked();
-            }
-            runner.batch(sql, param);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
 }
