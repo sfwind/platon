@@ -33,6 +33,8 @@ public class UnionUserResolver implements HandlerMethodArgumentResolver {
         if (ConfigUtils.isDebug()) {
             return UnionUser.defaultUser();
         }
+        logger.info("--------------------");
+        logger.info("进入 unionUser resolver");
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         Callback callback = unionUserService.getCallbackByRequest(request);

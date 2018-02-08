@@ -35,6 +35,8 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
             return GuestUser.defaultUser();
         }
 
+        logger.info("--------------------");
+        logger.info("进入 guestUser resolver");
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         Callback callback = unionUserService.getCallbackByRequest(request);
         if (callback == null) {
