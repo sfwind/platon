@@ -111,7 +111,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean checkIsFollow(String unionId) {
         Account account = followUserDao.queryByUnionId(unionId);
-        return account.getSubscribe();
+        return account.getSubscribe() == 1;
     }
 
     @Override
@@ -229,7 +229,7 @@ public class AccountServiceImpl implements AccountService {
             //先从数据库查询account对象
             Account account = followUserDao.queryByOpenId(openid);
             if (account != null) {
-                if (!account.getSubscribe()) {
+                if (account.getSubscribe() == 0) {
                     // 曾经关注，现在取关的人
                     throw new NotFollowingException();
                 }
@@ -293,7 +293,7 @@ public class AccountServiceImpl implements AccountService {
                 return new DateTime(time.longValue()).toDate();
             }, Date.class);
             BeanUtils.populate(accountNew, result);
-            if (!accountNew.getSubscribe()) {
+            if (accountNew.getSubscribe() == 0) {
                 //未关注直接抛异常
                 throw new NotFollowingException();
             }

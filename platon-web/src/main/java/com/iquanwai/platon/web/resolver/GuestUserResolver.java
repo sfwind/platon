@@ -59,7 +59,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         guestUser.setWeixinName(unionUser.getNickName());
         guestUser.setHeadimgUrl(unionUser.getHeadImgUrl());
         guestUser.setRealName(account.getRealName());
-        guestUser.setSubscribe(account.getSubscribe());
+        guestUser.setSubscribe(account.getSubscribe() == 1);
         return guestUser;
     }
 
