@@ -9,6 +9,10 @@ import java.util.List;
  * Created by 三十文
  */
 public interface UnionUserService {
+    String PC_STATE_COOKIE_NAME = "_qt";
+    String MOBILE_STATE_COOKIE_NAME = "_act";
+    String MINI_STATE_HEADER_NAME = "sk";
+
     /** 根据请求获取 callback 数据 */
     Callback getCallbackByRequest(HttpServletRequest request);
 

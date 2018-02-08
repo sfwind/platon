@@ -31,10 +31,6 @@ public class UnionUserServiceImpl implements UnionUserService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String PC_STATE_COOKIE_NAME = "_qt";
-    private static final String MOBILE_STATE_COOKIE_NAME = "_act";
-    private static final String MINI_STATE_HEADER_NAME = "sk";
-
     private static final String PLATFORM_HEADER_NAME = "platform";
 
     /** 登录用户缓存 */

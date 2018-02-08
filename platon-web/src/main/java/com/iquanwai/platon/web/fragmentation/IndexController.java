@@ -158,7 +158,7 @@ public class IndexController {
         logger.info("unionUser 不为空");
 
         logger.info("点击商学院按钮");
-        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
+        String accessToken = CookieUtils.getCookie(request, UnionUserService.MOBILE_STATE_COOKIE_NAME);
         String openid;
         Account account;
         if (accessToken != null) {

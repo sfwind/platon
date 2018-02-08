@@ -52,7 +52,7 @@ public class NotifyMessageDao extends PracticeDBUtil {
 
     public Integer loadOldCount(Integer profileId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(*) from NotifyMessage where ToUser=? and Old = 0";
+        String sql = "select count(*) from NotifyMessage where ToUser = ? and Old = 0";
         try{
             ResultSetHandler<Long> h = new ScalarHandler<>();
             return runner.query(sql, h, profileId.toString()).intValue();
