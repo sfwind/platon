@@ -98,7 +98,7 @@ public class CourseScheduleDao extends PracticeDBUtil {
 
     public CourseSchedule loadSingleCourseSchedule(Integer profileId, Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ?";
+        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND ProblemId = ? AND Del = 0";
         ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
         try {
             return runner.query(sql, h, profileId, problemId);
