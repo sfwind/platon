@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -41,9 +40,11 @@ public class UnionUserResolver implements HandlerMethodArgumentResolver {
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         Callback callback = unionUserService.getCallbackByRequest(request);
-        // callback 为空的话，会在 interceptor 那层拦截掉
-        Assert.notNull(callback, "callback 不能为空");
-        Assert.notNull(callback.getUnionId(), "callback 的 UnionId 不能为空");
+
+        if (callback == null) {
+            // 特殊处理，被 interceptor 排除，但是却还想获取 user 的接口
+            return null;
+        }
 
         UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
         if (unionUser != null) {
