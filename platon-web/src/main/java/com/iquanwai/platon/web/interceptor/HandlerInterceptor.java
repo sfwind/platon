@@ -22,7 +22,7 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
 
     @Autowired
     private UnionUserServiceImpl unionUserService;
-
+    
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         logger.info("进入拦截器");
@@ -34,7 +34,11 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
         } else {
             logger.info("platform: {}", platform);
             Callback callback = unionUserService.getCallbackByRequest(request);
-            return (callback != null && callback.getUnionId() != null) || handleUnLogin(response);
+            if (callback != null && callback.getUnionId() != null) {
+                return true;
+            } else {
+                return handleUnLogin(response);
+            }
         }
     }
 

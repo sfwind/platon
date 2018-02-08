@@ -54,6 +54,7 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         Account account = accountService.getAccountByUnionId(unionUser.getUnionId());
         GuestUser guestUser = new GuestUser();
         guestUser.setId(unionUser.getId());
+        guestUser.setUnionId(unionUser.getUnionId());
         guestUser.setOpenId(unionUser.getOpenId());
         guestUser.setWeixinName(unionUser.getNickName());
         guestUser.setHeadimgUrl(unionUser.getHeadImgUrl());

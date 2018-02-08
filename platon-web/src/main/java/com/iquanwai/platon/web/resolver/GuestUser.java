@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class GuestUser {
 
     private Integer id;
+    private String unionId;
     private String openId;
     private String weixinName;
     private String headimgUrl;
@@ -24,6 +25,7 @@ public class GuestUser {
     public static GuestUser defaultUser() {
         return new GuestUser(
                 ConfigUtils.getDefaultProfileId(),
+                ConfigUtils.getDefaultUnionId(),
                 ConfigUtils.getDefaultOpenid(), "三十文",
                 Profile.DEFAULT_AVATAR, null, true);
     }
