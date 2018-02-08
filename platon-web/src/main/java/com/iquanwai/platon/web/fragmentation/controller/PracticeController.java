@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rise/practice")
 public class PracticeController {
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PracticeService practiceService;
     @Autowired
@@ -75,7 +75,7 @@ public class PracticeController {
         ImprovementPlan improvementPlan = planService.getPlan(planId);
 
         if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            logger.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
@@ -107,7 +107,7 @@ public class PracticeController {
         Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            LOGGER.info("提交平台:{}", loginUser.getDevice());
+            logger.info("提交平台:{}", loginUser.getDevice());
             if (loginUser.getDevice() == Constants.Device.PC) {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
             } else {
@@ -144,16 +144,16 @@ public class PracticeController {
 
         // 当用户提交答案时，将 draft 草稿表一起更新
         practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getAnswer());
-        Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
+        Integer practicePlanId = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
 
-
-        if (result) {
+        if (practicePlanId != null) {
             // 提升提交数
             if (loginUser.getDevice() == Constants.Device.PC) {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
             } else {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
             }
+            planService.checkPlanComplete(practicePlanId);
         }
 
         Integer completedApplication = 0;
@@ -167,11 +167,7 @@ public class PracticeController {
                 .action("提交应用练习")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        if (result) {
-            return WebUtils.result(completedApplication);
-        } else {
-            return WebUtils.error("应用练习提交失败");
-        }
+        return WebUtils.result(completedApplication);
     }
 
     @RequestMapping(value = "/application/completed/count/{planId}", method = RequestMethod.GET)
@@ -197,6 +193,7 @@ public class PracticeController {
 
     /**
      * 点赞或者取消点赞
+     *
      * @param vote 1：点赞，2：取消点赞
      */
     @RequestMapping(value = "/vote", method = RequestMethod.POST)
@@ -228,14 +225,15 @@ public class PracticeController {
             }
         } else {
             // 取消点赞
-            LOGGER.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
+            logger.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
             return WebUtils.error("禁止取消点赞");
         }
     }
 
     /**
      * 应用任务列表页加载他人的任务信息
-     * @param loginUser 登陆人
+     *
+     * @param loginUser     登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}")
@@ -258,7 +256,8 @@ public class PracticeController {
 
     /**
      * 应用任务列表页加载他人的任务信息
-     * @param loginUser 登陆人
+     *
+     * @param loginUser     登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping("/application/list/other/{applicationId}/{pageIndex}")
@@ -290,7 +289,7 @@ public class PracticeController {
                     dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
                     dto.setPublishTime(item.getPublishTime());
-                    dto.setType(PracticePlan.APPLICATION);
+                    dto.setType(PracticePlan.APPLICATION_BASE);
                     dto.setSubmitId(item.getId());
                     dto.setFeedback(item.getFeedback());
                     Profile account = accountService.getProfile(item.getProfileId());
@@ -364,7 +363,7 @@ public class PracticeController {
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
             } else {
-                LOGGER.error("未找到该评论用户:{}", item);
+                logger.error("未找到该评论用户:{}", item);
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -416,7 +415,7 @@ public class PracticeController {
             dto.setRole(account.getRole());
             dto.setRepliedDel(comment.getRepliedDel());
         } else {
-            LOGGER.error("未找到该评论用户：{}", comment);
+            logger.error("未找到该评论用户：{}", comment);
             return null;
         }
 
@@ -441,10 +440,11 @@ public class PracticeController {
 
     /**
      * 评论
+     *
      * @param loginUser 登陆人
-     * @param moduleId 评论模块
-     * @param submitId 文章id
-     * @param dto 评论内容
+     * @param moduleId  评论模块
+     * @param submitId  文章id
+     * @param dto       评论内容
      */
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> comment(LoginUser loginUser,
@@ -482,7 +482,7 @@ public class PracticeController {
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
 
-            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
             if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
@@ -530,7 +530,7 @@ public class PracticeController {
             resultDto.setIsMine(true);
             resultDto.setRepliedDel(replyComment.getDel());
 
-            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
             if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
@@ -746,7 +746,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
                                                               @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
-        practiceService.learnKnowledge(practicePlanId);
+        practiceService.learnKnowledge(loginUser.getId(), practicePlanId);
         planService.checkPlanComplete(practicePlanId);
 
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -819,7 +819,7 @@ public class PracticeController {
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
         if (discussDto.getComment() == null || discussDto.getComment().length() > 1000) {
-            LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
+            logger.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
             return WebUtils.result("您提交的讨论字数过长");
         }
 

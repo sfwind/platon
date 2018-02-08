@@ -25,11 +25,13 @@ public interface ProblemService {
     Problem getProblem(Integer problemId);
 
     /**
-     * 根据课程id获取问题
+     * 根据课程id获取课程
      *
      * @param problemId 课程id
      */
     Problem getProblemForSchedule(Integer problemId, Integer profileId);
+
+    Problem getProblemForSchedule(Integer practicePlanId);
 
     /**
      * 获得课程的目录分类
@@ -95,10 +97,6 @@ public interface ProblemService {
      */
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
 
-    String loadProblemScheduleMonth(Integer profileId, Integer problemId);
-
-    int loadChosenPersonCount(Integer problemId);
-
     boolean hasCollectedProblem(Integer profileId, Integer problemId);
 
     int collectProblem(Integer profileId, Integer problemId);
@@ -108,8 +106,6 @@ public interface ProblemService {
     List<Problem> loadProblemCollections(Integer profileId);
 
     List<Problem> loadHotProblems(List<Integer> problemIds);
-
-    Integer loadCoursePlanSchedule(Integer profileId, Integer problemId);
 
     List<ExploreBanner> loadExploreBanner();
 }

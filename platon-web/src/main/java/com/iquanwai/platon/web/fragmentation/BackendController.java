@@ -1,8 +1,9 @@
 package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
@@ -41,12 +42,13 @@ public class BackendController {
     private CertificateService certificateService;
     @Autowired
     private GeneratePlanService generatePlanService;
+    @Autowired
+    private PlanService planService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto,
-                                                   LoginUser loginUser, GuestUser guestUser) {
+    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, LoginUser loginUser, GuestUser guestUser) {
         String data = errorLogDto.getResult();
         StringBuilder sb = new StringBuilder();
         if (data.length() > 700) {
@@ -181,4 +183,14 @@ public class BackendController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/adjust/plan", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> adjustPracticePlan() {
+        logger.info("课程计划调整接口调用成功");
+        ThreadPool.execute(() -> {
+            logger.info("开始调整课程计划");
+            planService.adjustPracticePlan();
+            logger.info("课程计划调整成功");
+        });
+        return WebUtils.success();
+    }
 }

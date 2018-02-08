@@ -3,9 +3,9 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionActivityDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PromotionLevelDao;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.LiveRedeemCodeRepository;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.TheatreService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CardRepository;
+import com.iquanwai.platon.biz.domain.operation.LiveRedeemCodeRepository;
+import com.iquanwai.platon.biz.domain.operation.TheatreService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.material.UploadResourceService;
@@ -46,7 +46,7 @@ public class CaitongLiveReceiver {
     @Autowired
     private LiveRedeemCodeRepository liveRedeemCodeRepository;
     @Autowired
-    private CardRepository cardRepository;
+    private CardManager cardRepository;
     @Autowired
     private UploadResourceService uploadResourceService;
 

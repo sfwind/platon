@@ -230,7 +230,6 @@ public class IndexController {
             return null;
         }
 
-
         return courseView(request, loginUser, moduleShow, RISE_VIEW);
     }
 

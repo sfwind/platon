@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
 import lombok.Data;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
  */
 @Data
 public class ImprovementReport {
+    private Integer problemId; // 小课 Id
     private String problem; //课程
     private Integer planId;
     private String pic; // 头图

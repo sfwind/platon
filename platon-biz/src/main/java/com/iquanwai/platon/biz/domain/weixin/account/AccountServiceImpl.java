@@ -10,7 +10,7 @@ import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.*;
@@ -64,7 +64,7 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
-    private PointRepo pointRepo;
+    private PointManager pointRepo;
     @Autowired
     private ShortMessageService shortMessageService;
     @Autowired
@@ -566,7 +566,7 @@ public class AccountServiceImpl implements AccountService {
             return courseSchedule.getCategory();
         }
         // 老用户
-        CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.SCHEDULE_LESS);
+        CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE);
         if (status != null) {
             return CourseScheduleDefault.CategoryType.OLD_STUDENT;
         } else {

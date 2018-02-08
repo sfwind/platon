@@ -29,7 +29,7 @@ public class CustomerStatus {
      */
     public static final Integer LEARNED_AUDITION = 4;
     /**
-     * 是否不用开课程表
+     * 是否是老课程表
      */
-    public static final Integer SCHEDULE_LESS = 5;
+    public static final Integer OLD_SCHEDULE = 5;
 }

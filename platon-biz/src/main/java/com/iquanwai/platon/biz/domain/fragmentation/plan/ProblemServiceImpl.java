@@ -4,8 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
@@ -42,13 +45,11 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    private CardManager cardManager;
     @Autowired
-    private CardRepository cardRepository;
+    private ProblemScheduleManager problemScheduleManager;
     @Autowired
-    private ProblemScheduleRepository problemScheduleRepository;
-    @Autowired
-    private AccountService accountService;
+    private PracticePlanDao practicePlanDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -72,10 +73,22 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = cacheService.getProblem(problemId);
         List<Chapter> chapters;
         if (improvementPlan != null) {
-            chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+            chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         } else {
-            chapters = problemScheduleRepository.loadDefaultRoadMap(problemId);
+            chapters = problemScheduleManager.loadDefaultRoadMap(problemId);
         }
+        problem.setChapterList(chapters);
+        problem.setProblemType(problemScheduleManager.getProblemType(problemId, profileId));
+
+        return problem;
+    }
+
+    @Override
+    public Problem getProblemForSchedule(Integer practicePlanId) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+        Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         problem.setChapterList(chapters);
 
         return problem;
@@ -155,7 +168,7 @@ public class ProblemServiceImpl implements ProblemService {
         Integer problemId = plan.getProblemId();
         // 获取 essenceCard 所有与当前课程相关的数据
         Problem problem = cacheService.getProblem(problemId);
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(planId);
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(planId);
         Integer completeSeries = plan.getCompleteSeries();
         // 目标 essenceList
         List<EssenceCard> cards = Lists.newArrayList();
@@ -165,8 +178,8 @@ public class ProblemServiceImpl implements ProblemService {
             EssenceCard essenceCard = new EssenceCard();
             essenceCard.setProblemId(problemId);
             essenceCard.setChapterId(chapterId);
-            essenceCard.setThumbnail(cardRepository.loadTargetThumbnailByChapterId(chapterId, chapters.size()));
-            essenceCard.setThumbnailLock(cardRepository.loadTargetThumbnailLockByChapterId(chapterId, chapters.size()));
+            essenceCard.setThumbnail(cardManager.loadTargetThumbnailByChapterId(chapterId, chapters.size()));
+            essenceCard.setThumbnailLock(cardManager.loadTargetThumbnailLockByChapterId(chapterId, chapters.size()));
             essenceCard.setChapterNo("第" + NumberToHanZi.formatInteger(chapterId) + "章");
             if (chapterId == chapters.size()) {
                 essenceCard.setChapter("课程知识清单");
@@ -200,23 +213,7 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        return cardRepository.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
-    }
-
-    @Override
-    public String loadProblemScheduleMonth(Integer profileId, Integer problemId) {
-        Integer category = accountService.loadUserScheduleCategory(profileId);
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
-
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
-                .filter(scheduleDefault -> problemId.equals(scheduleDefault.getProblemId())).findAny().orElse(null);
-        return courseScheduleDefault != null ? courseScheduleDefault.getMonth() + "" : null;
-    }
-
-    @Override
-    public int loadChosenPersonCount(Integer problemId) {
-        // return improvementPlanDao.loadChosenPersonCount(problemId);
-        return 0;
+        return cardManager.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
     }
 
     @Override
@@ -276,28 +273,15 @@ public class ProblemServiceImpl implements ProblemService {
         for (Integer problemId : problemIds) {
             Problem problem = cacheService.getProblem(problemId);
             Assert.notNull(problem, "配置的课程不能为空");
-            problem.setChosenPersonCount(loadChosenPersonCount(problemId));
             problems.add(problem);
         }
         return problems;
     }
 
     @Override
-    public Integer loadCoursePlanSchedule(Integer profileId, Integer problemId) {
-        Integer category = accountService.loadUserScheduleCategory(profileId);
-
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
-                .filter(scheduleDefault -> problemId.equals(scheduleDefault.getProblemId())).findAny().orElse(null);
-
-        return courseScheduleDefault != null ? courseScheduleDefault.getMonth() : null;
-    }
-
-    @Override
     public List<ExploreBanner> loadExploreBanner() {
         JSONArray bannerArray = JSONArray.parseArray(ConfigUtils.getExploreBannerString());
         List<ExploreBanner> banners = Lists.newArrayList();
-
         // 专项课 Banner 放第一个
         ExploreBanner campBanner = new ExploreBanner();
         campBanner.setImageUrl(ConfigUtils.getCampProblemBanner());

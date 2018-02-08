@@ -68,7 +68,7 @@ public interface PracticeService {
      * @param id      提交id
      * @param content 提交内容
      */
-    Boolean applicationSubmit(Integer id, String content);
+    Integer applicationSubmit(Integer id, String content);
 
 
     Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content);
@@ -249,7 +249,7 @@ public interface PracticeService {
      *
      * @param practicePlanId 练习id
      */
-    void learnKnowledge(Integer practicePlanId);
+    void learnKnowledge(Integer profileId, Integer practicePlanId);
 
     /**
      * 求点评
@@ -275,20 +275,15 @@ public interface PracticeService {
      */
     void deleteComment(Integer commentId);
 
-
-    /**
-     * 根据应用练习
-     *
-     * @param applicationId 应用练习id
-     * @param profileId     用户id
-     * @return
-     */
-    ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
-
     /**
      * 根据 ApplicationSubmit 的 id 获取 ApplicationSubmit
      */
-    ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId);
+    ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId);
+
+    /**
+     * 完成课程介绍
+     */
+    void learnProblemIntroduction(Integer profileId, Integer practicePlanId);
 
     /**
      * 根据Id获取ApplicationSubmit对象

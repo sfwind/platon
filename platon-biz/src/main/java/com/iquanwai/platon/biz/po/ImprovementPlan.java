@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.po;
 
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
 import lombok.Data;
 
 import java.util.Date;
@@ -52,6 +52,7 @@ public class ImprovementPlan {
     private Integer mustStudyDays; // 最小学习天数
     private String typeDesc; //课程类型描述
     private Integer type; //课程类型
+    private Integer month; //几月课程
 
     public final static int TYPE_MAJOR = 1;
     public final static int TYPE_MINOR = 2;

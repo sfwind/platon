@@ -1,9 +1,9 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.CourseReductionService;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.operation.CourseReductionService;
+import com.iquanwai.platon.biz.domain.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;

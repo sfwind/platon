@@ -49,16 +49,4 @@ public class ProblemScoreDao extends PracticeDBUtil {
         }
         return -1;
     }
-
-    public Double getProblemAverage(Integer problemId, Integer question) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select AVG(Choice) from fragmentCourse.ProblemScore where ProblemId = ? and Question = ? ";
-        try {
-            ResultSetHandler<Double> h = new ScalarHandler<>();
-            return runner.query(sql, h, problemId, question);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return 5.0;
-    }
 }

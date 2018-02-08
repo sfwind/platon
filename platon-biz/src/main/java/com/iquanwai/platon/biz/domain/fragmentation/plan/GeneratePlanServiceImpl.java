@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -111,14 +111,16 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         }).collect(Collectors.toList());
         userProblemScheduleDao.batchInsert(userProblemSchedules);
 
-        //生成知识点
-        practicePlans.addAll(createKnowledge(planId, problemSchedules));
-        //生成巩固练习
-        practicePlans.addAll(createWarmupPractice(planId, problemSchedules));
-        //生成应用练习
-        practicePlans.addAll(createApplicationPractice(problem, planId, problemSchedules));
-        //生成小目标
+        // 生成小课介绍
+        practicePlans.addAll(createIntroduction(problem, planId));
+        // 生成小目标
         practicePlans.addAll(createChallengePractice(problem, planId));
+        // 生成知识点
+        practicePlans.addAll(createKnowledge(planId, problemSchedules));
+        // 生成巩固练习
+        practicePlans.addAll(createWarmupPractice(planId, problemSchedules));
+        // 生成应用练习
+        practicePlans.addAll(createApplicationPractice(problem, planId, problemSchedules));
         if (maxSeries != null) {
             practicePlans.stream().filter(item -> item.getSeries() > maxSeries).forEach(item -> item.setStatus(PracticePlan.STATUS.NEVER_UNLOCK));
         }
@@ -126,6 +128,22 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlanDao.batchInsert(practicePlans);
 
         return planId;
+    }
+
+    private List<PracticePlan> createIntroduction(Problem problem, Integer planId) {
+        List<PracticePlan> selected = Lists.newArrayList();
+
+        PracticePlan practicePlan = new PracticePlan();
+        practicePlan.setPlanId(planId);
+        practicePlan.setType(PracticePlan.INTRODUCTION);
+        practicePlan.setPracticeId(problem.getId() + "");
+        practicePlan.setSeries(0);
+        practicePlan.setSequence(1);
+        practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
+        practicePlan.setUnlocked(true);
+
+        selected.add(practicePlan);
+        return selected;
     }
 
     @Override
@@ -144,25 +162,18 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             PracticePlan practicePlan = new PracticePlan();
             Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
-            //第一节内容自动解锁
-            if (sequence == 1) {
-                practicePlan.setUnlocked(true);
-            } else {
-                practicePlan.setUnlocked(false);
-            }
-            boolean review = Knowledge.isReview(knowledgeId);
-            if (!review) {
-                practicePlan.setType(PracticePlan.KNOWLEDGE);
-            } else {
+            practicePlan.setUnlocked(false);
+            if(Knowledge.isReview(knowledgeId)){
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
+            }else{
+                practicePlan.setType(PracticePlan.KNOWLEDGE);
             }
-            practicePlan.setPlanId(planId);
 
+            practicePlan.setPlanId(planId);
             practicePlan.setPracticeId(knowledgeId.toString());
             practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
             practicePlan.setSequence(KNOWLEDGE_SEQUENCE);
             practicePlan.setSeries(sequence);
-//            practicePlan.setSummary(false);
             selected.add(practicePlan);
         }
 
@@ -212,14 +223,13 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> selected = Lists.newArrayList();
 
         PracticePlan practicePlan = new PracticePlan();
-        practicePlan.setUnlocked(true);
+        practicePlan.setUnlocked(false);
         practicePlan.setPlanId(planId);
         practicePlan.setType(PracticePlan.CHALLENGE);
         practicePlan.setPracticeId(problem.getId() + "");
         practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
         practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
         practicePlan.setSeries(0);
-        // practicePlan.setSummary(false);
         selected.add(practicePlan);
 
         return selected;
@@ -241,25 +251,18 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
-            boolean review = Knowledge.isReview(knowledgeId);
-//            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用练习
             for (int i = 0; i < practices.size(); i++) {
                 PracticePlan practicePlan = new PracticePlan();
-                //第一节内容自动解锁
-                if (sequence == 1) {
-                    practicePlan.setUnlocked(true);
-                } else {
-                    practicePlan.setUnlocked(false);
-                }
+                practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
-                if (!review) {
-                    practicePlan.setType(PracticePlan.APPLICATION);
+                if (practices.get(i) != null && practices.get(i).getSequence() == 1) {
+                    practicePlan.setType(PracticePlan.APPLICATION_BASE);
                 } else {
-                    practicePlan.setType(PracticePlan.APPLICATION_REVIEW);
+                    practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
                 }
                 practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
                 practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
@@ -273,7 +276,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         return selectedPractice;
     }
-
 
     /**
      * 创建选择题记录
@@ -293,12 +295,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
             boolean review = Knowledge.isReview(knowledgeId);
-            //第一节内容自动解锁
-            if (sequence == 1) {
-                practicePlan.setUnlocked(true);
-            } else {
-                practicePlan.setUnlocked(false);
-            }
+            practicePlan.setUnlocked(false);
             practicePlan.setPlanId(planId);
             if (!review) {
                 practicePlan.setType(PracticePlan.WARM_UP);
@@ -381,7 +378,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
         if (improvementPlan != null) {
             List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(improvementPlan.getId());
-            if (practicePlans.stream().anyMatch(item -> PracticePlan.STATUS.NEVER_UNLOCK.equals(item.getStatus()))) {
+            if (practicePlans.stream().anyMatch(item -> PracticePlan.STATUS.NEVER_UNLOCK == item.getStatus())) {
                 // 有永不解锁的小节
                 practicePlanDao.revertNeverUnlockPracticePlan(improvementPlan.getId());
             }
@@ -495,7 +492,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW;
                 // 是否未完成
-                Boolean isNotComplete = !PracticePlan.STATUS.COMPLETED.equals(practicePlan.getStatus());
+                Boolean isNotComplete = PracticePlan.STATUS.COMPLETED != practicePlan.getStatus();
                 if (isRequest && isNotComplete) {
                     // 必做并且未完成
                     return false;
