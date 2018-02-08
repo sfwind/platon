@@ -131,6 +131,10 @@ public class StudyServiceImpl implements StudyService {
             return false;
         }
 
+        if (improvementPlan.getCompleteTime() == null) {
+            return false;
+        }
+
         return problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(),
                 improvementPlan.getProblemId()) == 0;
     }
