@@ -22,7 +22,7 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
 
     @Autowired
     private UnionUserServiceImpl unionUserService;
-    
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         logger.info("进入拦截器");
@@ -30,6 +30,7 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
         UnionUser.Platform platform = unionUserService.getPlatformType(request);
         if (platform == null || unionUserService.isDocumentRequest(request)) {
             logger.info("platform 为空或者当前请求的是资源请求");
+
             return true;
         } else {
             logger.info("platform: {}", platform);

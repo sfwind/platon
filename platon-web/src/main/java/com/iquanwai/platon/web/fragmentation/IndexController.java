@@ -14,6 +14,7 @@ import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import lombok.Data;
@@ -44,6 +45,8 @@ public class IndexController {
     private AccountService accountService;
     @Autowired
     private WhiteListService whiteListService;
+    @Autowired
+    private UnionUserService unionUserService;
     @Autowired
     private InterlocutionService interlocutionService;
     @Autowired
@@ -145,6 +148,10 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+        if (unionUser == null) {
+            WebUtils.auth(request, response);
+        }
+
         logger.info("点击商学院按钮");
         String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid;
