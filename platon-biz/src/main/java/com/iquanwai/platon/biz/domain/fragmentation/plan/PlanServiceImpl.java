@@ -531,8 +531,14 @@ public class PlanServiceImpl implements PlanService {
         if (improvementPlan != null) {
             improvementPlan.setProblem(cacheService.getProblem(improvementPlan.getProblemId()));
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
-            improvementPlan.setMonth(courseSchedule.getMonth());
-            improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修" : "辅修");
+            if (courseSchedule != null) {
+                improvementPlan.setMonth(courseSchedule.getMonth());
+                improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修" : "辅修");
+            } else {
+                Date startDate = improvementPlan.getStartDate();
+                improvementPlan.setMonth(DateUtils.getMonth(startDate));
+                improvementPlan.setTypeDesc("专项课");
+            }
             //设置截止时间
             if (improvementPlan.getStatus() != ImprovementPlan.CLOSE) {
                 improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()));
