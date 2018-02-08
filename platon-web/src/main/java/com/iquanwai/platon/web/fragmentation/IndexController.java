@@ -148,9 +148,14 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+        logger.info("进入 rise/static/rise");
         if (unionUser == null) {
+            logger.info("unionUser 为空");
             WebUtils.auth(request, response);
+            return null;
         }
+
+        logger.info("unionUser 不为空");
 
         logger.info("点击商学院按钮");
         String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
