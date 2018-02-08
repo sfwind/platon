@@ -512,7 +512,7 @@ public class CustomerController {
                 .action("检查是否关注")
                 .memo(key);
         operationLogService.log(operationLog);
-        if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
+        if (loginUser == null || loginUser.getSubscribe() == null || !loginUser.getSubscribe()) {
             // 没有loginUser，即没有关注,创建一个img
             String qrCode = accountService.createSubscribePush(loginUser != null ? loginUser.getOpenId() : null, callback, key);
             return WebUtils.result(qrCode);
