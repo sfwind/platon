@@ -166,7 +166,7 @@ public class MessageController {
 //                .action("查看条数");
 //        operationLogService.log(operationLog);
 
-        logger.info("登录用户 id 为：", loginUser.getId());
+        logger.info("登录用户 id 为：{}", loginUser.getId());
         Integer count = messageService.unreadCount(loginUser.getId());
         return WebUtils.result(count);
     }

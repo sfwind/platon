@@ -50,6 +50,8 @@
         </mvc:message-converters>
         <mvc:argument-resolvers>
             <bean class="com.iquanwai.platon.web.resolver.UnionUserResolver"/>
+            <bean class="com.iquanwai.platon.web.resolver.LoginUserResolver"/>
+            <bean class="com.iquanwai.platon.web.resolver.GuestUserResolver"/>
         </mvc:argument-resolvers>
     </mvc:annotation-driven>
 
