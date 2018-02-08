@@ -2,7 +2,6 @@ package com.iquanwai.platon.web.resolver;
 
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.RestfulHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,6 @@ public class UnionUserResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
     private UnionUserServiceImpl unionUserService;
-
-    @Autowired
-    private RestfulHelper restfulHelper;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
