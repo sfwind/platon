@@ -31,6 +31,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
             return LoginUser.defaultUser();
         }
 
+        logger.info("--------------------");
+        logger.info("进入 loginuse resolver");
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         Callback callback = unionUserService.getCallbackByRequest(request);
         if (callback == null) {
