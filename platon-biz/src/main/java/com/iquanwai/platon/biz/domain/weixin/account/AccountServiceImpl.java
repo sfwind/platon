@@ -101,7 +101,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public boolean initUserByUnionId(String unionId, Boolean realTime) {
-        String requestUrl = ConfigUtils.domainName() + "/internal/init/user?unionId=" + unionId + "&realTime=" + realTime;
+        String requestUrl = "http://" + ConfigUtils.getInternalIp() + ":" + ConfigUtils.getInternalPort() + "/internal/init/user?unionId=" + unionId + "&realTime=" + realTime;
         String body = restfulHelper.getPure(requestUrl);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         String code = result.get("code").toString();
