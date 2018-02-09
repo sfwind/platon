@@ -108,6 +108,14 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
     public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
         logger.info("点击学习页面");
+        logger.info("进入 rise/static/learn");
+        if (unionUser == null) {
+            logger.info("unionUser 为空");
+            WebUtils.auth(request, response);
+            return null;
+        }
+        logger.info("unionUser 不为空");
+
         String state = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid;
         Account account;
@@ -154,7 +162,6 @@ public class IndexController {
             WebUtils.auth(request, response);
             return null;
         }
-
         logger.info("unionUser 不为空");
 
         logger.info("点击商学院按钮");
@@ -242,6 +249,13 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
     public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
         logger.info("点击训练营按钮");
+        logger.info("进入 rise/static/camp");
+        if (unionUser == null) {
+            logger.info("unionUser 为空");
+            WebUtils.auth(request, response);
+            return null;
+        }
+        logger.info("unionUser 不为空");
 
         String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid;
@@ -293,6 +307,14 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+        logger.info("进入 rise/static/**");
+        if (unionUser == null) {
+            logger.info("unionUser 为空");
+            WebUtils.auth(request, response);
+            return null;
+        }
+        logger.info("unionUser 不为空");
+
         String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid;
         Account account;
