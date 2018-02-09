@@ -573,7 +573,7 @@ public class PlanServiceImpl implements PlanService {
         if (complete && improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
-            improvementPlanDao.updateStatus(planId, ImprovementPlan.CLOSE);
+            improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
         }
     }
 
@@ -583,20 +583,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
 
-        // TODO 对于限免课程，不设置最小学习天数，后期删除
-        int minStudyDays;
-        if (plan.getProblemId().equals(ConfigUtils.getTrialProblemId())) {
-            minStudyDays = 0;
-        } else {
-            minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
-        }
-        Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
-        // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
-        if (new Date().before(minDays)) {
-            return new MutablePair<>(complete, minStudyDays);
-        } else {
-            return new MutablePair<>(complete, 0);
-        }
+        return new MutablePair<>(complete, 0);
     }
 
     @Override
