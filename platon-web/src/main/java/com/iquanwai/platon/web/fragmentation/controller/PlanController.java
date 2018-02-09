@@ -297,11 +297,6 @@ public class PlanController {
         if (!check.getLeft()) {
             // 没有完成必做
             return WebUtils.error(-1, "先完成所有的知识理解和巩固练习<br/>才能完成课程哦");
-        } else {
-            // 完成必做,查看最小完成天数
-            if (check.getRight() != 0) {
-                return WebUtils.error("学得太猛了，再复习一下吧<br/>本课程推荐学习天数至少为" + check.getRight() + "天<br/>之后就可以完成课程了");
-            }
         }
 
         if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
