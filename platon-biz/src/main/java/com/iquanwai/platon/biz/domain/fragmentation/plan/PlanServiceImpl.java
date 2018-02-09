@@ -567,7 +567,7 @@ public class PlanServiceImpl implements PlanService {
         if (complete && improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
-            improvementPlanDao.updateStatus(planId, ImprovementPlan.CLOSE);
+            improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
         }
     }
 
