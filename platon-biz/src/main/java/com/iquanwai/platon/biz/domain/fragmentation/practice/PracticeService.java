@@ -307,4 +307,11 @@ public interface PracticeService {
 
     Integer loadCompletedApplicationCnt(Integer planId);
 
+    /**
+     * 获取练习
+     *
+     * @param practicePlanId 训练组编号
+     */
+    PracticePlan getPractice(Integer practicePlanId);
+
 }
