@@ -35,19 +35,27 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
 
         // 核实人员信息、并且将 status 改成 1，将该条记录置成完成
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
-        boolean planAuthCheck = improvementPlans.stream().map(ImprovementPlan::getId)
-                .collect(Collectors.toList()).contains(planId);
-        if (planAuthCheck) {
+        ImprovementPlan improvementPlan = improvementPlans.stream()
+                .filter(plan -> plan.getId() == planId).findAny().orElse(null);
+        if (improvementPlan != null) {
             practicePlanDao.complete(practicePlanId);
+        }else{
+            //没找到课程
+            logger.error("{} 不是 {} 的小课", practicePlanId, profileId);
+            return;
+        }
+
+        if(improvementPlan.getStatus() == ImprovementPlan.CLOSE){
+            //课程已关闭,不能解锁
+            return;
         }
 
         int type = practicePlan.getType(); // 当前题目类型
         int series = practicePlan.getSeries(); // 当前小节数
-//        int sequence = practicePlan.getSequence();
 
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(practicePlan.getPlanId());
 
-        // 根据完成的 type 类型来进行下一步操作
+        // 根据完成的 type 类型来进行解锁
         PracticePlan targetPracticePlan;
         switch (type) {
             // 如果完成的是小课介绍，需要将小目标解锁
@@ -75,7 +83,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                         .filter(plan -> (plan.getType() == PracticePlan.WARM_UP
                                 || plan.getType() == PracticePlan.WARM_UP_REVIEW)
                                 && plan.getSeries() == series)
-                                .findAny().orElse(null);
+                        .findAny().orElse(null);
                 if (targetPracticePlan != null) {
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
@@ -134,8 +142,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .filter(plan -> series.equals(plan.getSeries()))
                 .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
                         plan.getType() != PracticePlan.APPLICATION_UPGRADED))
-                        .map(PracticePlan::getStatus)
-                        .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
+                .map(PracticePlan::getStatus)
+                .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
 
         if (!unlocked) {
             return -1;
@@ -153,7 +161,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     public boolean calculateProblemUnlocked(List<PracticePlan> practicePlans) {
         return practicePlans.stream()
                 .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
-                        plan.getType()!= PracticePlan.APPLICATION_UPGRADED))
+                        plan.getType() != PracticePlan.APPLICATION_UPGRADED))
                 .map(PracticePlan::getUnlocked)
                 .reduce((lock1, lock2) -> lock1 && lock2)
                 .orElse(false);

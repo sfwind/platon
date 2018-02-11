@@ -880,4 +880,9 @@ public class PracticeServiceImpl implements PracticeService {
         return completedCnt.intValue();
     }
 
+    @Override
+    public PracticePlan getPractice(Integer practicePlanId) {
+        return practicePlanDao.load(PracticePlan.class, practicePlanId);
+    }
+
 }
