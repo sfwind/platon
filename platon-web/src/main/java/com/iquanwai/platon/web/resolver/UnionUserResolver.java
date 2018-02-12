@@ -33,8 +33,6 @@ public class UnionUserResolver implements HandlerMethodArgumentResolver {
         if (ConfigUtils.isDebug()) {
             return UnionUser.defaultUser();
         }
-        logger.info("--------------------");
-        logger.info("进入 unionUser resolver");
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         Callback callback = unionUserService.getCallbackByRequest(request);
@@ -44,10 +42,6 @@ public class UnionUserResolver implements HandlerMethodArgumentResolver {
             return null;
         }
 
-        UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
-        if (unionUser != null) {
-            logger.info("加载 UnionUserId: {}, UnionId: {}", unionUser.getId(), unionUser.getUnionId());
-        }
-        return unionUser;
+        return unionUserService.getUnionUserByCallback(callback);
     }
 }

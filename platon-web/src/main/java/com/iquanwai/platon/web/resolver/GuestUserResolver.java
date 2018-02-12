@@ -44,7 +44,6 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
         UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
         GuestUser guestUser = null;
         if (unionUser != null) {
-            logger.info("加载 UnionUserId: {}, UnionId: {}", unionUser.getId(), unionUser.getUnionId());
             guestUser = adapterUnionUser(unionUser);
         }
         return guestUser;
