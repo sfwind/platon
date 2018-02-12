@@ -76,12 +76,11 @@ public class IndexController {
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
     // 填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
+    private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goRise=true&goCamp=true";
     // 申请成功页面
     private static final String APPLY_SUCCESS = "/pay/apply";
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
-    // 组团学习倒计时页面
-    private static final String GROUP_PROMOTION_COUNT_DOWN = "/rise/static/group/promotion/count/down";
 
     private static final String RISE_VIEW = "course";
     private static final String NOTE_VIEW = "note";
@@ -233,9 +232,15 @@ public class IndexController {
         return courseView(request, loginUser, moduleShow, RISE_VIEW);
     }
 
-    //个人信息是否完整
+    //所有信息是否完整
     private boolean isInfoComplete(Profile profile) {
         return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
+                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
+    }
+
+    //个人信息是否完整
+    private boolean isPersonalInfoComplete(Profile profile) {
+        return profile.getRealName() == null ||
                 (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
     }
 
@@ -279,19 +284,20 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(loginUser.getId());
         ModuleShow moduleShow = getModuleShow(loginUser, riseMembers);
 
-        if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
-            activityMessageService.loginMsg(loginUser.getId());
+        //是否买过或曾经买过 商学院/专业版
+        Boolean isMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
+        Profile profile = accountService.getProfile(loginUser.getId());
+
+        if (isMember && isPersonalInfoComplete(profile)) {
+            // 未填写信息的已购买专项课的 “新” 会员
+            response.sendRedirect(PROFILE_CAMP_SUBMIT);
+            return null;
         } else if (whiteListService.isGoCampCountDownPage(loginUser.getId())) {
+            // 填完身份信息之后，开始学习日期未到
             response.sendRedirect(CAMP_COUNT_DOWN_URL);
             return null;
-        } else if (whiteListService.isGoGroupPromotionCountDownPage(loginUser.getId())) {
-            response.sendRedirect(GROUP_PROMOTION_COUNT_DOWN);
-            return null;
-        } else if (whiteListService.isStillLearningCamp(loginUser.getId())) {
-            return courseView(request, loginUser, moduleShow, RISE_VIEW);
-            //参加一带二活动的人可以进入学习页面
-        } else if (whiteListService.isProOrCardOnDate(loginUser.getId())) {
-            return courseView(request, loginUser, moduleShow, RISE_VIEW);
+        } else if (whiteListService.checkCampMenuWhiteList(loginUser.getId())) {
+            activityMessageService.loginMsg(loginUser.getId());
         } else {
             response.sendRedirect(CAMP_SALE_URL);
             return null;
