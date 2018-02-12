@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.resolver;
 
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -18,6 +19,8 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
     private UnionUserServiceImpl unionUserService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -58,6 +61,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         loginUser.setHeadimgUrl(unionUser.getHeadImgUrl());
         loginUser.setWeixinName(unionUser.getNickName());
         loginUser.setUnionId(unionUser.getUnionId());
+        loginUser.setRole(accountService.getRole(unionUser.getId()).getId());
         return loginUser;
     }
 }
