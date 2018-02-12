@@ -405,7 +405,8 @@ public class ProblemController {
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
-                dto.setIsRiseMember(loginUser.getRiseMember() == 1);
+                int riseMemberType = accountService.getProfileRiseMember(loginUser.getId());
+                dto.setIsRiseMember(riseMemberType == 1);
                 dto.setProblemId(essenceCards.getLeft().getId());
                 dto.setProblem(essenceCards.getLeft().getProblem());
             }
