@@ -21,8 +21,6 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
     private AccountService accountService;
     @Autowired
     private UnionUserService unionUserService;
-    @Autowired
-    private LoginUserService loginUserService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
