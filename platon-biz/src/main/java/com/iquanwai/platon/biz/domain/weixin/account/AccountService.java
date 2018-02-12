@@ -10,6 +10,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
 public interface AccountService {
+
+    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
+    String REFRESH_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid={appid}&grant_type=refresh_token&refresh_token={refresh_token}";
+
     /**
      * 根据openid获取用户的详细信息
      */
@@ -95,9 +100,6 @@ public interface AccountService {
      * 查看证书时提交用户信息
      */
     void submitCertificateProfile(Profile profile);
-
-    String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
-    String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
 
     void reloadRegion();
 

@@ -5,7 +5,11 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -15,12 +19,14 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -60,13 +66,15 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
-    private CardRepository cardRepository;
+    private ProblemScheduleDao problemScheduleDao;
+    @Autowired
+    private CardManager cardManager;
+    @Autowired
+    private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
-    private ProblemScheduleRepository problemScheduleRepository;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
@@ -83,26 +91,11 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public void buildPlanDetail(ImprovementPlan improvementPlan) {
-        //解锁检查
-        Integer series = improvementPlan.getCompleteSeries();
-        Integer planId = improvementPlan.getId();
-
-        //已过期不能解锁
-        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
-            improvementPlan.setLockedStatus(-3);
-        } else {
-            //解锁下一组
-            List<PracticePlan> nextSeriesPracticePlans = practicePlanDao.loadBySeries(planId,
-                    series + 1);
-            if (CollectionUtils.isNotEmpty(nextSeriesPracticePlans)) {
-                unlock(nextSeriesPracticePlans, planId);
-            }
-        }
         //写入字段
         // 关闭时间，1.已关闭 显示已关闭， 2.未关闭（学习中／已完成）-会员-显示关闭时间 3.未关闭-非会员-不显示
         calcDeadLine(improvementPlan);
         Problem problem = cacheService.getProblem(improvementPlan.getProblemId());
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         problem.setChapterList(chapters);
         improvementPlan.setProblem(problem);
         // 当前 Problem 是否为限免课程
@@ -112,15 +105,8 @@ public class PlanServiceImpl implements PlanService {
         } else {
             improvementPlan.setFree(false);
         }
-        improvementPlan.setHasProblemScore(
-                problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(), improvementPlan.getProblemId()) > 0);
-        // 所有的综合练习是否完成
-        List<PracticePlan> applications = practicePlanDao.loadApplicationPracticeByPlanId(improvementPlan.getId());
-        // 拿到未完成的综合训练
-        List<PracticePlan> unDoneApplications = applications.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.APPLICATION_REVIEW && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
-                .collect(Collectors.toList());
-        // 未完成未空则代表全部完成
-        improvementPlan.setDoneAllIntegrated(CollectionUtils.isEmpty(unDoneApplications));
+        improvementPlan.setHasProblemScore(problemScoreDao.userProblemScoreCount(improvementPlan.getProfileId(),
+                improvementPlan.getProblemId()) > 0);
 
         if (improvementPlan.getStatus() == ImprovementPlan.RUNNING) {
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做
@@ -148,7 +134,6 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
         }
-
 
         //组装小节数据
         buildSections(improvementPlan);
@@ -184,12 +169,24 @@ public class PlanServiceImpl implements PlanService {
         //组装小节
         List<Section> sections = Lists.newArrayList();
         chapters.forEach(chapter -> chapter.getSections().forEach(section -> {
+            List<Practice> newPractices = Lists.newArrayList();
             List<Practice> practices = practiceMap.get(section.getSeries());
+            //添加小课介绍
+            if (section.getSeries() == 1) {
+                PracticePlan practicePlan = practicePlanDao.loadProblemIntroduction(improvementPlan.getId());
+                if (practicePlan != null) {
+                    newPractices.add(buildPractice(practicePlan));
+                }
+            }
             //添加小目标
             if (section.getSeries() == 1) {
-                practices.add(buildPractice(practicePlanDao.loadChallengePractice(improvementPlan.getId())));
+                PracticePlan practicePlan = practicePlanDao.loadChallengePractice(improvementPlan.getId());
+                if (practicePlan != null) {
+                    newPractices.add(buildPractice(practicePlan));
+                }
             }
-            section.setPractices(practices);
+            newPractices.addAll(practices);
+            section.setPractices(newPractices);
             sections.add(section);
         }));
         improvementPlan.setSections(sections);
@@ -202,7 +199,8 @@ public class PlanServiceImpl implements PlanService {
                 if ((practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) && PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) &&
+                        practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED) {
                     return false;
                 }
             }
@@ -237,21 +235,6 @@ public class PlanServiceImpl implements PlanService {
         return problemSchedules;
     }
 
-    private void unlock(List<PracticePlan> runningPractice, Integer planId) {
-        Assert.notNull(planId, "训练计划不能为空");
-        Assert.notNull(runningPractice, "练习计划不能为空");
-        //如果练习未解锁,则解锁练习
-        runningPractice.stream()
-                .filter(practicePlan -> !practicePlan.getUnlocked())
-                .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus()))
-                .forEach(practicePlan -> {
-                    practicePlan.setUnlocked(true);
-                    practicePlanDao.unlock(practicePlan.getId());
-                });
-        Integer progress = runningPractice.get(0).getSeries();
-        improvementPlanDao.updateProgress(planId, progress - 1);
-    }
-
     //映射
     private Practice buildPractice(PracticePlan practicePlan) {
         Assert.notNull(practicePlan, "练习计划不能为空");
@@ -280,8 +263,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private boolean isOptional(Integer type) {
-        return type == PracticePlan.CHALLENGE ||
-                type == PracticePlan.APPLICATION || type == PracticePlan.APPLICATION_REVIEW;
+        return type == PracticePlan.APPLICATION_BASE || type == PracticePlan.APPLICATION_UPGRADED;
     }
 
     @Override
@@ -343,6 +325,14 @@ public class PlanServiceImpl implements PlanService {
                     // 未到开营日的主修课不能提前选择
                     return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
                             + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+                }
+            }
+            // TODO 2018-02-04日删掉这段，之后增加商学院开营日控制配置，另外需要对主修课做限制
+            if (courseSchedule.getYear() == 2018 && courseSchedule.getMonth() == 2 && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+                if (new Date().before(DateUtils.parseStringToDate("2018-02-04"))) {
+                    // 未到开营日的主修课不能提前选择
+                    return new MutablePair<>(-1, "2月主修课将于"
+                            + "4号开放选课，请等待当天开课仪式通知吧!");
                 }
             }
             switch (memberTypeId) {
@@ -536,6 +526,31 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    public ImprovementPlan getDetailByProblemId(Integer profileId, Integer problemId) {
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
+        if (improvementPlan != null) {
+            improvementPlan.setProblem(cacheService.getProblem(improvementPlan.getProblemId()));
+            CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
+            if (courseSchedule != null) {
+                improvementPlan.setMonth(courseSchedule.getMonth());
+                improvementPlan.setTypeDesc(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR ? "主修" : "辅修");
+            } else {
+                Date startDate = improvementPlan.getStartDate();
+                improvementPlan.setMonth(DateUtils.getMonth(startDate));
+                improvementPlan.setTypeDesc("专项课");
+            }
+            //设置截止时间
+            if (improvementPlan.getStatus() != ImprovementPlan.CLOSE) {
+                improvementPlan.setDeadline(DateUtils.interval(improvementPlan.getCloseDate()));
+            } else {
+                improvementPlan.setDeadline(0);
+            }
+        }
+
+        return improvementPlan;
+    }
+
+    @Override
     public void checkPlanComplete(Integer practicePlanId) {
         PracticePlan practice = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practice == null) {
@@ -568,20 +583,7 @@ public class PlanServiceImpl implements PlanService {
         List<PracticePlan> allPracticePlans = practicePlanDao.loadPracticePlan(planId);
         Boolean complete = isDone(allPracticePlans);
 
-        // TODO 对于限免课程，不设置最小学习天数，后期删除
-        int minStudyDays;
-        if (plan.getProblemId().equals(ConfigUtils.getTrialProblemId())) {
-            minStudyDays = 0;
-        } else {
-            minStudyDays = Double.valueOf(Math.ceil(plan.getTotalSeries() / 2.0D)).intValue();
-        }
-        Date minDays = DateUtils.afterDays(plan.getStartDate(), minStudyDays);
-        // 如果4.1号10点开始  +1 = 4.2号0点是最早时间，4.2白天就可以了
-        if (new Date().before(minDays)) {
-            return new MutablePair<>(complete, minStudyDays);
-        } else {
-            return new MutablePair<>(complete, 0);
-        }
+        return new MutablePair<>(complete, 0);
     }
 
     @Override
@@ -645,7 +647,7 @@ public class PlanServiceImpl implements PlanService {
             return false;
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -680,7 +682,7 @@ public class PlanServiceImpl implements PlanService {
         }
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
 
-        List<Chapter> chapters = problemScheduleRepository.loadRoadMap(improvementPlan.getId());
+        List<Chapter> chapters = problemScheduleManager.loadRoadMap(improvementPlan.getId());
         Integer completeSeries = improvementPlan.getCompleteSeries();
         // 获取当前完成的巩固练习所在顺序
         Integer currentSeries = practicePlan.getSeries();
@@ -704,7 +706,7 @@ public class PlanServiceImpl implements PlanService {
         }
         // 当前章节 和 完成章节相等
         if (isLearningSuccess) {
-            return cardRepository.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId());
+            return cardManager.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId());
         } else {
             return null;
         }
@@ -765,7 +767,7 @@ public class PlanServiceImpl implements PlanService {
 
         for (Integer problemId : problemIds) {
 
-            Integer planId = generatePlanService.magicOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate, true);
+            Integer planId = generatePlanService.magicOpenProblem(profileId, problemId, monthlyCampConfig.getOpenDate(), closeDate, false);
 
             if (planId != null) {
                 // 如果 Profile 中不存在求点评此数，则将求点评此数置为 1
@@ -798,4 +800,118 @@ public class PlanServiceImpl implements PlanService {
             generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
         });
     }
+
+    @Override
+    public List<PlanSeriesStatus> loadPlanSeries(Integer practicePlanId) {
+        List<PlanSeriesStatus> planSeriesStatuses = Lists.newArrayList();
+
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        Integer planId = practicePlan.getPlanId();
+        Integer series = practicePlan.getSeries();
+
+        List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(planId, series);
+        for (PracticePlan plan : practicePlans) {
+            PlanSeriesStatus seriesStatus = new PlanSeriesStatus();
+            seriesStatus.setPracticePlanId(plan.getId());
+            seriesStatus.setPlanId(planId);
+            seriesStatus.setPracticeId(plan.getPracticeId());
+            seriesStatus.setSeries(series);
+            seriesStatus.setSequence(plan.getSequence());
+            seriesStatus.setType(plan.getType());
+            seriesStatus.setUnlock(plan.getUnlocked());
+            seriesStatus.setComplete(plan.getStatus() == 1);
+            planSeriesStatuses.add(seriesStatus);
+        }
+
+        return planSeriesStatuses;
+    }
+
+    @Override
+    public String loadPlanSeriesTitle(Integer practicePlanId) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if (practicePlan == null) {
+            return null;
+        }
+
+        Integer planId = practicePlan.getPlanId();
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
+        Integer problemId = improvementPlan.getProblemId();
+        Integer series = practicePlan.getSeries();
+        List<PracticePlan> practicePlans = practicePlanDao.loadBySeries(planId, series);
+        PracticePlan planWithKnowledgeId = practicePlans.stream().filter(item -> item.getKnowledgeId() != null)
+                .findAny().orElse(null);
+
+        if (planWithKnowledgeId == null) {
+            return null;
+        }
+
+        int knowledgeId = planWithKnowledgeId.getKnowledgeId();
+        ProblemSchedule schedule = problemScheduleDao.loadByKnowledgeId(knowledgeId, problemId);
+        StringBuilder titleBuilder = new StringBuilder();
+        if (schedule != null) {
+            titleBuilder.append(schedule.getChapter())
+                    .append(".")
+                    .append(schedule.getSection())
+                    .append(" ");
+            String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
+            titleBuilder.append(knowledgeStr);
+        }
+        return titleBuilder.toString();
+    }
+
+    @Override
+    public void adjustPracticePlan() {
+        int maxSize = 10000;
+
+        Page page = new Page();
+        page.setPageSize(maxSize);
+        page.setPage(0);
+
+        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        List<PracticePlan> insertPracticePlans = Lists.newArrayList();
+
+        do {
+            logger.info("开始进行第 {} 批次调用处理", page.getPage() + 1);
+            improvementPlans.clear();
+            insertPracticePlans.clear();
+
+            improvementPlans = improvementPlanDao.loadPlanIdsByPage(page);
+            for (ImprovementPlan improvementPlan : improvementPlans) {
+                logger.info("正在处理学习计划 PlanId：{}", improvementPlan.getId());
+
+                Integer planId = improvementPlan.getId();
+                Integer problemId = improvementPlan.getProblemId();
+                PracticePlan introduction = practicePlanDao.loadProblemIntroduction(planId);
+                if (introduction == null) {
+                    PracticePlan targetPlan = new PracticePlan();
+                    BeanUtils.copyProperties(getDefaultIntroductionPracticePlan(), targetPlan);
+                    targetPlan.setPlanId(planId);
+                    targetPlan.setPracticeId(problemId + "");
+                    insertPracticePlans.add(targetPlan);
+                }
+            }
+            // 塞入数据库
+            practicePlanDao.batchInsert(insertPracticePlans);
+            // 更新换页信息
+            page.setPage(page.getPage() + 1);
+        } while (improvementPlans.size() == maxSize);
+    }
+
+    /**
+     * 用来特殊处理 PracticePlan
+     */
+    private PracticePlan basePracticePlan;
+
+    private PracticePlan getDefaultIntroductionPracticePlan() {
+        if (basePracticePlan == null) {
+            basePracticePlan = new PracticePlan();
+            basePracticePlan.setType(PracticePlan.INTRODUCTION);
+            basePracticePlan.setSeries(0);
+            basePracticePlan.setSequence(1);
+            basePracticePlan.setStatus(1);
+            basePracticePlan.setUnlocked(true);
+        }
+        return basePracticePlan;
+    }
+
 }

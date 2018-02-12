@@ -68,7 +68,7 @@ public interface PracticeService {
      * @param id      提交id
      * @param content 提交内容
      */
-    Boolean applicationSubmit(Integer id, String content);
+    Integer applicationSubmit(Integer id, String content);
 
 
     Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content);
@@ -187,6 +187,50 @@ public interface PracticeService {
     WarmupPractice getWarmupPractice(Integer warmupId);
 
     /**
+     * 提交课程分享文章
+     */
+    Integer submitSubjectArticle(SubjectArticle subjectArticle);
+
+    /**
+     * 加载课程分享区文章
+     *
+     * @param problemId 课程id
+     * @param page      分页对象
+     */
+    List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
+
+    /**
+     * 加载分享区文章
+     *
+     * @param submitId 提交id
+     */
+    SubjectArticle loadSubjectArticle(Integer submitId);
+
+    /**
+     * 获取课程所有标签
+     *
+     * @param problemId 课程id
+     */
+    List<LabelConfig> loadProblemLabels(Integer problemId);
+
+    /**
+     * 更新课程分享的标签
+     *
+     * @param moduleId  模块
+     * @param articleId 文章id
+     * @param labels    标签
+     */
+    List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
+
+    /**
+     * 获取课程分享的标签
+     *
+     * @param moduleId  模块
+     * @param articleId 文章id
+     */
+    List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
+
+    /**
      * 根据训练id获取知识
      *
      * @param practicePlanId 训练id
@@ -205,7 +249,7 @@ public interface PracticeService {
      *
      * @param practicePlanId 练习id
      */
-    void learnKnowledge(Integer practicePlanId);
+    void learnKnowledge(Integer profileId, Integer practicePlanId);
 
     /**
      * 求点评
@@ -231,20 +275,15 @@ public interface PracticeService {
      */
     void deleteComment(Integer commentId);
 
-
-    /**
-     * 根据应用练习
-     *
-     * @param applicationId 应用练习id
-     * @param profileId     用户id
-     * @return
-     */
-    ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId);
-
     /**
      * 根据 ApplicationSubmit 的 id 获取 ApplicationSubmit
      */
-    ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId);
+    ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId);
+
+    /**
+     * 完成课程介绍
+     */
+    void learnProblemIntroduction(Integer profileId, Integer practicePlanId);
 
     /**
      * 根据Id获取ApplicationSubmit对象
@@ -267,5 +306,12 @@ public interface PracticeService {
     Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
 
     Integer loadCompletedApplicationCnt(Integer planId);
+
+    /**
+     * 获取练习
+     *
+     * @param practicePlanId 训练组编号
+     */
+    PracticePlan getPractice(Integer practicePlanId);
 
 }

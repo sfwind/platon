@@ -79,9 +79,9 @@ public class RestfulHelper {
             try {
                 Response response = client.newCall(request).execute();
                 String body = response.body().string();
-//                if(CommonUtils.isError(body)){
-//                    logger.error("execute {} return error, error message is {}", requestUrl, body);
-//                }
+                // if(CommonUtils.isError(body)){
+                //     logger.error("execute {} return error, error message is {}", requestUrl, body);
+                // }
                 logger.info("body:{}", body);
                 return body;
             } catch (Exception e) {
@@ -111,9 +111,7 @@ public class RestfulHelper {
                     //refresh token and try again
                     accessToken = accessTokenService.refreshAccessToken(false);
                     url = requestUrl.replace("{access_token}", accessToken);
-                    request = new Request.Builder()
-                            .url(url)
-                            .build();
+                    request = new Request.Builder().url(url).build();
                     response = client.newCall(request).execute();
                     body = response.body().string();
                     if (CommonUtils.isError(body)) {

@@ -107,14 +107,11 @@ public class IndexController {
 
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
     public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
-        logger.info("点击学习页面");
-        logger.info("进入 rise/static/learn");
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
             return null;
         }
-        logger.info("unionUser 不为空");
 
         String state = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid;

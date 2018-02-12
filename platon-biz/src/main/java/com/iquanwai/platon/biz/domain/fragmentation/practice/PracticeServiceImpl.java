@@ -2,11 +2,12 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepo;
-import com.iquanwai.platon.biz.domain.fragmentation.point.PointRepoImpl;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.PracticePlanStatusManager;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
+import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.*;
@@ -50,7 +51,7 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private PracticePlanDao practicePlanDao;
     @Autowired
-    private PointRepo pointRepo;
+    private PointManager poinManager;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
@@ -66,6 +67,12 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private AccountService accountService;
     @Autowired
+    private SubjectArticleDao subjectArticleDao;
+    @Autowired
+    private LabelConfigDao labelConfigDao;
+    @Autowired
+    private ArticleLabelDao articleLabelDao;
+    @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private AsstCoachCommentDao asstCoachCommentDao;
@@ -75,6 +82,8 @@ public class PracticeServiceImpl implements PracticeService {
     private CommentEvaluationDao commentEvaluationDao;
     @Autowired
     private CertificateService certificateService;
+    @Autowired
+    private PracticePlanStatusManager practicePlanStatusManager;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -88,11 +97,11 @@ public class PracticeServiceImpl implements PracticeService {
                 //设置分值
                 WarmupPractice warmupPractice = cacheService.getWarmupPractice(Integer.parseInt(practiceId));
                 if (warmupPractice.getDifficulty() == 1) {
-                    warmupPractice.setScore(PointRepo.EASY_SCORE);
+                    warmupPractice.setScore(PointManager.EASY_SCORE);
                 } else if (warmupPractice.getDifficulty() == 2) {
-                    warmupPractice.setScore(PointRepo.NORMAL_SCORE);
+                    warmupPractice.setScore(PointManager.NORMAL_SCORE);
                 } else if (warmupPractice.getDifficulty() == 3) {
-                    warmupPractice.setScore(PointRepo.HARD_SCORE);
+                    warmupPractice.setScore(PointManager.HARD_SCORE);
                 }
                 warmupPractices.add(warmupPractice);
             }
@@ -132,7 +141,7 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("practice {} is not existed", userAnswer.getId());
                 continue;
             }
-            Pair<Integer, Boolean> ret = pointRepo.warmupScore(practice, userChoice);
+            Pair<Integer, Boolean> ret = poinManager.warmupScore(practice, userChoice);
             Integer score = ret.getLeft();
             Boolean accurate = ret.getRight();
             if (accurate) {
@@ -154,12 +163,12 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setProfileId(profileId);
             warmupSubmitDao.insert(warmupSubmit);
         }
-        if (PracticePlan.STATUS.UNCOMPLETED.equals(practicePlan.getStatus())) {
-            practicePlanDao.complete(practicePlan.getId());
+        if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
+            practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
             certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
         }
         improvementPlanDao.updateWarmupComplete(planId);
-        pointRepo.risePoint(planId, point);
+        poinManager.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
 
@@ -259,8 +268,10 @@ public class PracticeServiceImpl implements PracticeService {
             applicationPractice.setSubmitId(submit.getId());
             applicationPractice.setSubmitUpdateTime(DateUtils.parseDateToString(submit.getPublishTime()));
             applicationPractice.setFeedback(submit.getFeedback());
+
+            planId = submit.getPlanId();
         }
-        applicationPractice.setPlanId(submit == null ? planId : submit.getPlanId());
+        applicationPractice.setPlanId(planId);
 
         // 查询点赞数
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
@@ -289,23 +300,22 @@ public class PracticeServiceImpl implements PracticeService {
                 }
             }
         }
+
+        // 检查该道题是否是简单应用题还是复杂应用题
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        PracticePlan targetPracticePlan = practicePlans.stream()
+                .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
+        applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
+
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
 
     @Override
-    public Boolean applicationSubmit(Integer id, String content) {
-        Integer type;
+    public Integer applicationSubmit(Integer id, String content) {
         ApplicationSubmit submit = applicationSubmitDao.load(ApplicationSubmit.class, id);
         if (submit == null) {
             logger.error("submitId {} is not existed", id);
-            return false;
-        }
-        int applicationId = submit.getApplicationId();
-        ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
-        if (Knowledge.isReview(applicationPractice.getKnowledgeId())) {
-            type = PracticePlan.APPLICATION_REVIEW;
-        } else {
-            type = PracticePlan.APPLICATION;
+            return null;
         }
         boolean result;
         int length = CommonUtils.removeHTMLTag(content).length();
@@ -323,19 +333,20 @@ public class PracticeServiceImpl implements PracticeService {
                 logger.error("ImprovementPlan is not existed,planId:{}", submit.getPlanId());
             }
             logger.info("应用练习加分:{}", id);
-            PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
-                    submit.getApplicationId(), type);
+            PracticePlan practicePlan = practicePlanDao.loadApplicationPractice(submit.getPlanId(), submit.getApplicationId());
             if (practicePlan != null) {
-                practicePlanDao.complete(practicePlan.getId());
+                practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
                 certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
-                Integer point = PointRepoImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class, submit.getApplicationId()).getDifficulty());
+                Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class,
+                        submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
-                pointRepo.risePoint(submit.getPlanId(), point);
+                poinManager.risePoint(submit.getPlanId(), point);
                 // 修改status
                 applicationSubmitDao.updatePointStatus(id);
+                return practicePlan.getId();
             }
         }
-        return result;
+        return null;
     }
 
     @Override
@@ -376,13 +387,12 @@ public class PracticeServiceImpl implements PracticeService {
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                     submit.getChallengeId(), PracticePlan.CHALLENGE);
             if (practicePlan != null) {
-                practicePlanDao.complete(practicePlan.getId());
+                practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
                 // 加分
-                pointRepo.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
+                poinManager.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
                 // 修改status
                 challengeSubmitDao.updatePointStatus(id);
             }
-
         }
 
         return result;
@@ -441,7 +451,7 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setVotedProfileId(submitProfileId);
             homeworkVote.setDevice(device);
             homeworkVoteDao.vote(homeworkVote);
-            pointRepo.risePoint(planId, ConfigUtils.getVoteScore());
+            poinManager.risePoint(planId, ConfigUtils.getVoteScore());
         } else {
             homeworkVoteDao.reVote(vote.getId());
         }
@@ -467,73 +477,6 @@ public class PracticeServiceImpl implements PracticeService {
         int count = applicationSubmitDao.count(applicationId);
         page.setTotal(count);
 
-//        List<Integer> submitsIdList = submits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
-//        // applicationSubmit Id 序列 -> votes
-//        List<HomeworkVote> votes = homeworkVoteDao.getHomeworkVotesByIds(submitsIdList); // 所有应用练习的点赞
-//        List<Integer> referenceIds = votes.stream().map(HomeworkVote::getReferencedId).collect(Collectors.toList()); // vote 的 referenceId 集合
-//        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitsIdList); // 所有评论
-//        List<UserRole> userRoles = userRoleDao.loadAll(UserRole.class); // 所有用户角色信息
-//        // 已被点评
-//        List<ApplicationSubmit> feedbackSubmits = Lists.newArrayList();
-//        // 未被点评，有点赞
-//        List<ApplicationSubmit> votedSubmits = Lists.newArrayList();
-//        // 未被点评、无点赞
-//        List<ApplicationSubmit> restSubmits = Lists.newArrayList();
-//        submits.forEach(submit -> {
-//            if (submit.getFeedback()) {
-//                feedbackSubmits.add(submit);
-//            } else if (referenceIds.contains(submit.getId())) {
-//                votedSubmits.add(submit);
-//            } else {
-//                restSubmits.add(submit);
-//            }
-//        });
-//        // 已被点评作业内部排序：最新被点评到最旧被点评，点评时间越新该条作业越靠前
-//        feedbackSubmits.sort((left, right) -> {
-//            Date leftFeedbackDate = new Date(0);
-//            Date rightFeedbackDate = new Date(0);
-//            for (Comment comment : comments) {
-//                Integer commentProfileId = comment.getCommentProfileId();
-//                Date commentAddTime = comment.getAddTime();
-//                if (left.getId() == comment.getReferencedId()) {
-//                    for (UserRole userRole : userRoles) {
-//                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
-//                            leftFeedbackDate = commentAddTime.compareTo(leftFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
-//                        }
-//                    }
-//                } else if (right.getId() == comment.getReferencedId()) {
-//                    for (UserRole userRole : userRoles) {
-//                        if (userRole.getProfileId().equals(commentProfileId) && Role.isAsst(userRole.getRoleId())) {
-//                            rightFeedbackDate = commentAddTime.compareTo(rightFeedbackDate) > 0 ? comment.getAddTime() : leftFeedbackDate;
-//                        }
-//                    }
-//                }
-//            }
-//            return rightFeedbackDate.compareTo(leftFeedbackDate);
-//        });
-//        // 有点赞数作业内部排序：1. 根据点评数由多至少排序 2. 点评数一样，根据作业提交日期逆序排列，提交日期越新，越靠前。
-//        votedSubmits.sort((left, right) -> {
-//            int leftVoteCnt = 0;
-//            int rightVoteCnt = 0;
-//            for (Integer id : referenceIds) {
-//                if (id.equals(left.getId())) {
-//                    leftVoteCnt++;
-//                } else if (id.equals(right.getId())) {
-//                    rightVoteCnt++;
-//                }
-//            }
-//            if (leftVoteCnt == rightVoteCnt) {
-//                return right.getPublishTime().compareTo(left.getPublishTime());
-//            } else {
-//                return rightVoteCnt - leftVoteCnt;
-//            }
-//        });
-//        // 剩余无教练点评，无点赞作业内部排序：根据作业提交日期逆序排列，提交日期越新，越靠前。
-//        restSubmits.sort(Comparator.comparing(ApplicationSubmit::getPublishTime).reversed());
-//        List<ApplicationSubmit> applicationSubmits = Lists.newArrayList();
-//        applicationSubmits.addAll(feedbackSubmits);
-//        applicationSubmits.addAll(votedSubmits);
-//        applicationSubmits.addAll(restSubmits);
         return submits;
     }
 
@@ -738,6 +681,74 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
+    public Integer submitSubjectArticle(SubjectArticle subjectArticle) {
+        String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
+        subjectArticle.setLength(content.length());
+        Integer submitId = subjectArticle.getId();
+        if (subjectArticle.getId() == null) {
+            // 第一次提交
+            submitId = subjectArticleDao.insert(subjectArticle);
+            // 生成记录表
+            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.SUBJECT, submitId);
+        } else {
+            // 更新之前的
+            subjectArticleDao.update(subjectArticle);
+        }
+        return submitId;
+    }
+
+    @Override
+    public List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page) {
+        page.setTotal(subjectArticleDao.count(problemId));
+        return subjectArticleDao.loadArticles(problemId, page).stream().map(subjectArticle -> {
+            String content = CommonUtils.replaceHttpsDomainName(subjectArticle.getContent());
+            if (!content.equals(subjectArticle.getContent())) {
+                subjectArticleDao.updateContent(subjectArticle.getId(), content);
+                subjectArticle.setContent(content);
+            }
+            return subjectArticle;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public SubjectArticle loadSubjectArticle(Integer submitId) {
+        return subjectArticleDao.load(SubjectArticle.class, submitId);
+    }
+
+    @Override
+    public List<LabelConfig> loadProblemLabels(Integer problemId) {
+        return labelConfigDao.loadLabelConfigs(problemId);
+    }
+
+    @Override
+    public List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels) {
+        List<ArticleLabel> oldLabels = articleLabelDao.loadArticleLabels(moduleId, articleId);
+        List<ArticleLabel> shouldDels = Lists.newArrayList();
+        List<ArticleLabel> shouldReAdds = Lists.newArrayList();
+        labels = labels == null ? Lists.newArrayList() : labels;
+        List<Integer> userChoose = labels.stream().map(ArticleLabel::getLabelId).collect(Collectors.toList());
+        oldLabels.forEach(item -> {
+            if (userChoose.contains(item.getLabelId())) {
+                if (item.getDel()) {
+                    shouldReAdds.add(item);
+                }
+            } else {
+                shouldDels.add(item);
+            }
+            userChoose.remove(item.getLabelId());
+        });
+        userChoose.forEach(item -> articleLabelDao.insertArticleLabel(moduleId, articleId, item));
+        shouldDels.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 1));
+        shouldReAdds.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 0));
+        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
+    }
+
+    @Override
+    public List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId) {
+        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
+    }
+
+    @Override
     public List<Knowledge> loadKnowledges(Integer practicePlanId) {
         List<Knowledge> knowledges = Lists.newArrayList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
@@ -766,8 +777,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public void learnKnowledge(Integer practicePlanId) {
-        practicePlanDao.complete(practicePlanId);
+    public void learnKnowledge(Integer profileId, Integer practicePlanId) {
+        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
         certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
     }
 
@@ -814,13 +825,13 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ApplicationSubmit loadApplicationSubmitByApplicationId(Integer applicationId, Integer profileId) {
-        return applicationSubmitDao.load(applicationId, profileId);
+    public ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId) {
+        return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
     }
 
     @Override
-    public ApplicationSubmit loadApplocationSubmitById(Integer applicationSubmitId) {
-        return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
+    public void learnProblemIntroduction(Integer profileId, Integer practicePlanId) {
+        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
     }
 
     @Override
@@ -862,9 +873,16 @@ public class PracticeServiceImpl implements PracticeService {
     public Integer loadCompletedApplicationCnt(Integer planId) {
         List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
         Long completedCnt = practicePlans.stream()
-                .filter(practicePlan -> (practicePlan.getType() == 11 || practicePlan.getType() == 12) && PracticePlan.STATUS.COMPLETED.equals(practicePlan.getStatus()))
+                .filter(practicePlan -> (practicePlan.getType() == PracticePlan.APPLICATION_BASE ||
+                        practicePlan.getType() == PracticePlan.APPLICATION_UPGRADED) &&
+                        PracticePlan.STATUS.COMPLETED == practicePlan.getStatus())
                 .count();
         return completedCnt.intValue();
+    }
+
+    @Override
+    public PracticePlan getPractice(Integer practicePlanId) {
+        return practicePlanDao.load(PracticePlan.class, practicePlanId);
     }
 
 }
