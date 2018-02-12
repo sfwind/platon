@@ -422,8 +422,17 @@ public class ConfigUtils {
         return getValue("product.trial.msg");
     }
 
-    public static Boolean getPayApplyFlag(){
+    public static Boolean getPayApplyFlag() {
         return getBooleanValue("pay.apply.flag");
     }
+
+    public static String getInternalIp() {
+        return getValue("internal.ip");
+    }
+
+    public static String getInternalPort() {
+        return getValue("internal.port");
+    }
+
 }
 

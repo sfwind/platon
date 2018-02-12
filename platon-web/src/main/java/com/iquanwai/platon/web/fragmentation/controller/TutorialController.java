@@ -41,7 +41,7 @@ public class TutorialController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @PostConstruct
-    public void init(){
+    public void init() {
         rabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(LoginUserUpdateReceiver.TOPIC);
     }
 
@@ -112,20 +112,11 @@ public class TutorialController {
                 .action("查看打开状态");
         operationLogService.log(operationLog);
         OpenStatusDto dto = new OpenStatusDto();
-        if (!loginUser.getOpenApplication() || !loginUser.getOpenConsolidation()
-                || !loginUser.getOpenRise() || !loginUser.getOpenNavigator()) {
-            // 没有点开其中一个
-            Profile profile = accountService.getProfile(loginUser.getId());
-            loginUser.setOpenRise(profile.getOpenRise());
-            loginUser.setOpenConsolidation(profile.getOpenConsolidation());
-            loginUser.setOpenApplication(profile.getOpenApplication());
-            loginUser.setOpenNavigator(profile.getOpenNavigator());
-        }
-
-        dto.setOpenRise(loginUser.getOpenRise());
-        dto.setOpenConsolidation(loginUser.getOpenConsolidation());
-        dto.setOpenApplication(loginUser.getOpenApplication());
-        dto.setOpenNavigator(loginUser.getOpenNavigator());
+        Profile profile = accountService.getProfile(loginUser.getId());
+        dto.setOpenRise(profile.getOpenRise());
+        dto.setOpenConsolidation(profile.getOpenConsolidation());
+        dto.setOpenApplication(profile.getOpenApplication());
+        dto.setOpenNavigator(profile.getOpenNavigator());
         return WebUtils.result(dto);
     }
 }
