@@ -104,16 +104,12 @@ public class UnionUserServiceImpl implements UnionUserService {
         if (platformHeader != null) {
             switch (platformHeader) {
                 case UnionUser.PlatformHeaderValue.PC_HEADER:
-                    logger.info("所在平台为：{}", UnionUser.PlatformHeaderValue.PC_HEADER);
                     return UnionUser.Platform.PC;
                 case UnionUser.PlatformHeaderValue.MOBILE_HEADER:
-                    logger.info("所在平台为：{}", UnionUser.PlatformHeaderValue.MOBILE_HEADER);
                     return UnionUser.Platform.MOBILE;
                 case UnionUser.PlatformHeaderValue.MINI_HEADER:
-                    logger.info("所在平台为：{}", UnionUser.PlatformHeaderValue.MINI_HEADER);
                     return UnionUser.Platform.MINI;
                 default:
-                    logger.info("没有匹配到对应平台");
                     return null;
             }
         } else {
