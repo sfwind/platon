@@ -81,6 +81,8 @@ public class AccountServiceImpl implements AccountService {
     private PrizeCardDao prizeCardDao;
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
 
     private List<Region> provinceList;
     private List<Region> cityList;
@@ -444,7 +446,8 @@ public class AccountServiceImpl implements AccountService {
     public Role getRole(Integer profileId) {
         List<UserRole> userRoles = userRoleDao.getRoles(profileId);
         if (CollectionUtils.isEmpty(userRoles)) {
-            return null;
+            List<ImprovementPlan> improvementPlans = improvementPlanDao.loadUserPlans(profileId);
+            return improvementPlans.size() == 0 ? Role.stranger() : Role.student();
         } else {
             Integer roleId = userRoles.get(0).getRoleId();
             return userRoleDao.load(Role.class, roleId);
