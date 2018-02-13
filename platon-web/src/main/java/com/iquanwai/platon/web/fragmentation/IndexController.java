@@ -46,8 +46,6 @@ public class IndexController {
     @Autowired
     private WhiteListService whiteListService;
     @Autowired
-    private UnionUserService unionUserService;
-    @Autowired
     private InterlocutionService interlocutionService;
     @Autowired
     private SubscribeRouterService subscribeRouterService;
@@ -152,7 +150,7 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
-        logger.info("进入 rise/static/rise");
+        logger.info("点击商学院按钮");
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
@@ -160,7 +158,6 @@ public class IndexController {
         }
         logger.info("unionUser 不为空");
 
-        logger.info("点击商学院按钮");
         String accessToken = CookieUtils.getCookie(request, UnionUserService.MOBILE_STATE_COOKIE_NAME);
         String openid;
         Account account;
@@ -250,7 +247,6 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
     public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
         logger.info("点击训练营按钮");
-        logger.info("进入 rise/static/camp");
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
