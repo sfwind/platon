@@ -1,11 +1,9 @@
 package com.iquanwai.platon.web.resolver;
 
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.web.util.CookieUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +15,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * Created by nethunder on 2017/9/7.
- */
 public class GuestUserResolver implements HandlerMethodArgumentResolver {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     private AccountService accountService;
     @Autowired
-    private LoginUserService loginUserService;
+    private UnionUserService unionUserService;
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -33,40 +30,37 @@ public class GuestUserResolver implements HandlerMethodArgumentResolver {
     }
 
     @Override
-    public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer
-            modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-        //调试时，返回mock user
+    public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
         if (ConfigUtils.isDebug()) {
             return GuestUser.defaultUser();
         }
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        String state = CookieUtils.getCookie(request, LoginUserService.WE_CHAT_STATE_COOKIE_NAME);
-        if (state == null) {
-            state = CookieUtils.getCookie(request, LoginUserService.PC_STATE_COOKIE_NAME);
+        Callback callback = unionUserService.getCallbackByRequest(request);
+        if (callback == null) {
+            return null;
         }
 
-        Callback callback = loginUserService.getCallbackByState(state);
-        Account account;
-        try {
-            account = accountService.getAccount(callback.getOpenid(), false);
-        } catch (NotFollowingException e) {
-            // 用Ack去请求微信接口
-            account = accountService.getGuestFromWeixin(callback.getOpenid(), callback.getAccessToken());
+        UnionUser unionUser = unionUserService.getUnionUserByCallback(callback);
+        GuestUser guestUser = null;
+        if (unionUser != null) {
+            guestUser = adapterUnionUser(unionUser);
         }
-        if (account == null) {
-            logger.info("account 为 null， 刷新用户的 accessToken");
-            callback = loginUserService.getCallbackByRefreshToken(state, callback.getRefreshToken());
-            logger.info("新的 callback accessToken 为： {}", callback.getAccessToken());
-            return accountService.getGuestFromWeixin(callback.getOpenid(), callback.getAccessToken());
-        } else {
-            GuestUser guestUser = new GuestUser();
-            guestUser.setOpenId(account.getOpenid());
-            guestUser.setHeadimgUrl(account.getHeadimgurl());
-            guestUser.setWeixinName(account.getNickname());
-            guestUser.setRealName(account.getRealName());
-            guestUser.setSubscribe(account.getSubscribe());
-            return guestUser;
-        }
+        return guestUser;
     }
+
+    private GuestUser adapterUnionUser(UnionUser unionUser) {
+        Account account = accountService.getAccountByUnionId(unionUser.getUnionId());
+        GuestUser guestUser = new GuestUser();
+        guestUser.setId(unionUser.getId());
+        guestUser.setUnionId(unionUser.getUnionId());
+        guestUser.setOpenId(unionUser.getOpenId());
+        guestUser.setWeixinName(unionUser.getNickName());
+        guestUser.setHeadimgUrl(unionUser.getHeadImgUrl());
+        guestUser.setRealName(account.getRealName());
+        guestUser.setSubscribe(account.getSubscribe() == 1);
+        return guestUser;
+    }
+
+
 }

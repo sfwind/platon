@@ -31,28 +31,4 @@ public class LoginUser {
                 Profile.DEFAULT_AVATAR, null, 5, null, true, true, 0, true, true, 1, true);
     }
 
-    public enum Platform {
-        PC(1), WE_MOBILE(2), WE_MINI(3);
-
-        private int value;
-
-        Platform(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-    }
-
-    /** 三种平台对应 header 中 platform 的值 */
-    public interface PlatformHeaderValue {
-        /** pc */
-        public String PC_HEADER = "pc";
-        /** 移动端 */
-        public String WE_MOBILE_HEADER = "we_mobile";
-        /** 小程序 */
-        public String WE_MINI_HEADER = "we_mini";
-    }
-
 }

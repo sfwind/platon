@@ -11,8 +11,6 @@
 <script>
     window.ENV = {
         reactMountPoint: "react-app",
-        userName: "${userName}",
-        headImage:"${headImage}",
         showForum:"${showForum}",
         showExplore:"${showExplore}",
         configUrl:'',
@@ -41,7 +39,6 @@
             })(window,document,"https://retcode.alicdn.com/retcode/bl.js","__bl");
         })();
     }
-
 </script>
 
 </body>

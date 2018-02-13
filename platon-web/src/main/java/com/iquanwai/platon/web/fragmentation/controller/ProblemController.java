@@ -143,7 +143,7 @@ public class ProblemController {
         result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
-        result.setRiseMember(loginUser.getRiseMember() != 0);
+        result.setRiseMember(accountService.getProfileRiseMember(loginUser.getId()) != 0);
         result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("问题")
@@ -405,7 +405,8 @@ public class ProblemController {
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
-                dto.setIsRiseMember(loginUser.getRiseMember() == 1);
+                int riseMemberType = accountService.getProfileRiseMember(loginUser.getId());
+                dto.setIsRiseMember(riseMemberType == 1);
                 dto.setProblemId(essenceCards.getLeft().getId());
                 dto.setProblem(essenceCards.getLeft().getProblem());
             }

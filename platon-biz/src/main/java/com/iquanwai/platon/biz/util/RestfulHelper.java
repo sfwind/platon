@@ -91,7 +91,6 @@ public class RestfulHelper {
         return "";
     }
 
-
     public String get(String requestUrl) {
         if (StringUtils.isNotEmpty(requestUrl)) {
             String accessToken = accessTokenService.getAccessToken();
@@ -127,15 +126,26 @@ public class RestfulHelper {
         return "";
     }
 
-    public ResponseBody getPlain(String requestUrl) {
-        if (StringUtils.isNotEmpty(requestUrl)) {
-            Request request = new Request.Builder()
-                    .url(requestUrl)
-                    .build();
-
+    public String getPure(String requestUrl) {
+        if (!StringUtils.isEmpty(requestUrl)) {
+            Request request = new Request.Builder().url(requestUrl).build();
             try {
                 Response response = client.newCall(request).execute();
+                String result = response.body().string();
+                logger.info("调用：{}，\n 结果：{}", requestUrl, result);
+                return result;
+            } catch (Exception e) {
+                logger.error("execute " + requestUrl + " error", e);
+            }
+        }
+        return null;
+    }
 
+    public ResponseBody getPlain(String requestUrl) {
+        if (StringUtils.isNotEmpty(requestUrl)) {
+            Request request = new Request.Builder().url(requestUrl).build();
+            try {
+                Response response = client.newCall(request).execute();
                 return response.body();
             } catch (Exception e) {
                 logger.error("execute " + requestUrl + " error", e);

@@ -140,9 +140,9 @@ public class PrizeCardController {
      */
     @RequestMapping(value = "/annual/summary/card/receive", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> receiveAnnualCard(GuestUser guestUser, @RequestParam("prizeCardNo") String prizeCardNo) {
-        //没有关注则弹出二维码
-        if (guestUser == null || guestUser.getSubscribe() == null || guestUser.getSubscribe() == 0) {
-            //没有注册
+        // 没有关注则弹出二维码
+        if (guestUser == null || guestUser.getSubscribe() == null || !guestUser.getSubscribe()) {
+            // 没有注册
             String callback = "callback";
             String key = "annual_prize_card_" + prizeCardNo;
             String qrCode = accountService.createSubscribePush(guestUser != null ? guestUser.getOpenId() : null, callback, key);

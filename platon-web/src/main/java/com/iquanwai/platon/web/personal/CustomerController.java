@@ -27,7 +27,7 @@ import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
-import com.iquanwai.platon.web.resolver.LoginUserService;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -77,11 +77,10 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
     @Autowired
-    private LoginUserService loginUserService;
+    private UnionUserService unionUserService;
 
     @RequestMapping("/info")
     public ResponseEntity<Map<String, Object>> getUserInfo(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("小程序")
                 .function("获取用户基本信息")
@@ -219,7 +218,7 @@ public class CustomerController {
         operationLogService.log(operationLog);
         int updateResult = customerService.updateHeadImageUrl(loginUser.getId(), headImgUrl);
         if (updateResult > 0) {
-            loginUserService.updateLoginUserByOpenId(loginUser.getOpenId());
+            unionUserService.updateUserByUnionId(loginUser.getUnionId());
             return WebUtils.success();
         } else {
             return WebUtils.error("头像更新失败");
@@ -229,7 +228,6 @@ public class CustomerController {
     @RequestMapping(value = "/profile/nickname/update", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> updateNickName(LoginUser loginUser, @RequestBody NicknameDto nickname) {
         Assert.notNull(loginUser, "登录用户不能为空");
-
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("个人中心")
                 .function("昵称修改")
@@ -238,7 +236,7 @@ public class CustomerController {
 
         int result = customerService.updateNickName(loginUser.getId(), nickname.getNickname());
         if (result > 0) {
-            loginUserService.updateLoginUserByOpenId(loginUser.getOpenId());
+            unionUserService.updateUserByUnionId(loginUser.getUnionId());
             return WebUtils.result("昵称更新成功");
         } else {
             return WebUtils.result("昵称更新失败");
@@ -514,7 +512,7 @@ public class CustomerController {
                 .action("检查是否关注")
                 .memo(key);
         operationLogService.log(operationLog);
-        if (loginUser == null || loginUser.getSubscribe() == null || loginUser.getSubscribe() == 0) {
+        if (loginUser == null || loginUser.getSubscribe() == null || !loginUser.getSubscribe()) {
             // 没有loginUser，即没有关注,创建一个img
             String qrCode = accountService.createSubscribePush(loginUser != null ? loginUser.getOpenId() : null, callback, key);
             return WebUtils.result(qrCode);

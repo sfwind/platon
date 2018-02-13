@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
-
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
@@ -10,9 +9,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
-/**
- * Created by justin on 16/8/10.
- */
 public interface AccountService {
 
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
@@ -25,9 +21,19 @@ public interface AccountService {
     Account getAccount(String openid, boolean realTime) throws NotFollowingException;
 
     /**
+     * new
+     * 调用 confucius 接口，生成并补充新的用户信息
+     */
+    boolean initUserByUnionId(String unionId, Boolean realTime);
+
+    boolean checkIsFollow(String unionId);
+
+    /**
      * 根据 profileId 获取用户角色信息
      */
     UserRole getUserRole(Integer profileId);
+
+    Profile getProfileByUnionId(String unionId);
 
     /**
      * 根据openid获取用户详情
@@ -47,6 +53,8 @@ public interface AccountService {
     List<Profile> getProfiles(List<Integer> profileIds);
 
     Account getGuestFromWeixin(String openId, String accessToken);
+
+    Account getAccountByUnionId(String unionId);
 
     /**
      * 获取所有的省份信息
@@ -170,6 +178,8 @@ public interface AccountService {
      * @param profileId 用户id
      */
     List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId);
+
+    Integer getProfileRiseMember(Integer profileId);
 
     /**
      * 创建关注推送消息
