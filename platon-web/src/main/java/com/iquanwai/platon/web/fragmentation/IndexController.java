@@ -46,8 +46,6 @@ public class IndexController {
     @Autowired
     private WhiteListService whiteListService;
     @Autowired
-    private UnionUserService unionUserService;
-    @Autowired
     private InterlocutionService interlocutionService;
     @Autowired
     private SubscribeRouterService subscribeRouterService;
@@ -77,12 +75,11 @@ public class IndexController {
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
     // 填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
+    private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goRise=true&goCamp=true";
     // 申请成功页面
     private static final String APPLY_SUCCESS = "/pay/apply";
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
-    // 组团学习倒计时页面
-    private static final String GROUP_PROMOTION_COUNT_DOWN = "/rise/static/group/promotion/count/down";
 
     private static final String RISE_VIEW = "course";
 
@@ -153,7 +150,7 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
-        logger.info("进入 rise/static/rise");
+        logger.info("点击商学院按钮");
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
@@ -161,7 +158,6 @@ public class IndexController {
         }
         logger.info("unionUser 不为空");
 
-        logger.info("点击商学院按钮");
         String accessToken = CookieUtils.getCookie(request, UnionUserService.MOBILE_STATE_COOKIE_NAME);
         String openid;
         Account account;
@@ -201,8 +197,7 @@ public class IndexController {
                 item.getMemberTypeId() == RiseMember.HALF);
         Profile profile = accountService.getProfile(unionUser.getId());
 
-        // 不是白名单
-        if (isMember && isInfoComplete(profile)) {
+        if (isMember && isInfoInComplete(profile)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -234,9 +229,15 @@ public class IndexController {
         return courseView(request, moduleShow, RISE_VIEW);
     }
 
-    //个人信息是否完整
-    private boolean isInfoComplete(Profile profile) {
+    //所有信息是否完整
+    private boolean isInfoInComplete(Profile profile) {
         return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
+                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
+    }
+
+    //个人信息是否完整
+    private boolean isPersonalInfoInComplete(Profile profile) {
+        return profile.getRealName() == null ||
                 (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
     }
 
@@ -246,7 +247,6 @@ public class IndexController {
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
     public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
         logger.info("点击训练营按钮");
-        logger.info("进入 rise/static/camp");
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
@@ -281,18 +281,22 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(unionUser.getId());
         ModuleShow moduleShow = getModuleShow(unionUser, riseMembers);
 
-        if (whiteListService.checkCampMenuWhiteList(unionUser.getId())) {
-            activityMessageService.loginMsg(unionUser.getId());
+        //是否买过或曾经买过 商学院/专业版
+        Boolean isMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
+        Profile profile = accountService.getProfile(unionUser.getId());
+
+        if (isMember && isPersonalInfoInComplete(profile)) {
+            // 未填写信息的已购买专项课的 “新” 会员
+            response.sendRedirect(PROFILE_CAMP_SUBMIT);
+            return null;
         } else if (whiteListService.isGoCampCountDownPage(unionUser.getId())) {
+            // 填完身份信息之后，开始学习日期未到
             response.sendRedirect(CAMP_COUNT_DOWN_URL);
             return null;
-        } else if (whiteListService.isGoGroupPromotionCountDownPage(unionUser.getId())) {
-            response.sendRedirect(GROUP_PROMOTION_COUNT_DOWN);
-            return null;
+        } else if (whiteListService.checkCampMenuWhiteList(unionUser.getId())) {
+            // 加载首屏广告信息
+            activityMessageService.loginMsg(unionUser.getId());
         } else if (whiteListService.isStillLearningCamp(unionUser.getId())) {
-            return courseView(request, moduleShow, RISE_VIEW);
-            //参加一带二活动的人可以进入学习页面
-        } else if (whiteListService.isProOrCardOnDate(unionUser.getId())) {
             return courseView(request, moduleShow, RISE_VIEW);
         } else {
             response.sendRedirect(CAMP_SALE_URL);

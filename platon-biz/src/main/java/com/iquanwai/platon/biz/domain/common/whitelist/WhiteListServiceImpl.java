@@ -138,48 +138,10 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public boolean isGoGroupPromotionCountDownPage(Integer profileId) {
-        GroupPromotion groupPromotion = groupPromotionDao.loadByProfileId(profileId);
-        if (groupPromotion != null) {
-            List<GroupPromotion> groupPromotions = groupPromotionDao.loadByGroupCode(groupPromotion.getGroupCode());
-            Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
-            if (groupPromotion.getLeader()) {
-                // 如果是团长，并且入团人员满足的话，进入倒计时
-                return groupPromotions.size() >= 3 && campOpenDate.compareTo(new Date()) >= 0;
-            } else {
-                // 如果不是团长，进入倒计时
-                return campOpenDate.compareTo(new Date()) >= 0;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public boolean isStillLearningCamp(Integer profileId) {
         Integer learningYear = ConfigUtils.getLearningYear();
         Integer learningMonth = ConfigUtils.getLearningMonth();
         RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
         return riseClassMember != null;
-    }
-
-    /**
-     * 判断是否有学习资格
-     * TODO:2月1号删除此方法
-     *
-     * @param profileId
-     * @return
-     */
-    @Override
-    public boolean isProOrCardOnDate(Integer profileId) {
-        if (prizeCardDao.loadReceiveAnnualCard(profileId).size() == 0 && prizeCardDao.loadAnnualCardByReceiver(profileId) == null && groupPromotionDao.loadByProfileId(profileId) == null) {
-            return false;
-        }
-        Date campOpenDate = new DateTime(2018, 1, 7, 0, 0).toDate();
-        Date campCloseDate = new DateTime(2018, 2, 1, 0, 0).toDate();
-        //如果已经到学习时间
-        if (campOpenDate.compareTo(new Date()) < 0 && campCloseDate.compareTo(new Date()) >= 0) {
-            return true;
-        }
-        return false;
     }
 }
