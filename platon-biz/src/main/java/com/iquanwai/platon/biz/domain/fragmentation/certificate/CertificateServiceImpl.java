@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.certificate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
@@ -69,6 +70,8 @@ public class CertificateServiceImpl implements CertificateService {
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
     private BusinessPlanService businessPlanService;
+    @Autowired
+    private UserRoleDao userRoleDao;
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -389,6 +392,10 @@ public class CertificateServiceImpl implements CertificateService {
             if (improvementPlan != null) {
                 logger.info("improvementPlan不为空");
                 profileId = improvementPlan.getProfileId();
+                //判断是否是助教
+                if(userRoleDao.getAssist(profileId)!=null){
+                    return;
+                }
                 problemId = improvementPlan.getProblemId();
                 Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
                 logger.info("当前主修的problemId为：" + learningProblemId);
@@ -417,6 +424,7 @@ public class CertificateServiceImpl implements CertificateService {
                             int month = ConfigUtils.getLearningMonth();
                             Boolean validElite = riseMemberService.isValidElite(profileId);
                             Boolean validCamp = riseMemberService.isValidCamp(profileId);
+
                             //判断是否是当月训练营或者商学院用户
                             if (validElite || validCamp) {
                                 logger.info("是商学院或者当月训练营用户");
