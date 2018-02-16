@@ -45,7 +45,6 @@ public class CacheReloadReceiver {
                     break;
                 case "reload":
                     cacheService.reload();
-                    pictureService.reloadModule();
                     break;
                 case "member":
                     // 返回当前登录人数

@@ -102,20 +102,6 @@ public class BackendController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/reply", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumReply(@RequestParam(value = "profileId") Integer profileId, @RequestBody AnswerCommentDto answerCommentDto) {
-        answerService.commentAnswer(answerCommentDto.getAnswerId(), answerCommentDto.getRepliedCommentId(),
-                profileId, answerCommentDto.getComment());
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/answer", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "profileId") Integer profileId, @RequestBody AnswerDto answerDto) {
-        answerService.submitAnswer(answerDto.getAnswerId(), profileId,
-                answerDto.getAnswer(), answerDto.getQuestionId());
-        return WebUtils.success();
-    }
-
     @RequestMapping(value = "/generate/certificate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> generateCertificate(@RequestBody RiseCertificate riseCertificate) {
         Integer month = riseCertificate.getMonth();
