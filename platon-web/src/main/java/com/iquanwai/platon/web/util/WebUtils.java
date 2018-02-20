@@ -83,16 +83,12 @@ public class WebUtils {
 
     /**
      * 获取推广活动时加的漏斗渠道
-     * */
-    public static String getChannel(HttpServletRequest request){
+     */
+    public static String getChannel(HttpServletRequest request) {
         String channel = CookieUtils.getCookie(request, "_tm");
 
-        if(channel == null){
-            channel = request.getParameter("_tm");
-        }
-
-        if(channel == null){
-            channel ="";
+        if (channel == null) {
+            channel = "";
         }
 
         return channel;

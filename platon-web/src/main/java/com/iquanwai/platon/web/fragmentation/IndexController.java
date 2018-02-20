@@ -18,6 +18,7 @@ import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import lombok.Data;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.PostConstruct;
@@ -103,7 +105,8 @@ public class IndexController {
     }
 
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
-    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
+                                     @RequestParam(value="_tm", required = false) String channel) throws Exception {
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
@@ -135,21 +138,23 @@ public class IndexController {
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(unionUser.getId());
             ModuleShow moduleShow = getModuleShow(unionUser, riseMembers);
 
-            return courseView(request, response, moduleShow, RISE_VIEW);
+            return courseView(request, response, channel, moduleShow, RISE_VIEW);
         }
     }
 
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
-    public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response,
+                                           @RequestParam(value="_tm", required = false) String channel) throws Exception {
         logger.info("问题／答案页面, {}, {}", request.getRequestURI(), request.getParameter("date"));
-        return courseView(request, response, new ModuleShow(), RISE_VIEW);
+        return courseView(request, response, channel, new ModuleShow(), RISE_VIEW);
     }
 
     /**
      * 主菜单：商学院
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
-    public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+    public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
+                                     @RequestParam(value="_tm", required = false) String channel) throws Exception {
         logger.info("点击商学院按钮");
         if (unionUser == null) {
             logger.info("unionUser 为空");
@@ -226,7 +231,7 @@ public class IndexController {
             return null;
         }
 
-        return courseView(request, response, moduleShow, RISE_VIEW);
+        return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
     //所有信息是否完整
@@ -245,7 +250,8 @@ public class IndexController {
      * 主菜单：训练营
      */
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
-    public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+    public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
+                                     @RequestParam(value="_tm", required = false) String channel) throws Exception {
         logger.info("点击训练营按钮");
         if (unionUser == null) {
             logger.info("unionUser 为空");
@@ -297,17 +303,18 @@ public class IndexController {
             // 加载首屏广告信息
             activityMessageService.loginMsg(unionUser.getId());
         } else if (whiteListService.isStillLearningCamp(unionUser.getId())) {
-            return courseView(request, response, moduleShow, RISE_VIEW);
+            return courseView(request, response, channel, moduleShow, RISE_VIEW);
         } else {
             response.sendRedirect(CAMP_SALE_URL);
             return null;
         }
 
-        return courseView(request, response, moduleShow, RISE_VIEW);
+        return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
-    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws Exception {
+    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
+                                 @RequestParam(value="_tm", required = false) String channel) throws Exception {
         logger.info("进入 rise/static/**");
         if (unionUser == null) {
             logger.info("unionUser 为空");
@@ -352,7 +359,7 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(unionUser.getId());
         ModuleShow moduleShow = getModuleShow(unionUser, riseMembers);
 
-        return courseView(request, response, moduleShow, RISE_VIEW);
+        return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
     private ModuleShow getModuleShow(UnionUser unionUser, List<RiseMember> riseMembers) {
@@ -383,7 +390,8 @@ public class IndexController {
         return WebUtils.result(activityMsg);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, HttpServletResponse response, ModuleShow moduleShow, String viewName) {
+    private ModelAndView courseView(HttpServletRequest request, HttpServletResponse response, String channel,
+                                    ModuleShow moduleShow, String viewName) {
         ModelAndView mav = new ModelAndView(viewName);
         String resourceUrl;
         String domainName = request.getHeader("Host-Test");
@@ -397,7 +405,6 @@ public class IndexController {
         }
 
         //设置渠道漏洞监控参数,浏览器关闭后cookie自动失效
-        String channel = WebUtils.getChannel(request);
         if(channel != null){
             CookieUtils.addCookie("_tm", channel, response);
         }
