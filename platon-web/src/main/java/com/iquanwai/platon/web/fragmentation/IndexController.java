@@ -135,14 +135,14 @@ public class IndexController {
             List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(unionUser.getId());
             ModuleShow moduleShow = getModuleShow(unionUser, riseMembers);
 
-            return courseView(request, moduleShow, RISE_VIEW);
+            return courseView(request, response, moduleShow, RISE_VIEW);
         }
     }
 
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response) throws Exception {
         logger.info("问题／答案页面, {}, {}", request.getRequestURI(), request.getParameter("date"));
-        return courseView(request, new ModuleShow(), RISE_VIEW);
+        return courseView(request, response, new ModuleShow(), RISE_VIEW);
     }
 
     /**
@@ -226,7 +226,7 @@ public class IndexController {
             return null;
         }
 
-        return courseView(request, moduleShow, RISE_VIEW);
+        return courseView(request, response, moduleShow, RISE_VIEW);
     }
 
     //所有信息是否完整
@@ -297,13 +297,13 @@ public class IndexController {
             // 加载首屏广告信息
             activityMessageService.loginMsg(unionUser.getId());
         } else if (whiteListService.isStillLearningCamp(unionUser.getId())) {
-            return courseView(request, moduleShow, RISE_VIEW);
+            return courseView(request, response, moduleShow, RISE_VIEW);
         } else {
             response.sendRedirect(CAMP_SALE_URL);
             return null;
         }
 
-        return courseView(request, moduleShow, RISE_VIEW);
+        return courseView(request, response, moduleShow, RISE_VIEW);
     }
 
     @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
@@ -352,7 +352,7 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(unionUser.getId());
         ModuleShow moduleShow = getModuleShow(unionUser, riseMembers);
 
-        return courseView(request, moduleShow, RISE_VIEW);
+        return courseView(request, response, moduleShow, RISE_VIEW);
     }
 
     private ModuleShow getModuleShow(UnionUser unionUser, List<RiseMember> riseMembers) {
@@ -383,7 +383,7 @@ public class IndexController {
         return WebUtils.result(activityMsg);
     }
 
-    private ModelAndView courseView(HttpServletRequest request, ModuleShow moduleShow, String viewName) {
+    private ModelAndView courseView(HttpServletRequest request, HttpServletResponse response, ModuleShow moduleShow, String viewName) {
         ModelAndView mav = new ModelAndView(viewName);
         String resourceUrl;
         String domainName = request.getHeader("Host-Test");
@@ -394,6 +394,12 @@ public class IndexController {
                 break;
             default:
                 resourceUrl = ConfigUtils.staticResourceUrl(domainName);
+        }
+
+        //设置渠道漏洞监控参数,浏览器关闭后cookie自动失效
+        String channel = WebUtils.getChannel(request);
+        if(channel != null){
+            CookieUtils.addCookie("_tm", channel, response);
         }
 
         if (request.getParameter("debug") != null) {

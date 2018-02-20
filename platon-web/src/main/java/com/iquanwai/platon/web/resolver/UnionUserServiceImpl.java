@@ -41,7 +41,9 @@ public class UnionUserServiceImpl implements UnionUserService {
     @Override
     public Callback getCallbackByRequest(HttpServletRequest request) {
         UnionUser.Platform platform = getPlatformType(request);
-        if (platform == null) return null;
+        if (platform == null){
+            return null;
+        }
         switch (platform) {
             case PC:
                 String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
