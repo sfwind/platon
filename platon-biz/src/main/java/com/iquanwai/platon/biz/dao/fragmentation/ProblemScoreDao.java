@@ -41,7 +41,7 @@ public class ProblemScoreDao extends PracticeDBUtil {
 
     public int userProblemScoreCount(Integer profileId, Integer problem) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(*) from ProblemScore where ProfileId = ? and ProblemId = ?";
+        String sql = "select count(*) from ProblemScore where ProfileId = ? and ProblemId = ? and Del=0";
         try {
             ResultSetHandler<Long> h = new ScalarHandler<>();
             return runner.query(sql, h, profileId, problem).intValue();
