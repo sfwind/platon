@@ -764,7 +764,20 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Knowledge loadKnowledge(Integer knowledgeId) {
-        return cacheService.getKnowledge(knowledgeId);
+        //小目标的knowledgeId=null
+        if (knowledgeId == null) {
+            Knowledge knowledge = new Knowledge();
+            //文案写死
+            knowledge.setKnowledge("让你的训练更有效");
+            return knowledge;
+        }
+        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
+        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledgeId);
+        if (warmupPractice != null) {
+            warmupPractice = cacheService.getWarmupPractice(warmupPractice.getId());
+            knowledge.setExample(warmupPractice);
+        }
+        return knowledge;
     }
 
     private Knowledge getKnowledge(Integer knowledgeId) {

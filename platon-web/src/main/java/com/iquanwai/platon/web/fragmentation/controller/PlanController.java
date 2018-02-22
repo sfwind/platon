@@ -195,6 +195,7 @@ public class PlanController {
         return WebUtils.result(improvementPlan);
     }
 
+    @Deprecated
     @RequestMapping("/knowledge/load/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser, @PathVariable Integer knowledgeId) {
 
@@ -307,19 +308,6 @@ public class PlanController {
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
         return WebUtils.success();
-    }
-
-    @Deprecated
-    @RequestMapping("/welcome")
-    public ResponseEntity<Map<String, Object>> welcome(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("课程")
-                .function("打开课程")
-                .action("打开欢迎页");
-        operationLogService.log(operationLog);
-        return WebUtils.result(loginUser.getRiseMember());
     }
 
     @RequestMapping("/risemember")
