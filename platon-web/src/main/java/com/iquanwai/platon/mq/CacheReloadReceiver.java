@@ -1,8 +1,7 @@
 package com.iquanwai.platon.mq;
 
-import com.iquanwai.platon.biz.domain.common.file.PictureService;
-import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.common.message.MQService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.UnionUserService;
@@ -26,8 +25,6 @@ public class CacheReloadReceiver {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private PictureService pictureService;
-    @Autowired
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private MQService mqService;
@@ -45,7 +42,6 @@ public class CacheReloadReceiver {
                     break;
                 case "reload":
                     cacheService.reload();
-                    pictureService.reloadModule();
                     break;
                 case "member":
                     // 返回当前登录人数
