@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.interceptor;
 
 import com.iquanwai.platon.biz.po.common.Callback;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserServiceImpl;
 import org.slf4j.Logger;
@@ -34,13 +35,18 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
             if (callback != null && callback.getUnionId() != null) {
                 return true;
             } else {
-                return handleUnLogin(response);
+                if (ConfigUtils.isDebug()) {
+                    return true;
+                } else {
+                    return handleUnLogin(response);
+                }
             }
         }
     }
 
     /**
      * 对于 ajax 请求，不存在 callback 请求的处理
+     *
      * @param response 响应
      * @return 是否通过拦截器
      */

@@ -51,6 +51,15 @@ public class CookieUtils {
     }
 
     /**
+     * 往根下面存一个会话级cookie
+     * @param name cookie的key
+     * @param value cookie的value
+     */
+    public static void addCookie(String name, String value, HttpServletResponse response) {
+        addCookie(name, value, ConfigUtils.realDomainName(), -1, "/", response);
+    }
+
+    /**
      * 从cookie值返回cookie值，如果没有返回 null
      * @return cookie的值
      */
