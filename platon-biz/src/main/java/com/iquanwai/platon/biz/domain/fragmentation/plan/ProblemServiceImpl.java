@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
+import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -50,6 +51,12 @@ public class ProblemServiceImpl implements ProblemService {
     private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private BusinessPlanService businessPlanService;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -296,6 +303,28 @@ public class ProblemServiceImpl implements ProblemService {
             banners.add(banner);
         }
         return banners;
+    }
+
+    @Override
+    public Integer getLearningProblemId(Integer profileId) {
+        //查询不同的problemSchedule
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if (riseMember == null) {
+            return null;
+        }
+        //专项课用户
+        if (riseMember.getMemberTypeId().equals(RiseMember.CAMP)) {
+            List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
+            MonthlyCampSchedule learnCampSchedule = monthlyCampSchedules.stream().filter(monthlyCampSchedule -> monthlyCampSchedule.getYear().equals(ConfigUtils.getLearningYear())
+                    && monthlyCampSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
+                    && monthlyCampSchedule.getType().equals(MonthlyCampSchedule.MAJOR_TYPE)).findAny().orElse(null);
+            if (learnCampSchedule == null) {
+                return null;
+            }
+            return learnCampSchedule.getProblemId();
+        }
+        //商学院用户
+        return businessPlanService.getLearningProblemId(profileId);
     }
 
 }

@@ -108,4 +108,11 @@ public interface ProblemService {
     List<Problem> loadHotProblems(List<Integer> problemIds);
 
     List<ExploreBanner> loadExploreBanner();
+
+    /**
+     * 获取当前主修课
+     * @param profileId
+     * @return
+     */
+    Integer getLearningProblemId(Integer profileId);
 }

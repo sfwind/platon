@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -72,6 +73,8 @@ public class CertificateServiceImpl implements CertificateService {
     private BusinessPlanService businessPlanService;
     @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private ProblemService problemService;
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -397,17 +400,17 @@ public class CertificateServiceImpl implements CertificateService {
                     return;
                 }
                 problemId = improvementPlan.getProblemId();
-                Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
+                //Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
+                Integer learningProblemId = problemService.getLearningProblemId(profileId);
                 logger.info("当前主修的problemId为：" + learningProblemId);
                 logger.info("您目前的problemId为：" + problemId);
                 //判断是否是当前主修的problemId
                 if (learningProblemId.equals(problemId)) {
-                    logger.info("当前课程是训练营课程");
+                    logger.info("当前课程是主修课程");
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
                     //获得学习内容完成情况列表
                     List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-                    logger.info("practiceplans的大小：" + practicePlans.size());
                     if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
                                 .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
