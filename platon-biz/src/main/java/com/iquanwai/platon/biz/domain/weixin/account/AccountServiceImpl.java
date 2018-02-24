@@ -111,12 +111,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public boolean checkIsFollow(String unionId) {
-        Account account = followUserDao.queryByUnionId(unionId);
-        return account.getSubscribe() == 1;
-    }
-
-    @Override
     public UserRole getUserRole(Integer profileId) {
         List<UserRole> userRoles = userRoleDao.getRoles(profileId);
         return userRoles.size() > 0 ? userRoles.get(0) : null;
@@ -542,16 +536,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Boolean hasStatusId(Integer profileId, Integer statusId) {
         return customerStatusDao.load(profileId, statusId) != null;
-    }
-
-    @Override
-    public Boolean addStatusId(Integer profileId, Integer statusId) {
-        CustomerStatus status = customerStatusDao.load(profileId, statusId);
-        if (status == null) {
-            return customerStatusDao.insert(profileId, statusId) > 0;
-        } else {
-            return true;
-        }
     }
 
     @Override
