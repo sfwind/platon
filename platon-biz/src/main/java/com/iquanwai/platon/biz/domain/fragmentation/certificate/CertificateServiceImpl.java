@@ -386,7 +386,7 @@ public class CertificateServiceImpl implements CertificateService {
     public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
         int planId;
         int profileId;
-        int problemId;
+        Integer problemId;
         PracticePlan plan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (plan != null) {
             logger.info("plan不为空");
@@ -405,7 +405,7 @@ public class CertificateServiceImpl implements CertificateService {
                 logger.info("当前主修的problemId为：" + learningProblemId);
                 logger.info("您目前的problemId为：" + problemId);
                 //判断是否是当前主修的problemId
-                if (learningProblemId.equals(problemId)) {
+                if (problemId.equals(learningProblemId)) {
                     logger.info("当前课程是主修课程");
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
