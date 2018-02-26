@@ -537,4 +537,20 @@ public class CustomerController {
             return WebUtils.result(annualSummary);
         }
     }
+
+    @RequestMapping("/coupon")
+    public ResponseEntity<Map<String, Object>> getCouponInfo(LoginUser loginUser) {
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("优惠券")
+                .function("查询用户优惠券")
+                .action("查询");
+        operationLogService.log(operationLog);
+
+        CouponDto couponDto = new CouponDto();
+        List<Coupon> coupons = accountService.loadCoupons(loginUser.getId());
+        couponDto.setCoupons(coupons);
+        couponDto.setTotal(coupons.stream().collect(Collectors.summingInt(Coupon::getAmount)));
+
+        return WebUtils.result(couponDto);
+    }
 }

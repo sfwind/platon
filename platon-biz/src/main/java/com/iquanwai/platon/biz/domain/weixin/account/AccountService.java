@@ -26,8 +26,6 @@ public interface AccountService {
      */
     boolean initUserByUnionId(String unionId, Boolean realTime);
 
-    boolean checkIsFollow(String unionId);
-
     /**
      * 根据 profileId 获取用户角色信息
      */
@@ -164,14 +162,6 @@ public interface AccountService {
      * @return 是否有对应statusId
      */
     Boolean hasStatusId(Integer profileId, Integer statusId);
-
-    /**
-     * 添加CustomerStatusId
-     * @param profileId 用户id
-     * @param statusId statusId
-     * @return 是否创建成功
-     */
-    Boolean addStatusId(Integer profileId, Integer statusId);
 
     /**
      * 获取所有该用户会员信息
