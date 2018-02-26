@@ -7,7 +7,7 @@ import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -40,8 +40,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CertificateServiceImpl implements CertificateService {
-    @Autowired
-    private RiseCertificateDao riseCertificateDao;
+
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -49,9 +48,11 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private RiseMemberService riseMemberService;
+    @Autowired
     private PointManager pointManager;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private CouponDao couponDao;
     @Autowired
@@ -67,11 +68,9 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
-    @Autowired
-    private BusinessPlanService businessPlanService;
-    @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private RiseCertificateDao riseCertificateDao;
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -156,12 +155,12 @@ public class CertificateServiceImpl implements CertificateService {
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
-            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
-            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
-            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
-            if (selfPlan != null) {
-                improvementPlans.add(selfPlan);
+            Integer majorProblemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
+            if (majorProblemId != null) {
+                ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, majorProblemId);
+                if (selfPlan != null) {
+                    improvementPlans.add(selfPlan);
+                }
             }
         });
         logger.info("improvementPlan 获取结束");
@@ -290,14 +289,15 @@ public class CertificateServiceImpl implements CertificateService {
 
         logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        //根据profileId获得主修课的improvementPlan
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
-            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
-            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
-            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
-            if (selfPlan != null) {
-                improvementPlans.add(selfPlan);
+            Integer problemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
+            if (problemId != null) {
+                ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemId);
+                if (selfPlan != null) {
+                    improvementPlans.add(selfPlan);
+                }
             }
         });
         logger.info("improvementPlan 获取结束");
@@ -383,31 +383,28 @@ public class CertificateServiceImpl implements CertificateService {
     public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
         int planId;
         int profileId;
-        int problemId;
+        Integer problemId;
         PracticePlan plan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (plan != null) {
-            logger.info("plan不为空");
             planId = plan.getPlanId();
             ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
             if (improvementPlan != null) {
-                logger.info("improvementPlan不为空");
                 profileId = improvementPlan.getProfileId();
                 //判断是否是助教
-                if(userRoleDao.getAssist(profileId)!=null){
+                if (userRoleDao.getAssist(profileId) != null) {
                     return;
                 }
                 problemId = improvementPlan.getProblemId();
-                Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
+                Integer learningProblemId = problemScheduleManager.getLearningMajorProblemId(profileId);
                 logger.info("当前主修的problemId为：" + learningProblemId);
                 logger.info("您目前的problemId为：" + problemId);
                 //判断是否是当前主修的problemId
-                if (learningProblemId.equals(problemId)) {
-                    logger.info("当前课程是训练营课程");
+                if (problemId.equals(learningProblemId)) {
+                    logger.info("当前课程是主修课程");
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
                     //获得学习内容完成情况列表
                     List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-                    logger.info("practiceplans的大小：" + practicePlans.size());
                     if (practicePlans.size() != 0) {
                         Long unCompleteNecessaryCountLong = practicePlans.stream()
                                 .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
@@ -811,6 +808,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
