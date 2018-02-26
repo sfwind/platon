@@ -86,7 +86,7 @@ public class AccountServiceImpl implements AccountService {
 
     private List<Region> provinceList;
     private List<Region> cityList;
-    private Map<String, Integer> userRoleMap = Maps.newHashMap();
+    private Map<Integer, Integer> userRoleMap = Maps.newHashMap();
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
     // 用户头像失效校验 mq
     private RabbitMQPublisher headImgUrlCheckPublisher;
@@ -96,7 +96,7 @@ public class AccountServiceImpl implements AccountService {
     @PostConstruct
     public void init() {
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
-        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getOpenid(), userRole.getRoleId()));
+        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getProfileId(), userRole.getRoleId()));
         logger.info("role init complete");
         // headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
     }
@@ -130,7 +130,7 @@ public class AccountServiceImpl implements AccountService {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
-            Integer role = userRoleMap.get(profile.getOpenid());
+            Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);
             } else {
@@ -149,7 +149,7 @@ public class AccountServiceImpl implements AccountService {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
-            Integer role = userRoleMap.get(profile.getOpenid());
+            Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);
             } else {
@@ -174,7 +174,7 @@ public class AccountServiceImpl implements AccountService {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
-            Integer role = userRoleMap.get(profile.getOpenid());
+            Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);
             } else {
@@ -193,7 +193,7 @@ public class AccountServiceImpl implements AccountService {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
             profile.setRiseMember(getProfileRiseMember(profile.getId()));
-            Integer role = userRoleMap.get(profile.getOpenid());
+            Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);
             } else {
@@ -212,7 +212,7 @@ public class AccountServiceImpl implements AccountService {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
-            Integer role = userRoleMap.get(profile.getOpenid());
+            Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);
             } else {
