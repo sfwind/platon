@@ -295,12 +295,16 @@ public class CertificateServiceImpl implements CertificateService {
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
-            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
-            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
-            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
-            if (selfPlan != null) {
-                improvementPlans.add(selfPlan);
+            Integer problemId = problemService.getLearningProblemId(classMemberProfileId);
+            if(problemId!=null) {
+                ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemId);
+//            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
+//            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+//            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
+//            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
+                if (selfPlan != null) {
+                    improvementPlans.add(selfPlan);
+                }
             }
         });
         logger.info("improvementPlan 获取结束");
@@ -389,18 +393,16 @@ public class CertificateServiceImpl implements CertificateService {
         Integer problemId;
         PracticePlan plan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (plan != null) {
-            logger.info("plan不为空");
             planId = plan.getPlanId();
             ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
             if (improvementPlan != null) {
-                logger.info("improvementPlan不为空");
                 profileId = improvementPlan.getProfileId();
                 //判断是否是助教
                 if(userRoleDao.getAssist(profileId)!=null){
                     return;
                 }
                 problemId = improvementPlan.getProblemId();
-                //Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
+               // Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
                 Integer learningProblemId = problemService.getLearningProblemId(profileId);
                 logger.info("当前主修的problemId为：" + learningProblemId);
                 logger.info("您目前的problemId为：" + problemId);
