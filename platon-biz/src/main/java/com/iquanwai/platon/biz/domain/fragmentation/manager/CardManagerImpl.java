@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.fragmentation.plan.manager;
+package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;

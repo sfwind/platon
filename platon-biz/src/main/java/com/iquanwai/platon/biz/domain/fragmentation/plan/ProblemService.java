@@ -19,14 +19,12 @@ public interface ProblemService {
 
     /**
      * 根据课程id获取问题
-     *
      * @param problemId 课程id
      */
     Problem getProblem(Integer problemId);
 
     /**
      * 根据课程id获取课程
-     *
      * @param problemId 课程id
      */
     Problem getProblemForSchedule(Integer problemId, Integer profileId);
@@ -40,23 +38,20 @@ public interface ProblemService {
 
     /**
      * 获得课程的分类
-     *
      * @param catalogId 分类
      */
     ProblemCatalog getProblemCatalog(Integer catalogId);
 
     /**
      * 获得课程的子分类
-     *
      * @param subCatalogId 子分类
      */
     ProblemSubCatalog getProblemSubCatalog(Integer subCatalogId);
 
     /**
      * 给问题打分
-     *
-     * @param profileId        用户id
-     * @param problemId     课程id
+     * @param profileId 用户id
+     * @param problemId 课程id
      * @param problemScores 课程打分
      */
     void gradeProblem(Integer problemId, Integer profileId, List<ProblemScore> problemScores);
@@ -73,17 +68,11 @@ public interface ProblemService {
 
     /**
      * 根据 ProblemId 获取 ProblemExtension 信息
-     *
-     * @param problemId
-     * @return
      */
     ProblemExtension loadProblemExtensionByProblemId(Integer problemId);
 
     /**
      * 根据 ProblemId 获取 ProblemActivity 列表
-     *
-     * @param problemId
-     * @return
      */
     List<ProblemActivity> loadProblemActivitiesByProblemId(Integer problemId);
 
@@ -109,10 +98,4 @@ public interface ProblemService {
 
     List<ExploreBanner> loadExploreBanner();
 
-    /**
-     * 获取当前主修课
-     * @param profileId
-     * @return
-     */
-    Integer getLearningProblemId(Integer profileId);
 }

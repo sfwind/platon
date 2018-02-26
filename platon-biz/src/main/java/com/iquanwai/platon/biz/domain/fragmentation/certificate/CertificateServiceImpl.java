@@ -7,8 +7,7 @@ import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -41,8 +40,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CertificateServiceImpl implements CertificateService {
-    @Autowired
-    private RiseCertificateDao riseCertificateDao;
+
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -50,9 +48,11 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private RiseMemberService riseMemberService;
+    @Autowired
     private PointManager pointManager;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private CouponDao couponDao;
     @Autowired
@@ -68,13 +68,12 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
-    @Autowired
-    private BusinessPlanService businessPlanService;
-    @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
-    private ProblemService problemService;
+    private RiseCertificateDao riseCertificateDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -159,10 +158,7 @@ public class CertificateServiceImpl implements CertificateService {
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
-            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
-            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
-            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
+            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemScheduleManager.getLearningMajorProblemId(classMemberProfileId));
             if (selfPlan != null) {
                 improvementPlans.add(selfPlan);
             }
@@ -295,13 +291,9 @@ public class CertificateServiceImpl implements CertificateService {
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
-            Integer problemId = problemService.getLearningProblemId(classMemberProfileId);
-            if(problemId!=null) {
+            Integer problemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
+            if (problemId != null) {
                 ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemId);
-//            Integer category = accountService.loadUserScheduleCategory(classMemberProfileId);
-//            List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-//            CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(scheduleDefault -> month.equals(scheduleDefault.getMonth())).findAny().orElse(null);
-//            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, courseScheduleDefault.getProblemId());
                 if (selfPlan != null) {
                     improvementPlans.add(selfPlan);
                 }
@@ -398,12 +390,11 @@ public class CertificateServiceImpl implements CertificateService {
             if (improvementPlan != null) {
                 profileId = improvementPlan.getProfileId();
                 //判断是否是助教
-                if(userRoleDao.getAssist(profileId)!=null){
+                if (userRoleDao.getAssist(profileId) != null) {
                     return;
                 }
                 problemId = improvementPlan.getProblemId();
-               // Integer learningProblemId = businessPlanService.getLearningProblemId(profileId);
-                Integer learningProblemId = problemService.getLearningProblemId(profileId);
+                Integer learningProblemId = problemScheduleManager.getLearningMajorProblemId(profileId);
                 logger.info("当前主修的problemId为：" + learningProblemId);
                 logger.info("您目前的problemId为：" + problemId);
                 //判断是否是当前主修的problemId

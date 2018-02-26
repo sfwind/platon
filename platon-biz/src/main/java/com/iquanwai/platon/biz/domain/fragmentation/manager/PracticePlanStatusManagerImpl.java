@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.domain.fragmentation.plan.manager;
+package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
@@ -39,13 +39,13 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .filter(plan -> plan.getId() == planId).findAny().orElse(null);
         if (improvementPlan != null) {
             practicePlanDao.complete(practicePlanId);
-        }else{
+        } else {
             //没找到课程
             logger.error("{} 不是 {} 的小课", practicePlanId, profileId);
             return;
         }
 
-        if(improvementPlan.getStatus() == ImprovementPlan.CLOSE){
+        if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
             //课程已关闭,不能解锁
             return;
         }

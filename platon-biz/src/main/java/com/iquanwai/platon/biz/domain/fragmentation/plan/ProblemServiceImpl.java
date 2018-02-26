@@ -5,14 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
-import com.iquanwai.platon.biz.util.zk.ZKConfigUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -34,6 +34,8 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private AccountService accountService;
+    @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
     private ProblemExtensionDao problemExtensionDao;
@@ -54,9 +56,11 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
-    private BusinessPlanService businessPlanService;
-    @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    @Autowired
+    private CourseScheduleDao courseScheduleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -303,28 +307,6 @@ public class ProblemServiceImpl implements ProblemService {
             banners.add(banner);
         }
         return banners;
-    }
-
-    @Override
-    public Integer getLearningProblemId(Integer profileId) {
-        //查询不同的problemSchedule
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember == null) {
-            return null;
-        }
-        //专项课用户
-        if (riseMember.getMemberTypeId().equals(RiseMember.CAMP)) {
-            List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
-            MonthlyCampSchedule learnCampSchedule = monthlyCampSchedules.stream().filter(monthlyCampSchedule -> monthlyCampSchedule.getYear().equals(ConfigUtils.getLearningYear())
-                    && monthlyCampSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
-                    && monthlyCampSchedule.getType().equals(MonthlyCampSchedule.MAJOR_TYPE)).findAny().orElse(null);
-            if (learnCampSchedule == null) {
-                return null;
-            }
-            return learnCampSchedule.getProblemId();
-        }
-        //商学院用户
-        return businessPlanService.getLearningProblemId(profileId);
     }
 
 }

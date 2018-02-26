@@ -64,4 +64,15 @@ public class CourseSchedule {
      * 是否是可调整的
      */
     private Boolean adjustable;
+
+    public interface Type {
+        /**
+         * 主修
+         */
+        int MAJOR = 1;
+        /**
+         * 辅修
+         */
+        int MINOR = 2;
+    }
 }
