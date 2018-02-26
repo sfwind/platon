@@ -7,8 +7,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -50,36 +48,7 @@ public class LogAspect {
 
         Object result = null;
 
-        // 这里集成cat
-//        Transaction t = null;
-//
-//        try {
-//            Object catUri = request.getAttribute("cat-page-uri");
-//            String url = request.getRequestURI();
-//            if (catUri != null) {
-//                url = catUri.toString();
-//            }
-//            logger.info("cat url:{}", url);
-//            t = Cat.newTransaction("URL", url);
-
         result = pjp.proceed();// result的值就是被拦截方法的返回值
-//
-//            t.setStatus(Transaction.SUCCESS);
-//            logger.info("cat success:{}", url);
-//        } catch (Exception e) {
-//            if (t != null) {
-//                t.setStatus(e);
-//                Cat.logError(e);
-//                logger.info("cat error:{}", e);
-//            }
-//            throw e;
-//        } finally {
-//            if (t != null) {
-//                logger.info("cat final");
-//                t.complete();
-//            }
-//        }
-
 
         long endTimeMillis = System.currentTimeMillis();
         outputParamMap.put("result", result);
