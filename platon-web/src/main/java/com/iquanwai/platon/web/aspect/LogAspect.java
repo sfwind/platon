@@ -5,10 +5,8 @@ import com.google.gson.Gson;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -20,9 +18,11 @@ import java.util.Map;
 /**
  * @ClassName: LogAspect
  * @Description: 日志记录AOP实现
+ * @deprecated
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
+//@Order(5)
 public class LogAspect {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -45,7 +45,11 @@ public class LogAspect {
         // 执行完方法的返回值：调用proceed()方法，就会触发切入点方法执行  
         Map<String, Object> outputParamMap = Maps.newHashMap();
         long startTimeMillis = System.currentTimeMillis();
-        Object result = pjp.proceed();// result的值就是被拦截方法的返回值
+
+        Object result = null;
+
+        result = pjp.proceed();// result的值就是被拦截方法的返回值
+
         long endTimeMillis = System.currentTimeMillis();
         outputParamMap.put("result", result);
 

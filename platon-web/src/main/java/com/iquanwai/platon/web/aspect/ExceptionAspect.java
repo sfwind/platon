@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserServiceImpl;
 import com.iquanwai.platon.web.util.WebUtils;
+import com.iquanwai.platon.web.util.CookieUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,7 @@ public class ExceptionAspect {
                 ",userAgent:" + req.getHeader("user-agent") +
                 ",ip:" + req.getHeader("X-Forwarded-For") +
                 ",cookie:" + cookie, e);
-        return WebUtils.error("服务器伐开心,我们正在想办法");
+        throw e;
+//        return WebUtils.error("服务器伐开心,我们正在想办法");
     }
 }
