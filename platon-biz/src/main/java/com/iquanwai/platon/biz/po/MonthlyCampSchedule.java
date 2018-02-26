@@ -11,4 +11,6 @@ public class MonthlyCampSchedule {
     private Integer problemId; // 小课 Id
     private Boolean del; // 是否删除
 
+    public static final int MAJOR_TYPE = 1;
+
 }
