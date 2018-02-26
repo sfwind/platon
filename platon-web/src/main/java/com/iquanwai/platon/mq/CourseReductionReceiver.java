@@ -1,7 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.CourseReductionService;
+import com.iquanwai.platon.biz.domain.operation.CourseReductionService;
 import com.iquanwai.platon.biz.po.common.SubscribeEvent;
 import com.iquanwai.platon.biz.util.PromotionConstants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;

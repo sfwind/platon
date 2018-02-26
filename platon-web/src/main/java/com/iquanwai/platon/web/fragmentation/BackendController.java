@@ -1,11 +1,13 @@
 package com.iquanwai.platon.web.fragmentation;
 
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
+import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
@@ -13,8 +15,8 @@ import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ForceOpenPlanParams;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
-import com.iquanwai.platon.web.resolver.GuestUser;
-import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +38,20 @@ public class BackendController {
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
+    private UnionUserService unionUserService;
+    @Autowired
     private AnswerService answerService;
     @Autowired
     private CertificateService certificateService;
     @Autowired
     private GeneratePlanService generatePlanService;
+    @Autowired
+    private PlanService planService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/log", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto,
-                                                   LoginUser loginUser, GuestUser guestUser) {
+    public ResponseEntity<Map<String, Object>> log(HttpServletRequest request, @RequestBody ErrorLogDto errorLogDto, UnionUser unionUser) {
         String data = errorLogDto.getResult();
         StringBuilder sb = new StringBuilder();
         if (data.length() > 700) {
@@ -70,47 +75,41 @@ public class BackendController {
             sb.append(cookie);
         }
 
-        String openId = loginUser == null ? null : loginUser.getOpenId();
-        if (openId == null) {
-            openId = guestUser == null ? null : guestUser.getOpenId();
+        Integer profileId = unionUser.getId();
+        Integer platform = null;
+        UnionUser.Platform platformOrigin = unionUserService.getPlatformType(request);
+        if (platformOrigin != null) {
+            platform = platformOrigin.getValue();
         }
 
-        OperationLog operationLog = OperationLog.create().openid(openId)
-                .module("记录前端bug")
-                .function("bug")
-                .action("bug")
-                .memo(sb.toString());
-        operationLogService.log(operationLog);
+        ActionLog actionLog = ActionLog.create().uid(profileId)
+                .module("bug")
+                .function("前端bug")
+                .action("记录bug")
+                .memo(sb.toString())
+                .platform(platform);
+        operationLogService.log(actionLog);
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/mark", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> mark(LoginUser loginUser, GuestUser guestUser, @RequestBody MarkDto markDto) {
-        String openId = loginUser == null ? null : loginUser.getOpenId();
-        if (openId == null) {
-            openId = guestUser == null ? null : guestUser.getOpenId();
+    public ResponseEntity<Map<String, Object>> mark(HttpServletRequest request, UnionUser unionUser, @RequestBody MarkDto markDto) {
+        Integer profileId = unionUser.getId();
+        Integer platform = null;
+        UnionUser.Platform platformOrigin = unionUserService.getPlatformType(request);
+        if (platformOrigin != null) {
+            platform = platformOrigin.getValue();
         }
 
-        OperationLog operationLog = OperationLog.create().openid(openId)
+        ActionLog actionLog = ActionLog.create().uid(profileId)
                 .module(markDto.getModule())
                 .function(markDto.getFunction())
                 .action(markDto.getAction())
-                .memo(markDto.getMemo());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
+                .memo(markDto.getMemo())
+                .platform(platform)
+                .channel(WebUtils.getChannel(request));
 
-    @RequestMapping(value = "/reply", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumReply(@RequestParam(value = "profileId") Integer profileId, @RequestBody AnswerCommentDto answerCommentDto) {
-        answerService.commentAnswer(answerCommentDto.getAnswerId(), answerCommentDto.getRepliedCommentId(),
-                profileId, answerCommentDto.getComment());
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/answer", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> forumAnswer(@RequestParam(value = "profileId") Integer profileId, @RequestBody AnswerDto answerDto) {
-        answerService.submitAnswer(answerDto.getAnswerId(), profileId,
-                answerDto.getAnswer(), answerDto.getQuestionId());
+        operationLogService.log(actionLog);
         return WebUtils.success();
     }
 
@@ -137,7 +136,7 @@ public class BackendController {
         Integer month = fullAttendanceReward.getMonth();
         Integer year = fullAttendanceReward.getYear();
         ThreadPool.execute(() ->
-                certificateService.generateFullAttendanceCoupon(year, month)
+                        certificateService.generateFullAttendanceCoupon(year, month)
         );
         return WebUtils.result("正在进行中");
     }
@@ -181,4 +180,14 @@ public class BackendController {
         return WebUtils.success();
     }
 
+    @RequestMapping(value = "/adjust/plan", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> adjustPracticePlan() {
+        logger.info("课程计划调整接口调用成功");
+        ThreadPool.execute(() -> {
+            logger.info("开始调整课程计划");
+            planService.adjustPracticePlan();
+            logger.info("课程计划调整成功");
+        });
+        return WebUtils.success();
+    }
 }

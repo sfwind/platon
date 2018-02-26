@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
@@ -12,7 +13,6 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -47,27 +47,8 @@ public class ProblemController {
     private WhiteListService whiteListService;
     @Autowired
     private AccountService accountService;
-
-    @RequestMapping("/load")
-    public ResponseEntity<Map<String, Object>> loadProblems(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-
-        List<Problem> problemList = problemService.loadProblems();
-        //非天使用户去除试用课程
-        if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
-            problemList = problemList.stream().filter(problem -> !problem.getTrial()).collect(Collectors.toList());
-        }
-        ProblemDto problemDto = new ProblemDto();
-        problemDto.setName(loginUser.getWeixinName());
-        problemDto.setProblemList(problemList);
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
-                .function("加载问题")
-                .action("打开测评页");
-        operationLogService.log(operationLog);
-        return WebUtils.result(problemDto);
-    }
+    @Autowired
+    private PracticeService practiceService;
 
     @RequestMapping("/list/unchoose")
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(LoginUser loginUser) {
@@ -75,10 +56,10 @@ public class ProblemController {
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
 
-        // 获取每门课程已经选择的人数
-        for (Problem problem : problems) {
-            problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
-        }
+        // 获取每门小课已经选择的人数
+//        for (Problem problem : problems) {
+//            problem.setChosenPersonCount(problemService.loadChosenPersonCount(problem.getId()));
+//        }
 
         //非天使用户去除试用版课程
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, loginUser.getId())) {
@@ -141,10 +122,10 @@ public class ProblemController {
         result.setHotList(hotList);
         result.setName(loginUser.getWeixinName());
         result.setCatalogList(catalogListDtos);
-        result.setRiseMember(loginUser.getRiseMember() != 0);
+        result.setRiseMember(accountService.getProfileRiseMember(loginUser.getId()) != 0);
         result.setBanners(problemService.loadExploreBanner());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
+                .module("课程")
                 .function("课程列表")
                 .action("加载课程信息");
         operationLogService.log(operationLog);
@@ -184,7 +165,7 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(catalogId, "课程分类不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
+                .module("课程")
                 .function("课程类别")
                 .action("加载课程类别")
                 .memo(catalogId.toString());
@@ -217,7 +198,7 @@ public class ProblemController {
                         dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                         dto.setName(item.getProblem());
                         dto.setId(item.getId());
-                        dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+//                        dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
                         dto.setAbbreviation(item.getAbbreviation());
                         return dto;
                     })
@@ -232,7 +213,7 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadAllProblem(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
+                .module("课程")
                 .function("课程信息")
                 .action("加载所有课程信息");
         operationLogService.log(operationLog);
@@ -264,7 +245,7 @@ public class ProblemController {
                     dto.setDifficulty(item.getDifficultyScore() == null ? "0" : item.getDifficultyScore().toString());
                     dto.setName(item.getProblem());
                     dto.setId(item.getId());
-                    dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
+//                    dto.setChosenPersonCount(problemService.loadChosenPersonCount(item.getId()));
                     dto.setAbbreviation(item.getAbbreviation());
                     return dto;
                 })
@@ -278,28 +259,32 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
-                .function("阅读问题报告")
-                .action("打开问题报告页")
+                .module("课程")
+                .function("课程标题")
+                .action("加载课程标题")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(problem);
     }
 
     @RequestMapping("/open/{problemId}")
-    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId, @RequestParam(required = false) Boolean autoOpen) {
+    public ResponseEntity<Map<String, Object>> openProblemIntroduction(LoginUser loginUser, @PathVariable Integer problemId,
+                                                                       @RequestParam(required = false) Boolean autoOpen,
+                                                                       @RequestParam(required = false) Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, loginUser.getId());
-        // 设置当前课程已学习人数
-//        problem.setChosenPersonCount(problemService.loadChosenPersonCount(problemId));
-//        problem.setMonthlyCampMonth(problemService.loadCoursePlanSchedule(loginUser.getId(), problemId));
 
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
-
-//        Boolean isMember = loginUser.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP;
-
-        Integer buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
+        Integer buttonStatus;
+        if(practicePlanId != null){
+            buttonStatus = 6;
+        }else{
+            buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
+        }
+        if (practicePlanId != null) {
+            practiceService.learnProblemIntroduction(loginUser.getId(), practicePlanId);
+        }
 
         if (plan != null) {
             dto.setPlanId(plan.getId());
@@ -311,19 +296,11 @@ public class ProblemController {
         dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
         dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
 
-//        if (isMember) {
-//            // 是会员，才会继续
-//            String monthStr = problemService.loadProblemScheduleMonth(loginUser.getId(), problemId);
-//            if (monthStr != null) {
-//                dto.setTogetherClassMonth(monthStr);
-//            }
-//        }
-
         dto.setProblemCollected(problemService.hasCollectedProblem(loginUser.getId(), problemId));
 
         // 查询信息
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
+                .module("课程")
                 .function("查询课程信息")
                 .action("打开课程介绍页")
                 .memo(problemId.toString());
@@ -336,56 +313,29 @@ public class ProblemController {
         Assert.notNull(loginUser, "用户不能为空");
         problemService.gradeProblem(problemId, loginUser.getId(), problemScores);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("问题")
+                .module("课程")
                 .function("评分")
-                .action("移动端打分")
+                .action("课程打分")
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/submit/extension", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> updateProblemExtension(LoginUser loginUser, @RequestBody ProblemExtension problemExtension) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemExtension.getProblemId(), "课程 Id 不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("课程").function("课程扩展").action("更新课程扩展");
-        operationLogService.log(operationLog);
-        Integer result = problemService.insertProblemExtension(problemExtension);
-        if (result > 0) {
-            return WebUtils.success();
-        } else {
-            return WebUtils.error("更新失败");
-        }
-    }
-
-    @RequestMapping(value = "/submit/activity", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> updateProblemActivity(LoginUser loginUser, @RequestBody ProblemActivity problemActivity) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Assert.notNull(problemActivity.getProblemId(), "课程 Id 不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("课程").function("课程扩展").action("更新课程活动");
-        operationLogService.log(operationLog);
-        Integer result = problemService.insertProblemActivity(problemActivity);
-        if (result > 0) {
-            return WebUtils.result("更新成功");
-        } else {
-            return WebUtils.error("更新失败");
-        }
     }
 
     @RequestMapping(value = "/extension/{problemId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadProblemExtension(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
         Assert.notNull(problemId, "请求 ProblemId 不能为空");
-        OperationLog operationLog = OperationLog.create().module("课程").action("课程扩展").function("获取课程扩展数据").openid(loginUser.getOpenId());
+        OperationLog operationLog = OperationLog.create().module("课程")
+                .function("课程扩展").action("获取课程扩展数据").openid(loginUser.getOpenId());
         operationLogService.log(operationLog);
         ProblemExtension extension = problemService.loadProblemExtensionByProblemId(problemId);
         List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
         if (extension != null && activities != null) {
             extension.setActivities(activities);
-            extension.setOnlineActivities(activities.stream().filter(activity -> ProblemActivity.ONLINE.equals(activity.getType())).collect(Collectors.toList()));
-            extension.setOfflineActivities(activities.stream().filter(activity -> ProblemActivity.OFFLINE.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOnlineActivities(activities.stream()
+                    .filter(activity -> ProblemActivity.ONLINE.equals(activity.getType())).collect(Collectors.toList()));
+            extension.setOfflineActivities(activities.stream()
+                    .filter(activity -> ProblemActivity.OFFLINE.equals(activity.getType())).collect(Collectors.toList()));
             return WebUtils.result(extension);
         } else {
             return WebUtils.error("当前课程暂无延伸学习相关内容");
@@ -407,7 +357,8 @@ public class ProblemController {
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
-                dto.setIsRiseMember(loginUser.getRiseMember() == 1);
+                int riseMemberType = accountService.getProfileRiseMember(loginUser.getId());
+                dto.setIsRiseMember(riseMemberType == 1);
                 dto.setProblemId(essenceCards.getLeft().getId());
                 dto.setProblem(essenceCards.getLeft().getProblem());
             }
@@ -417,7 +368,8 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/card/{problemId}/{chapterId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(LoginUser loginUser, @PathVariable Integer problemId, @PathVariable Integer chapterId) {
+    public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(LoginUser loginUser,
+                                                                      @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("课程卡包")
@@ -463,6 +415,19 @@ public class ProblemController {
         } else {
             return WebUtils.error("取消收藏失败");
         }
+    }
+
+    @RequestMapping(value = "/get/my/{problemId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getMyProblem(LoginUser loginUser, @PathVariable Integer problemId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(problemId, "课程不能为空");
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("课程学习").function("我的课程").action("获取我的课程").memo(Integer.toString(problemId));
+        operationLogService.log(operationLog);
+
+        ImprovementPlan improvementPlan = planService.getDetailByProblemId(loginUser.getId(), problemId);
+
+        return WebUtils.result(improvementPlan);
     }
 
 }

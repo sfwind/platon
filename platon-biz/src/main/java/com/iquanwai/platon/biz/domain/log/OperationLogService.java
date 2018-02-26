@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.log;
 
+import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 
 /**
@@ -8,4 +9,6 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 public interface OperationLogService {
 
     void log(OperationLog operationLog);
+
+    void log(ActionLog actionLog);
 }

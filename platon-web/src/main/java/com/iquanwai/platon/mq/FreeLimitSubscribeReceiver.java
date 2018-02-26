@@ -1,7 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iquanwai.platon.biz.domain.fragmentation.operation.OperationFreeLimitService;
+import com.iquanwai.platon.biz.domain.operation.OperationFreeLimitService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;

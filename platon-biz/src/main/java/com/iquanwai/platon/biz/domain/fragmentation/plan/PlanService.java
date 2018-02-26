@@ -43,6 +43,12 @@ public interface PlanService {
      */
     Pair<Boolean, String> checkChooseCampProblem(Integer profileId, Integer problemId);
 
+    /**
+     * 解锁专项课
+     *
+     * @param planId 计划id
+     * @param profileId 用户id
+     */
     void unlockCampPlan(Integer profileId, Integer planId);
 
     /**
@@ -114,6 +120,15 @@ public interface PlanService {
      */
     ImprovementPlan getPlanByProblemId(Integer profileId, Integer problemId);
 
+
+    /**
+     * 查询是否有该课程
+     *
+     * @param profileId 用户id
+     * @param problemId 课程id
+     */
+    ImprovementPlan getDetailByProblemId(Integer profileId, Integer problemId);
+
     /**
      * 判断课程是否完成,当理解练习和巩固练习都完成时,课程判定为完成
      *
@@ -174,9 +189,23 @@ public interface PlanService {
     void magicOpenCampOrder(String orderId);
 
     /**
+     * 根据 PracticePlanId 获取该 Series 中各个题型题目的完成情况
+     */
+    List<PlanSeriesStatus> loadPlanSeries(Integer practicePlanId);
+
+    /**
+     * 获取该小节对应知识点的名称标题
+     * @param practicePlanId
+     * @return
+     */
+    String loadPlanSeriesTitle(Integer practicePlanId);
+
+    /**
      * 解锁之前用不解锁的计划
      *
      * @param profileId 用户id
      */
     void unlockNeverUnlockPlans(Integer profileId);
+
+    void adjustPracticePlan();
 }

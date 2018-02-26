@@ -143,7 +143,7 @@ public class SurveyController {
         operationLogService.log(operationLog);
         SurveyResult result = surveyService.loadSubmit(guestUser.getOpenId(), category);
 
-        Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe() != 0;
+        Boolean subscribe = guestUser.getSubscribe() != null && guestUser.getSubscribe();
         SurveyResultDto dto = new SurveyResultDto();
         dto.setSubscribe(subscribe);
         dto.setSubscribeQrCode(ConfigUtils.isDevelopment() ?

@@ -27,19 +27,19 @@ public class PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected DataSource getDataSource(){
+    protected DataSource getDataSource() {
         return ds;
     }
 
-    public <T> T load(Class<T> type, Integer id){
-        if(id==null){
+    public <T> T load(Class<T> type, Integer id) {
+        if (id == null) {
             return null;
         }
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<T> h = new BeanHandler<T>(type);
 
         try {
-            T t = run.query("SELECT * FROM "+type.getSimpleName()+" where id=?", h, id);
+            T t = run.query("SELECT * FROM " + type.getSimpleName() + " where id=?", h, id);
             return t;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -48,13 +48,12 @@ public class PracticeDBUtil {
         return null;
     }
 
-    public <T> List<T> loadAll(Class<T> type){
-
+    public <T> List<T> loadAll(Class<T> type) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<T>> h = new BeanListHandler<T>(type);
 
         try {
-            List<T> t = run.query("SELECT * FROM "+type.getSimpleName(), h);
+            List<T> t = run.query("SELECT * FROM " + type.getSimpleName(), h);
             return t;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -63,13 +62,12 @@ public class PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public long count(Class type){
-
+    public long count(Class type) {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<Long>();
 
         try {
-            Long number = run.query("SELECT count(*) FROM "+type.getSimpleName(), h);
+            Long number = run.query("SELECT count(*) FROM " + type.getSimpleName(), h);
             return number;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -78,15 +76,15 @@ public class PracticeDBUtil {
         return -1L;
     }
 
-    protected String produceQuestionMark(int size){
-        if(size==0){
+    protected String produceQuestionMark(int size) {
+        if (size == 0) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
-        for(int i=0;i<size;i++){
+        for (int i = 0; i < size; i++) {
             sb.append("?,");
         }
 
-        return sb.deleteCharAt(sb.length()-1).toString();
+        return sb.deleteCharAt(sb.length() - 1).toString();
     }
 }

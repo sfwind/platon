@@ -10,8 +10,10 @@ import java.util.List;
  */
 @Data
 public class SchedulePlan {
-    private int minorPercent; //辅修进度
-    private int majorPercent; //主修进度
+    private int majorTotal; // 主修总章节数
+    private int majorComplete; // 主修完成章节数
+    private int minorTotal; //辅修总章节数
+    private int minorComplete; // 辅修完成章节数
     private List<ImprovementPlan> runningProblem; // 辅修课程
     private List<ImprovementPlan> completeProblem; // 辅修课程
     private String topic; //本月主题

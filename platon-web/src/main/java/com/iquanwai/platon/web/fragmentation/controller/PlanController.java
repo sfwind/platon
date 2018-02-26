@@ -6,12 +6,8 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
-import com.iquanwai.platon.biz.domain.fragmentation.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -31,6 +27,7 @@ import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ChapterDto;
 import com.iquanwai.platon.web.fragmentation.dto.PlanListDto;
 import com.iquanwai.platon.web.fragmentation.dto.SectionDto;
+import com.iquanwai.platon.web.fragmentation.dto.SectionProgressDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.AuditionChooseDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
@@ -85,6 +82,8 @@ public class PlanController {
     private CustomerMessageService customerMessageService;
     @Autowired
     private AuditionService auditionService;
+    @Autowired
+    private StudyService studyService;
 
     /**
      * 选课程，生成学习计划<br/>
@@ -197,6 +196,7 @@ public class PlanController {
         return WebUtils.result(improvementPlan);
     }
 
+    @Deprecated
     @RequestMapping("/knowledge/load/{knowledgeId}")
     public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser, @PathVariable Integer knowledgeId) {
 
@@ -299,11 +299,6 @@ public class PlanController {
         if (!check.getLeft()) {
             // 没有完成必做
             return WebUtils.error(-1, "先完成所有的知识理解和巩固练习<br/>才能完成课程哦");
-        } else {
-            // 完成必做,查看最小完成天数
-            if (check.getRight() != 0) {
-                return WebUtils.error("学得太猛了，再复习一下吧<br/>本课程推荐学习天数至少为" + check.getRight() + "天<br/>之后就可以完成课程了");
-            }
         }
 
         if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
@@ -314,19 +309,6 @@ public class PlanController {
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
         return WebUtils.success();
-    }
-
-    @Deprecated
-    @RequestMapping("/welcome")
-    public ResponseEntity<Map<String, Object>> welcome(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("课程")
-                .function("打开课程")
-                .action("打开欢迎页");
-        operationLogService.log(operationLog);
-        return WebUtils.result(loginUser.getRiseMember());
     }
 
     @RequestMapping("/risemember")
@@ -448,7 +430,7 @@ public class PlanController {
 
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(item.getProblemId());
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+//            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
             planDto.setProblem(itemProblem.simple());
             currentCampPlans.add(planDto);
         });
@@ -472,7 +454,7 @@ public class PlanController {
 
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(item.getProblemId());
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
+//            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(item.getProblemId()));
             plan.setProblem(itemProblem.simple());
 
             if (item.getStatus() == ImprovementPlan.CLOSE) {
@@ -496,7 +478,7 @@ public class PlanController {
             PlanDto plan = new PlanDto();
             // 设置 Problem 对象
             Problem itemProblem = cacheService.getProblem(auditionId);
-            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
+//            itemProblem.setChosenPersonCount(problemService.loadChosenPersonCount(auditionId));
             plan.setProblem(itemProblem.simple());
             plan.setName(itemProblem.getProblem());
             plan.setPic(itemProblem.getPic());
@@ -731,5 +713,50 @@ public class PlanController {
         return WebUtils.result(dto);
     }
 
+    @RequestMapping(value = "/load/studyline/{planId}")
+    public ResponseEntity<Map<String, Object>> loadStudyLine(LoginUser loginUser, @PathVariable Integer planId) {
+        Assert.notNull(loginUser, "用户不能为空");
+
+        StudyLine studyLine = studyService.loadStudyLine(planId);
+
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("课程学习")
+                .function("打开课程学习")
+                .action("打开课程学习")
+                .memo(planId.toString());
+        operationLogService.log(operationLog);
+
+        return WebUtils.result(studyLine);
+    }
+
+    @RequestMapping(value = "/load/series/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadPlanSeriesStatus(LoginUser loginUser, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "登录用户不能为空");
+        List<PlanSeriesStatus> planSeriesStatuses = planService.loadPlanSeries(practicePlanId);
+        String planSeriesTitle = planService.loadPlanSeriesTitle(practicePlanId);
+
+        if (planSeriesStatuses.size() == 0) {
+            return WebUtils.error("小节数据完成情况为空");
+        } else {
+            SectionProgressDto sectionProgressDto = new SectionProgressDto();
+            sectionProgressDto.setPlanSeriesTitle(planSeriesTitle);
+            sectionProgressDto.setPlanSeriesStatuses(planSeriesStatuses);
+            return WebUtils.result(sectionProgressDto);
+        }
+    }
+
+    @RequestMapping("/knowledge/review/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadKnowledgeReview(LoginUser loginUser, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        Problem problem = problemService.getProblemForSchedule(practicePlanId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("问题")
+                .function("知识回顾")
+                .action("打开知识回顾页")
+                .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(problem);
+    }
 
 }
+

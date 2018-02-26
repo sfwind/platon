@@ -2,7 +2,6 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rise/practice")
 public class PracticeController {
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PracticeService practiceService;
     @Autowired
@@ -46,26 +45,8 @@ public class PracticeController {
     private OperationLogService operationLogService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private PracticeDiscussService practiceDiscussService;
     //分页文章数量
     private static final int PAGE_SIZE = 10;
-
-    @RequestMapping("/application/start/{applicationId}")
-    public ResponseEntity<Map<String, Object>> startApplication(LoginUser loginUser, @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
-        Assert.notNull(loginUser, "用户不能为空");
-
-        ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
-                loginUser.getId(), planId, false).getLeft();
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("应用练习")
-                .action("打开应用练习页")
-                .memo(applicationId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(applicationPractice);
-    }
 
     @RequestMapping("/challenge/start/{challengeId}")
     public ResponseEntity<Map<String, Object>> startChallenge(LoginUser loginUser,
@@ -75,7 +56,7 @@ public class PracticeController {
         ImprovementPlan improvementPlan = planService.getPlan(planId);
 
         if (improvementPlan == null) {
-            LOGGER.error("{} has no improvement plan", loginUser.getOpenId());
+            logger.error("{} has no improvement plan", loginUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
@@ -107,7 +88,7 @@ public class PracticeController {
         Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
         if (result) {
             // 提升提交数
-            LOGGER.info("提交平台:{}", loginUser.getDevice());
+            logger.info("提交平台:{}", loginUser.getDevice());
             if (loginUser.getDevice() == Constants.Device.PC) {
                 practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
             } else {
@@ -123,80 +104,9 @@ public class PracticeController {
         return WebUtils.result(result);
     }
 
-    @RequestMapping(value = "/application/submit/{planId}/{applicationId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitApplication(LoginUser loginUser,
-                                                                 @PathVariable("planId") Integer planId,
-                                                                 @PathVariable("applicationId") Integer applicationId,
-                                                                 @RequestBody SubmitDto submitDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        // 如果没有则生成，之后走之前逻辑
-        Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
-                loginUser.getId(), planId, true);
-
-        ApplicationPractice applicationPractice = applicationPracticeBooleanPair.getLeft();
-        Boolean isNewApplication = applicationPracticeBooleanPair.getRight();
-
-        Integer submitId = applicationPractice.getSubmitId();
-        Assert.notNull(loginUser, "用户不能为空");
-        if (submitDto.getAnswer() == null) {
-            return WebUtils.error("您还未输入文字");
-        }
-
-        // 当用户提交答案时，将 draft 草稿表一起更新
-        practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getAnswer());
-        Boolean result = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
-
-
-        if (result) {
-            // 提升提交数
-            if (loginUser.getDevice() == Constants.Device.PC) {
-                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
-            } else {
-                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
-            }
-        }
-
-        Integer completedApplication = 0;
-        if (isNewApplication) {
-            completedApplication = practiceService.loadCompletedApplicationCnt(planId);
-        }
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("应用练习")
-                .action("提交应用练习")
-                .memo(submitId.toString());
-        operationLogService.log(operationLog);
-        if (result) {
-            return WebUtils.result(completedApplication);
-        } else {
-            return WebUtils.error("应用练习提交失败");
-        }
-    }
-
-    @RequestMapping(value = "/application/completed/count/{planId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadCompletedApplicationCnt(LoginUser loginUser, @PathVariable Integer planId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Integer completedApplicationCnt = practiceService.loadCompletedApplicationCnt(planId);
-        return WebUtils.result(completedApplicationCnt);
-    }
-
-    @RequestMapping(value = "/application/autosave/{planId}/{applicationId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> autoSaveApplication(LoginUser loginUser,
-                                                                   @PathVariable("planId") Integer planId,
-                                                                   @PathVariable("applicationId") Integer applicationId,
-                                                                   @RequestBody SubmitDto submitDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Integer result = practiceService.insertApplicationSubmitDraft(loginUser.getId(), applicationId, planId, submitDto.getDraft());
-        if (result > 0) {
-            return WebUtils.success();
-        } else {
-            return WebUtils.error("自动存储失败");
-        }
-    }
-
     /**
      * 点赞或者取消点赞
+     *
      * @param vote 1：点赞，2：取消点赞
      */
     @RequestMapping(value = "/vote", method = RequestMethod.POST)
@@ -228,97 +138,9 @@ public class PracticeController {
             }
         } else {
             // 取消点赞
-            LOGGER.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
+            logger.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
             return WebUtils.error("禁止取消点赞");
         }
-    }
-
-    /**
-     * 应用任务列表页加载他人的任务信息
-     * @param loginUser 登陆人
-     * @param applicationId 应用任务Id
-     */
-    @RequestMapping("/application/list/other/{applicationId}")
-    public ResponseEntity<Map<String, Object>> loadOtherApplicationList(LoginUser loginUser,
-                                                                        @PathVariable Integer applicationId,
-                                                                        @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户信息不能为空");
-        page.setPageSize(PAGE_SIZE);
-        // 该计划的应用练习是否提交
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("应用任务")
-                .action("移动端应用任务列表加载他人的应用任务")
-                .memo(applicationId.toString());
-        operationLogService.log(operationLog);
-
-        RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
-        return WebUtils.result(riseRefreshListDto);
-    }
-
-    /**
-     * 应用任务列表页加载他人的任务信息
-     * @param loginUser 登陆人
-     * @param applicationId 应用任务Id
-     */
-    @RequestMapping("/application/list/other/{applicationId}/{pageIndex}")
-    public ResponseEntity<Map<String, Object>> loadOtherApplicationListBatch(LoginUser loginUser,
-                                                                             @PathVariable Integer applicationId,
-                                                                             @PathVariable Integer pageIndex) {
-        Assert.notNull(loginUser, "用户信息不能为空");
-        Page page = new Page();
-        page.setPageSize(PAGE_SIZE * pageIndex);
-        // 该计划的应用练习是否提交
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("应用任务")
-                .action("移动端应用任务列表加载他人的应用任务")
-                .memo(applicationId.toString());
-        operationLogService.log(operationLog);
-
-        RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = getRiseWorkInfoDtoRefreshListDto(loginUser, applicationId, page);
-        return WebUtils.result(riseRefreshListDto);
-    }
-
-    private RiseRefreshListDto<RiseWorkInfoDto> getRiseWorkInfoDtoRefreshListDto(LoginUser loginUser, @PathVariable Integer applicationId, Page page) {
-        List<ApplicationSubmit> applicationSubmits = practiceService.loadAllOtherApplicationSubmits(applicationId, page);
-        List<RiseWorkInfoDto> riseWorkInfoDtos = applicationSubmits.stream().filter(item -> !item.getProfileId().equals(loginUser.getId()))
-                .map(item -> {
-                    RiseWorkInfoDto dto = new RiseWorkInfoDto();
-                    dto.setContent(item.getContent());
-                    //TODO: 性能瓶颈 可以放入redis维护
-                    dto.setVoteCount(practiceService.votedCount(Constants.VoteType.APPLICATION, item.getId()));
-                    dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
-                    dto.setPublishTime(item.getPublishTime());
-                    dto.setType(PracticePlan.APPLICATION);
-                    dto.setSubmitId(item.getId());
-                    dto.setFeedback(item.getFeedback());
-                    Profile account = accountService.getProfile(item.getProfileId());
-                    if (account != null) {
-                        dto.setUserName(account.getNickname());
-                        dto.setHeadImage(account.getHeadimgurl());
-                        dto.setRole(account.getRole());
-                        dto.setSignature(account.getSignature());
-                    }
-                    //TODO: 性能瓶颈 可以放入redis维护
-                    dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.APPLICATION, item.getId()));
-                    dto.setPriority(item.getPriority());
-                    //TODO: 性能瓶颈 未来可以一次拉取后设置
-                    HomeworkVote myVote = practiceService.loadVoteRecord(Constants.VoteType.APPLICATION, item.getId(),
-                            loginUser.getId());
-                    if (myVote != null && myVote.getDel() == 0) {
-                        // 点赞中
-                        dto.setVoteStatus(1);
-                    } else {
-                        dto.setVoteStatus(0);
-                    }
-                    return dto;
-                }).collect(Collectors.toList());
-
-        RiseRefreshListDto<RiseWorkInfoDto> riseRefreshListDto = new RiseRefreshListDto<>();
-        riseRefreshListDto.setList(riseWorkInfoDtos);
-        riseRefreshListDto.setEnd(page.isLastPage());
-        return riseRefreshListDto;
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
@@ -364,7 +186,7 @@ public class PracticeController {
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
             } else {
-                LOGGER.error("未找到该评论用户:{}", item);
+                logger.error("未找到该评论用户:{}", item);
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -395,9 +217,6 @@ public class PracticeController {
         boolean isModified = practiceService.isModifiedAfterFeedback(submitId, comment.getCommentProfileId(), comment.getAddTime());
         riseRefreshListDto.setIsModifiedAfterFeedback(isModified);
 
-        // 查看当前评论是否已经被评价
-        // riseRefreshListDto.setEvaluated(practiceService.loadEvaluated(commentId));
-
         RiseWorkCommentDto dto = new RiseWorkCommentDto();
         Profile account = accountService.getProfile(comment.getCommentProfileId());
         if (account != null) {
@@ -416,7 +235,7 @@ public class PracticeController {
             dto.setRole(account.getRole());
             dto.setRepliedDel(comment.getRepliedDel());
         } else {
-            LOGGER.error("未找到该评论用户：{}", comment);
+            logger.error("未找到该评论用户：{}", comment);
             return null;
         }
 
@@ -430,6 +249,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/evaluate/application", method = RequestMethod.POST)
+    @Deprecated
     public ResponseEntity<Map<String, Object>> submitApplicationEvaluation(LoginUser loginUser, @RequestBody CommentEvaluation evaluation) {
         Assert.notNull(loginUser, "用户不能为空");
         Integer commentId = evaluation.getCommentId();
@@ -441,10 +261,11 @@ public class PracticeController {
 
     /**
      * 评论
+     *
      * @param loginUser 登陆人
-     * @param moduleId 评论模块
-     * @param submitId 文章id
-     * @param dto 评论内容
+     * @param moduleId  评论模块
+     * @param submitId  文章id
+     * @param dto       评论内容
      */
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> comment(LoginUser loginUser,
@@ -482,7 +303,7 @@ public class PracticeController {
             resultDto.setSignature(loginUser.getSignature());
             resultDto.setIsMine(true);
 
-            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
             if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
@@ -530,7 +351,7 @@ public class PracticeController {
             resultDto.setIsMine(true);
             resultDto.setRepliedDel(replyComment.getDel());
 
-            ApplicationSubmit applicationSubmit = practiceService.loadApplocationSubmitById(submitId);
+            ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
             if (Role.isAsst(loginUser.getRole()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
@@ -642,10 +463,6 @@ public class PracticeController {
                     dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, item.getId()));
                     return dto;
                 }).collect(Collectors.toList());
-
-//        list.forEach(item -> {
-//            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, item.getSubmitId(), Constants.ViewInfo.EventType.MOBILE_SHOW);
-//        });
         RiseRefreshListDto<RiseWorkInfoDto> result = new RiseRefreshListDto<>();
         result.setList(list);
         result.setEnd(page.isLastPage());
@@ -685,9 +502,6 @@ public class PracticeController {
             dto.setRequest(subjectArticle.getRequestFeedback());
             dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
                     loginUser.getId()));
-//        dto.setPicList(pictureService.loadPicture(Constants.PictureType.SUBJECT, submitId)
-//                .stream().map(pic -> pictureService.getModulePrefix(Constants.PictureType.SUBJECT) + pic.getRealName())
-//                .collect(Collectors.toList()));
             dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
             OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                     .module("训练")
@@ -713,49 +527,6 @@ public class PracticeController {
                 .memo(problemId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(practiceService.loadProblemLabels(problemId));
-    }
-
-    @RequestMapping("/knowledge/start/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> startKnowledge(LoginUser loginUser,
-                                                              @PathVariable Integer practicePlanId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("知识点")
-                .action("打开知识点页")
-                .memo(practicePlanId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(knowledges);
-    }
-
-    @RequestMapping("/knowledge/{id}")
-    public ResponseEntity<Map<String, Object>> loadKnowledge(LoginUser loginUser, @PathVariable Integer id) {
-        Assert.notNull(id, "知识点id不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("知识点")
-                .action("加载知识点信息")
-                .memo(id.toString());
-        operationLogService.log(operationLog);
-        Knowledge knowledge = practiceService.loadKnowledge(id);
-        return WebUtils.result(knowledge);
-    }
-
-    @RequestMapping("/knowledge/learn/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
-                                                              @PathVariable Integer practicePlanId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        practiceService.learnKnowledge(practicePlanId);
-        planService.checkPlanComplete(practicePlanId);
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("知识点")
-                .function("知识点")
-                .action("学习知识点")
-                .memo(practicePlanId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
     }
 
     @RequestMapping(value = "/request/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
@@ -792,81 +563,6 @@ public class PracticeController {
         return WebUtils.success();
     }
 
-    @RequestMapping("/knowledge/discuss/{knowledgeId}/{offset}")
-    public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
-                                                               @PathVariable Integer knowledgeId,
-                                                               @PathVariable Integer offset) {
-        Assert.notNull(loginUser, "用户不能为空");
-        Page page = new Page();
-        page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
-        page.setPage(offset);
-        List<KnowledgeDiscuss> discusses = practiceDiscussService.loadKnowledgeDiscusses(knowledgeId, page);
-
-        discusses.forEach(knowledgeDiscuss -> {
-            knowledgeDiscuss.setIsMine(loginUser.getId().equals(knowledgeDiscuss.getProfileId()));
-            knowledgeDiscuss.setReferenceId(knowledgeDiscuss.getKnowledgeId());
-        });
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("练习")
-                .function("理解练习")
-                .action("获取讨论")
-                .memo(knowledgeId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(discusses);
-    }
-
-    @RequestMapping(value = "/knowledge/discuss", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody KnowledgeDiscuss discussDto) {
-        Assert.notNull(loginUser, "用户不能为空");
-        if (discussDto.getComment() == null || discussDto.getComment().length() > 1000) {
-            LOGGER.error("{} 理解练习讨论字数过长", loginUser.getOpenId());
-            return WebUtils.result("您提交的讨论字数过长");
-        }
-
-        practiceDiscussService.discussKnowledge(loginUser.getId(), discussDto.getReferenceId(),
-                discussDto.getComment(), discussDto.getRepliedId());
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("练习")
-                .function("理解练习")
-                .action("讨论")
-                .memo(discussDto.getReferenceId().toString());
-        operationLogService.log(operationLog);
-        return WebUtils.success();
-    }
-
-    @RequestMapping(value = "/knowledge/discuss/del/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> deleteKnowledgeDiscuss(LoginUser loginUser, @PathVariable Integer id) {
-        int result = practiceDiscussService.deleteKnowledgeDiscussById(id);
-        String respMsg;
-        if (result > 0) {
-            respMsg = "删除成功";
-        } else {
-            respMsg = "操作失败";
-        }
-
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("课程")
-                .function("知识理解")
-                .action("删除回复")
-                .memo("KnowledgeId:" + id);
-        operationLogService.log(operationLog);
-        return WebUtils.result(respMsg);
-    }
-
-    @RequestMapping(value = "/application/article/{submitId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadApplicationPracticeById(LoginUser loginUser, @PathVariable Integer submitId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        ApplicationSubmit applicationSubmit = practiceService.getApplicationSubmit(submitId, loginUser.getId());
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("应用练习")
-                .function("浏览文章")
-                .action("获取文章正文")
-                .memo(submitId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(applicationSubmit);
-    }
-
     @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> riseShowCount(LoginUser loginUser,
                                                              @PathVariable(value = "moduleId") Integer moduleId,
@@ -883,6 +579,19 @@ public class PracticeController {
             practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
         }
         return WebUtils.success();
+    }
+
+    @RequestMapping("/load/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadKnowledgeReview(LoginUser loginUser, @PathVariable Integer practicePlanId) {
+        Assert.notNull(loginUser, "用户不能为空");
+        PracticePlan practicePlan = practiceService.getPractice(practicePlanId);
+        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+                .module("小课")
+                .function("加载练习")
+                .action("加载练习")
+                .memo(practicePlanId.toString());
+        operationLogService.log(operationLog);
+        return WebUtils.result(practicePlan);
     }
 
 }

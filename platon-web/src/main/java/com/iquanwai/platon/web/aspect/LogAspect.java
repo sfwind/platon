@@ -3,12 +3,12 @@ package com.iquanwai.platon.web.aspect;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.web.resolver.LoginUserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -27,9 +27,6 @@ import java.util.Map;
 //@Order(5)
 public class LogAspect {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    private LoginUserService loginUserService;
 
     /**
      * @param pjp

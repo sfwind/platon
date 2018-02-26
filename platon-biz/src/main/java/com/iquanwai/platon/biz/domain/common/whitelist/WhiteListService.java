@@ -63,19 +63,10 @@ public interface WhiteListService {
      */
     boolean isGoCampCountDownPage(Integer profileId);
 
-    boolean isGoGroupPromotionCountDownPage(Integer profileId);
-
     /**
      * 判断一个人是否有正在学习的专项课
      * @param profileId
      * @return
      */
     boolean isStillLearningCamp(Integer profileId);
-
-    /**
-     * 判断参加一带二活动或者领取礼品卡的人是否到学习时间
-     * @param profileId
-     * @return
-     */
-    boolean isProOrCardOnDate(Integer profileId);
 }

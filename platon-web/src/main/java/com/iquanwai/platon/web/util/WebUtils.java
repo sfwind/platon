@@ -20,7 +20,7 @@ public class WebUtils {
         json.put("code", 200);
         json.put("msg", "ok");
 
-        return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
     public static ResponseEntity<Map<String, Object>> result(Object result) {
@@ -28,7 +28,7 @@ public class WebUtils {
         json.put("code", 200);
         json.put("msg", result);
 
-        return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
     public static ResponseEntity<Map<String, Object>> error(Object msg) {
@@ -36,7 +36,7 @@ public class WebUtils {
         json.put("code", 221);
         json.put("msg", msg);
 
-        return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
     public static ResponseEntity<Map<String, Object>> error(int code, Object msg) {
@@ -44,7 +44,7 @@ public class WebUtils {
         json.put("code", code);
         json.put("msg", msg);
 
-        return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
     public static ResponseEntity<Map<String, Object>> error(int code, Object msg, HttpStatus status) {
@@ -52,7 +52,7 @@ public class WebUtils {
         json.put("code", code);
         json.put("msg", msg);
 
-        return new ResponseEntity<Map<String, Object>>(json, status);
+        return new ResponseEntity<>(json, status);
     }
 
     public static ResponseEntity<Map<String, Object>> forbid(Object msg) {
@@ -60,7 +60,7 @@ public class WebUtils {
         json.put("code", 403);
         json.put("msg", msg);
 
-        return new ResponseEntity<Map<String, Object>>(json, HttpStatus.OK);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
     /**
@@ -82,22 +82,15 @@ public class WebUtils {
     }
 
     /**
-     * 提示性授权
+     * 获取推广活动时加的漏斗渠道
      */
-    public static void askAuth(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String domainName = request.getHeader("Host-Test");
-        String url;
-        if (domainName != null) {
-            url = "http://" + domainName + request.getRequestURI();
-        } else {
-            url = ConfigUtils.adapterDomainName() + request.getRequestURI();
+    public static String getChannel(HttpServletRequest request) {
+        String channel = CookieUtils.getCookie(request, "_tm");
+
+        if (channel == null) {
+            channel = "";
         }
 
-        if (!StringUtils.isEmpty(request.getQueryString())) {
-            url = url + "?" + request.getQueryString();
-        }
-        url = URLEncoder.encode(url, "UTF-8");
-        response.sendRedirect(ConfigUtils.adapterDomainName() + "/wx/oauth/auth/ask?callbackUrl=" + url);
+        return channel;
     }
-
 }

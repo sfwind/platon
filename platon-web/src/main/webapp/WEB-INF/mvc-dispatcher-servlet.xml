@@ -6,8 +6,6 @@
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:rabbit="http://www.springframework.org/schema/rabbit"
-
-
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
                            http://www.springframework.org/schema/context
@@ -23,7 +21,6 @@
 
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     <context:annotation-config/>
-
     <context:component-scan base-package="com.iquanwai.platon.web,com.iquanwai.platon.mq"/>
 
     <mvc:resources location="/image/" mapping="/image/**"/>
@@ -52,6 +49,7 @@
             </bean>
         </mvc:message-converters>
         <mvc:argument-resolvers>
+            <bean class="com.iquanwai.platon.web.resolver.UnionUserResolver"/>
             <bean class="com.iquanwai.platon.web.resolver.LoginUserResolver"/>
             <bean class="com.iquanwai.platon.web.resolver.GuestUserResolver"/>
         </mvc:argument-resolvers>
@@ -64,17 +62,12 @@
     <mvc:interceptors>
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
-            <mvc:exclude-mapping path="/rise/customer/pc/plans"/>
-            <mvc:exclude-mapping path="/rise/customer/certificate/**"/>
+            <mvc:exclude-mapping path="/heartbeat"/>
             <mvc:exclude-mapping path="/image/**"/>
             <mvc:exclude-mapping path="/js/**"/>
-            <mvc:exclude-mapping path="/rise/cache/**"/>
             <mvc:exclude-mapping path="/rise/b/**"/>
-            <!--<mvc:exclude-mapping path="/rise/static/inter/quan/answer"/>-->
-            <!--<mvc:exclude-mapping path="/rise/static/inter/question"/>-->
-            <mvc:exclude-mapping path="/heartbeat"/>
-            <mvc:exclude-mapping path="/rise/operation/prize/load/annual/**"/>
-            <bean class="com.iquanwai.platon.web.interceptor.WeixinLoginHandlerInterceptor"/>
+            <mvc:exclude-mapping path="/rise/cache/**"/>
+            <bean class="com.iquanwai.platon.web.interceptor.HandlerInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>
 </beans>

@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.dao.fragmentation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.NotifyMessage;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -23,37 +24,37 @@ public class NotifyMessageDao extends PracticeDBUtil {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<NotifyMessage> getMyMessages(Integer profileId, Page page){
+    public List<NotifyMessage> getMyMessages(Integer profileId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from NotifyMessage where ToUser=? and Old=1 order by Id desc limit " +
-                + page.getOffset() + "," + page.getLimit();
+                +page.getOffset() + "," + page.getLimit();
         try {
             ResultSetHandler<List<NotifyMessage>> h = new BeanListHandler<>(NotifyMessage.class);
             return runner.query(sql, h, profileId.toString());
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
-        return null;
+        return Lists.newArrayList();
     }
 
-    public Integer getMyMessagesCount(Integer profileId){
+    public Integer getMyMessagesCount(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select count(*) from NotifyMessage where ToUser=? and Old=1";
         try {
             ResultSetHandler<Long> h = new ScalarHandler<>();
             return runner.query(sql, h, profileId.toString()).intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
         return -1;
     }
 
-    public Integer loadOldCount(Integer profileId){
+    public Integer loadOldCount(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(*) from NotifyMessage where ToUser=? and Old = 0";
-        try{
+        String sql = "select count(*) from NotifyMessage where ToUser = ? and Old = 0";
+        try {
             ResultSetHandler<Long> h = new ScalarHandler<>();
             return runner.query(sql, h, profileId.toString()).intValue();
         } catch (SQLException e) {
@@ -62,7 +63,7 @@ public class NotifyMessageDao extends PracticeDBUtil {
         return -1;
     }
 
-    public void insert(NotifyMessage message){
+    public void insert(NotifyMessage message) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into NotifyMessage(Message, FromUser, ToUser, Url, SendTime, IsRead, Old)" +
                 "values(?,?,?,?,?,?,?)";
@@ -71,30 +72,30 @@ public class NotifyMessageDao extends PracticeDBUtil {
                     message.getMessage(), message.getFromUser(), message.getToUser(),
                     message.getUrl(), message.getSendTime(), message.getIsRead(),
                     message.getOld());
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
     }
 
-    public void read(int id){
+    public void read(int id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update NotifyMessage set ReadTime=?, IsRead=1 where id=?";
         try {
             runner.update(sql, new Date(), id);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
     }
 
 
-    public void markOld(Integer profileId){
+    public void markOld(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update NotifyMessage set Old=1 where ToUser=? and Old=0";
         try {
             runner.update(sql, profileId.toString());
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 

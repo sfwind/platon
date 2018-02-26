@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.common.UserRole;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,5 +34,17 @@ public class UserRoleDao extends DBUtil {
         }
 
         return Lists.newArrayList();
+    }
+
+    public UserRole getAssist(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<UserRole> h = new BeanHandler<>(UserRole.class);
+        String sql = "SELECT * FROM UserRole where ProfileId=? and RoleId in (3,4,5,6,11,12,13,14,15) and Del=0";
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 }

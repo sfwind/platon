@@ -21,16 +21,17 @@ public class ProblemScoreDao extends PracticeDBUtil {
 
     public void gradeProblem(List<ProblemScore> problemScores) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO ProblemScore(ProfileId, ProblemId, Question, Choice) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO ProblemScore(ProfileId, ProblemId, Question, Choice, Comment) VALUES (?,?,?,?,?)";
         try {
             Object[][] param = new Object[problemScores.size()][];
             for (int i = 0; i < problemScores.size(); i++) {
                 ProblemScore problemScore = problemScores.get(i);
-                param[i] = new Object[4];
+                param[i] = new Object[5];
                 param[i][0] = problemScore.getProfileId();
                 param[i][1] = problemScore.getProblemId();
                 param[i][2] = problemScore.getQuestion();
                 param[i][3] = problemScore.getChoice();
+                param[i][4] = problemScore.getComment();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {
@@ -40,7 +41,7 @@ public class ProblemScoreDao extends PracticeDBUtil {
 
     public int userProblemScoreCount(Integer profileId, Integer problem) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select count(*) from ProblemScore where ProfileId = ? and ProblemId = ?";
+        String sql = "select count(*) from ProblemScore where ProfileId = ? and ProblemId = ? and Del=0";
         try {
             ResultSetHandler<Long> h = new ScalarHandler<>();
             return runner.query(sql, h, profileId, problem).intValue();
@@ -48,17 +49,5 @@ public class ProblemScoreDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
-    }
-
-    public Double getProblemAverage(Integer problemId, Integer question) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select AVG(Choice) from fragmentCourse.ProblemScore where ProblemId = ? and Question = ? ";
-        try {
-            ResultSetHandler<Double> h = new ScalarHandler<>();
-            return runner.query(sql, h, problemId, question);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return 5.0;
     }
 }
