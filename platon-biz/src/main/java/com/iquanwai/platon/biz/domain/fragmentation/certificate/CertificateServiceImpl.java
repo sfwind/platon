@@ -155,9 +155,12 @@ public class CertificateServiceImpl implements CertificateService {
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
-            ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemScheduleManager.getLearningMajorProblemId(classMemberProfileId));
-            if (selfPlan != null) {
-                improvementPlans.add(selfPlan);
+            Integer majorProblemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
+            if (majorProblemId != null) {
+                ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, majorProblemId);
+                if (selfPlan != null) {
+                    improvementPlans.add(selfPlan);
+                }
             }
         });
         logger.info("improvementPlan 获取结束");
@@ -805,6 +808,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
