@@ -71,9 +71,6 @@ public class CertificateServiceImpl implements CertificateService {
     private UserRoleDao userRoleDao;
     @Autowired
     private RiseCertificateDao riseCertificateDao;
-    @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
-
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -289,6 +286,7 @@ public class CertificateServiceImpl implements CertificateService {
 
         logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
+        //根据profileId获得主修课的improvementPlan
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
             Integer problemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
