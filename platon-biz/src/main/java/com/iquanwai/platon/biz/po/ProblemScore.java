@@ -12,4 +12,5 @@ public class ProblemScore {
     private Integer problemId;
     private Integer question;
     private Integer choice;
+    private String comment;
 }
