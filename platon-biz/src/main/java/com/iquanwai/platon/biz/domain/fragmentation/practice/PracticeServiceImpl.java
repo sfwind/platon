@@ -5,7 +5,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.PracticePlanStatusManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;

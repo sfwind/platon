@@ -1,6 +1,6 @@
 package com.iquanwai.platon.biz.po;
 
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
 import lombok.Data;
 
 import java.util.Date;

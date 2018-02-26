@@ -2,11 +2,18 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
-import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanSeriesStatus;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyLine;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -177,7 +184,6 @@ public class PlanController {
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> startPlan(LoginUser loginUser, HttpServletRequest request, @RequestParam Integer planId) {
         LOGGER.info(request.getHeader("User-Agent") + ", openId:" + loginUser.getOpenId());
-
         Assert.notNull(loginUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
         if (improvementPlan == null) {

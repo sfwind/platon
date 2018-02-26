@@ -5,10 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.CardManager;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.ProblemScheduleManager;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
@@ -33,6 +34,8 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private AccountService accountService;
+    @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
     private ProblemExtensionDao problemExtensionDao;
@@ -50,6 +53,14 @@ public class ProblemServiceImpl implements ProblemService {
     private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
+    @Autowired
+    private CourseScheduleDefaultDao courseScheduleDefaultDao;
+    @Autowired
+    private CourseScheduleDao courseScheduleDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 

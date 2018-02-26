@@ -1,12 +1,14 @@
-package com.iquanwai.platon.biz.domain.fragmentation.plan.manager;
+package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
+import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,13 @@ import java.util.stream.Collectors;
 @Service
 public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     @Autowired
-    private UserProblemScheduleDao userProblemScheduleDao;
-    @Autowired
     private CacheService cacheService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
+    @Autowired
+    private UserProblemScheduleDao userProblemScheduleDao;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
@@ -110,21 +116,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
         return getChapters(problemSchedules);
     }
 
-    private String chapterName(List<Section> sectionList) {
-        if (CollectionUtils.isEmpty(sectionList)) {
-            return "";
-        }
-        //步骤
-        return sectionList.get(0).getChapterName();
-    }
-
-    private UserProblemSchedule getUserProblemSchedule(ProblemSchedule problemSchedule, Integer planId) {
-        ModelMapper mapper = new ModelMapper();
-        UserProblemSchedule userProblemSchedule = mapper.map(problemSchedule, UserProblemSchedule.class);
-        userProblemSchedule.setPlanId(planId);
-        return userProblemSchedule;
-    }
-
     @Override
     public Integer getProblemType(Integer problemId, Integer profileId) {
         //查询用户是否生成了课表
@@ -158,4 +149,69 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
 
         return major ? CourseScheduleDefault.Type.MAJOR : CourseScheduleDefault.Type.MINOR;
     }
+
+    @Override
+    public Integer getLearningMajorProblemId(Integer profileId) {
+        // 针对不同身份的学员，查看当前主修课的 ProblemId
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if (riseMember != null && riseMember.getMemberTypeId() != null) {
+            switch (riseMember.getMemberTypeId()) {
+                case RiseMember.CAMP:
+                    List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
+                    MonthlyCampSchedule campMajorCampSchedule = monthlyCampSchedules.stream()
+                            .filter(monthlyCampSchedule -> ConfigUtils.getLearningMonth().equals(monthlyCampSchedule.getMonth()))
+                            .filter(monthlyCampSchedule -> ConfigUtils.getLearningYear().equals(monthlyCampSchedule.getYear()))
+                            .filter(monthlyCampSchedule -> MonthlyCampSchedule.MAJOR_TYPE == monthlyCampSchedule.getType())
+                            .findAny()
+                            .orElse(null);
+                    if (campMajorCampSchedule != null) {
+                        return campMajorCampSchedule.getProblemId();
+                    }
+                    break;
+                case RiseMember.HALF:
+                case RiseMember.ANNUAL:
+                    int category = accountService.loadUserScheduleCategory(profileId);
+                    List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+                    CourseScheduleDefault professionDefault = courseScheduleDefaults.stream()
+                            .filter(courseScheduleDefault -> ConfigUtils.getLearningMonth().equals(courseScheduleDefault.getMonth()))
+                            .findAny()
+                            .orElse(null);
+                    if (professionDefault != null) {
+                        return professionDefault.getProblemId();
+                    }
+                    break;
+                case RiseMember.ELITE:
+                case RiseMember.HALF_ELITE:
+                    List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+                    CourseSchedule riseMemberCourseSchedule = courseSchedules.stream()
+                            .filter(courseSchedule -> ConfigUtils.getLearningYear().equals(courseSchedule.getYear()))
+                            .filter(courseSchedule -> ConfigUtils.getLearningMonth().equals(courseSchedule.getMonth()))
+                            .filter(courseSchedule -> CourseSchedule.Type.MAJOR == courseSchedule.getType())
+                            .findAny().orElse(null);
+                    if (riseMemberCourseSchedule != null) {
+                        return riseMemberCourseSchedule.getProblemId();
+                    }
+                    break;
+                case RiseMember.COURSE:
+                    break;
+            }
+        }
+        return null;
+    }
+
+    private String chapterName(List<Section> sectionList) {
+        if (CollectionUtils.isEmpty(sectionList)) {
+            return "";
+        }
+        //步骤
+        return sectionList.get(0).getChapterName();
+    }
+
+    private UserProblemSchedule getUserProblemSchedule(ProblemSchedule problemSchedule, Integer planId) {
+        ModelMapper mapper = new ModelMapper();
+        UserProblemSchedule userProblemSchedule = mapper.map(problemSchedule, UserProblemSchedule.class);
+        userProblemSchedule.setPlanId(planId);
+        return userProblemSchedule;
+    }
+
 }
