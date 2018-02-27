@@ -186,7 +186,8 @@ public class AccountServiceImpl implements AccountService {
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
+            // NOTE:批量接口不注入risemember
+//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);

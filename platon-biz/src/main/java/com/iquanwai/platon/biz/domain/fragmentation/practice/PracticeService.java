@@ -95,12 +95,8 @@ public interface PracticeService {
      */
     List<CommentEvaluation> loadUnEvaluatedCommentEvaluationByCommentId(Integer commentId);
 
-    /**
-     * 增加文章视图的记录数
-     */
-    Integer riseArticleViewCount(Integer module, Integer id, Integer type);
 
-    /*
+    /**
      * 获取点赞数量
      * @param type 点赞的类型
      * @param referencedId 被赞的id

@@ -85,12 +85,6 @@ public class ApplicationController {
         Integer practicePlanId = practiceService.applicationSubmit(submitId, submitDto.getAnswer());
 
         if (practicePlanId != null) {
-            // 提升提交数
-            if (loginUser.getDevice() == Constants.Device.PC) {
-                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
-            } else {
-                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.APPLICATION, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
-            }
             planService.checkPlanComplete(practicePlanId);
         }
 

@@ -86,15 +86,6 @@ public class PracticeController {
             return WebUtils.error("您还未输入文字");
         }
         Boolean result = practiceService.challengeSubmit(submitId, submitDto.getAnswer());
-        if (result) {
-            // 提升提交数
-            logger.info("提交平台:{}", loginUser.getDevice());
-            if (loginUser.getDevice() == Constants.Device.PC) {
-                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
-            } else {
-                practiceService.riseArticleViewCount(Constants.ViewInfo.Module.CHALLENGE, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
-            }
-        }
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("训练")
                 .function("小目标")
@@ -401,11 +392,6 @@ public class PracticeController {
         if (submitId == -1) {
             return WebUtils.error("提交失败,请保存提交内容，并联系管理员");
         }
-        if (loginUser.getDevice() == Constants.Device.PC) {
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.PC_SUBMIT);
-        } else {
-            practiceService.riseArticleViewCount(Constants.ViewInfo.Module.SUBJECT, submitId, Constants.ViewInfo.EventType.MOBILE_SUBMIT);
-        }
         workInfoDto.setPerfect(false);
         workInfoDto.setAuthorType(1);
         workInfoDto.setSubmitId(submitId);
@@ -573,11 +559,6 @@ public class PracticeController {
                 .action("增加浏览数")
                 .memo(submitId.toString());
         operationLogService.log(operationLog);
-        if ((loginUser.getDevice() == Constants.Device.PC)) {
-            practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.PC_SHOW);
-        } else {
-            practiceService.riseArticleViewCount(moduleId, submitId, Constants.ViewInfo.EventType.MOBILE_SHOW);
-        }
         return WebUtils.success();
     }
 
