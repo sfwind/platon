@@ -483,7 +483,7 @@ public class CertificateServiceImpl implements CertificateService {
             coupon.setProfileId(profileId);
             coupon.setAmount(fullAttendanceReward.getAmount().intValue());
             coupon.setUsed(0);
-            buildCouponExpireDate(coupon, profile);
+            buildCouponExpireDate(coupon);
             coupon.setCategory(FULL_ATTENDANCE_COUPON_CATEGORY);
             coupon.setDescription(FULL_ATTENDANCE_COUPON_DESCRIPTION);
             int couponInsertResult = couponDao.insertCoupon(coupon);
@@ -526,7 +526,7 @@ public class CertificateServiceImpl implements CertificateService {
         coupon.setProfileId(profileId);
         coupon.setAmount(fullAttendanceReward.getAmount().intValue());
         coupon.setUsed(0);
-        buildCouponExpireDate(coupon, profile);
+        buildCouponExpireDate(coupon);
         coupon.setCategory(FULL_ATTENDANCE_COUPON_CATEGORY);
         coupon.setDescription(FULL_ATTENDANCE_COUPON_DESCRIPTION);
         couponInsertResult = couponDao.insertCoupon(coupon);
@@ -617,7 +617,7 @@ public class CertificateServiceImpl implements CertificateService {
         coupon.setProfileId(profile.getId());
         coupon.setDescription(description);
         coupon.setUsed(0);
-        buildCouponExpireDate(coupon, profile);
+        buildCouponExpireDate(coupon);
         coupon.setAmount(amount);
         couponDao.insertCoupon(coupon);
 
@@ -797,18 +797,12 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
-        if (riseMember != null && Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
-            coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
-        } else {
-            coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
-        }
+    private void buildCouponExpireDate(Coupon coupon) {
+        coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
     }
 
     /**
      * 将证书上传至七牛云
-     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
