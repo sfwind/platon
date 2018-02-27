@@ -59,8 +59,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private HomeworkVoteDao homeworkVoteDao;
     @Autowired
-    private FragmentAnalysisDataDao fragmentAnalysisDataDao;
-    @Autowired
     private CommentDao commentDao;
     @Autowired
     private MessageService messageService;
@@ -189,7 +187,6 @@ public class PracticeServiceImpl implements PracticeService {
             int submitId = challengeSubmitDao.insert(submit);
             submit.setId(submitId);
             submit.setUpdateTime(new Date());
-            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.CHALLENGE, submitId);
         }
         if (submit != null && submit.getContent() != null) {
             String content = CommonUtils.replaceHttpsDomainName(submit.getContent());
@@ -229,7 +226,6 @@ public class PracticeServiceImpl implements PracticeService {
             submit.setProblemId(applicationPractice.getProblemId());
             int submitId = applicationSubmitDao.insert(submit);
             submit.setId(submitId);
-            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.APPLICATION, submitId);
         }
 
         Map<Integer, Integer> scoreMap = ConfigUtils.getWorkScoreMap();
@@ -676,11 +672,6 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Integer riseArticleViewCount(Integer module, Integer id, Integer type) {
-        return fragmentAnalysisDataDao.riseArticleViewCount(module, id, type);
-    }
-
-    @Override
     public Integer submitSubjectArticle(SubjectArticle subjectArticle) {
         String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
         subjectArticle.setLength(content.length());
@@ -688,8 +679,6 @@ public class PracticeServiceImpl implements PracticeService {
         if (subjectArticle.getId() == null) {
             // 第一次提交
             submitId = subjectArticleDao.insert(subjectArticle);
-            // 生成记录表
-            fragmentAnalysisDataDao.insertArticleViewInfo(Constants.ViewInfo.Module.SUBJECT, submitId);
         } else {
             // 更新之前的
             subjectArticleDao.update(subjectArticle);
