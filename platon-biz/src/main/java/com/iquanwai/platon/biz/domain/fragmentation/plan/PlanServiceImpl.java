@@ -4,7 +4,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
@@ -13,7 +23,20 @@ import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.exception.CreateCourseException;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -290,27 +313,38 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId) {
-        // 是精英会员用户才会有选课上限分析
+    public Boolean checkChooseNewProblem(List<ImprovementPlan> allPlans, Integer profileId, Integer problemId) throws CreateCourseException {
+        List<ImprovementPlan> plans = allPlans.stream()
+                .filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
+                .collect(Collectors.toList());
+
+        // 是精英会员用户才会有选课上限
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        Integer memberTypeId = riseMember.getMemberTypeId();
         //员工没有选课限制
         if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
-            return new MutablePair<>(1, "");
+            return true;
         }
+
+        if (riseMember == null) {
+            throw new CreateCourseException("您暂时没有开课权限哦");
+        }
+        if (new DateTime().isBefore(riseMember.getOpenDate().getTime())) {
+            throw new CreateCourseException("您在 " + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + " 才能开课哦");
+        }
+        Integer memberTypeId = riseMember.getMemberTypeId();
 
         //商学院用户
         if (memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
             if (courseSchedule == null) {
-                return new MutablePair<>(-1, "请先去学习计划中勾选该课程");
+                throw new CreateCourseException("请先去学习计划中勾选该课程");
             }
             if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
                 //当月主修课可以强开
                 if (!(courseSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
                         && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)) {
                     // 会员已经有三门再学
-                    return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
+                    throw new CreateCourseException("为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
                             + "门课程。先完成进行中的一门，再选新课哦");
                 }
             }
@@ -323,18 +357,11 @@ public class PlanServiceImpl implements PlanService {
                     && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
                 if (new Date().before(openDate)) {
                     // 未到开营日的主修课不能提前选择
-                    return new MutablePair<>(-1, courseSchedule.getMonth() + "月主修课将于"
+                    throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于"
                             + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
                 }
             }
-            // TODO 2018-02-04日删掉这段，之后增加商学院开营日控制配置，另外需要对主修课做限制
-            if (courseSchedule.getYear() == 2018 && courseSchedule.getMonth() == 2 && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
-                if (new Date().before(DateUtils.parseStringToDate("2018-02-04"))) {
-                    // 未到开营日的主修课不能提前选择
-                    return new MutablePair<>(-1, "2月主修课将于"
-                            + "4号开放选课，请等待当天开课仪式通知吧!");
-                }
-            }
+
             switch (memberTypeId) {
                 case RiseMember.ELITE:
                     //商学院用户，限制36门
@@ -343,7 +370,7 @@ public class PlanServiceImpl implements PlanService {
                         List<ImprovementPlan> startPlans1 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime1);
                         Long countLong1 = startPlans1.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         if (countLong1.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
-                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达" + MAX_ELITE_PROBLEM_LIMIT +
+                            throw new CreateCourseException("亲爱的商学院会员，你的选课数量已达" + MAX_ELITE_PROBLEM_LIMIT +
                                     "门。");
                         }
                     }
@@ -355,7 +382,7 @@ public class PlanServiceImpl implements PlanService {
                         List<ImprovementPlan> startPlans2 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime2);
                         Long countLong2 = startPlans2.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
                         if (countLong2.intValue() >= MAX_HALF_ELITE_PROBLEM_LIMIT) {
-                            return new MutablePair<>(-1, "亲爱的商学院会员，你的选课数量已达" + MAX_HALF_ELITE_PROBLEM_LIMIT
+                            throw new CreateCourseException("亲爱的商学院会员，你的选课数量已达" + MAX_HALF_ELITE_PROBLEM_LIMIT
                                     + "门。如需升级或续费，请联系班主任");
                         }
                     }
@@ -366,17 +393,30 @@ public class PlanServiceImpl implements PlanService {
         } else {
             //非商学院用户
             if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-                return new MutablePair<>(-1, "为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
+                throw new CreateCourseException("为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
                         + "门课程。先完成进行中的一门，再选新课哦");
             }
         }
 
         Problem problem = cacheService.getProblem(problemId);
         if (!problem.getPublish()) {
-            return new MutablePair<>(-1, "该课程还在开发中，敬请期待");
+            throw new CreateCourseException("该课程还在开发中，敬请期待");
         }
 
-        return new MutablePair<>(1, "");
+        // 之前是否学过这个课程，避免重复生成计划
+        ImprovementPlan oldPlan = allPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
+        if (oldPlan != null) {
+            throw new CreateCourseException("你已经选过该门课程了，你可以在\"我的\"菜单里找到以前的学习记录哦");
+        }
+
+        // 这里生成课程训练计划，另外在检查一下是否是会员或者购买了这个课程
+        Boolean isRiseMember = accountService.isRiseMember(profileId);
+        Integer trialProblemId = ConfigUtils.getTrialProblemId();
+        if (!isRiseMember && !problemId.equals(trialProblemId)) {
+            // 既没有购买过这个课程，又不是rise会员,也不是限免课程
+            throw new CreateCourseException("您不是商学院会员，需要先购买会员哦");
+        }
+        return true;
     }
 
     @Override

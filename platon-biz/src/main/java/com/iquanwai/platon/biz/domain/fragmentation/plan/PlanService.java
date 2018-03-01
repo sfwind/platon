@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import com.iquanwai.platon.biz.exception.CreateCourseException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
@@ -29,10 +30,10 @@ public interface PlanService {
     /**
      * 检查是否能够选新课
      *
-     * @param plans 用户的课程数据
+     * @param plans 用户的所有课程数据
      * @return left:是否能够选课程(-1,超过允许进行中的最多门数) right:提示信息
      */
-    Pair<Integer, String> checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId);
+    Boolean checkChooseNewProblem(List<ImprovementPlan> plans, Integer profileId, Integer problemId) throws CreateCourseException;
 
     /**
      * 检查是否能够选专项课

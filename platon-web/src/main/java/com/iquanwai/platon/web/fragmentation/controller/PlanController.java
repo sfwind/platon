@@ -17,6 +17,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.exception.CreateCourseException;
 import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -99,38 +100,24 @@ public class PlanController {
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createPlan(LoginUser loginUser, @PathVariable Integer problemId) {
         Assert.notNull(loginUser, "用户不能为空");
-        Integer trialProblemId = ConfigUtils.getTrialProblemId();
         List<ImprovementPlan> improvementPlans = planService.getPlans(loginUser.getId());
 
         // 获取正在学习的课程
-        List<ImprovementPlan> runningPlans = improvementPlans.stream().filter(item -> item.getStatus() == ImprovementPlan.RUNNING
-                || item.getStatus() == ImprovementPlan.COMPLETE).collect(Collectors.toList());
-        ImprovementPlan curPlan = improvementPlans.stream().
-                filter(plan -> plan.getProblemId().equals(problemId)
-                        && (plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE))
+
+        ImprovementPlan curPlan = improvementPlans.stream()
+                .filter(plan -> plan.getProblemId().equals(problemId))
+                .filter(plan -> plan.getStatus() == ImprovementPlan.RUNNING || plan.getStatus() == ImprovementPlan.COMPLETE)
                 .findFirst().orElse(null);
         if (curPlan != null) {
             // 正在学的包括这个课程
             return WebUtils.result(curPlan.getId());
         }
 
-        Pair<Integer, String> check = planService.checkChooseNewProblem(runningPlans, loginUser.getId(), problemId);
-
-        if (check.getLeft() < 0) {
-            return WebUtils.error(check.getRight());
-        }
-
-        // 之前是否学过这个课程，避免重复生成计划
-        ImprovementPlan oldPlan = improvementPlans.stream().filter(plan -> plan.getProblemId().equals(problemId)).findFirst().orElse(null);
-        if (oldPlan != null) {
-            return WebUtils.error("你已经选过该门课程了，你可以在\"我的\"菜单里找到以前的学习记录哦");
-        }
-
-        // 这里生成课程训练计划，另外在检查一下是否是会员或者购买了这个课程
-        Boolean isRiseMember = accountService.isRiseMember(loginUser.getId());
-        if (!isRiseMember && !problemId.equals(trialProblemId)) {
-            // 既没有购买过这个课程，又不是rise会员,也不是限免课程
-            return WebUtils.error("您不是商学院会员，需要先购买会员哦");
+        try {
+            // 检查是否能开新课
+            planService.checkChooseNewProblem(improvementPlans, loginUser.getId(), problemId);
+        } catch(CreateCourseException ex){
+            return WebUtils.error(ex.getMessage());
         }
 
         Integer planId = generatePlanService.generatePlan(loginUser.getId(), problemId);
