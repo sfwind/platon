@@ -98,7 +98,7 @@ public class AccountServiceImpl implements AccountService {
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
         userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getProfileId(), userRole.getRoleId()));
         logger.info("role init complete");
-        // headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
+        headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
     }
 
     @Override
@@ -156,7 +156,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Profile getProfile(String openid) {
         Profile profile = getProfileFromDB(openid);
-        // checkHeadImgUrlEffectiveness(profile);
+        checkHeadImgUrlEffectiveness(profile);
         return profile;
     }
 
