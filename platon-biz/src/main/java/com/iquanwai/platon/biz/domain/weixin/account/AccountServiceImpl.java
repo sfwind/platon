@@ -174,7 +174,7 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
-            // checkHeadImgUrlEffectiveness(profile);
+            checkHeadImgUrlEffectiveness(profile);
         }
         return profile;
     }
@@ -194,7 +194,7 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
-            // checkHeadImgUrlEffectiveness(profile);
+            checkHeadImgUrlEffectiveness(profile);
         });
         return profiles;
     }
