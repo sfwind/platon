@@ -637,9 +637,7 @@ public class AccountServiceImpl implements AccountService {
             json.put("openId", profile.getOpenid());
             json.put("headImgUrl", headImgUrl);
             try {
-                for (int i = 0; i < 100; i++) {
-                    headImgUrlCheckPublisher.publish(json.toString());
-                }
+                headImgUrlCheckPublisher.publish(json.toString());
             } catch (ConnectException e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
