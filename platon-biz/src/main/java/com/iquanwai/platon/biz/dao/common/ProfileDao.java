@@ -185,9 +185,12 @@ public class ProfileDao extends DBUtil {
 
     public boolean submitPersonalCenterProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?,Receiver=?,Married = ? where id=?";
+        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?, " +
+                "Receiver=?, Married=?, RealName=? where id=?";
         try {
-            run.update(updateSql, profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(), profile.getCity(), profile.getProvince(), profile.getReceiver(), profile.getMarried(), profile.getId());
+            run.update(updateSql, profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
+                    profile.getCity(), profile.getProvince(), profile.getReceiver(), profile.getMarried(),
+                    profile.getRealName(), profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
