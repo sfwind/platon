@@ -10,8 +10,6 @@ import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ThreadPool;
-import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
-import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ForceOpenPlanParams;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
@@ -39,8 +37,6 @@ public class BackendController {
     private OperationLogService operationLogService;
     @Autowired
     private UnionUserService unionUserService;
-    @Autowired
-    private AnswerService answerService;
     @Autowired
     private CertificateService certificateService;
     @Autowired

@@ -43,7 +43,7 @@ public class ProblemExtensionDao extends PracticeDBUtil {
      */
     public ProblemExtension loadByProblemId(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ProblemExtension where ProblemId = ?";
+        String sql = "select * from ProblemExtension where ProblemId = ? and del = 0";
         try {
             ResultSetHandler<ProblemExtension> h = new BeanHandler<>(ProblemExtension.class);
             return runner.query(sql, h, problemId);
