@@ -26,7 +26,7 @@ public class ProblemActivityDao extends PracticeDBUtil {
      */
     public List<ProblemActivity> loadProblemActivitiesByProblemId(Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ProblemActivity where problemId = ?";
+        String sql = "select * from ProblemActivity where problemId = ? and del = 0";
         try {
             ResultSetHandler<List<ProblemActivity>> h = new BeanListHandler<>(ProblemActivity.class);
             return runner.query(sql, h, problemId);

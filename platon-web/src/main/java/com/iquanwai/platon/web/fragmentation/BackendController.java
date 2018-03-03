@@ -136,7 +136,7 @@ public class BackendController {
         Integer month = fullAttendanceReward.getMonth();
         Integer year = fullAttendanceReward.getYear();
         ThreadPool.execute(() ->
-                        certificateService.generateFullAttendanceCoupon(year, month)
+                certificateService.generateFullAttendanceCoupon(year, month)
         );
         return WebUtils.result("正在进行中");
     }
