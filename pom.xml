@@ -365,6 +365,11 @@
                 <artifactId>foundation-service</artifactId>
                 <version>4.0.0</version>
             </dependency>
+            <dependency>
+                <groupId>com.mangofactory</groupId>
+                <artifactId>swagger-springmvc</artifactId>
+                <version>0.9.5</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

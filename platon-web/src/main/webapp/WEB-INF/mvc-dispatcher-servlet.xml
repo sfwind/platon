@@ -24,6 +24,7 @@
 
     <mvc:resources location="/image/" mapping="/image/**"/>
     <mvc:resources location="/js/" mapping="/js/**"/>
+    <mvc:resources location="/local/" mapping="/local/**"/>
 
     <mvc:annotation-driven>
         <mvc:message-converters register-defaults="false">

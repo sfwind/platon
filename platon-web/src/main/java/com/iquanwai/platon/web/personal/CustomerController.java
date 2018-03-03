@@ -29,6 +29,9 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +83,7 @@ public class CustomerController {
     private UnionUserService unionUserService;
 
     @RequestMapping("/info")
+    @ApiOperation(value="查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("小程序")
@@ -94,6 +98,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/event/list")
+    @ApiOperation(value="查询活动列表")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -107,6 +112,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/account", method = RequestMethod.GET)
+    @ApiOperation(value="查询账号信息")
     public ResponseEntity<Map<String, Object>> loadRiseInfo(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -140,6 +146,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile", method = RequestMethod.GET)
+    @ApiOperation(value="查询圈外用户个人信息")
     public ResponseEntity<Map<String, Object>> loadProfile(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -168,6 +175,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile", method = RequestMethod.POST)
+    @ApiOperation(value="提交用户个人信息")
     public ResponseEntity<Map<String, Object>> submitProfile(LoginUser loginUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -183,6 +191,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/headImg/upload")
+    @ApiOperation(value="上传个人头像")
     public ResponseEntity<Map<String, Object>> updateHeadImg(LoginUser loginUser, @RequestParam("file") MultipartFile file) {
         Long fileSize = file.getSize();
         if (fileSize > 5 * 1000 * 1000) { // 文件图片大于 5M
@@ -208,6 +217,8 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/headImg/update")
+    @ApiOperation(value="更新个人头像")
+    @ApiParam(name="headImgUrl", value="头像图片链接")
     public ResponseEntity<Map<String, Object>> updateHeadImg(LoginUser loginUser, @RequestParam("headImgUrl") String headImgUrl) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(headImgUrl, "上传头像不能为空");
@@ -226,6 +237,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/nickname/update", method = RequestMethod.POST)
+    @ApiOperation(value="提交昵称")
     public ResponseEntity<Map<String, Object>> updateNickName(LoginUser loginUser, @RequestBody NicknameDto nickname) {
         Assert.notNull(loginUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -244,6 +256,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/certificate", method = RequestMethod.POST)
+    @ApiOperation(value="提交个人信息")
     public ResponseEntity<Map<String, Object>> submitCertificateProfile(LoginUser loginUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -259,6 +272,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.GET)
+    @ApiOperation(value="获取证书")
     public ResponseEntity<Map<String, Object>> getCertificate(LoginUser loginUser, @PathVariable String certificateNo) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -275,6 +289,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/download/{certificateNo}", method = RequestMethod.GET)
+    @ApiOperation(value="下载证书")
     public ResponseEntity<Map<String, Object>> getCertificateAndNext(LoginUser loginUser, @PathVariable String certificateNo) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -296,6 +311,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/convert", method = RequestMethod.POST)
+    @ApiOperation(value="证书转码")
     public ResponseEntity<Map<String, Object>> convertBase64(LoginUser loginUser, @RequestBody Base64ConvertDto base64ConvertDto) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -321,6 +337,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/download/success/{certificateNo}", method = RequestMethod.GET)
+    @ApiOperation(value="下载课程证书完毕")
     public ResponseEntity<Map<String, Object>> updateCertificateDownloadTime(LoginUser loginUser, @PathVariable String certificateNo) {
         Assert.notNull(loginUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -333,6 +350,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/region")
+    @ApiOperation(value="加载地区信息")
     public ResponseEntity<Map<String, Object>> loadRegion(GuestUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         List<Region> provinces = accountService.loadAllProvinces();
@@ -349,6 +367,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = {"/plans", "/pc/plans"}, method = RequestMethod.GET)
+    @ApiOperation(value="查询课程信息")
     public ResponseEntity<Map<String, Object>> loadUserPlans(LoginUser loginUser) {
         if (loginUser == null) {
             return WebUtils.error(401, "未登录");
@@ -395,6 +414,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/member")
+    @ApiOperation(value="查询用户会员信息")
     public ResponseEntity<Map<String, Object>> riseMember(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
@@ -413,6 +433,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/global/notify")
+    @ApiOperation(value="用户会员期过期提醒查询")
     public ResponseEntity<Map<String, Object>> notifyExpire(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
@@ -426,6 +447,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/valid/sms", method = RequestMethod.POST)
+    @ApiOperation(value="短信验证")
     public ResponseEntity<Map<String, Object>> validCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(loginUser, "用户不能为空");
         boolean result = accountService.validCode(validCodeDto.getCode(), loginUser.getId());
@@ -439,6 +461,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
+    @ApiOperation(value="发送验证码")
     public ResponseEntity<Map<String, Object>> sendCode(LoginUser loginUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(loginUser, "用户不能为空");
         Pair<Boolean, String> result = accountService.sendValidCode(validCodeDto.getPhone(),
@@ -453,6 +476,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/update/weixinId", method = RequestMethod.POST)
+    @ApiOperation(value="更新微信id")
     public ResponseEntity<Map<String, Object>> updateWeixinId(LoginUser loginUser, @RequestBody WeixinDto weixinDto) {
         Assert.notNull(loginUser, "用户不能为空");
         accountService.updateWeixinId(loginUser.getId(), weixinDto.getWeixinId());
@@ -504,6 +528,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
+    @ApiOperation(value="检查用户是否关注")
     public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable(value = "key") String key, @RequestParam String callback) {
         OperationLog operationLog = OperationLog.create()
                 .openid(loginUser != null ? loginUser.getOpenId() : null)
@@ -522,6 +547,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/annual/summary")
+    @ApiOperation(value="查询年度报告")
     public ResponseEntity<Map<String, Object>> getAnnualSummary(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create()
@@ -539,6 +565,7 @@ public class CustomerController {
     }
 
     @RequestMapping("/coupon")
+    @ApiOperation(value="查询用户优惠券")
     public ResponseEntity<Map<String, Object>> getCouponInfo(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("优惠券")
