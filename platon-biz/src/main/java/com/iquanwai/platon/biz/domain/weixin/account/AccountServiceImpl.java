@@ -381,7 +381,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void submitPersonalCenterProfile(Profile profile) {
         Assert.notNull(profile, "profile 不能为空");
-        Assert.notNull(profile.getId(), "profileId 不能为空");
         Profile oldProfile = profileDao.load(Profile.class, profile.getId());
 
         if (profile.getRealName() != null) {
@@ -396,7 +395,7 @@ public class AccountServiceImpl implements AccountService {
         if (profile.getMarried() != null) {
             oldProfile.setMarried(profile.getMarried());
         }
-        Boolean result = profileDao.submitPersonalCenterProfileWithMoreDetail(profile);
+        Boolean result = profileDao.submitPersonalCenterProfileWithMoreDetail(oldProfile);
         if (result && oldProfile.getIsFull() == 0) {
             logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
             // 第一次提交，加分
