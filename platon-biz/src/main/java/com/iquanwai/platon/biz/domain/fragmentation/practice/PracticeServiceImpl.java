@@ -379,7 +379,6 @@ public class PracticeServiceImpl implements PracticeService {
         }
         if (result && submit.getPointStatus() == 0) {
             // 修改课程任务记录
-            logger.info("小目标加分:{}", id);
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                     submit.getChallengeId(), PracticePlan.CHALLENGE);
             if (practicePlan != null) {

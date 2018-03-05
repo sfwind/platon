@@ -160,13 +160,11 @@ public class MessageController {
     @RequestMapping("/old/count/load")
     public ResponseEntity<Map<String, Object>> loadUnreadCount(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
-//        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-//                .module("消息")
-//                .function("未读消息")
-//                .action("查看条数");
-//        operationLogService.log(operationLog);
-
-        logger.info("登录用户 id 为：{}", loginUser.getId());
+        // OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
+        //         .module("消息")
+        //         .function("未读消息")
+        //         .action("查看条数");
+        // operationLogService.log(operationLog);
         Integer count = messageService.unreadCount(loginUser.getId());
         return WebUtils.result(count);
     }
