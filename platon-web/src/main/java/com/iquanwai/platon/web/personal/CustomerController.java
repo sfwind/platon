@@ -2,13 +2,11 @@ package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
-import com.iquanwai.platon.biz.domain.forum.AnswerService;
-import com.iquanwai.platon.biz.domain.forum.QuestionService;
-import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -18,11 +16,8 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
-import com.iquanwai.platon.biz.po.forum.ForumAnswer;
-import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
@@ -68,10 +63,6 @@ public class CustomerController {
     private RiseMemberService riseMemberService;
     @Autowired
     private EventWallService eventWallService;
-    @Autowired
-    private QuestionService questionService;
-    @Autowired
-    private AnswerService answerService;
     @Autowired
     private CertificateService certificateService;
     @Autowired
@@ -463,44 +454,6 @@ public class CustomerController {
                 .memo(weixinDto.getWeixinId());
         operationLogService.log(operationLog);
         return WebUtils.success();
-    }
-
-    @RequestMapping("/forum/mine/questions")
-    public ResponseEntity<Map<String, Object>> loadMineQuestions(LoginUser loginUser, @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("个人中心")
-                .function("论坛")
-                .action("查询我的提问");
-        operationLogService.log(operationLog);
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPage(1);
-        page.setPageSize(100);
-        List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
-        // 设置刷新列表
-//        BibleRefreshListDto<ForumQuestion> result = new BibleRefreshListDto<>();
-//        result.setList(forumQuestions);
-//        result.setEnd(page.isLastPage());
-        return WebUtils.result(forumQuestions);
-    }
-
-    @RequestMapping("/forum/mine/answers")
-    public ResponseEntity<Map<String, Object>> loadMineAnswers(LoginUser loginUser, @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("个人中心")
-                .function("论坛")
-                .action("查询我的回答");
-        operationLogService.log(operationLog);
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPage(1);
-        page.setPageSize(100);
-        List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
-        return WebUtils.result(forumAnswers);
     }
 
     @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)

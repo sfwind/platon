@@ -312,7 +312,7 @@ public class IndexController {
         return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
-    @RequestMapping(value = {"/rise/static/**", "/forum/static/**"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
                                  @RequestParam(value="_tm", required = false) String channel) throws Exception {
         logger.info("进入 rise/static/**");
@@ -365,12 +365,6 @@ public class IndexController {
     private ModuleShow getModuleShow(UnionUser unionUser, List<RiseMember> riseMembers) {
         // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
         ModuleShow moduleShow = new ModuleShow();
-        Boolean showForum = true;
-        if (ConfigUtils.isForumTest()) {
-            // 论坛处于测试中,在白名单则显示，否则隐藏
-            showForum = whiteListService.isInWhiteList(WhiteList.FORUM, unionUser.getId());
-        }
-        moduleShow.setShowForum(showForum);
 
         // 是否显示发现tab
         // 谁不显示：有课程计划表则不显示
@@ -420,7 +414,6 @@ public class IndexController {
         }
 
         if (moduleShow != null) {
-            mav.addObject("showForum", moduleShow.getShowForum());
             mav.addObject("showExplore", moduleShow.getShowExplore());
         }
         return mav;
@@ -430,10 +423,8 @@ public class IndexController {
 @Data
 class ModuleShow {
     public ModuleShow() {
-        this.showForum = false;
         this.showExplore = true;
     }
 
-    private Boolean showForum;
     private Boolean showExplore;
 }

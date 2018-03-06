@@ -122,26 +122,8 @@ public class ConfigUtils {
         return url;
     }
 
-    public static String staticNoteResourceUrl(String domainName) {
-        String url = getValue("static.note.resource.url");
-        //测试环境防浏览器缓存，添加随机参数
-        if (url.endsWith("?")) {
-            url = url.concat("_t=").concat(new Random().nextInt() + "");
-        }
-
-        if (!StringUtils.isEmpty(domainName)) {
-            url = replaceDomainName(url, domainName);
-        }
-
-        return url;
-    }
-
     public static Integer getChallengeScore() {
         return getIntValue("challenge.score");
-    }
-
-    public static String gaId() {
-        return getValue("ga.id");
     }
 
     public static String getDefaultUnionId() {
@@ -158,10 +140,6 @@ public class ConfigUtils {
 
     public static Integer getVoteScore() {
         return getIntValue("vote.score");
-    }
-
-    public static String getUploadDomain() {
-        return getValue("upload.image.domain");
     }
 
     @PreDestroy
@@ -203,14 +181,6 @@ public class ConfigUtils {
 
     public static String domainName() {
         return getValue("app.domain");
-    }
-
-    public static Boolean isForumTest() {
-        return getBooleanValue("rise.forum.test");
-    }
-
-    public static Integer getForumQuestionOpenPoint() {
-        return getIntValue("forum.question.open.point");
     }
 
     public static Integer getForumQuestionFollowPoint() {
@@ -351,10 +321,6 @@ public class ConfigUtils {
 
     public static String productChangeMsg() {
         return getValue("product.change.msg");
-    }
-
-    public static String getAuditionPushMsg() {
-        return getValue("audition.choose.msg.media.id");
     }
 
     public static List<String> getDevelopOpenIds() {
