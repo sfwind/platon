@@ -29,6 +29,7 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/rise/customer")
+@Api(value = "CustomerController", description = "用户相关api")
 public class CustomerController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
