@@ -575,7 +575,12 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //更新助教评论状态
             if (isAsst) {
-                applicationSubmitDao.asstFeedback(load.getId());
+                //记录首次点评时间
+                if(load.getFeedBackTime()==null){
+                    applicationSubmitDao.asstFeedBackAndTime(load.getId());
+                }else {
+                    applicationSubmitDao.asstFeedback(load.getId());
+                }
                 asstCoachComment(load.getProfileId(), load.getProblemId());
             }
             //自己给自己评论不提醒
