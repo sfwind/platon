@@ -298,7 +298,7 @@ public class CertificateServiceImpl implements CertificateService {
         //根据profileId获得主修课的improvementPlan
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
-            Integer problemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
+            Integer problemId = problemScheduleManager.getMajorProblemIdByYearAndMonth(classMemberProfileId,year,month);
             if (problemId != null) {
                 ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemId);
                 if (selfPlan != null) {
