@@ -632,10 +632,10 @@ public class PracticeServiceImpl implements PracticeService {
         List<CommentEvaluation> evaluations = commentEvaluationDao.loadUnEvaluatedCommentEvaluationBySubmitId(submitId);
         List<Integer> commentIds = evaluations.stream().map(CommentEvaluation::getCommentId).collect(Collectors.toList());
         List<Comment> comments = commentDao.loadAllCommentsByIds(commentIds);
-        Map<Integer, Comment> commentMap = comments.stream().collect(Collectors.toMap(Comment::getId, comment -> comment));
+        Map<Integer, Comment> commentMap = comments.stream().collect(Collectors.toMap(Comment::getId, comment -> comment, (key1, key2) -> key2));
         List<Integer> profileIds = comments.stream().map(Comment::getCommentProfileId).collect(Collectors.toList());
         List<Profile> profiles = accountService.getProfiles(profileIds);
-        Map<Integer, Profile> profileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
+        Map<Integer, Profile> profileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key2));
 
         for (CommentEvaluation evaluation : evaluations) {
             Comment comment = commentMap.get(evaluation.getCommentId());

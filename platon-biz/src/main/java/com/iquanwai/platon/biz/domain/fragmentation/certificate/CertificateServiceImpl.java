@@ -150,12 +150,16 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public void generateCertificate(Integer year, Integer month) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadRiseClassMembersByYearMonth(year, month);
-        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).collect(Collectors.toList());
+        List<Integer> riseClassMemberProfileIds = riseClassMembers.stream()
+                .map(RiseClassMember::getProfileId)
+                .distinct()
+                .collect(Collectors.toList());
+
         logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
             logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
-            Integer majorProblemId = problemScheduleManager.getLearningMajorProblemId(classMemberProfileId);
+            Integer majorProblemId = problemScheduleManager.getMajorProblemIdByYearAndMonth(classMemberProfileId, year, month);
             if (majorProblemId != null) {
                 ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, majorProblemId);
                 if (selfPlan != null) {
@@ -164,7 +168,7 @@ public class CertificateServiceImpl implements CertificateService {
             }
         });
         logger.info("improvementPlan 获取结束");
-        Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
+        Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
         List<Integer> certificateNoSequence = Lists.newArrayList();
@@ -195,9 +199,11 @@ public class CertificateServiceImpl implements CertificateService {
                                 .filter(practicePlan -> PracticePlan.APPLICATION_BASE == practicePlan.getType()
                                         || PracticePlan.APPLICATION_UPGRADED == practicePlan.getType())
                                 .collect(Collectors.toList());
+
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
-                        Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
+                        Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
+                                .collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
 
                         // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
                         Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
@@ -302,7 +308,7 @@ public class CertificateServiceImpl implements CertificateService {
         });
         logger.info("improvementPlan 获取结束");
 
-        Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan));
+        Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
         riseClassMemberPlanIds.forEach(planId -> {
@@ -328,7 +334,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 .collect(Collectors.toList());
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
-                        Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit));
+                        Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
 
                         // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
                         Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
