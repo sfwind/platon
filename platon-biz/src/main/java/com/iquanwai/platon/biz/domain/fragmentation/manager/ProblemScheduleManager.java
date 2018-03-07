@@ -31,5 +31,11 @@ public interface ProblemScheduleManager {
      */
     Integer getLearningMajorProblemId(Integer profileId);
 
+    /**
+     * 获取当前学习月份主修课 ProblemId
+     * @param profileId 用户 id
+     * @param year 年份
+     * @param month 月份
+     */
     Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month);
 }
