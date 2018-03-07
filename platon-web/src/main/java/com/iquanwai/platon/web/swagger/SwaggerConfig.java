@@ -1,6 +1,8 @@
 package com.iquanwai.platon.web.swagger;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.iquanwai.platon.web.resolver.GuestUser;
+import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +23,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class SwaggerConfig {
     @Bean
     public Docket buildDocket() {
-        return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInfo()).select()
+        return new Docket(DocumentationType.SWAGGER_2)
+                .ignoredParameterTypes(LoginUser.class, UnionUser.class, GuestUser.class)
+                .apiInfo(buildApiInfo()).select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any()).build();
     }
