@@ -153,14 +153,20 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     @Override
     public Integer getLearningMajorProblemId(Integer profileId) {
         // 针对不同身份的学员，查看当前主修课的 ProblemId
+        return getMajorProblemIdByYearAndMonth(profileId, ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
+    }
+
+    @Override
+    public Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month) {
+        // 针对不同身份的学员，查看当前主修课的 ProblemId
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember != null && riseMember.getMemberTypeId() != null) {
             switch (riseMember.getMemberTypeId()) {
                 case RiseMember.CAMP:
                     List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
                     MonthlyCampSchedule campMajorCampSchedule = monthlyCampSchedules.stream()
-                            .filter(monthlyCampSchedule -> ConfigUtils.getLearningMonth().equals(monthlyCampSchedule.getMonth()))
-                            .filter(monthlyCampSchedule -> ConfigUtils.getLearningYear().equals(monthlyCampSchedule.getYear()))
+                            .filter(monthlyCampSchedule -> month.equals(monthlyCampSchedule.getMonth()))
+                            .filter(monthlyCampSchedule -> year.equals(monthlyCampSchedule.getYear()))
                             .filter(monthlyCampSchedule -> MonthlyCampSchedule.MAJOR_TYPE == monthlyCampSchedule.getType())
                             .findAny()
                             .orElse(null);
@@ -173,7 +179,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
                     int category = accountService.loadUserScheduleCategory(profileId);
                     List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
                     CourseScheduleDefault professionDefault = courseScheduleDefaults.stream()
-                            .filter(courseScheduleDefault -> ConfigUtils.getLearningMonth().equals(courseScheduleDefault.getMonth()))
+                            .filter(courseScheduleDefault -> month.equals(courseScheduleDefault.getMonth()))
                             .findAny()
                             .orElse(null);
                     if (professionDefault != null) {
@@ -184,8 +190,8 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
                 case RiseMember.HALF_ELITE:
                     List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
                     CourseSchedule riseMemberCourseSchedule = courseSchedules.stream()
-                            .filter(courseSchedule -> ConfigUtils.getLearningYear().equals(courseSchedule.getYear()))
-                            .filter(courseSchedule -> ConfigUtils.getLearningMonth().equals(courseSchedule.getMonth()))
+                            .filter(courseSchedule -> year.equals(courseSchedule.getYear()))
+                            .filter(courseSchedule -> month.equals(courseSchedule.getMonth()))
                             .filter(courseSchedule -> CourseSchedule.Type.MAJOR == courseSchedule.getType())
                             .findAny().orElse(null);
                     if (riseMemberCourseSchedule != null) {

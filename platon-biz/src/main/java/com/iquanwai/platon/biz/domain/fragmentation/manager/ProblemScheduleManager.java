@@ -30,4 +30,6 @@ public interface ProblemScheduleManager {
      * @param profileId 用户 id
      */
     Integer getLearningMajorProblemId(Integer profileId);
+
+    Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month);
 }
