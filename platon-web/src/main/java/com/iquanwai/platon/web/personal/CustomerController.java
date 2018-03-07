@@ -2,13 +2,13 @@ package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.forum.QuestionService;
-import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -18,21 +18,17 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
-import com.iquanwai.platon.biz.po.forum.ForumAnswer;
-import com.iquanwai.platon.biz.po.forum.ForumQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +80,7 @@ public class CustomerController {
     @Autowired
     private UnionUserService unionUserService;
 
-    @RequestMapping("/info")
+    @RequestMapping(value="/info", method = RequestMethod.GET)
     @ApiOperation(value="查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -99,7 +95,7 @@ public class CustomerController {
         return WebUtils.result(profile);
     }
 
-    @RequestMapping("/event/list")
+    @RequestMapping(value="/event/list" , method = RequestMethod.GET)
     @ApiOperation(value="查询活动列表")
     public ResponseEntity<Map<String, Object>> getEventList(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -192,7 +188,7 @@ public class CustomerController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/profile/headImg/upload")
+    @RequestMapping(value = "/profile/headImg/upload", method = RequestMethod.POST)
     @ApiOperation(value="上传个人头像")
     public ResponseEntity<Map<String, Object>> updateHeadImg(LoginUser loginUser, @RequestParam("file") MultipartFile file) {
         Long fileSize = file.getSize();
@@ -218,7 +214,7 @@ public class CustomerController {
         }
     }
 
-    @RequestMapping(value = "/profile/headImg/update")
+    @RequestMapping(value = "/profile/headImg/update", method = RequestMethod.POST)
     @ApiOperation(value="更新个人头像")
     @ApiParam(name="headImgUrl", value="头像图片链接")
     public ResponseEntity<Map<String, Object>> updateHeadImg(LoginUser loginUser, @RequestParam("headImgUrl") String headImgUrl) {
@@ -351,7 +347,7 @@ public class CustomerController {
         return WebUtils.success();
     }
 
-    @RequestMapping("/region")
+    @RequestMapping(value="/region", method = RequestMethod.GET)
     @ApiOperation(value="加载地区信息")
     public ResponseEntity<Map<String, Object>> loadRegion(GuestUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -415,7 +411,7 @@ public class CustomerController {
         return WebUtils.result(list);
     }
 
-    @RequestMapping("/member")
+    @RequestMapping(value="/member", method = RequestMethod.GET)
     @ApiOperation(value="查询用户会员信息")
     public ResponseEntity<Map<String, Object>> riseMember(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -434,7 +430,7 @@ public class CustomerController {
         }
     }
 
-    @RequestMapping("/global/notify")
+    @RequestMapping(value="/global/notify", method = RequestMethod.GET)
     @ApiOperation(value="用户会员期过期提醒查询")
     public ResponseEntity<Map<String, Object>> notifyExpire(LoginUser loginUser) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -491,44 +487,6 @@ public class CustomerController {
         return WebUtils.success();
     }
 
-    @RequestMapping("/forum/mine/questions")
-    public ResponseEntity<Map<String, Object>> loadMineQuestions(LoginUser loginUser, @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("个人中心")
-                .function("论坛")
-                .action("查询我的提问");
-        operationLogService.log(operationLog);
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPage(1);
-        page.setPageSize(100);
-        List<ForumQuestion> forumQuestions = questionService.loadSelfQuestions(loginUser.getId(), page);
-        // 设置刷新列表
-//        BibleRefreshListDto<ForumQuestion> result = new BibleRefreshListDto<>();
-//        result.setList(forumQuestions);
-//        result.setEnd(page.isLastPage());
-        return WebUtils.result(forumQuestions);
-    }
-
-    @RequestMapping("/forum/mine/answers")
-    public ResponseEntity<Map<String, Object>> loadMineAnswers(LoginUser loginUser, @ModelAttribute Page page) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("个人中心")
-                .function("论坛")
-                .action("查询我的回答");
-        operationLogService.log(operationLog);
-        if (page == null) {
-            page = new Page();
-        }
-        page.setPage(1);
-        page.setPageSize(100);
-        List<ForumAnswer> forumAnswers = answerService.loadSelfAnswers(loginUser.getId(), page);
-        return WebUtils.result(forumAnswers);
-    }
-
     @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
     @ApiOperation(value="检查用户是否关注")
     public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser loginUser, @PathVariable(value = "key") String key, @RequestParam String callback) {
@@ -548,25 +506,7 @@ public class CustomerController {
         }
     }
 
-    @RequestMapping(value = "/annual/summary")
-    @ApiOperation(value="查询年度报告")
-    public ResponseEntity<Map<String, Object>> getAnnualSummary(LoginUser loginUser) {
-        Assert.notNull(loginUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create()
-                .openid(loginUser.getOpenId())
-                .module("用户信息")
-                .function("学习")
-                .action("年度报告");
-        operationLogService.log(operationLog);
-        AnnualSummary annualSummary = customerService.loadUserAnnualSummary(loginUser.getId());
-        if (annualSummary == null) {
-            return WebUtils.error("您还没有年度报告");
-        } else {
-            return WebUtils.result(annualSummary);
-        }
-    }
-
-    @RequestMapping("/coupon")
+    @RequestMapping(value="/coupon", method = RequestMethod.GET)
     @ApiOperation(value="查询用户优惠券")
     public ResponseEntity<Map<String, Object>> getCouponInfo(LoginUser loginUser) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())

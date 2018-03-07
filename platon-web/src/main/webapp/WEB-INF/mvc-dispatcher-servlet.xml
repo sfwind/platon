@@ -24,7 +24,8 @@
 
     <mvc:resources location="/image/" mapping="/image/**"/>
     <mvc:resources location="/js/" mapping="/js/**"/>
-    <mvc:resources location="/local/" mapping="/local/**"/>
+    <mvc:resources mapping="swagger-ui.html" location="classpath:/META-INF/resources/" />
+    <mvc:resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/" />
 
     <mvc:annotation-driven>
         <mvc:message-converters register-defaults="false">

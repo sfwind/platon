@@ -1,8 +1,8 @@
 package com.iquanwai.platon.web.personal.dto;
 
 import com.iquanwai.platon.biz.po.Problem;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
