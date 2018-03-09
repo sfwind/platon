@@ -24,9 +24,7 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +47,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/rise/customer")
-@Api(value = "CustomerController", description = "用户相关api")
+@Api(description = "用户相关Controller")
 public class CustomerController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -74,8 +72,8 @@ public class CustomerController {
     @Autowired
     private UnionUserService unionUserService;
 
-    @RequestMapping(value="/info", method = RequestMethod.GET)
-    @ApiOperation(value="查询小程序用户基本信息")
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
+    @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
                 .module("小程序")
@@ -89,8 +87,8 @@ public class CustomerController {
         return WebUtils.result(profile);
     }
 
-    @RequestMapping(value="/event/list" , method = RequestMethod.GET)
-    @ApiOperation(value="查询活动列表")
+    @RequestMapping(value = "/event/list", method = RequestMethod.GET)
+    @ApiOperation("查询活动列表")
     public ResponseEntity<Map<String, Object>> getEventList(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -104,7 +102,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/account", method = RequestMethod.GET)
-    @ApiOperation(value="查询账号信息")
+    @ApiOperation("查询账号信息")
     public ResponseEntity<Map<String, Object>> loadRiseInfo(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -138,7 +136,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile", method = RequestMethod.GET)
-    @ApiOperation(value="查询圈外用户个人信息")
+    @ApiOperation("查询圈外用户个人信息")
     public ResponseEntity<Map<String, Object>> loadProfile(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -167,7 +165,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile", method = RequestMethod.POST)
-    @ApiOperation(value="提交用户个人信息")
+    @ApiOperation("提交用户个人信息")
     public ResponseEntity<Map<String, Object>> submitProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -183,7 +181,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/headImg/upload", method = RequestMethod.POST)
-    @ApiOperation(value="上传个人头像")
+    @ApiOperation("上传个人头像")
     public ResponseEntity<Map<String, Object>> updateHeadImg(UnionUser unionUser, @RequestParam("file") MultipartFile file) {
         Long fileSize = file.getSize();
         if (fileSize > 5 * 1000 * 1000) { // 文件图片大于 5M
@@ -209,8 +207,8 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/headImg/update", method = RequestMethod.POST)
-    @ApiOperation(value="更新个人头像")
-    @ApiImplicitParam(name="headImgUrl", value="头像图片链接")
+    @ApiOperation("更新个人头像")
+    @ApiParam(name = "headImgUrl", value = "头像图片链接")
     public ResponseEntity<Map<String, Object>> updateHeadImg(UnionUser unionUser, @RequestParam("headImgUrl") String headImgUrl) {
         Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(headImgUrl, "上传头像不能为空");
@@ -229,7 +227,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/nickname/update", method = RequestMethod.POST)
-    @ApiOperation(value="提交昵称")
+    @ApiOperation("提交昵称")
     public ResponseEntity<Map<String, Object>> updateNickName(UnionUser unionUser, @RequestBody NicknameDto nickname) {
         Assert.notNull(unionUser, "登录用户不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -248,7 +246,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/profile/certificate", method = RequestMethod.POST)
-    @ApiOperation(value="提交个人信息")
+    @ApiOperation("提交个人信息")
     public ResponseEntity<Map<String, Object>> submitCertificateProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -264,8 +262,8 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.GET)
-    @ApiOperation(value="获取证书")
-    @ApiImplicitParam(name="certificateNo", value="证书编号")
+    @ApiOperation("获取证书")
+    @ApiParam(name = "certificateNo", value = "证书编号")
     public ResponseEntity<Map<String, Object>> getCertificate(UnionUser unionUser, @PathVariable String certificateNo) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -282,8 +280,8 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/download/{certificateNo}", method = RequestMethod.GET)
-    @ApiOperation(value="下载证书")
-    @ApiImplicitParam(name="certificateNo", value="证书编号")
+    @ApiOperation("下载证书")
+    @ApiParam(name = "certificateNo", value = "证书编号")
     public ResponseEntity<Map<String, Object>> getCertificateAndNext(UnionUser unionUser, @PathVariable String certificateNo) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -305,7 +303,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/convert", method = RequestMethod.POST)
-    @ApiOperation(value="证书转码")
+    @ApiOperation("证书转码")
     public ResponseEntity<Map<String, Object>> convertBase64(UnionUser unionUser, @RequestBody Base64ConvertDto base64ConvertDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -331,8 +329,8 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/certificate/download/success/{certificateNo}", method = RequestMethod.GET)
-    @ApiOperation(value="下载课程证书完毕")
-    @ApiImplicitParam(name="certificateNo", value="证书编号")
+    @ApiOperation("下载课程证书完毕")
+    @ApiParam(name = "certificateNo", value = "证书编号")
     public ResponseEntity<Map<String, Object>> updateCertificateDownloadTime(UnionUser unionUser, @PathVariable String certificateNo) {
         Assert.notNull(unionUser, "用户信息不能为空");
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
@@ -344,8 +342,8 @@ public class CustomerController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value="/region", method = RequestMethod.GET)
-    @ApiOperation(value="加载地区信息")
+    @RequestMapping(value = "/region", method = RequestMethod.GET)
+    @ApiOperation("加载地区信息")
     public ResponseEntity<Map<String, Object>> loadRegion(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         List<Region> provinces = accountService.loadAllProvinces();
@@ -362,7 +360,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = {"/plans", "/pc/plans"}, method = RequestMethod.GET)
-    @ApiOperation(value="查询课程信息")
+    @ApiOperation("查询课程信息")
     public ResponseEntity<Map<String, Object>> loadUserPlans(UnionUser unionUser) {
         if (unionUser == null) {
             return WebUtils.error(401, "未登录");
@@ -408,8 +406,8 @@ public class CustomerController {
         return WebUtils.result(list);
     }
 
-    @RequestMapping(value="/member", method = RequestMethod.GET)
-    @ApiOperation(value="查询用户会员信息")
+    @RequestMapping(value = "/member", method = RequestMethod.GET)
+    @ApiOperation("查询用户会员信息")
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = riseMemberService.getRiseMember(unionUser.getId());
@@ -427,8 +425,8 @@ public class CustomerController {
         }
     }
 
-    @RequestMapping(value="/global/notify", method = RequestMethod.GET)
-    @ApiOperation(value="用户会员期过期提醒查询")
+    @RequestMapping(value = "/global/notify", method = RequestMethod.GET)
+    @ApiOperation("用户会员期过期提醒查询")
     public ResponseEntity<Map<String, Object>> notifyExpire(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
@@ -442,7 +440,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/valid/sms", method = RequestMethod.POST)
-    @ApiOperation(value="短信验证")
+    @ApiOperation("短信验证")
     public ResponseEntity<Map<String, Object>> validCode(UnionUser unionUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(unionUser, "用户不能为空");
         boolean result = accountService.validCode(validCodeDto.getCode(), unionUser.getId());
@@ -456,7 +454,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/send/valid/code", method = RequestMethod.POST)
-    @ApiOperation(value="发送验证码")
+    @ApiOperation("发送验证码")
     public ResponseEntity<Map<String, Object>> sendCode(UnionUser unionUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(unionUser, "用户不能为空");
         Pair<Boolean, String> result = accountService.sendValidCode(validCodeDto.getPhone(),
@@ -471,7 +469,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/update/weixinId", method = RequestMethod.POST)
-    @ApiOperation(value="更新微信id")
+    @ApiOperation("更新微信id")
     public ResponseEntity<Map<String, Object>> updateWeixinId(UnionUser unionUser, @RequestBody WeixinDto weixinDto) {
         Assert.notNull(unionUser, "用户不能为空");
         accountService.updateWeixinId(unionUser.getId(), weixinDto.getWeixinId());
@@ -485,7 +483,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
-    @ApiOperation(value="检查用户是否关注")
+    @ApiOperation("检查用户是否关注")
     public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser unionUser, @PathVariable(value = "key") String key, @RequestParam String callback) {
         OperationLog operationLog = OperationLog.create()
                 .openid(unionUser != null ? unionUser.getOpenId() : null)
@@ -503,8 +501,8 @@ public class CustomerController {
         }
     }
 
-    @RequestMapping(value="/coupon", method = RequestMethod.GET)
-    @ApiOperation(value="查询用户优惠券")
+    @RequestMapping(value = "/coupon", method = RequestMethod.GET)
+    @ApiOperation("查询用户优惠券")
     public ResponseEntity<Map<String, Object>> getCouponInfo(UnionUser unionUser) {
         OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
                 .module("优惠券")

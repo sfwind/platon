@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
  * Created by nethunder on 2017/2/4.
  */
 @Data
+@ApiModel("区域信息")
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("区域信息")
 public class AreaDto {
     @ApiModelProperty("区域id")
     private String id;
