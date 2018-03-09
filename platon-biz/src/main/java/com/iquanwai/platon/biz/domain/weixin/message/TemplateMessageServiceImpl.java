@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.common.CustomerMessageLogDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.exception.WeixinException;
 import com.iquanwai.platon.biz.po.CustomerMessageLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
@@ -38,6 +37,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     }
 
     private boolean sendMessage(TemplateMessage templateMessage, boolean forwardlyPush) {
+        addHook(templateMessage);
         boolean sendTag = true;
         if (forwardlyPush) {
             // 发送权限校验
@@ -77,6 +77,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
      * 5. 用户每天最多收到2条消息
      * 6. 用户三小时内最多收到1条消息
      * 7. 活动提醒通知，文字尽量简洁，不要用推销的口吻
+     *
      * @return 是否允许发送模板消息
      */
     private boolean checkTemplateMessageAuthority(TemplateMessage templateMessage, boolean forwardlyPush) {
@@ -151,6 +152,18 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
         customerMessageLog.setForwardlyPush(forwardlyPush ? 1 : 0);
         customerMessageLog.setValidPush(validPush ? 1 : 0);
         customerMessageLogDao.insert(customerMessageLog);
+    }
+
+    private void addHook(TemplateMessage templateMessage) {
+        if (templateMessage.getUrl() != null) {
+            String url = templateMessage.getUrl();
+            if(url.contains("?")){
+                url = url + "&_tm=template_message";
+            }else{
+                url = url + "?_tm=template_message";
+            }
+            templateMessage.setUrl(url);
+        }
     }
 
 }
