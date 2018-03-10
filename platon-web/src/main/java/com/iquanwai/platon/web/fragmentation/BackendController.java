@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.iquanwai.platon.biz.domain.forum.AnswerService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -10,8 +9,6 @@ import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ThreadPool;
-import com.iquanwai.platon.web.forum.dto.AnswerCommentDto;
-import com.iquanwai.platon.web.forum.dto.AnswerDto;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ForceOpenPlanParams;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
@@ -23,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -34,13 +32,12 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/rise/b")
+@ApiIgnore
 public class BackendController {
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
     private UnionUserService unionUserService;
-    @Autowired
-    private AnswerService answerService;
     @Autowired
     private CertificateService certificateService;
     @Autowired

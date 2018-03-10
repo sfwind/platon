@@ -1,11 +1,14 @@
 package com.iquanwai.platon.web.personal.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
  * Created by nethunder on 2017/2/4.
  */
 @Data
+@ApiModel("用户信息")
 public class ProfileDto {
     private String industry; //行业
     private String function; //职业

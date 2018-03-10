@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +41,7 @@ import java.util.Map;
  * @version 16/9/9
  */
 @Controller
+@ApiIgnore
 public class IndexController {
     @Autowired
     private OAuthService oAuthService;
