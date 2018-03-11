@@ -379,7 +379,6 @@ public class PracticeServiceImpl implements PracticeService {
         }
         if (result && submit.getPointStatus() == 0) {
             // 修改课程任务记录
-            logger.info("小目标加分:{}", id);
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                     submit.getChallengeId(), PracticePlan.CHALLENGE);
             if (practicePlan != null) {
@@ -576,7 +575,12 @@ public class PracticeServiceImpl implements PracticeService {
             }
             //更新助教评论状态
             if (isAsst) {
-                applicationSubmitDao.asstFeedback(load.getId());
+                //记录首次点评时间
+                if(load.getFeedBackTime()==null){
+                    applicationSubmitDao.asstFeedBackAndTime(load.getId());
+                }else {
+                    applicationSubmitDao.asstFeedback(load.getId());
+                }
                 asstCoachComment(load.getProfileId(), load.getProblemId());
             }
             //自己给自己评论不提醒
@@ -633,10 +637,10 @@ public class PracticeServiceImpl implements PracticeService {
         List<CommentEvaluation> evaluations = commentEvaluationDao.loadUnEvaluatedCommentEvaluationBySubmitId(submitId);
         List<Integer> commentIds = evaluations.stream().map(CommentEvaluation::getCommentId).collect(Collectors.toList());
         List<Comment> comments = commentDao.loadAllCommentsByIds(commentIds);
-        Map<Integer, Comment> commentMap = comments.stream().collect(Collectors.toMap(Comment::getId, comment -> comment));
+        Map<Integer, Comment> commentMap = comments.stream().collect(Collectors.toMap(Comment::getId, comment -> comment, (key1, key2) -> key2));
         List<Integer> profileIds = comments.stream().map(Comment::getCommentProfileId).collect(Collectors.toList());
         List<Profile> profiles = accountService.getProfiles(profileIds);
-        Map<Integer, Profile> profileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
+        Map<Integer, Profile> profileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key2));
 
         for (CommentEvaluation evaluation : evaluations) {
             Comment comment = commentMap.get(evaluation.getCommentId());

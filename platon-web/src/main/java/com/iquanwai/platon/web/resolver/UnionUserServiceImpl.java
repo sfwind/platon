@@ -89,16 +89,13 @@ public class UnionUserServiceImpl implements UnionUserService {
         String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
         if (platformHeader == null) {
             // 资源请求，没有 platform header，查看 cookie 值
-            logger.info("资源请求，没有 platform header，查看 cookie 值");
             String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
             if (pcState != null) {
-                logger.info("pcState: {}", pcState);
                 platformHeader = UnionUser.PlatformHeaderValue.PC_HEADER;
             }
 
             String mobileState = CookieUtils.getCookie(request, MOBILE_STATE_COOKIE_NAME);
             if (mobileState != null) {
-                logger.info("mobileState: {}", mobileState);
                 platformHeader = UnionUser.PlatformHeaderValue.MOBILE_HEADER;
             }
         }

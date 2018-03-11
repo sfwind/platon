@@ -116,6 +116,15 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
+    public void asstFeedBackAndTime(Integer id){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update ApplicationSubmit set Feedback=1,FeedBackTime=CURRENT_TIMESTAMP where Id=?";
+        try {
+            runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+    }
 
     public List<ApplicationSubmit> loadSubmits(Integer applicationId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
@@ -145,7 +154,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public void requestComment(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set RequestFeedback=1 where Id=?";
+        String sql = "update ApplicationSubmit set RequestFeedback=1,RequestTime= CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, id);
         } catch (SQLException e) {
