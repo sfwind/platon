@@ -11,7 +11,6 @@
 <script>
     window.ENV = {
         reactMountPoint: "react-app",
-        showForum:"${showForum}",
         showExplore:"${showExplore}",
         configUrl:'',
     }
