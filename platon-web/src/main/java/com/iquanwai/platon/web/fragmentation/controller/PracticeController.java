@@ -101,7 +101,7 @@ public class PracticeController {
         UnionUser.Platform platform = WebUtils.getPlatformType(request);
 
         Integer device;
-        if (platform!=null && platform.getValue() == Constants.Device.PC) {
+        if (platform != null && platform.getValue() == Constants.Device.PC) {
             device = Constants.Device.PC;
         } else {
             device = Constants.Device.MOBILE;
@@ -123,7 +123,8 @@ public class PracticeController {
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
     @ApiOperation("加载文章评论")
     public ResponseEntity<Map<String, Object>> loadComments(UnionUser loginUser,
-                                                            @PathVariable("moduleId") Integer moduleId, @PathVariable("submitId") Integer submitId,
+                                                            @PathVariable("moduleId") Integer moduleId,
+                                                            @PathVariable("submitId") Integer submitId,
                                                             @ModelAttribute Page page) {
         Assert.notNull(moduleId, "评论类型不能为空");
         Assert.notNull(submitId, "文章不能为空");
@@ -165,7 +166,8 @@ public class PracticeController {
         }).filter(Objects::nonNull).collect(Collectors.toList());
         riseRefreshListDto.setList(commentDtos);
         // 如果这个评论是自己的，则获取尚未被评价的应用题评论
-        riseRefreshListDto.setCommentEvaluations(practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(loginUser.getId(), submitId));
+        riseRefreshListDto.setCommentEvaluations(
+                practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(loginUser.getId(), submitId));
 
         riseRefreshListDto.setEnd(page.isLastPage());
         return WebUtils.result(riseRefreshListDto);
@@ -173,7 +175,8 @@ public class PracticeController {
 
     @RequestMapping(value = "/comment/message/{submitId}/{commentId}", method = RequestMethod.GET)
     @ApiOperation("加载应用练习某一条评论")
-    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(UnionUser loginUser, @PathVariable Integer submitId, @PathVariable Integer commentId) {
+    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(UnionUser loginUser, @PathVariable Integer submitId,
+                                                                           @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "登录用户不能为空");
         Assert.notNull(commentId, "评论不能为空");
 
@@ -182,7 +185,8 @@ public class PracticeController {
         Comment comment = practiceService.loadApplicationReplyComment(commentId);
 
         // 在评论之后是否被修改
-        boolean isModified = practiceService.isModifiedAfterFeedback(submitId, comment.getCommentProfileId(), comment.getAddTime());
+        boolean isModified = practiceService.isModifiedAfterFeedback(submitId,
+                comment.getCommentProfileId(), comment.getAddTime());
         riseRefreshListDto.setIsModifiedAfterFeedback(isModified);
 
         RiseWorkCommentDto dto = new RiseWorkCommentDto();
@@ -227,7 +231,8 @@ public class PracticeController {
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     @ApiOperation("提交评论")
     public ResponseEntity<Map<String, Object>> comment(UnionUser loginUser,
-                                                       @PathVariable("moduleId") Integer moduleId, @PathVariable("submitId") Integer submitId,
+                                                       @PathVariable("moduleId") Integer moduleId,
+                                                       @PathVariable("submitId") Integer submitId,
                                                        @RequestBody RiseWorkCommentDto dto, HttpServletRequest request) {
         Assert.notNull(loginUser, "登陆用户不能为空");
         Assert.notNull(moduleId, "评论模块不能为空");
@@ -236,7 +241,7 @@ public class PracticeController {
         UnionUser.Platform platform = WebUtils.getPlatformType(request);
 
         Integer device;
-        if (platform!=null && platform.getValue() == Constants.Device.PC) {
+        if (platform != null && platform.getValue() == Constants.Device.PC) {
             device = Constants.Device.PC;
         } else {
             device = Constants.Device.MOBILE;
@@ -288,7 +293,7 @@ public class PracticeController {
         UnionUser.Platform platform = WebUtils.getPlatformType(request);
 
         Integer device;
-        if (platform!=null && platform.getValue() == Constants.Device.PC) {
+        if (platform != null && platform.getValue() == Constants.Device.PC) {
             device = Constants.Device.PC;
         } else {
             device = Constants.Device.MOBILE;
