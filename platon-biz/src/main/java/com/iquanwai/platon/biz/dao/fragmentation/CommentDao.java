@@ -44,13 +44,13 @@ public class CommentDao extends PracticeDBUtil {
         return -1;
     }
 
-    public List<Comment> loadComments(Integer moduleId, Integer referId, Page page) {
+    public List<Comment> loadComments(Integer referId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
-        String sql = "SELECT * FROM Comment where ReferencedId = ? and ModuleId = ?  and Del = 0 " +
+        String sql = "SELECT * FROM Comment where ReferencedId = ? and ModuleId = 2  and Del = 0 " +
                 "order by Type desc, AddTime desc limit " + page.getOffset() + "," + page.getLimit();
         try {
-            return run.query(sql, h, referId, moduleId);
+            return run.query(sql, h, referId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -59,7 +59,7 @@ public class CommentDao extends PracticeDBUtil {
 
     public List<Comment> loadCommentsByProfileId(Integer referId, Integer commentProfileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM Comment WHERE ReferencedId = ? AND CommentProfileId = ? AND Del = 0";
+        String sql = "SELECT * FROM Comment WHERE ReferencedId = ? AND CommentProfileId = ? and ModuleId = 2 AND Del = 0";
         ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
         try {
             return runner.query(sql, h, referId, commentProfileId);
@@ -69,13 +69,13 @@ public class CommentDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public Integer commentCount(Integer moduleId, Integer referId) {
+    public Integer commentCount(Integer referId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<>();
 
         try {
-            Long count = run.query("SELECT count(*) FROM Comment where ReferencedId=? and ModuleId=? and Del=0",
-                    h, referId, moduleId);
+            Long count = run.query("SELECT count(*) FROM Comment where ReferencedId=? and ModuleId=2 and Del=0",
+                    h, referId);
             return count.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -111,7 +111,8 @@ public class CommentDao extends PracticeDBUtil {
         }
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<Comment>> h = new BeanListHandler<>(Comment.class);
-        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ") and Del=0";
+        String sql = "select * from Comment where ReferencedId in (" + produceQuestionMark(referencedIds.size()) + ") " +
+                "and ModuleId=2 and Del=0";
         try {
             return runner.query(sql, h, referencedIds.toArray());
         } catch (SQLException e) {

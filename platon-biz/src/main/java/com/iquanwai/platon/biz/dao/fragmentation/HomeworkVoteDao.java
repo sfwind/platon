@@ -26,11 +26,11 @@ public class HomeworkVoteDao extends PracticeDBUtil {
     /**
      * 被点赞的次数
      */
-    public int votedCount(Integer type, Integer referencedId) {
+    public int votedCount(Integer referencedId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ScalarHandler<Long> h = new ScalarHandler<Long>();
         try {
-            Long number = run.query("select count(1) from HomeworkVote where Type=? and referencedId=? and Del=0", h, type, referencedId);
+            Long number = run.query("select count(1) from HomeworkVote where referencedId=? and Type=2 and Del=0", h, referencedId);
             return number.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -58,17 +58,16 @@ public class HomeworkVoteDao extends PracticeDBUtil {
     /**
      * voteProfileId对某条记录的点赞记录
      *
-     * @param type         1:挑战任务，2：体系化大作业
-     * @param referencedId 被依赖的id
-     * @param voteProfileId   点赞的人
+     * @param referencedId  被依赖的id
+     * @param voteProfileId 点赞的人
      * @return
      */
-    public HomeworkVote loadVoteRecord(Integer type, Integer referencedId, Integer voteProfileId) {
+    public HomeworkVote loadVoteRecord(Integer referencedId, Integer voteProfileId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<HomeworkVote> h = new BeanHandler<>(HomeworkVote.class);
         try {
-            HomeworkVote vote = run.query("SELECT * FROM HomeworkVote where ReferencedId=? and VoteProfileId=? and Type=? ",
-                    h, referencedId, voteProfileId, type);
+            HomeworkVote vote = run.query("SELECT * FROM HomeworkVote where ReferencedId=? and VoteProfileId=? and Type=2 AND del=0 ",
+                    h, referencedId, voteProfileId);
             return vote;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -92,14 +91,14 @@ public class HomeworkVoteDao extends PracticeDBUtil {
     }
 
 
-    public List<HomeworkVote> getHomeworkVotesByIds(List<Integer> referencedIds) {
-        if(CollectionUtils.isEmpty(referencedIds)) {
+    public List<HomeworkVote> getHomeworkVotesByReferenceIds(List<Integer> referencedIds) {
+        if (CollectionUtils.isEmpty(referencedIds)) {
             return Lists.newArrayList();
         }
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler<>(HomeworkVote.class);
         String questionMark = produceQuestionMark(referencedIds.size());
-        String sql = "select * from HomeworkVote where ReferencedId in (" + questionMark + ")";
+        String sql = "select * from HomeworkVote where ReferencedId in (" + questionMark + ") AND Type=2 AND DEL=0";
         try {
             return runner.query(sql, h, referencedIds.toArray());
         } catch (SQLException e) {
@@ -108,11 +107,11 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<HomeworkVote> votedList(Integer profileId){
+    public List<HomeworkVote> votedList(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from HomeworkVote where VotedProfileId = ?";
-        try{
-            return runner.query(sql,new BeanListHandler<>(HomeworkVote.class),profileId);
+        String sql = "select * from HomeworkVote where VotedProfileId = ? AND Type=2 AND DEL=0";
+        try {
+            return runner.query(sql, new BeanListHandler<>(HomeworkVote.class), profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -120,11 +119,11 @@ public class HomeworkVoteDao extends PracticeDBUtil {
     }
 
 
-    public List<HomeworkVote> voteList(Integer profileId){
+    public List<HomeworkVote> voteList(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from HomeworkVote where VoteProfileId = ?";
-        try{
-            return runner.query(sql,new BeanListHandler<>(HomeworkVote.class),profileId);
+        String sql = "select * from HomeworkVote where VoteProfileId = ? AND Type=2 AND DEL=0";
+        try {
+            return runner.query(sql, new BeanListHandler<>(HomeworkVote.class), profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

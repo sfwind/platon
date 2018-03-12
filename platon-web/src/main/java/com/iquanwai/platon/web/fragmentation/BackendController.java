@@ -13,7 +13,6 @@ import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ForceOpenPlanParams;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
-import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +35,6 @@ import java.util.Map;
 public class BackendController {
     @Autowired
     private OperationLogService operationLogService;
-    @Autowired
-    private UnionUserService unionUserService;
     @Autowired
     private CertificateService certificateService;
     @Autowired
@@ -74,7 +71,7 @@ public class BackendController {
 
         Integer profileId = unionUser.getId();
         Integer platform = null;
-        UnionUser.Platform platformOrigin = unionUserService.getPlatformType(request);
+        UnionUser.Platform platformOrigin = WebUtils.getPlatformType(request);
         if (platformOrigin != null) {
             platform = platformOrigin.getValue();
         }
@@ -93,7 +90,7 @@ public class BackendController {
     public ResponseEntity<Map<String, Object>> mark(HttpServletRequest request, UnionUser unionUser, @RequestBody MarkDto markDto) {
         Integer profileId = unionUser.getId();
         Integer platform = null;
-        UnionUser.Platform platformOrigin = unionUserService.getPlatformType(request);
+        UnionUser.Platform platformOrigin = WebUtils.getPlatformType(request);
         if (platformOrigin != null) {
             platform = platformOrigin.getValue();
         }

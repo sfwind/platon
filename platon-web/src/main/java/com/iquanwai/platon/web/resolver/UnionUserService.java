@@ -12,15 +12,13 @@ public interface UnionUserService {
     String PC_STATE_COOKIE_NAME = "_qt";
     String MOBILE_STATE_COOKIE_NAME = "_act";
     String MINI_STATE_HEADER_NAME = "sk";
+    String PLATFORM_HEADER_NAME = "platform";
 
     /** 根据请求获取 callback 数据 */
     Callback getCallbackByRequest(HttpServletRequest request);
 
     /** 根据请求获取用户，如果用户不存在会请求 confucius 生成 */
     UnionUser getUnionUserByCallback(Callback callback);
-
-    /** 获取当前所在平台 */
-    UnionUser.Platform getPlatformType(HttpServletRequest request);
 
     /** 根据 UnionId 刷新用户缓存 */
     void updateUserByUnionId(String unionId);

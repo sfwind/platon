@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class LoginUserResolver implements HandlerMethodArgumentResolver {
         LoginUser loginUser = null;
         if (unionUser != null) {
             loginUser = adapterLoginUser(unionUser);
-            UnionUser.Platform platform = unionUserService.getPlatformType(request);
+            UnionUser.Platform platform = WebUtils.getPlatformType(request);
             loginUser.setDevice(platform == UnionUser.Platform.MOBILE ? Constants.Device.MOBILE : Constants.Device.PC);
         } else {
             logger.error("unionUser 为空");

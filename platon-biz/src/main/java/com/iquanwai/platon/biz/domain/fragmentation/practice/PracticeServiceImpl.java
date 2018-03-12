@@ -1,11 +1,12 @@
 package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
-import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
+import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -66,10 +67,6 @@ public class PracticeServiceImpl implements PracticeService {
     private AccountService accountService;
     @Autowired
     private SubjectArticleDao subjectArticleDao;
-    @Autowired
-    private LabelConfigDao labelConfigDao;
-    @Autowired
-    private ArticleLabelDao articleLabelDao;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
@@ -400,17 +397,46 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Integer votedCount(Integer type, Integer referencedId) {
-        return homeworkVoteDao.votedCount(type, referencedId);
+        return homeworkVoteDao.votedCount(referencedId);
+    }
+
+    @Override
+    public Map<Integer, List<HomeworkVote>> getHomeworkVotes(List<ApplicationSubmit> applicationSubmits) {
+        List<Integer> submitIds = applicationSubmits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
+
+        List<HomeworkVote> homeworkVotes = homeworkVoteDao.getHomeworkVotesByReferenceIds(submitIds);
+
+        Map<Integer, List<HomeworkVote>> homeworkVoteMap = Maps.newHashMap();
+        homeworkVotes.forEach(homeworkVote -> {
+            List<HomeworkVote> homeworkVoteList = homeworkVoteMap.getOrDefault(homeworkVote.getReferencedId(),
+                    Lists.newArrayList());
+            homeworkVoteList.add(homeworkVote);
+        });
+
+        return homeworkVoteMap;
     }
 
     @Override
     public Integer commentCount(Integer moduleId, Integer referId) {
-        return commentDao.commentCount(moduleId, referId);
+        return commentDao.commentCount(referId);
+    }
+
+    @Override
+    public Map<Integer, Integer> commentCount(List<ApplicationSubmit> applicationSubmits) {
+        List<Integer> submitIds = applicationSubmits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
+        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitIds);
+        Map<Integer, Integer> commentMap = Maps.newHashMap();
+
+        comments.forEach(comment -> {
+            Integer count = commentMap.getOrDefault(comment.getReferencedId(), 0);
+            commentMap.put(comment.getReferencedId(), count + 1);
+        });
+        return commentMap;
     }
 
     @Override
     public HomeworkVote loadVoteRecord(Integer type, Integer referId, Integer profileId) {
-        return homeworkVoteDao.loadVoteRecord(type, referId, profileId);
+        return homeworkVoteDao.loadVoteRecord(referId, profileId);
     }
 
     @Override
@@ -418,7 +444,7 @@ public class PracticeServiceImpl implements PracticeService {
         if (device == null) {
             device = Constants.Device.MOBILE;
         }
-        HomeworkVote vote = homeworkVoteDao.loadVoteRecord(type, referencedId, profileId);
+        HomeworkVote vote = homeworkVoteDao.loadVoteRecord(referencedId, profileId);
         if (vote == null) {
             Integer planId = null;
             Integer submitProfileId = null;
@@ -477,8 +503,8 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public List<Comment> loadComments(Integer moduleId, Integer submitId, Page page) {
-        page.setTotal(commentDao.commentCount(moduleId, submitId));
-        return commentDao.loadComments(moduleId, submitId, page);
+        page.setTotal(commentDao.commentCount(submitId));
+        return commentDao.loadComments(submitId, page);
     }
 
     @Override
@@ -676,69 +702,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Integer submitSubjectArticle(SubjectArticle subjectArticle) {
-        String content = CommonUtils.removeHTMLTag(subjectArticle.getContent());
-        subjectArticle.setLength(content.length());
-        Integer submitId = subjectArticle.getId();
-        if (subjectArticle.getId() == null) {
-            // 第一次提交
-            submitId = subjectArticleDao.insert(subjectArticle);
-        } else {
-            // 更新之前的
-            subjectArticleDao.update(subjectArticle);
-        }
-        return submitId;
-    }
-
-    @Override
-    public List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page) {
-        page.setTotal(subjectArticleDao.count(problemId));
-        return subjectArticleDao.loadArticles(problemId, page).stream().map(subjectArticle -> {
-            String content = CommonUtils.replaceHttpsDomainName(subjectArticle.getContent());
-            if (!content.equals(subjectArticle.getContent())) {
-                subjectArticleDao.updateContent(subjectArticle.getId(), content);
-                subjectArticle.setContent(content);
-            }
-            return subjectArticle;
-        }).collect(Collectors.toList());
-    }
-
-    @Override
     public SubjectArticle loadSubjectArticle(Integer submitId) {
         return subjectArticleDao.load(SubjectArticle.class, submitId);
-    }
-
-    @Override
-    public List<LabelConfig> loadProblemLabels(Integer problemId) {
-        return labelConfigDao.loadLabelConfigs(problemId);
-    }
-
-    @Override
-    public List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels) {
-        List<ArticleLabel> oldLabels = articleLabelDao.loadArticleLabels(moduleId, articleId);
-        List<ArticleLabel> shouldDels = Lists.newArrayList();
-        List<ArticleLabel> shouldReAdds = Lists.newArrayList();
-        labels = labels == null ? Lists.newArrayList() : labels;
-        List<Integer> userChoose = labels.stream().map(ArticleLabel::getLabelId).collect(Collectors.toList());
-        oldLabels.forEach(item -> {
-            if (userChoose.contains(item.getLabelId())) {
-                if (item.getDel()) {
-                    shouldReAdds.add(item);
-                }
-            } else {
-                shouldDels.add(item);
-            }
-            userChoose.remove(item.getLabelId());
-        });
-        userChoose.forEach(item -> articleLabelDao.insertArticleLabel(moduleId, articleId, item));
-        shouldDels.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 1));
-        shouldReAdds.forEach(item -> articleLabelDao.updateDelStatus(item.getId(), 0));
-        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
-    }
-
-    @Override
-    public List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId) {
-        return articleLabelDao.loadArticleActiveLabels(moduleId, articleId);
     }
 
     @Override
@@ -810,22 +775,6 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public Integer hasRequestComment(Integer problemId, Integer profileId) {
-        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        if (improvementPlan != null && improvementPlan.getRequestCommentCount() > 0) {
-            return improvementPlan.getRequestCommentCount();
-        }
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember != null) {
-            if (riseMember.getMemberTypeId().equals(RiseMember.ELITE)
-                    || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
-                return 0;
-            }
-        }
-        return null;
-    }
-
-    @Override
     public void deleteComment(Integer commentId) {
         commentDao.deleteComment(commentId);
     }
@@ -848,9 +797,8 @@ public class PracticeServiceImpl implements PracticeService {
             ApplicationPractice applicationPractice = applicationPracticeDao.load(ApplicationPractice.class, applicationId);
             applicationSubmit.setTopic(applicationPractice.getTopic());
             //点赞状态
-            applicationSubmit.setVoteCount(homeworkVoteDao.votedCount(Constants.CommentModule.APPLICATION, id));
-            applicationSubmit.setVoteStatus(homeworkVoteDao.loadVoteRecord(Constants.CommentModule.APPLICATION, id,
-                    readProfileId) != null);
+            applicationSubmit.setVoteCount(homeworkVoteDao.votedCount(id));
+            applicationSubmit.setVoteStatus(homeworkVoteDao.loadVoteRecord(id, readProfileId) != null);
         }
         return applicationSubmit;
     }
