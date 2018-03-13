@@ -135,16 +135,8 @@ public class PlanServiceImpl implements PlanService {
             // 计划正在进行中,暂时不能显示学习报告，需要完成必做
             improvementPlan.setReportStatus(-2);
         } else if (improvementPlan.getStatus() == ImprovementPlan.COMPLETE) {
-
-            Pair<Boolean, Integer> check = checkCloseable(improvementPlan);
-            if (check.getRight() != 0) {
-                // 未满足最小天数
-                improvementPlan.setReportStatus(2);
-                improvementPlan.setMustStudyDays(check.getRight());
-            } else {
-                // 计划已经完成，显示完成按钮
-                improvementPlan.setReportStatus(1);
-            }
+            // 计划已经完成，显示完成按钮
+            improvementPlan.setReportStatus(1);
         } else {
             if (improvementPlan.getStatus() == ImprovementPlan.CLOSE) {
                 Pair<Boolean, Integer> check = this.checkCloseable(improvementPlan);
