@@ -17,11 +17,10 @@ public class PersonalSchedulePlan {
     public static class SchedulePlan {
         private int problemId;
         private String name; // 课程名字
+        private String abbreviation; // 缩略
         private String description; // 描述信息，如9月主修
-        // private int month;
         private int type; // 课程类型
         private Boolean isLearning; // 是否正在学习
-        // private int point;
         private int completeSeries; // 完成节数
         private int totalSeries; // 总节数
         private int remainDaysCount; // 剩余时间

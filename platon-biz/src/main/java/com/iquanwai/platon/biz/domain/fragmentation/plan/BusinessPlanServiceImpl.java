@@ -747,6 +747,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             Problem problem = cacheService.getProblem(problemId);
             plan.setProblemId(problemId);
             plan.setName(problem.getProblem());
+            plan.setAbbreviation(problem.getAbbreviation());
             plan.setDescription(
                     schedule.getType() == CourseSchedule.Type.MAJOR ?
                             schedule.getMonth() + "月主修" :
@@ -769,6 +770,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             }
             runningPlans.add(plan);
         }
+        runningPlans = runningPlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getType)).collect(Collectors.toList());
         return runningPlans;
     }
 
@@ -783,15 +785,17 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
             Problem problem = cacheService.getProblem(problemId);
             plan.setProblemId(problemId);
-            plan.setName(problem.getAbbreviation() + ":" + problem.getProblem());
+            plan.setName(problem.getAbbreviation() + "：" + problem.getProblem());
+            plan.setAbbreviation(problem.getAbbreviation());
             plan.setDescription(
                     schedule.getType() == CourseSchedule.Type.MAJOR ?
-                            schedule.getMonth() + "月主修|" + problem.getAbbreviation() + "|" + improvementPlan.getPoint() :
-                            schedule.getMonth() + "月辅修|" + problem.getAbbreviation() + "|" + improvementPlan.getPoint()
+                            schedule.getMonth() + "月主修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分" :
+                            schedule.getMonth() + "月辅修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分"
             );
             plan.setCompleteTime(DateUtils.parseDateToString(improvementPlan.getCompleteTime()));
             completePlans.add(plan);
         }
+        completePlans = completePlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getCompleteTime).reversed()).collect(Collectors.toList());
         return completePlans;
     }
 
