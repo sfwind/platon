@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.web.util.CookieUtils;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,6 @@ public class UnionUserServiceImpl implements UnionUserService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String PLATFORM_HEADER_NAME = "platform";
-
     /** 登录用户缓存 */
     private static Map<String, SoftReference<UnionUser>> unionUserCacheMap = Maps.newHashMap();
     /** 待更新信息用户的 unionId 集合 */
@@ -40,7 +39,7 @@ public class UnionUserServiceImpl implements UnionUserService {
 
     @Override
     public Callback getCallbackByRequest(HttpServletRequest request) {
-        UnionUser.Platform platform = getPlatformType(request);
+        UnionUser.Platform platform = WebUtils.getPlatformType(request);
         if (platform == null){
             return null;
         }
@@ -82,38 +81,6 @@ public class UnionUserServiceImpl implements UnionUserService {
             unionUserCacheMap.put(state, new SoftReference<>(unionUser));
         }
         return unionUser;
-    }
-
-    @Override
-    public UnionUser.Platform getPlatformType(HttpServletRequest request) {
-        String platformHeader = request.getHeader(PLATFORM_HEADER_NAME);
-        if (platformHeader == null) {
-            // 资源请求，没有 platform header，查看 cookie 值
-            String pcState = CookieUtils.getCookie(request, PC_STATE_COOKIE_NAME);
-            if (pcState != null) {
-                platformHeader = UnionUser.PlatformHeaderValue.PC_HEADER;
-            }
-
-            String mobileState = CookieUtils.getCookie(request, MOBILE_STATE_COOKIE_NAME);
-            if (mobileState != null) {
-                platformHeader = UnionUser.PlatformHeaderValue.MOBILE_HEADER;
-            }
-        }
-
-        if (platformHeader != null) {
-            switch (platformHeader) {
-                case UnionUser.PlatformHeaderValue.PC_HEADER:
-                    return UnionUser.Platform.PC;
-                case UnionUser.PlatformHeaderValue.MOBILE_HEADER:
-                    return UnionUser.Platform.MOBILE;
-                case UnionUser.PlatformHeaderValue.MINI_HEADER:
-                    return UnionUser.Platform.MINI;
-                default:
-                    return null;
-            }
-        } else {
-            return null;
-        }
     }
 
     @Override

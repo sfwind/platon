@@ -35,12 +35,11 @@ public class ImprovementPlan {
     private Boolean del; //是否删除
 
     // ----------------- 非db字段------------------
-    private Problem problem; //非db字段 课程
+    private Problem problem; //课程
     private Boolean free; //是否免费
-    private List<Section> sections; //非db字段
-    private Integer deadline; //非db字段 离截止日期天数
+    private List<Section> sections; //章节信息
+    private Integer deadline; //离截止日期天数
     private Boolean hasProblemScore; //是否已打分
-    private Boolean doneAllIntegrated; //是否做完所有综合练习
     private Integer lockedStatus = -1; //-1 之前必做练习未完成,-2 非会员未解锁,-3 课程已过期
 
     /**
@@ -49,8 +48,7 @@ public class ImprovementPlan {
      * 3：课程结束，report btn点击后直接跳转到report ， plan.status=3 and 完成练习
      **/
     private Integer reportStatus; // report的状态以及点击后的行为
-    private Integer mustStudyDays; // 最小学习天数
-    private String typeDesc; //课程类型描述
+    private String typeDesc = "课程"; //课程类型描述,默认值课程
     private Integer type; //课程类型
     private Integer month; //几月课程
 

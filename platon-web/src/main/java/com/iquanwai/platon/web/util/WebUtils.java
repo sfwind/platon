@@ -2,6 +2,8 @@ package com.iquanwai.platon.web.util;
 
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.web.resolver.UnionUser;
+import com.iquanwai.platon.web.resolver.UnionUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -92,5 +94,36 @@ public class WebUtils {
         }
 
         return channel;
+    }
+
+    public static UnionUser.Platform getPlatformType(HttpServletRequest request) {
+        String platformHeader = request.getHeader(UnionUserService.PLATFORM_HEADER_NAME);
+        if (platformHeader == null) {
+            // 资源请求，没有 platform header，查看 cookie 值
+            String pcState = CookieUtils.getCookie(request, UnionUserService.PC_STATE_COOKIE_NAME);
+            if (pcState != null) {
+                platformHeader = UnionUser.PlatformHeaderValue.PC_HEADER;
+            }
+
+            String mobileState = CookieUtils.getCookie(request, UnionUserService.MOBILE_STATE_COOKIE_NAME);
+            if (mobileState != null) {
+                platformHeader = UnionUser.PlatformHeaderValue.MOBILE_HEADER;
+            }
+        }
+
+        if (platformHeader != null) {
+            switch (platformHeader) {
+                case UnionUser.PlatformHeaderValue.PC_HEADER:
+                    return UnionUser.Platform.PC;
+                case UnionUser.PlatformHeaderValue.MOBILE_HEADER:
+                    return UnionUser.Platform.MOBILE;
+                case UnionUser.PlatformHeaderValue.MINI_HEADER:
+                    return UnionUser.Platform.MINI;
+                default:
+                    return null;
+            }
+        } else {
+            return null;
+        }
     }
 }

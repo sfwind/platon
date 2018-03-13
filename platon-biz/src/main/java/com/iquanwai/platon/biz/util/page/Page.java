@@ -5,20 +5,22 @@ package com.iquanwai.platon.biz.util.page;
  */
 
 import com.google.gson.Gson;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 
+@ApiModel("分页model")
 public class Page implements Serializable {
     private static final long serialVersionUID = -4312323165564562319L;
 
+    @ApiModelProperty("当前页面序号")
     private int page = 1;
 
-    // 默认查5条
+    @ApiModelProperty("每页的条数")
     private int pageSize = 5;
 
-    /**
-     * 总记录数, -1: 未知
-     */
+    @ApiModelProperty("总数")
     private int total = -1;
 
     public int getPage() {
