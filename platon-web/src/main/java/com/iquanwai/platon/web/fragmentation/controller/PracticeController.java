@@ -259,13 +259,17 @@ public class PracticeController {
             resultDto.setAvatar(loginUser.getHeadImgUrl());
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
             UserRole userRole = accountService.getUserRole(loginUser.getId());
-            resultDto.setRole(userRole.getRoleId());
+            Integer roleId = 0;
+            if(userRole != null){
+                roleId = userRole.getRoleId();
+            }
+            resultDto.setRole(roleId);
             resultDto.setIsMine(true);
 
             ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(userRole.getRoleId()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
+            if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
@@ -310,7 +314,11 @@ public class PracticeController {
             resultDto.setAvatar(loginUser.getHeadImgUrl());
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
             UserRole userRole = accountService.getUserRole(loginUser.getId());
-            resultDto.setRole(userRole.getRoleId());
+            Integer roleId = 0;
+            if(userRole != null){
+                roleId = userRole.getRoleId();
+            }
+            resultDto.setRole(roleId);
             Profile profile = accountService.getProfile(replyComment.getCommentProfileId());
             if (profile != null) {
                 resultDto.setRepliedName(profile.getNickname());
@@ -323,7 +331,7 @@ public class PracticeController {
             ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(userRole.getRoleId()) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
+            if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
