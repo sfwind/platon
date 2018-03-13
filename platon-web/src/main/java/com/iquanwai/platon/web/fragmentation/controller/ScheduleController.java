@@ -1,8 +1,10 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.PersonalSchedulePlan;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -13,12 +15,14 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.fragmentation.dto.PersonalCoursePlanDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleModifyDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.MonthCourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.CountDownDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -57,6 +61,8 @@ public class ScheduleController {
     private RiseMemberService riseMemberService;
     @Autowired
     private PlanService planService;
+    @Autowired
+    private CustomerService customerService;
 
     /**
      * 获取个人的学习计划
@@ -167,15 +173,22 @@ public class ScheduleController {
 
     @RequestMapping("/load/plan")
     public ResponseEntity<Map<String, Object>> loadCoursePlan(LoginUser loginUser) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("获取个人学习进度");
-        operationLogService.log(operationLog);
         SchedulePlan schedulePlan = businessPlanService.getSchedulePlan(loginUser.getId());
         return WebUtils.result(schedulePlan);
     }
+
+    @RequestMapping("/load/person/plan")
+    public ResponseEntity<Map<String, Object>> loadCoursePlan(UnionUser unionUser) {
+        PersonalSchedulePlan schedulePlan = businessPlanService.getPersonalSchedulePlans(unionUser.getId());
+        PersonalCoursePlanDto dto = new PersonalCoursePlanDto();
+        dto.setRunningPlans(schedulePlan.getRunningPlans());
+        dto.setCompletePlans(schedulePlan.getCompletePlans());
+        dto.setLoginCount(customerService.loadContinuousLoginCount(unionUser.getId()));
+        dto.setJoinDays(customerService.loadJoinDays(unionUser.getId()));
+        dto.setTotalPoint(customerService.loadPersonalTotalPoint(unionUser.getId()));
+        return WebUtils.result(dto);
+    }
+
 
     @RequestMapping(value = "/count/down", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadBusinessCountDown(LoginUser loginUser) {

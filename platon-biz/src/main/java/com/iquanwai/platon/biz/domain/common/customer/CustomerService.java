@@ -35,4 +35,18 @@ public interface CustomerService {
      * 查看一个人是否有权限查看年度总结报告
      */
     Boolean hasAnnualSummaryAuthority(Integer profileId);
+
+    /**
+     * 获取用户连续登录天数
+     * @param profileId
+     * @return
+     */
+    int loadContinuousLoginCount(Integer profileId);
+
+    /**
+     * 获取加入圈外时间
+     */
+    int loadJoinDays(Integer profileId);
+
+    int loadPersonalTotalPoint(Integer profileId);
 }

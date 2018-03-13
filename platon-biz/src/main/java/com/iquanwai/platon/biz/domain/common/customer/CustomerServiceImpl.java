@@ -2,14 +2,15 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.common.RiseUserLoginDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
-import com.iquanwai.platon.biz.util.QiNiuUtils;
+import com.iquanwai.platon.biz.po.common.RiseUserLogin;
+import com.iquanwai.platon.biz.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -32,6 +35,10 @@ public class CustomerServiceImpl implements CustomerService {
     private AnnualSummaryDao annualSummaryDao;
     @Autowired
     private PrizeCardDao prizeCardDao;
+    @Autowired
+    private RiseUserLoginDao riseUserLoginDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -104,6 +111,40 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Boolean hasAnnualSummaryAuthority(Integer profileId) {
         return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
+    }
+
+    @Override
+    public int loadContinuousLoginCount(Integer profileId) {
+        List<RiseUserLogin> riseUserLogins = riseUserLoginDao.loadByProfileId(profileId);
+        int dayCount = 1;
+        Date compareDate = new Date();
+        for (int i = 0; i < riseUserLogins.size(); i++) {
+            RiseUserLogin riseUserLogin = riseUserLogins.get(i);
+            if (DateUtils.interval(compareDate, riseUserLogin.getLoginDate()) <= 1) {
+                dayCount++;
+                compareDate = riseUserLogin.getLoginDate();
+            } else {
+                break;
+            }
+        }
+        return dayCount;
+    }
+
+    @Override
+    public int loadJoinDays(Integer profileId) {
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        RiseMember firstAddRiseMember = riseMembers.stream().min(Comparator.comparing(RiseMember::getOpenDate)).orElse(null);
+        if (firstAddRiseMember != null) {
+            return DateUtils.interval(new Date(), firstAddRiseMember.getOpenDate());
+        } else {
+            return 1;
+        }
+    }
+
+    @Override
+    public int loadPersonalTotalPoint(Integer profileId) {
+        Profile profile = profileDao.load(Profile.class, profileId);
+        return profile.getPoint();
     }
 
 }

@@ -16,6 +16,9 @@ public interface BusinessPlanService {
      */
     List<CourseSchedule> getPlan(Integer profileId);
 
+    // TODO
+    PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId);
+
     /**
      * 获取个人与月份相关的学习计划安排
      *
