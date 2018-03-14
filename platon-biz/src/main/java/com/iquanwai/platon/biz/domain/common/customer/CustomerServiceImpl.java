@@ -1,10 +1,12 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.iquanwai.platon.biz.dao.common.AnnounceDao;
 import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.RiseUserLoginDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.po.Announce;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -25,6 +27,7 @@ import java.io.InputStream;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -39,6 +42,8 @@ public class CustomerServiceImpl implements CustomerService {
     private RiseUserLoginDao riseUserLoginDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private AnnounceDao announceDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -145,6 +150,29 @@ public class CustomerServiceImpl implements CustomerService {
     public int loadPersonalTotalPoint(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
         return profile.getPoint();
+    }
+
+    @Override
+    public String loadAnnounceMessage(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        int memberTypeId = riseMember == null ? 0 : riseMember.getMemberTypeId();
+        List<Announce> announces = announceDao.loadByMemberTypeId(memberTypeId);
+        Announce validAnnounce = announces.stream().filter(announce -> announce.getStartTime() != null
+                && announce.getEndTime() != null
+                && new Date().compareTo(announce.getStartTime()) >= 0
+                && announce.getEndTime().compareTo(new Date()) >= 0
+        ).findAny().orElse(null);
+
+        // 将已经超时的 announce del 置为 1
+        List<Integer> expiredIds = announces.stream().filter(announce -> announce.getStartTime() != null
+                && announce.getEndTime() != null
+                && new Date().compareTo(announce.getEndTime()) > 0
+        ).map(Announce::getId).collect(Collectors.toList());
+        if (expiredIds.size() > 0) {
+            announceDao.delExpiredAnnounce(expiredIds);
+        }
+
+        return validAnnounce == null ? null : validAnnounce.getMessage();
     }
 
 }

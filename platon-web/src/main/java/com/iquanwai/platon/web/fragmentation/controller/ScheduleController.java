@@ -186,9 +186,9 @@ public class ScheduleController {
         dto.setLoginCount(customerService.loadContinuousLoginCount(unionUser.getId()));
         dto.setJoinDays(customerService.loadJoinDays(unionUser.getId()));
         dto.setTotalPoint(customerService.loadPersonalTotalPoint(unionUser.getId()));
+        dto.setAnnounce(customerService.loadAnnounceMessage(unionUser.getId()));
         return WebUtils.result(dto);
     }
-
 
     @RequestMapping(value = "/count/down", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadBusinessCountDown(LoginUser loginUser) {

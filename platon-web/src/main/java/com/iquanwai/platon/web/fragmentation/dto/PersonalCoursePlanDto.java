@@ -16,5 +16,6 @@ public class PersonalCoursePlanDto {
     private int loginCount;
     private int joinDays;
     private int totalPoint;
+    private String announce;
 
 }
