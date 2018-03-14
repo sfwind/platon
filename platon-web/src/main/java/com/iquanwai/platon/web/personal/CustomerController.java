@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
@@ -9,11 +8,9 @@ import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateServi
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
-import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -54,8 +51,6 @@ public class CustomerController {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private OperationLogService operationLogService;
-    @Autowired
     private PlanService planService;
     @Autowired
     private ProblemService problemService;
@@ -75,11 +70,6 @@ public class CustomerController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("小程序")
-                .function("获取用户基本信息")
-                .action("查询");
-        operationLogService.log(operationLog);
 
         Profile profile = new Profile();
         profile.setNickname(unionUser.getNickName());
@@ -91,11 +81,6 @@ public class CustomerController {
     @ApiOperation("查询活动列表")
     public ResponseEntity<Map<String, Object>> getEventList(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("活动墙")
-                .function("活动墙")
-                .action("查询");
-        operationLogService.log(operationLog);
         List<EventWall> eventWall = eventWallService.getEventWall(unionUser.getId());
 
         return WebUtils.result(eventWall);
@@ -105,11 +90,6 @@ public class CustomerController {
     @ApiOperation("查询账号信息")
     public ResponseEntity<Map<String, Object>> loadRiseInfo(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("账号")
-                .action("查询账号信息");
-        operationLogService.log(operationLog);
 
         Profile profile = accountService.getProfile(unionUser.getId());
 
@@ -139,11 +119,7 @@ public class CustomerController {
     @ApiOperation("查询圈外用户个人信息")
     public ResponseEntity<Map<String, Object>> loadProfile(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("个人信息")
-                .action("加载个人信息");
-        operationLogService.log(operationLog);
+
         ProfileDto profileDto = new ProfileDto();
         Profile account = accountService.getProfile(unionUser.getId());
 
@@ -168,11 +144,7 @@ public class CustomerController {
     @ApiOperation("提交用户个人信息")
     public ResponseEntity<Map<String, Object>> submitProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("个人信息")
-                .action("提交个人信息");
-        operationLogService.log(operationLog);
+
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
@@ -188,11 +160,7 @@ public class CustomerController {
             return WebUtils.error("文件内容过大");
         }
         String fileName = file.getOriginalFilename();
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("头像修改")
-                .action("上传头像");
-        operationLogService.log(operationLog);
+
         String imageUrl = null;
         try {
             imageUrl = customerService.uploadHeadImage(unionUser.getId(), fileName, file.getInputStream());
@@ -208,15 +176,11 @@ public class CustomerController {
 
     @RequestMapping(value = "/profile/headImg/update", method = RequestMethod.POST)
     @ApiOperation("更新个人头像")
-    @ApiParam(name = "headImgUrl", value = "头像图片链接")
+    @ApiImplicitParams({@ApiImplicitParam(name = "headImgUrl", value = "头像图片链接")})
     public ResponseEntity<Map<String, Object>> updateHeadImg(UnionUser unionUser, @RequestParam("headImgUrl") String headImgUrl) {
         Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(headImgUrl, "上传头像不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("头像修改")
-                .action("更新头像");
-        operationLogService.log(operationLog);
+
         int updateResult = customerService.updateHeadImageUrl(unionUser.getId(), headImgUrl);
         if (updateResult > 0) {
             unionUserService.updateUserByUnionId(unionUser.getUnionId());
@@ -230,11 +194,6 @@ public class CustomerController {
     @ApiOperation("提交昵称")
     public ResponseEntity<Map<String, Object>> updateNickName(UnionUser unionUser, @RequestBody NicknameDto nickname) {
         Assert.notNull(unionUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("昵称修改")
-                .action("提交昵称");
-        operationLogService.log(operationLog);
 
         int result = customerService.updateNickName(unionUser.getId(), nickname.getNickname());
         if (result > 0) {
@@ -249,11 +208,7 @@ public class CustomerController {
     @ApiOperation("提交个人信息")
     public ResponseEntity<Map<String, Object>> submitCertificateProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("证书信息")
-                .action("提交个人信息");
-        operationLogService.log(operationLog);
+
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
@@ -263,14 +218,10 @@ public class CustomerController {
 
     @RequestMapping(value = "/certificate/{certificateNo}", method = RequestMethod.GET)
     @ApiOperation("获取证书")
-    @ApiParam(name = "certificateNo", value = "证书编号")
+    @ApiImplicitParams({@ApiImplicitParam(name = "certificateNo", value = "证书编号")})
     public ResponseEntity<Map<String, Object>> getCertificate(UnionUser unionUser, @PathVariable String certificateNo) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("证书信息")
-                .action("获取证书");
-        operationLogService.log(operationLog);
+
         RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
         if (riseCertificate.getDel()) {
             return WebUtils.error("证书已失效");
@@ -281,14 +232,10 @@ public class CustomerController {
 
     @RequestMapping(value = "/certificate/download/{certificateNo}", method = RequestMethod.GET)
     @ApiOperation("下载证书")
-    @ApiParam(name = "certificateNo", value = "证书编号")
+    @ApiImplicitParams({@ApiImplicitParam(name = "certificateNo", value = "证书编号")})
     public ResponseEntity<Map<String, Object>> getCertificateAndNext(UnionUser unionUser, @PathVariable String certificateNo) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("证书信息")
-                .action("下载证书");
-        operationLogService.log(operationLog);
+
         RiseCertificate riseCertificate = certificateService.getCertificate(certificateNo);
         RiseCertificate nextRiseCertificate = certificateService.getNextCertificate(riseCertificate.getId());
         if (nextRiseCertificate != null) {
@@ -306,11 +253,7 @@ public class CustomerController {
     @ApiOperation("证书转码")
     public ResponseEntity<Map<String, Object>> convertBase64(UnionUser unionUser, @RequestBody Base64ConvertDto base64ConvertDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("证书信息")
-                .action("证书转码");
-        operationLogService.log(operationLog);
+
         if (base64ConvertDto != null && base64ConvertDto.getBase64Str() != null && base64ConvertDto.getImageName() != null) {
             // 去除 base64 的头属性信息
             String base64Str = base64ConvertDto.getBase64Str().substring(base64ConvertDto.getBase64Str().indexOf(",") + 1);
@@ -330,14 +273,10 @@ public class CustomerController {
 
     @RequestMapping(value = "/certificate/download/success/{certificateNo}", method = RequestMethod.GET)
     @ApiOperation("下载课程证书完毕")
-    @ApiParam(name = "certificateNo", value = "证书编号")
+    @ApiImplicitParams({@ApiImplicitParam(name = "certificateNo", value = "证书编号")})
     public ResponseEntity<Map<String, Object>> updateCertificateDownloadTime(UnionUser unionUser, @PathVariable String certificateNo) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("证书信息")
-                .action("证书下载完成");
-        operationLogService.log(operationLog);
+
         certificateService.updateDownloadTime(certificateNo);
         return WebUtils.success();
     }
@@ -351,11 +290,7 @@ public class CustomerController {
         RegionDto regionDto = new RegionDto();
         regionDto.setProvinceList(provinces.stream().map(item -> new AreaDto(item.getId() + "", item.getName(), item.getParentId() + "")).collect(Collectors.toList()));
         regionDto.setCityList(cities.stream().map(item -> new AreaDto(item.getId() + "", item.getName(), item.getParentId() + "")).collect(Collectors.toList()));
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("地区信息")
-                .action("加载地区信息");
-        operationLogService.log(operationLog);
+
         return WebUtils.result(regionDto);
     }
 
@@ -366,11 +301,6 @@ public class CustomerController {
             return WebUtils.error(401, "未登录");
         }
 
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("个人中心")
-                .function("课程")
-                .action("查询课程信息");
-        operationLogService.log(operationLog);
         List<RiseCertificate> riseCertificates = certificateService.getCertificates(unionUser.getId());
         //清空profileId
         riseCertificates.forEach(riseCertificate -> riseCertificate.setProfileId(null));
@@ -411,12 +341,6 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = riseMemberService.getRiseMember(unionUser.getId());
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("用户信息")
-                .function("会员")
-                .action("查询rise会员信息")
-                .memo(riseMember != null ? new Gson().toJson(riseMember) : "none");
-        operationLogService.log(operationLog);
 
         if (riseMember != null) {
             return WebUtils.result(riseMember.simple());
@@ -435,7 +359,6 @@ public class CustomerController {
         riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
         riseMember.setExpired(expiredRiseMember);
         riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSevenDays);
-        // riseMember.setShowGlobalNotify(customerService.hasAnnualSummaryAuthority(unionUser.getId()));
         return WebUtils.result(riseMember);
     }
 
@@ -444,12 +367,7 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> validCode(UnionUser unionUser, @RequestBody ValidCodeDto validCodeDto) {
         Assert.notNull(unionUser, "用户不能为空");
         boolean result = accountService.validCode(validCodeDto.getCode(), unionUser.getId());
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("用户信息")
-                .function("个人信息")
-                .action("验证")
-                .memo(validCodeDto.getCode() + ":" + result);
-        operationLogService.log(operationLog);
+
         return result ? WebUtils.success() : WebUtils.error("验证失败");
     }
 
@@ -459,12 +377,7 @@ public class CustomerController {
         Assert.notNull(unionUser, "用户不能为空");
         Pair<Boolean, String> result = accountService.sendValidCode(validCodeDto.getPhone(),
                 unionUser.getId(), validCodeDto.getAreaCode());
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("用户信息")
-                .function("个人信息")
-                .action("发送验证码")
-                .memo(validCodeDto.getPhone() + ":" + result.getLeft());
-        operationLogService.log(operationLog);
+
         return result.getLeft() ? WebUtils.success() : WebUtils.error(result.getRight());
     }
 
@@ -473,25 +386,13 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> updateWeixinId(UnionUser unionUser, @RequestBody WeixinDto weixinDto) {
         Assert.notNull(unionUser, "用户不能为空");
         accountService.updateWeixinId(unionUser.getId(), weixinDto.getWeixinId());
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("用户信息")
-                .function("个人信息")
-                .action("更新微信id")
-                .memo(weixinDto.getWeixinId());
-        operationLogService.log(operationLog);
+
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/check/subscribe/{key}", method = RequestMethod.GET)
     @ApiOperation("检查用户是否关注")
     public ResponseEntity<Map<String, Object>> goQuestionSubmitPage(GuestUser unionUser, @PathVariable(value = "key") String key, @RequestParam String callback) {
-        OperationLog operationLog = OperationLog.create()
-                .openid(unionUser != null ? unionUser.getOpenId() : null)
-                .module("用户信息")
-                .function("服务号")
-                .action("检查是否关注")
-                .memo(key);
-        operationLogService.log(operationLog);
         if (unionUser == null || unionUser.getSubscribe() == null || !unionUser.getSubscribe()) {
             // 没有unionUser，即没有关注,创建一个img
             String qrCode = accountService.createSubscribePush(unionUser != null ? unionUser.getOpenId() : null, callback, key);
@@ -504,12 +405,6 @@ public class CustomerController {
     @RequestMapping(value = "/coupon", method = RequestMethod.GET)
     @ApiOperation("查询用户优惠券")
     public ResponseEntity<Map<String, Object>> getCouponInfo(UnionUser unionUser) {
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("优惠券")
-                .function("查询用户优惠券")
-                .action("查询");
-        operationLogService.log(operationLog);
-
         CouponDto couponDto = new CouponDto();
         List<Coupon> coupons = accountService.loadCoupons(unionUser.getId());
         couponDto.setCoupons(coupons);
