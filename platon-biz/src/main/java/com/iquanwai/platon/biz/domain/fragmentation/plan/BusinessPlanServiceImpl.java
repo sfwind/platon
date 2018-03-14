@@ -780,10 +780,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                         .filter(warmUpPlan -> warmUpPlan.getUnlocked() && warmUpPlan.getStatus() == 0)
                         .max(Comparator.comparing(PracticePlan::getSeries))
                         .orElse(null);
-                if (unlockPlan.getType() == PracticePlan.INTRODUCTION || unlockPlan.getType() == PracticePlan.CHALLENGE) {
+
+                if (unlockPlan == null) {
+                    completeSeries = totalSeries;
+                } else if (unlockPlan.getType() == PracticePlan.INTRODUCTION || unlockPlan.getType() == PracticePlan.CHALLENGE) {
                     completeSeries = 0;
                 } else {
-                    completeSeries = unlockPlan == null ? totalSeries : unlockPlan.getSeries() - 1;
+                    completeSeries = unlockPlan.getSeries() - 1;
                 }
 
                 plan.setCompleteSeries(completeSeries);
