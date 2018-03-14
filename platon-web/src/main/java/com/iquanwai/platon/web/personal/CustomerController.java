@@ -87,6 +87,25 @@ public class CustomerController {
         return WebUtils.result(profile);
     }
 
+
+    @RequestMapping(value = "/profile/info",method = RequestMethod.GET)
+    @ApiOperation("查询个人中心首页信息")
+    public ResponseEntity<Map<String,Object>> getProfileInfo(UnionUser unionUser){
+        UserStudyDto userStudyDto = new UserStudyDto();
+        Integer profileId = unionUser.getId();
+        Profile profile = accountService.getProfile(profileId);
+        userStudyDto.setNickName(profile.getNickname());
+        userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
+        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
+        userStudyDto.setMemberId(riseClassMember.getMemberId());
+        userStudyDto.setClassName(riseClassMember.getClassName());
+        //TODO:知识卡张数和荣誉证书张数
+        userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
+
+        return WebUtils.result(userStudyDto);
+    }
+
+
     @RequestMapping(value = "/event/list", method = RequestMethod.GET)
     @ApiOperation("查询活动列表")
     public ResponseEntity<Map<String, Object>> getEventList(UnionUser unionUser) {
