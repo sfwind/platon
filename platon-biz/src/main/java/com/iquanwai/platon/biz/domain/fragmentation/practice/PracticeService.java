@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by justin on 16/12/11.
@@ -105,6 +106,12 @@ public interface PracticeService {
     Integer votedCount(Integer type, Integer referencedId);
 
     /**
+     * 批量获取作业点赞
+     */
+    Map<Integer, List<HomeworkVote>> getHomeworkVotes(List<ApplicationSubmit> applicationSubmits);
+
+
+    /**
      * 获取评论数
      *
      * @param moduleId 评论模块
@@ -112,6 +119,11 @@ public interface PracticeService {
      * @return 评论数
      */
     Integer commentCount(Integer moduleId, Integer referId);
+
+    /**
+     * 批量获取作业点评数
+     */
+    Map<Integer, Integer> commentCount(List<ApplicationSubmit> applicationSubmits);
 
     /**
      * 获取点赞记录
@@ -183,48 +195,11 @@ public interface PracticeService {
     WarmupPractice getWarmupPractice(Integer warmupId);
 
     /**
-     * 提交课程分享文章
-     */
-    Integer submitSubjectArticle(SubjectArticle subjectArticle);
-
-    /**
-     * 加载课程分享区文章
-     *
-     * @param problemId 课程id
-     * @param page      分页对象
-     */
-    List<SubjectArticle> loadSubjectArticles(Integer problemId, Page page);
-
-    /**
      * 加载分享区文章
      *
      * @param submitId 提交id
      */
     SubjectArticle loadSubjectArticle(Integer submitId);
-
-    /**
-     * 获取课程所有标签
-     *
-     * @param problemId 课程id
-     */
-    List<LabelConfig> loadProblemLabels(Integer problemId);
-
-    /**
-     * 更新课程分享的标签
-     *
-     * @param moduleId  模块
-     * @param articleId 文章id
-     * @param labels    标签
-     */
-    List<ArticleLabel> updateLabels(Integer moduleId, Integer articleId, List<ArticleLabel> labels);
-
-    /**
-     * 获取课程分享的标签
-     *
-     * @param moduleId  模块
-     * @param articleId 文章id
-     */
-    List<ArticleLabel> loadArticleActiveLabels(Integer moduleId, Integer articleId);
 
     /**
      * 根据训练id获取知识
@@ -254,15 +229,6 @@ public interface PracticeService {
      * @param moduleId 模块id（2-应用练习,3-课程分享）
      */
     boolean requestComment(Integer submitId, Integer moduleId, Integer profileId);
-
-
-    /**
-     * 求点评次数
-     *
-     * @param problemId 课程id
-     * @param profileId 学员id
-     */
-    Integer hasRequestComment(Integer problemId, Integer profileId);
 
     /**
      * 删除评论

@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.po.common.Callback;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserServiceImpl;
+import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class HandlerInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        UnionUser.Platform platform = unionUserService.getPlatformType(request);
+        UnionUser.Platform platform = WebUtils.getPlatformType(request);
         if (platform == null || unionUserService.isDocumentRequest(request)) {
             return true;
         } else {
