@@ -16,6 +16,7 @@ public class PersonalSchedulePlan {
     @Data
     public static class SchedulePlan {
         private int problemId;
+        private int planId;
         private String name; // 课程名字
         private String abbreviation; // 缩略
         private String description; // 描述信息，如9月主修
