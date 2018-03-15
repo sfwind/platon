@@ -405,13 +405,13 @@ public class PracticeServiceImpl implements PracticeService {
         List<Integer> submitIds = applicationSubmits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
 
         List<HomeworkVote> homeworkVotes = homeworkVoteDao.getHomeworkVotesByReferenceIds(submitIds);
+        Map<Integer, List<HomeworkVote>> homeworkOriginMap = homeworkVotes.stream()
+                .collect(Collectors.groupingBy(HomeworkVote::getReferencedId));
 
         Map<Integer, List<HomeworkVote>> homeworkVoteMap = Maps.newHashMap();
-        homeworkVotes.forEach(homeworkVote -> {
-            List<HomeworkVote> homeworkVoteList = homeworkVoteMap.getOrDefault(homeworkVote.getReferencedId(),
-                    Lists.newArrayList());
-            homeworkVoteList.add(homeworkVote);
-        });
+        for (Integer submitId : submitIds) {
+            homeworkVoteMap.put(submitId, homeworkOriginMap.getOrDefault(submitId, Lists.newArrayList()));
+        }
 
         return homeworkVoteMap;
     }
