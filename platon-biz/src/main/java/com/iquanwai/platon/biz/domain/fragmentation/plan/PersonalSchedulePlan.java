@@ -26,6 +26,8 @@ public class PersonalSchedulePlan {
         private int totalSeries; // 总节数
         private int remainDaysCount; // 剩余时间
         private String completeTime; // 课程完成时间
+
+        private int priority; // 排序
     }
 
 }

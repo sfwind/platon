@@ -182,7 +182,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         int currentYear = DateUtils.getYear(new Date());
         // 获取课表中所有包括当月以及以前月份的主修
         List<CourseSchedule> runningSchedules = courseSchedules.stream().filter(schedule ->
-                schedule.getMonth() == currentMonth || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1))
+                (schedule.getMonth() == currentMonth && schedule.getSelected()) || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1))
                 .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
                 .collect(Collectors.toList());
 
@@ -792,10 +792,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 plan.setCompleteSeries(completeSeries);
                 plan.setTotalSeries(totalSeries);
                 plan.setRemainDaysCount(DateUtils.interval(new Date(), improvementPlan.getCloseDate()));
+
             }
+            int priorityPart1 = schedule.getType() == CourseSchedule.Type.MAJOR ? 2 : 1;
+            int priorityPart2 = improvementPlanMap.get(schedule.getProblemId()) != null ? 2 : 0;
+            plan.setPriority(priorityPart1 + priorityPart2);
             runningPlans.add(plan);
         }
-        runningPlans = runningPlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getType)).collect(Collectors.toList());
+        runningPlans = runningPlans.stream()
+                .sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getPriority).reversed())
+                .collect(Collectors.toList());
         return runningPlans;
     }
 
