@@ -174,7 +174,7 @@ public class ApplicationController {
                     }
                     // 处理点赞
                     List<HomeworkVote> applicationHomeworkVote = homeworkVotes.get(item.getId());
-                    dto.setCommentCount(applicationHomeworkVote.size());
+                    dto.setCommentCount(commentCounts.get(item.getId()));
                     dto.setPriority(item.getPriority());
 
                     HomeworkVote myVote = applicationHomeworkVote.stream()
