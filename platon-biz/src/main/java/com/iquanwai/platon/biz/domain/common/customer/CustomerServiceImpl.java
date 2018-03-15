@@ -1,15 +1,17 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
+import com.iquanwai.platon.biz.dao.common.FeedbackDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
-import com.iquanwai.platon.biz.util.QiNiuUtils;
+import com.iquanwai.platon.biz.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -32,6 +36,10 @@ public class CustomerServiceImpl implements CustomerService {
     private AnnualSummaryDao annualSummaryDao;
     @Autowired
     private PrizeCardDao prizeCardDao;
+    @Autowired
+    private FeedbackDao feedbackDao;
+    @Autowired
+    private TemplateMessageService templateMessageService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -86,11 +94,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public AnnualSummary loadUserAnnualSummary(Integer profileId) {
-        return annualSummaryDao.loadUserAnnualSummary(profileId);
-    }
-
-    @Override
     public AnnualSummary loadUserAnnualSummary(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(riseId);
@@ -102,8 +105,21 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Boolean hasAnnualSummaryAuthority(Integer profileId) {
-        return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
+    public void sendFeedback(Feedback feedback) {
+        int result = feedbackDao.insert(feedback);
+        if (result != -1) {
+            TemplateMessage templateMessage = new TemplateMessage();
+            templateMessage.setTemplate_id(ConfigUtils.incompleteTaskMsg());
+            templateMessage.setTouser(ConfigUtils.feedbackAlarmOpenId());
+            Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+            data.put("first", new TemplateMessage.Keyword("圈外用户问题来了，速速去处理吧"));
+            data.put("keyword1", new TemplateMessage.Keyword("圈外用户问题"));
+            data.put("keyword2", new TemplateMessage.Keyword("H5个人中心反馈问题需处理"));
+            data.put("keyword3", new TemplateMessage.Keyword(
+                    (DateUtils.parseDateTimeToString(new Date()))));
+            templateMessage.setData(data);
+            templateMessageService.sendMessage(templateMessage);
+        }
     }
 
 }

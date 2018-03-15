@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
+import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -411,5 +412,14 @@ public class CustomerController {
         couponDto.setTotal(coupons.stream().collect(Collectors.summingInt(Coupon::getAmount)));
 
         return WebUtils.result(couponDto);
+    }
+
+    @RequestMapping(value = "/feedback", method = RequestMethod.POST)
+    @ApiOperation("用户提交意见反馈")
+    public ResponseEntity<Map<String, Object>> submitFeedback(UnionUser unionUser, @RequestBody Feedback feedback) {
+        feedback.setProfileId(unionUser.getId());
+        customerService.sendFeedback(feedback);
+
+        return WebUtils.success();
     }
 }
