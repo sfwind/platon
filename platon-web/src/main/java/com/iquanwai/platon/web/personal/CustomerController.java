@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -99,9 +100,11 @@ public class CustomerController {
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
         userStudyDto.setMemberId(riseClassMember.getMemberId());
         userStudyDto.setClassName(riseClassMember.getClassName());
-        //TODO:知识卡张数和荣誉证书张数
         userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
-
+        Integer certificateSum = certificateService.getCertificates(profileId).size();
+        userStudyDto.setCertificateSum(certificateSum);
+        List<Coupon> coupons = accountService.loadCoupons(profileId);
+        userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         return WebUtils.result(userStudyDto);
     }
 

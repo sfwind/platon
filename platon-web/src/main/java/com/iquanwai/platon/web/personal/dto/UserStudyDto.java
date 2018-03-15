@@ -20,4 +20,6 @@ public class UserStudyDto {
     private Integer cardSum;
     @ApiModelProperty("荣誉证书张数")
     private Integer certificateSum;
+    @ApiModelProperty("抵用券总额")
+    private Integer couponSum;
 }
