@@ -16,7 +16,6 @@ public interface BusinessPlanService {
      */
     List<CourseSchedule> getPlan(Integer profileId);
 
-    // TODO
     PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId);
 
     /**

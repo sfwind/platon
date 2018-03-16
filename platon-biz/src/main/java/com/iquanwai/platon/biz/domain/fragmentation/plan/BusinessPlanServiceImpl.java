@@ -158,7 +158,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return schedulePlan;
     }
 
-    // TODO
     @Override
     public PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId) {
         // 获取个人所有课表
