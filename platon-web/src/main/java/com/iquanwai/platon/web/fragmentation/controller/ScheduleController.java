@@ -24,6 +24,7 @@ import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.ApiOperation;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.slf4j.Logger;
@@ -177,6 +178,7 @@ public class ScheduleController {
         return WebUtils.result(schedulePlan);
     }
 
+    @ApiOperation("获取个人课表")
     @RequestMapping("/load/person/plan")
     public ResponseEntity<Map<String, Object>> loadCoursePlan(UnionUser unionUser) {
         PersonalSchedulePlan schedulePlan = businessPlanService.getPersonalSchedulePlans(unionUser.getId());
