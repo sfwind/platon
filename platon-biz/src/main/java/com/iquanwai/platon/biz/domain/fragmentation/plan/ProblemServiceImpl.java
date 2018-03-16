@@ -173,7 +173,26 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Pair<Problem, List<EssenceCard>> loadProblemCards(Integer planId) {
+    public List<ProblemCard> loadProblemCardsList(Integer profileId) {
+        List<ProblemCard> problemCards = Lists.newArrayList();
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
+        improvementPlans.forEach(plan -> {
+            Problem problem = cacheService.getProblem(plan.getProblemId());
+            ProblemCard problemCard = new ProblemCard();
+            problemCard.setPlanId(plan.getId());
+            problemCard.setProblemId(plan.getProblemId());
+            problemCard.setName(problem.getProblem());
+            problemCard.setAbbreviation(problem.getAbbreviation());
+            List<EssenceCard> essenceCards = loadProblemCardsByPlanId(plan.getId()).getRight();
+            int completeCount = (int) essenceCards.stream().filter(EssenceCard::getCompleted).count();
+            problemCard.setCompleteCount(completeCount);
+            problemCards.add(problemCard);
+        });
+        return problemCards;
+    }
+
+    @Override
+    public Pair<Problem, List<EssenceCard>> loadProblemCardsByPlanId(Integer planId) {
         // 根据 planId 获取 improvement 中的 problemId
         ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, planId);
         Integer problemId = plan.getProblemId();

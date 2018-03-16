@@ -203,4 +203,17 @@ public class PracticePlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<PracticePlan> loadKnowledgeAndWarmupPracticePlansByPlanId(Integer planId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (20, 21, 31, 32, 1, 2) and Del = 0";
+        try {
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
+            return practicePlans;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
 }

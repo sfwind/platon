@@ -18,7 +18,6 @@ import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import lombok.Data;
-import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +107,7 @@ public class IndexController {
 
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
     public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                     @RequestParam(value="_tm", required = false) String channel) throws Exception {
+                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         if (unionUser == null) {
             logger.info("unionUser 为空");
             WebUtils.auth(request, response);
@@ -146,7 +145,7 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
     public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response,
-                                           @RequestParam(value="_tm", required = false) String channel) throws Exception {
+                                           @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         logger.info("问题／答案页面, {}, {}", request.getRequestURI(), request.getParameter("date"));
         return courseView(request, response, channel, new ModuleShow(), RISE_VIEW);
     }
@@ -156,7 +155,7 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                     @RequestParam(value="_tm", required = false) String channel) throws Exception {
+                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         logger.info("点击商学院按钮");
         if (unionUser == null) {
             logger.info("unionUser 为空");
@@ -253,14 +252,11 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
     public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                     @RequestParam(value="_tm", required = false) String channel) throws Exception {
-        logger.info("点击训练营按钮");
+                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         if (unionUser == null) {
-            logger.info("unionUser 为空");
             WebUtils.auth(request, response);
             return null;
         }
-        logger.info("unionUser 不为空");
 
         String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
         String openid;
@@ -316,7 +312,7 @@ public class IndexController {
 
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                 @RequestParam(value="_tm", required = false) String channel) throws Exception {
+                                 @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         logger.info("进入 rise/static/**");
         if (unionUser == null) {
             logger.info("unionUser 为空");
@@ -401,7 +397,7 @@ public class IndexController {
         }
 
         //设置渠道漏洞监控参数,浏览器关闭后cookie自动失效
-        if(channel != null){
+        if (channel != null) {
             CookieUtils.addCookie("_tm", channel, response);
         }
 

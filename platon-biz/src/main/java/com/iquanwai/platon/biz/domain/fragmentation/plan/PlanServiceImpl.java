@@ -929,6 +929,12 @@ public class PlanServiceImpl implements PlanService {
         } while (improvementPlans.size() == maxSize);
     }
 
+    @Override
+    public List<CourseSchedule> loadAllCourseSchedules(Integer profileId) {
+        return courseScheduleDao.getAllScheduleByProfileId(profileId);
+    }
+
+
     /**
      * 用来特殊处理 PracticePlan
      */
