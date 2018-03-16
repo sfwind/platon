@@ -100,11 +100,13 @@ public class CustomerController {
         userStudyDto.setNickName(profile.getNickname());
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
-        userStudyDto.setMemberId(riseClassMember.getMemberId());
-        String className = riseClassMember.getClassName();
-        if(className!=null && className.length()>=classSize) {
-            String tempName = className.substring(2,4)+"月"+className.substring(4,6)+"班";
-            userStudyDto.setClassName(tempName.replaceAll("0",""));
+        if(riseClassMember!=null) {
+            userStudyDto.setMemberId(riseClassMember.getMemberId());
+            String className = riseClassMember.getClassName();
+            if (className != null && className.length() >= classSize) {
+                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
+                userStudyDto.setClassName(tempName.replaceAll("0", ""));
+            }
         }
         userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
         userStudyDto.setPoint(profile.getPoint());
