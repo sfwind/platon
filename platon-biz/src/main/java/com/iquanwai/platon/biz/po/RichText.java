@@ -1,11 +1,13 @@
 package com.iquanwai.platon.biz.po;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
  * Created by 三十文
  */
+@ApiModel("富文本对象")
 @Data
 public class RichText {
 

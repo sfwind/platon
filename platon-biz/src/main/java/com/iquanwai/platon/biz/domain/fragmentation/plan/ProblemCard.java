@@ -1,11 +1,13 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
  * Created by 三十文
  */
+@ApiModel("课程卡片信息")
 @Data
 public class ProblemCard {
 

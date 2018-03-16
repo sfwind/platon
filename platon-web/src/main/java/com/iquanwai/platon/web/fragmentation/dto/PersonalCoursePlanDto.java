@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PersonalSchedulePlan;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * Created by 三十文
  */
 @Data
+@ApiModel("个人课表")
 public class PersonalCoursePlanDto {
 
     @ApiModelProperty("进行中的学习计划")

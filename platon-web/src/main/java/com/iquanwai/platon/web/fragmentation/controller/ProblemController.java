@@ -18,6 +18,7 @@ import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -344,6 +345,7 @@ public class ProblemController {
         }
     }
 
+    @ApiOperation("获取所有课程卡片信息")
     @RequestMapping(value = "/card/list")
     public ResponseEntity<Map<String, Object>> loadCardList(UnionUser unionUser) {
         List<ProblemCard> problemCards = problemService.loadProblemCardsList(unionUser.getId());
