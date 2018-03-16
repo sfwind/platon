@@ -22,4 +22,7 @@ public class UserStudyDto {
     private Integer certificateSum;
     @ApiModelProperty("抵用券总额")
     private Integer couponSum;
+    @ApiModelProperty("课程积分")
+    private Integer point;
+
 }

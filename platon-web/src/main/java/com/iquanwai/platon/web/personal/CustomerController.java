@@ -101,6 +101,7 @@ public class CustomerController {
         userStudyDto.setMemberId(riseClassMember.getMemberId());
         userStudyDto.setClassName(riseClassMember.getClassName());
         userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
+        userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
         userStudyDto.setCertificateSum(certificateSum);
         List<Coupon> coupons = accountService.loadCoupons(profileId);
