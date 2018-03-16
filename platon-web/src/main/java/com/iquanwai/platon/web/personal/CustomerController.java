@@ -194,6 +194,23 @@ public class CustomerController {
         if (StringUtils.isEmpty(account.getMobileNo()) && StringUtils.isEmpty(account.getWeixinId())) {
             bindMobile = false;
         }
+
+        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
+        if(riseClassMember!=null) {
+            profileDto.setMemberId(riseClassMember.getMemberId());
+            String className = riseClassMember.getClassName();
+            if (className != null && className.length() >= classSize) {
+                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
+                profileDto.setClassName(tempName.replaceAll("0", ""));
+            }
+        }
+        RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
+        if(riseMember!=null){
+            profileDto.setMemberTypeId(riseMember.getMemberTypeId());
+        }else{
+            profileDto.setMemberTypeId(0);
+        }
+
         profileDto.setBindMobile(bindMobile);
         profileDto.setPhone(account.getMobileNo());
         profileDto.setWeixinId(account.getWeixinId());
