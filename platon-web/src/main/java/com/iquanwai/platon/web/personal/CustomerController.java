@@ -73,6 +73,8 @@ public class CustomerController {
     @Autowired
     private UnionUserService unionUserService;
 
+    private final static int classSize = 6;
+
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
@@ -100,8 +102,8 @@ public class CustomerController {
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
         userStudyDto.setMemberId(riseClassMember.getMemberId());
         String className = riseClassMember.getClassName();
-        if(className!=null) {
-            String tempName = className.substring(2,3)+"月"+className.substring(4,5)+"班";
+        if(className!=null && className.length()>=classSize) {
+            String tempName = className.substring(2,4)+"月"+className.substring(4,6)+"班";
             userStudyDto.setClassName(tempName.replaceAll("0",""));
         }
         userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
