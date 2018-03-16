@@ -462,6 +462,31 @@ public class CustomerController {
         return WebUtils.result(list);
     }
 
+    @RequestMapping(value = "/finished/plans",method = RequestMethod.GET)
+    @ApiOperation("查询用户已经完成的课程")
+    public ResponseEntity<Map<String,Object>> loadFinishedPlans(UnionUser unionUser){
+        List<ImprovementPlan> plans = planService.getPlans(unionUser.getId());
+        PlanListDto list = new PlanListDto();
+        List<PlanDto> donePlans = Lists.newArrayList();
+        plans.forEach(item -> {
+            PlanDto planDto = new PlanDto();
+            planDto.setName(problemService.getProblem(item.getProblemId()).getProblem());
+            planDto.setPoint(item.getPoint());
+            planDto.setProblemId(item.getProblemId());
+             if (item.getStatus() == ImprovementPlan.CLOSE) {
+                donePlans.add(planDto);
+            }
+            planDto.setProblem(cacheService.getProblem(item.getProblemId()).simple());
+        });
+        list.setDonePlans(donePlans);
+        // 查询riseId
+        Profile profile = accountService.getProfile(unionUser.getId());
+        list.setRiseId(profile.getRiseId());
+        list.setPoint(profile.getPoint());
+        return WebUtils.result(list);
+    }
+
+
     @RequestMapping(value = "/member", method = RequestMethod.GET)
     @ApiOperation("查询用户会员信息")
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
