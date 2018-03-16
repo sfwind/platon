@@ -187,6 +187,7 @@ public class ScheduleController {
         dto.setJoinDays(customerService.loadJoinDays(unionUser.getId()));
         dto.setTotalPoint(customerService.loadPersonalTotalPoint(unionUser.getId()));
         dto.setAnnounce(customerService.loadAnnounceMessage(unionUser.getId()));
+        dto.setHasCourseSchedule(planService.loadAllCourseSchedules(unionUser.getId()).size() > 0);
         return WebUtils.result(dto);
     }
 

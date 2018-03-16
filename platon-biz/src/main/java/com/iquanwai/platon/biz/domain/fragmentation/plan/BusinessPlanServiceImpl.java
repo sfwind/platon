@@ -61,6 +61,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private PracticePlanDao practicePlanDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -160,14 +162,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Override
     public PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId) {
         // 获取个人所有课表
-        List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        List<CourseSchedule> courseSchedules = getOriginCourseSchedulesByIdentity(profileId);
         Map<Integer, CourseSchedule> courseScheduleMap = courseSchedules.stream()
                 .collect(Collectors.toMap(CourseSchedule::getProblemId, courseSchedule -> courseSchedule, (key1, key2) -> key2));
+
         // 获取所有 improvement plans
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream()
                 .collect(Collectors.toMap(ImprovementPlan::getProblemId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
-
         // 获取所有正在进行课程的 ProblemIds
         List<Integer> runningProblemIds = improvementPlans.stream()
                 .filter(plan -> ImprovementPlan.RUNNING == plan.getStatus())
@@ -180,20 +182,43 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 进行中的月份
         int currentMonth = DateUtils.getMonth(new Date());
         int currentYear = DateUtils.getYear(new Date());
+
+        // 正在进行课程
         // 获取课表中所有包括当月以及以前月份的主修
-        List<CourseSchedule> runningSchedules = courseSchedules.stream().filter(schedule ->
-                (schedule.getMonth() == currentMonth && schedule.getSelected()) || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1))
+        List<CourseSchedule> runningSchedules = courseSchedules.stream().filter(schedule
+                -> (schedule.getMonth() == currentMonth && schedule.getSelected())
+                || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1) && schedule.getSelected())
                 .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
                 .collect(Collectors.toList());
-
-        // 添加正在进行课程
         runningProblemIds.forEach(runningProblemId -> {
-            runningSchedules.add(courseScheduleMap.get(runningProblemId));
+            CourseSchedule tempSchedule = courseScheduleMap.get(runningProblemId);
+            if (tempSchedule != null) {
+                runningSchedules.add(tempSchedule);
+            } else {
+                CourseSchedule courseSchedule = new CourseSchedule();
+                courseSchedule.setProblemId(runningProblemId);
+                courseSchedule.setMonth(currentMonth);
+                courseSchedule.setType(CourseSchedule.Type.MINOR);
+                runningSchedules.add(courseSchedule);
+            }
         });
 
+        // 已经完成的课程
         List<CourseSchedule> completeSchedules = courseSchedules.stream()
                 .filter(schedule -> completeProblemIds.contains(schedule.getProblemId()))
                 .collect(Collectors.toList());
+        completeProblemIds.forEach(completeProblemId -> {
+            CourseSchedule tempSchedule = courseScheduleMap.get(completeProblemId);
+            if (tempSchedule != null) {
+                completeSchedules.add(tempSchedule);
+            } else {
+                CourseSchedule courseSchedule = new CourseSchedule();
+                courseSchedule.setProblemId(completeProblemId);
+                courseSchedule.setMonth(currentMonth);
+                courseSchedule.setType(CourseSchedule.Type.MINOR);
+                completeSchedules.add(courseSchedule);
+            }
+        });
 
         List<PersonalSchedulePlan.SchedulePlan> runningPlans = buildRunningPlans(improvementPlanMap, runningSchedules);
         List<PersonalSchedulePlan.SchedulePlan> completePlans = buildCompletePlans(improvementPlanMap, completeSchedules);
@@ -745,6 +770,32 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         });
 
         return improvementPlanList;
+    }
+
+
+    /**
+     * 根据个人身份情况获取响应的默认课表信息
+     */
+    private List<CourseSchedule> getOriginCourseSchedulesByIdentity(Integer profileId) {
+        List<CourseSchedule> targetCourseSchedules = Lists.newArrayList();
+        // 先获取是否存在默认的个人课表
+        List<CourseSchedule> riseMemberCourseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        if (riseMemberCourseSchedules.size() == 0) {
+            // 如果不存在个人课表，尝试回去专项课的默认课表
+            List<MonthlyCampSchedule> monthlyCampCourseSchedules = monthlyCampScheduleDao.loadAll();
+            monthlyCampCourseSchedules.forEach(schedule -> {
+                CourseSchedule courseSchedule = new CourseSchedule();
+                courseSchedule.setProblemId(schedule.getProblemId());
+                courseSchedule.setType(schedule.getType());
+                courseSchedule.setMonth(schedule.getMonth());
+                courseSchedule.setYear(schedule.getYear());
+                courseSchedule.setSelected(false);
+                targetCourseSchedules.add(courseSchedule);
+            });
+        } else {
+            targetCourseSchedules.addAll(riseMemberCourseSchedules);
+        }
+        return targetCourseSchedules;
     }
 
     private List<PersonalSchedulePlan.SchedulePlan> buildRunningPlans(Map<Integer, ImprovementPlan> improvementPlanMap,
