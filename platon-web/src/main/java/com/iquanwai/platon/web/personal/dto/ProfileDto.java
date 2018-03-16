@@ -50,4 +50,10 @@ public class ProfileDto {
     private String className;
     @ApiModelProperty("会员类型")
     private Integer memberTypeId;
+    @ApiModelProperty("圈外id")
+    private String riseId;
+    @ApiModelProperty("昵称")
+    private String nickName;
+    @ApiModelProperty("头像")
+    private String headImgUrl;
 }

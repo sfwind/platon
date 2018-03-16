@@ -210,7 +210,9 @@ public class CustomerController {
         }else{
             profileDto.setMemberTypeId(0);
         }
-
+        profileDto.setRiseId(account.getRiseId());
+        profileDto.setNickName(account.getNickname());
+        profileDto.setHeadImgUrl(account.getHeadimgurl());
         profileDto.setBindMobile(bindMobile);
         profileDto.setPhone(account.getMobileNo());
         profileDto.setWeixinId(account.getWeixinId());
