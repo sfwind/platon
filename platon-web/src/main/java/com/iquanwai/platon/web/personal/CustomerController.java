@@ -118,7 +118,6 @@ public class CustomerController {
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
         userStudyDto.setCertificateSum(certificateSum);
-        userStudyDto.setRiseMember(accountService.isRiseMember(profileId));
         List<Coupon> coupons = accountService.loadCoupons(profileId);
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         return WebUtils.result(userStudyDto);
