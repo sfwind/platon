@@ -159,7 +159,6 @@ public class ApplicationController {
                 .map(item -> {
                     RiseWorkInfoDto dto = new RiseWorkInfoDto();
                     dto.setContent(item.getContent());
-                    dto.setVoteCount(commentCounts.get(item.getId()));
                     dto.setSubmitUpdateTime(DateUtils.parseDateToString(item.getPublishTime()));
                     dto.setPublishTime(item.getPublishTime());
                     dto.setType(PracticePlan.APPLICATION_BASE);
@@ -172,9 +171,10 @@ public class ApplicationController {
                         dto.setRole(account.getRole());
                         dto.setSignature(account.getSignature());
                     }
-                    // 处理点赞
+                    // 处理评论点赞
                     List<HomeworkVote> applicationHomeworkVote = homeworkVotes.get(item.getId());
                     dto.setCommentCount(commentCounts.get(item.getId()));
+                    dto.setVoteCount(applicationHomeworkVote.size());
                     dto.setPriority(item.getPriority());
 
                     HomeworkVote myVote = applicationHomeworkVote.stream()

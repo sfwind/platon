@@ -405,18 +405,13 @@ public class PracticeServiceImpl implements PracticeService {
         List<Integer> submitIds = applicationSubmits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
 
         List<HomeworkVote> homeworkVotes = homeworkVoteDao.getHomeworkVotesByReferenceIds(submitIds);
-        Map<Integer, List<HomeworkVote>> homeworkOriginMap = homeworkVotes.stream().collect(Collectors.groupingBy(HomeworkVote::getReferencedId));
-
+        Map<Integer, List<HomeworkVote>> homeworkOriginMap = homeworkVotes.stream()
+                .collect(Collectors.groupingBy(HomeworkVote::getReferencedId));
 
         Map<Integer, List<HomeworkVote>> homeworkVoteMap = Maps.newHashMap();
         for (Integer submitId : submitIds) {
             homeworkVoteMap.put(submitId, homeworkOriginMap.getOrDefault(submitId, Lists.newArrayList()));
         }
-
-        // homeworkVotes.forEach(homeworkVote -> {
-        //     List<HomeworkVote> homeworkVoteList = homeworkVoteMap.getOrDefault(homeworkVote.getReferencedId(), Lists.newArrayList());
-        //     homeworkVoteList.add(homeworkVote);
-        // });
 
         return homeworkVoteMap;
     }
@@ -607,9 +602,9 @@ public class PracticeServiceImpl implements PracticeService {
             //更新助教评论状态
             if (isAsst) {
                 //记录首次点评时间
-                if (load.getFeedBackTime() == null) {
+                if(load.getFeedBackTime()==null){
                     applicationSubmitDao.asstFeedBackAndTime(load.getId());
-                } else {
+                }else {
                     applicationSubmitDao.asstFeedback(load.getId());
                 }
                 asstCoachComment(load.getProfileId(), load.getProblemId());
