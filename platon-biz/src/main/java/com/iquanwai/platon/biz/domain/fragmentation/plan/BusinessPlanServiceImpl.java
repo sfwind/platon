@@ -161,7 +161,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Override
     public PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId) {
         // 获取个人所有课表
-        List<CourseSchedule> courseSchedules = getOriginCourseSchedulesByIdentity(profileId);
+        List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
         Map<Integer, CourseSchedule> courseScheduleMap = courseSchedules.stream()
                 .collect(Collectors.toMap(CourseSchedule::getProblemId, courseSchedule -> courseSchedule, (key1, key2) -> key2));
 
@@ -182,42 +182,51 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         int currentMonth = DateUtils.getMonth(new Date());
         int currentYear = DateUtils.getYear(new Date());
 
-        // 正在进行课程
-        // 获取课表中所有包括当月以及以前月份的主修
-        List<CourseSchedule> runningSchedules = courseSchedules.stream().filter(schedule
-                -> (schedule.getMonth() == currentMonth && schedule.getSelected())
-                || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1) && schedule.getSelected())
-                .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
-                .collect(Collectors.toList());
-        runningProblemIds.forEach(runningProblemId -> {
-            CourseSchedule tempSchedule = courseScheduleMap.get(runningProblemId);
-            if (tempSchedule != null) {
-                runningSchedules.add(tempSchedule);
-            } else {
+        List<CourseSchedule> runningSchedules = Lists.newArrayList();
+        List<CourseSchedule> completeSchedules = Lists.newArrayList();
+        if (courseSchedules.size() > 0) {
+            runningSchedules.addAll(courseSchedules.stream().filter(schedule
+                    -> (schedule.getMonth() == currentMonth && schedule.getSelected())
+                    || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1 && schedule.getSelected()))
+                    .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
+                    .collect(Collectors.toList()));
+
+            runningProblemIds.forEach(runningProblemId -> {
+                CourseSchedule tempSchedule = courseScheduleMap.get(runningProblemId);
+                if (tempSchedule != null) {
+                    runningSchedules.add(tempSchedule);
+                } else {
+                    CourseSchedule courseSchedule = new CourseSchedule();
+                    courseSchedule.setProblemId(runningProblemId);
+                    courseSchedule.setMonth(currentMonth);
+                    runningSchedules.add(courseSchedule);
+                }
+            });
+            completeProblemIds.forEach(completeProblemId -> {
+                CourseSchedule tempSchedule = courseScheduleMap.get(completeProblemId);
+                if (tempSchedule != null) {
+                    completeSchedules.add(tempSchedule);
+                } else {
+                    CourseSchedule courseSchedule = new CourseSchedule();
+                    courseSchedule.setProblemId(completeProblemId);
+                    courseSchedule.setMonth(currentMonth);
+                    completeSchedules.add(courseSchedule);
+                }
+            });
+        } else {
+            runningProblemIds.forEach(runningProblemId -> {
                 CourseSchedule courseSchedule = new CourseSchedule();
                 courseSchedule.setProblemId(runningProblemId);
                 courseSchedule.setMonth(currentMonth);
-                courseSchedule.setType(CourseSchedule.Type.MINOR);
                 runningSchedules.add(courseSchedule);
-            }
-        });
-
-        // 已经完成的课程
-        List<CourseSchedule> completeSchedules = courseSchedules.stream()
-                .filter(schedule -> completeProblemIds.contains(schedule.getProblemId()))
-                .collect(Collectors.toList());
-        completeProblemIds.forEach(completeProblemId -> {
-            CourseSchedule tempSchedule = courseScheduleMap.get(completeProblemId);
-            if (tempSchedule != null) {
-                completeSchedules.add(tempSchedule);
-            } else {
+            });
+            completeProblemIds.forEach(completeProblemId -> {
                 CourseSchedule courseSchedule = new CourseSchedule();
                 courseSchedule.setProblemId(completeProblemId);
                 courseSchedule.setMonth(currentMonth);
-                courseSchedule.setType(CourseSchedule.Type.MINOR);
                 completeSchedules.add(courseSchedule);
-            }
-        });
+            });
+        }
 
         List<PersonalSchedulePlan.SchedulePlan> runningPlans = buildRunningPlans(improvementPlanMap, runningSchedules);
         List<PersonalSchedulePlan.SchedulePlan> completePlans = buildCompletePlans(improvementPlanMap, completeSchedules);
@@ -771,32 +780,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         return improvementPlanList;
     }
 
-
-    /**
-     * 根据个人身份情况获取响应的默认课表信息
-     */
-    private List<CourseSchedule> getOriginCourseSchedulesByIdentity(Integer profileId) {
-        List<CourseSchedule> targetCourseSchedules = Lists.newArrayList();
-        // 先获取是否存在默认的个人课表
-        List<CourseSchedule> riseMemberCourseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-        if (riseMemberCourseSchedules.size() == 0) {
-            // 如果不存在个人课表，尝试回去专项课的默认课表
-            List<MonthlyCampSchedule> monthlyCampCourseSchedules = monthlyCampScheduleDao.loadAll();
-            monthlyCampCourseSchedules.forEach(schedule -> {
-                CourseSchedule courseSchedule = new CourseSchedule();
-                courseSchedule.setProblemId(schedule.getProblemId());
-                courseSchedule.setType(schedule.getType());
-                courseSchedule.setMonth(schedule.getMonth());
-                courseSchedule.setYear(schedule.getYear());
-                courseSchedule.setSelected(false);
-                targetCourseSchedules.add(courseSchedule);
-            });
-        } else {
-            targetCourseSchedules.addAll(riseMemberCourseSchedules);
-        }
-        return targetCourseSchedules;
-    }
-
     private List<PersonalSchedulePlan.SchedulePlan> buildRunningPlans(Map<Integer, ImprovementPlan> improvementPlanMap,
                                                                       List<CourseSchedule> runningSchedules) {
         runningSchedules = runningSchedules.stream().distinct().collect(Collectors.toList());
@@ -808,21 +791,21 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             plan.setProblemId(problemId);
             plan.setName(problem.getProblem());
             plan.setAbbreviation(problem.getAbbreviation());
-            plan.setDescription(
-                    schedule.getType() == CourseSchedule.Type.MAJOR ?
-                            schedule.getMonth() + "月主修" :
-                            "辅修"
-            );
-            plan.setType(schedule.getType());
             plan.setIsLearning(improvementPlanMap.get(problemId) != null);
+
+            if (schedule.getType() != null) {
+                plan.setType(schedule.getType());
+                plan.setDescription(schedule.getType() == CourseSchedule.Type.MAJOR ? schedule.getMonth() + "月主修" : "辅修");
+            } else {
+                plan.setDescription("课程");
+            }
 
             if (improvementPlanMap.get(problemId) != null) {
                 ImprovementPlan improvementPlan = improvementPlanMap.get(problemId);
                 plan.setPlanId(improvementPlan.getId());
                 List<PracticePlan> practicePlans = practicePlanDao.loadKnowledgeAndWarmupPracticePlansByPlanId(improvementPlan.getId());
                 int totalSeries = (int) practicePlans.stream()
-                        .filter(warmUpPlan -> warmUpPlan.getType() == PracticePlan.WARM_UP
-                                || warmUpPlan.getType() == PracticePlan.WARM_UP_REVIEW)
+                        .filter(warmUpPlan -> warmUpPlan.getType() == PracticePlan.WARM_UP || warmUpPlan.getType() == PracticePlan.WARM_UP_REVIEW)
                         .count();
                 int completeSeries;
 
@@ -844,7 +827,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 plan.setRemainDaysCount(DateUtils.interval(new Date(), improvementPlan.getCloseDate()));
 
             }
-            int priorityPart1 = schedule.getType() == CourseSchedule.Type.MAJOR ? 2 : 1;
+            int priorityPart1 = schedule.getType() == null ? 0 : schedule.getType() == CourseSchedule.Type.MAJOR ? 2 : 1;
             int priorityPart2 = improvementPlanMap.get(schedule.getProblemId()) != null ? 2 : 0;
             plan.setPriority(priorityPart1 + priorityPart2);
             runningPlans.add(plan);
@@ -869,11 +852,17 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             plan.setPlanId(improvementPlan.getId());
             plan.setName(problem.getAbbreviation() + "：" + problem.getProblem());
             plan.setAbbreviation(problem.getAbbreviation());
-            plan.setDescription(
-                    schedule.getType() == CourseSchedule.Type.MAJOR ?
-                            schedule.getMonth() + "月主修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分" :
-                            "辅修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分"
-            );
+
+            if (schedule.getType() != null) {
+                plan.setDescription(
+                        schedule.getType() == CourseSchedule.Type.MAJOR ?
+                                schedule.getMonth() + "月主修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分" :
+                                "辅修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分"
+                );
+            } else {
+                plan.setDescription("课程");
+            }
+
             plan.setCompleteTime(DateUtils.parseDateToString(improvementPlan.getCompleteTime()));
             completePlans.add(plan);
         }
