@@ -108,6 +108,12 @@ public class CustomerController {
                 userStudyDto.setClassName(tempName.replaceAll("0", ""));
             }
         }
+        RiseMember riseMember = accountService.getValidRiseMember(profileId);
+        if(riseMember!=null){
+            userStudyDto.setMemberTypeId(riseMember.getMemberTypeId());
+        }else{
+            userStudyDto.setMemberTypeId(0);
+        }
         userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();

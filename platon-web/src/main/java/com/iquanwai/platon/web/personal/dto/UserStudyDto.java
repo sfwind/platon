@@ -26,4 +26,6 @@ public class UserStudyDto {
     private Integer point;
     @ApiModelProperty("是否是商学院或者专项课用户")
     private boolean riseMember;
+    @ApiModelProperty("会员类型")
+    private Integer memberTypeId;
 }
