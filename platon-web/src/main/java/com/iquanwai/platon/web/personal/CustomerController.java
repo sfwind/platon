@@ -99,11 +99,16 @@ public class CustomerController {
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
         userStudyDto.setMemberId(riseClassMember.getMemberId());
-        userStudyDto.setClassName(riseClassMember.getClassName());
+        String className = riseClassMember.getClassName();
+        if(className!=null) {
+            String tempName = className.substring(2,3)+"月"+className.substring(4,5)+"班";
+            userStudyDto.setClassName(tempName.replaceAll("0",""));
+        }
         userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
         userStudyDto.setCertificateSum(certificateSum);
+        userStudyDto.setRiseMember(accountService.isRiseMember(profileId));
         List<Coupon> coupons = accountService.loadCoupons(profileId);
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         return WebUtils.result(userStudyDto);

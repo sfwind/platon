@@ -24,5 +24,6 @@ public class UserStudyDto {
     private Integer couponSum;
     @ApiModelProperty("课程积分")
     private Integer point;
-
+    @ApiModelProperty("是否是商学院或者专项课用户")
+    private boolean riseMember;
 }
