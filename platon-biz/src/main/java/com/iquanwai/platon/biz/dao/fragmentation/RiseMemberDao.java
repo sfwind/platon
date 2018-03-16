@@ -45,17 +45,16 @@ public class RiseMemberDao extends DBUtil {
 
     /**
      * 获取所有有效的商学院用户
-     * @return
      */
-    public List<RiseMember> loadValidRiseMembers(){
+    public List<RiseMember> loadValidRiseMembers() {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM RiseMember WHERE DEL = 0";
         ResultSetHandler<List<RiseMember>> h = new BeanListHandler<>(RiseMember.class);
 
         try {
-            return runner.query(sql,h);
+            return runner.query(sql, h);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return Lists.newArrayList();
     }
