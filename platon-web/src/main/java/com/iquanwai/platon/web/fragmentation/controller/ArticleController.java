@@ -29,9 +29,9 @@ public class ArticleController {
 
     @ApiOperation("获取富文本")
     @RequestMapping(value = "/load", method = RequestMethod.GET)
-    @ApiImplicitParams({@ApiImplicitParam(name="uuid", value = "文章id")})
-    public ResponseEntity<Map<String, Object>> loadRichText(@RequestParam("uuid") String uuid) {
-        RichText richText = richTextService.loadRichText(uuid);
+    @ApiImplicitParams({@ApiImplicitParam(name="id", value = "文章id")})
+    public ResponseEntity<Map<String, Object>> loadRichText(@RequestParam("id") String id) {
+        RichText richText = richTextService.loadRichText(id);
         if (richText != null) {
             return WebUtils.result(richText);
         } else {
