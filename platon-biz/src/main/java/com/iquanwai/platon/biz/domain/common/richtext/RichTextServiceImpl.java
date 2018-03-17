@@ -19,8 +19,8 @@ public class RichTextServiceImpl implements RichTextService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public RichText loadRichText(Integer textId) {
-        return richTextDao.load(RichText.class, textId);
+    public RichText loadRichText(String textId) {
+        return richTextDao.loadByUUID(textId);
     }
 
 }

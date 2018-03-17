@@ -4,6 +4,8 @@ import com.iquanwai.platon.biz.domain.common.richtext.RichTextService;
 import com.iquanwai.platon.biz.po.RichText;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +29,9 @@ public class ArticleController {
 
     @ApiOperation("获取富文本")
     @RequestMapping(value = "/load", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadRichText(@RequestParam("id") Integer textId) {
-        RichText richText = richTextService.loadRichText(textId);
+    @ApiImplicitParams({@ApiImplicitParam(name="id", value = "文章id")})
+    public ResponseEntity<Map<String, Object>> loadRichText(@RequestParam("id") String id) {
+        RichText richText = richTextService.loadRichText(id);
         if (richText != null) {
             return WebUtils.result(richText);
         } else {
