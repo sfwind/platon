@@ -8,6 +8,7 @@ import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -114,7 +115,7 @@ public class CustomerController {
         }else{
             userStudyDto.setMemberTypeId(0);
         }
-        userStudyDto.setCardSum(problemService.getFinishedCards(profileId));
+        userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0,Integer::sum));
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
         userStudyDto.setCertificateSum(certificateSum);
@@ -470,6 +471,7 @@ public class CustomerController {
         List<PlanDto> donePlans = Lists.newArrayList();
         plans.forEach(item -> {
             PlanDto planDto = new PlanDto();
+            planDto.setPlanId(item.getId());
             planDto.setName(problemService.getProblem(item.getProblemId()).getProblem());
             planDto.setPoint(item.getPoint());
             planDto.setProblemId(item.getProblemId());
