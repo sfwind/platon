@@ -303,8 +303,8 @@ public class PlanServiceImpl implements PlanService {
         if (new DateTime().isBefore(riseMember.getOpenDate().getTime())) {
             throw new CreateCourseException("您在 " + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + " 才能开课哦");
         }
-        Integer memberTypeId = riseMember.getMemberTypeId();
 
+        Integer memberTypeId = riseMember.getMemberTypeId();
         //商学院用户
         if (memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
