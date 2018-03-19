@@ -621,7 +621,7 @@ public class CustomerController {
             certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
 
             List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
-           if(problems.size()>0){
+           if(problems1.size()>0){
                certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
            }else{
                certificateDto.setAbbreviation(riseCertificate.getProblemName());
@@ -635,7 +635,7 @@ public class CustomerController {
            certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
 
            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
-           if(problems.size()>0){
+           if(problems1.size()>0){
                certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
            }else{
                certificateDto.setAbbreviation(riseCertificate.getProblemName());
