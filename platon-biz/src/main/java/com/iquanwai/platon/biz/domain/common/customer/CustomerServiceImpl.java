@@ -1,16 +1,18 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
-import com.iquanwai.platon.biz.dao.common.FeedbackDao;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.po.Announce;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.RiseUserLogin;
 import com.iquanwai.platon.biz.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +25,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
-
     @Autowired
     private ProfileDao profileDao;
     @Autowired
@@ -40,6 +43,12 @@ public class CustomerServiceImpl implements CustomerService {
     private FeedbackDao feedbackDao;
     @Autowired
     private TemplateMessageService templateMessageService;
+    @Autowired
+    private RiseUserLoginDao riseUserLoginDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private AnnounceDao announceDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -120,6 +129,63 @@ public class CustomerServiceImpl implements CustomerService {
             templateMessage.setData(data);
             templateMessageService.sendMessage(templateMessage);
         }
+    }
+
+    @Override
+    public int loadContinuousLoginCount(Integer profileId) {
+        List<RiseUserLogin> riseUserLogins = riseUserLoginDao.loadByProfileId(profileId);
+        int dayCount = 1;
+        Date compareDate = new Date();
+        for (int i = 0; i < riseUserLogins.size(); i++) {
+            RiseUserLogin riseUserLogin = riseUserLogins.get(i);
+            if (DateUtils.interval(compareDate, riseUserLogin.getLoginDate()) <= 1) {
+                dayCount++;
+                compareDate = riseUserLogin.getLoginDate();
+            } else {
+                break;
+            }
+        }
+        return dayCount;
+    }
+
+    @Override
+    public int loadJoinDays(Integer profileId) {
+        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        RiseMember firstAddRiseMember = riseMembers.stream().min(Comparator.comparing(RiseMember::getOpenDate)).orElse(null);
+        if (firstAddRiseMember != null) {
+            return DateUtils.interval(new Date(), firstAddRiseMember.getOpenDate());
+        } else {
+            return 1;
+        }
+    }
+
+    @Override
+    public int loadPersonalTotalPoint(Integer profileId) {
+        Profile profile = profileDao.load(Profile.class, profileId);
+        return profile.getPoint();
+    }
+
+    @Override
+    public String loadAnnounceMessage(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        int memberTypeId = riseMember == null ? 0 : riseMember.getMemberTypeId();
+        List<Announce> announces = announceDao.loadByMemberTypeId(memberTypeId);
+        Announce validAnnounce = announces.stream().filter(announce -> announce.getStartTime() != null
+                && announce.getEndTime() != null
+                && new Date().compareTo(announce.getStartTime()) >= 0
+                && announce.getEndTime().compareTo(new Date()) >= 0
+        ).findAny().orElse(null);
+
+        // 将已经超时的 announce del 置为 1
+        List<Integer> expiredIds = announces.stream().filter(announce -> announce.getStartTime() != null
+                && announce.getEndTime() != null
+                && new Date().compareTo(announce.getEndTime()) > 0
+        ).map(Announce::getId).collect(Collectors.toList());
+        if (expiredIds.size() > 0) {
+            announceDao.delExpiredAnnounce(expiredIds);
+        }
+
+        return validAnnounce == null ? null : validAnnounce.getMessage();
     }
 
 }

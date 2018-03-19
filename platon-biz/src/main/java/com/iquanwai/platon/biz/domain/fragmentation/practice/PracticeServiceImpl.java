@@ -344,7 +344,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content) {
-        ApplicationSubmitDraft submitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(applicationId, planId);
+        ApplicationSubmitDraft submitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, applicationId, planId);
         if (submitDraft == null) {
             // 用户第一次提交，或者历史数据，没有草稿存储，新建 draft，并且初始化数据
             ApplicationSubmitDraft tempDraft = new ApplicationSubmitDraft();
@@ -405,13 +405,13 @@ public class PracticeServiceImpl implements PracticeService {
         List<Integer> submitIds = applicationSubmits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
 
         List<HomeworkVote> homeworkVotes = homeworkVoteDao.getHomeworkVotesByReferenceIds(submitIds);
+        Map<Integer, List<HomeworkVote>> homeworkOriginMap = homeworkVotes.stream()
+                .collect(Collectors.groupingBy(HomeworkVote::getReferencedId));
 
         Map<Integer, List<HomeworkVote>> homeworkVoteMap = Maps.newHashMap();
-        homeworkVotes.forEach(homeworkVote -> {
-            List<HomeworkVote> homeworkVoteList = homeworkVoteMap.getOrDefault(homeworkVote.getReferencedId(),
-                    Lists.newArrayList());
-            homeworkVoteList.add(homeworkVote);
-        });
+        for (Integer submitId : submitIds) {
+            homeworkVoteMap.put(submitId, homeworkOriginMap.getOrDefault(submitId, Lists.newArrayList()));
+        }
 
         return homeworkVoteMap;
     }

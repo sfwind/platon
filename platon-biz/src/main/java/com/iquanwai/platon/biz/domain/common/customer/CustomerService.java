@@ -29,4 +29,23 @@ public interface CustomerService {
      * 学员提交意见反馈
      */
     void sendFeedback(Feedback feedback);
+
+    /**
+     * 获取用户连续登录天数
+     * @param profileId
+     * @return
+     */
+    int loadContinuousLoginCount(Integer profileId);
+
+    /**
+     * 获取加入圈外时间
+     */
+    int loadJoinDays(Integer profileId);
+
+    int loadPersonalTotalPoint(Integer profileId);
+
+    /**
+     * 获取该身份用户的收到的消息
+     */
+    String loadAnnounceMessage(Integer profileId);
 }

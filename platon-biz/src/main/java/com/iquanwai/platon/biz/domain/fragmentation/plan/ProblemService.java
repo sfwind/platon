@@ -77,9 +77,14 @@ public interface ProblemService {
     List<ProblemActivity> loadProblemActivitiesByProblemId(Integer problemId);
 
     /**
+     * 获取课程卡片列表相关信息
+     */
+    List<ProblemCard> loadProblemCardsList(Integer profileId);
+
+    /**
      * 根据 planId 获取卡包页面数据
      */
-    Pair<Problem, List<EssenceCard>> loadProblemCards(Integer planId);
+    Pair<Problem, List<EssenceCard>> loadProblemCardsByPlanId(Integer planId);
 
     /**
      * 获取精华卡图

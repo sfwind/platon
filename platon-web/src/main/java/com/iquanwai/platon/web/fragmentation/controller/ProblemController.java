@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -15,7 +16,9 @@ import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -277,9 +280,9 @@ public class ProblemController {
         RiseCourseDto dto = new RiseCourseDto();
         ImprovementPlan plan = planService.getPlanByProblemId(loginUser.getId(), problemId);
         Integer buttonStatus;
-        if(practicePlanId != null){
+        if (practicePlanId != null) {
             buttonStatus = 6;
-        }else{
+        } else {
             buttonStatus = planService.problemIntroductionButtonStatus(loginUser.getId(), problemId, plan, autoOpen);
         }
         if (practicePlanId != null) {
@@ -342,10 +345,17 @@ public class ProblemController {
         }
     }
 
+    @ApiOperation("获取所有课程卡片信息")
+    @RequestMapping(value = "/card/list")
+    public ResponseEntity<Map<String, Object>> loadCardList(UnionUser unionUser) {
+        List<ProblemCard> problemCards = problemService.loadProblemCardsList(unionUser.getId());
+        return WebUtils.result(problemCards);
+    }
+
     @RequestMapping(value = "/cards/{planId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadProblemCards(LoginUser loginUser, @PathVariable Integer planId) {
         Assert.notNull(loginUser, "登录用户不能为空");
-        Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCards(planId);
+        Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCardsByPlanId(planId);
         OperationLog operationLog = OperationLog.create()
                 .module("课程")
                 .action("课程卡包")

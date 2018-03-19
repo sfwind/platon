@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.exception.CreateCourseException;
+import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
@@ -208,5 +209,8 @@ public interface PlanService {
      */
     void unlockNeverUnlockPlans(Integer profileId);
 
-    void adjustPracticePlan();
+    /**
+     * 获取某个人所有的学习计划
+     */
+    List<CourseSchedule> loadAllCourseSchedules(Integer profileId);
 }

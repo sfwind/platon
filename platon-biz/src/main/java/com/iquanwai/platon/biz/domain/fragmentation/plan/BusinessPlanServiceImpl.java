@@ -59,6 +59,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private AuditionClassMemberDao auditionClassMemberDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private PracticePlanDao practicePlanDao;
+    @Autowired
+    private MonthlyCampScheduleDao monthlyCampScheduleDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -132,7 +136,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         runningProblems.addAll(minorProblem);
 
         runningProblems.forEach(item -> {
-            if(item.getCloseDate() != null) {
+            if (item.getCloseDate() != null) {
                 Integer deadLine = DateUtils.interval(DateUtils.startDay(new Date()), item.getCloseDate());
                 item.setDeadline(deadLine);
             }
@@ -152,6 +156,86 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         schedulePlan.setTopic(cacheService.loadMonthTopic(category).get(currentMonth));
         return schedulePlan;
+    }
+
+    @Override
+    public PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId) {
+        // 获取个人所有课表
+        List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        Map<Integer, CourseSchedule> courseScheduleMap = courseSchedules.stream()
+                .collect(Collectors.toMap(CourseSchedule::getProblemId, courseSchedule -> courseSchedule, (key1, key2) -> key2));
+
+        // 获取所有 improvement plans
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
+        Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream()
+                .collect(Collectors.toMap(ImprovementPlan::getProblemId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
+        // 获取所有正在进行课程的 ProblemIds
+        List<Integer> runningProblemIds = improvementPlans.stream()
+                .filter(plan -> ImprovementPlan.RUNNING == plan.getStatus() ||
+                       ImprovementPlan.COMPLETE == plan.getStatus())
+                .map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+        // 获取所有已经完成课程的 ProblemIds
+        List<Integer> completeProblemIds = improvementPlans.stream()
+                .filter(plan -> ImprovementPlan.CLOSE == plan.getStatus())
+                .map(ImprovementPlan::getProblemId).collect(Collectors.toList());
+
+        // 进行中的月份
+        int currentMonth = DateUtils.getMonth(new Date());
+        int currentYear = DateUtils.getYear(new Date());
+
+        List<CourseSchedule> runningSchedules = Lists.newArrayList();
+        List<CourseSchedule> completeSchedules = Lists.newArrayList();
+        if (courseSchedules.size() > 0) {
+            runningSchedules.addAll(courseSchedules.stream().filter(schedule
+                    -> (schedule.getMonth() == currentMonth && schedule.getSelected())
+                    || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1 && schedule.getSelected()))
+                    .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
+                    .collect(Collectors.toList()));
+
+            runningProblemIds.forEach(runningProblemId -> {
+                CourseSchedule tempSchedule = courseScheduleMap.get(runningProblemId);
+                if (tempSchedule != null) {
+                    runningSchedules.add(tempSchedule);
+                } else {
+                    CourseSchedule courseSchedule = new CourseSchedule();
+                    courseSchedule.setProblemId(runningProblemId);
+                    courseSchedule.setMonth(currentMonth);
+                    runningSchedules.add(courseSchedule);
+                }
+            });
+            completeProblemIds.forEach(completeProblemId -> {
+                CourseSchedule tempSchedule = courseScheduleMap.get(completeProblemId);
+                if (tempSchedule != null) {
+                    completeSchedules.add(tempSchedule);
+                } else {
+                    CourseSchedule courseSchedule = new CourseSchedule();
+                    courseSchedule.setProblemId(completeProblemId);
+                    courseSchedule.setMonth(currentMonth);
+                    completeSchedules.add(courseSchedule);
+                }
+            });
+        } else {
+            runningProblemIds.forEach(runningProblemId -> {
+                CourseSchedule courseSchedule = new CourseSchedule();
+                courseSchedule.setProblemId(runningProblemId);
+                courseSchedule.setMonth(currentMonth);
+                runningSchedules.add(courseSchedule);
+            });
+            completeProblemIds.forEach(completeProblemId -> {
+                CourseSchedule courseSchedule = new CourseSchedule();
+                courseSchedule.setProblemId(completeProblemId);
+                courseSchedule.setMonth(currentMonth);
+                completeSchedules.add(courseSchedule);
+            });
+        }
+
+        List<PersonalSchedulePlan.SchedulePlan> runningPlans = buildRunningPlans(improvementPlanMap, runningSchedules);
+        List<PersonalSchedulePlan.SchedulePlan> completePlans = buildCompletePlans(improvementPlanMap, completeSchedules);
+
+        PersonalSchedulePlan personalSchedulePlan = new PersonalSchedulePlan();
+        personalSchedulePlan.setRunningPlans(runningPlans);
+        personalSchedulePlan.setCompletePlans(completePlans);
+        return personalSchedulePlan;
     }
 
     @Override
@@ -696,4 +780,95 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
         return improvementPlanList;
     }
+
+    private List<PersonalSchedulePlan.SchedulePlan> buildRunningPlans(Map<Integer, ImprovementPlan> improvementPlanMap,
+                                                                      List<CourseSchedule> runningSchedules) {
+        runningSchedules = runningSchedules.stream().distinct().collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> runningPlans = Lists.newArrayList();
+        for (CourseSchedule schedule : runningSchedules) {
+            PersonalSchedulePlan.SchedulePlan plan = new PersonalSchedulePlan.SchedulePlan();
+            int problemId = schedule.getProblemId();
+            Problem problem = cacheService.getProblem(problemId);
+            plan.setProblemId(problemId);
+            plan.setName(problem.getProblem());
+            plan.setAbbreviation(problem.getAbbreviation());
+            plan.setIsLearning(improvementPlanMap.get(problemId) != null);
+
+            if (schedule.getType() != null) {
+                plan.setType(schedule.getType());
+                plan.setDescription(schedule.getType() == CourseSchedule.Type.MAJOR ? schedule.getMonth() + "月主修" : "辅修");
+            } else {
+                plan.setDescription("课程");
+            }
+
+            if (improvementPlanMap.get(problemId) != null) {
+                ImprovementPlan improvementPlan = improvementPlanMap.get(problemId);
+                plan.setPlanId(improvementPlan.getId());
+                List<PracticePlan> practicePlans = practicePlanDao.loadKnowledgeAndWarmupPracticePlansByPlanId(improvementPlan.getId());
+                int totalSeries = (int) practicePlans.stream()
+                        .filter(warmUpPlan -> warmUpPlan.getType() == PracticePlan.WARM_UP || warmUpPlan.getType() == PracticePlan.WARM_UP_REVIEW)
+                        .count();
+                int completeSeries;
+
+                PracticePlan unlockPlan = practicePlans.stream()
+                        .filter(warmUpPlan -> warmUpPlan.getUnlocked() && warmUpPlan.getStatus() == 0)
+                        .max(Comparator.comparing(PracticePlan::getSeries))
+                        .orElse(null);
+
+                if (unlockPlan == null) {
+                    completeSeries = totalSeries;
+                } else if (unlockPlan.getType() == PracticePlan.INTRODUCTION || unlockPlan.getType() == PracticePlan.CHALLENGE) {
+                    completeSeries = 0;
+                } else {
+                    completeSeries = unlockPlan.getSeries() - 1;
+                }
+
+                plan.setCompleteSeries(completeSeries);
+                plan.setTotalSeries(totalSeries);
+                plan.setRemainDaysCount(DateUtils.interval(new Date(), improvementPlan.getCloseDate()));
+
+            }
+            int priorityPart1 = schedule.getType() == null ? 0 : schedule.getType() == CourseSchedule.Type.MAJOR ? 2 : 1;
+            int priorityPart2 = improvementPlanMap.get(schedule.getProblemId()) != null ? 2 : 0;
+            plan.setPriority(priorityPart1 + priorityPart2);
+            runningPlans.add(plan);
+        }
+        runningPlans = runningPlans.stream()
+                .sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getPriority).reversed())
+                .collect(Collectors.toList());
+        return runningPlans;
+    }
+
+    public List<PersonalSchedulePlan.SchedulePlan> buildCompletePlans(Map<Integer, ImprovementPlan> improvementPlanMap,
+                                                                      List<CourseSchedule> completeSchedules) {
+        completeSchedules = completeSchedules.stream().distinct().collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> completePlans = Lists.newArrayList();
+        for (CourseSchedule schedule : completeSchedules) {
+            PersonalSchedulePlan.SchedulePlan plan = new PersonalSchedulePlan.SchedulePlan();
+
+            int problemId = schedule.getProblemId();
+            ImprovementPlan improvementPlan = improvementPlanMap.get(problemId);
+            Problem problem = cacheService.getProblem(problemId);
+            plan.setProblemId(problemId);
+            plan.setPlanId(improvementPlan.getId());
+            plan.setName(problem.getAbbreviation() + "：" + problem.getProblem());
+            plan.setAbbreviation(problem.getAbbreviation());
+
+            if (schedule.getType() != null) {
+                plan.setDescription(
+                        schedule.getType() == CourseSchedule.Type.MAJOR ?
+                                schedule.getMonth() + "月主修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分" :
+                                "辅修 | " + problem.getAbbreviation() + " | " + improvementPlan.getPoint() + "分"
+                );
+            } else {
+                plan.setDescription("课程");
+            }
+
+            plan.setCompleteTime(DateUtils.parseDateToString(improvementPlan.getCompleteTime()));
+            completePlans.add(plan);
+        }
+        completePlans = completePlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getCompleteTime).reversed()).collect(Collectors.toList());
+        return completePlans;
+    }
+
 }
