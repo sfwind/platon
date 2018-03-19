@@ -15,6 +15,8 @@ import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -48,34 +50,38 @@ public class PracticeController {
 
     @RequestMapping(value = "/challenge/start/{challengeId}", method = RequestMethod.GET)
     @ApiOperation("加载小目标")
-    public ResponseEntity<Map<String, Object>> startChallenge(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "challengeId", value = "小目标id"),
+            @ApiImplicitParam(name = "planId", value = "计划id")})
+    public ResponseEntity<Map<String, Object>> startChallenge(UnionUser unionUser,
                                                               @PathVariable Integer challengeId,
                                                               @RequestParam(name = "planId") Integer planId) {
-        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(unionUser, "用户不能为空");
         ImprovementPlan improvementPlan = planService.getPlan(planId);
 
         if (improvementPlan == null) {
-            logger.error("{} has no improvement plan", loginUser.getOpenId());
+            logger.error("{} has no improvement plan", unionUser.getOpenId());
             return WebUtils.result("您还没有制定训练计划哦");
         }
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                loginUser.getId(), improvementPlan.getId(), false);
+                unionUser.getId(), improvementPlan.getId(), false);
 
         return WebUtils.result(challengePractice);
     }
 
     @RequestMapping(value = "/challenge/submit/{planId}/{challengeId}", method = RequestMethod.POST)
     @ApiOperation("提交小目标")
-    public ResponseEntity<Map<String, Object>> submitChallenge(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "challengeId", value = "小目标id"),
+            @ApiImplicitParam(name = "planId", value = "计划id")})
+    public ResponseEntity<Map<String, Object>> submitChallenge(UnionUser unionUser,
                                                                @PathVariable("planId") Integer planId,
                                                                @PathVariable("challengeId") Integer challengeId,
                                                                @RequestBody SubmitDto submitDto) {
-        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(unionUser, "用户不能为空");
         // 先生成，之后走之前逻辑
         ChallengePractice challengePractice = practiceService.getChallengePractice(challengeId,
-                loginUser.getId(), planId, true);
+                unionUser.getId(), planId, true);
         Integer submitId = challengePractice.getSubmitId();
-        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(unionUser, "用户不能为空");
         if (submitDto.getAnswer() == null) {
             return WebUtils.error("您还未输入文字");
         }
@@ -84,16 +90,11 @@ public class PracticeController {
         return WebUtils.result(result);
     }
 
-    /**
-     * 点赞或者取消点赞
-     *
-     * @param vote 1：点赞，2：取消点赞
-     */
     @RequestMapping(value = "/vote", method = RequestMethod.POST)
     @ApiOperation("点赞")
-    public ResponseEntity<Map<String, Object>> vote(UnionUser loginUser, @RequestBody HomeworkVoteDto vote,
+    public ResponseEntity<Map<String, Object>> vote(UnionUser unionUser, @RequestBody HomeworkVoteDto vote,
                                                     HttpServletRequest request) {
-        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(unionUser, "用户不能为空");
         Assert.isTrue(vote.getStatus() == 1 || vote.getStatus() == 2, "点赞状态异常");
         Integer refer = vote.getReferencedId();
         Integer status = vote.getStatus();
@@ -107,7 +108,7 @@ public class PracticeController {
             device = Constants.Device.MOBILE;
         }
         if (status == 1) {
-            boolean result = practiceService.vote(vote.getType(), refer, loginUser.getId(), device);
+            boolean result = practiceService.vote(vote.getType(), refer, unionUser.getId(), device);
             if (result) {
                 return WebUtils.success();
             } else {
@@ -115,14 +116,16 @@ public class PracticeController {
             }
         } else {
             // 取消点赞
-            logger.error("异常，禁止用户:{},取消点赞:{}", loginUser.getOpenId(), vote);
+            logger.error("异常，禁止用户:{},取消点赞:{}", unionUser.getOpenId(), vote);
             return WebUtils.error("禁止取消点赞");
         }
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
     @ApiOperation("加载文章评论")
-    public ResponseEntity<Map<String, Object>> loadComments(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
+            @ApiImplicitParam(name = "submitId", value = "提交id")})
+    public ResponseEntity<Map<String, Object>> loadComments(UnionUser unionUser,
                                                             @PathVariable("moduleId") Integer moduleId,
                                                             @PathVariable("submitId") Integer submitId,
                                                             @ModelAttribute Page page) {
@@ -155,7 +158,7 @@ public class PracticeController {
                     dto.setRepliedName(repliedProfile.getNickname());
                 }
                 dto.setSignature(account.getSignature());
-                dto.setIsMine(loginUser.getId().equals(item.getCommentProfileId()));
+                dto.setIsMine(unionUser.getId().equals(item.getCommentProfileId()));
                 dto.setRole(account.getRole());
                 dto.setRepliedDel(item.getRepliedDel());
                 return dto;
@@ -167,7 +170,7 @@ public class PracticeController {
         riseRefreshListDto.setList(commentDtos);
         // 如果这个评论是自己的，则获取尚未被评价的应用题评论
         riseRefreshListDto.setCommentEvaluations(
-                practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(loginUser.getId(), submitId));
+                practiceService.loadUnEvaluatedCommentEvaluationBySubmitId(unionUser.getId(), submitId));
 
         riseRefreshListDto.setEnd(page.isLastPage());
         return WebUtils.result(riseRefreshListDto);
@@ -175,9 +178,11 @@ public class PracticeController {
 
     @RequestMapping(value = "/comment/message/{submitId}/{commentId}", method = RequestMethod.GET)
     @ApiOperation("加载应用练习某一条评论")
-    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(UnionUser loginUser, @PathVariable Integer submitId,
+    @ApiImplicitParams({@ApiImplicitParam(name = "submitId", value = "作业id"),
+            @ApiImplicitParam(name = "commentId", value = "评论id")})
+    public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(UnionUser unionUser, @PathVariable Integer submitId,
                                                                            @PathVariable Integer commentId) {
-        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(commentId, "评论不能为空");
 
         RiseRefreshListDto<RiseWorkCommentDto> riseRefreshListDto = new RiseRefreshListDto<>();
@@ -203,7 +208,7 @@ public class PracticeController {
                 dto.setRepliedName(repliedProfile.getNickname());
             }
             dto.setSignature(account.getSignature());
-            dto.setIsMine(loginUser.getId().equals(comment.getCommentProfileId()));
+            dto.setIsMine(unionUser.getId().equals(comment.getCommentProfileId()));
             dto.setRole(account.getRole());
             dto.setRepliedDel(comment.getRepliedDel());
         } else {
@@ -220,21 +225,15 @@ public class PracticeController {
         return WebUtils.result(riseRefreshListDto);
     }
 
-    /**
-     * 评论
-     *
-     * @param loginUser 登陆人
-     * @param moduleId  评论模块
-     * @param submitId  文章id
-     * @param dto       评论内容
-     */
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     @ApiOperation("提交评论")
-    public ResponseEntity<Map<String, Object>> comment(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
+            @ApiImplicitParam(name = "submitId", value = "提交id")})
+    public ResponseEntity<Map<String, Object>> comment(UnionUser unionUser,
                                                        @PathVariable("moduleId") Integer moduleId,
                                                        @PathVariable("submitId") Integer submitId,
                                                        @RequestBody RiseWorkCommentDto dto, HttpServletRequest request) {
-        Assert.notNull(loginUser, "登陆用户不能为空");
+        Assert.notNull(unionUser, "登陆用户不能为空");
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "内容不能为空");
@@ -247,7 +246,7 @@ public class PracticeController {
             device = Constants.Device.MOBILE;
         }
 
-        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, loginUser.getId(),
+        Pair<Integer, String> result = practiceService.comment(moduleId, submitId, unionUser.getId(),
                 dto.getComment(), device);
 
 
@@ -255,10 +254,10 @@ public class PracticeController {
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
             resultDto.setId(result.getLeft());
             resultDto.setComment(dto.getComment());
-            resultDto.setName(loginUser.getNickName());
-            resultDto.setAvatar(loginUser.getHeadImgUrl());
+            resultDto.setName(unionUser.getNickName());
+            resultDto.setAvatar(unionUser.getHeadImgUrl());
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
-            UserRole userRole = accountService.getUserRole(loginUser.getId());
+            UserRole userRole = accountService.getUserRole(unionUser.getId());
             Integer roleId = 0;
             if(userRole != null){
                 roleId = userRole.getRoleId();
@@ -269,7 +268,7 @@ public class PracticeController {
             ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
+            if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(unionUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
@@ -280,17 +279,16 @@ public class PracticeController {
 
     }
 
-    /**
-     * 移动应用练习评论回复
-     */
     @RequestMapping(value = "/comment/reply/{moduleId}/{submitId}", method = RequestMethod.POST)
     @ApiOperation("回复评论")
-    public ResponseEntity<Map<String, Object>> commentReply(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
+            @ApiImplicitParam(name = "submitId", value = "提交id")})
+    public ResponseEntity<Map<String, Object>> commentReply(UnionUser unionUser,
                                                             @PathVariable("moduleId") Integer moduleId,
                                                             @PathVariable("submitId") Integer submitId,
                                                             @RequestBody RiseWorkCommentDto dto,
                                                             HttpServletRequest request) {
-        Assert.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(moduleId, "评论模块不能为空");
         Assert.notNull(submitId, "文章不能为空");
         Assert.notNull(dto, "回复内容不能为空");
@@ -302,7 +300,7 @@ public class PracticeController {
         } else {
             device = Constants.Device.MOBILE;
         }
-        Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, loginUser.getId(),
+        Pair<Integer, String> result = practiceService.replyComment(moduleId, submitId, unionUser.getId(),
                 dto.getComment(), dto.getRepliedId(), device);
 
         if (result.getLeft() > 0) {
@@ -310,10 +308,10 @@ public class PracticeController {
             RiseWorkCommentDto resultDto = new RiseWorkCommentDto();
             resultDto.setId(result.getLeft());
             resultDto.setComment(dto.getComment());
-            resultDto.setName(loginUser.getNickName());
-            resultDto.setAvatar(loginUser.getHeadImgUrl());
+            resultDto.setName(unionUser.getNickName());
+            resultDto.setAvatar(unionUser.getHeadImgUrl());
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
-            UserRole userRole = accountService.getUserRole(loginUser.getId());
+            UserRole userRole = accountService.getUserRole(unionUser.getId());
             Integer roleId = 0;
             if(userRole != null){
                 roleId = userRole.getRoleId();
@@ -331,7 +329,7 @@ public class PracticeController {
             ApplicationSubmit applicationSubmit = practiceService.loadApplicationSubmitById(submitId);
 
             // 初始化教练回复的评论反馈评价
-            if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(loginUser.getId())) {
+            if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(unionUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
 
@@ -343,14 +341,15 @@ public class PracticeController {
 
     @RequestMapping(value = "/subject/{submitId}", method = RequestMethod.GET)
     @ApiOperation("回复评论")
-    public ResponseEntity<Map<String, Object>> loadSubject(UnionUser loginUser, @PathVariable("submitId") Integer submitId) {
-        Assert.notNull(loginUser, "用户不能为空");
+    @ApiImplicitParams({@ApiImplicitParam(name = "submitId", value = "提交id")})
+    public ResponseEntity<Map<String, Object>> loadSubject(UnionUser unionUser, @PathVariable("submitId") Integer submitId) {
+        Assert.notNull(unionUser, "用户不能为空");
         SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
         if (subjectArticle != null) {
             RiseWorkInfoDto dto = new RiseWorkInfoDto();
 //            dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
 //            dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
-//            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, loginUser.getId()) != null ? 1 : 0);
+//            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, unionUser.getId()) != null ? 1 : 0);
             dto.setSubmitId(submitId);
             dto.setAuthorType(subjectArticle.getAuthorType());
             dto.setContent(subjectArticle.getContent());
@@ -362,13 +361,13 @@ public class PracticeController {
                 dto.setRole(profile.getRole());
                 dto.setSignature(profile.getSignature());
             }
-            dto.setIsMine(loginUser.getId().equals(subjectArticle.getProfileId()));
+            dto.setIsMine(unionUser.getId().equals(subjectArticle.getProfileId()));
             dto.setProblemId(subjectArticle.getProblemId());
             dto.setPerfect(subjectArticle.getSequence() > 0);
             dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getAddTime()));
             dto.setRequest(subjectArticle.getRequestFeedback());
 //            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
-//                    loginUser.getId()));
+//                    unionUser.getId()));
 //            dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
 
             return WebUtils.result(dto);
@@ -380,11 +379,13 @@ public class PracticeController {
 
     @RequestMapping(value = "/request/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
     @ApiOperation("求点评")
-    public ResponseEntity<Map<String, Object>> requestComment(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
+            @ApiImplicitParam(name = "submitId", value = "提交id")})
+    public ResponseEntity<Map<String, Object>> requestComment(UnionUser unionUser,
                                                               @PathVariable Integer moduleId,
                                                               @PathVariable Integer submitId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        boolean result = practiceService.requestComment(submitId, moduleId, loginUser.getId());
+        Assert.notNull(unionUser, "用户不能为空");
+        boolean result = practiceService.requestComment(submitId, moduleId, unionUser.getId());
 
         if (result) {
             return WebUtils.success();
@@ -395,9 +396,10 @@ public class PracticeController {
 
     @RequestMapping("/delete/comment/{commentId}")
     @ApiOperation("删除评论")
-    public ResponseEntity<Map<String, Object>> deleteComment(UnionUser loginUser,
+    @ApiImplicitParams({@ApiImplicitParam(name = "commentId", value = "评论id")})
+    public ResponseEntity<Map<String, Object>> deleteComment(UnionUser unionUser,
                                                              @PathVariable Integer commentId) {
-        Assert.notNull(loginUser, "用户不能为空");
+        Assert.notNull(unionUser, "用户不能为空");
         practiceService.deleteComment(commentId);
 
         return WebUtils.success();
@@ -405,7 +407,7 @@ public class PracticeController {
 
     @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)
     @Deprecated
-    public ResponseEntity<Map<String, Object>> riseShowCount(UnionUser loginUser,
+    public ResponseEntity<Map<String, Object>> riseShowCount(UnionUser unionUser,
                                                              @PathVariable(value = "moduleId") Integer moduleId,
                                                              @PathVariable(value = "submitId") Integer submitId) {
 
@@ -414,8 +416,9 @@ public class PracticeController {
 
     @RequestMapping(value = "/load/{practicePlanId}", method = RequestMethod.GET)
     @ApiOperation("加载某个练习")
-    public ResponseEntity<Map<String, Object>> loadKnowledgeReview(UnionUser loginUser, @PathVariable Integer practicePlanId) {
-        Assert.notNull(loginUser, "用户不能为空");
+    @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
+    public ResponseEntity<Map<String, Object>> loadKnowledgeReview(UnionUser unionUser, @PathVariable Integer practicePlanId) {
+        Assert.notNull(unionUser, "用户不能为空");
         PracticePlan practicePlan = practiceService.getPractice(practicePlanId);
 
         return WebUtils.result(practicePlan);
