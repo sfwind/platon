@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ApplicationSubmitDraft;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -61,21 +60,9 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
      */
     public ApplicationSubmitDraft loadApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from ApplicationSubmitDraft where ProfileId = ? and ApplicationId = ? and PlanId = ? and Del=0";
+        String sql = "select * from ApplicationSubmitDraft where ProfileId = ? and PlanId = ? and ApplicationId = ? and Del=0";
         try {
-            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), profileId, applicationId, planId);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
-    }
-
-    public ApplicationSubmitDraft loadApplicationSubmitDraft(Integer applicationId, Integer planId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ApplicationSubmitDraft WHERE ApplicationId = ? AND PlanId = ? AND Del=0";
-        ResultSetHandler<ApplicationSubmitDraft> h = new BeanHandler<>(ApplicationSubmitDraft.class);
-        try {
-            return runner.query(sql, h, applicationId, planId);
+            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), profileId, planId, applicationId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
