@@ -62,7 +62,7 @@ public class ApplicationSubmitDraftDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from ApplicationSubmitDraft where ProfileId = ? and PlanId = ? and ApplicationId = ? and Del=0";
         try {
-            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), profileId, applicationId, planId);
+            return runner.query(sql, new BeanHandler<>(ApplicationSubmitDraft.class), profileId, planId, applicationId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
