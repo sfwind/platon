@@ -321,7 +321,6 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
 
-            // TODO fix 课程开课时间 bug，和丁老师 check
             BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
             Date openDate = businessSchoolConfig.getOpenDate();
             int year = DateUtils.getYear(openDate);
