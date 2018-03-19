@@ -613,15 +613,33 @@ public class CustomerController {
        List<CertificateDto> finishDtos = Lists.newArrayList();
        List<CertificateDto> gradeDtos = Lists.newArrayList();
 
+       List<Problem> problems = problemService.loadProblems();
+
        finishList.forEach(riseCertificate -> {
             CertificateDto certificateDto = new CertificateDto();
             BeanUtils.copyProperties(riseCertificate,certificateDto);
+            certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
+
+            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+           if(problems.size()>0){
+               certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
+           }else{
+               certificateDto.setAbbreviation(riseCertificate.getProblemName());
+           }
             finishDtos.add(certificateDto);
        });
 
        gradeList.forEach(riseCertificate -> {
            CertificateDto certificateDto = new CertificateDto();
            BeanUtils.copyProperties(riseCertificate,certificateDto);
+           certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
+
+           List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+           if(problems.size()>0){
+               certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
+           }else{
+               certificateDto.setAbbreviation(riseCertificate.getProblemName());
+           }
            gradeDtos.add(certificateDto);
        });
 
@@ -631,4 +649,32 @@ public class CustomerController {
 
        return WebUtils.result(certificateListDto);
     }
+
+
+    private String getCertificateName(Integer type){
+        if(type==1){
+            return "优秀班长";
+        }
+        if(type==2){
+            return "优秀组长";
+        }
+        if(type==3){
+            return "优秀学员";
+        }
+        if(type==4){
+            return "优秀团队";
+        }
+        if(type==5){
+            return "结课证书";
+        }
+        if(type==6){
+            return "优秀助教";
+        }
+
+    }
+
+
+
+
+
 }

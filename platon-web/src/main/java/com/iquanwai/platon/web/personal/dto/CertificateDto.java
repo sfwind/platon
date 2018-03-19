@@ -11,7 +11,9 @@ public class CertificateDto {
     @ApiModelProperty("月份")
     private Integer month;
     @ApiModelProperty("证书类型")
-    private Integer type;
+    private String typeName;
+    @ApiModelProperty("课程缩略图")
+    private String abbreviation;
     @ApiModelProperty("课程名字")
     private String problemName;
     @ApiModelProperty("证书链接")

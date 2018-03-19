@@ -1,5 +1,7 @@
 package com.iquanwai.platon.biz.po;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -34,5 +36,7 @@ public class RiseCertificate {
     private String congratulation; //证书描述 非db字段
     private Integer problemId; // 课程 id
     private String nextCertificateNo; // 下一位证书的证书 No，下载证书图片用
+
+
 
 }
