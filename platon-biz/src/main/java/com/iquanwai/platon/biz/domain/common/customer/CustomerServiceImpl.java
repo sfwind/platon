@@ -110,6 +110,12 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public Boolean hasAnnualSummaryAuthority(Integer profileId) {
+        return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
+    }
+
+
+    @Override
     public AnnualSummary loadUserAnnualSummary(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(riseId);
