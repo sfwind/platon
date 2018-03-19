@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -599,5 +600,35 @@ public class CustomerController {
         couponDto.setTotal(coupons.stream().collect(Collectors.summingInt(Coupon::getAmount)));
 
         return WebUtils.result(couponDto);
+    }
+
+
+    @RequestMapping(value = "/get/certificate",method = RequestMethod.GET)
+    public ResponseEntity<Map<String,Object>> getCertificates(UnionUser unionUser){
+       List<RiseCertificate> certificateList =  certificateService.getCertificates(unionUser.getId());
+
+       List<RiseCertificate> finishList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType()==5).collect(Collectors.toList());
+       List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate ->  riseCertificate.getType()==1 || riseCertificate.getType()==2||riseCertificate.getType()==3||riseCertificate.getType()==4||riseCertificate.getType()==6).collect(Collectors.toList());
+
+       List<CertificateDto> finishDtos = Lists.newArrayList();
+       List<CertificateDto> gradeDtos = Lists.newArrayList();
+
+       finishList.forEach(riseCertificate -> {
+            CertificateDto certificateDto = new CertificateDto();
+            BeanUtils.copyProperties(riseCertificate,certificateDto);
+            finishDtos.add(certificateDto);
+       });
+
+       gradeList.forEach(riseCertificate -> {
+           CertificateDto certificateDto = new CertificateDto();
+           BeanUtils.copyProperties(riseCertificate,certificateDto);
+           gradeDtos.add(certificateDto);
+       });
+
+       CertificateListDto certificateListDto = new CertificateListDto();
+       certificateListDto.setFinishDto(finishDtos);
+       certificateListDto.setGradeDto(gradeDtos);
+
+       return WebUtils.result(certificateListDto);
     }
 }
