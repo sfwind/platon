@@ -4,17 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
-import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
@@ -24,19 +14,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.EssenceCard;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.UserProblemSchedule;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -102,6 +80,8 @@ public class PlanServiceImpl implements PlanService {
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private QuanwaiEmployeeDao quanwaiEmployeeDao;
+    @Autowired
+    private BusinessSchoolConfigDao businessSchoolConfigDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -341,16 +321,15 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
 
-            MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-            Date openDate = monthlyCampConfig.getOpenDate();
+            // TODO fix 课程开课时间 bug，和丁老师 check
+            BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
+            Date openDate = businessSchoolConfig.getOpenDate();
             int year = DateUtils.getYear(openDate);
             int month = DateUtils.getMonth(openDate);
-            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
-                    && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth() && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
                 if (new Date().before(openDate)) {
                     // 未到开营日的主修课不能提前选择
-                    throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于"
-                            + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+                    throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于" + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
                 }
             }
 
