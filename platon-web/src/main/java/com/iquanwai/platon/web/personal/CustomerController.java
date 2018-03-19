@@ -670,7 +670,7 @@ public class CustomerController {
         if(type==6){
             return "优秀助教";
         }
-
+        return "未知类型";
     }
 
 
