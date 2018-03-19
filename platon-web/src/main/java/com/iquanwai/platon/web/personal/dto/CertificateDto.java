@@ -16,6 +16,6 @@ public class CertificateDto {
     private String abbreviation;
     @ApiModelProperty("课程名字")
     private String problemName;
-    @ApiModelProperty("证书链接")
-    private String imageUrl;
+    @ApiModelProperty("证书编号")
+    private String certificateNo;
 }
