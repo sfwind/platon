@@ -16,6 +16,9 @@ public class RichText {
     private String title;
     @ApiModelProperty("文本内容")
     private String content;
+
+    private String uuid;
+
     private Boolean del;
 
 }

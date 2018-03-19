@@ -9,5 +9,5 @@ public interface RichTextService {
     /**
      * 根据富文本 id 获取富文本内容
      */
-    RichText loadRichText(Integer textId);
+    RichText loadRichText(String textId);
 }

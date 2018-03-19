@@ -344,7 +344,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content) {
-        ApplicationSubmitDraft submitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(applicationId, planId);
+        ApplicationSubmitDraft submitDraft = applicationSubmitDraftDao.loadApplicationSubmitDraft(profileId, applicationId, planId);
         if (submitDraft == null) {
             // 用户第一次提交，或者历史数据，没有草稿存储，新建 draft，并且初始化数据
             ApplicationSubmitDraft tempDraft = new ApplicationSubmitDraft();

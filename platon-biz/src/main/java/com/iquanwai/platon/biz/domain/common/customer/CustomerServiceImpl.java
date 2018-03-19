@@ -6,11 +6,19 @@ import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
 import com.iquanwai.platon.biz.dao.common.FeedbackDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.RiseUserLoginDao;
+import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.po.Announce;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.po.AnnualSummary;
+import com.iquanwai.platon.biz.po.PrizeCard;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.Feedback;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.Announce;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -39,7 +47,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
-
     @Autowired
     private ProfileDao profileDao;
     @Autowired
