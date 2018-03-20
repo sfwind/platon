@@ -21,4 +21,6 @@ public class ActivitiesFlow {
     private String linkUrl;
     private Boolean del;
 
+    private String startTimeStr;
+
 }

@@ -52,7 +52,13 @@ public class FlowServiceImpl implements FlowService {
 
     @Override
     public List<ActivitiesFlow> loadActivitiesFlow() {
-        return activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
+        List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
+        activitiesFlows.forEach(activitiesFlow -> {
+            if (activitiesFlow.getStartTime() != null) {
+                activitiesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(activitiesFlow.getStartTime()));
+            }
+        });
+        return activitiesFlows;
     }
 
 }
