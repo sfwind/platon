@@ -379,7 +379,6 @@ public class ConfigUtils {
         return getValue("team.promotion.code.image");
     }
 
-
     public static String getXiaoYQRCode() {
         return getValue("xiao.y.mediaid");
     }
@@ -398,6 +397,10 @@ public class ConfigUtils {
 
     public static String getInternalPort() {
         return getValue("internal.port");
+    }
+
+    public static String getLandingPageBanner() {
+        return getValue("landing.page.banner");
     }
 
 }

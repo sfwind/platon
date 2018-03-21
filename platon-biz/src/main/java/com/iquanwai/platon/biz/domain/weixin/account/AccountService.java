@@ -213,4 +213,5 @@ public interface AccountService {
      */
     boolean isPreviewNewUser(Integer profileId);
 
+    boolean isBusinessRiseMember(Integer profileId);
 }

@@ -630,6 +630,12 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
+    @Override
+    public boolean isBusinessRiseMember(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        return riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE;
+    }
+
     // 生成用来发送更新 mq 的信息
     private void checkHeadImgUrlEffectiveness(Profile profile) {
         if (profile == null) {
