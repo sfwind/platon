@@ -65,7 +65,8 @@ public class IndexController {
     // 内测页面
     private static final String FORBID_URL = "/403.jsp";
     // 专项课售卖页
-    private static final String CAMP_SALE_URL = "/pay/camp";
+    private static final String CAMP_SALE_URL = "http://mp.weixin.qq.com/s?__biz=MzI1OTQ2OTY1OA==&mid=100000747&idx=1&sn=cffa80cc2c9303f102d40df574e3981c&chksm=6a793bde5d0eb2c89cf04523362a1ba1e1f49030e6bb6be38d167b4a6be9dd31a4e47465f6d2#rd";
+//    private static final String CAMP_SALE_URL = "/pay/camp";
     // 专项课倒计时页面
     private static final String CAMP_COUNT_DOWN_URL = "/rise/static/camp/count/down";
     // 商学院售卖页
