@@ -254,7 +254,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 riseCertificate.setYear(year);
                                 riseCertificate.setMonth(month);
                                 riseCertificate.setGroupNo(Integer.parseInt(riseClassMember.getGroupId()));
-                                riseCertificate.setProblemName(problem.getProblem());
+                                riseCertificate.setProblemName(problem.getAbbreviation());
                                 int generateId = riseCertificateDao.insert(riseCertificate);
 
                                 if (generateId > 0) {
