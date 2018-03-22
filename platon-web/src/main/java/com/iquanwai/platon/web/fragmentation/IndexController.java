@@ -84,6 +84,11 @@ public class IndexController {
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
 
+    // 产品着陆页
+    private static final String HOME_LANDING_PAGE = "/rise/static/home";
+    // 产品学习页面
+    private static final String LEARN_PAGE = "/rise/static/learn";
+
     private static final String RISE_VIEW = "course";
 
     @PostConstruct
@@ -105,11 +110,15 @@ public class IndexController {
         return null;
     }
 
+    @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
+    public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
+        logger.info("问题／答案页面, {}, {}", request.getRequestURI(), request.getParameter("date"));
+        return courseView(request, response, channel, new ModuleShow(), RISE_VIEW);
+    }
+
     @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
-    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
+    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         if (unionUser == null) {
-            logger.info("unionUser 为空");
             WebUtils.auth(request, response);
             return null;
         }
@@ -143,19 +152,11 @@ public class IndexController {
         }
     }
 
-    @RequestMapping(value = {"/rise/static/guest/**"}, method = RequestMethod.GET)
-    public ModelAndView getGuestInterIndex(HttpServletRequest request, HttpServletResponse response,
-                                           @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        logger.info("问题／答案页面, {}, {}", request.getRequestURI(), request.getParameter("date"));
-        return courseView(request, response, channel, new ModuleShow(), RISE_VIEW);
-    }
-
     /**
      * 主菜单：商学院
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
-    public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
+    public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         logger.info("点击商学院按钮");
         if (unionUser == null) {
             logger.info("unionUser 为空");
@@ -203,6 +204,12 @@ public class IndexController {
                 item.getMemberTypeId() == RiseMember.HALF);
         Profile profile = accountService.getProfile(unionUser.getId());
 
+        // TODO 如果不是会员，直接跳转着陆页
+        if (!isMember) {
+            response.sendRedirect(HOME_LANDING_PAGE);
+            return null;
+        }
+
         if (isMember && isInfoInComplete(profile)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
@@ -219,8 +226,7 @@ public class IndexController {
             // 进入新的学习页面
             response.sendRedirect(NEW_SCHEDULE_PLAN);
             return null;
-        } else if (accountService.hasStatusId(unionUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS)
-                && !whiteListService.checkRunningRiseMenuWhiteList(unionUser.getId())) {
+        } else if (accountService.hasStatusId(unionUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS) && !whiteListService.checkRunningRiseMenuWhiteList(unionUser.getId())) {
             // 已经申请成功，有购买权限，非默认可购买的人(专业版)
             response.sendRedirect(APPLY_SUCCESS);
             return null;
@@ -235,24 +241,11 @@ public class IndexController {
         return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
-    //所有信息是否完整
-    private boolean isInfoInComplete(Profile profile) {
-        return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
-                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
-    }
-
-    //个人信息是否完整
-    private boolean isPersonalInfoInComplete(Profile profile) {
-        return profile.getRealName() == null ||
-                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
-    }
-
     /**
      * 主菜单：训练营
      */
     @RequestMapping(value = "/rise/static/camp", method = RequestMethod.GET)
-    public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
+    public ModelAndView getCampIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         if (unionUser == null) {
             WebUtils.auth(request, response);
             return null;
@@ -285,11 +278,20 @@ public class IndexController {
         List<RiseMember> riseMembers = accountService.loadAllRiseMembersByProfileId(unionUser.getId());
         ModuleShow moduleShow = getModuleShow(unionUser, riseMembers);
 
+        // 当前身份如果是商学院会员，直接跳转着陆页
+        Boolean isValidRiseMember = riseMembers.stream().anyMatch(item -> !item.getExpired() && ((item.getMemberTypeId() == RiseMember.ELITE ||
+                item.getMemberTypeId() == RiseMember.HALF_ELITE) || item.getMemberTypeId() == RiseMember.ANNUAL ||
+                item.getMemberTypeId() == RiseMember.HALF));
+        if (isValidRiseMember) {
+            response.sendRedirect(HOME_LANDING_PAGE);
+            return null;
+        }
+
         //是否买过或曾经买过 商学院/专业版
-        Boolean isMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
+        Boolean isCampMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
         Profile profile = accountService.getProfile(unionUser.getId());
 
-        if (isMember && isPersonalInfoInComplete(profile)) {
+        if (isCampMember && isPersonalInfoInComplete(profile)) {
             // 未填写信息的已购买专项课的 “新” 会员
             response.sendRedirect(PROFILE_CAMP_SUBMIT);
             return null;
@@ -308,6 +310,17 @@ public class IndexController {
         }
 
         return courseView(request, response, channel, moduleShow, RISE_VIEW);
+    }
+
+    //所有信息是否完整
+    private boolean isInfoInComplete(Profile profile) {
+        return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
+                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
+    }
+
+    //个人信息是否完整
+    private boolean isPersonalInfoInComplete(Profile profile) {
+        return profile.getRealName() == null || (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
     }
 
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
