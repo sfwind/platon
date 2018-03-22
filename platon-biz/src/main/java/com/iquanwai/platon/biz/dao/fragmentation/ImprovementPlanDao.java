@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -84,25 +83,6 @@ public class ImprovementPlanDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
-    }
-
-    public List<ImprovementPlan> loadPlansByProfileIds(List<Integer> profileIds, Integer problemId) {
-        if (profileIds.size() == 0) {
-            return Lists.newArrayList();
-        }
-
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId in (" + produceQuestionMark(profileIds.size()) + ") AND ProblemId = ? And Del=0";
-        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
-        List<Object> objects = Lists.newArrayList();
-        objects.addAll(profileIds);
-        objects.add(problemId);
-        try {
-            return runner.query(sql, h, objects.toArray());
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
     }
 
     public ImprovementPlan getLastPlan(Integer profileId) {
@@ -278,22 +258,6 @@ public class ImprovementPlanDao extends PracticeDBUtil {
     }
 
     /**
-     * 获取当前课程此时已经学习过的人数
-     */
-    public int loadChosenPersonCount(Integer problemId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT COUNT(DISTINCT(ProfileId)) FROM ImprovementPlan WHERE ProblemId = ? And Del=0";
-        ResultSetHandler<Long> h = new ScalarHandler<>();
-        try {
-            Long result = runner.query(sql, h, problemId);
-            return result.intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return 0;
-    }
-
-    /**
      * 当前会员期间内学习的课程
      */
     public List<ImprovementPlan> loadRiseMemberPlans(Integer profileId, Date startDate) {
@@ -307,17 +271,4 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
-
-    public List<ImprovementPlan> loadPlanIdsByPage(Page page) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT Id, ProblemId FROM ImprovementPlan WHERE Del = 0 LIMIT " + page.getOffset() + ", " + page.getLimit() + ";";
-        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
-        try {
-            return runner.query(sql, h);
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
-
 }

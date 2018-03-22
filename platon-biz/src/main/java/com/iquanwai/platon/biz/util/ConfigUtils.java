@@ -328,6 +328,10 @@ public class ConfigUtils {
         return Lists.newArrayList(openIdsStr.split(","));
     }
 
+    public static String feedbackAlarmOpenId() {
+        return getValue("feedback.alarm.openid");
+    }
+
     /**
      * 账户变动提醒
      */

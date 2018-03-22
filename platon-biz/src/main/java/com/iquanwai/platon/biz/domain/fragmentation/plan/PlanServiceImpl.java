@@ -870,64 +870,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public void adjustPracticePlan() {
-        int maxSize = 10000;
-
-        Page page = new Page();
-        page.setPageSize(maxSize);
-        page.setPage(0);
-
-        List<ImprovementPlan> improvementPlans = Lists.newArrayList();
-        List<PracticePlan> insertPracticePlans = Lists.newArrayList();
-
-        do {
-            logger.info("开始进行第 {} 批次调用处理", page.getPage() + 1);
-            improvementPlans.clear();
-            insertPracticePlans.clear();
-
-            improvementPlans = improvementPlanDao.loadPlanIdsByPage(page);
-            for (ImprovementPlan improvementPlan : improvementPlans) {
-                logger.info("正在处理学习计划 PlanId：{}", improvementPlan.getId());
-
-                Integer planId = improvementPlan.getId();
-                Integer problemId = improvementPlan.getProblemId();
-                PracticePlan introduction = practicePlanDao.loadProblemIntroduction(planId);
-                if (introduction == null) {
-                    PracticePlan targetPlan = new PracticePlan();
-                    BeanUtils.copyProperties(getDefaultIntroductionPracticePlan(), targetPlan);
-                    targetPlan.setPlanId(planId);
-                    targetPlan.setPracticeId(problemId + "");
-                    insertPracticePlans.add(targetPlan);
-                }
-            }
-            // 塞入数据库
-            practicePlanDao.batchInsert(insertPracticePlans);
-            // 更新换页信息
-            page.setPage(page.getPage() + 1);
-        } while (improvementPlans.size() == maxSize);
-    }
-
-    @Override
     public List<CourseSchedule> loadAllCourseSchedules(Integer profileId) {
         return courseScheduleDao.getAllScheduleByProfileId(profileId);
-    }
-
-
-    /**
-     * 用来特殊处理 PracticePlan
-     */
-    private PracticePlan basePracticePlan;
-
-    private PracticePlan getDefaultIntroductionPracticePlan() {
-        if (basePracticePlan == null) {
-            basePracticePlan = new PracticePlan();
-            basePracticePlan.setType(PracticePlan.INTRODUCTION);
-            basePracticePlan.setSeries(0);
-            basePracticePlan.setSequence(1);
-            basePracticePlan.setStatus(1);
-            basePracticePlan.setUnlocked(true);
-        }
-        return basePracticePlan;
     }
 
 }

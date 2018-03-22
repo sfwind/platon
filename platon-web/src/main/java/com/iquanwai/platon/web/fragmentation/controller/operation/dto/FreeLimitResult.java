@@ -1,4 +1,4 @@
-package com.iquanwai.platon.web.fragmentation.controller.operation;
+package com.iquanwai.platon.web.fragmentation.controller.operation.dto;
 
 import lombok.Data;
 

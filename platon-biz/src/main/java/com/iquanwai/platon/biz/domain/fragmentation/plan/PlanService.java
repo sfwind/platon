@@ -209,8 +209,6 @@ public interface PlanService {
      */
     void unlockNeverUnlockPlans(Integer profileId);
 
-    void adjustPracticePlan();
-
     /**
      * 获取某个人所有的学习计划
      */

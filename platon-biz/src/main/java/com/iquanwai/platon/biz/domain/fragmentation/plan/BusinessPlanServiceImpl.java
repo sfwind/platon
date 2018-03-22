@@ -171,7 +171,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 .collect(Collectors.toMap(ImprovementPlan::getProblemId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
         // 获取所有正在进行课程的 ProblemIds
         List<Integer> runningProblemIds = improvementPlans.stream()
-                .filter(plan -> ImprovementPlan.RUNNING == plan.getStatus())
+                .filter(plan -> ImprovementPlan.RUNNING == plan.getStatus() ||
+                       ImprovementPlan.COMPLETE == plan.getStatus())
                 .map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 获取所有已经完成课程的 ProblemIds
         List<Integer> completeProblemIds = improvementPlans.stream()
