@@ -178,6 +178,8 @@ public class BackendController {
     @RequestMapping(value = "/open/course/memberid", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> backendForceOpenCourse(UnionUser unionUser, @RequestBody ForceOpenPlanParams params) {
         logger.info("enter force open course");
+        ActionLog actionLog = ActionLog.create().module("打点").action("课程强开").function("后台功能").uid(unionUser.getId());
+        operationLogService.log(actionLog);
 
         List<String> memberIds = params.getMemberIds();
         List<Integer> profileIds = accountService.getProfileIdsByMemberId(memberIds);
