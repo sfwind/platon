@@ -177,8 +177,9 @@ public class BackendController {
 
     @RequestMapping(value = "/open/course/memberid", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> backendForceOpenCourse(UnionUser unionUser, @RequestBody ForceOpenPlanParams params) {
-        List<String> memberIds = params.getMemberIds();
+        logger.info("enter force open course");
 
+        List<String> memberIds = params.getMemberIds();
         List<Integer> profileIds = accountService.getProfileIdsByMemberId(memberIds);
         Integer problemId = params.getProblemId();
         Date startDate = params.getStartDate();
