@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.EventWall;
@@ -23,7 +24,10 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.WebUtils;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +40,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,8 @@ public class CustomerController {
     private CustomerService customerService;
     @Autowired
     private UnionUserService unionUserService;
+    @Autowired
+    private StudyService studyService;
 
     private final static int classSize = 6;
 
@@ -84,16 +88,16 @@ public class CustomerController {
     }
 
 
-    @RequestMapping(value = "/profile/info",method = RequestMethod.GET)
+    @RequestMapping(value = "/profile/info", method = RequestMethod.GET)
     @ApiOperation("查询个人中心首页信息")
-    public ResponseEntity<Map<String,Object>> getProfileInfo(UnionUser unionUser){
+    public ResponseEntity<Map<String, Object>> getProfileInfo(UnionUser unionUser) {
         UserStudyDto userStudyDto = new UserStudyDto();
         Integer profileId = unionUser.getId();
         Profile profile = accountService.getProfile(profileId);
         userStudyDto.setNickName(profile.getNickname());
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
-        if(riseClassMember!=null) {
+        if (riseClassMember != null) {
             userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
@@ -102,12 +106,12 @@ public class CustomerController {
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
-        if(riseMember!=null){
+        if (riseMember != null) {
             userStudyDto.setMemberTypeId(riseMember.getMemberTypeId());
-        }else{
+        } else {
             userStudyDto.setMemberTypeId(0);
         }
-        userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0,Integer::sum));
+        userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0, Integer::sum));
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
         userStudyDto.setCertificateSum(certificateSum);
@@ -175,7 +179,7 @@ public class CustomerController {
         }
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if(riseClassMember!=null) {
+        if (riseClassMember != null) {
             profileDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
@@ -184,9 +188,9 @@ public class CustomerController {
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
-        if(riseMember!=null){
+        if (riseMember != null) {
             profileDto.setMemberTypeId(riseMember.getMemberTypeId());
-        }else{
+        } else {
             profileDto.setMemberTypeId(0);
         }
         profileDto.setRiseId(account.getRiseId());
@@ -395,9 +399,9 @@ public class CustomerController {
         return WebUtils.result(list);
     }
 
-    @RequestMapping(value = "/finished/plans",method = RequestMethod.GET)
+    @RequestMapping(value = "/finished/plans", method = RequestMethod.GET)
     @ApiOperation("查询用户已经完成的课程")
-    public ResponseEntity<Map<String,Object>> loadFinishedPlans(UnionUser unionUser){
+    public ResponseEntity<Map<String, Object>> loadFinishedPlans(UnionUser unionUser) {
         List<ImprovementPlan> plans = planService.getPlans(unionUser.getId());
         PlanListDto list = new PlanListDto();
         List<PlanDto> donePlans = Lists.newArrayList();
@@ -407,7 +411,7 @@ public class CustomerController {
             planDto.setName(problemService.getProblem(item.getProblemId()).getProblem());
             planDto.setPoint(item.getPoint());
             planDto.setProblemId(item.getProblemId());
-             if (item.getStatus() == ImprovementPlan.CLOSE) {
+            if (item.getStatus() == ImprovementPlan.CLOSE) {
                 donePlans.add(planDto);
             }
             planDto.setProblem(cacheService.getProblem(item.getProblemId()).simple());
@@ -419,7 +423,6 @@ public class CustomerController {
         list.setPoint(profile.getPoint());
         return WebUtils.result(list);
     }
-
 
     @RequestMapping(value = "/member", method = RequestMethod.GET)
     @ApiOperation("查询用户会员信息")
@@ -498,81 +501,83 @@ public class CustomerController {
         return WebUtils.result(couponDto);
     }
 
+    @RequestMapping(value = "/get/certificate", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> getCertificates(UnionUser unionUser) {
+        List<RiseCertificate> certificateList = certificateService.getCertificates(unionUser.getId());
 
-    @RequestMapping(value = "/get/certificate",method = RequestMethod.GET)
-    public ResponseEntity<Map<String,Object>> getCertificates(UnionUser unionUser){
-       List<RiseCertificate> certificateList =  certificateService.getCertificates(unionUser.getId());
+        List<RiseCertificate> finishList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 5).collect(Collectors.toList());
+        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6).collect(Collectors.toList());
 
-       List<RiseCertificate> finishList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType()==5).collect(Collectors.toList());
-       List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate ->  riseCertificate.getType()==1 || riseCertificate.getType()==2||riseCertificate.getType()==3||riseCertificate.getType()==4||riseCertificate.getType()==6).collect(Collectors.toList());
+        List<CertificateDto> finishDtos = Lists.newArrayList();
+        List<CertificateDto> gradeDtos = Lists.newArrayList();
 
-       List<CertificateDto> finishDtos = Lists.newArrayList();
-       List<CertificateDto> gradeDtos = Lists.newArrayList();
+        List<Problem> problems = problemService.loadProblems();
 
-       List<Problem> problems = problemService.loadProblems();
-
-       finishList.forEach(riseCertificate -> {
+        finishList.forEach(riseCertificate -> {
             CertificateDto certificateDto = new CertificateDto();
-            BeanUtils.copyProperties(riseCertificate,certificateDto);
+            BeanUtils.copyProperties(riseCertificate, certificateDto);
             certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
 
             List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
-           if(problems1.size()>0){
-               certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
-           }else{
-               certificateDto.setAbbreviation(riseCertificate.getProblemName());
-           }
+            if (problems1.size() > 0) {
+                certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
+            } else {
+                certificateDto.setAbbreviation(riseCertificate.getProblemName());
+            }
             finishDtos.add(certificateDto);
-       });
+        });
 
-       gradeList.forEach(riseCertificate -> {
-           CertificateDto certificateDto = new CertificateDto();
-           BeanUtils.copyProperties(riseCertificate,certificateDto);
-           certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
+        gradeList.forEach(riseCertificate -> {
+            CertificateDto certificateDto = new CertificateDto();
+            BeanUtils.copyProperties(riseCertificate, certificateDto);
+            certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
 
-           List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
-           if(problems1.size()>0){
-               certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
-           }else{
-               certificateDto.setAbbreviation(riseCertificate.getProblemName());
-           }
-           gradeDtos.add(certificateDto);
-       });
+            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            if (problems1.size() > 0) {
+                certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
+            } else {
+                certificateDto.setAbbreviation(riseCertificate.getProblemName());
+            }
+            gradeDtos.add(certificateDto);
+        });
 
-       CertificateListDto certificateListDto = new CertificateListDto();
-       certificateListDto.setFinishDto(finishDtos);
-       certificateListDto.setGradeDto(gradeDtos);
+        CertificateListDto certificateListDto = new CertificateListDto();
+        certificateListDto.setFinishDto(finishDtos);
+        certificateListDto.setGradeDto(gradeDtos);
 
-       return WebUtils.result(certificateListDto);
+        return WebUtils.result(certificateListDto);
     }
 
+    @RequestMapping(value = "/get/countdown/status", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadCurrentRiseMember(UnionUser unionUser) {
+        RiseMemberStatusDto riseMemberStatusDto = new RiseMemberStatusDto();
+        Pair<Boolean, Integer> result = studyService.shouldGoCountDownPage(unionUser.getId());
+        riseMemberStatusDto.setGoCountDownPage(result.getLeft());
+        riseMemberStatusDto.setMemberTypeId(result.getRight());
+        return WebUtils.result(riseMemberStatusDto);
+    }
 
-    private String getCertificateName(Integer type){
-        if(type==1){
+    private String getCertificateName(Integer type) {
+        if (type == 1) {
             return "优秀班长";
         }
-        if(type==2){
+        if (type == 2) {
             return "优秀组长";
         }
-        if(type==3){
+        if (type == 3) {
             return "优秀学员";
         }
-        if(type==4){
+        if (type == 4) {
             return "优秀团队";
         }
-        if(type==5){
+        if (type == 5) {
             return "结课证书";
         }
-        if(type==6){
+        if (type == 6) {
             return "优秀助教";
         }
         return "未知类型";
     }
-
-
-
-
-
 
     @RequestMapping(value = "/feedback", method = RequestMethod.POST)
     @ApiOperation("用户提交意见反馈")
