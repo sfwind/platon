@@ -16,10 +16,10 @@ public class ArticlesFlow {
     private String title;
     @ApiModelProperty("文章描述")
     private String description;
-    @ApiModelProperty("文章内容")
-    private String content;
     @ApiModelProperty("缩略图地址")
     private String thumbnail;
+    @ApiModelProperty("链接地址")
+    private String linkUrl;
     @ApiModelProperty("文章链接参数")
     private String linkParam;
 

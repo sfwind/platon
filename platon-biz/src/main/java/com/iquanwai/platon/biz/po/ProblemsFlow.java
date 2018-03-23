@@ -12,6 +12,8 @@ import lombok.Data;
 public class ProblemsFlow {
 
     private Integer id;
+    @ApiModelProperty("ProblemId")
+    private Integer problemId;
     @ApiModelProperty("课程缩略名")
     private String abbreviation;
     @ApiModelProperty("课程名")
