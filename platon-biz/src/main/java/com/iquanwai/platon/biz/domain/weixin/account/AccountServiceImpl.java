@@ -455,7 +455,6 @@ public class AccountServiceImpl implements AccountService {
         if(profile.getNickname()!=null){
             oldProfile.setNickname(profile.getNickname());
         }
-        logger.info("oldProfile:"+oldProfile);
         Boolean result = profileDao.submitNewProfile(oldProfile);
         if (result && oldProfile.getIsFull() == 0) {
             logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());

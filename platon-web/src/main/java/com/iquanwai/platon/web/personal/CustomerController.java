@@ -220,7 +220,7 @@ public class CustomerController {
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
-        logger.info("profile:"+profile);
+        profile.setNickname(profileDto.getNickName());
         accountService.submitNewProfile(profile);
         return WebUtils.success();
     }
