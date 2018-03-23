@@ -191,6 +191,7 @@ public class CustomerController {
             profileDto.setMemberTypeId(0);
         }
         profileDto.setRiseId(account.getRiseId());
+        profileDto.setIsFull(account.getIsFull()==1);
         profileDto.setNickName(account.getNickname());
         profileDto.setHeadImgUrl(account.getHeadimgurl());
         profileDto.setBindMobile(bindMobile);
