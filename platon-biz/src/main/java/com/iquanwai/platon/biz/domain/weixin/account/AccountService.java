@@ -95,6 +95,11 @@ public interface AccountService {
     void submitPersonalCenterProfile(Profile profile);
 
     /**
+     * 在新个人中心提交用户信息
+     * @param profile
+     */
+    void submitNewProfile(Profile profile);
+    /**
      * 查看证书时提交用户信息
      */
     void submitCertificateProfile(Profile profile);

@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
@@ -210,6 +211,21 @@ public class CustomerController {
         accountService.submitPersonalCenterProfile(profile);
         return WebUtils.success();
     }
+
+    @RequestMapping(value="/new/profile",method = RequestMethod.POST)
+    @ApiOperation("提交个人中心信息")
+    public ResponseEntity<Map<String,Object>> submitNewProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto){
+        Assert.notNull(unionUser, "用户信息不能为空");
+
+        Profile profile = new Profile();
+        BeanUtils.copyProperties(profileDto, profile);
+        profile.setId(unionUser.getId());
+        accountService.submitNewProfile(profile);
+        return WebUtils.success();
+    }
+
+
+
 
     @RequestMapping(value = "/profile/headImg/upload", method = RequestMethod.POST)
     @ApiOperation("上传个人头像")
