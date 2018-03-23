@@ -410,6 +410,9 @@ public class AccountServiceImpl implements AccountService {
         if (profile.getCity() != null) {
             oldProfile.setCity(profile.getCity());
         }
+        if(profile.getNickname()!=null){
+            oldProfile.setNickname(profile.getNickname());
+        }
 
         Boolean result = profileDao.submitPersonalCenterProfileWithMoreDetail(oldProfile);
         if (result && oldProfile.getIsFull() == 0) {
