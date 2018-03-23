@@ -395,19 +395,19 @@ public class AccountServiceImpl implements AccountService {
         if (profile.getMarried() != null) {
             oldProfile.setMarried(profile.getMarried());
         }
-        if(profile.getFunction()!=null){
+        if (profile.getFunction() != null) {
             oldProfile.setFunction(profile.getFunction());
         }
-        if(profile.getWorkingYear()!=null){
+        if (profile.getWorkingYear() != null) {
             oldProfile.setWorkingYear(profile.getWorkingYear());
         }
-        if(profile.getIndustry()!=null){
+        if (profile.getIndustry() != null) {
             oldProfile.setIndustry(profile.getIndustry());
         }
-        if(profile.getProvince()!=null){
+        if (profile.getProvince() != null) {
             oldProfile.setProvince(profile.getProvince());
         }
-        if(profile.getCity()!=null){
+        if (profile.getCity() != null) {
             oldProfile.setCity(profile.getCity());
         }
 
@@ -649,7 +649,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean isBusinessRiseMember(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        return riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE;
+        return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
     }
 
     // 生成用来发送更新 mq 的信息

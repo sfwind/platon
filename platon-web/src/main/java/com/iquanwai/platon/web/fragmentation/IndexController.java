@@ -86,8 +86,6 @@ public class IndexController {
 
     // 产品着陆页
     private static final String HOME_LANDING_PAGE = "/rise/static/home";
-    // 产品学习页面
-    private static final String LEARN_PAGE = "/rise/static/learn";
 
     private static final String RISE_VIEW = "course";
 
