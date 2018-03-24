@@ -66,7 +66,7 @@ public class IndexController {
     private static final String FORBID_URL = "/403.jsp";
     // 专项课售卖页
     private static final String CAMP_SALE_URL = "http://mp.weixin.qq.com/s?__biz=MzI1OTQ2OTY1OA==&mid=100000747&idx=1&sn=cffa80cc2c9303f102d40df574e3981c&chksm=6a793bde5d0eb2c89cf04523362a1ba1e1f49030e6bb6be38d167b4a6be9dd31a4e47465f6d2#rd";
-//    private static final String CAMP_SALE_URL = "/pay/camp";
+    //    private static final String CAMP_SALE_URL = "/pay/camp";
     // 专项课倒计时页面
     private static final String CAMP_COUNT_DOWN_URL = "/rise/static/camp/count/down";
     // 商学院售卖页
@@ -378,8 +378,13 @@ public class IndexController {
 
         // 是否显示发现tab
         // 谁不显示：有课程计划表则不显示
-        Boolean showExplore = whiteListService.isShowExploreTab(unionUser.getId(), riseMembers);
-        moduleShow.setShowExplore(showExplore);
+        // Boolean showExplore = whiteListService.isShowEx
+        RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.HALF)) {
+            moduleShow.setShowExplore(true);
+        } else {
+            moduleShow.setShowExplore(false);
+        }
         return moduleShow;
     }
 
