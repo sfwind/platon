@@ -40,6 +40,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -694,6 +695,13 @@ public class AccountServiceImpl implements AccountService {
     public boolean isBusinessRiseMember(Integer profileId) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
+    }
+
+    @Override
+    public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
+        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberIds(memberIds);
+        List<Integer> profileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).distinct().collect(Collectors.toList());
+        return profileIds;
     }
 
     // 生成用来发送更新 mq 的信息

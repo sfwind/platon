@@ -218,5 +218,17 @@ public interface AccountService {
      */
     boolean isPreviewNewUser(Integer profileId);
 
+    /**
+     * 现在是否是会员
+     * @param profileId
+     * @return
+     */
     boolean isBusinessRiseMember(Integer profileId);
+
+    /**
+     * 根据学号获取用户 id
+     * @param memberIds
+     * @return
+     */
+    List<Integer> getProfileIdsByMemberId(List<String> memberIds);
 }

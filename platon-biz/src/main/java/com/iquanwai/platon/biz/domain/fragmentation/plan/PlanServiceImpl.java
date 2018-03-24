@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +167,7 @@ public class PlanServiceImpl implements PlanService {
         chapters.forEach(chapter -> chapter.getSections().forEach(section -> {
             List<Practice> newPractices = Lists.newArrayList();
             List<Practice> practices = practiceMap.get(section.getSeries());
+            practices = practices.stream().sorted(Comparator.comparing(Practice::getSequence)).collect(Collectors.toList());
             //添加小课介绍
             if (section.getSeries() == 1) {
                 PracticePlan practicePlan = practicePlanDao.loadProblemIntroduction(improvementPlan.getId());
