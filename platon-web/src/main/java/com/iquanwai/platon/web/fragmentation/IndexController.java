@@ -380,7 +380,7 @@ public class IndexController {
         // 谁不显示：有课程计划表则不显示
         // Boolean showExplore = whiteListService.isShowEx
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.HALF)) {
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.HALF || riseMember.getMemberTypeId() == RiseMember.ANNUAL)) {
             moduleShow.setShowExplore(true);
         } else {
             moduleShow.setShowExplore(false);
