@@ -328,6 +328,10 @@ public class ConfigUtils {
         return Lists.newArrayList(openIdsStr.split(","));
     }
 
+    public static String feedbackAlarmOpenId() {
+        return getValue("feedback.alarm.openid");
+    }
+
     /**
      * 账户变动提醒
      */
@@ -379,7 +383,6 @@ public class ConfigUtils {
         return getValue("team.promotion.code.image");
     }
 
-
     public static String getXiaoYQRCode() {
         return getValue("xiao.y.mediaid");
     }
@@ -398,6 +401,10 @@ public class ConfigUtils {
 
     public static String getInternalPort() {
         return getValue("internal.port");
+    }
+
+    public static String getLandingPageBanner() {
+        return getValue("landing.page.banner");
     }
 
 }

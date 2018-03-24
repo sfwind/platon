@@ -213,6 +213,22 @@ public class ProfileDao extends DBUtil {
         return true;
     }
 
+    public boolean submitNewProfile(Profile profile) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        String updateSql = "Update Profile Set NickName = ?, Industry=?, Function=?, WorkingYear=?, City=?, Province=?," +
+                "RealName=?,Address=?,Receiver=?,Married=? where id=?";
+        try {
+            run.update(updateSql, profile.getNickname(),profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
+                    profile.getCity(), profile.getProvince(), profile.getRealName(), profile.getAddress(),
+                    profile.getReceiver(), profile.getMarried(), profile.getId());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        return true;
+    }
+
+
     public boolean submitCertificateProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set Industry=?, Function=?, WorkingLife=?, City=?, Province=?, RealName=? where id=?";

@@ -239,6 +239,25 @@ public class ProblemServiceImpl implements ProblemService {
         return new MutablePair<>(problem, cards);
     }
 
+    @Override
+    public Integer getFinishedCards(Integer profileId) {
+        List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
+        Integer sum = 0;
+        for(ImprovementPlan plan:plans){
+            List<Chapter> chapters = problemScheduleManager.loadRoadMap(plan.getId());
+            Integer completeSeries = plan.getCompleteSeries();
+
+            for(Chapter chapter:chapters){
+                List<Section> sections = chapter.getSections();
+                Long resultCnt = sections.stream().filter(section -> section.getSeries() > completeSeries).count();
+                Integer completedChapter = resultCnt > 0 ? chapter.getChapter() - 1 : chapter.getChapter();
+                sum+=completedChapter;
+            }
+        }
+
+        return sum;
+    }
+
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
