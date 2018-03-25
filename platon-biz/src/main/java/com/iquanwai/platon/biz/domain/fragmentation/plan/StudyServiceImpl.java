@@ -3,19 +3,22 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.*;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,10 @@ public class StudyServiceImpl implements StudyService {
     private PracticePlanStatusManager practicePlanStatusManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -119,6 +126,33 @@ public class StudyServiceImpl implements StudyService {
         studyLine.setStatus(improvementPlan.getStatus());
 
         return studyLine;
+    }
+
+    @Override
+    public Pair<Boolean, Integer> shouldGoCountDownPage(Integer profileId) {
+        RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if (validRiseMember == null) {
+            return new MutablePair<>(false, null);
+        } else {
+            int memberTypeId = validRiseMember.getMemberTypeId();
+            if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
+                    || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE
+                    || memberTypeId == RiseMember.CAMP) {
+                // 有正在进行的学习
+                RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+                if (riseClassMember != null) {
+                    return new MutablePair<>(false, null);
+                }
+
+                // 已经进入会员有效期
+                if (new Date().compareTo(validRiseMember.getOpenDate()) >= 0) {
+                    return new MutablePair<>(false, null);
+                }
+            } else {
+                return new MutablePair<>(false, null);
+            }
+            return new MutablePair<>(true, memberTypeId);
+        }
     }
 
     private List<ReviewPractice> buildReviewPractice(List<PracticePlan> practicePlans, boolean close) {

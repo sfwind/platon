@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.IOException;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Map;
  */
 @RequestMapping("/rise/wx/js")
 @Controller
+@ApiIgnore
 public class JsController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
