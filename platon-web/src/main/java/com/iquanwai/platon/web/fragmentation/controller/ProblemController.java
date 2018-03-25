@@ -56,6 +56,20 @@ public class ProblemController {
         Assert.notNull(unionUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
+        //TODO:专业版可以学习problemId = 5, 11, 13
+        List<Integer> problemIds = problems.stream().map(Problem::getId).collect(Collectors.toList());
+        // 逻辑谬误
+        if(!problemIds.contains(5)){
+            problems.add(problemService.getProblem(5));
+        }
+        // 行为分析
+        if(!problemIds.contains(11)){
+            problems.add(problemService.getProblem(11));
+        }
+        // 公开演讲
+        if(!problemIds.contains(13)){
+            problems.add(problemService.getProblem(13));
+        }
 
         //非天使用户去除试用版课程
         if (!whiteListService.isInWhiteList(WhiteList.TRIAL, unionUser.getId())) {
