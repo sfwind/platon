@@ -1,6 +1,8 @@
 package com.iquanwai.platon.biz.domain.daily;
 
 import com.iquanwai.platon.biz.dao.daily.DailyTalkDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
 import com.iquanwai.platon.biz.util.*;
 import org.slf4j.Logger;
@@ -17,6 +19,8 @@ import java.io.*;
 public class DailyServiceImpl implements DailyService{
     @Autowired
     private DailyTalkDao dailyTalkDao;
+    @Autowired
+    private AccountService accountService;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
@@ -29,25 +33,36 @@ public class DailyServiceImpl implements DailyService{
 
 
     @Override
-    public String drawDailyTalk(String currentDate) {
+    public String drawDailyTalk(Integer profileId,String currentDate) {
       DailyTalk dailyTalk =  dailyTalkDao.loadByShowDate(currentDate);
-      return drawTalk(dailyTalk);
+      Profile profile =accountService.getProfile(profileId);
+      return drawTalk(profile,dailyTalk);
     }
 
 
     /**
      * 绘制每日圈语图片
+     * @param profile
      * @param dailyTalk
      * @return
      */
-    private String drawTalk(DailyTalk dailyTalk){
+    private String drawTalk(Profile profile,DailyTalk dailyTalk){
 
+        String url = dailyTalk.getUrl();
+        String content = dailyTalk.getContent();
+
+        String nickName = profile.getNickname();
+        String headImg = profile.getHeadimgurl();
         // 绘图准备
         ByteArrayOutputStream  outputStream = new ByteArrayOutputStream();
 
-
         BufferedImage inputImage = ImageUtils.copy(talkImg);
-
+        //绘制头像
+        if(headImg!=null){
+            BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND));
+            headBuffer = ImageUtils.scaleByPercentage(headBuffer,37,37);
+            inputImage = ImageUtils.overlapImage(inputImage,headBuffer,20,20);
+        }
         ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
         try {

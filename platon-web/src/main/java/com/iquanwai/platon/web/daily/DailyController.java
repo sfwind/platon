@@ -29,7 +29,7 @@ public class DailyController {
     public ResponseEntity<Map<String,Object>> getDailyTalk(UnionUser unionUser){
         String currentDate = DateUtils.parseDateToString(new Date());
 
-        return WebUtils.result(dailyService.drawDailyTalk(currentDate));
+        return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(),currentDate));
     }
 
 

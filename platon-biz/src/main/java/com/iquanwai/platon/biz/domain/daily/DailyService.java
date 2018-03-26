@@ -4,7 +4,13 @@ package com.iquanwai.platon.biz.domain.daily;
 
 public interface DailyService {
 
-    String drawDailyTalk(String currentDate);
+    /**
+     * 绘制每日圈语
+     * @param profileId
+     * @param currentDate
+     * @return
+     */
+    String drawDailyTalk(Integer profileId,String currentDate);
 
 
 }
