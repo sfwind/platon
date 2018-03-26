@@ -11,7 +11,7 @@ import java.util.Date;
  */
 @Data
 @ApiModel("活动对象")
-public class ActivitiesFlow {
+public class ActivitiesFlow extends FlowData {
 
     private Integer id;
     @ApiModelProperty("活动名称")
@@ -28,11 +28,26 @@ public class ActivitiesFlow {
     private Date endTime;
     @ApiModelProperty("活动状态")
     private Integer status;
+    @ApiModelProperty("会员售卖链接")
+    private String vipSaleLinkUrl;
+    @ApiModelProperty("普通用户售卖链接")
+    private String guestSaleLinkUrl;
     @ApiModelProperty("活动链接")
     private String linkUrl;
+    @ApiModelProperty("目标链接地址")
+    private String targetUrl;
     @ApiModelProperty("链接参数")
     private String linkParam;
 
     private String startTimeStr;
+
+    public interface Status {
+        /** 准备中 */
+        int PREPARE = 1;
+        /** 已关闭报名 */
+        int CLOSED = 2;
+        /** 有回顾链接 */
+        int REVIEW = 3;
+    }
 
 }

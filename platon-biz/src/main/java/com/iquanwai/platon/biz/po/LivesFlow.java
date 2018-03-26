@@ -11,7 +11,7 @@ import java.util.Date;
  */
 @Data
 @ApiModel("直播对象")
-public class LivesFlow {
+public class LivesFlow extends FlowData {
 
     private Integer id;
     @ApiModelProperty("直播名称")
