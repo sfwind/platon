@@ -100,9 +100,7 @@ public class CustomerController {
             userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
-                        Integer.valueOf(className.substring(4, 6)) + "班";
-                userStudyDto.setClassName(tempName);
+                userStudyDto.setClassName(getClassName(className));
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
@@ -182,8 +180,7 @@ public class CustomerController {
             profileDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
-                profileDto.setClassName(tempName.replaceAll("0", ""));
+                profileDto.setClassName(getClassName(className));
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
@@ -600,4 +597,21 @@ public class CustomerController {
 
         return WebUtils.success();
     }
+
+
+    private String getClassName(String className){
+       String tempName =  Integer.valueOf(className.substring(2, 4)) + "月" +
+                        Integer.valueOf(className.substring(4, 6)) + "班";
+
+       if(tempName.charAt(4)=='0'){
+           tempName = tempName.substring(0,4)+tempName.substring(5);
+       }
+       if(tempName.charAt(0)=='0'){
+           tempName = tempName.substring(1);
+       }
+       return tempName;
+    }
+
+
+
 }
