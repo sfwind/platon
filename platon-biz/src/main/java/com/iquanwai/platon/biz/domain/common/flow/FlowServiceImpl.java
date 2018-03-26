@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,17 +107,26 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId) {
         List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
+        boolean isBusinessRiseMember = accountService.isBusinessRiseMember(profileId);
         activitiesFlows = activitiesFlows.stream()
                 .map(activitiesFlow -> {
+                    if (activitiesFlow.getStatus() == ActivitiesFlow.Status.PREPARE && activitiesFlow.getEndTime().compareTo(new Date()) < 0) {
+                        activitiesFlowDao.downLine(activitiesFlow.getId());
+                        activitiesFlow.setStatus(ActivitiesFlow.Status.CLOSED);
+                    }
                     if (activitiesFlow.getStartTime() != null) {
                         activitiesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(activitiesFlow.getStartTime()));
                     }
-                    if (activitiesFlow.getStatus() != ActivitiesFlow.Status.REVIEW) {
-                        activitiesFlow.setTargetUrl(accountService.isBusinessRiseMember(profileId) ? activitiesFlow.getVipSaleLinkUrl() : activitiesFlow.getGuestSaleLinkUrl());
-                    } else {
+                    if (activitiesFlow.getStatus() == ActivitiesFlow.Status.PREPARE) {
+                        activitiesFlow.setTargetUrl(isBusinessRiseMember ? activitiesFlow.getVipSaleLinkUrl() : activitiesFlow.getGuestSaleLinkUrl());
+                    } else if (activitiesFlow.getStatus() == ActivitiesFlow.Status.CLOSED) {
+                        activitiesFlow.setTargetUrl(null);
+                    } else if (activitiesFlow.getStatus() == ActivitiesFlow.Status.REVIEW) {
                         activitiesFlow.setTargetUrl(activitiesFlow.getLinkUrl());
+                    } else {
+                        activitiesFlow.setTargetUrl(null);
                     }
-                    activitiesFlow.setVisibility(accountService.isBusinessRiseMember(profileId));
+                    activitiesFlow.setVisibility(isBusinessRiseMember);
                     return activitiesFlow;
                 })
                 .sorted(Comparator.comparing(ActivitiesFlow::getStartTime).reversed())
