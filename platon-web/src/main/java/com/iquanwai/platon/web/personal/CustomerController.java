@@ -603,8 +603,6 @@ public class CustomerController {
        String tempName =  Integer.valueOf(className.substring(2, 4)) + "月" +
                         Integer.valueOf(className.substring(4, 6)) + "班";
 
-       logger.info(tempName);
-
        if(tempName.charAt(3)=='0'){
            tempName = tempName.substring(0,3)+tempName.substring(4);
        }
