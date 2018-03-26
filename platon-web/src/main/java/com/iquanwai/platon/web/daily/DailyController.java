@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.domain.daily.DailyService;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/rise/daily")
+@Api(description = "日常活动Api")
 public class DailyController {
 
     @Autowired
