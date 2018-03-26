@@ -41,14 +41,10 @@ public class DailyServiceImpl implements DailyService{
      * @return
      */
     private String drawTalk(DailyTalk dailyTalk){
-//        String img = dailyTalk.getUrl();
-//        String content = dailyTalk.getContent();
 
         // 绘图准备
-//        BufferedImage inputImage = null;
-
-        ByteArrayOutputStream outputStream = null;
         ByteArrayInputStream inputStream = null;
+        ByteArrayOutputStream  outputStream = new ByteArrayOutputStream();
 
 
         BufferedImage inputImage = ImageUtils.copy(talkImg);
