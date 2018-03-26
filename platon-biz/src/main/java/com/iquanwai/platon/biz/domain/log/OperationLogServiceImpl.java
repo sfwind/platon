@@ -2,25 +2,47 @@ package com.iquanwai.platon.biz.domain.log;
 
 import com.iquanwai.platon.biz.dao.common.ActionLogDao;
 import com.iquanwai.platon.biz.dao.common.OperationLogDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.ThreadPool;
+import com.sensorsdata.analytics.javasdk.SensorsAnalytics;
+import com.sensorsdata.analytics.javasdk.exceptions.InvalidArgumentException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.support.Assert;
+
+import java.util.Map;
 
 /**
  * Created by justin on 16/9/3.
  */
 @Service
 public class OperationLogServiceImpl implements OperationLogService {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     private OperationLogDao operationLogDao;
     @Autowired
     private ActionLogDao actionLogDao;
+    @Autowired
+    private SensorsAnalytics sa;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
 
     @Override
     public void log(OperationLog operationLog) {
-        if(ConfigUtils.logSwitch()) {
+        if (ConfigUtils.logSwitch()) {
             if (operationLog.getMemo() != null && operationLog.getMemo().length() > 1024) {
                 operationLog.setMemo(operationLog.getMemo().substring(0, 1024));
             }
@@ -30,11 +52,44 @@ public class OperationLogServiceImpl implements OperationLogService {
 
     @Override
     public void log(ActionLog actionLog) {
-        if(ConfigUtils.logSwitch()) {
+        if (ConfigUtils.logSwitch()) {
             if (actionLog.getMemo() != null && actionLog.getMemo().length() > 1024) {
                 actionLog.setMemo(actionLog.getMemo().substring(0, 1024));
             }
             actionLogDao.insert(actionLog);
         }
+    }
+
+    @Override
+    public void trace(Integer profileId, String eventName) {
+        trace(profileId, eventName, new Prop());
+    }
+
+    @Override
+    public void trace(Integer profileId, String eventName, Prop prop) {
+        ThreadPool.execute(() -> {
+            try {
+                Map<String, Object> properties = prop.build();
+                Assert.notNull(profileId, "用户id不能为null");
+                Profile profile = accountService.getProfile(profileId);
+                Integer roleName = 0;
+                RiseMember validRiseMember = accountService.getValidRiseMember(profileId);
+                RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+                if (riseClassMember != null) {
+                    properties.put("className", riseClassMember.getClassName());
+                    properties.put("groupId", riseClassMember.getGroupId());
+                }
+                if (validRiseMember != null) {
+                    roleName = validRiseMember.getMemberTypeId();
+                }
+                properties.put("roleName", roleName);
+                properties.put("isAsst", Role.isAsst(profile.getRole()));
+                properties.put("profileId", profileId);
+
+                sa.track(profileId.toString(), true, eventName, properties);
+            } catch (InvalidArgumentException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
+        });
     }
 }

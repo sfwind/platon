@@ -22,7 +22,7 @@
     <aop:aspectj-autoproxy proxy-target-class="true"/>
     <context:component-scan base-package="com.iquanwai.platon.biz"/>
     <context:annotation-config/>
-    <redisson:client >
+    <redisson:client>
         <redisson:single-server address="${redis.single.address}" password="${redis.single.password}"/>
     </redisson:client>
 
@@ -34,7 +34,8 @@
                                channel-cache-size="20"
                                connection-timeout="15000"
     />
-    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" retry-template="retryTemplate" message-converter="mqConverter">
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" retry-template="retryTemplate"
+                     message-converter="mqConverter">
     </rabbit:template>
 
     <rabbit:annotation-driven/>
@@ -51,9 +52,9 @@
     <bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
         <property name="backOffPolicy">
             <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
-                <property name="initialInterval" value="500" />
-                <property name="multiplier" value="10.0" />
-                <property name="maxInterval" value="10000" />
+                <property name="initialInterval" value="500"/>
+                <property name="multiplier" value="10.0"/>
+                <property name="maxInterval" value="10000"/>
             </bean>
         </property>
     </bean>
@@ -61,4 +62,12 @@
     <!-- rabbit:admin标签会自动扫面queue，exchange和bind类型的声明，然后将它们在broker上生成 -->
     <rabbit:admin id="rabbitAdmin" connection-factory="connectionFactory"/>
 
+    <bean id="sa" class="com.sensorsdata.analytics.javasdk.SensorsAnalytics" destroy-method="shutdown">
+        <constructor-arg index="0">
+            <bean class="com.sensorsdata.analytics.javasdk.SensorsAnalytics.DebugConsumer">
+                <constructor-arg index="0" value="${sensors.server.url}"/>
+                <constructor-arg index="1" value="true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
 </beans>
