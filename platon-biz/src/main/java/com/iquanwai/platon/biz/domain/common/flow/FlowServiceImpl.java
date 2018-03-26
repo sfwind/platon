@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -117,7 +118,9 @@ public class FlowServiceImpl implements FlowService {
                     }
                     activitiesFlow.setVisibility(accountService.isBusinessRiseMember(profileId));
                     return activitiesFlow;
-                }).collect(Collectors.toList());
+                })
+                .sorted(Comparator.comparing(ActivitiesFlow::getStartTime).reversed())
+                .collect(Collectors.toList());
         return activitiesFlows;
     }
 
