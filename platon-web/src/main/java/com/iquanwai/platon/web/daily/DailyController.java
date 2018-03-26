@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/rise/static/daily")
+@RequestMapping("/rise/daily")
 public class DailyController {
 
     @Autowired
