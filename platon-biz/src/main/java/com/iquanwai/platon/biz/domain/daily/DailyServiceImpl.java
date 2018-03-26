@@ -79,6 +79,9 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
+                inputImage = ImageUtils.writeText(inputImage,70,242,"12天",font.deriveFont(32f),Color.BLACK);
+
+
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
                 BASE64Encoder encoder = new BASE64Encoder();
