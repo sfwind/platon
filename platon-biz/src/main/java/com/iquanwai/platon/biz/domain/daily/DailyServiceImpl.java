@@ -48,7 +48,8 @@ public class DailyServiceImpl implements DailyService{
      */
     private String drawTalk(Profile profile,DailyTalk dailyTalk){
         if(dailyTalk!=null) {
-            String url = dailyTalk.getUrl();
+            logger.info("dailyTalk:"+dailyTalk.toString());
+            String url = dailyTalk.getImgUrl();
             String content = dailyTalk.getContent();
 
             String nickName = profile.getNickname();
@@ -67,11 +68,11 @@ public class DailyServiceImpl implements DailyService{
 
             if(url!=null){
                 BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
-                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,0,200,60,60);
+                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,0,400,750,504);
+
             }
 
-                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-
+            ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
             BASE64Encoder encoder = new BASE64Encoder();
             try {

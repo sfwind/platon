@@ -11,7 +11,7 @@ import java.util.Date;
 public class DailyTalk {
 
     @ApiModelProperty("圈语图片链接")
-    private String url;
+    private String imgUrl;
     @ApiModelProperty("圈语内容")
     private String content;
     @ApiModelProperty("显示日期")
