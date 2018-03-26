@@ -12,11 +12,12 @@ import org.springframework.stereotype.Service;
 import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
 @Service
-public class DailyServiceImpl implements DailyService{
+public class DailyServiceImpl implements DailyService {
     @Autowired
     private DailyTalkDao dailyTalkDao;
     @Autowired
@@ -27,58 +28,66 @@ public class DailyServiceImpl implements DailyService{
     private static BufferedImage talkImg = null;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         talkImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND);
     }
 
 
     @Override
-    public String drawDailyTalk(Integer profileId,String currentDate) {
-      DailyTalk dailyTalk =  dailyTalkDao.loadByShowDate(currentDate);
-      Profile profile =accountService.getProfile(profileId);
-      return drawTalk(profile,dailyTalk);
+    public String drawDailyTalk(Integer profileId, String currentDate) {
+        DailyTalk dailyTalk = dailyTalkDao.loadByShowDate(currentDate);
+        Profile profile = accountService.getProfile(profileId);
+        return drawTalk(profile, dailyTalk);
     }
 
 
     /**
      * 绘制每日圈语图片
+     *
      * @param profile
      * @param dailyTalk
      * @return
      */
-    private String drawTalk(Profile profile,DailyTalk dailyTalk){
-        if(dailyTalk!=null) {
-            logger.info("dailyTalk:"+dailyTalk.toString());
+    private String drawTalk(Profile profile, DailyTalk dailyTalk) {
+        if (dailyTalk != null) {
+            logger.info("dailyTalk:" + dailyTalk.toString());
             String url = dailyTalk.getImgUrl();
             String content = dailyTalk.getContent();
 
             String nickName = profile.getNickname();
             String headImg = profile.getHeadimgurl();
+            InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
             // 绘图准备
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-            BufferedImage inputImage = ImageUtils.copy(talkImg);
-            //绘制头像
-            if (headImg != null) {
-                BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
-                //圆形
-                headBuffer = ImageUtils.convertCircular(headBuffer);
-                inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer,40,32, 74, 74);
-            }
-
-            if(url!=null){
-                BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
-                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,0,400,750,504);
-
-            }
-
-            ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-
-            BASE64Encoder encoder = new BASE64Encoder();
             try {
+                Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+                BufferedImage inputImage = ImageUtils.copy(talkImg);
+                //绘制头像
+                if (headImg != null) {
+                    BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
+                    //圆形
+                    headBuffer = ImageUtils.convertCircular(headBuffer);
+                    inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
+                }
+
+                inputImage = ImageUtils.writeText(inputImage, 128, 32, nickName, font, Color.BLACK);
+                if (url != null) {
+                    BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
+                    inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
+                }
+
+                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+
+                BASE64Encoder encoder = new BASE64Encoder();
                 return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage(), e);
             } finally {
                 try {
+                    if (in != null) {
+                        in.close();
+                    }
                     if (outputStream != null) {
                         outputStream.close();
                     }
@@ -86,8 +95,7 @@ public class DailyServiceImpl implements DailyService{
                     logger.error("os close failed", e);
                 }
             }
-        }else{
-            return null;
         }
+        return null;
     }
 }
