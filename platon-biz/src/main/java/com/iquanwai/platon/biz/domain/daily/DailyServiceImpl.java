@@ -47,7 +47,6 @@ public class DailyServiceImpl implements DailyService{
      * @return
      */
     private String drawTalk(Profile profile,DailyTalk dailyTalk){
-
         String url = dailyTalk.getUrl();
         String content = dailyTalk.getContent();
 
@@ -59,9 +58,8 @@ public class DailyServiceImpl implements DailyService{
         BufferedImage inputImage = ImageUtils.copy(talkImg);
         //绘制头像
         if(headImg!=null){
-            BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND));
-            headBuffer = ImageUtils.scaleByPercentage(headBuffer,37,37);
-            inputImage = ImageUtils.overlapImage(inputImage,headBuffer,20,20);
+            BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
+            inputImage = ImageUtils.overlapImage(inputImage,headBuffer,200,200);
         }
         ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
