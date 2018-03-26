@@ -13,30 +13,20 @@ import java.util.List;
 public interface FlowService {
     List<LandingPageBanner> loadLandingPageBanners();
 
-    List<ProblemsFlow> loadProblemsFlow();
-
-    List<LivesFlow> loadLivesFlow();
-
     /**
-     * 获取直播数据
-     * @param limit 获取近 limit 个数据
-     * @return
+     * 获取课程资源
      */
-    List<LivesFlow> loadLivesFlow(Integer limit);
+    List<ProblemsFlow> loadProblemsFlow(Integer profileId);
 
-    List<ArticlesFlow> loadArticlesFlow();
+    List<LivesFlow> loadLivesFlow(Integer profileId);
 
-    /**
-     * 随机获取文章内容
-     * @param limit 限制条数
-     * @param shuffle 是否打乱次序
-     */
-    List<ArticlesFlow> loadArticlesFlow(Integer limit, Boolean shuffle);
+    List<LivesFlow> loadLivesFlow(Integer profileId, Integer limit);
 
-    List<ActivitiesFlow> loadActivitiesFlow();
+    List<ArticlesFlow> loadArticlesFlow(Integer profileId);
 
-    /**
-     * 获取活动数据
-     */
-    List<ActivitiesFlow> loadActivitiesFlow(Integer limit);
+    List<ArticlesFlow> loadArticlesFlow(Integer profileId, Integer limit, Boolean shuffle);
+
+    List<ActivitiesFlow> loadActivitiesFlow(Integer profileId);
+
+    List<ActivitiesFlow> loadActivitiesFlow(Integer profileId, Integer limit);
 }

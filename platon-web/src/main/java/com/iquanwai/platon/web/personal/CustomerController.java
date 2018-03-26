@@ -87,7 +87,6 @@ public class CustomerController {
         return WebUtils.result(profile);
     }
 
-
     @RequestMapping(value = "/profile/info", method = RequestMethod.GET)
     @ApiOperation("查询个人中心首页信息")
     public ResponseEntity<Map<String, Object>> getProfileInfo(UnionUser unionUser) {
@@ -120,7 +119,6 @@ public class CustomerController {
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         return WebUtils.result(userStudyDto);
     }
-
 
     @RequestMapping(value = "/event/list", method = RequestMethod.GET)
     @ApiOperation("查询活动列表")
@@ -229,9 +227,6 @@ public class CustomerController {
         accountService.submitNewProfile(profile);
         return WebUtils.success();
     }
-
-
-
 
     @RequestMapping(value = "/profile/headImg/upload", method = RequestMethod.POST)
     @ApiOperation("上传个人头像")
