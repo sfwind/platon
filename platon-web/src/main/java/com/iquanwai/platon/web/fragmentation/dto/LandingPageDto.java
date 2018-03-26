@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.po.ActivitiesFlow;
 import com.iquanwai.platon.biz.po.ArticlesFlow;
 import com.iquanwai.platon.biz.po.LivesFlow;
 import com.iquanwai.platon.biz.po.ProblemsFlow;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * Created by 三十文
  */
 @Data
+@ApiModel("首页对象")
 public class LandingPageDto {
 
     @ApiModelProperty("是否是商学院会员")

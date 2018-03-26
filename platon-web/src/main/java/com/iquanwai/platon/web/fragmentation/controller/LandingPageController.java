@@ -12,6 +12,8 @@ import com.iquanwai.platon.biz.po.ProblemsFlow;
 import com.iquanwai.platon.web.fragmentation.dto.LandingPageDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/rise/landing")
+@Api(description = "获取登录页面的")
 public class LandingPageController {
 
     @Autowired
@@ -37,6 +40,7 @@ public class LandingPageController {
     @Autowired
     private CustomerService customerService;
 
+    @ApiOperation("获取着陆页所有信息")
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadLandingPageData(UnionUser unionUser) {
         Integer unReadCount = messageService.unreadCount(unionUser.getId());
@@ -61,21 +65,25 @@ public class LandingPageController {
         return WebUtils.result(dto);
     }
 
+    @ApiOperation("获取随机乱序文章")
     @RequestMapping("/load/shuffle/articles")
     public ResponseEntity<Map<String, Object>> loadShuffleArticles(UnionUser unionUser) {
         return WebUtils.result(flowService.loadArticlesFlow(unionUser.getId(), 3, true));
     }
 
+    @ApiOperation("获取所有直播内容")
     @RequestMapping("/load/lives")
     public ResponseEntity<Map<String, Object>> loadAllLives(UnionUser unionUser) {
         return WebUtils.result(flowService.loadLivesFlow(unionUser.getId()));
     }
 
+    @ApiOperation("获取所有文章")
     @RequestMapping("/load/articles")
     public ResponseEntity<Map<String, Object>> loadAllArticles(UnionUser unionUser) {
         return WebUtils.result(flowService.loadArticlesFlow(unionUser.getId()));
     }
 
+    @ApiOperation("获取活动列表")
     @RequestMapping("/load/activities")
     public ResponseEntity<Map<String, Object>> loadAllActivities(UnionUser unionUser) {
         return WebUtils.result(flowService.loadActivitiesFlow(unionUser.getId()));
