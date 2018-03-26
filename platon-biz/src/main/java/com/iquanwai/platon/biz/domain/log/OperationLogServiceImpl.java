@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.support.Assert;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Created by justin on 16/9/3.
@@ -58,6 +59,11 @@ public class OperationLogServiceImpl implements OperationLogService {
             }
             actionLogDao.insert(actionLog);
         }
+    }
+
+    @Override
+    public void trace(Integer profileId, String eventName, Supplier<Prop> supplier) {
+        this.trace(profileId, eventName, supplier.get());
     }
 
     @Override

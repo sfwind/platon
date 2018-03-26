@@ -4,30 +4,55 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.BusinessSchoolConfigDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.BusinessSchoolConfig;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -83,6 +108,12 @@ public class PlanServiceImpl implements PlanService {
     private QuanwaiEmployeeDao quanwaiEmployeeDao;
     @Autowired
     private BusinessSchoolConfigDao businessSchoolConfigDao;
+    @Autowired
+    private OperationLogService operationLogService;
+    @Autowired
+    private ProblemDao problemDao;
+    @Autowired
+    private WarmupSubmitDao warmupSubmitDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -494,6 +525,22 @@ public class PlanServiceImpl implements PlanService {
             improvementPlanDao.updateCompleteTime(improvementPlan.getId());
         }
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
+
+        // 打点
+        operationLogService.trace(improvementPlan.getProfileId(), "completeCourse",
+                () -> {
+                    Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
+                    int planSubmitCount = warmupSubmitDao.getPlanSubmitCount(improvementPlan.getId());
+                    int planRightCount = warmupSubmitDao.getPlanRightCount(improvementPlan.getId());
+                    return OperationLogService
+                            .props()
+                            .add("problemId", improvementPlan.getProblemId())
+                            .add("problem", problem.getAbbreviation())
+                            .add("totalWarmup", planSubmitCount)
+                            .add("rightWarmup", planRightCount)
+                            .add("useDays", DateUtils.interval(improvementPlan.getStartDate()));
+                }
+        );
         return true;
     }
 
