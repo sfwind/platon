@@ -27,6 +27,8 @@ public class DailyServiceImpl implements DailyService {
     private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
     private static BufferedImage talkImg = null;
 
+    private static final Color grey = new Color(51,51,51);
+
     @PostConstruct
     public void init() {
         talkImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND);
@@ -72,20 +74,21 @@ public class DailyServiceImpl implements DailyService {
                 }
 
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,128,102,"又在圈外商学院学习一天",font.deriveFont(22f),new Color(51,51,51));
+                inputImage = ImageUtils.writeText(inputImage,128,102,"又在圈外商学院学习一天",font.deriveFont(22f),grey);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage,70,262,"12天",font.deriveFont(68f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,280,262,"365个",font.deriveFont(68f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,542,262,"12%的同学",font.deriveFont(68f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,70,262,"12",font.deriveFont(68f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,90,262,"天",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,280,262,"365",font.deriveFont(68f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,200,262,"个",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,542,262,"12%",font.deriveFont(68f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,562,262,"的同学",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
                 inputImage = ImageUtils.writeText(inputImage,50,526,content,font.deriveFont(60f),Color.white);
-//                inputImage = ImageUtils.writeText(inputImage,460,740,"",font.deriveFont(15f),Color.white);
-
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
                 BASE64Encoder encoder = new BASE64Encoder();
