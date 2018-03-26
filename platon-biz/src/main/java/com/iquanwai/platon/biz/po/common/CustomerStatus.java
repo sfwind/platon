@@ -2,6 +2,8 @@ package com.iquanwai.platon.biz.po.common;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * Created by nethunder on 2017/9/6.
  */
@@ -10,6 +12,7 @@ public class CustomerStatus {
     private Integer profileId;
     private Integer statusId;
     private Boolean del;
+    private Date addTime;
 
     /**
      * 开bible

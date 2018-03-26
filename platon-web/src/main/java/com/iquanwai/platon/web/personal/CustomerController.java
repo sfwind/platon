@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
@@ -88,7 +87,6 @@ public class CustomerController {
         return WebUtils.result(profile);
     }
 
-
     @RequestMapping(value = "/profile/info", method = RequestMethod.GET)
     @ApiOperation("查询个人中心首页信息")
     public ResponseEntity<Map<String, Object>> getProfileInfo(UnionUser unionUser) {
@@ -102,8 +100,9 @@ public class CustomerController {
             userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
-                userStudyDto.setClassName(tempName.replaceAll("0", ""));
+                String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
+                        Integer.valueOf(className.substring(4, 6)) + "班";
+                userStudyDto.setClassName(tempName);
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
@@ -120,7 +119,6 @@ public class CustomerController {
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         return WebUtils.result(userStudyDto);
     }
-
 
     @RequestMapping(value = "/event/list", method = RequestMethod.GET)
     @ApiOperation("查询活动列表")
@@ -229,9 +227,6 @@ public class CustomerController {
         accountService.submitNewProfile(profile);
         return WebUtils.success();
     }
-
-
-
 
     @RequestMapping(value = "/profile/headImg/upload", method = RequestMethod.POST)
     @ApiOperation("上传个人头像")
