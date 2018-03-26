@@ -79,7 +79,7 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage,70,242,"12天",font.deriveFont(32f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,70,262,"12天",font.deriveFont(32f),Color.BLACK);
 
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
