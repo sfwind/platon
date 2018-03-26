@@ -72,7 +72,7 @@ public class DailyServiceImpl implements DailyService {
                 }
 
                 inputImage = ImageUtils.writeText(inputImage, 128, 74, nickName, font.deriveFont(42f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,128,122,"又在圈外商学院学习一天",font.deriveFont(42f),Color.red);
+                inputImage = ImageUtils.writeText(inputImage,128,122,"又在圈外商学院学习一天",font.deriveFont(21f),Color.LIGHT_GRAY);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
