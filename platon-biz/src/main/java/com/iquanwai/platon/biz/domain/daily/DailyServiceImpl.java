@@ -71,17 +71,18 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(32f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,128,102,"又在圈外商学院学习一天",font.deriveFont(21f),Color.LIGHT_GRAY);
+                inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(17f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,128,102,"又在圈外商学院学习一天",font.deriveFont(11f),Color.LIGHT_GRAY);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage,70,262,"12天",font.deriveFont(32f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,280,262,"365个",font.deriveFont(32f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,522,262,"12%的同学",font.deriveFont(32f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,70,262,"12天",font.deriveFont(34f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,280,262,"365个",font.deriveFont(34f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,542,262,"12%的同学",font.deriveFont(34f),Color.BLACK);
+                inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
