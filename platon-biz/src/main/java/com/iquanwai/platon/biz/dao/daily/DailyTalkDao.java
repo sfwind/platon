@@ -19,7 +19,7 @@ public class DailyTalkDao extends DBUtil{
 
     public DailyTalk loadByShowDate(String currentDate){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM DailyTalk WHERE ShowDate = ? WHERE DEL = 0 ";
+        String sql = "SELECT * FROM DailyTalk WHERE ShowDate = ? AND DEL = 0 ";
         ResultSetHandler<DailyTalk> h = new BeanHandler<DailyTalk>(DailyTalk.class);
 
         try {
