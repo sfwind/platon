@@ -59,7 +59,7 @@ public class DailyServiceImpl implements DailyService{
         //绘制头像
         if(headImg!=null){
             BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
-            inputImage = ImageUtils.overlapImage(inputImage,headBuffer,200,200);
+            inputImage = ImageUtils.overlapImage(inputImage,headBuffer,50,50);
         }
         ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
