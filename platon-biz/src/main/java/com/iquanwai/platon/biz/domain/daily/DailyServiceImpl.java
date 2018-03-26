@@ -53,7 +53,7 @@ public class DailyServiceImpl implements DailyService{
 
         BufferedImage inputImage = ImageUtils.copy(talkImg);
 
-        ImageUtils.writeToOutputStream(inputImage, "jpg", outputStream);
+        ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
         try {
             return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
