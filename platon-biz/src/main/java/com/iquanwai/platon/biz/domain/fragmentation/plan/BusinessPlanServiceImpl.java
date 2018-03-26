@@ -1,13 +1,26 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -23,7 +36,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -172,7 +188,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 获取所有正在进行课程的 ProblemIds
         List<Integer> runningProblemIds = improvementPlans.stream()
                 .filter(plan -> ImprovementPlan.RUNNING == plan.getStatus() ||
-                       ImprovementPlan.COMPLETE == plan.getStatus())
+                        ImprovementPlan.COMPLETE == plan.getStatus())
                 .map(ImprovementPlan::getProblemId).collect(Collectors.toList());
         // 获取所有已经完成课程的 ProblemIds
         List<Integer> completeProblemIds = improvementPlans.stream()
@@ -188,7 +204,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (courseSchedules.size() > 0) {
             runningSchedules.addAll(courseSchedules.stream().filter(schedule
                     -> (schedule.getMonth() == currentMonth && schedule.getSelected())
-                    || (schedule.getYear() <= currentYear && schedule.getMonth() <= currentMonth && schedule.getType() == 1 && schedule.getSelected()))
+                    || (
+                    ((schedule.getYear() == currentYear && schedule.getMonth() <= currentMonth)
+                            || schedule.getYear() < currentYear) && schedule.getType() == 1 && schedule.getSelected()))
                     .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
                     .collect(Collectors.toList()));
 
@@ -533,6 +551,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     /**
      * 查看当前用户正在学习的课程 id
+     *
      * @param profileId 用户 id
      * @return 正在学习的课程 id
      */
@@ -864,7 +883,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 plan.setDescription("课程");
             }
 
-            plan.setCompleteTime(DateUtils.parseDateToString(improvementPlan.getCompleteTime()));
+            plan.setCompleteTime(DateUtils.parseDateToString(improvementPlan.getCloseTime()));
             completePlans.add(plan);
         }
         completePlans = completePlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getCompleteTime).reversed()).collect(Collectors.toList());
