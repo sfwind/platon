@@ -47,36 +47,46 @@ public class DailyServiceImpl implements DailyService{
      * @return
      */
     private String drawTalk(Profile profile,DailyTalk dailyTalk){
-        String url = dailyTalk.getUrl();
-        String content = dailyTalk.getContent();
+        if(dailyTalk!=null) {
+            String url = dailyTalk.getUrl();
+            String content = dailyTalk.getContent();
 
-        String nickName = profile.getNickname();
-        String headImg = profile.getHeadimgurl();
-        // 绘图准备
-        ByteArrayOutputStream  outputStream = new ByteArrayOutputStream();
+            String nickName = profile.getNickname();
+            String headImg = profile.getHeadimgurl();
+            // 绘图准备
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        BufferedImage inputImage = ImageUtils.copy(talkImg);
-        //绘制头像
-        if(headImg!=null){
-            BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
-            //圆形
-            headBuffer = ImageUtils.convertCircular(headBuffer);
-            inputImage = ImageUtils.overlapFixImage(inputImage,headBuffer,60,20,60,60);
-        }
-        ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-        BASE64Encoder encoder = new BASE64Encoder();
-        try {
-            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
-        } finally {
-            try {
-                if(outputStream!=null) {
-                    outputStream.close();
-                }
-            } catch (IOException e) {
-                logger.error("os close failed", e);
+            BufferedImage inputImage = ImageUtils.copy(talkImg);
+            //绘制头像
+            if (headImg != null) {
+                BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
+                //圆形
+                headBuffer = ImageUtils.convertCircular(headBuffer);
+                inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 60, 20, 60, 60);
             }
+
+            if(url!=null){
+                BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
+                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,200,0,375,252);
+            }
+
+                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+
+
+            BASE64Encoder encoder = new BASE64Encoder();
+            try {
+                return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+            } finally {
+                try {
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
+                } catch (IOException e) {
+                    logger.error("os close failed", e);
+                }
+            }
+        }else{
+            return null;
         }
-
-
     }
 }
