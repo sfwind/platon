@@ -82,11 +82,11 @@ public class DailyServiceImpl implements DailyService {
                 }
 
                 inputImage = ImageUtils.writeText(inputImage,70,262,"12",font.deriveFont(45f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,90,262,"天",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,110,262,"天",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,280,262,"365",font.deriveFont(45f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,300,262,"个",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,340,262,"个",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,542,262,"12%",font.deriveFont(45f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,562,262,"的同学",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,582,262,"的同学",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
                 inputImage = ImageUtils.writeText(inputImage,50,526,content,font.deriveFont(60f),Color.white);
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
