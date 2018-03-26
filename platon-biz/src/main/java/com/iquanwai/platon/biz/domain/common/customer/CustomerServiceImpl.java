@@ -1,23 +1,24 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.common.AnnounceDao;
-import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
-import com.iquanwai.platon.biz.dao.common.FeedbackDao;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.common.RiseUserLoginDao;
+import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
+import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.po.Announce;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.po.Announce;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
 import com.iquanwai.platon.biz.util.*;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 @Service
 public class CustomerServiceImpl implements CustomerService {
     @Autowired
+    private TemplateMessageService templateMessageService;
+    @Autowired
     private ProfileDao profileDao;
     @Autowired
     private AnnualSummaryDao annualSummaryDao;
@@ -47,13 +49,18 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private FeedbackDao feedbackDao;
     @Autowired
-    private TemplateMessageService templateMessageService;
-    @Autowired
     private RiseUserLoginDao riseUserLoginDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
     private AnnounceDao announceDao;
+    @Autowired
+    private CustomerStatusDao customerStatusDao;
+    @Autowired
+    private BusinessSchoolApplicationDao businessSchoolApplicationDao;
+
+    // 申请通过 status id
+    private static final Integer PASS_STATUS_ID = 3;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -111,7 +118,6 @@ public class CustomerServiceImpl implements CustomerService {
     public Boolean hasAnnualSummaryAuthority(Integer profileId) {
         return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
     }
-
 
     @Override
     public AnnualSummary loadUserAnnualSummary(String riseId) {
@@ -197,6 +203,37 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         return validAnnounce == null ? null : validAnnounce.getMessage();
+    }
+
+    @Override
+    public Pair<Boolean, Long> isAlertApplicationPassMessage(Integer profileId) {
+        CustomerStatus customerStatus = customerStatusDao.load(profileId, PASS_STATUS_ID);
+        Boolean notifyTag;
+        if (customerStatus == null) {
+            notifyTag = false;
+        } else {
+            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+            if (riseMember == null) {
+                notifyTag = true;
+            } else {
+                if (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
+                    notifyTag = false;
+                } else {
+                    notifyTag = true;
+                }
+            }
+        }
+        if (notifyTag) {
+            BusinessSchoolApplication businessSchoolApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
+            if (businessSchoolApplication != null && DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).compareTo(new Date()) > 0) {
+                Long intervalLong = DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).getTime() - new Date().getTime();
+                return new MutablePair<>(true, intervalLong);
+            } else {
+                return new MutablePair<>(false, null);
+            }
+        } else {
+            return new MutablePair<>(false, null);
+        }
     }
 
 }
