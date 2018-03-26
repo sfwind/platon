@@ -67,7 +67,7 @@ public class DailyServiceImpl implements DailyService{
 
             if(url!=null){
                 BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
-                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,200,0,375,252);
+                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,0,200,375,252);
             }
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
