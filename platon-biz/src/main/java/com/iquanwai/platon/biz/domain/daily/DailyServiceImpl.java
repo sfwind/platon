@@ -62,12 +62,12 @@ public class DailyServiceImpl implements DailyService{
                 BufferedImage headBuffer = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(headImg));
                 //圆形
                 headBuffer = ImageUtils.convertCircular(headBuffer);
-                inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 60, 20, 60, 60);
+                inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer,40,32, 74, 74);
             }
 
             if(url!=null){
                 BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
-                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,0,200,375,252);
+                inputImage = ImageUtils.overlapFixImage(inputImage,contentImg,0,200,60,60);
             }
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
