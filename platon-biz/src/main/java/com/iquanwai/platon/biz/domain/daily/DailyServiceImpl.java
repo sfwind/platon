@@ -72,6 +72,8 @@ public class DailyServiceImpl implements DailyService {
                 }
 
                 inputImage = ImageUtils.writeText(inputImage, 128, 32, nickName, font, Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,128,80,"又在圈外商学院学习一天",font,Color.red);
+
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
