@@ -43,7 +43,6 @@ public class DailyServiceImpl implements DailyService{
     private String drawTalk(DailyTalk dailyTalk){
 
         // 绘图准备
-        ByteArrayInputStream inputStream = null;
         ByteArrayOutputStream  outputStream = new ByteArrayOutputStream();
 
 
@@ -55,8 +54,9 @@ public class DailyServiceImpl implements DailyService{
             return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
         } finally {
             try {
-                inputStream.close();
-                outputStream.close();
+                if(outputStream!=null) {
+                    outputStream.close();
+                }
             } catch (IOException e) {
                 logger.error("os close failed", e);
             }
