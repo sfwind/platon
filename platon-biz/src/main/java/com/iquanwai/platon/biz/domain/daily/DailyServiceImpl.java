@@ -79,9 +79,9 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage,70,262,"12天",font.deriveFont(34f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,280,262,"365个",font.deriveFont(34f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,542,262,"12%的同学",font.deriveFont(34f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,70,262,"12天",font.deriveFont(68f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,280,262,"365个",font.deriveFont(68f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,542,262,"12%的同学",font.deriveFont(68f),Color.BLACK);
                 inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
                 inputImage = ImageUtils.writeText(inputImage,50,526,content,font.deriveFont(60f),Color.white);
 //                inputImage = ImageUtils.writeText(inputImage,460,740,"",font.deriveFont(15f),Color.white);
