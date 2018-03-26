@@ -102,7 +102,7 @@ public class CustomerController {
             if (className != null && className.length() >= classSize) {
                 String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
                         Integer.valueOf(className.substring(4, 6)) + "班";
-                userStudyDto.setClassName(tempName.replaceAll("0", ""));
+                userStudyDto.setClassName(tempName);
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
