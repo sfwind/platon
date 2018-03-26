@@ -1,7 +1,6 @@
 package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
@@ -102,7 +101,8 @@ public class CustomerController {
             userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
+                String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
+                        Integer.valueOf(className.substring(4, 6)) + "班";
                 userStudyDto.setClassName(tempName.replaceAll("0", ""));
             }
         }
