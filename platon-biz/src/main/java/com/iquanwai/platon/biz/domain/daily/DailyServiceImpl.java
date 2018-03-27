@@ -26,8 +26,10 @@ public class DailyServiceImpl implements DailyService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
     private static final String DAILY_TALK_TITLE = "http://static.iqycamp.com/images/dailytalk/daily_talk_title.png";
+    private static final String DAILY_TALK_AUTHOR = "http://static.iqycamp.com/images/dailytalk/daily_talk_author.png";
     private static BufferedImage talkImg = null;
     private static BufferedImage titleImg = null;
+    private static BufferedImage authorImg = null;
 
     private static final Color grey = new Color(51,51,51);
 
@@ -35,6 +37,7 @@ public class DailyServiceImpl implements DailyService {
     public void init() {
         talkImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND);
         titleImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_TITLE);
+        authorImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_AUTHOR);
     }
 
 
@@ -55,9 +58,11 @@ public class DailyServiceImpl implements DailyService {
      */
     private String drawTalk(Profile profile, DailyTalk dailyTalk) {
         if (dailyTalk != null) {
+            String welcome = ConfigUtils.getDailyTalkWelcome();
             logger.info("dailyTalk:" + dailyTalk.toString());
             String url = dailyTalk.getImgUrl();
             String content = dailyTalk.getContent();
+            String author = dailyTalk.getAuthor();
             Integer learningDay = 1;
             Integer learnKnowledge = 20;
             Integer percent = 50;
@@ -80,11 +85,14 @@ public class DailyServiceImpl implements DailyService {
                 }
 
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,128,102,"又在圈外商学院学习一天",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,128,102,welcome,font.deriveFont(22f),grey);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
                     contentImg = ImageUtils.overlapFixImage(contentImg,titleImg,106,64,538,60);
+                    contentImg = ImageUtils.writeText(contentImg,50,174,content,font.deriveFont(45f),Color.white);
+                    contentImg = ImageUtils.overlapFixImage(contentImg,authorImg,460,380,64,20);
+                    contentImg = ImageUtils.writeText(contentImg,500,380,author,font.deriveFont(30f),Color.WHITE);
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
@@ -95,7 +103,6 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage,280+30*learnKnowledge.toString().length(),292,"个",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,542,292,percent+"%",font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,542+50*percent.toString().length(),292,"的同学",font.deriveFont(22f),grey);
-                inputImage = ImageUtils.writeText(inputImage,50,606,content,font.deriveFont(45f),Color.white);
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
                 BASE64Encoder encoder = new BASE64Encoder();

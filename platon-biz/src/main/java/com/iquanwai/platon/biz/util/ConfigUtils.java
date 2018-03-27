@@ -407,5 +407,7 @@ public class ConfigUtils {
         return getValue("landing.page.banner");
     }
 
+    public static String getDailyTalkWelcome(){return getValue("daily.talk.welcome");}
+
 }
 
