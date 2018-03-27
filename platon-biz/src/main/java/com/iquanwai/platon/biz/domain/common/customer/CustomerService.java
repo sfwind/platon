@@ -21,6 +21,7 @@ public interface CustomerService {
 
     /**
      * 获取年度报告
+     *
      * @param riseId 圈外id
      * @return 年度报告
      */
@@ -50,8 +51,17 @@ public interface CustomerService {
      */
     String loadAnnounceMessage(Integer profileId);
 
+
     /**
      * 是否提示申请通过通知
      */
     Pair<Boolean, Long> isAlertApplicationPassMessage(Integer profileId);
+
+
+    /**
+     * 获得用户学习过的知识点个数
+     */
+    Integer loadLearnedKnowledgesCount(Integer profileId);
+
+
 }

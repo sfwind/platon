@@ -34,7 +34,7 @@ public class DailyController {
         String currentDate = DateUtils.parseDateToString(new Date());
         Integer profileId = unionUser.getId();
         Integer loginDay = customerService.loadContinuousLoginCount(profileId);
-        Integer learnedKnowledge = 20;
+        Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
         Integer percent = 50;
 
         return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(),currentDate,loginDay,learnedKnowledge,percent));
