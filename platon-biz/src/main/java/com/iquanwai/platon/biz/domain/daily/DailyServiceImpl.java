@@ -95,8 +95,7 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage,280+30*learnKnowledge.toString().length(),292,"个",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,542,292,percent+"%",font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,542+50*percent.toString().length(),292,"的同学",font.deriveFont(22f),grey);
-                //inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
-                inputImage = ImageUtils.writeText(inputImage,50,526,content,font.deriveFont(60f),Color.white);
+                inputImage = ImageUtils.writeText(inputImage,50,566,content,font.deriveFont(60f),Color.white);
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
                 BASE64Encoder encoder = new BASE64Encoder();
