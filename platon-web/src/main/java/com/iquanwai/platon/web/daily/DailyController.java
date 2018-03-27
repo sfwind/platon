@@ -36,10 +36,14 @@ public class DailyController {
     public ResponseEntity<Map<String, Object>> getDailyTalk(UnionUser unionUser) {
         String currentDate = DateUtils.parseDateToString(new Date());
         Integer profileId = unionUser.getId();
-        Integer loginDay = customerService.loadContinuousLoginCount(profileId);
-        Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
-        RiseMember riseMember = accountService.getValidRiseMember(profileId);
-        Integer percent = customerService.calSyncDefeatPercent(riseMember);
+//        Integer loginDay = customerService.loadContinuousLoginCount(profileId);
+//        Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
+//        RiseMember riseMember = accountService.getValidRiseMember(profileId);
+//        Integer percent = customerService.calSyncDefeatPercent(riseMember);
+
+        Integer loginDay = 12;
+        Integer learnedKnowledge = 23;
+        Integer percent = 50;
 
         return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent));
     }
