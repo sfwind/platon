@@ -32,6 +32,17 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private AccountService accountService;
 
     @Override
+    public boolean sendSelfCompleteMessage(String eventName, String openId) {
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(openId);
+        templateMessage.setTemplate_id(ConfigUtils.incompleteTaskMsg());
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        templateMessage.setData(data);
+        data.put("first", new TemplateMessage.Keyword("事件处理成功：" + eventName + "\n 完成时间：" + DateUtils.parseDateTimeToString(new Date())));
+        return sendMessage(templateMessage);
+    }
+
+    @Override
     public boolean sendMessage(TemplateMessage templateMessage) {
         return sendMessage(templateMessage, false);
     }
@@ -77,7 +88,6 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
      * 5. 用户每天最多收到2条消息
      * 6. 用户三小时内最多收到1条消息
      * 7. 活动提醒通知，文字尽量简洁，不要用推销的口吻
-     *
      * @return 是否允许发送模板消息
      */
     private boolean checkTemplateMessageAuthority(TemplateMessage templateMessage, boolean forwardlyPush) {
@@ -157,9 +167,9 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private void addHook(TemplateMessage templateMessage) {
         if (templateMessage.getUrl() != null) {
             String url = templateMessage.getUrl();
-            if (url.contains("?") && !url.contains("_tm")){
+            if (url.contains("?") && !url.contains("_tm")) {
                 url = url + "&_tm=template_message";
-            }else{
+            } else {
                 url = url + "?_tm=template_message";
             }
             templateMessage.setUrl(url);
