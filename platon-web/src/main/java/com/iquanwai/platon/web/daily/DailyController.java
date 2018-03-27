@@ -43,7 +43,7 @@ public class DailyController {
 
         Integer loginDay = 12;
         Integer learnedKnowledge = 43;
-        Integer percent = 60;
+        Integer percent = 100;
 
         return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent));
     }
