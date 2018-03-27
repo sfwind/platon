@@ -103,6 +103,7 @@ public class CertificateServiceImpl implements CertificateService {
         RiseCertificate riseCertificate = riseCertificateDao.loadByCertificateNo(certificateNo);
         Profile profile = accountService.getProfile(riseCertificate.getProfileId());
         if (profile.getRealName() != null && riseCertificate.getImageUrl() == null) {
+            riseCertificate.setName(profile.getRealName());
             Pair<Boolean, String> pair = drawRiseCertificate(riseCertificate, true);
             if (pair.getLeft()) {
                 String imageUrl = ConfigUtils.getPicturePrefix() + pair.getRight();
@@ -110,7 +111,7 @@ public class CertificateServiceImpl implements CertificateService {
                 riseCertificateDao.updateImageUrl(riseCertificate.getId(), imageUrl);
             }
         }
-        buildDetail(riseCertificate);
+        // buildDetail(riseCertificate);
         //删除profileId
         riseCertificate.setProfileId(null);
         return riseCertificate;
