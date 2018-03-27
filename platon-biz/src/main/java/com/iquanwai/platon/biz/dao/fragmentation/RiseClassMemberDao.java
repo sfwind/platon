@@ -62,6 +62,21 @@ public class RiseClassMemberDao extends PracticeDBUtil {
         return null;
     }
 
+    public List<RiseClassMember> loadByMemberIds(List<String> memberIds) {
+        if (memberIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM RiseClassMember WHERE MemberId IN (" + produceQuestionMark(memberIds.size()) + ") AND Del = 0 GROUP BY ProfileId";
+        ResultSetHandler<List<RiseClassMember>> h = new BeanListHandler<>(RiseClassMember.class);
+        try {
+            return runner.query(sql, h, memberIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public List<RiseClassMember> loadRiseClassMembersByYearMonth(Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM RiseClassMember WHERE Year = ? AND Month = ? AND Active = 1 AND Del = 0 AND GroupId IS NOT NULL";

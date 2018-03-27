@@ -79,6 +79,8 @@ public class PlanServiceImpl implements PlanService {
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private QuanwaiEmployeeDao quanwaiEmployeeDao;
+    @Autowired
+    private BusinessSchoolConfigDao businessSchoolConfigDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -301,8 +303,8 @@ public class PlanServiceImpl implements PlanService {
         if (new DateTime().isBefore(riseMember.getOpenDate().getTime())) {
             throw new CreateCourseException("您在 " + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + " 才能开课哦");
         }
-        Integer memberTypeId = riseMember.getMemberTypeId();
 
+        Integer memberTypeId = riseMember.getMemberTypeId();
         //商学院用户
         if (memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
@@ -319,16 +321,14 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
 
-            MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-            Date openDate = monthlyCampConfig.getOpenDate();
+            BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
+            Date openDate = businessSchoolConfig.getOpenDate();
             int year = DateUtils.getYear(openDate);
             int month = DateUtils.getMonth(openDate);
-            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth()
-                    && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth() && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
                 if (new Date().before(openDate)) {
                     // 未到开营日的主修课不能提前选择
-                    throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于"
-                            + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
+                    throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于" + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
                 }
             }
 

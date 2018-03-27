@@ -40,6 +40,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -395,7 +396,67 @@ public class AccountServiceImpl implements AccountService {
         if (profile.getMarried() != null) {
             oldProfile.setMarried(profile.getMarried());
         }
+        if (profile.getFunction() != null) {
+            oldProfile.setFunction(profile.getFunction());
+        }
+        if (profile.getWorkingYear() != null) {
+            oldProfile.setWorkingYear(profile.getWorkingYear());
+        }
+        if (profile.getIndustry() != null) {
+            oldProfile.setIndustry(profile.getIndustry());
+        }
+        if (profile.getProvince() != null) {
+            oldProfile.setProvince(profile.getProvince());
+        }
+        if (profile.getCity() != null) {
+            oldProfile.setCity(profile.getCity());
+        }
         Boolean result = profileDao.submitPersonalCenterProfileWithMoreDetail(oldProfile);
+        if (result && oldProfile.getIsFull() == 0) {
+            logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
+            // 第一次提交，加分
+            pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
+            // 更新信息状态
+            profileDao.completeProfile(profile.getId());
+        }
+    }
+
+    @Override
+    public void submitNewProfile(Profile profile) {
+        Assert.notNull(profile, "profile 不能为空");
+        Profile oldProfile = profileDao.load(Profile.class, profile.getId());
+
+        if (profile.getRealName() != null) {
+            oldProfile.setRealName(profile.getRealName());
+        }
+        if (profile.getAddress() != null) {
+            oldProfile.setAddress(profile.getAddress());
+        }
+        if (profile.getReceiver() != null) {
+            oldProfile.setReceiver(profile.getReceiver());
+        }
+        if (profile.getMarried() != null) {
+            oldProfile.setMarried(profile.getMarried());
+        }
+        if (profile.getFunction() != null) {
+            oldProfile.setFunction(profile.getFunction());
+        }
+        if (profile.getWorkingYear() != null) {
+            oldProfile.setWorkingYear(profile.getWorkingYear());
+        }
+        if (profile.getIndustry() != null) {
+            oldProfile.setIndustry(profile.getIndustry());
+        }
+        if (profile.getProvince() != null) {
+            oldProfile.setProvince(profile.getProvince());
+        }
+        if (profile.getCity() != null) {
+            oldProfile.setCity(profile.getCity());
+        }
+        if(profile.getNickname()!=null){
+            oldProfile.setNickname(profile.getNickname());
+        }
+        Boolean result = profileDao.submitNewProfile(oldProfile);
         if (result && oldProfile.getIsFull() == 0) {
             logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
             // 第一次提交，加分
@@ -628,6 +689,19 @@ public class AccountServiceImpl implements AccountService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean isBusinessRiseMember(Integer profileId) {
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
+    }
+
+    @Override
+    public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
+        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberIds(memberIds);
+        List<Integer> profileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).distinct().collect(Collectors.toList());
+        return profileIds;
     }
 
     // 生成用来发送更新 mq 的信息

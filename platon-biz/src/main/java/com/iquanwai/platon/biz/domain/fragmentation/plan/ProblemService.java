@@ -87,6 +87,13 @@ public interface ProblemService {
     Pair<Problem, List<EssenceCard>> loadProblemCardsByPlanId(Integer planId);
 
     /**
+     * 获得已经完成的知识卡的数量
+     * @param profileId
+     * @return
+     */
+    Integer getFinishedCards(Integer profileId);
+
+    /**
      * 获取精华卡图
      */
     String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);

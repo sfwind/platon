@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.ActionLog;
@@ -38,6 +39,8 @@ public class BackendController {
     private CertificateService certificateService;
     @Autowired
     private GeneratePlanService generatePlanService;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -158,6 +161,28 @@ public class BackendController {
                 .action("课程强开");
         operationLogService.log(operationLog);
         List<Integer> profileIds = params.getProfileIds();
+        Integer problemId = params.getProblemId();
+        Date startDate = params.getStartDate();
+        Date closeDate = params.getCloseDate();
+        Boolean sendWelcomeMsg = params.getSendWelcomeMsg();
+
+        profileIds.forEach(profileId -> ThreadPool.execute(() -> {
+            Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
+            logger.info("开课: profileId:{},planId:{}", profileId, result);
+        }));
+
+        return WebUtils.success();
+    }
+
+
+    @RequestMapping(value = "/open/course/memberid", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> backendForceOpenCourse(UnionUser unionUser, @RequestBody ForceOpenPlanParams params) {
+        logger.info("enter force open course");
+        ActionLog actionLog = ActionLog.create().module("打点").action("课程强开").function("后台功能").uid(unionUser.getId());
+        operationLogService.log(actionLog);
+
+        List<String> memberIds = params.getMemberIds();
+        List<Integer> profileIds = accountService.getProfileIdsByMemberId(memberIds);
         Integer problemId = params.getProblemId();
         Date startDate = params.getStartDate();
         Date closeDate = params.getCloseDate();

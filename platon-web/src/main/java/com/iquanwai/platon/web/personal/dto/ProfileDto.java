@@ -36,7 +36,7 @@ public class ProfileDto {
     private String realName;
     @ApiModelProperty("收件地址")
     private String address;
-    @ApiModelProperty("电话")
+    @ApiModelProperty("手机号码")
     private String phone;
     @ApiModelProperty("微信id")
     private String weixinId;
@@ -44,4 +44,16 @@ public class ProfileDto {
     private String receiver;
     @ApiModelProperty("婚恋情况")
     private String married;
+    @ApiModelProperty("学号")
+    private String memberId;
+    @ApiModelProperty("班级")
+    private String className;
+    @ApiModelProperty("会员类型")
+    private Integer memberTypeId;
+    @ApiModelProperty("圈外id")
+    private String riseId;
+    @ApiModelProperty("昵称")
+    private String nickName;
+    @ApiModelProperty("头像")
+    private String headImgUrl;
 }

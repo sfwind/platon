@@ -95,6 +95,11 @@ public interface AccountService {
     void submitPersonalCenterProfile(Profile profile);
 
     /**
+     * 在新个人中心提交用户信息
+     * @param profile
+     */
+    void submitNewProfile(Profile profile);
+    /**
      * 查看证书时提交用户信息
      */
     void submitCertificateProfile(Profile profile);
@@ -213,4 +218,17 @@ public interface AccountService {
      */
     boolean isPreviewNewUser(Integer profileId);
 
+    /**
+     * 现在是否是会员
+     * @param profileId
+     * @return
+     */
+    boolean isBusinessRiseMember(Integer profileId);
+
+    /**
+     * 根据学号获取用户 id
+     * @param memberIds
+     * @return
+     */
+    List<Integer> getProfileIdsByMemberId(List<String> memberIds);
 }

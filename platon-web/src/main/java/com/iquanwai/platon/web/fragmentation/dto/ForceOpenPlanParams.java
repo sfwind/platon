@@ -15,6 +15,10 @@ public class ForceOpenPlanParams {
      */
     private List<Integer> profileIds;
     /**
+     * 用户学号
+     */
+    private List<String> memberIds;
+    /**
      * 小课id
      */
     private Integer problemId;
