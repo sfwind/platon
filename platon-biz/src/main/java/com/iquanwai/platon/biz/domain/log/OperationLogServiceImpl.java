@@ -2,14 +2,16 @@ package com.iquanwai.platon.biz.domain.log;
 
 import com.iquanwai.platon.biz.dao.common.ActionLogDao;
 import com.iquanwai.platon.biz.dao.common.OperationLogDao;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ThreadPool;
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics;
@@ -37,9 +39,13 @@ public class OperationLogServiceImpl implements OperationLogService {
     @Autowired
     private SensorsAnalytics sa;
     @Autowired
-    private AccountService accountService;
-    @Autowired
     private RiseClassMemberDao riseClassMemberDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private ProfileDao profileDao;
+    @Autowired
+    private UserRoleDao userRoleDao;
 
     @Override
     public void log(OperationLog operationLog) {
@@ -69,10 +75,17 @@ public class OperationLogServiceImpl implements OperationLogService {
                 Prop prop = supplier.get();
                 Map<String, Object> properties = prop.build();
                 Assert.notNull(profileId, "用户id不能为null");
-                Profile profile = accountService.getProfile(profileId);
+                Profile profile = profileDao.load(Profile.class, profileId);
+                UserRole role = userRoleDao.getAssist(profileId);
+
                 Integer roleName = 0;
-                RiseMember validRiseMember = accountService.getValidRiseMember(profileId);
-                RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
+                RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
+
+                RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+                if (riseClassMember == null) {
+                    riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
+                }
+
                 if (riseClassMember != null) {
                     properties.put("className", riseClassMember.getClassName());
                     properties.put("groupId", riseClassMember.getGroupId());
@@ -81,7 +94,7 @@ public class OperationLogServiceImpl implements OperationLogService {
                     roleName = validRiseMember.getMemberTypeId();
                 }
                 properties.put("roleName", roleName);
-                properties.put("isAsst", Role.isAsst(profile.getRole()));
+                properties.put("isAsst", role != null);
                 properties.put("riseId", profile.getRiseId());
 
                 sa.track(profileId.toString(), true, eventName, properties);
