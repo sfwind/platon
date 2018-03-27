@@ -254,6 +254,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Integer calSyncDefeatPercent(RiseMember riseMember) {
+        if(riseMember==null){
+            return 0;
+        }
         Integer profileId = riseMember.getProfileId();
         Profile profile = accountService.getProfile(profileId);
         if(profile==null){
@@ -265,7 +268,6 @@ public class CustomerServiceImpl implements CustomerService {
             return 0;
         }
         String currentDate = openDate.toString().substring(0,7);
-        logger.info("currentDate:"+currentDate);
 
         List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate,riseMember.getMemberTypeId());
         List<Integer> profileIds = riseMemberList.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
