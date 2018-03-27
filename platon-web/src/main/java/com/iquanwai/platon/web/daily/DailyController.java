@@ -31,10 +31,4 @@ public class DailyController {
 
         return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(),currentDate));
     }
-
-
-
-
-
-
 }
