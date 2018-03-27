@@ -89,10 +89,9 @@ public class DailyServiceImpl implements DailyService {
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
-                    //contentImg = ImageUtils.overlapFixImage(contentImg,titleImg,106,64,538,60);
-                    contentImg = ImageUtils.overlapFixImage(contentImg,lineImg,106,64,169,1);
-                    contentImg = ImageUtils.writeTextCenter(contentImg,64,"每日圈语",font.deriveFont(30f),Color.WHITE);
-                    contentImg = ImageUtils.overlapFixImage(contentImg,lineImg,306,64,169,1);
+                    contentImg = ImageUtils.overlapFixImage(contentImg,lineImg,106,64,300,1);
+                    contentImg = ImageUtils.writeTextCenter(contentImg,84,"每日圈语",font.deriveFont(30f),Color.WHITE);
+                    contentImg = ImageUtils.overlapFixImage(contentImg,lineImg,306,64,300,1);
 
 
 
@@ -111,7 +110,7 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage,280,292,learnKnowledge.toString(),font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,280+30*learnKnowledge.toString().length(),292,"个",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,522,292,percent+"%",font.deriveFont(45f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,522+50*percent.toString().length(),292,"的同学",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,522+40*percent.toString().length(),292,"的同学",font.deriveFont(22f),grey);
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
                 BASE64Encoder encoder = new BASE64Encoder();
