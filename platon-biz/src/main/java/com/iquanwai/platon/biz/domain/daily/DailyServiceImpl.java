@@ -92,7 +92,7 @@ public class DailyServiceImpl implements DailyService {
                     contentImg = ImageUtils.overlapFixImage(contentImg,titleImg,106,64,538,60);
                     String[] strs = content.split("\\|");
                     for(int i = 0 ; i<strs.length;i++){
-                    contentImg = ImageUtils.writeText(contentImg,50,210+i*60,strs[i],font.deriveFont(60f),Color.white);
+                    contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(60f),Color.white);
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg,authorImg,460,380,64,1);
                     contentImg = ImageUtils.writeText(contentImg,540,390,author,font.deriveFont(30f),Color.WHITE);
