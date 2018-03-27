@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.daily;
 
+import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.daily.DailyService;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
@@ -22,13 +23,20 @@ public class DailyController {
 
     @Autowired
     private DailyService dailyService;
+    @Autowired
+    private CustomerService customerService;
+
 
 
     @RequestMapping(value = "/talk",method = RequestMethod.GET)
     @ApiOperation("获得每日圈语")
     public ResponseEntity<Map<String,Object>> getDailyTalk(UnionUser unionUser){
         String currentDate = DateUtils.parseDateToString(new Date());
+        Integer profileId = unionUser.getId();
+        Integer loginDay = customerService.loadContinuousLoginCount(profileId);
+        Integer learnedKnowledge = 20;
+        Integer percent = 50;
 
-        return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(),currentDate));
+        return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(),currentDate,loginDay,learnedKnowledge,percent));
     }
 }

@@ -10,7 +10,7 @@ public interface DailyService {
      * @param currentDate
      * @return
      */
-    String drawDailyTalk(Integer profileId,String currentDate);
+    String drawDailyTalk(Integer profileId,String currentDate,Integer loginDay,Integer learnedKnowledge,Integer percent);
 
 
 }

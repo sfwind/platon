@@ -42,10 +42,10 @@ public class DailyServiceImpl implements DailyService {
 
 
     @Override
-    public String drawDailyTalk(Integer profileId, String currentDate) {
+    public String drawDailyTalk(Integer profileId, String currentDate,Integer loginDay,Integer learnedKnowledge,Integer percent) {
         DailyTalk dailyTalk = dailyTalkDao.loadByShowDate(currentDate);
         Profile profile = accountService.getProfile(profileId);
-        return drawTalk(profile, dailyTalk);
+        return drawTalk(profile, dailyTalk,loginDay,learnedKnowledge,percent);
     }
 
 
@@ -56,16 +56,13 @@ public class DailyServiceImpl implements DailyService {
      * @param dailyTalk
      * @return
      */
-    private String drawTalk(Profile profile, DailyTalk dailyTalk) {
+    private String drawTalk(Profile profile, DailyTalk dailyTalk,Integer loginDay,Integer learnKnowledge,Integer percent) {
         if (dailyTalk != null) {
             String welcome = ConfigUtils.getDailyTalkWelcome();
             logger.info("dailyTalk:" + dailyTalk.toString());
             String url = dailyTalk.getImgUrl();
             String content = dailyTalk.getContent();
             String author = dailyTalk.getAuthor();
-            Integer learningDay = 1;
-            Integer learnKnowledge = 20;
-            Integer percent = 50;
 
             String nickName = profile.getNickname();
             String headImg = profile.getHeadimgurl();
@@ -99,8 +96,8 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage,70,292,learningDay.toString(),font.deriveFont(45f),Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage,70+30*learningDay.toString().length(),292,"天",font.deriveFont(22f),grey);
+                inputImage = ImageUtils.writeText(inputImage,70,292,loginDay.toString(),font.deriveFont(45f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,70+30*loginDay.toString().length(),292,"天",font.deriveFont(22f),grey);
 
                 inputImage = ImageUtils.writeText(inputImage,280,292,learnKnowledge.toString(),font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,280+30*learnKnowledge.toString().length(),292,"个",font.deriveFont(22f),grey);
