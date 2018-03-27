@@ -516,7 +516,7 @@ public class CustomerController {
         List<RiseCertificate> certificateList = certificateService.getCertificates(unionUser.getId());
 
         List<RiseCertificate> finishList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 5).collect(Collectors.toList());
-        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6).collect(Collectors.toList());
+        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6 || riseCertificate.getType() == 7).collect(Collectors.toList());
 
         List<CertificateDto> finishDtos = Lists.newArrayList();
         List<CertificateDto> gradeDtos = Lists.newArrayList();
@@ -585,6 +585,9 @@ public class CustomerController {
         }
         if (type == 6) {
             return "优秀助教";
+        }
+        if( type == 7){
+            return "优秀班委";
         }
         return "未知类型";
     }
