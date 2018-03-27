@@ -25,7 +25,7 @@ public class ZKConfigUtils {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static String zkAddress = "101.132.185.195:2181";
+    private static String zkAddress = "172.19.10.215:12181";
 
     private static Cache<String, String> CONFIG_CACHE;
 
@@ -38,17 +38,17 @@ public class ZKConfigUtils {
     /* zk服务器地址配置key */
     private static final String ZK_ADDRESS_KEY = "zk.address";
 
-    public ZKConfigUtils(){
+    public ZKConfigUtils() {
         init();
     }
 
-    public void init(){
+    public void init() {
         try {
             config();
             zooKeeper = new RobustZooKeeper(zkAddress);
             zk = zooKeeper.getClient();
         } catch (IOException e) {
-            logger.error("zk"+zkAddress+" is not connectible", e);
+            logger.error("zk" + zkAddress + " is not connectible", e);
         }
     }
 
@@ -61,7 +61,7 @@ public class ZKConfigUtils {
                 .expireAfterWrite(1L, TimeUnit.MINUTES)
                 .build();
         File file = new File(ZK_CONFIG_PATH);
-        if(file.exists()){
+        if (file.exists()) {
             Properties p = new Properties();
             try {
                 p.load(new FileReader(file));
@@ -72,8 +72,8 @@ public class ZKConfigUtils {
         }
     }
 
-    public void destroy(){
-        if(zooKeeper!=null){
+    public void destroy() {
+        if (zooKeeper != null) {
             try {
                 zooKeeper.shutdown();
             } catch (InterruptedException e) {
@@ -82,11 +82,11 @@ public class ZKConfigUtils {
         }
     }
 
-    public String getArchValue(String key){
+    public String getArchValue(String key) {
         return getValue(key, ARCH_PATH);
     }
 
-    public String getValue(String key){
+    public String getValue(String key) {
         String fullPath = CONFIG_PATH.concat(key);
         try {
             if (zk.exists(fullPath, false) != null) {
@@ -109,10 +109,10 @@ public class ZKConfigUtils {
         return null;
     }
 
-    public String getValue(String key, String prePath){
+    public String getValue(String key, String prePath) {
         try {
             String value = CONFIG_CACHE.getIfPresent(key);
-            if(value!=null){
+            if (value != null) {
                 return value;
             }
             logger.info("get {} from zk", key);
@@ -134,35 +134,35 @@ public class ZKConfigUtils {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("zk " + zkAddress + " get value", e);
         }
 
         return null;
     }
 
-    public Boolean getBooleanValue(String key){
+    public Boolean getBooleanValue(String key) {
         String value = getValue(key);
 
         return Boolean.valueOf(value);
     }
 
-    public Integer getIntValue(String key){
+    public Integer getIntValue(String key) {
         String value = getValue(key);
-        try{
+        try {
             Assert.notNull(value);
             return Integer.valueOf(value);
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             logger.error("zk" + zkAddress + " get int {}", value);
         }
 
         return null;
     }
 
-    private String getValueOnce(String key, String prePath){
+    private String getValueOnce(String key, String prePath) {
         try {
             String value = CONFIG_CACHE.getIfPresent(key);
-            if(value!=null){
+            if (value != null) {
                 return value;
             }
             logger.info("get {} from zk", key);
@@ -176,19 +176,19 @@ public class ZKConfigUtils {
             value = configNode.getValue();
             CONFIG_CACHE.put(key, value);
             return value;
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("zk " + zkAddress + " get value", e);
         }
 
         return null;
     }
 
-    public Double getDoubleValue(String key){
+    public Double getDoubleValue(String key) {
         String value = getValue(key);
-        try{
-            Assert.notNull  (value);
+        try {
+            Assert.notNull(value);
             return Double.valueOf(value);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("zk" + zkAddress + " get int {}", value);
         }
 
