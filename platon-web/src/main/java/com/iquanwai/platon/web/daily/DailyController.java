@@ -41,9 +41,9 @@ public class DailyController {
 //        RiseMember riseMember = accountService.getValidRiseMember(profileId);
 //        Integer percent = customerService.calSyncDefeatPercent(riseMember);
 
-        Integer loginDay = 1234;
-        Integer learnedKnowledge = 2343;
-        Integer percent = 100;
+        Integer loginDay = 12;
+        Integer learnedKnowledge = 43;
+        Integer percent = 60;
 
         return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent));
     }

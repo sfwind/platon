@@ -89,7 +89,7 @@ public class DailyServiceImpl implements DailyService {
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
-                    contentImg = ImageUtils.overlapFixImage(contentImg,lineImg,146,64,500,5);
+                    contentImg = ImageUtils.overlapFixImage(contentImg,lineImg,126,64,500,5);
                     contentImg = ImageUtils.writeTextCenter(contentImg,84,"每日圈语",font.deriveFont(30f),Color.WHITE);
 
                     String[] strs = content.split("\\|");
