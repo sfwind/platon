@@ -105,7 +105,8 @@ public class CustomerController {
     @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
         CustomerInfoDto profile = new CustomerInfoDto();
-        profile.setProfileId(unionUser.getId());
+        Profile profilePojo = accountService.getProfile(unionUser.getId());
+        profile.setRiseId(profilePojo.getRiseId());
         profile.setNickname(unionUser.getNickName());
         profile.setHeadimgurl(unionUser.getHeadImgUrl());
         // 查询他的用户信息

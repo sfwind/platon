@@ -82,7 +82,7 @@ public class OperationLogServiceImpl implements OperationLogService {
                 }
                 properties.put("roleName", roleName);
                 properties.put("isAsst", Role.isAsst(profile.getRole()));
-                properties.put("profileId", profileId);
+                properties.put("riseId", profile.getRiseId());
 
                 sa.track(profileId.toString(), true, eventName, properties);
             } catch (InvalidArgumentException e) {
