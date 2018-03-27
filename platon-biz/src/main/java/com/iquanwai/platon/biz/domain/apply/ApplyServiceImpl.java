@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.dao.apply.BusinessApplySubmitDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -54,7 +55,8 @@ public class ApplyServiceImpl implements ApplyService {
     private BusinessApplySubmitDao businessApplySubmitDao;
     @Autowired
     private BusinessSchoolApplicationOrderDao businessSchoolApplicationOrderDao;
-
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId) {
@@ -143,6 +145,8 @@ public class ApplyServiceImpl implements ApplyService {
             }
         });
         businessApplySubmitDao.batchInsertApplySubmit(userApplySubmits);
+
+        operationLogService.trace(profileId, "submitApply");
     }
 
     @Override
