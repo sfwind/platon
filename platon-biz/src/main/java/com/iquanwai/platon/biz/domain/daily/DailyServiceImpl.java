@@ -102,7 +102,7 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage,70,292,learningDay.toString(),font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,70+30*learningDay.toString().length(),292,"天",font.deriveFont(22f),grey);
 
-                inputImage = ImageUtils.writeText(inputImage,280,292,"5",font.deriveFont(45f),Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage,280,292,learnKnowledge.toString(),font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,280+30*learnKnowledge.toString().length(),292,"个",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,542,292,percent+"%",font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,542+50*percent.toString().length(),292,"的同学",font.deriveFont(22f),grey);
