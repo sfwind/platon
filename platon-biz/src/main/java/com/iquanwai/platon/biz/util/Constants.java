@@ -113,7 +113,7 @@ public interface Constants {
             String SUPERB_GROUP = "优秀团队";
             String ORDINARY = "结课证书";
             String ASST_COACH = "优秀助教";
-            String CLASS_NORMAL = "优秀团委";
+            String CLASS_NORMAL = "优秀班委";
         }
     }
 
