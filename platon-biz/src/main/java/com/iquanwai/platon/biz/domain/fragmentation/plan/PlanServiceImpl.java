@@ -378,6 +378,8 @@ public class PlanServiceImpl implements PlanService {
                 }else{
                     throw new CreateCourseException("该课程还在开发中，敬请期待");
                 }
+            }else{
+                throw new CreateCourseException("该课程还在开发中，敬请期待");
             }
         }
 

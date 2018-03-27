@@ -203,13 +203,12 @@ public class IndexController {
                 item.getMemberTypeId() == RiseMember.HALF);
         Profile profile = accountService.getProfile(unionUser.getId());
 
-        // TODO 如果不是会员，直接跳转着陆页
         if (!isMember) {
             response.sendRedirect(HOME_LANDING_PAGE);
             return null;
         }
 
-        if (isMember && isInfoInComplete(profile)) {
+        if (isInfoInComplete(profile)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;

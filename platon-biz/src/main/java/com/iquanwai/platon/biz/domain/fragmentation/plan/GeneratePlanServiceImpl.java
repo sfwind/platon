@@ -77,7 +77,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         if (plan != null) {
             return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH));
         } else {
-            // TODO 修改maxSeries和closeDate
             return this.generatePlan(profileId, TEAM_LEARNING_PROBLEM_ID, TEAM_LEARNING_MAX_SERIES, startDate, DateUtils.afterDays(startDate, 7));
         }
     }
