@@ -25,13 +25,16 @@ public class DailyServiceImpl implements DailyService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
+    private static final String DAILY_TALK_TITLE = "http://static.iqycamp.com/images/dailytalk/daily_talk_title.png";
     private static BufferedImage talkImg = null;
+    private static BufferedImage titleImg = null;
 
     private static final Color grey = new Color(51,51,51);
 
     @PostConstruct
     public void init() {
         talkImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND);
+        titleImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_TITLE);
     }
 
 
@@ -81,6 +84,7 @@ public class DailyServiceImpl implements DailyService {
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
+                    contentImg = ImageUtils.overlapFixImage(contentImg,titleImg,106,64,538,60);
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
                 }
 
@@ -91,7 +95,7 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage,280+30*learnKnowledge.toString().length(),292,"个",font.deriveFont(22f),grey);
                 inputImage = ImageUtils.writeText(inputImage,542,292,percent+"%",font.deriveFont(45f),Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage,542+50*percent.toString().length(),292,"的同学",font.deriveFont(22f),grey);
-                inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
+                //inputImage = ImageUtils.writeTextCenter(inputImage,416,"----------------------每日圈语-----------------",font.deriveFont(15),Color.white);
                 inputImage = ImageUtils.writeText(inputImage,50,526,content,font.deriveFont(60f),Color.white);
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
