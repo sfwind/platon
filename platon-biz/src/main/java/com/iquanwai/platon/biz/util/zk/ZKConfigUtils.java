@@ -9,7 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -57,16 +60,16 @@ public class ZKConfigUtils {
         CONFIG_CACHE = CacheBuilder.newBuilder()
                 .expireAfterWrite(1L, TimeUnit.MINUTES)
                 .build();
-//        File file = new File(ZK_CONFIG_PATH);
-//        if (file.exists()) {
-//            Properties p = new Properties();
-//            try {
-//                p.load(new FileReader(file));
-//                zkAddress = p.getProperty(ZK_ADDRESS_KEY);
-//            } catch (IOException e) {
-//                // ignore
-//            }
-//        }
+        File file = new File(ZK_CONFIG_PATH);
+        if (file.exists()) {
+            Properties p = new Properties();
+            try {
+                p.load(new FileReader(file));
+                zkAddress = p.getProperty(ZK_ADDRESS_KEY);
+            } catch (IOException e) {
+                // ignore
+            }
+        }
     }
 
     public void destroy() {
