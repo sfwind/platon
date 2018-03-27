@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
@@ -61,6 +62,8 @@ public class CustomerServiceImpl implements CustomerService {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private PracticePlanDao practicePlanDao;
+    @Autowired
+    private AccountService accountService;
 
 
     // 申请通过 status id
@@ -247,6 +250,32 @@ public class CustomerServiceImpl implements CustomerService {
         List<PracticePlan> practicePlanList = practicePlanDao.loadByPlanIds(planIds);
         Long result = practicePlanList.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.KNOWLEDGE && practicePlan.getStatus() == PracticePlan.STATUS.COMPLETED).count();
         return result.intValue();
+    }
+
+    @Override
+    public Integer calSyncDefeatPercent(RiseMember riseMember) {
+        Integer profileId = riseMember.getProfileId();
+        Profile profile = accountService.getProfile(profileId);
+        if(profile==null){
+            return 0;
+        }
+        Integer point = profile.getPoint();
+        Date openDate = riseMember.getOpenDate();
+        if(openDate==null){
+            return 0;
+        }
+        String currentDate = openDate.toString().substring(0,7);
+        logger.info("currentDate:"+currentDate);
+
+        List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate,riseMember.getMemberTypeId());
+        List<Integer> profileIds = riseMemberList.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+
+        List<Profile> profiles = accountService.getProfiles(profileIds);
+
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint()<=point).count();
+
+
+        return  result.intValue()/profiles.size();
     }
 
 }
