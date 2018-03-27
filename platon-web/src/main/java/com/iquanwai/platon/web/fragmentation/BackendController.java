@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
-import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ThreadPool;
@@ -110,19 +109,6 @@ public class BackendController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/generate/certificate", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generateCertificate(UnionUser unionUser, @RequestBody RiseCertificate riseCertificate) {
-        Integer month = riseCertificate.getMonth();
-        Integer year = riseCertificate.getYear();
-        ThreadPool.execute(() -> {
-                    logger.info("开始进入生成证书线程");
-                    certificateService.generateCertificate(year, month);
-                    templateMessageService.sendSelfCompleteMessage("生成证书", unionUser.getOpenId());
-                }
-        );
-        return WebUtils.result("正在进行中");
-    }
-
     @RequestMapping(value = "/upload/certificate")
     public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu(@RequestParam Boolean isOnline) {
         ThreadPool.execute(() -> certificateService.uploadCertificateToQiNiu(isOnline));
@@ -136,15 +122,6 @@ public class BackendController {
         ThreadPool.execute(() ->
                 certificateService.generateFullAttendanceCoupon(year, month)
         );
-        return WebUtils.result("正在进行中");
-    }
-
-    @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendCertificate(UnionUser unionUser, @RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
-        ThreadPool.execute(() -> {
-            certificateService.sendCertificate(year, month);
-            templateMessageService.sendSelfCompleteMessage("发送证书", unionUser.getOpenId());
-        });
         return WebUtils.result("正在进行中");
     }
 
@@ -168,28 +145,6 @@ public class BackendController {
                 .action("课程强开");
         operationLogService.log(operationLog);
         List<Integer> profileIds = params.getProfileIds();
-        Integer problemId = params.getProblemId();
-        Date startDate = params.getStartDate();
-        Date closeDate = params.getCloseDate();
-        Boolean sendWelcomeMsg = params.getSendWelcomeMsg();
-
-        profileIds.forEach(profileId -> ThreadPool.execute(() -> {
-            Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
-            logger.info("开课: profileId:{},planId:{}", profileId, result);
-        }));
-
-        return WebUtils.success();
-    }
-
-
-    @RequestMapping(value = "/open/course/memberid", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> backendForceOpenCourse(UnionUser unionUser, @RequestBody ForceOpenPlanParams params) {
-        logger.info("enter force open course");
-        ActionLog actionLog = ActionLog.create().module("打点").action("课程强开").function("后台功能").uid(unionUser.getId());
-        operationLogService.log(actionLog);
-
-        List<String> memberIds = params.getMemberIds();
-        List<Integer> profileIds = accountService.getProfileIdsByMemberId(memberIds);
         Integer problemId = params.getProblemId();
         Date startDate = params.getStartDate();
         Date closeDate = params.getCloseDate();
