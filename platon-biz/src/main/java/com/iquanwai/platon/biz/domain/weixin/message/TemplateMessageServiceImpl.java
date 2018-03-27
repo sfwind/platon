@@ -37,8 +37,10 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
         templateMessage.setTouser(openId);
         templateMessage.setTemplate_id(ConfigUtils.incompleteTaskMsg());
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        data.put("keyword1", new TemplateMessage.Keyword(eventName));
+        data.put("keyword2", new TemplateMessage.Keyword("处理完成"));
+        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
         templateMessage.setData(data);
-        data.put("first", new TemplateMessage.Keyword("事件处理成功：" + eventName + "\n 完成时间：" + DateUtils.parseDateTimeToString(new Date())));
         return sendMessage(templateMessage);
     }
 
