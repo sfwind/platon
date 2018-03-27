@@ -39,7 +39,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
         data.put("keyword1", new TemplateMessage.Keyword(eventName));
         data.put("keyword2", new TemplateMessage.Keyword("处理完成"));
-        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
+        data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
         templateMessage.setData(data);
         return sendMessage(templateMessage);
     }
