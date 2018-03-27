@@ -72,7 +72,7 @@ public class OperationLogServiceImpl implements OperationLogService {
                 Profile profile = accountService.getProfile(profileId);
                 Integer roleName = 0;
                 RiseMember validRiseMember = accountService.getValidRiseMember(profileId);
-                RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+                RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
                 if (riseClassMember != null) {
                     properties.put("className", riseClassMember.getClassName());
                     properties.put("groupId", riseClassMember.getGroupId());
