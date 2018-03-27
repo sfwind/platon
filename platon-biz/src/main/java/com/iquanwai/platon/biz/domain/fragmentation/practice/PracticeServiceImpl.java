@@ -379,6 +379,7 @@ public class PracticeServiceImpl implements PracticeService {
                     prop.add("series", practicePlan.getSeries());
                 }
             }));
+            prop.add("firstAnswer", firstAnswer);
             prop.add("problemId", submit.getProblemId());
             prop.add("applicationId", submit.getApplicationId());
             return prop;
@@ -438,6 +439,11 @@ public class PracticeServiceImpl implements PracticeService {
         int length = CommonUtils.removeHTMLTag(content).length();
         if (submit.getContent() == null) {
             result = challengeSubmitDao.firstAnswer(id, content, length);
+            operationLogService.trace(submit.getProfileId(), "submitChallenge", () -> {
+                OperationLogService.Prop prop = OperationLogService.props();
+                prop.add("challengeId", submit.getChallengeId());
+                return prop;
+            });
         } else {
             result = challengeSubmitDao.answer(id, content, length);
         }
