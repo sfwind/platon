@@ -486,6 +486,37 @@ public class PlanServiceImpl implements PlanService {
             // 设置关闭时间
             improvementPlanDao.updateCloseTime(planId);
             sendCloseMsg(plan, percent);
+            operationLogService.trace(plan.getProfileId(), "closeCourse",
+                    () -> {
+                        Problem problem = problemDao.load(Problem.class, plan.getProblemId());
+                        int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
+                        int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
+                        return OperationLogService
+                                .props()
+                                .add("problemId", plan.getProblemId())
+                                .add("problem", problem.getAbbreviation())
+                                .add("totalWarmup", warmupSubmitCount)
+                                .add("rightWarmup", warmupRightCount)
+                                .add("useDays", DateUtils.interval(plan.getStartDate()))
+                                .add("manualClose", true);
+                    }
+            );
+        } else if (status == ImprovementPlan.COMPLETE) {
+            // 打点
+            operationLogService.trace(plan.getProfileId(), "completeCourse",
+                    () -> {
+                        Problem problem = problemDao.load(Problem.class, plan.getProblemId());
+                        int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
+                        int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
+                        return OperationLogService
+                                .props()
+                                .add("problemId", plan.getProblemId())
+                                .add("problem", problem.getAbbreviation())
+                                .add("totalWarmup", warmupSubmitCount)
+                                .add("rightWarmup", warmupRightCount)
+                                .add("useDays", DateUtils.interval(plan.getStartDate()));
+                    }
+            );
         }
     }
 
@@ -525,22 +556,6 @@ public class PlanServiceImpl implements PlanService {
             improvementPlanDao.updateCompleteTime(improvementPlan.getId());
         }
         improvementPlan.setStatus(ImprovementPlan.COMPLETE);
-
-        // 打点
-        operationLogService.trace(improvementPlan.getProfileId(), "completeCourse",
-                () -> {
-                    Problem problem = problemDao.load(Problem.class, improvementPlan.getProblemId());
-                    int planSubmitCount = warmupSubmitDao.getPlanSubmitCount(improvementPlan.getId());
-                    int planRightCount = warmupSubmitDao.getPlanRightCount(improvementPlan.getId());
-                    return OperationLogService
-                            .props()
-                            .add("problemId", improvementPlan.getProblemId())
-                            .add("problem", problem.getAbbreviation())
-                            .add("totalWarmup", planSubmitCount)
-                            .add("rightWarmup", planRightCount)
-                            .add("useDays", DateUtils.interval(improvementPlan.getStartDate()));
-                }
-        );
         return true;
     }
 

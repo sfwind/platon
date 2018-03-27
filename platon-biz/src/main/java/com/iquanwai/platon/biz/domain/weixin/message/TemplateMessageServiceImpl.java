@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.weixin.message;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.common.CustomerMessageLogDao;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.CustomerMessageLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -30,6 +31,8 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private CustomerMessageLogDao customerMessageLogDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public boolean sendMessage(TemplateMessage templateMessage) {
@@ -53,7 +56,14 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
             String json = new Gson().toJson(templateMessage);
             body = restfulHelper.post(SEND_MESSAGE_URL, json);
         }
-        return StringUtils.isNoneEmpty(body) && !CommonUtils.isErrorNoException(body);
+        boolean success = StringUtils.isNoneEmpty(body) && !CommonUtils.isErrorNoException(body);
+
+        operationLogService.trace(() -> {
+            Profile profile = accountService.getProfile(templateMessage.getTouser());
+            return profile.getId();
+        }, "sendWechatMessage", () -> OperationLogService.props().add("success", success));
+
+        return success;
     }
 
     @Override
@@ -157,9 +167,9 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private void addHook(TemplateMessage templateMessage) {
         if (templateMessage.getUrl() != null) {
             String url = templateMessage.getUrl();
-            if(url.contains("?")){
+            if (url.contains("?")) {
                 url = url + "&_tm=template_message";
-            }else{
+            } else {
                 url = url + "?_tm=template_message";
             }
             templateMessage.setUrl(url);

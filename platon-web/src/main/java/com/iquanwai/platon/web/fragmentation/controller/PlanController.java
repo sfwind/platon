@@ -300,6 +300,7 @@ public class PlanController {
         // 可以关闭，进行关闭
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
 
+
         return WebUtils.success();
     }
 

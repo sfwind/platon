@@ -110,10 +110,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         // 打点
         operationLogService.trace(profileId, "chooseCourse",
-                OperationLogService
+                () -> OperationLogService
                         .props()
-                        .add("problemId", problemId)
-                        .add("problem", problem == null ? "" : problem.getAbbreviation()));
+                        .add("problemId", problemId));
 
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);

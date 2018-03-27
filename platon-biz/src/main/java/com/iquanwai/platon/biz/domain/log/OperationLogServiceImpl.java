@@ -62,19 +62,11 @@ public class OperationLogServiceImpl implements OperationLogService {
     }
 
     @Override
-    public void trace(Integer profileId, String eventName, Supplier<Prop> supplier) {
-        this.trace(profileId, eventName, supplier.get());
-    }
-
-    @Override
-    public void trace(Integer profileId, String eventName) {
-        trace(profileId, eventName, new Prop());
-    }
-
-    @Override
-    public void trace(Integer profileId, String eventName, Prop prop) {
+    public void trace(Supplier<Integer> profileIdSupplier, String eventName, Supplier<Prop> supplier) {
         ThreadPool.execute(() -> {
             try {
+                Integer profileId = profileIdSupplier.get();
+                Prop prop = supplier.get();
                 Map<String, Object> properties = prop.build();
                 Assert.notNull(profileId, "用户id不能为null");
                 Profile profile = accountService.getProfile(profileId);
@@ -97,5 +89,15 @@ public class OperationLogServiceImpl implements OperationLogService {
                 logger.error(e.getLocalizedMessage(), e);
             }
         });
+    }
+
+    @Override
+    public void trace(Integer profileId, String eventName) {
+        this.trace(() -> profileId, eventName, OperationLogService::props);
+    }
+
+    @Override
+    public void trace(Integer profileId, String eventName, Supplier<Prop> supplier) {
+        this.trace(() -> profileId, eventName, supplier);
     }
 }
