@@ -65,7 +65,7 @@
     <bean id="sa" class="com.sensorsdata.analytics.javasdk.SensorsAnalytics" destroy-method="shutdown">
         <constructor-arg index="0">
             <bean class="com.sensorsdata.analytics.javasdk.SensorsAnalytics.ConcurrentLoggingConsumer">
-                <constructor-arg index="0" value="/data/appdatas/sa/service_log.log"/>
+                <constructor-arg index="0" value="/data/appdatas/sa/access.log"/>
             </bean>
         </constructor-arg>
     </bean>
