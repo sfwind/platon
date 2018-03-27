@@ -588,6 +588,9 @@ public class CustomerController {
         if (type == 6) {
             return "优秀助教";
         }
+        if( type == 7){
+            return "优秀班委";
+        }
         return "未知类型";
     }
 
