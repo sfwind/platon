@@ -71,7 +71,6 @@ public class DailyServiceImpl implements DailyService {
      * @return
      */
     private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, Integer learnKnowledge, Integer percent) {
-        logger.info("开始绘制图片");
         if (dailyTalk != null) {
             String welcome = ConfigUtils.getDailyTalkWelcome();
             String url = dailyTalk.getImgUrl();
@@ -85,6 +84,13 @@ public class DailyServiceImpl implements DailyService {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             try {
+                String scene = PRESCENE + profile.getId();
+                logger.info("请求微信接口开始");
+                BufferedImage qrImg = qrCodeService.loadQrImage(scene);
+                logger.info("请求微信接口结束");
+
+                logger.info("开始绘制图片");
+
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
                 //绘制头像
@@ -94,10 +100,6 @@ public class DailyServiceImpl implements DailyService {
                     headBuffer = ImageUtils.convertCircular(headBuffer);
                     inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
                 }
-                String scene = PRESCENE + profile.getId();
-                logger.info("请求微信接口开始");
-                BufferedImage qrImg = qrCodeService.loadQrImage(scene);
-                logger.info("请求微信接口结束");
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 128, 102, welcome, font.deriveFont(22f), grey);
 
