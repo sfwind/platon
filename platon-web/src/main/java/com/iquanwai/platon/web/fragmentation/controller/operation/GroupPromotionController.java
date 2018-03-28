@@ -65,7 +65,7 @@ public class GroupPromotionController {
     public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, UnionUser unionUser) {
         // 页面可能无 ProfileId
         Account account = accountService.getAccountByUnionId(unionUser.getUnionId());
-        if (account.getSubscribe() == 1) {
+        if (account != null && account.getSubscribe() == 1) {
             return WebUtils.success();
         } else {
             String qrCodeBase64 = qrCodeService.loadQrBase64("groupPromotion_" + groupCode);
