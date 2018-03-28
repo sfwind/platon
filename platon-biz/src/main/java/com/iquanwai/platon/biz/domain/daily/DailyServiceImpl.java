@@ -140,24 +140,24 @@ public class DailyServiceImpl implements DailyService {
 
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,532,960,180,180);
 
-                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+            //    ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
-//                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
-//                ImageWriter writer=null;
-//                while(it.hasNext()) {
-//                    writer=it.next();
-//                    break;
-//                }
-//                ImageOutputStream output = ImageIO.createImageOutputStream(outputStream);
-//                if(writer!=null) {
-//                    ImageWriteParam params = writer.getDefaultWriteParam();
-//                    params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
-//
-//                    writer.setOutput(output);
-//                    writer.write(null,new IIOImage(inputImage,null,null), params);
-//                    output.flush();
-//                    writer.dispose();
-//                }
+                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
+                ImageWriter writer=null;
+                while(it.hasNext()) {
+                    writer=it.next();
+                    break;
+                }
+                ImageOutputStream output = ImageIO.createImageOutputStream(outputStream);
+                if(writer!=null) {
+                    ImageWriteParam params = writer.getDefaultWriteParam();
+                    params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
+
+                    writer.setOutput(output);
+                    writer.write(null,new IIOImage(inputImage,null,null), params);
+                    output.flush();
+                    writer.dispose();
+                }
                 logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
