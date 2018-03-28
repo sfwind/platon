@@ -3,12 +3,13 @@ package com.iquanwai.platon.web.fragmentation.controller.operation;
 import com.iquanwai.platon.biz.domain.fragmentation.operation.GroupPromotionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
+import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.dto.GroupPromotionCountDownDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -61,12 +62,12 @@ public class GroupPromotionController {
     }
 
     @RequestMapping(value = "/following")
-    public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, LoginUser loginUser) {
+    public ResponseEntity<Map<String, Object>> loadGroupPromotionFollowing(@RequestParam("groupCode") String groupCode, UnionUser unionUser) {
         // 页面可能无 ProfileId
-        try {
-            accountService.getAccount(loginUser.getOpenId(), false);
+        Account account = accountService.getAccountByUnionId(unionUser.getUnionId());
+        if (account.getSubscribe() == 1) {
             return WebUtils.success();
-        } catch (NotFollowingException e) {
+        } else {
             String qrCodeBase64 = qrCodeService.loadQrBase64("groupPromotion_" + groupCode);
             return WebUtils.error(201, qrCodeBase64);
         }

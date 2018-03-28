@@ -11,17 +11,11 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PromotionActivity;
 import com.iquanwai.platon.biz.po.PromotionLevel;
-import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
-import com.iquanwai.platon.biz.util.PromotionConstants;
+import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -202,38 +196,13 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         InputStream inputStream = qrCodeService.showQRCode(response.getTicket());
         try {
             return ImageUtils.getBufferedImageByInputStream(inputStream);
-        }finally {
+        } finally {
             try {
                 inputStream.close();
             } catch (IOException e) {
                 logger.error("is close failed", e);
             }
         }
-    }
-
-    // 获取用户头像
-    private BufferedImage loadHeadImage(Integer profileId) {
-        Profile profile = accountService.getProfile(profileId);
-        // 获取用户头像图片
-        String headImgUrl = profile.getHeadimgurl();
-        BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-        // 如果用户头像过期，则拉取实时新头像
-        if (headImg == null) {
-            Account realProfile;
-            try {
-                realProfile = accountService.getAccount(profile.getOpenid(), true);
-                headImgUrl = realProfile.getHeadimgurl();
-                headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-            } catch (NotFollowingException e) {
-                // ignore
-            }
-        }
-        // 修复两次都没有头像的用户，使用默认头像
-        if (headImg == null) {
-            String defaultImageUrl = "https://static.iqycamp.com/images/fragment/headimg_default_1.jpg?imageslim";
-            headImg = ImageUtils.getBufferedImageByUrl(defaultImageUrl);
-        }
-        return headImg;
     }
 
     // 查看获取当前已经获取的奖励，并且同时发送消息
@@ -250,11 +219,11 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         boolean freeLimit = false;
         ImprovementPlan improvementPlan = improvementPlanDao.
                 loadPlanByProblemId(sourceProfileId, ConfigUtils.getTrialProblemId());
-        if(improvementPlan!=null){
+        if (improvementPlan != null) {
             freeLimit = true;
         } else {
             Profile sourceProfile = accountService.getProfile(sourceProfileId);
-            if(sourceProfile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP){
+            if (sourceProfile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP) {
                 freeLimit = true;
             }
         }
@@ -262,7 +231,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         Integer remainTrial = accessTrial(sourceProfileId);
         // 发送给推广人的消息
         if (remainTrial == 0) {
-            if(!freeLimit){
+            if (!freeLimit) {
                 sendSuccessTrialMsg(profileId, sourceProfileId);
             } else {
                 sendNormalTrialMsg(profileId, sourceProfileId, remainTrial, true);
@@ -310,7 +279,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setTemplate_id(ConfigUtils.getShareCodeSuccessMsg());
         templateMessage.setData(data);
 
-        if(!freeLimit){
+        if (!freeLimit) {
             if (remainCount != 0) {
                 data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试，距离免费领取洞察力课程，只剩"
                         + remainCount + "个好友啦！\n"));
@@ -320,8 +289,8 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
             data.put("keyword1", new TemplateMessage.Keyword("洞察力天赋检测"));
             data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
             data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
-        }else{
-            data.put("first", new TemplateMessage.Keyword("你的好友"+ promoterProfile.getNickname() + "扫码完成测试啦，ta一定很关注你！\n"));
+        } else {
+            data.put("first", new TemplateMessage.Keyword("你的好友" + promoterProfile.getNickname() + "扫码完成测试啦，ta一定很关注你！\n"));
             data.put("keyword1", new TemplateMessage.Keyword("洞察力天赋检测"));
             data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
             data.put("keyword3", new TemplateMessage.Keyword("【圈外同学】服务号"));
@@ -344,7 +313,7 @@ public class OperationEvaluateServiceImpl implements OperationEvaluateService {
         templateMessage.setData(data);
         templateMessage.setUrl(ConfigUtils.domainName() + "/rise/static/plan/view?id=9&free=true");
         templateMessage.setTemplate_id(ConfigUtils.getSignUpSuccessMsg());
-        data.put("first", new TemplateMessage.Keyword("恭喜！你的好友"+promoterProfile.getNickname() + "扫码完成测试，总计"+
+        data.put("first", new TemplateMessage.Keyword("恭喜！你的好友" + promoterProfile.getNickname() + "扫码完成测试，总计" +
                 TRIAL_NUM + "位好友完成测评，你已获得免费领取洞察力课程资格啦！\n"));
         data.put("keyword1", new TemplateMessage.Keyword("找到本质问题，减少无效努力"));
         data.put("keyword2", new TemplateMessage.Keyword("圈外同学"));

@@ -7,7 +7,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.EssenceCard;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -200,14 +199,9 @@ public class CardManagerImpl implements CardManager {
         BufferedImage headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         // 如果用户头像过期，则拉取实时新头像
         if (headImg == null) {
-            Account realProfile;
-            try {
-                realProfile = accountService.getAccount(profile.getOpenid(), true);
-                headImgUrl = realProfile.getHeadimgurl();
-                headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
-            } catch (NotFollowingException e) {
-                logger.error("not following", e);
-            }
+            Account realProfile = accountService.getAccountByUnionId(profile.getUnionid());
+            headImgUrl = realProfile.getHeadimgurl();
+            headImg = ImageUtils.getBufferedImageByUrl(headImgUrl);
         }
         // 修复两次都没有头像的用户，使用默认头像
         if (headImg == null) {
