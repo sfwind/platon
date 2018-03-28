@@ -95,8 +95,9 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
                 }
                 String scene = PRESCENE + profile.getId();
+                logger.info("请求微信接口开始");
                 BufferedImage qrImg = qrCodeService.loadQrImage(scene);
-
+                logger.info("请求微信接口结束");
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 128, 102, welcome, font.deriveFont(22f), grey);
 
