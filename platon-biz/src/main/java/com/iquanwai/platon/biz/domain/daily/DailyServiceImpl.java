@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.daily;
 
 import com.iquanwai.platon.biz.dao.daily.DailyTalkDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.manager.QRCodeManager;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
 import com.iquanwai.platon.biz.util.*;
@@ -23,8 +24,10 @@ public class DailyServiceImpl implements DailyService {
     @Autowired
     private AccountService accountService;
 
+    QRCodeManager qrCodeManager = new QRCodeManager();
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
+    private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_backend.png";
     private static final String DAILY_TALK_TITLE = "http://static.iqycamp.com/images/dailytalk/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR = "http://static.iqycamp.com/images/dailytalk/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = "http://static.iqycamp.com/images/dailytalk/daily_talk_line.png";
@@ -35,6 +38,7 @@ public class DailyServiceImpl implements DailyService {
 
     private static final Color grey = new Color(51, 51, 51);
     private static final Integer CONTENTSIZE = 24;
+    private static final String PRESCENE = "daily_talk_";
 
     @PostConstruct
     public void init() {
@@ -91,6 +95,9 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
                 }
                 //TODO:绘制二维码
+                String scene = PRESCENE + profile.getId();
+                BufferedImage qrImg = qrCodeManager.loadQrImage(scene);
+
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 128, 102, welcome, font.deriveFont(22f), grey);
 
@@ -122,6 +129,9 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage, 280 + 30 * learnKnowledge.toString().length(), 292, "个", font.deriveFont(22f), grey);
                 inputImage = ImageUtils.writeText(inputImage, 522, 292, percent + "%", font.deriveFont(45f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 562 + 30 * percent.toString().length(), 292, "的同学", font.deriveFont(22f), grey);
+
+                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,582,896,80,80);
+
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
                 BASE64Encoder encoder = new BASE64Encoder();
