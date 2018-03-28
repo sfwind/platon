@@ -98,6 +98,9 @@ public class OperationLogServiceImpl implements OperationLogService {
                 properties.put("riseId", profile.getRiseId());
 
                 sa.track(profileId.toString(), true, eventName, properties);
+
+                // TODO 上线前删掉
+                sa.flush();
             } catch (InvalidArgumentException e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
