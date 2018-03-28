@@ -105,7 +105,7 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
 
                 if (content.length() <= CONTENTSIZE) {
                     for (int i = 0; i < strs.length; i++) {
-                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i],boldSimSumFont.deriveFont(60f), Color.WHITE);
+                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i],boldSimSumFont.deriveFont(54f), Color.WHITE);
                     }
                 } else {
                     for (int i = 0; i < strs.length; i++) {
