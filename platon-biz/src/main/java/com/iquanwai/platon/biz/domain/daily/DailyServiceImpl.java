@@ -82,7 +82,6 @@ public class DailyServiceImpl implements DailyService {
             try {
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 Font simsumFont = Font.createFont(Font.TRUETYPE_FONT, simsunIn);
-                Font boldSimSumFont = Font.createFont(Font.TRUETYPE_FONT, simsunIn);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
                 //绘制头像
                 if (headImg != null) {
@@ -104,11 +103,11 @@ public class DailyServiceImpl implements DailyService {
 
                     if (content.length() <= CONTENTSIZE) {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], boldSimSumFont.deriveFont(54f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], simsumFont.deriveFont(54f), Color.WHITE);
                         }
                     } else {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i], boldSimSumFont.deriveFont(40f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i], simsumFont.deriveFont(40f), Color.WHITE);
                         }
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
