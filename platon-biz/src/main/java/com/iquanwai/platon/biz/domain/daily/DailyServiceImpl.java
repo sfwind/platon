@@ -102,7 +102,7 @@ public class DailyServiceImpl implements DailyService {
 
                     if(content.length()<=CONTENTSIZE){
                         for(int i = 0 ; i<strs.length;i++){
-                            contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(60f),Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(54f),Color.WHITE);
                         }
                     }
                     else{
@@ -110,8 +110,6 @@ public class DailyServiceImpl implements DailyService {
                             contentImg = ImageUtils.writeText(contentImg,50,210+i*60,strs[i],font.deriveFont(40f),Color.WHITE);
                         }
                     }
-
-
                     contentImg = ImageUtils.overlapFixImage(contentImg,authorImg,460,380,64,1);
                     contentImg = ImageUtils.writeText(contentImg,540,390,author,font.deriveFont(30f),Color.WHITE);
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
