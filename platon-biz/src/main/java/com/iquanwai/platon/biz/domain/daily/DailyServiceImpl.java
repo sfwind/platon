@@ -93,17 +93,18 @@ public class DailyServiceImpl implements DailyService {
                 //绘制头像
                 if (headImg != null) {
                     BufferedImage headImgBuffer = ImageUtils.getBufferedImageByUrl(headImg);
-                    if(headImgBuffer!=null){
+                    if(headImgBuffer!=null) {
                         BufferedImage headBuffer = ImageUtils.copy(headImgBuffer);
                         //圆形
                         headBuffer = ImageUtils.convertCircular(headBuffer);
                         inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
-                    }else{
-                        BufferedImage headBuffer = ImageUtils.copy(unknownImg);
-                        //圆形
-                        headBuffer = ImageUtils.convertCircular(headBuffer);
-                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
                     }
+//                    }else{
+//                        BufferedImage headBuffer = ImageUtils.copy(unknownImg);
+//                        //圆形
+//                        headBuffer = ImageUtils.convertCircular(headBuffer);
+//                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
+//                    }
                 }
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 128, 102, welcome, font.deriveFont(22f), grey);
@@ -158,7 +159,6 @@ public class DailyServiceImpl implements DailyService {
                     output.flush();
                     writer.dispose();
                 }
-
 
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
