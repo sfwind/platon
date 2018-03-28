@@ -51,6 +51,11 @@ public class DailyServiceImpl implements DailyService {
         return drawTalk(profile, dailyTalk,loginDay,learnedKnowledge,percent);
     }
 
+    @Override
+    public DailyTalk loadByTalkDate(String currentDate) {
+        return dailyTalkDao.loadByShowDate(currentDate);
+    }
+
 
     /**
      * 绘制每日圈语图片
