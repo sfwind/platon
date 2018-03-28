@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
@@ -12,6 +13,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.AbstractComment;
 import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
 import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -49,6 +51,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private RiseClassMemberDao riseClassMemberDao;
     @Autowired
     private WarmupPracticeDao warmupPracticeDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -71,11 +75,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
                 operationLogService.trace(profileId, "replyWarumupDiscuss", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
+                    RiseMember riseMember = riseMemberDao.loadValidRiseMember(repliedDiscuss.getProfileId());
                     WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
                     RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(repliedDiscuss.getProfileId());
                     if (riseClassMember != null) {
                         prop.add("repliedClassName", riseClassMember.getClassName());
                         prop.add("repliedGroupId", riseClassMember.getGroupId());
+                    }
+                    if (riseMember != null) {
+                        prop.add("repliedRolename", riseMember.getMemberTypeId());
                     }
                     prop.add("warmupId", warmupPracticeId);
                     prop.add("problemId", warmupPractice.getProblemId());

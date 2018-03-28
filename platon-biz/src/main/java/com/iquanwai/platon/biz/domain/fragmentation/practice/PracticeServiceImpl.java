@@ -543,7 +543,6 @@ public class PracticeServiceImpl implements PracticeService {
                     }
                     prop.add("applicationId", submit.getApplicationId());
                     prop.add("votedProfileId", submitProfileId);
-                    prop.add("problem", problem.getAbbreviation());
                     prop.add("problemId", problem.getId());
                     prop.add("device", device);
                     return prop;
