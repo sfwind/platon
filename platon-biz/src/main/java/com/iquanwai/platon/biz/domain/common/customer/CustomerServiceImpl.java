@@ -274,7 +274,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Profile> profiles = accountService.getProfiles(profileIds);
 
-        Long result = profiles.stream().filter(profile1 -> profile1.getPoint()<=point).count();
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint()==null || profile1.getPoint()<=point).count();
 
 
         return  result.intValue()/profiles.size()*100;
