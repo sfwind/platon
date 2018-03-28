@@ -26,10 +26,10 @@ public class DailyServiceImpl implements DailyService {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
-    private static final String DAILY_TALK_TITLE = "http://static.iqycamp.com/images/dailytalk/daily_talk_title.png";
-    private static final String DAILY_TALK_AUTHOR = "http://static.iqycamp.com/images/dailytalk/daily_talk_author.png";
-    private static final String DAILY_TALK_LINE = "http://static.iqycamp.com/images/dailytalk/daily_talk_line.png";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_backend.png";
+    private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_title.png";
+    private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/daily_talk_author.png";
+    private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_line.png";
     private static BufferedImage talkImg = null;
     private static BufferedImage titleImg = null;
     private static BufferedImage authorImg = null;
@@ -133,7 +133,7 @@ public class DailyServiceImpl implements DailyService {
                  InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
                 QiNiuUtils.uploadFile(dailyUrl,inputStream);
-                return dailyUrl;
+                return ConfigUtils.getPicturePrefix()+dailyUrl;
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
             } finally {
