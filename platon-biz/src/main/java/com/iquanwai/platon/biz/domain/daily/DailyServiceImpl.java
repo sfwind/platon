@@ -108,7 +108,7 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
                     }
                 } else {
                     for (int i = 0; i < strs.length; i++) {
-                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 60, strs[i],simsumFont.deriveFont(40f), Color.WHITE);
+                        contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i],simsumFont.deriveFont(40f), Color.WHITE);
                     }
                 }
                 contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
