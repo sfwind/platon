@@ -303,18 +303,19 @@ public class IndexController {
             return null;
         }
 
-        Account account = accountService.getAccountByUnionId(unionUser.getUnionId());
-        if (account == null || account.getSubscribe() == 0) {
-            SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-            if (subscribeRouterConfig != null) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-                return null;
-            } else {
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
-            }
-        }
+        // TODO
+        // Account account = accountService.getAccountByUnionId(unionUser.getUnionId());
+        // if (account == null || account.getSubscribe() == 0) {
+        //     SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+        //     if (subscribeRouterConfig != null) {
+        //         // 未关注
+        //         response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+        //         return null;
+        //     } else {
+        //         response.sendRedirect(SUBSCRIBE_URL);
+        //         return null;
+        //     }
+        // }
 
         if (ConfigUtils.isDevelopment()) {
             //如果不在白名单中,直接403报错
