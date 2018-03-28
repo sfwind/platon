@@ -71,6 +71,7 @@ public class DailyServiceImpl implements DailyService {
      * @return
      */
     private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, Integer learnKnowledge, Integer percent) {
+        logger.info("开始绘制图片");
         if (dailyTalk != null) {
             String welcome = ConfigUtils.getDailyTalkWelcome();
             String url = dailyTalk.getImgUrl();
@@ -131,8 +132,13 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,532,960,180,180);
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-
+                logger.info("绘制结束");
                 BASE64Encoder encoder = new BASE64Encoder();
+
+                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                logger.info("开始上传七牛云");
+                boolean isSuccess = QiNiuUtils.uploadFile("test.png",inputStream);
+                logger.info("上传七牛云完成");
                 return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
