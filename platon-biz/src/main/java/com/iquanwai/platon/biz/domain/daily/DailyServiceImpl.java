@@ -161,7 +161,9 @@ public class DailyServiceImpl implements DailyService {
                 logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
+                logger.info("上传七牛云");
                 QiNiuUtils.uploadFile(dailyUrl,inputStream);
+                logger.info("上传七牛云结束");
                 return ConfigUtils.getPicturePrefix()+dailyUrl;
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
