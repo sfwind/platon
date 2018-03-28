@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.domain.daily;
 
 import com.iquanwai.platon.biz.dao.daily.DailyTalkDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.manager.QRCodeManager;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
 import com.iquanwai.platon.biz.util.*;
@@ -23,8 +23,9 @@ public class DailyServiceImpl implements DailyService {
     private DailyTalkDao dailyTalkDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private QRCodeService qrCodeService;
 
-    QRCodeManager qrCodeManager = new QRCodeManager();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_backend.png";
@@ -94,9 +95,8 @@ public class DailyServiceImpl implements DailyService {
                     headBuffer = ImageUtils.convertCircular(headBuffer);
                     inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
                 }
-                //TODO:绘制二维码
                 String scene = PRESCENE + profile.getId();
-                BufferedImage qrImg = qrCodeManager.loadQrImage(scene);
+                BufferedImage qrImg = qrCodeService.loadQrImage(scene);
 
                 inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 128, 102, welcome, font.deriveFont(22f), grey);
