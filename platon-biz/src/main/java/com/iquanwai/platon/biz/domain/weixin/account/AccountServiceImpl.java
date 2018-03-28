@@ -12,21 +12,15 @@ import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.ConversionException;
-import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.joda.time.DateTime;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +124,6 @@ public class AccountServiceImpl implements AccountService {
                 profile.setRole(role);
             }
         }
-
         return profile;
     }
 
@@ -188,14 +179,13 @@ public class AccountServiceImpl implements AccountService {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
             // NOTE:批量接口不注入risemember
-//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
+            // profile.setRiseMember(getProfileRiseMember(profile.getId()));
             Integer role = userRoleMap.get(profile.getId());
             if (role == null) {
                 profile.setRole(0);
             } else {
                 profile.setRole(role);
             }
-            // checkHeadImgUrlEffectiveness(profile);
         });
         return profiles;
     }
@@ -220,123 +210,79 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccount(String openid, boolean realTime) throws NotFollowingException {
-        if (realTime) {
-            return getAccountFromWeixin(openid);
-        } else {
-            //先从数据库查询account对象
-            Account account = followUserDao.queryByOpenId(openid);
-            if (account != null) {
-                if (account.getSubscribe() == 0) {
-                    // 曾经关注，现在取关的人
-                    throw new NotFollowingException();
-                }
-                return account;
-            }
-            //从微信处获取
-            return getAccountFromWeixin(openid);
-        }
-    }
-
-    @Override
-    public Account getGuestFromWeixin(String openId, String accessToken) {
-        String url = GUEST_INFO_URL;
-        Map<String, String> map = Maps.newHashMap();
-        map.put("openid", openId);
-        map.put("access_token", accessToken);
-        logger.info("请求游客信息:{}", openId);
-        url = CommonUtils.placeholderReplace(url, map);
-
-        String body = restfulHelper.get(url);
-        if (StringUtils.isEmpty(body)) {
-            logger.info("使用 accessToken 请求用户信息过期，返回 account 为 null");
-            return null;
-        }
-        logger.info("请求游客信息结果:{}", body);
-        Map<String, Object> result = CommonUtils.jsonToMap(body);
-        Account account = new Account();
-        try {
-            BeanUtils.populate(account, result);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return account;
-    }
-
-    @Override
     public Account getAccountByUnionId(String unionId) {
         return followUserDao.queryByUnionId(unionId);
     }
 
-    private Account getAccountFromWeixin(String openid) throws NotFollowingException {
-        //调用api查询account对象
-        String url = USER_INFO_URL;
-        Map<String, String> map = Maps.newHashMap();
-        map.put("openid", openid);
-        logger.info("请求用户信息:{}", openid);
-        url = CommonUtils.placeholderReplace(url, map);
-
-        String body = restfulHelper.get(url);
-        logger.info("请求用户信息结果:{}", body);
-        Map<String, Object> result = CommonUtils.jsonToMap(body);
-        Account accountNew = new Account();
-        try {
-            ConvertUtils.register((aClass, value) -> {
-                if (value == null) {
-                    return null;
-                }
-
-                if (!(value instanceof Double)) {
-                    logger.error("不是日期类型");
-                    throw new ConversionException("不是日期类型");
-                }
-                Double time = (Double) value * 1000;
-
-                return new DateTime(time.longValue()).toDate();
-            }, Date.class);
-            BeanUtils.populate(accountNew, result);
-            if (accountNew.getSubscribe() == 0) {
-                //未关注直接抛异常
-                throw new NotFollowingException();
-            }
-            redisUtil.lock("lock:wx:user:insert", (lock) -> {
-                Account finalQuery = followUserDao.queryByOpenId(openid);
-                if (finalQuery == null) {
-                    if (accountNew.getNickname() != null) {
-                        logger.info("插入用户信息:{}", accountNew);
-                        followUserDao.insert(accountNew);
-                        // 插入profile表
-                        Profile profile = getProfileFromDB(accountNew.getOpenid());
-                        if (profile == null) {
-                            try {
-                                ModelMapper modelMapper = new ModelMapper();
-                                profile = modelMapper.map(accountNew, Profile.class);
-                                logger.info("插入Profile表信息:{}", profile);
-                                profile.setRiseId(CommonUtils.randomString(7));
-                                profileDao.insertProfile(profile);
-                            } catch (SQLException err) {
-                                profile.setRiseId(CommonUtils.randomString(7));
-                                try {
-                                    profileDao.insertProfile(profile);
-                                } catch (SQLException subErr) {
-                                    logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    if (accountNew.getNickname() != null) {
-                        followUserDao.updateMeta(accountNew);
-                    }
-                }
-            });
-        } catch (NotFollowingException e1) {
-            throw new NotFollowingException();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        return accountNew;
-    }
+    // private Account getAccountFromWeixin(String openid) throws NotFollowingException {
+    //     //调用api查询account对象
+    //     String url = USER_INFO_URL;
+    //     Map<String, String> map = Maps.newHashMap();
+    //     map.put("openid", openid);
+    //     logger.info("请求用户信息:{}", openid);
+    //     url = CommonUtils.placeholderReplace(url, map);
+    //
+    //     String body = restfulHelper.get(url);
+    //     logger.info("请求用户信息结果:{}", body);
+    //     Map<String, Object> result = CommonUtils.jsonToMap(body);
+    //     Account accountNew = new Account();
+    //     try {
+    //         ConvertUtils.register((aClass, value) -> {
+    //             if (value == null) {
+    //                 return null;
+    //             }
+    //
+    //             if (!(value instanceof Double)) {
+    //                 logger.error("不是日期类型");
+    //                 throw new ConversionException("不是日期类型");
+    //             }
+    //             Double time = (Double) value * 1000;
+    //
+    //             return new DateTime(time.longValue()).toDate();
+    //         }, Date.class);
+    //         BeanUtils.populate(accountNew, result);
+    //         if (accountNew.getSubscribe() == 0) {
+    //             //未关注直接抛异常
+    //             throw new NotFollowingException();
+    //         }
+    //         redisUtil.lock("lock:wx:user:insert", (lock) -> {
+    //             Account finalQuery = followUserDao.queryByOpenId(openid);
+    //             if (finalQuery == null) {
+    //                 if (accountNew.getNickname() != null) {
+    //                     logger.info("插入用户信息:{}", accountNew);
+    //                     followUserDao.insert(accountNew);
+    //                     // 插入profile表
+    //                     Profile profile = getProfileFromDB(accountNew.getOpenid());
+    //                     if (profile == null) {
+    //                         try {
+    //                             ModelMapper modelMapper = new ModelMapper();
+    //                             profile = modelMapper.map(accountNew, Profile.class);
+    //                             logger.info("插入Profile表信息:{}", profile);
+    //                             profile.setRiseId(CommonUtils.randomString(7));
+    //                             profileDao.insertProfile(profile);
+    //                         } catch (SQLException err) {
+    //                             profile.setRiseId(CommonUtils.randomString(7));
+    //                             try {
+    //                                 profileDao.insertProfile(profile);
+    //                             } catch (SQLException subErr) {
+    //                                 logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             } else {
+    //                 if (accountNew.getNickname() != null) {
+    //                     followUserDao.updateMeta(accountNew);
+    //                 }
+    //             }
+    //         });
+    //     } catch (NotFollowingException e1) {
+    //         throw new NotFollowingException();
+    //     } catch (Exception e) {
+    //         logger.error(e.getMessage(), e);
+    //     }
+    //     return accountNew;
+    // }
 
     @Override
     public List<Region> loadAllProvinces() {
@@ -453,7 +399,7 @@ public class AccountServiceImpl implements AccountService {
         if (profile.getCity() != null) {
             oldProfile.setCity(profile.getCity());
         }
-        if(profile.getNickname()!=null){
+        if (profile.getNickname() != null) {
             oldProfile.setNickname(profile.getNickname());
         }
         Boolean result = profileDao.submitNewProfile(oldProfile);
