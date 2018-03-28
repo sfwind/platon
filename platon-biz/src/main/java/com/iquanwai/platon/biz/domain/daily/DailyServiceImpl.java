@@ -100,7 +100,7 @@ public class DailyServiceImpl implements DailyService {
 
                     String[] strs = content.split("\\|");
 
-                    if(strs.length<=CONTENTSIZE){
+                    if(content.length()<=CONTENTSIZE){
                         for(int i = 0 ; i<strs.length;i++){
                             contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(60f),Color.WHITE);
                         }
