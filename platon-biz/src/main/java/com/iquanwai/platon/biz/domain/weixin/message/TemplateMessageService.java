@@ -5,6 +5,11 @@ package com.iquanwai.platon.biz.domain.weixin.message;
  */
 public interface TemplateMessageService {
     /**
+     * 发送模板消息提醒事情完成
+     */
+    boolean sendSelfCompleteMessage(String eventName, String openId);
+
+    /**
      * 发送非主动推送模板消息
      * @return 返回发送结果
      */

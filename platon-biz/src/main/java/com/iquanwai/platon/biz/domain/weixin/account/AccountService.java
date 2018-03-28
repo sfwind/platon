@@ -1,6 +1,5 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -14,11 +13,6 @@ public interface AccountService {
     String USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={access_token}&openid={openid}&lang=zh_CN";
     String GUEST_INFO_URL = "https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN";
     String REFRESH_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid={appid}&grant_type=refresh_token&refresh_token={refresh_token}";
-
-    /**
-     * 根据openid获取用户的详细信息
-     */
-    Account getAccount(String openid, boolean realTime) throws NotFollowingException;
 
     /**
      * new
@@ -49,8 +43,6 @@ public interface AccountService {
      * 根据openid批量获取用户详情
      */
     List<Profile> getProfiles(List<Integer> profileIds);
-
-    Account getGuestFromWeixin(String openId, String accessToken);
 
     Account getAccountByUnionId(String unionId);
 
@@ -96,9 +88,9 @@ public interface AccountService {
 
     /**
      * 在新个人中心提交用户信息
-     * @param profile
      */
     void submitNewProfile(Profile profile);
+
     /**
      * 查看证书时提交用户信息
      */
@@ -220,15 +212,11 @@ public interface AccountService {
 
     /**
      * 现在是否是会员
-     * @param profileId
-     * @return
      */
     boolean isBusinessRiseMember(Integer profileId);
 
     /**
      * 根据学号获取用户 id
-     * @param memberIds
-     * @return
      */
     List<Integer> getProfileIdsByMemberId(List<String> memberIds);
 }
