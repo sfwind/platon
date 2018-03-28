@@ -75,7 +75,7 @@ public class DailyServiceImpl implements DailyService {
 
             String nickName = profile.getNickname();
             String headImg = profile.getHeadimgurl();
-            InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
+            InputStream in = ImageUtils.class.getResourceAsStream("/fonts/simsun.ttf");
             // 绘图准备
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
