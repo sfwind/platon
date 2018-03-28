@@ -115,11 +115,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Boolean hasAnnualSummaryAuthority(Integer profileId) {
-        return annualSummaryDao.loadUserAnnualSummary(profileId) != null;
-    }
-
-    @Override
     public AnnualSummary loadUserAnnualSummary(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         AnnualSummary annualSummary = annualSummaryDao.loadUserAnnualSummary(riseId);
@@ -143,6 +138,7 @@ public class CustomerServiceImpl implements CustomerService {
             data.put("keyword2", new TemplateMessage.Keyword("H5个人中心反馈问题需处理"));
             data.put("keyword3", new TemplateMessage.Keyword(
                     (DateUtils.parseDateTimeToString(new Date()))));
+            data.put("remark", new TemplateMessage.Keyword("\n"+feedback.getWords()));
             templateMessage.setData(data);
             templateMessageService.sendMessage(templateMessage);
         }
@@ -153,8 +149,7 @@ public class CustomerServiceImpl implements CustomerService {
         List<RiseUserLogin> riseUserLogins = riseUserLoginDao.loadByProfileId(profileId);
         int dayCount = 1;
         Date compareDate = new Date();
-        for (int i = 0; i < riseUserLogins.size(); i++) {
-            RiseUserLogin riseUserLogin = riseUserLogins.get(i);
+        for (RiseUserLogin riseUserLogin : riseUserLogins) {
             if (DateUtils.interval(compareDate, riseUserLogin.getLoginDate()) <= 1) {
                 dayCount++;
                 compareDate = riseUserLogin.getLoginDate();
@@ -226,7 +221,8 @@ public class CustomerServiceImpl implements CustomerService {
         if (notifyTag) {
             BusinessSchoolApplication businessSchoolApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
             if (businessSchoolApplication != null && DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).compareTo(new Date()) > 0) {
-                Long intervalLong = DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).getTime() - new Date().getTime();
+                Long intervalLong = DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).getTime() -
+                        System.currentTimeMillis();
                 return new MutablePair<>(true, intervalLong);
             } else {
                 return new MutablePair<>(false, null);
