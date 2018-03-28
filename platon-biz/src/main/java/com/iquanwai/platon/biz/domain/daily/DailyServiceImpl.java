@@ -11,9 +11,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Iterator;
 
 @Service
 public class DailyServiceImpl implements DailyService {
@@ -135,7 +141,26 @@ public class DailyServiceImpl implements DailyService {
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
-                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
+                ImageWriter writer=null;
+                while(it.hasNext()) {
+                    writer=it.next();
+                    break;
+                }
+                ImageOutputStream output = ImageIO.createImageOutputStream(outputStream);
+                if(writer!=null) {
+                    ImageWriteParam params = writer.getDefaultWriteParam();
+                    params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
+
+                    writer.setOutput(output);
+                    writer.write(null,new IIOImage(inputImage,null,null), params);
+                    output.flush();
+                    writer.dispose();
+                }
+
+
+                InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
                 QiNiuUtils.uploadFile(dailyUrl,inputStream);
                 return ConfigUtils.getPicturePrefix()+dailyUrl;
