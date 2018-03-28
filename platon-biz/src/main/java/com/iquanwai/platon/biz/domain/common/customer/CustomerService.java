@@ -31,8 +31,6 @@ public interface CustomerService {
      */
     void sendFeedback(Feedback feedback);
 
-    Boolean hasAnnualSummaryAuthority(Integer profileId);
-
     /**
      * 获取用户连续登录天数
      */
