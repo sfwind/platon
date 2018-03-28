@@ -110,7 +110,7 @@ public class DailyServiceImpl implements DailyService {
 
                     if (content.length() <= CONTENTSIZE) {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], simsumFont.deriveFont(Font.BOLD,54f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], simsumFont.deriveFont(Font.BOLD,56f), Color.WHITE);
                         }
                     } else {
                         for (int i = 0; i < strs.length; i++) {
