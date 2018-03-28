@@ -98,7 +98,7 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
             if (url != null) {
                 BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
                 contentImg = ImageUtils.overlapFixImage(contentImg, lineImg, 126, 68, 500, 5);
-                contentImg = ImageUtils.writeTextCenter(contentImg, 84, "每日圈语", font.deriveFont(30f), Color.WHITE);
+                contentImg = ImageUtils.writeTextCenter(contentImg, 84, "每日圈语", simsumFont.deriveFont(30f), Color.WHITE);
 
                 String[] strs = content.split("\\|");
 
@@ -112,7 +112,7 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
                     }
                 }
                 contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
-                contentImg = ImageUtils.writeText(contentImg, 540, 390, author, font.deriveFont(30f), Color.WHITE);
+                contentImg = ImageUtils.writeText(contentImg, 540, 390, author, simsumFont.deriveFont(30f), Color.WHITE);
                 inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
             }
 
