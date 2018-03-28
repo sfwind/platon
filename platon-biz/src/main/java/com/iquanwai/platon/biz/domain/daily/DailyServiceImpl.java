@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.misc.BASE64Encoder;
-
 import javax.annotation.PostConstruct;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -28,7 +26,7 @@ public class DailyServiceImpl implements DailyService {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_backend.png";
+    private static final String DAILY_TALK_BACKEND = "http://static.iqycamp.com/images/dailytalk/daily_talk_backend.png";
     private static final String DAILY_TALK_TITLE = "http://static.iqycamp.com/images/dailytalk/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR = "http://static.iqycamp.com/images/dailytalk/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = "http://static.iqycamp.com/images/dailytalk/daily_talk_line.png";
@@ -85,11 +83,7 @@ public class DailyServiceImpl implements DailyService {
 
             try {
                 String scene = PRESCENE + profile.getId();
-                logger.info("请求微信接口开始");
                 BufferedImage qrImg = qrCodeService.loadQrImage(scene);
-                logger.info("请求微信接口结束");
-
-                logger.info("开始绘制图片");
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
@@ -135,14 +129,11 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,532,960,180,180);
 
                 ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-                logger.info("绘制结束");
-                BASE64Encoder encoder = new BASE64Encoder();
 
                  InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-                logger.info("开始上传七牛云");
-                boolean isSuccess = QiNiuUtils.uploadFile("test.png",inputStream);
-                logger.info("上传七牛云完成");
-                return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+                String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
+                QiNiuUtils.uploadFile(dailyUrl,inputStream);
+                return dailyUrl;
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
             } finally {

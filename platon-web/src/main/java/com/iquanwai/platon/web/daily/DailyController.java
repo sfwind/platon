@@ -69,28 +69,4 @@ public class DailyController {
         }
     }
 
-
-//    @RequestMapping(value = "/talk/info",method = RequestMethod.GET)
-//    @ApiOperation("获得每日圈语的信息")
-//    public ResponseEntity<Map<String,Object>> getDailyTalkInfo(UnionUser unionUser){
-//        Integer profileId = unionUser.getId();
-//        DailyTalkDto dailyTalkDto = new DailyTalkDto();
-//        dailyTalkDto.setLearnedDay(customerService.loadContinuousLoginCount(profileId));
-//        dailyTalkDto.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
-//        RiseMember riseMember = accountService.getValidRiseMember(profileId);
-//        dailyTalkDto.setPercent(customerService.calSyncDefeatPercent(riseMember));
-//        dailyTalkDto.setNickName(unionUser.getNickName());
-//        dailyTalkDto.setHeadImg(unionUser.getHeadImgUrl());
-//
-//        DailyTalk dailyTalk = dailyService.loadByTalkDate(DateUtils.parseDateToString(new Date()));
-//
-//        if(dailyTalk!=null){
-//            BeanUtils.copyProperties(dailyTalk,dailyTalkDto);
-//        }
-//        dailyTalkDto.setTitle(ConfigUtils.getDailyTalkWelcome());
-//
-//        return WebUtils.result(dailyTalkDto);
-//    }
-
-
 }
