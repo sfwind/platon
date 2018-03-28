@@ -99,7 +99,7 @@ public class DailyServiceImpl implements DailyService {
 
                     String[] strs = content.split("\\|");
                     for(int i = 0 ; i<strs.length;i++){
-                    contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(60f),Color.WHITE);
+                    contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(30f),Color.WHITE);
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg,authorImg,460,380,64,1);
                     contentImg = ImageUtils.writeText(contentImg,540,390,author,font.deriveFont(30f),Color.WHITE);

@@ -46,7 +46,6 @@ public class DailyController {
     @ApiOperation("获得每日圈语")
     public ResponseEntity<Map<String, Object>> getDailyTalk(UnionUser unionUser) {
         Integer profileId = unionUser.getId();
-        //TODO:当前时间点是否大于6点
         Calendar c = Calendar.getInstance();
         Integer hour = c.get(Calendar.HOUR_OF_DAY);
         if (hour >= MINHOUR) {
