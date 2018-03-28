@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.daily.DailyService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
@@ -68,5 +69,4 @@ public class DailyController {
             return WebUtils.error("还未到生成时间");
         }
     }
-
 }

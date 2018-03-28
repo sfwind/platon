@@ -13,12 +13,4 @@ public interface DailyService {
      */
     String drawDailyTalk(Integer profileId,String currentDate,Integer loginDay,Integer learnedKnowledge,Integer percent);
 
-    /**
-     * 获取当天的圈语内容
-     * @param currentDate
-     * @return
-     */
-    DailyTalk loadByTalkDate(String currentDate);
-
-
 }
