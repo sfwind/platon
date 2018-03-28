@@ -24,10 +24,4 @@ public class Account {
     private String unionid;    //只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。详见：获取用户个人信息（UnionID机制）
     private String remark;    //公众号运营者对粉丝的备注，公众号运营者可在微信公众平台用户管理界面对粉丝添加备注
     private Integer groupid;    //用户所在的分组ID
-    private String mobileNo;  //手机号
-    private String email;  //邮箱
-    private String industry; //行业
-    private String function; //职业
-    private String workingLife; //工作年限
-    private String realName; //真名
 }
