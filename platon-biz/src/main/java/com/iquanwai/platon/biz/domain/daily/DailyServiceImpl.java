@@ -30,10 +30,12 @@ public class DailyServiceImpl implements DailyService {
     private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_line.png";
+    private static final String UNKNOWN_IMG = ConfigUtils.getPicturePrefix()+"images/dailytalk/unknown.png";
     private static BufferedImage talkImg = null;
     private static BufferedImage titleImg = null;
     private static BufferedImage authorImg = null;
     private static BufferedImage lineImg = null;
+    private static BufferedImage unknownImg = null;
 
     private static final Color grey = new Color(51, 51, 51);
     private static final Integer CONTENTSIZE = 24;
@@ -45,6 +47,7 @@ public class DailyServiceImpl implements DailyService {
         titleImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_TITLE);
         authorImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_AUTHOR);
         lineImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_LINE);
+        unknownImg = ImageUtils.getBufferedImageByUrl(UNKNOWN_IMG);
     }
 
 
@@ -86,6 +89,11 @@ public class DailyServiceImpl implements DailyService {
                     BufferedImage headImgBuffer = ImageUtils.getBufferedImageByUrl(headImg);
                     if(headImgBuffer!=null){
                         BufferedImage headBuffer = ImageUtils.copy(headImgBuffer);
+                        //圆形
+                        headBuffer = ImageUtils.convertCircular(headBuffer);
+                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
+                    }else{
+                        BufferedImage headBuffer = ImageUtils.copy(unknownImg);
                         //圆形
                         headBuffer = ImageUtils.convertCircular(headBuffer);
                         inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
