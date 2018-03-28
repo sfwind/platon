@@ -82,7 +82,7 @@ public class DailyServiceImpl implements DailyService {
             try {
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 Font simsumFont = Font.createFont(Font.TRUETYPE_FONT, simsunIn);
-                Font boldSimSumFont = Font.createFont(Font.TYPE1_FONT, simsunIn);
+                Font boldSimSumFont = Font.createFont(Font.TRUETYPE_FONT, simsunIn);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
                 //绘制头像
                 if (headImg != null) {
