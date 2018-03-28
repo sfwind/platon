@@ -139,7 +139,7 @@ public class DailyServiceImpl implements DailyService {
 
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,532,960,180,180);
 
-                ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+                //ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
 
                 Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
