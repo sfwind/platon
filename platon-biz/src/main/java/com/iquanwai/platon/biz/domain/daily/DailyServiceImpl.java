@@ -75,7 +75,7 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
 
         String nickName = profile.getNickname();
         String headImg = profile.getHeadimgurl();
-        InputStream in = ImageUtils.class.getResourceAsStream("/fonts/simsun.ttf");
+        InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
         // 绘图准备
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
