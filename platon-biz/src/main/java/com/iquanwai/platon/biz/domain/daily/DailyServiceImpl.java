@@ -140,8 +140,7 @@ public class DailyServiceImpl implements DailyService {
 
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,532,960,180,180);
 
-                //ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
-
+                logger.info("开始生成模糊图片");
 
                 Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
                 ImageWriter writer=null;
@@ -159,7 +158,7 @@ public class DailyServiceImpl implements DailyService {
                     output.flush();
                     writer.dispose();
                 }
-
+                logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
                 QiNiuUtils.uploadFile(dailyUrl,inputStream);
