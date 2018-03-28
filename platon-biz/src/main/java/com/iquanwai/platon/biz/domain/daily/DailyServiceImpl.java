@@ -110,11 +110,11 @@ public class DailyServiceImpl implements DailyService {
 
                     if (content.length() <= CONTENTSIZE) {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], simsumFont.deriveFont(54f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], simsumFont.deriveFont(Font.BOLD,54f), Color.WHITE);
                         }
                     } else {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i], simsumFont.deriveFont(40f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i], simsumFont.deriveFont(Font.BOLD,40f), Color.WHITE);
                         }
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
