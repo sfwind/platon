@@ -75,7 +75,7 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
 
         String nickName = profile.getNickname();
         String headImg = profile.getHeadimgurl();
-        InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
+        InputStream in = ImageUtils.class.getResourceAsStream("/fonts/simsun.ttf");
         // 绘图准备
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -101,14 +101,12 @@ private String drawTalk(Profile profile, DailyTalk dailyTalk, Integer loginDay, 
                 String[] strs = content.split("\\|");
 
                 if (content.length() <= CONTENTSIZE) {
-                    Font simFont = new Font("宋体",Font.PLAIN,27);
                     for (int i = 0; i < strs.length; i++) {
-                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i],simFont, Color.WHITE);
+                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i],font.deriveFont(30f), Color.WHITE);
                     }
                 } else {
-                    Font simFont = new Font("宋体",Font.PLAIN,20);
                     for (int i = 0; i < strs.length; i++) {
-                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 60, strs[i],simFont, Color.WHITE);
+                        contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 60, strs[i],font.deriveFont(30f), Color.WHITE);
                     }
                 }
                 contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
