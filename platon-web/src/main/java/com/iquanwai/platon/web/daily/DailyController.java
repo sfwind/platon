@@ -38,31 +38,36 @@ public class DailyController {
     @Autowired
     private RedisUtil redisUtil;
 
-    private static final Integer minHour = 20;
+    private static final Integer MINHOUR = 6;
+    private static final String DAILYTALK = "daily_talk";
 
 
     @RequestMapping(value = "/talk", method = RequestMethod.GET)
     @ApiOperation("获得每日圈语")
     public ResponseEntity<Map<String, Object>> getDailyTalk(UnionUser unionUser) {
-
+        Integer profileId = unionUser.getId();
         //TODO:当前时间点是否大于6点
         Calendar c = Calendar.getInstance();
         Integer hour = c.get(Calendar.HOUR_OF_DAY);
-        if(hour>=minHour){
+        if (hour >= MINHOUR) {
+            String key = DAILYTALK + "_"+profileId;
+            String value = redisUtil.get(key);
             String currentDate = DateUtils.parseDateToString(new Date());
-            Integer profileId = unionUser.getId();
-            //TODO:check是否是登录天数
+            //判断当天是否显示过
+            if (value != null && value.equals(currentDate)) {
+                return WebUtils.error("当天已经显示过");
+            }
+            redisUtil.set(key, currentDate);
+
             Integer loginDay = customerService.loadContinuousLoginCount(profileId);
             Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
             RiseMember riseMember = accountService.getValidRiseMember(profileId);
             Integer percent = customerService.calSyncDefeatPercent(riseMember);
 
             return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent));
-        }
-        else {
+        } else {
             return WebUtils.error("还未到生成时间");
         }
-        //TODO:check当天是否已经打开过
     }
 
 
@@ -87,7 +92,6 @@ public class DailyController {
 //
 //        return WebUtils.result(dailyTalkDto);
 //    }
-
 
 
 }
