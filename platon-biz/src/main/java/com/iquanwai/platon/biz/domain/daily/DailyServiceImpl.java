@@ -34,6 +34,7 @@ public class DailyServiceImpl implements DailyService {
     private static BufferedImage lineImg = null;
 
     private static final Color grey = new Color(51,51,51);
+    private static final Integer CONTENTSIZE = 24;
 
     @PostConstruct
     public void init() {
@@ -98,9 +99,19 @@ public class DailyServiceImpl implements DailyService {
                     contentImg = ImageUtils.writeTextCenter(contentImg,84,"每日圈语",font.deriveFont(30f),Color.WHITE);
 
                     String[] strs = content.split("\\|");
-                    for(int i = 0 ; i<strs.length;i++){
-                    contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(30f),Color.WHITE);
+
+                    if(strs.length<=CONTENTSIZE){
+                        for(int i = 0 ; i<strs.length;i++){
+                            contentImg = ImageUtils.writeText(contentImg,50,210+i*100,strs[i],font.deriveFont(60f),Color.WHITE);
+                        }
                     }
+                    else{
+                        for(int i = 0 ; i<strs.length;i++){
+                            contentImg = ImageUtils.writeText(contentImg,50,210+i*60,strs[i],font.deriveFont(40f),Color.WHITE);
+                        }
+                    }
+
+
                     contentImg = ImageUtils.overlapFixImage(contentImg,authorImg,460,380,64,1);
                     contentImg = ImageUtils.writeText(contentImg,540,390,author,font.deriveFont(30f),Color.WHITE);
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
