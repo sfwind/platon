@@ -100,9 +100,7 @@ public class CustomerController {
             userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
-                        Integer.valueOf(className.substring(4, 6)) + "班";
-                userStudyDto.setClassName(tempName);
+                userStudyDto.setClassName(getClassName(className));
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
@@ -182,8 +180,7 @@ public class CustomerController {
             profileDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
-                profileDto.setClassName(tempName.replaceAll("0", ""));
+                profileDto.setClassName(getClassName(className));
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
@@ -519,7 +516,7 @@ public class CustomerController {
         List<RiseCertificate> certificateList = certificateService.getCertificates(unionUser.getId());
 
         List<RiseCertificate> finishList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 5).collect(Collectors.toList());
-        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6).collect(Collectors.toList());
+        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6 || riseCertificate.getType() == 7).collect(Collectors.toList());
 
         List<CertificateDto> finishDtos = Lists.newArrayList();
         List<CertificateDto> gradeDtos = Lists.newArrayList();
@@ -589,6 +586,9 @@ public class CustomerController {
         if (type == 6) {
             return "优秀助教";
         }
+        if( type == 7){
+            return "优秀班委";
+        }
         return "未知类型";
     }
 
@@ -600,4 +600,21 @@ public class CustomerController {
 
         return WebUtils.success();
     }
+
+
+    private String getClassName(String className){
+       String tempName =  Integer.valueOf(className.substring(2, 4)) + "月" +
+                        Integer.valueOf(className.substring(4, 6)) + "班";
+
+       if(tempName.charAt(3)=='0'){
+           tempName = tempName.substring(0,3)+tempName.substring(4);
+       }
+       if(tempName.charAt(0)=='0'){
+           tempName = tempName.substring(1);
+       }
+       return tempName;
+    }
+
+
+
 }

@@ -10,10 +10,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.GroupPromotion;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -56,29 +53,7 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
 
     @Override
     public boolean checkGroupPromotionAuthority(String openId) {
-        // 查看用户是否关注
-        try {
-            Account account = accountService.getAccount(openId, false);
-            if (account == null) {
-                return true;
-            } else {
-                Profile profile = accountService.getProfile(account.getOpenid());
-                if (profile == null) {
-                    return true;
-                } else {
-                    int profileId = profile.getId();
-                    // 用户没有付费并且没有参加试听才有资格
-                    List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-                    if (riseMembers.size() == 0) {
-                        return true;
-                    }
-                }
-            }
-        } catch (NotFollowingException e) {
-            // 从未关注用户，有参加活动权限
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -240,9 +215,9 @@ public class GroupPromotionServiceImpl implements GroupPromotionService {
                 templateMessage.setData(data);
                 templateMessage.setTemplate_id(ConfigUtils.getApplySuccessNotice());
                 templateMessage.setUrl(ConfigUtils.getTeamPromotionCodeUrl());
-                if(profile.getId() == leaderProfile.getId()){
+                if (profile.getId() == leaderProfile.getId()) {
                     data.put("first", new TemplateMessage.Keyword(newProfile.getNickname() + "已接受邀请。你已成功邀请到2位好友，成功解锁前7天课程内容。\n"));
-                }else{
+                } else {
                     data.put("first", new TemplateMessage.Keyword("你已解锁前7天课程内容，请等待开学通知。\n"));
                 }
                 data.put("keyword1", new TemplateMessage.Keyword("认识自己|用冰山模型，分析出真实的你"));
