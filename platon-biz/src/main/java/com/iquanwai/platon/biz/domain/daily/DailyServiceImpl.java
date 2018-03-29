@@ -158,7 +158,7 @@ public class DailyServiceImpl implements DailyService {
                 }
                 logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-                String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
+                String dailyUrl = PRESCENE+ CommonUtils.randomString(8)+".png";
                 logger.info("开始通过sftp传输");
 
                 SFTPUtil sftpUtil = new SFTPUtil();
