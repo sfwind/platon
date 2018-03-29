@@ -107,9 +107,11 @@ public class AccountServiceImpl implements AccountService {
     public boolean checkIsSubscribe(String openId) {
         String requestUrl = "http://" + ConfigUtils.getInternalIp() + ":" + ConfigUtils.getInternalPort() + "/internal/user/subscribe?openId=" + openId;
         String body = restfulHelper.getPure(requestUrl);
+        logger.info("请求是否关注：" + body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         String code = result.get("code").toString();
         if ("200".equals(code)) {
+            logger.info("enter 1 ");
             String subscribeStr = result.get("msg").toString();
             return subscribeStr != null && "1".equals(subscribeStr);
         }
