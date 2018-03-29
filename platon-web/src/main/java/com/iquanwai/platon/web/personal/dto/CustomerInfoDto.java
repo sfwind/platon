@@ -10,4 +10,5 @@ public class CustomerInfoDto {
     private Integer roleName;
     private String className;
     private String groupId;
+    private Boolean isAsst;
 }

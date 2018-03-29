@@ -16,6 +16,7 @@ import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;

@@ -119,7 +119,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
 
-
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
@@ -866,6 +865,12 @@ public class PracticeServiceImpl implements PracticeService {
     public void learnKnowledge(Integer profileId, Integer practicePlanId) {
         practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
         certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
+        operationLogService.trace(profileId, "learnKnowledge", () -> {
+            PracticePlan load = practicePlanDao.load(PracticePlan.class, practicePlanId);
+            ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, load.getPlanId());
+            return OperationLogService.props().add("problemId", plan.getProblemId());
+        });
+
     }
 
     @Override

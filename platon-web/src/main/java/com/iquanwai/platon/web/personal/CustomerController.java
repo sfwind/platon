@@ -122,6 +122,8 @@ public class CustomerController {
             profile.setGroupId(riseClassMember.getGroupId());
         }
 
+        profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
+
         return WebUtils.result(profile);
     }
 
@@ -625,7 +627,7 @@ public class CustomerController {
         if (type == 6) {
             return "优秀助教";
         }
-        if( type == 7){
+        if (type == 7) {
             return "优秀班委";
         }
         return "未知类型";
@@ -641,19 +643,18 @@ public class CustomerController {
     }
 
 
-    private String getClassName(String className){
-       String tempName =  Integer.valueOf(className.substring(2, 4)) + "月" +
-                        Integer.valueOf(className.substring(4, 6)) + "班";
+    private String getClassName(String className) {
+        String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
+                Integer.valueOf(className.substring(4, 6)) + "班";
 
-       if(tempName.charAt(3)=='0'){
-           tempName = tempName.substring(0,3)+tempName.substring(4);
-       }
-       if(tempName.charAt(0)=='0'){
-           tempName = tempName.substring(1);
-       }
-       return tempName;
+        if (tempName.charAt(3) == '0') {
+            tempName = tempName.substring(0, 3) + tempName.substring(4);
+        }
+        if (tempName.charAt(0) == '0') {
+            tempName = tempName.substring(1);
+        }
+        return tempName;
     }
-
 
 
 }

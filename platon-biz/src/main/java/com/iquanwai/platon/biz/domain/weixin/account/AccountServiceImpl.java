@@ -464,6 +464,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public UserRole getAssist(Integer profileId) {
+        return userRoleDao.getAssist(profileId);
+    }
+
+    @Override
     public Pair<Boolean, String> sendValidCode(String phone, Integer profileId, String areaCode) {
         if (!shortMessageService.canSend(profileId)) {
             return new ImmutablePair<>(false, "操作太频繁，请稍候再试");
