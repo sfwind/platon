@@ -32,7 +32,7 @@ public class DailyServiceImpl implements DailyService {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/backend.png";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/backend_daily.png";
     private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/source/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_line.png";
