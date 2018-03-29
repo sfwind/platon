@@ -109,11 +109,11 @@ public class AccountServiceImpl implements AccountService {
         String body = restfulHelper.getPure(requestUrl);
         logger.info("请求是否关注：" + body);
         Map<String, Object> result = CommonUtils.jsonToMap(body);
-        String code = result.get("code").toString();
-        if ("200".equals(code)) {
+        int code = (int) result.get("code");
+        if (code == 200) {
             logger.info("enter 1 ");
-            String subscribeStr = result.get("msg").toString();
-            return subscribeStr != null && "1".equals(subscribeStr);
+            int subscribe = (int) result.get("msg");
+            return subscribe == 1;
         }
         return false;
     }
