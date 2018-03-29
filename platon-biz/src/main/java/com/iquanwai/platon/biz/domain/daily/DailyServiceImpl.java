@@ -140,7 +140,7 @@ public class DailyServiceImpl implements DailyService {
 
             //    ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
-                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpg");
+                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
                 ImageWriter writer=null;
                 while(it.hasNext()) {
                     writer=it.next();
@@ -158,7 +158,7 @@ public class DailyServiceImpl implements DailyService {
                 }
                 logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-                String dailyUrl = PRESCENE+ CommonUtils.randomString(8)+".jpg";
+                String dailyUrl = PRESCENE+ CommonUtils.randomString(8)+".png";
                 logger.info("开始通过sftp传输");
 
                 SFTPUtil sftpUtil = new SFTPUtil();
