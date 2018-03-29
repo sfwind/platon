@@ -47,7 +47,7 @@ public class DailyServiceImpl implements DailyService {
     private static final Integer CONTENTSIZE = 24;
     private static final String PRESCENE = "daily_talk_";
     private final static String FTP_TALK_STORE = "/data/static/images/dailytalk/";
-
+    private final static String PREFIX = "/images/dailytalk/";
     @PostConstruct
     public void init() {
         talkImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_BACKEND);
@@ -162,14 +162,14 @@ public class DailyServiceImpl implements DailyService {
                 logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
-                logger.info("上传七牛云");
+                logger.info("开始通过sftp传输");
 
                 SFTPUtil sftpUtil = new SFTPUtil();
 
                 sftpUtil.upload(FTP_TALK_STORE, dailyUrl, inputStream);
 
-                logger.info("上传七牛云结束");
-                return ConfigUtils.getPicturePrefix()+dailyUrl;
+                logger.info("通过sftp传输结束");
+                return ConfigUtils.getResourceDomain()+PREFIX+dailyUrl;
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
             } finally {

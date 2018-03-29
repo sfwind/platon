@@ -420,5 +420,7 @@ public class ConfigUtils {
     public static String getFtpHost() {
         return getValue("ftp.host");
     }
+
+    public static String getResourceDomain(){return getValue("resource.domain");}
 }
 
