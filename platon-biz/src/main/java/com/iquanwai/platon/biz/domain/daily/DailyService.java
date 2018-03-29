@@ -1,8 +1,6 @@
 package com.iquanwai.platon.biz.domain.daily;
 
 
-import com.iquanwai.platon.biz.po.daily.DailyTalk;
-
 public interface DailyService {
 
     /**
