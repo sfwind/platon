@@ -110,7 +110,7 @@ public class AccountServiceImpl implements AccountService {
         Map<String, Object> result = CommonUtils.jsonToMap(body);
         String code = result.get("code").toString();
         if ("200".equals(code)) {
-            String subscribeStr = result.get("subscribe").toString();
+            String subscribeStr = result.get("msg").toString();
             return subscribeStr != null && "1".equals(subscribeStr);
         }
         return false;
