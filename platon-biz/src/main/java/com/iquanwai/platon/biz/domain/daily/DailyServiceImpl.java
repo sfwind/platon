@@ -46,7 +46,7 @@ public class DailyServiceImpl implements DailyService {
     private static final Color grey = new Color(51, 51, 51);
     private static final Integer CONTENTSIZE = 24;
     private static final String PRESCENE = "daily_talk_";
-    private final static String FTP_AUDIO_STORE = "/data/static/audio/";
+    private final static String FTP_TALK_STORE = "/data/static/images/dailytalk/";
 
     @PostConstruct
     public void init() {
@@ -163,11 +163,10 @@ public class DailyServiceImpl implements DailyService {
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
                 String dailyUrl = "PRESCENE"+ CommonUtils.randomString(8)+".png";
                 logger.info("上传七牛云");
-                //QiNiuUtils.uploadFile(dailyUrl,inputStream);
 
                 SFTPUtil sftpUtil = new SFTPUtil();
 
-                sftpUtil.upload(FTP_AUDIO_STORE, dailyUrl, inputStream);
+                sftpUtil.upload(FTP_TALK_STORE, dailyUrl, inputStream);
 
                 logger.info("上传七牛云结束");
                 return ConfigUtils.getPicturePrefix()+dailyUrl;
