@@ -113,9 +113,8 @@ public class AccountServiceImpl implements AccountService {
         String subscribeStr = result.get("msg").toString();
         logger.info(code);
         logger.info(subscribeStr);
-        if ("200".equals(code)) {
-            logger.info("enter 1 ");
-            return subscribeStr != null && "1".equals(subscribeStr);
+        if (200 == Integer.parseInt(code)) {
+            return subscribeStr != null && 1 == Integer.parseInt(subscribeStr);
         }
         return false;
     }
