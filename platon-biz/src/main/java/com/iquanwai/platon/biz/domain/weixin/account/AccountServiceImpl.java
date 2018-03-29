@@ -104,6 +104,19 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public boolean checkIsSubscribe(String openId) {
+        String requestUrl = "http://" + ConfigUtils.getInternalIp() + ":" + ConfigUtils.getInternalPort() + "/internal/user/subscribe?openId=" + openId;
+        String body = restfulHelper.getPure(requestUrl);
+        Map<String, Object> result = CommonUtils.jsonToMap(body);
+        String code = result.get("code").toString();
+        if ("200".equals(code)) {
+            String subscribeStr = result.get("subscribe").toString();
+            return subscribeStr != null && "1".equals(subscribeStr);
+        }
+        return false;
+    }
+
+    @Override
     public UserRole getUserRole(Integer profileId) {
         List<UserRole> userRoles = userRoleDao.getRoles(profileId);
         return userRoles.size() > 0 ? userRoles.get(0) : null;
