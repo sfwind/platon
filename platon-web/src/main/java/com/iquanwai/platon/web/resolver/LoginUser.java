@@ -23,7 +23,7 @@ public class LoginUser {
     private Integer riseMember;   //0-免费用户,1-会员,2-课程单买用户
     private Boolean openApplication; // 是否打开过应用练习
     private Boolean openConsolidation; // 是否打开过巩固练习
-    private Integer Device; // 1-pc 2-mobile
+    private Integer device; // 1-pc 2-mobile
     private Boolean openWelcome; //是否打开过欢迎页
 
     public static LoginUser defaultUser() {

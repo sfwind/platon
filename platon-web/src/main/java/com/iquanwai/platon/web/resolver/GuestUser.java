@@ -19,14 +19,13 @@ public class GuestUser {
     private String openId;
     private String weixinName;
     private String headimgUrl;
-    private String realName;
     private Boolean subscribe;    // 用户是否订阅该公众号标识，值为0时，代表此用户没有关注该公众号，拉取不到其余信息。
 
     public static GuestUser defaultUser() {
         return new GuestUser(
                 ConfigUtils.getDefaultProfileId(),
                 ConfigUtils.getDefaultUnionId(),
-                ConfigUtils.getDefaultOpenid(), "三十文",
+                ConfigUtils.getDefaultOpenid(),
                 Profile.DEFAULT_AVATAR, null, true);
     }
 
