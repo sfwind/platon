@@ -71,11 +71,11 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return null;
     }
 
-    public boolean firstAnswer(Integer id, String content, int length) {
+    public boolean firstAnswer(Integer id, String content, int length, boolean hasImage) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, hasImage=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
-            runner.update(sql, content, length, id);
+            runner.update(sql, content, length, id, hasImage);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
@@ -83,9 +83,9 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         return true;
     }
 
-    public boolean answer(Integer id, String content, int length) {
+    public boolean answer(Integer id, String content, int length, boolean hasImage) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, hasImage=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, id);
         } catch (SQLException e) {
@@ -181,7 +181,9 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         List<Object> params = Lists.newArrayList();
         params.add(problemId);
         params.addAll(refers);
-        String sql = "select * from ApplicationSubmit where  ProblemId = ? and Id in (" + mask + ") and Del=0";
+        String sql = "select Id, ProfileId, ApplicationId, PlanId, ProblemId, PointStatus, PublishTime, LastModifiedTime, " +
+                "Priority, HighlightTime, RequestFeedback, Feedback, Length, Del, AddTime, UpdateTime " +
+                "from ApplicationSubmit where ProblemId = ? and Id in (" + mask + ") and Del=0";
 
         try {
             return runner.query(sql, new BeanListHandler<>(ApplicationSubmit.class), params.toArray());

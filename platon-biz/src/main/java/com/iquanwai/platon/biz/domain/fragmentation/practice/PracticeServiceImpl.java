@@ -92,11 +92,11 @@ public class PracticeServiceImpl implements PracticeService {
                 //设置分值
                 WarmupPractice warmupPractice = cacheService.getWarmupPractice(Integer.parseInt(practiceId));
                 if (warmupPractice.getDifficulty() == 1) {
-                    warmupPractice.setScore(PointManager.EASY_SCORE);
+                    warmupPractice.setScore(PointManager.WARMUP_EASY_SCORE);
                 } else if (warmupPractice.getDifficulty() == 2) {
-                    warmupPractice.setScore(PointManager.NORMAL_SCORE);
+                    warmupPractice.setScore(PointManager.WARMUP_NORMAL_SCORE);
                 } else if (warmupPractice.getDifficulty() == 3) {
-                    warmupPractice.setScore(PointManager.HARD_SCORE);
+                    warmupPractice.setScore(PointManager.WARMUP_HARD_SCORE);
                 }
                 warmupPractices.add(warmupPractice);
             }
@@ -314,11 +314,12 @@ public class PracticeServiceImpl implements PracticeService {
             return null;
         }
         boolean result;
+        boolean hasImage = content.contains("img");
         int length = CommonUtils.removeHTMLTag(content).length();
         if (submit.getContent() == null) {
-            result = applicationSubmitDao.firstAnswer(id, content, length);
+            result = applicationSubmitDao.firstAnswer(id, content, length, hasImage);
         } else {
-            result = applicationSubmitDao.answer(id, content, length);
+            result = applicationSubmitDao.answer(id, content, length, hasImage);
         }
         if (result && submit.getPointStatus() == 0) {
             // 修改应用任务记录
@@ -333,7 +334,7 @@ public class PracticeServiceImpl implements PracticeService {
             if (practicePlan != null) {
                 practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
                 certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
-                Integer point = PointManagerImpl.score.get(applicationPracticeDao.load(ApplicationPractice.class,
+                Integer point = poinManager.calcApplicationScore(applicationPracticeDao.load(ApplicationPractice.class,
                         submit.getApplicationId()).getDifficulty());
                 // 查看难度，加分
                 poinManager.risePoint(submit.getPlanId(), point);
