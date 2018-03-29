@@ -32,16 +32,14 @@ public class DailyServiceImpl implements DailyService {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_backend.png";
-    private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_title.png";
-    private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/daily_talk_author.png";
-    private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/daily_talk_line.png";
-    private static final String UNKNOWN_IMG = ConfigUtils.getPicturePrefix()+"images/dailytalk/unknown.png";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_backend.png";
+    private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_title.png";
+    private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/source/daily_talk_author.png";
+    private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_line.png";
     private static BufferedImage talkImg = null;
     private static BufferedImage titleImg = null;
     private static BufferedImage authorImg = null;
     private static BufferedImage lineImg = null;
-    private static BufferedImage unknownImg = null;
 
     private static final Color grey = new Color(51, 51, 51);
     private static final Integer CONTENTSIZE = 24;
@@ -54,7 +52,6 @@ public class DailyServiceImpl implements DailyService {
         titleImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_TITLE);
         authorImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_AUTHOR);
         lineImg = ImageUtils.getBufferedImageByUrl(DAILY_TALK_LINE);
-        unknownImg = ImageUtils.getBufferedImageByUrl(UNKNOWN_IMG);
     }
 
 

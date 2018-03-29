@@ -63,8 +63,12 @@ public class DailyController {
             Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
             RiseMember riseMember = accountService.getValidRiseMember(profileId);
             Integer percent = customerService.calSyncDefeatPercent(riseMember);
+            String  result = dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent);
 
-            return WebUtils.result(dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent));
+            if(result==null){
+                return WebUtils.error("不需要展示圈语");
+            }
+            return WebUtils.result(result);
         } else {
             return WebUtils.error("还未到生成时间");
         }
