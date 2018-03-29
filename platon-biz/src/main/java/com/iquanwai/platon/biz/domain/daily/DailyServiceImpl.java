@@ -104,8 +104,8 @@ public class DailyServiceImpl implements DailyService {
 //                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
 //                    }
                 }
-                inputImage = ImageUtils.writeText(inputImage, 128, 64, nickName, font.deriveFont(34f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 128, 102, welcome, font.deriveFont(22f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 128, 84, nickName, font.deriveFont(34f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 128, 122, welcome, font.deriveFont(22f), grey);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
@@ -163,7 +163,6 @@ public class DailyServiceImpl implements DailyService {
 
                 SFTPUtil sftpUtil = new SFTPUtil();
 
-                //TODO:对图片压缩
                 sftpUtil.upload(FTP_TALK_STORE, dailyUrl, inputStream);
 
                 logger.info("通过sftp传输结束");
