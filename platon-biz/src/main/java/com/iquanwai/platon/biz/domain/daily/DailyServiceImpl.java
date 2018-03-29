@@ -32,7 +32,7 @@ public class DailyServiceImpl implements DailyService {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_backend.png";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/test.jpg";
     private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/source/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_line.png";
@@ -140,7 +140,7 @@ public class DailyServiceImpl implements DailyService {
 
             //    ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
 
-                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
+                Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpg");
                 ImageWriter writer=null;
                 while(it.hasNext()) {
                     writer=it.next();
@@ -158,7 +158,7 @@ public class DailyServiceImpl implements DailyService {
                 }
                 logger.info("生成模糊图片结束");
                 InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-                String dailyUrl = PRESCENE+ CommonUtils.randomString(8)+".png";
+                String dailyUrl = PRESCENE+ CommonUtils.randomString(8)+".jpg";
                 logger.info("开始通过sftp传输");
 
                 SFTPUtil sftpUtil = new SFTPUtil();
