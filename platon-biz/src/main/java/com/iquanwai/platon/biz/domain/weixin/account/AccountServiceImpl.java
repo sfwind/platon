@@ -109,7 +109,7 @@ public class AccountServiceImpl implements AccountService {
         String body = restfulHelper.getPure(requestUrl);
         JSONObject jsonObject = JSONObject.parseObject(body);
         Integer code = jsonObject.getInteger("code");
-        Integer subscribe = jsonObject.getInteger("subscribe");
+        Integer subscribe = jsonObject.getInteger("msg");
         logger.info(code + "");
         logger.info(subscribe + "");
         if (200 == code) {
