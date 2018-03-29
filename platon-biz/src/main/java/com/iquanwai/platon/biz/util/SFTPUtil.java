@@ -39,7 +39,7 @@ public class SFTPUtil {
 
             // 进入服务器指定的文件夹
             sftp.cd(path);
-
+            logger.info("开始传输");
             // 以下代码实现从本地上传一个文件到服务器
             OutputStream os = sftp.put(fileName);
 
@@ -48,6 +48,7 @@ public class SFTPUtil {
             while ((n = is.read(b)) != -1) {
                 os.write(b, 0, n);
             }
+            logger.info("传输结束");
             os.flush();
             os.close();
             is.close();
