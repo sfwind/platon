@@ -43,4 +43,36 @@ public class PracticePlan {
          */
         int NEVER_UNLOCK = 2;
     }
+
+    public static boolean isWarmupPractice(Integer type){
+        return type == PracticePlan.WARM_UP || type == PracticePlan.WARM_UP_REVIEW;
+    }
+
+    public static boolean isApplicationPractice(Integer type){
+        return type == PracticePlan.APPLICATION_BASE || type == PracticePlan.APPLICATION_UPGRADED
+                || type == PracticePlan.APPLICATION_GROUP;
+    }
+
+    public static boolean isKnowledge(Integer type){
+        return type == PracticePlan.KNOWLEDGE || type == PracticePlan.KNOWLEDGE_REVIEW;
+    }
+
+    public static String getPracticePlanTitle(Integer type){
+        if(isKnowledge(type)){
+            return "知识点";
+        }else if(isWarmupPractice(type)){
+            return "选择题";
+        }else if(isApplicationPractice(type)){
+            if(type == PracticePlan.APPLICATION_BASE){
+                return "应用题";
+            }else if(type == PracticePlan.APPLICATION_UPGRADED){
+                return "附加题";
+            }else if(type == PracticePlan.APPLICATION_GROUP){
+                return "案例题";
+            }
+        }
+
+        //默认
+        return "练习";
+    }
 }

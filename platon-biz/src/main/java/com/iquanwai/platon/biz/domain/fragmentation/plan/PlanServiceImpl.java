@@ -20,14 +20,12 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -245,7 +243,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setPlanId(practicePlan.getPlanId());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
         //设置选做标签,巩固练习和知识理解是必做,其他为选做
-        if (isOptional(practicePlan.getType())) {
+        if (PracticePlan.isApplicationPractice(practicePlan.getType())) {
             practice.setOptional(true);
         } else {
             practice.setOptional(false);
@@ -257,10 +255,6 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
         return practice;
-    }
-
-    private boolean isOptional(Integer type) {
-        return type == PracticePlan.APPLICATION_BASE || type == PracticePlan.APPLICATION_UPGRADED;
     }
 
     @Override
@@ -832,6 +826,7 @@ public class PlanServiceImpl implements PlanService {
             seriesStatus.setType(plan.getType());
             seriesStatus.setUnlock(plan.getUnlocked());
             seriesStatus.setComplete(plan.getStatus() == 1);
+            seriesStatus.setName(PracticePlan.getPracticePlanTitle(plan.getType()));
             planSeriesStatuses.add(seriesStatus);
         }
 

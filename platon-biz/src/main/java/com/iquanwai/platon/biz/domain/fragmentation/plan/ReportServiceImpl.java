@@ -119,9 +119,8 @@ public class ReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
         // 应用练习
         List<PracticePlan> applicationPlanList = practicePlans.stream()
-                .filter(item -> item.getType().equals(PracticePlan.APPLICATION_BASE) ||
-                        item.getType().equals(PracticePlan.APPLICATION_UPGRADED))
-                .collect(Collectors.toList());
+                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
+                        .collect(Collectors.toList());
 
         // 计算章节练习分数
         calculateWarmupScores(report, plan, warmPlanList);

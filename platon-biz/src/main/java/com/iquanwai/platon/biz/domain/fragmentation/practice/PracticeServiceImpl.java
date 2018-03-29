@@ -827,8 +827,7 @@ public class PracticeServiceImpl implements PracticeService {
     public Integer loadCompletedApplicationCnt(Integer planId) {
         List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
         Long completedCnt = practicePlans.stream()
-                .filter(practicePlan -> (practicePlan.getType() == PracticePlan.APPLICATION_BASE ||
-                        practicePlan.getType() == PracticePlan.APPLICATION_UPGRADED) &&
+                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()) &&
                         PracticePlan.STATUS.COMPLETED == practicePlan.getStatus())
                 .count();
         return completedCnt.intValue();

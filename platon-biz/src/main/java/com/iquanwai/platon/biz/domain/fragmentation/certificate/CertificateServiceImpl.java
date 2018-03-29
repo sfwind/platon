@@ -197,8 +197,7 @@ public class CertificateServiceImpl implements CertificateService {
                         // 所有必须完成的知识点、选择题都已经完成
                         // 对应用题完成情况进行复查
                         List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                                .filter(practicePlan -> PracticePlan.APPLICATION_BASE == practicePlan.getType()
-                                        || PracticePlan.APPLICATION_UPGRADED == practicePlan.getType())
+                                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
                                 .collect(Collectors.toList());
 
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
@@ -330,8 +329,7 @@ public class CertificateServiceImpl implements CertificateService {
                     } else {
                         // 完成所有练习之后，对应用题完成情况进行复查
                         List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                                .filter(practicePlan -> PracticePlan.APPLICATION_BASE == practicePlan.getType()
-                                        || PracticePlan.APPLICATION_UPGRADED == practicePlan.getType())
+                                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
                                 .collect(Collectors.toList());
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);

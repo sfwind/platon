@@ -92,8 +92,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             case PracticePlan.WARM_UP:
             case PracticePlan.WARM_UP_REVIEW:
                 List<PracticePlan> practicePlanList = practicePlans.stream()
-                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
-                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
+                        .filter(plan -> (PracticePlan.isApplicationPractice(plan.getType()))
                                 && plan.getSeries() == series).collect(Collectors.toList());
 
                 practicePlanList.forEach(practicePlan1 -> practicePlanDao.unlock(practicePlan1.getId()));
@@ -110,6 +109,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             // 如果是第一道应用题,则解锁下一道应用题和下一节的知识点
             case PracticePlan.APPLICATION_BASE:
             case PracticePlan.APPLICATION_UPGRADED:
+            case PracticePlan.APPLICATION_GROUP:
 //                targetPracticePlan = practicePlans.stream()
 //                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
 //                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
@@ -140,8 +140,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .reduce((lock1, lock2) -> lock1 || lock2).orElse(false);
         boolean complete = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
-                .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
-                        plan.getType() != PracticePlan.APPLICATION_UPGRADED))
+                .filter(plan -> !PracticePlan.isApplicationPractice(plan.getType()))
                 .map(PracticePlan::getStatus)
                 .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
 
@@ -160,8 +159,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     @Override
     public boolean calculateProblemUnlocked(List<PracticePlan> practicePlans) {
         return practicePlans.stream()
-                .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
-                        plan.getType() != PracticePlan.APPLICATION_UPGRADED))
+                .filter(plan -> !PracticePlan.isApplicationPractice(plan.getType()))
                 .map(PracticePlan::getUnlocked)
                 .reduce((lock1, lock2) -> lock1 && lock2)
                 .orElse(false);

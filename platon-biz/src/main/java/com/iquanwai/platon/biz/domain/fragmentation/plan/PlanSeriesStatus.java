@@ -16,5 +16,6 @@ public class PlanSeriesStatus {
     private Integer type; // 小题类型
     private Boolean unlock; // 是否锁定
     private Boolean complete; // 是否完成
+    private String name; //标题
 
 }
