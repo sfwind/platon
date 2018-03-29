@@ -144,7 +144,7 @@ public class IndexController {
             return null;
         }
 
-        if (!accountService.checkIsSubscribe(unionUser.getOpenId())) {
+        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
             SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
             if (subscribeRouterConfig != null) {
                 // 未关注
@@ -220,7 +220,7 @@ public class IndexController {
             WebUtils.auth(request, response);
             return null;
         }
-        if (!accountService.checkIsSubscribe(unionUser.getOpenId())) {
+        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
             SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
             if (subscribeRouterConfig != null) {
                 // 未关注
@@ -297,7 +297,7 @@ public class IndexController {
             return null;
         }
 
-        if (!accountService.checkIsSubscribe(unionUser.getOpenId())) {
+        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
             SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
             if (subscribeRouterConfig != null) {
                 // 未关注
