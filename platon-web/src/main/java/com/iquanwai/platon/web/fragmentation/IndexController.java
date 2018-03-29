@@ -393,6 +393,7 @@ public class IndexController {
         if (moduleShow != null) {
             mav.addObject("showExplore", moduleShow.getShowExplore());
         }
+        mav.addObject("sensorsProject", ConfigUtils.getSensorsProject());
         return mav;
     }
 }
