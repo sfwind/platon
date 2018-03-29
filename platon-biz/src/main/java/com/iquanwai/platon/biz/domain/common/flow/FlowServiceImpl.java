@@ -7,16 +7,19 @@ import com.iquanwai.platon.biz.dao.common.ActivitiesFlowDao;
 import com.iquanwai.platon.biz.dao.common.ArticlesFlowDao;
 import com.iquanwai.platon.biz.dao.common.LivesFlowDao;
 import com.iquanwai.platon.biz.dao.common.ProblemsFlowDao;
-import com.iquanwai.platon.biz.po.ActivitiesFlow;
-import com.iquanwai.platon.biz.po.ArticlesFlow;
-import com.iquanwai.platon.biz.po.LivesFlow;
-import com.iquanwai.platon.biz.po.ProblemsFlow;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,12 @@ public class FlowServiceImpl implements FlowService {
     private ArticlesFlowDao articlesFlowDao;
     @Autowired
     private ActivitiesFlowDao activitiesFlowDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
+    private AccountService accountService;
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public List<LandingPageBanner> loadLandingPageBanners() {
@@ -53,36 +62,41 @@ public class FlowServiceImpl implements FlowService {
     }
 
     @Override
-    public List<ProblemsFlow> loadProblemsFlow() {
-        return problemsFlowDao.loadAllWithoutDel(ProblemsFlow.class);
+    public List<ProblemsFlow> loadProblemsFlow(Integer profileId) {
+        List<ProblemsFlow> problemsFlows = problemsFlowDao.loadAllWithoutDel(ProblemsFlow.class);
+        return problemsFlows;
     }
 
     @Override
-    public List<LivesFlow> loadLivesFlow() {
+    public List<LivesFlow> loadLivesFlow(Integer profileId) {
         List<LivesFlow> livesFlows = livesFlowDao.loadAllWithoutDel(LivesFlow.class);
-        livesFlows.forEach(livesFlow -> {
-            if (livesFlow.getStartTime() != null) {
-                livesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(livesFlow.getStartTime()));
-            }
-        });
+        livesFlows = livesFlows.stream()
+                .map(livesFlow -> {
+                    if (livesFlow.getStartTime() != null) {
+                        livesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(livesFlow.getStartTime()));
+                    }
+                    livesFlow.setVisibility(getVisibility(livesFlow, profileId));
+                    return livesFlow;
+                }).collect(Collectors.toList());
         return livesFlows;
     }
 
     @Override
-    public List<LivesFlow> loadLivesFlow(Integer limit) {
-        List<LivesFlow> livesFlows = loadLivesFlow();
+    public List<LivesFlow> loadLivesFlow(Integer profileId, Integer limit) {
+        List<LivesFlow> livesFlows = loadLivesFlow(profileId);
         livesFlows = livesFlows.stream().limit(limit).collect(Collectors.toList());
         return livesFlows;
     }
 
     @Override
-    public List<ArticlesFlow> loadArticlesFlow() {
-        return articlesFlowDao.loadAllWithoutDel(ArticlesFlow.class);
+    public List<ArticlesFlow> loadArticlesFlow(Integer profileId) {
+        List<ArticlesFlow> articlesFlows = articlesFlowDao.loadAllWithoutDel(ArticlesFlow.class);
+        return articlesFlows;
     }
 
     @Override
-    public List<ArticlesFlow> loadArticlesFlow(Integer limit, Boolean shuffle) {
-        List<ArticlesFlow> articlesFlows = loadArticlesFlow();
+    public List<ArticlesFlow> loadArticlesFlow(Integer profileId, Integer limit, Boolean shuffle) {
+        List<ArticlesFlow> articlesFlows = loadArticlesFlow(profileId);
         if (shuffle) {
             Collections.shuffle(articlesFlows);
         }
@@ -91,21 +105,57 @@ public class FlowServiceImpl implements FlowService {
     }
 
     @Override
-    public List<ActivitiesFlow> loadActivitiesFlow() {
+    public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId) {
         List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
-        activitiesFlows.forEach(activitiesFlow -> {
-            if (activitiesFlow.getStartTime() != null) {
-                activitiesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(activitiesFlow.getStartTime()));
-            }
-        });
+        boolean isBusinessRiseMember = accountService.isBusinessRiseMember(profileId);
+        activitiesFlows = activitiesFlows.stream()
+                .map(activitiesFlow -> {
+                    if (activitiesFlow.getStatus() == ActivitiesFlow.Status.PREPARE && activitiesFlow.getEndTime().compareTo(new Date()) < 0) {
+                        activitiesFlowDao.downLine(activitiesFlow.getId());
+                        activitiesFlow.setStatus(ActivitiesFlow.Status.CLOSED);
+                    }
+                    if (activitiesFlow.getStartTime() != null) {
+                        activitiesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(activitiesFlow.getStartTime()));
+                    }
+                    if (activitiesFlow.getStatus() == ActivitiesFlow.Status.PREPARE) {
+                        activitiesFlow.setTargetUrl(isBusinessRiseMember ? activitiesFlow.getVipSaleLinkUrl() : activitiesFlow.getGuestSaleLinkUrl());
+                    } else if (activitiesFlow.getStatus() == ActivitiesFlow.Status.CLOSED) {
+                        activitiesFlow.setTargetUrl(null);
+                    } else if (activitiesFlow.getStatus() == ActivitiesFlow.Status.REVIEW) {
+                        activitiesFlow.setTargetUrl(activitiesFlow.getLinkUrl());
+                    } else {
+                        activitiesFlow.setTargetUrl(null);
+                    }
+                    activitiesFlow.setVisibility(isBusinessRiseMember);
+                    return activitiesFlow;
+                })
+                .sorted(Comparator.comparing(ActivitiesFlow::getStartTime).reversed())
+                .collect(Collectors.toList());
         return activitiesFlows;
     }
 
     @Override
-    public List<ActivitiesFlow> loadActivitiesFlow(Integer limit) {
-        List<ActivitiesFlow> activitiesFlows = loadActivitiesFlow();
+    public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId, Integer limit) {
+        List<ActivitiesFlow> activitiesFlows = loadActivitiesFlow(profileId);
         activitiesFlows = activitiesFlows.stream().limit(limit).collect(Collectors.toList());
         return activitiesFlows;
+    }
+
+    private Boolean getVisibility(FlowData flowData, Integer profileId) {
+        String authority = flowData.getAuthority();
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        Integer memberTypeId = 0;
+        if (riseMember != null && riseMember.getMemberTypeId() != null) {
+            memberTypeId = riseMember.getMemberTypeId();
+        }
+        try {
+            char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
+            String tagValue = String.valueOf(tagChar);
+            return "1".equals(tagValue);
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
+            return false;
+        }
     }
 
 }

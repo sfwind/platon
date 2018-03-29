@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel("圈外课")
-public class ProblemsFlow {
+public class ProblemsFlow extends FlowData {
 
     private Integer id;
     @ApiModelProperty("ProblemId")

@@ -125,7 +125,6 @@ public class CustomerController {
         return WebUtils.result(profile);
     }
 
-
     @RequestMapping(value = "/profile/info", method = RequestMethod.GET)
     @ApiOperation("查询个人中心首页信息")
     public ResponseEntity<Map<String, Object>> getProfileInfo(UnionUser unionUser) {
@@ -139,8 +138,7 @@ public class CustomerController {
             userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
-                userStudyDto.setClassName(tempName.replaceAll("0", ""));
+                userStudyDto.setClassName(getClassName(className));
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
@@ -157,7 +155,6 @@ public class CustomerController {
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         return WebUtils.result(userStudyDto);
     }
-
 
     @RequestMapping(value = "/event/list", method = RequestMethod.GET)
     @ApiOperation("查询活动列表")
@@ -221,8 +218,7 @@ public class CustomerController {
             profileDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
-                String tempName = className.substring(2, 4) + "月" + className.substring(4, 6) + "班";
-                profileDto.setClassName(tempName.replaceAll("0", ""));
+                profileDto.setClassName(getClassName(className));
             }
         }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
@@ -559,7 +555,7 @@ public class CustomerController {
         List<RiseCertificate> certificateList = certificateService.getCertificates(unionUser.getId());
 
         List<RiseCertificate> finishList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 5).collect(Collectors.toList());
-        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6).collect(Collectors.toList());
+        List<RiseCertificate> gradeList = certificateList.stream().filter(riseCertificate -> riseCertificate.getType() == 1 || riseCertificate.getType() == 2 || riseCertificate.getType() == 3 || riseCertificate.getType() == 4 || riseCertificate.getType() == 6 || riseCertificate.getType() == 7).collect(Collectors.toList());
 
         List<CertificateDto> finishDtos = Lists.newArrayList();
         List<CertificateDto> gradeDtos = Lists.newArrayList();
@@ -629,6 +625,9 @@ public class CustomerController {
         if (type == 6) {
             return "优秀助教";
         }
+        if( type == 7){
+            return "优秀班委";
+        }
         return "未知类型";
     }
 
@@ -640,4 +639,21 @@ public class CustomerController {
 
         return WebUtils.success();
     }
+
+
+    private String getClassName(String className){
+       String tempName =  Integer.valueOf(className.substring(2, 4)) + "月" +
+                        Integer.valueOf(className.substring(4, 6)) + "班";
+
+       if(tempName.charAt(3)=='0'){
+           tempName = tempName.substring(0,3)+tempName.substring(4);
+       }
+       if(tempName.charAt(0)=='0'){
+           tempName = tempName.substring(1);
+       }
+       return tempName;
+    }
+
+
+
 }

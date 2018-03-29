@@ -47,6 +47,7 @@ public class MessageServiceImpl implements MessageService {
         notifyMessage.setOld(false);
         notifyMessage.setSendTime(DateUtils.parseDateTimeToString(new Date()));
         notifyMessage.setUrl(url);
+        addHook(notifyMessage);
 
         notifyMessageDao.insert(notifyMessage);
     }
@@ -156,6 +157,18 @@ public class MessageServiceImpl implements MessageService {
 
         public void increment() {
             this.count++;
+        }
+    }
+
+    private void addHook(NotifyMessage notifyMessage) {
+        if (notifyMessage.getUrl() != null) {
+            String url = notifyMessage.getUrl();
+            if (url.contains("?") && !url.contains("_tm")){
+                url = url + "&_tm=notify_message";
+            }else{
+                url = url + "?_tm=notify_message";
+            }
+            notifyMessage.setUrl(url);
         }
     }
 }
