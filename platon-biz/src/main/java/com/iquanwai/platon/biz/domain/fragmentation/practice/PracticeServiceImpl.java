@@ -202,10 +202,9 @@ public class PracticeServiceImpl implements PracticeService {
                 OperationLogService.Prop prop = OperationLogService.props();
                 prop.add("warmupId", practice.getId());
                 prop.add("problemId", practice.getProblemId());
-                prop.add("series", practicePlan.getPlanId());
+                prop.add("series", practicePlan.getSeries());
                 return prop;
             });
-
         }
         if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
             practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
@@ -359,30 +358,12 @@ public class PracticeServiceImpl implements PracticeService {
             return null;
         }
         boolean result;
-        boolean firstAnswer;
         int length = CommonUtils.removeHTMLTag(content).length();
         if (submit.getContent() == null) {
             result = applicationSubmitDao.firstAnswer(id, content, length);
-            firstAnswer = true;
         } else {
             result = applicationSubmitDao.answer(id, content, length);
-            firstAnswer = false;
         }
-        operationLogService.trace(submit.getProfileId(), "submitApplication", () -> {
-            OperationLogService.Prop prop = OperationLogService.props();
-            List<PracticePlan> apps = practicePlanDao.loadApplicationPracticeByPlanId(submit.getPlanId());
-            apps.stream().filter(item -> item.getPracticeId().equals(submit.getApplicationId().toString())).findFirst().ifPresent((practicePlan -> {
-                Integer series = practicePlan.getSeries();
-                boolean exist = apps.stream().anyMatch(item -> item.getSeries().equals(series) && item.getStatus() == 1);
-                if (!exist) {
-                    prop.add("series", practicePlan.getSeries());
-                }
-            }));
-            prop.add("firstAnswer", firstAnswer);
-            prop.add("problemId", submit.getProblemId());
-            prop.add("applicationId", submit.getApplicationId());
-            return prop;
-        });
 
         if (result && submit.getPointStatus() == 0) {
             // 修改应用任务记录
@@ -438,11 +419,6 @@ public class PracticeServiceImpl implements PracticeService {
         int length = CommonUtils.removeHTMLTag(content).length();
         if (submit.getContent() == null) {
             result = challengeSubmitDao.firstAnswer(id, content, length);
-            operationLogService.trace(submit.getProfileId(), "submitChallenge", () -> {
-                OperationLogService.Prop prop = OperationLogService.props();
-                prop.add("challengeId", submit.getChallengeId());
-                return prop;
-            });
         } else {
             result = challengeSubmitDao.answer(id, content, length);
         }
@@ -865,12 +841,6 @@ public class PracticeServiceImpl implements PracticeService {
     public void learnKnowledge(Integer profileId, Integer practicePlanId) {
         practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
         certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
-        operationLogService.trace(profileId, "learnKnowledge", () -> {
-            PracticePlan load = practicePlanDao.load(PracticePlan.class, practicePlanId);
-            ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, load.getPlanId());
-            return OperationLogService.props().add("problemId", plan.getProblemId());
-        });
-
     }
 
     @Override

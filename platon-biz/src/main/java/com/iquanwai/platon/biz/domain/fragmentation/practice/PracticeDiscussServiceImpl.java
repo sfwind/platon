@@ -79,8 +79,12 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
                     RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(repliedDiscuss.getProfileId());
                     if (riseClassMember != null) {
-                        prop.add("repliedClassName", riseClassMember.getClassName());
-                        prop.add("repliedGroupId", riseClassMember.getGroupId());
+                        if (riseClassMember.getClassName() != null) {
+                            prop.add("repliedClassName", riseClassMember.getClassName());
+                        }
+                        if (riseClassMember.getGroupId() != null) {
+                            prop.add("repliedGroupId", riseClassMember.getGroupId());
+                        }
                     }
                     if (riseMember != null) {
                         prop.add("repliedRolename", riseMember.getMemberTypeId());

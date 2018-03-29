@@ -25,7 +25,84 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     @Autowired
     private OperationLogService operationLogService;
 
-    // 根据 PlanId 完成 PracticePlan
+    private void tracePracticeComplete(Integer profileId, PracticePlan practicePlan) {
+        switch (practicePlan.getType()) {
+            case PracticePlan.WARM_UP:
+            case PracticePlan.WARM_UP_REVIEW: {
+                operationLogService.trace(profileId, "submitWarmupGroup", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    // 完成一组选择题
+                    ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+                    boolean exist = practicePlanDao.loadWarmupPracticeByPlanId(practicePlan.getPlanId())
+                            .stream()
+                            .filter(item -> item.getId() != practicePlan.getId())
+                            .anyMatch(item -> item.getSeries().equals(practicePlan.getSeries()) && item.getStatus() == 1);
+                    prop.add("series", practicePlan.getSeries());
+                    prop.add("sequence", practicePlan.getSequence());
+                    prop.add("isReview", practicePlan.getType().equals(PracticePlan.WARM_UP_REVIEW));
+                    prop.add("isSeriesFirst", !exist);
+                    prop.add("problemId", plan.getProblemId());
+                    return prop;
+                });
+                break;
+            }
+            case PracticePlan.APPLICATION_BASE:
+            case PracticePlan.APPLICATION_UPGRADED: {
+                operationLogService.trace(profileId, "submitApplication", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+                    boolean exist = practicePlanDao.loadApplicationPracticeByPlanId(practicePlan.getPlanId())
+                            .stream()
+                            .filter(item -> item.getId() != practicePlan.getId())
+                            .anyMatch(item -> item.getSeries().equals(practicePlan.getSeries()) && item.getStatus() == 1);
+                    prop.add("isSeriesFirst", !exist);
+                    prop.add("series", practicePlan.getSeries());
+                    prop.add("sequence", practicePlan.getSequence());
+                    prop.add("problemId", plan.getProblemId());
+                    prop.add("applicationId", practicePlan.getPracticeId());
+                    prop.add("isUpgraded", practicePlan.getType().equals(PracticePlan.APPLICATION_UPGRADED));
+                    return prop;
+                });
+                break;
+            }
+            case PracticePlan.CHALLENGE: {
+                operationLogService.trace(profileId, "submitChallenge", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+                    prop.add("problemId", plan.getProblemId());
+                    return prop;
+                });
+                break;
+            }
+            case PracticePlan.KNOWLEDGE:
+            case PracticePlan.KNOWLEDGE_REVIEW: {
+                operationLogService.trace(profileId, "learnKnowledge", () -> {
+                    ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+                    return OperationLogService
+                            .props()
+                            .add("problemId", plan.getProblemId())
+                            .add("series", practicePlan.getSeries())
+                            .add("isReview", practicePlan.getType().equals(PracticePlan.KNOWLEDGE_REVIEW));
+                });
+                break;
+            }
+            case PracticePlan.INTRODUCTION: {
+                operationLogService.trace(profileId, "learnIntroduction", () -> {
+                    ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
+                    return OperationLogService
+                            .props()
+                            .add("problemId", plan.getProblemId())
+                            .add("series", practicePlan.getSeries());
+                });
+                break;
+            }
+            default: {
+                // ignore
+                logger.error("该题目未打点 :{}", practicePlan);
+            }
+        }
+    }
+
     @Override
     public void completePracticePlan(Integer profileId, Integer practicePlanId) {
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
@@ -41,6 +118,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
         ImprovementPlan improvementPlan = improvementPlans.stream()
                 .filter(plan -> plan.getId() == planId).findAny().orElse(null);
         if (improvementPlan != null) {
+            // 神策打点
+            tracePracticeComplete(profileId, practicePlan);
             practicePlanDao.complete(practicePlanId);
         } else {
             //没找到课程
