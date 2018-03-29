@@ -21,6 +21,7 @@ public class  ApplicationPractice {
     private Boolean del; //是否删除(0-否,1-是)
     private String practiceUid; //任务唯一编号
     private String pic; //题目图片
+    private Integer type; //题目类型(1-应用题,2-案例题)
 
     private String content; //提交内容，非db字段
     private Integer submitId; // 提交id，非db字段
