@@ -261,15 +261,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 if (applicationPractice != null) {
-                    // TODO:附件题和应用题最好能合并
-                    if(applicationPractice.getType() == 1){
+                    // TODO:附加题和应用题最好能合并
+                    if(applicationPractice.getType() == PracticePlan.APPLICATION_BASE){
                         if (applicationPractice.getSequence() == 1) {
                             practicePlan.setType(PracticePlan.APPLICATION_BASE);
                         } else {
                             practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
                         }
                     }else{
-                        practicePlan.setType(PracticePlan.APPLICATION_GROUP);
+                        practicePlan.setType(applicationPractice.getType());
                     }
 
                     practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
@@ -354,7 +354,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(profileId);
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
-//        improvementPlan.setOpenid(profile.getOpenid());
         improvementPlan.setProfileId(profileId);
         improvementPlan.setWarmupComplete(0);
         improvementPlan.setApplicationComplete(0);
@@ -368,7 +367,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setTotalSeries(length);
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(startDate);
-        improvementPlan.setEndDate(null);
 
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         improvementPlan.setCloseDate(closeDate);

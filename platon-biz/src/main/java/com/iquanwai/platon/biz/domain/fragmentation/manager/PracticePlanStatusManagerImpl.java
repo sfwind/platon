@@ -110,6 +110,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             case PracticePlan.APPLICATION_BASE:
             case PracticePlan.APPLICATION_UPGRADED:
             case PracticePlan.APPLICATION_GROUP:
+            case PracticePlan.APPLICATION_THINKING:
 //                targetPracticePlan = practicePlans.stream()
 //                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
 //                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)

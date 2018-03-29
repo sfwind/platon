@@ -270,6 +270,9 @@ public class PracticeServiceImpl implements PracticeService {
         applicationPractice.setVoteCount(votedCount(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId()));
         // 查询评论数
         applicationPractice.setCommentCount(commentCount(Constants.CommentModule.APPLICATION, applicationPractice.getSubmitId()));
+        // 应用题名字
+        applicationPractice.setName(applicationName(applicationPractice.getType()));
+
         // 查询我对它的点赞状态
         HomeworkVote myVote = loadVoteRecord(Constants.VoteType.APPLICATION, applicationPractice.getSubmitId(), profileId);
         if (myVote != null && myVote.getDel() == 0) {
@@ -836,6 +839,16 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public PracticePlan getPractice(Integer practicePlanId) {
         return practicePlanDao.load(PracticePlan.class, practicePlanId);
+    }
+
+    private String applicationName(Integer type){
+        if(type == PracticePlan.APPLICATION_GROUP){
+            return "今日案例";
+        }
+        if(type == PracticePlan.APPLICATION_THINKING){
+            return "今日思考";
+        }
+        return "今日应用";
     }
 
 }
