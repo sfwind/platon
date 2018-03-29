@@ -166,6 +166,7 @@ public class DailyServiceImpl implements DailyService {
 
                 SFTPUtil sftpUtil = new SFTPUtil();
 
+                //TODO:对图片压缩
                 sftpUtil.upload(FTP_TALK_STORE, dailyUrl, inputStream);
 
                 logger.info("通过sftp传输结束");
