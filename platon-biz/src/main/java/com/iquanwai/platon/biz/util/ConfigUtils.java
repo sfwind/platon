@@ -409,5 +409,16 @@ public class ConfigUtils {
 
     public static String getDailyTalkWelcome(){return getValue("daily.talk.welcome");}
 
+    public static String getFtpUser() {
+        return getValue("ftp.username");
+    }
+
+    public static String getFtpPassword() {
+        return getValue("ftp.password");
+    }
+
+    public static String getFtpHost() {
+        return getValue("ftp.host");
+    }
 }
 
