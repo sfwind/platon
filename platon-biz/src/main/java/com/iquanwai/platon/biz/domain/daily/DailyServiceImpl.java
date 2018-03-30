@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
 import com.iquanwai.platon.biz.util.*;
+import com.sun.imageio.plugins.common.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,7 @@ public class DailyServiceImpl implements DailyService {
             String nickName = profile.getNickname();
             String headImg = profile.getHeadimgurl();
             InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
+           // InputStream simSunIn = ImageUtils.class.getResourceAsStream("/fonts/simsun.tff");
             // 绘图准备
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -87,6 +89,7 @@ public class DailyServiceImpl implements DailyService {
                 BufferedImage qrImg = qrCodeService.loadQrImage(scene);
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+             //   Font simSunFont =Font.createFont(Font.TRUETYPE_FONT,simSunIn);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
                 //绘制头像
                 if (headImg != null) {
@@ -95,11 +98,11 @@ public class DailyServiceImpl implements DailyService {
                         BufferedImage headBuffer = ImageUtils.copy(headImgBuffer);
                         //圆形
                         headBuffer = ImageUtils.convertCircular(headBuffer);
-                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 80, 82, 88, 88);
+                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 80, 82, 100, 100);
                     }
                 }
-                inputImage = ImageUtils.writeText(inputImage, 200, 124, nickName, font.deriveFont(40f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 200, 162, welcome, font.deriveFont(24f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 200, 124, nickName, font.deriveFont(50f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 200, 162, welcome, font.deriveFont(34f), grey);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
