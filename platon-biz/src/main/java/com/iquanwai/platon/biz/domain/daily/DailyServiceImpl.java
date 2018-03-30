@@ -95,17 +95,11 @@ public class DailyServiceImpl implements DailyService {
                         BufferedImage headBuffer = ImageUtils.copy(headImgBuffer);
                         //圆形
                         headBuffer = ImageUtils.convertCircular(headBuffer);
-                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 52, 74, 74);
+                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 80, 82, 88, 88);
                     }
-//                    }else{
-//                        BufferedImage headBuffer = ImageUtils.copy(unknownImg);
-//                        //圆形
-//                        headBuffer = ImageUtils.convertCircular(headBuffer);
-//                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 40, 32, 74, 74);
-//                    }
                 }
-                inputImage = ImageUtils.writeText(inputImage, 128, 84, nickName, font.deriveFont(34f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 128, 122, welcome, font.deriveFont(22f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 200, 124, nickName, font.deriveFont(40f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 200, 162, welcome, font.deriveFont(24f), grey);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
@@ -125,20 +119,18 @@ public class DailyServiceImpl implements DailyService {
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
                     contentImg = ImageUtils.writeText(contentImg, 540, 390, author, font.deriveFont(30f), Color.WHITE);
-                    inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 400, 750, 504);
+                    inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 600, 1125, 756);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage, 70, 292, loginDay.toString(), font.deriveFont(45f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 70 + 30 * loginDay.toString().length(), 292, "天", font.deriveFont(22f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 90, 422, loginDay.toString(), font.deriveFont(90f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 90 + 60 * loginDay.toString().length(), 422, "天", font.deriveFont(30f), grey);
 
-                inputImage = ImageUtils.writeText(inputImage, 280, 292, learnKnowledge.toString(), font.deriveFont(45f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 280 + 30 * learnKnowledge.toString().length(), 292, "个", font.deriveFont(22f), grey);
-                inputImage = ImageUtils.writeText(inputImage, 522, 292, percent + "%", font.deriveFont(45f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 562 + 30 * percent.toString().length(), 292, "的同学", font.deriveFont(22f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 410, 422, learnKnowledge.toString(), font.deriveFont(90f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 410 + 60 * learnKnowledge.toString().length(), 422, "个", font.deriveFont(30f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 790, 422, percent + "%", font.deriveFont(90f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 880 + 60 * percent.toString().length(), 422, "的同学", font.deriveFont(30f), grey);
 
-                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,532,960,180,180);
-
-            //    ImageUtils.writeToOutputStream(inputImage, "png", outputStream);
+                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1360,180,180);
 
                 Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpg");
                 ImageWriter writer=null;

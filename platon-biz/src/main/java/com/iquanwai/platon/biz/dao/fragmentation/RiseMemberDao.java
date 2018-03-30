@@ -62,7 +62,7 @@ public class RiseMemberDao extends DBUtil {
 
     public List<RiseMember> loadSyncRiseMembers(String currentDate,Integer memberTypeId){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM RiseMember WHERE MemberTypeId = ? AND  OpenDate like ? AND EXPIRED = 0 AND VIP = 0  AND DEL = 0 ";
+        String sql = "SELECT * FROM RiseMember WHERE MemberTypeId = ? AND  OpenDate like ? AND EXPIRED = 0   AND DEL = 0 ";
         ResultSetHandler<List<RiseMember>> h = new BeanListHandler<RiseMember>(RiseMember.class);
 
         try {

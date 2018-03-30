@@ -270,6 +270,10 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<Profile> profiles = accountService.getProfiles(profileIds);
 
+        if(profiles.size()==0){
+            return 0;
+        }
+
         Long result = profiles.stream().filter(profile1 -> profile1.getPoint()==null || profile1.getPoint()<=point).count();
 
 
