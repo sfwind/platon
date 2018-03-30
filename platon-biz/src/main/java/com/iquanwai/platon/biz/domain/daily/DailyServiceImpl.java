@@ -72,6 +72,7 @@ public class DailyServiceImpl implements DailyService {
 
     @Override
     public void sendMsg(String openid) {
+        logger.info("openid:"+openid);
 
         String templateMsg = "小小的感动，每日的点滴，你的进步就在圈外～赶快加入我们一起学习吧～\n" +
                 "\n" +

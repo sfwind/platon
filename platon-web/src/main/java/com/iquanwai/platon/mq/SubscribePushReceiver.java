@@ -61,8 +61,7 @@ public class SubscribePushReceiver {
                     return;
                 }
                 if(push.getScene().startsWith(DAILTTALK)){
-                    logger.info(push.toString());
-                    dailyService.sendMsg(push.toString());
+                    dailyService.sendMsg(openId);
                 } else  if (push.getScene().startsWith("prize_card_")) {
                     String[] sceneStrArr = push.getScene().split("_");
                     Profile profile = accountService.getProfile(openId);
