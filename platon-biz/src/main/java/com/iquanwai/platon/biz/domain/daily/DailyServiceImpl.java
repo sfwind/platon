@@ -130,7 +130,7 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage, 790, 422, percent + "%", font.deriveFont(90f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 880 + 60 * percent.toString().length(), 422, "的同学", font.deriveFont(30f), grey);
 
-                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1360,180,180);
+                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1460,180,180);
 
                 Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpg");
                 ImageWriter writer=null;
