@@ -511,13 +511,13 @@ public class PracticeServiceImpl implements PracticeService {
                 submitProfileId = submit.getProfileId();
                 operationLogService.trace(profileId, "voteApplication", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
+                    Profile profile = accountService.getProfile(submitProfileId);
                     RiseMember validRiseMember = accountService.getValidRiseMember(submitProfileId);
                     Problem problem = problemDao.load(Problem.class, submit.getProblemId());
-                    if (validRiseMember != null) {
-                        prop.add("votedRolename", validRiseMember.getMemberTypeId());
-                    }
+                    prop.add("votedRolename", validRiseMember == null ? 0 : validRiseMember.getMemberTypeId());
                     prop.add("applicationId", submit.getApplicationId());
-                    prop.add("votedProfileId", submitProfileId);
+//                    prop.add("votedProfileId", submitProfileId);
+                    prop.add("votedRiseId", profile.getRiseId());
                     prop.add("problemId", problem.getId());
                     prop.add("device", device);
                     return prop;
@@ -602,14 +602,13 @@ public class PracticeServiceImpl implements PracticeService {
             operationLogService.trace(profileId, "replyCommentApplication", () -> {
                 RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
                 RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
-
+                Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();
-                prop.add("repliedProfileId", load.getProfileId());
+                prop.add("repliedRiseId", repliesProfile.getRiseId());
+//                prop.add("repliedProfileId", load.getProfileId());
                 prop.add("applicationId", load.getApplicationId());
                 prop.add("problemId", load.getProblemId());
-                if (riseMember != null) {
-                    prop.add("repliedRolename", riseMember.getMemberTypeId());
-                }
+                prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                 if (riseClassMember != null) {
                     prop.add("repliedClassname", riseClassMember.getClassName());
                     prop.add("repliedGroupid", riseClassMember.getGroupId());
@@ -695,12 +694,12 @@ public class PracticeServiceImpl implements PracticeService {
             }
             operationLogService.trace(profileId, "commentApplication", () -> {
                 OperationLogService.Prop prop = OperationLogService.props();
+                Profile discussedProfile = accountService.getProfile(load.getProfileId());
                 RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
-                if (riseMember != null) {
-                    prop.add("discussedRolename", riseMember.getMemberTypeId());
-                }
+                prop.add("discussedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                 prop.add("applicationId", load.getApplicationId());
-                prop.add("discussedProfileId", load.getProfileId());
+//                prop.add("discussedProfileId", load.getProfileId());
+                prop.add("discussedRiseId", discussedProfile.getRiseId());
                 prop.add("problemId", load.getProblemId());
                 return prop;
             });

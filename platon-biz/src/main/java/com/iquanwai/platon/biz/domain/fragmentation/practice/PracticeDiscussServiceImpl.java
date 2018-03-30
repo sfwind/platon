@@ -86,12 +86,12 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                             prop.add("repliedGroupId", riseClassMember.getGroupId());
                         }
                     }
-                    if (riseMember != null) {
-                        prop.add("repliedRolename", riseMember.getMemberTypeId());
-                    }
+                    prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                     prop.add("warmupId", warmupPracticeId);
                     prop.add("problemId", warmupPractice.getProblemId());
-                    prop.add("repliedProfileId", repliedDiscuss.getProfileId());
+//                    prop.add("repliedProfileId", repliedDiscuss.getProfileId());
+                    Profile profile = accountService.getProfile(repliedDiscuss.getProfileId());
+                    prop.add("repliedRiseId", profile.getRiseId());
                     return prop;
                 });
             }
