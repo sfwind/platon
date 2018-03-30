@@ -33,7 +33,7 @@ public class DailyServiceImpl implements DailyService {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/final_backend.jpg";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/backend_final.jpg";
     private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/source/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_line.png";
@@ -133,7 +133,7 @@ public class DailyServiceImpl implements DailyService {
                 inputImage = ImageUtils.writeText(inputImage, 780, 422, percent + "%", font.deriveFont(80f), Color.BLACK);
                 inputImage = ImageUtils.writeText(inputImage, 860 + 50 * percent.toString().length(), 422, "的同学", font.deriveFont(30f), grey);
 
-                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1460,180,180);
+                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1460,220,220);
 
                 Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpg");
                 ImageWriter writer=null;
