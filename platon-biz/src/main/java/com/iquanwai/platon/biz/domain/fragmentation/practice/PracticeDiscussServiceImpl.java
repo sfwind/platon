@@ -89,7 +89,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                     prop.add("warmupId", warmupPracticeId);
                     prop.add("problemId", warmupPractice.getProblemId());
-//                    prop.add("repliedProfileId", repliedDiscuss.getProfileId());
                     Profile profile = accountService.getProfile(repliedDiscuss.getProfileId());
                     prop.add("repliedRiseId", profile.getRiseId());
                     return prop;
