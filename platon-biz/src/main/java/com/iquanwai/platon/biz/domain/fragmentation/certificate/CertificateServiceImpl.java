@@ -752,66 +752,6 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    private void buildDetail(RiseCertificate riseCertificate) {
-        Integer type = riseCertificate.getType();
-        Profile profile = accountService.getProfile(riseCertificate.getProfileId());
-        switch (type) {
-            case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月课程中担任班长一职，表现突出，荣膺\"优秀班长\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.CLASS_LEADER);
-                break;
-            case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月课程中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.GROUP_LEADER);
-                break;
-            case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月课程中成绩名列前茅，荣膺\"优秀学员\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_MEMBER);
-                break;
-            case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
-                String monthStr = NumberToHanZi.formatInteger(riseCertificate.getMonth());
-                String groupNoStr = NumberToHanZi.formatInteger(riseCertificate.getGroupNo());
-                riseCertificate.setName(monthStr + "月课程" + groupNoStr + "组");
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月课程中小组表现优异，荣膺\"优秀小组\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_GROUP);
-                break;
-            case Constants.CERTIFICATE.TYPE.ORDINARY:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月课程中完成课程学习" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ORDINARY);
-                break;
-            case Constants.CERTIFICATE.TYPE.ASST_COACH:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月课程中表现卓越，荣膺\"优秀助教\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ASST_COACH);
-                break;
-            default:
-                logger.error("证书类型{}不存在", type);
-                break;
-        }
-    }
-
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
         if (riseMember != null) {
