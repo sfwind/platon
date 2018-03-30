@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.daily;
 
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
 import com.iquanwai.platon.biz.dao.daily.DailyTalkDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -37,7 +38,8 @@ public class DailyServiceImpl implements DailyService {
     private QRCodeService qrCodeService;
     @Autowired
     private CustomerMessageService customerMessageService;
-
+    @Autowired
+    private SubscribePushDao subscribePushDao;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/backend_final.jpg";
@@ -104,10 +106,11 @@ public class DailyServiceImpl implements DailyService {
 
             try {
                 String scene = PRESCENE + profile.getId();
+                String callback = "https://www.iquanwai.com/rise/static/home";
+                subscribePushDao.insert(profile.getOpenid(), callback, scene);
                 BufferedImage qrImg = qrCodeService.loadQrImage(scene);
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
-             //   Font simSunFont =Font.createFont(Font.TRUETYPE_FONT,simSunIn);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
                 //绘制头像
                 if (headImg != null) {
