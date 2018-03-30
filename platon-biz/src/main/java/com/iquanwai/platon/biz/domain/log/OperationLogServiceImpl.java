@@ -74,7 +74,6 @@ public class OperationLogServiceImpl implements OperationLogService {
                 Integer profileId = profileIdSupplier.get();
                 Prop prop = supplier.get();
                 Map<String, Object> properties = prop.build();
-                logger.info("trace:\nprofielId:{}\neventName:{}\nprops:{}", profileId, eventName, properties);
                 Assert.notNull(profileId, "用户id不能为null");
                 Profile profile = profileDao.load(Profile.class, profileId);
                 UserRole role = userRoleDao.getAssist(profileId);
@@ -101,7 +100,7 @@ public class OperationLogServiceImpl implements OperationLogService {
                 properties.put("roleName", roleName);
                 properties.put("isAsst", role != null);
                 properties.put("riseId", profile.getRiseId());
-
+                logger.info("trace:\nprofielId:{}\neventName:{}\nprops:{}", profileId, eventName, properties);
                 sa.track(profileId.toString(), true, eventName, properties);
 
                 // TODO 上线前删掉
