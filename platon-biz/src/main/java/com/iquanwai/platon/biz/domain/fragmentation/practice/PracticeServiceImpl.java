@@ -610,8 +610,12 @@ public class PracticeServiceImpl implements PracticeService {
                 prop.add("problemId", load.getProblemId());
                 prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                 if (riseClassMember != null) {
-                    prop.add("repliedClassname", riseClassMember.getClassName());
-                    prop.add("repliedGroupid", riseClassMember.getGroupId());
+                    if (riseClassMember.getClassName() != null) {
+                        prop.add("repliedClassname", riseClassMember.getClassName());
+                    }
+                    if (riseClassMember.getGroupId() != null) {
+                        prop.add("repliedGroupid", riseClassMember.getGroupId());
+                    }
                 }
                 return prop;
             });
