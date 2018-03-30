@@ -88,8 +88,12 @@ public class OperationLogServiceImpl implements OperationLogService {
                 }
 
                 if (riseClassMember != null) {
-                    properties.put("className", riseClassMember.getClassName());
-                    properties.put("groupId", riseClassMember.getGroupId());
+                    if (riseClassMember.getClassName() != null) {
+                        properties.put("className", riseClassMember.getClassName());
+                    }
+                    if (riseClassMember.getGroupId() != null) {
+                        properties.put("groupId", riseClassMember.getGroupId());
+                    }
                 }
                 if (validRiseMember != null) {
                     roleName = validRiseMember.getMemberTypeId();
