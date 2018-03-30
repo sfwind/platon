@@ -108,8 +108,8 @@ public class DailyServiceImpl implements DailyService {
             try {
                 String scene = PRESCENE + profile.getId();
                 String callback = "https://www.iquanwai.com/rise/static/home";
-                subscribePushDao.insert(profile.getOpenid(), callback, scene);
-                BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+scene);
+                Integer result = subscribePushDao.insert(profile.getOpenid(), callback, scene);
+                BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+result+scene);
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);

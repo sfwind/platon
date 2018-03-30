@@ -49,7 +49,6 @@ public class SubscribePushReceiver {
     @PostConstruct
     public void init() {
         rabbitMQFactory.initReceiver(QUEUE, TOPIC, (message) -> {
-            logger.info("进入Receiver");
             JSONObject msg = JSON.parseObject(message.getMessage().toString());
             String scene = msg.getString("scene");
             if (scene != null && scene.startsWith(PREFIX)) {
