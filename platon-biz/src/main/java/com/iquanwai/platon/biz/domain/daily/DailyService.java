@@ -11,4 +11,6 @@ public interface DailyService {
      */
     String drawDailyTalk(Integer profileId,String currentDate,Integer loginDay,Integer learnedKnowledge,Integer percent);
 
+    void sendMsg(String openid);
+
 }

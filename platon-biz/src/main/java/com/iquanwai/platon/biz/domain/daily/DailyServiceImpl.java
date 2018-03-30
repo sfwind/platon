@@ -1,7 +1,10 @@
 package com.iquanwai.platon.biz.domain.daily;
 
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.daily.DailyTalkDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
@@ -20,7 +23,9 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 
 @Service
 public class DailyServiceImpl implements DailyService {
@@ -30,6 +35,8 @@ public class DailyServiceImpl implements DailyService {
     private AccountService accountService;
     @Autowired
     private QRCodeService qrCodeService;
+    @Autowired
+    private CustomerMessageService customerMessageService;
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -61,6 +68,16 @@ public class DailyServiceImpl implements DailyService {
         DailyTalk dailyTalk = dailyTalkDao.loadByShowDate(currentDate);
         Profile profile = accountService.getProfile(profileId);
         return drawTalk(profile, dailyTalk, loginDay, learnedKnowledge, percent);
+    }
+
+    @Override
+    public void sendMsg(String openid) {
+
+        String templateMsg = "小小的感动，每日的点滴，你的进步就在圈外～赶快加入我们一起学习吧～\n" +
+                "\n" +
+                "点击加入商学院";
+
+        customerMessageService.sendCustomerMessage(openid, templateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
     /**

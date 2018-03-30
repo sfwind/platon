@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.customer.PrizeCardService;
+import com.iquanwai.platon.biz.domain.daily.DailyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
@@ -26,6 +27,8 @@ public class SubscribePushReceiver {
     public static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "subscribe_push_queue";
     private static final String PREFIX = "subscribe_push_";
+    private static final String DAILTTALK = "daily_talk_";
+
 
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
@@ -37,6 +40,8 @@ public class SubscribePushReceiver {
     private OperationLogService operationLogService;
     @Autowired
     private CustomerMessageService customerMessageService;
+    @Autowired
+    private DailyService dailyService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static Map<String, String> template = Maps.newHashMap();
@@ -55,7 +60,10 @@ public class SubscribePushReceiver {
                     logger.error("缺少push对象:{}", message);
                     return;
                 }
-                if (push.getScene().startsWith("prize_card_")) {
+                if(push.getScene().startsWith(DAILTTALK)){
+                    logger.info(push.toString());
+                    dailyService.sendMsg(push.toString());
+                } else  if (push.getScene().startsWith("prize_card_")) {
                     String[] sceneStrArr = push.getScene().split("_");
                     Profile profile = accountService.getProfile(openId);
                     if (sceneStrArr.length == 3) {
