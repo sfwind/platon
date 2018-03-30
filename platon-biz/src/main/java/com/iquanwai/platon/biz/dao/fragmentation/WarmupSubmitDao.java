@@ -39,10 +39,10 @@ public class WarmupSubmitDao extends PracticeDBUtil {
 
     public int getPlanSubmitCount(Integer planId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ScalarHandler<Integer> h = new ScalarHandler<>();
+        ScalarHandler<Long> h = new ScalarHandler<>();
         String sql = "select count(*) from WarmupSubmit where PlanId = ?";
         try {
-            return run.query(sql, h, planId);
+            return run.query(sql, h, planId).intValue();
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -51,10 +51,10 @@ public class WarmupSubmitDao extends PracticeDBUtil {
 
     public int getPlanRightCount(Integer planId) {
         QueryRunner run = new QueryRunner(getDataSource());
-        ScalarHandler<Integer> h = new ScalarHandler<>();
+        ScalarHandler<Long> h = new ScalarHandler<>();
         String sql = "select count(*) from WarmupSubmit where PlanId = ? and IsRight = 1";
         try {
-            return run.query(sql, h, planId);
+            return run.query(sql, h, planId).intValue();
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         }
