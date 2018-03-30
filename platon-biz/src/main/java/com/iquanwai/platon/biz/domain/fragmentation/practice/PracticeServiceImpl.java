@@ -516,10 +516,9 @@ public class PracticeServiceImpl implements PracticeService {
                     Problem problem = problemDao.load(Problem.class, submit.getProblemId());
                     prop.add("votedRolename", validRiseMember == null ? 0 : validRiseMember.getMemberTypeId());
                     prop.add("applicationId", submit.getApplicationId());
-//                    prop.add("votedProfileId", submitProfileId);
                     prop.add("votedRiseId", profile.getRiseId());
                     prop.add("problemId", problem.getId());
-                    prop.add("device", device);
+                    prop.add("deviceType", device);
                     return prop;
                 });
             } else {
