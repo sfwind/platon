@@ -20,7 +20,7 @@ public interface AccountService {
      */
     boolean initUserByUnionId(String unionId, Boolean realTime);
 
-    boolean checkIsSubscribe(String openId);
+    boolean checkIsSubscribe(String openId, String unionId);
 
     /**
      * 根据 profileId 获取用户角色信息
