@@ -19,6 +19,7 @@ import com.iquanwai.platon.biz.po.common.RiseUserLogin;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,7 +139,7 @@ public class CustomerServiceImpl implements CustomerService {
             data.put("keyword2", new TemplateMessage.Keyword("H5个人中心反馈问题需处理"));
             data.put("keyword3", new TemplateMessage.Keyword(
                     (DateUtils.parseDateTimeToString(new Date()))));
-            data.put("remark", new TemplateMessage.Keyword("\n"+feedback.getWords()));
+            data.put("remark", new TemplateMessage.Keyword("\n" + feedback.getWords()));
             templateMessage.setData(data);
             templateMessageService.sendMessage(templateMessage);
         }
@@ -147,8 +148,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public int loadContinuousLoginCount(Integer profileId) {
         List<RiseUserLogin> riseUserLogins = riseUserLoginDao.loadByProfileId(profileId);
+
         int dayCount = 1;
         Date compareDate = new Date();
+        if (DateTime.now().getHourOfDay() <= 6) {
+            compareDate = DateUtils.beforeDays(new Date(), 1);
+        }
+
         for (RiseUserLogin riseUserLogin : riseUserLogins) {
             if (DateUtils.interval(compareDate, riseUserLogin.getLoginDate()) <= 1) {
                 dayCount++;
