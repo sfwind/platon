@@ -502,20 +502,24 @@ public class PlanServiceImpl implements PlanService {
             );
         } else if (status == ImprovementPlan.COMPLETE) {
             // 打点
-            operationLogService.trace(plan.getProfileId(), "completeCourse",
-                    () -> {
-                        Problem problem = problemDao.load(Problem.class, plan.getProblemId());
-                        int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
-                        int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
-                        return OperationLogService
-                                .props()
-                                .add("problemId", plan.getProblemId())
-                                .add("totalWarmup", warmupSubmitCount)
-                                .add("rightWarmup", warmupRightCount)
-                                .add("useDays", DateUtils.interval(plan.getStartDate()));
-                    }
-            );
+            traceCompletePlan(plan);
         }
+    }
+
+    private void traceCompletePlan(ImprovementPlan plan) {
+        operationLogService.trace(plan.getProfileId(), "completeCourse",
+                () -> {
+                    Problem problem = problemDao.load(Problem.class, plan.getProblemId());
+                    int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
+                    int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
+                    return OperationLogService
+                            .props()
+                            .add("problemId", plan.getProblemId())
+                            .add("totalWarmup", warmupSubmitCount)
+                            .add("rightWarmup", warmupRightCount)
+                            .add("useDays", DateUtils.interval(plan.getStartDate()));
+                }
+        );
     }
 
     private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
@@ -646,6 +650,7 @@ public class PlanServiceImpl implements PlanService {
             // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
             improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
+            traceCompletePlan(improvementPlan);
         }
     }
 
