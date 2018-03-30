@@ -63,6 +63,8 @@ public class DailyController {
             Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
             RiseMember riseMember = accountService.getValidRiseMember(profileId);
             Integer percent = customerService.calSyncDefeatPercent(riseMember);
+
+
             String  result = dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent);
 
             if(result==null){

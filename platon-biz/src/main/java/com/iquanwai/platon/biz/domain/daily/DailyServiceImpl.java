@@ -122,13 +122,13 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 600, 1125, 756);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage, 90, 422, loginDay.toString(), font.deriveFont(90f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 90 + 60 * loginDay.toString().length(), 422, "天", font.deriveFont(30f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 90, 422, loginDay.toString(), font.deriveFont(80f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 90 + 50 * loginDay.toString().length(), 422, "天", font.deriveFont(30f), grey);
 
-                inputImage = ImageUtils.writeText(inputImage, 410, 422, learnKnowledge.toString(), font.deriveFont(90f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 410 + 60 * learnKnowledge.toString().length(), 422, "个", font.deriveFont(30f), grey);
-                inputImage = ImageUtils.writeText(inputImage, 790, 422, percent + "%", font.deriveFont(90f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 880 + 60 * percent.toString().length(), 422, "的同学", font.deriveFont(30f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 410, 422, learnKnowledge.toString(), font.deriveFont(80f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 410 + 50 * learnKnowledge.toString().length(), 422, "个", font.deriveFont(30f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 780, 422, percent + "%", font.deriveFont(80f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 860 + 50 * percent.toString().length(), 422, "的同学", font.deriveFont(30f), grey);
 
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1460,180,180);
 
