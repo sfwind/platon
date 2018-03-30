@@ -73,6 +73,7 @@ public class OperationLogServiceImpl implements OperationLogService {
             try {
                 Integer profileId = profileIdSupplier.get();
                 Prop prop = supplier.get();
+                logger.info("trace:\nprofielId:{}\neventName:{}\nprops:{}", profileId, eventName, prop);
                 Map<String, Object> properties = prop.build();
                 Assert.notNull(profileId, "用户id不能为null");
                 Profile profile = profileDao.load(Profile.class, profileId);
