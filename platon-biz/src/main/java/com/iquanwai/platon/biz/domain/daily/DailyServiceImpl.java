@@ -50,6 +50,7 @@ public class DailyServiceImpl implements DailyService {
     private static BufferedImage titleImg = null;
     private static BufferedImage authorImg = null;
     private static BufferedImage lineImg = null;
+    private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
     private static final Color grey = new Color(51, 51, 51);
     private static final Integer CONTENTSIZE = 24;
@@ -108,7 +109,7 @@ public class DailyServiceImpl implements DailyService {
                 String scene = PRESCENE + profile.getId();
                 String callback = "https://www.iquanwai.com/rise/static/home";
                 subscribePushDao.insert(profile.getOpenid(), callback, scene);
-                BufferedImage qrImg = qrCodeService.loadQrImage(scene);
+                BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+scene);
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
