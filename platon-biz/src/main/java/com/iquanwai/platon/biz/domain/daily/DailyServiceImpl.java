@@ -76,7 +76,7 @@ public class DailyServiceImpl implements DailyService {
     @Override
     public void sendMsg(String openid) {
 
-        String templateMsg = "小小的感动，每日的点滴，你的进步就在圈外～赶快加入我们一起学习吧～\n\n<a href='https://www.confucius.mobi/rise/static/home'>点击加入商学院</a>";
+        String templateMsg = "小小的感动，每日的点滴，你的进步就在圈外～赶快加入我们一起学习吧～\n\n<a href='"+ ConfigUtils.domainName()+"'>点击加入商学院</a>";
 
         customerMessageService.sendCustomerMessage(openid, templateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
@@ -104,7 +104,7 @@ public class DailyServiceImpl implements DailyService {
 
             try {
                 String scene = PRESCENE + profile.getId();
-                String callback = "https://www.iquanwai.com/rise/static/home";
+                String callback = ConfigUtils.domainName()+"/rise/static/home";
                 Integer result = subscribePushDao.insert(profile.getOpenid(), callback, scene);
                 BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+result+"_"+scene);
 
