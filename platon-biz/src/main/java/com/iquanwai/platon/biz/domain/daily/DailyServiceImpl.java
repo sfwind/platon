@@ -76,7 +76,7 @@ public class DailyServiceImpl implements DailyService {
     @Override
     public void sendMsg(String openid) {
 
-        String templateMsg = "小小的感动，每日的点滴，你的进步就在圈外～赶快加入我们一起学习吧～\n\n<a href='"+ ConfigUtils.domainName()+"'>点击加入商学院</a>";
+        String templateMsg = "小小的感动，每日的点滴，你的进步就在圈外～赶快加入我们一起学习吧～\n\n<a href='"+ConfigUtils.domainName()+"/rise/static/home'>点击加入商学院</a>";
 
         customerMessageService.sendCustomerMessage(openid, templateMsg, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
