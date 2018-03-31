@@ -64,6 +64,9 @@ public class DailyController {
             RiseMember riseMember = accountService.getValidRiseMember(profileId);
             Integer percent = customerService.calSyncDefeatPercent(riseMember);
 
+            if(riseMember==null){
+                return WebUtils.error("不需要展示圈语");
+            }
 
             String  result = dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent);
 
