@@ -59,7 +59,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                     prop.add("series", practicePlan.getSeries());
                     prop.add("sequence", practicePlan.getSequence());
                     prop.add("problemId", plan.getProblemId());
-                    prop.add("applicationId", practicePlan.getPracticeId());
+                    prop.add("applicationId", Integer.valueOf(practicePlan.getPracticeId()));
                     prop.add("isUpgraded", practicePlan.getType().equals(PracticePlan.APPLICATION_UPGRADED));
                     return prop;
                 });
