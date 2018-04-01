@@ -321,11 +321,10 @@ public class PlanServiceImpl implements PlanService {
                 }
             }
 
-            BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(courseSchedule.getYear(), courseSchedule.getMonth());
-            Date openDate = businessSchoolConfig.getOpenDate();
-            int year = DateUtils.getYear(openDate);
-            int month = DateUtils.getMonth(openDate);
-            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth() && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+            if(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR){
+                BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(
+                        courseSchedule.getYear(), courseSchedule.getMonth());
+                Date openDate = businessSchoolConfig.getOpenDate();
                 if (new Date().before(openDate)) {
                     // 未到开营日的主修课不能提前选择
                     throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于" + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
