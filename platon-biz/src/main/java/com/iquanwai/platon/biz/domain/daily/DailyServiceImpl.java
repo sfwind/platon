@@ -104,9 +104,11 @@ public class DailyServiceImpl implements DailyService {
 
             try {
                 String scene = PRESCENE + profile.getId();
-                String callback = ConfigUtils.domainName()+"/rise/static/home";
-                Integer result = subscribePushDao.insert(profile.getOpenid(), callback, scene);
-                BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+result+"_"+scene);
+                //String callback = ConfigUtils.domainName()+"/rise/static/home";
+                //Integer result = subscribePushDao.insert(profile.getOpenid(), callback, scene);
+                //BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+result+"_"+scene);
+
+                BufferedImage qrImg = qrCodeService.loadQrImage(scene);
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
                 Font simsunFont = Font.createFont(Font.TRUETYPE_FONT,simSunIn);
