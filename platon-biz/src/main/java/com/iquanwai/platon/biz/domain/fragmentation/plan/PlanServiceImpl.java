@@ -20,14 +20,12 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
-import com.iquanwai.platon.biz.util.page.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -307,27 +305,26 @@ public class PlanServiceImpl implements PlanService {
         }
 
         Integer memberTypeId = riseMember.getMemberTypeId();
-        //商学院用户
+        // 商学院用户
         if (memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
+            // 拿到的主修课计划
             CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
             if (courseSchedule == null) {
                 throw new CreateCourseException("请先去学习计划中勾选该课程");
             }
             if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
                 //当月主修课可以强开
-                if (!(courseSchedule.getMonth().equals(ConfigUtils.getLearningMonth())
-                        && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)) {
+                if (!(courseSchedule.getMonth().equals(ConfigUtils.getLearningMonth()) && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR)) {
                     // 会员已经有三门再学
                     throw new CreateCourseException("为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
                             + "门课程。先完成进行中的一门，再选新课哦");
                 }
             }
 
-            BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
-            Date openDate = businessSchoolConfig.getOpenDate();
-            int year = DateUtils.getYear(openDate);
-            int month = DateUtils.getMonth(openDate);
-            if (year == courseSchedule.getYear() && month == courseSchedule.getMonth() && courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR) {
+            if(courseSchedule.getType() == CourseScheduleDefault.Type.MAJOR){
+                BusinessSchoolConfig businessSchoolConfig = businessSchoolConfigDao.loadByYearAndMonth(
+                        courseSchedule.getYear(), courseSchedule.getMonth());
+                Date openDate = businessSchoolConfig.getOpenDate();
                 if (new Date().before(openDate)) {
                     // 未到开营日的主修课不能提前选择
                     throw new CreateCourseException(courseSchedule.getMonth() + "月主修课将于" + DateUtils.getDay(openDate) + "号开放选课，请等待当天开课仪式通知吧!");
