@@ -98,7 +98,7 @@ public class DailyServiceImpl implements DailyService {
             String nickName = profile.getNickname();
             String headImg = profile.getHeadimgurl();
             InputStream in = ImageUtils.class.getResourceAsStream("/fonts/pfmedium.ttf");
-           // InputStream simSunIn = ImageUtils.class.getResourceAsStream("/fonts/simsun.tff");
+            InputStream simSunIn = ImageUtils.class.getResourceAsStream("/fonts/simsun.ttf");
             // 绘图准备
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -109,6 +109,7 @@ public class DailyServiceImpl implements DailyService {
                 BufferedImage qrImg = qrCodeService.loadQrImage(SUBSCRIBE_PUSH_PREFIX+result+"_"+scene);
 
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+                Font simsunFont = Font.createFont(Font.TRUETYPE_FONT,simSunIn);
                 BufferedImage inputImage = ImageUtils.copy(talkImg);
                 //绘制头像
                 if (headImg != null) {
@@ -126,21 +127,21 @@ public class DailyServiceImpl implements DailyService {
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
                     contentImg = ImageUtils.overlapFixImage(contentImg, lineImg, 126, 68, 500, 5);
-                    contentImg = ImageUtils.writeTextCenter(contentImg, 84, "每日圈语", font.deriveFont(30f), Color.WHITE);
+                    contentImg = ImageUtils.writeTextCenter(contentImg, 84, "每日圈语", simsunFont.deriveFont(30f), Color.WHITE);
 
                     String[] strs = content.split("\\|");
 
                     if (content.length() <= CONTENTSIZE) {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], font.deriveFont(Font.BOLD,56f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 210 + i * 100, strs[i], simsunFont.deriveFont(Font.BOLD,56f), Color.WHITE);
                         }
                     } else {
                         for (int i = 0; i < strs.length; i++) {
-                            contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i], font.deriveFont(Font.BOLD,40f), Color.WHITE);
+                            contentImg = ImageUtils.writeText(contentImg, 50, 190 + i * 60, strs[i], simsunFont.deriveFont(Font.BOLD,40f), Color.WHITE);
                         }
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
-                    contentImg = ImageUtils.writeText(contentImg, 540, 390, author, font.deriveFont(30f), Color.WHITE);
+                    contentImg = ImageUtils.writeText(contentImg, 540, 390, author, simsunFont.deriveFont(30f), Color.WHITE);
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 600, 1125, 756);
                 }
 
