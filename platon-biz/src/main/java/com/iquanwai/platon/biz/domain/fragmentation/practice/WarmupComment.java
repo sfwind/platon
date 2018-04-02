@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -29,4 +30,11 @@ public class WarmupComment {
     private Integer priorityComment; //排序优先级,1-包含优质回答讨论或就是优质回答,0-普通
 
     private List<WarmupPracticeDiscuss> warmupPracticeDiscussList = Lists.newArrayList(); //基于这条评论的讨论
+
+
+    @ApiModelProperty("选择题主要评论")
+    private WarmupPracticeDiscuss primaryDiscuss;
+    @ApiModelProperty("选择题次要评论")
+    private WarmupPracticeDiscuss secondaryDiscuss;
+
 }

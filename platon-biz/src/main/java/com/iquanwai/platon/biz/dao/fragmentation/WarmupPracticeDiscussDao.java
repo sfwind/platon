@@ -22,7 +22,7 @@ import java.util.List;
 public class WarmupPracticeDiscussDao extends PracticeDBUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    public int insert(WarmupPracticeDiscuss discuss){
+    public int insert(WarmupPracticeDiscuss discuss) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "insert into WarmupPracticeDiscuss(WarmupPracticeId, Profileid, RepliedId, Comment, " +
                 "Priority, Del, RepliedProfileid, RepliedComment, OriginDiscussId) " +
@@ -34,7 +34,7 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
                     discuss.getRepliedProfileId(), discuss.getRepliedComment(), discuss.getOriginDiscussId());
 
             return result.intValue();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
 
@@ -82,6 +82,44 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    /**
+     * 获取官方加精之后的选择题评论列表
+     * @param warmupPraticeId 评论对应的选择题 id
+     * @param page 分页信息
+     */
+    public List<WarmupPracticeDiscuss> loadPriorityWarmupDiscuss(Integer warmupPraticeId, Page page) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
+        String sql = "SELECT * FROM WarmupPracticeDiscuss WHERE WarmupPracticeId = ? AND Del = 0 ORDER BY Priority DESC, " +
+                "AddTime DESC LIMIT " + page.getOffset() + ", " + page.getLimit();
+        try {
+            return runner.query(sql, h, warmupPraticeId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 根据选择题评论的 id 集合来获取评论信息
+     * @param ids 评论 id 集合
+     */
+    public List<WarmupPracticeDiscuss> loadWarmupDiscussById(List<Integer> ids) {
+        if (ids.size() == 0) {
+            return Lists.newArrayList();
+        }
+
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
+        String sql = "SELECT * FROM WarmupPracticeDiscuss WHERE Id in (" + produceQuestionMark(ids.size()) + ") AND Del = 0";
+        try {
+            return runner.query(sql, h, ids.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 
 }

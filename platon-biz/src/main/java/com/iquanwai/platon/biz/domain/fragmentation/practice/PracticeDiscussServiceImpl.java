@@ -136,11 +136,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             discuss.setProfileId(null);
             discuss.setRepliedProfileId(null);
             //讨论的第一条
-            if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() == discuss.getId()) {
+            if (discuss.getOriginDiscussId() != null && discuss.getOriginDiscussId() == discuss.getId()) {
                 ModelMapper modelMapper = new ModelMapper();
                 WarmupComment warmupComment = modelMapper.map(discuss, WarmupComment.class);
                 // 设置isPriority字段
-                if (warmupComment.getPriority()!= null && warmupComment.getPriority() == 1) {
+                if (warmupComment.getPriority() != null && warmupComment.getPriority() == 1) {
                     warmupComment.setPriorityComment(1);
                 } else {
                     warmupComment.setPriorityComment(0);
@@ -151,7 +151,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
         discussList.forEach(discuss -> {
             //不是讨论的第一条
-            if (discuss.getOriginDiscussId()!=null && discuss.getOriginDiscussId() != discuss.getId()) {
+            if (discuss.getOriginDiscussId() != null && discuss.getOriginDiscussId() != discuss.getId()) {
                 warmupComments.forEach(warmupComment -> {
                     if (warmupComment.getId() == discuss.getOriginDiscussId()) {
                         warmupComment.getWarmupPracticeDiscussList().add(discuss);
@@ -245,6 +245,34 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         return discuss;
     }
 
+    public Map<Integer, List<WarmupComment>> loadWarmUpDiscuss(Integer profileId, List<Integer> warmUpPracticeIds, Page page) {
+        Map<Integer, List<WarmupComment>> discussListMap = Maps.newHashMap();
+
+        Map<Integer, FutureTask<List<WarmupComment>>> futureTaskMap = Maps.newHashMap();
+        warmUpPracticeIds.forEach(practiceId -> {
+            FutureTask futureTask = new FutureTask(() -> {
+                // 获取数据
+                return 1;
+            });
+            new Thread(futureTask).start();
+            futureTaskMap.put(practiceId, futureTask);
+        });
+
+        for (Integer key : futureTaskMap.keySet()) {
+            try {
+                List<WarmupComment> warmUpComments = futureTaskMap.get(key).get();
+                if (warmUpComments != null) {
+                    discussListMap.put(key, warmUpComments);
+                }
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
+        }
+
+        return discussListMap;
+    }
+
+
     //填充评论的其他字段
     private void fulfilDiscuss(List<? extends AbstractComment> discuss) {
         List<Integer> profileIds = Lists.newArrayList();
@@ -296,6 +324,5 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
         warmupPracticeDiscuss.setDiscussTime(DateUtils.parseDateToString(warmupPracticeDiscuss.getAddTime()));
     }
-
 
 }
