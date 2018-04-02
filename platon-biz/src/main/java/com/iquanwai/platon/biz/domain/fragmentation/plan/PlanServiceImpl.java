@@ -797,16 +797,18 @@ public class PlanServiceImpl implements PlanService {
 
 
         plans.stream().filter(item -> unlockPlanIds.contains(item.getId())).forEach(item -> {
-            DateTime otherCloseDate = new DateTime().plusDays(30);
-            Date closeDate;
-            if (otherCloseDate.isAfter(item.getCloseDate().getTime())) {
-                closeDate = otherCloseDate.toDate();
-            } else {
-                closeDate = item.getCloseDate();
-            }
-
+//            DateTime otherCloseDate = new DateTime().plusDays(30);
+//            Date closeDate;
+//            if (otherCloseDate.isAfter(item.getCloseDate().getTime())) {
+//                closeDate = otherCloseDate.toDate();
+//            } else {
+//                closeDate = item.getCloseDate();
+//            }
             // 解锁
-            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
+            practicePlanDao.revertNeverUnlockPracticePlan(item.getId());
+            practicePlanDao.batchUnlockByPlanId(item.getId());
+
+//            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
         });
     }
 
