@@ -1,26 +1,13 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -216,6 +203,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     CourseSchedule courseSchedule = new CourseSchedule();
                     courseSchedule.setProblemId(runningProblemId);
                     courseSchedule.setMonth(currentMonth);
+                    courseSchedule.setYear(currentYear);
                     runningSchedules.add(courseSchedule);
                 }
             });
@@ -228,6 +216,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     CourseSchedule courseSchedule = new CourseSchedule();
                     courseSchedule.setProblemId(completeProblemId);
                     courseSchedule.setMonth(currentMonth);
+                    courseSchedule.setYear(currentYear);
                     completeSchedules.add(courseSchedule);
                 }
             });
@@ -236,12 +225,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 CourseSchedule courseSchedule = new CourseSchedule();
                 courseSchedule.setProblemId(runningProblemId);
                 courseSchedule.setMonth(currentMonth);
+                courseSchedule.setYear(currentYear);
                 runningSchedules.add(courseSchedule);
             });
             completeProblemIds.forEach(completeProblemId -> {
                 CourseSchedule courseSchedule = new CourseSchedule();
                 courseSchedule.setProblemId(completeProblemId);
                 courseSchedule.setMonth(currentMonth);
+                courseSchedule.setYear(currentYear);
                 completeSchedules.add(courseSchedule);
             });
         }
@@ -810,13 +801,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             plan.setName(problem.getProblem());
             plan.setAbbreviation(problem.getAbbreviation());
             plan.setIsLearning(improvementPlanMap.get(problemId) != null);
-
-            if (schedule.getYear() != null) {
-                plan.setYear(schedule.getYear());
-            }
-            if (schedule.getMonth() != null) {
-                plan.setMonth(schedule.getMonth());
-            }
+            plan.setYear(schedule.getYear());
+            plan.setMonth(schedule.getMonth());
 
             if (schedule.getType() != null) {
                 plan.setType(schedule.getType());
