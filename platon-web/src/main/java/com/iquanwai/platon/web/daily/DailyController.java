@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -41,6 +42,34 @@ public class DailyController {
 
     private static final Integer MINHOUR = 6;
     private static final String DAILYTALK = "daily_talk";
+
+
+    @RequestMapping(value = "/talk/check",method = RequestMethod.GET)
+    @ApiOperation("是否显示每日圈语")
+    public ResponseEntity<Map<String,Object>> checkDailyTalk(UnionUser unionUser){
+        Integer profileId = unionUser.getId();
+        Calendar c = Calendar.getInstance();
+        Integer hour = c.get(Calendar.HOUR_OF_DAY);
+        //6点过后才会展示
+        if(hour<MINHOUR){
+            return WebUtils.result(false);
+        }
+        String key = DAILYTALK + "_"+profileId;
+        String value = redisUtil.get(key);
+        String currentDate = DateUtils.parseDateToString(new Date());
+        //            if (value != null && value.equals(currentDate)) {
+//                return WebUtils.error("当天已经显示过");
+//            }
+
+        RiseMember riseMember = accountService.getValidRiseMember(profileId);
+        //非会员不展示
+        if(riseMember==null){
+            return WebUtils.result(false);
+        }
+
+        return WebUtils.result(true);
+
+    }
 
 
     @RequestMapping(value = "/talk", method = RequestMethod.GET)
