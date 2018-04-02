@@ -204,9 +204,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (courseSchedules.size() > 0) {
             runningSchedules.addAll(courseSchedules.stream().filter(schedule
                     -> (schedule.getMonth() == currentMonth && schedule.getSelected())
-                    || (
-                    ((schedule.getYear() == currentYear && schedule.getMonth() <= currentMonth)
-                            || schedule.getYear() < currentYear) && schedule.getType() == 1 && schedule.getSelected()))
+                    || (((schedule.getYear() == currentYear && schedule.getMonth() <= currentMonth) || schedule.getYear() < currentYear) && schedule.getType() == 1 && schedule.getSelected()))
                     .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
                     .collect(Collectors.toList()));
 
@@ -221,6 +219,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     runningSchedules.add(courseSchedule);
                 }
             });
+
             completeProblemIds.forEach(completeProblemId -> {
                 CourseSchedule tempSchedule = courseScheduleMap.get(completeProblemId);
                 if (tempSchedule != null) {
@@ -551,7 +550,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     /**
      * 查看当前用户正在学习的课程 id
-     *
      * @param profileId 用户 id
      * @return 正在学习的课程 id
      */
@@ -813,6 +811,10 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             plan.setAbbreviation(problem.getAbbreviation());
             plan.setIsLearning(improvementPlanMap.get(problemId) != null);
 
+            if (schedule.getMonth() != null) {
+                plan.setMonth(schedule.getMonth());
+            }
+
             if (schedule.getType() != null) {
                 plan.setType(schedule.getType());
                 plan.setDescription(schedule.getType() == CourseSchedule.Type.MAJOR ? schedule.getMonth() + "月主修" : "辅修");
@@ -847,15 +849,21 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 plan.setRemainDaysCount(DateUtils.interval(new Date(), improvementPlan.getCloseDate()));
 
             }
-            int priorityPart1 = schedule.getType() == null ? 0 : schedule.getType() == CourseSchedule.Type.MAJOR ? 2 : 1;
-            int priorityPart2 = improvementPlanMap.get(schedule.getProblemId()) != null ? 2 : 0;
-            plan.setPriority(priorityPart1 + priorityPart2);
             runningPlans.add(plan);
         }
-        runningPlans = runningPlans.stream()
-                .sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getPriority).reversed())
-                .collect(Collectors.toList());
-        return runningPlans;
+
+        List<PersonalSchedulePlan.SchedulePlan> runningMajor = runningPlans.stream().filter(plan -> plan.getIsLearning() && plan.getType() == CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> runningMinor = runningPlans.stream().filter(plan -> plan.getIsLearning() && plan.getType() != CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> waitingMajor = runningPlans.stream().filter(plan -> !plan.getIsLearning() && plan.getType() == CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> waitingMinor = runningPlans.stream().filter(plan -> !plan.getIsLearning() && plan.getType() != CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+
+        List<PersonalSchedulePlan.SchedulePlan> targetPlans = Lists.newArrayList();
+        targetPlans.addAll(runningMajor.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getMonth).reversed()).collect(Collectors.toList()));
+        targetPlans.addAll(runningMinor);
+        targetPlans.addAll(waitingMajor.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getMonth).reversed()).collect(Collectors.toList()));
+        targetPlans.addAll(waitingMinor);
+
+        return targetPlans;
     }
 
     public List<PersonalSchedulePlan.SchedulePlan> buildCompletePlans(Map<Integer, ImprovementPlan> improvementPlanMap,

@@ -19,6 +19,7 @@ public class PersonalSchedulePlan {
         private int planId;
         private String name; // 课程名字
         private String abbreviation; // 缩略
+        private Integer month; // 所在月份
         private String description; // 描述信息，如9月主修
         private int type; // 课程类型
         private Boolean isLearning; // 是否正在学习
@@ -27,6 +28,7 @@ public class PersonalSchedulePlan {
         private int remainDaysCount; // 剩余时间
         private String completeTime; // 课程完成时间
 
+        @Deprecated
         private int priority; // 排序
     }
 
