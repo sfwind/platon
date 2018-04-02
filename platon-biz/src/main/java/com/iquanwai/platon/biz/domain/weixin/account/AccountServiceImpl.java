@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
@@ -76,6 +77,8 @@ public class AccountServiceImpl implements AccountService {
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private OperationLogService operationLogService;
 
     private List<Region> provinceList;
     private List<Region> cityList;
@@ -374,33 +377,43 @@ public class AccountServiceImpl implements AccountService {
 
         if (profile.getRealName() != null) {
             oldProfile.setRealName(profile.getRealName());
+            operationLogService.profileSet(oldProfile.getId(), "realname", profile.getRealName());
         }
         if (profile.getAddress() != null) {
             oldProfile.setAddress(profile.getAddress());
+            operationLogService.profileSet(oldProfile.getId(), "address", profile.getAddress());
         }
         if (profile.getReceiver() != null) {
             oldProfile.setReceiver(profile.getReceiver());
+            operationLogService.profileSet(oldProfile.getId(), "receiver", profile.getReceiver());
         }
         if (profile.getMarried() != null) {
             oldProfile.setMarried(profile.getMarried());
+            operationLogService.profileSet(oldProfile.getId(), "married", profile.getMarried());
         }
         if (profile.getFunction() != null) {
             oldProfile.setFunction(profile.getFunction());
+            operationLogService.profileSet(oldProfile.getId(), "married", profile.getMarried());
         }
         if (profile.getWorkingYear() != null) {
             oldProfile.setWorkingYear(profile.getWorkingYear());
+            operationLogService.profileSet(oldProfile.getId(), "workingYear", profile.getWorkingYear());
         }
         if (profile.getIndustry() != null) {
             oldProfile.setIndustry(profile.getIndustry());
+            operationLogService.profileSet(oldProfile.getId(), "industry", profile.getIndustry());
         }
         if (profile.getProvince() != null) {
             oldProfile.setProvince(profile.getProvince());
+            operationLogService.profileSet(oldProfile.getId(), "province", profile.getProvince());
         }
         if (profile.getCity() != null) {
             oldProfile.setCity(profile.getCity());
+            operationLogService.profileSet(oldProfile.getId(), "city", profile.getCity());
         }
         if (profile.getNickname() != null) {
             oldProfile.setNickname(profile.getNickname());
+            operationLogService.profileSet(oldProfile.getId(), "nickname", profile.getNickname());
         }
         Boolean result = profileDao.submitNewProfile(oldProfile);
         if (result && oldProfile.getIsFull() == 0) {
