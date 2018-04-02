@@ -806,6 +806,7 @@ public class PlanServiceImpl implements PlanService {
 //            }
             // 解锁
             practicePlanDao.revertNeverUnlockPracticePlan(item.getId());
+            practicePlanDao.batchUnlockByPlanId(item.getId());
 
 //            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
         });
