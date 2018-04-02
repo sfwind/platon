@@ -811,6 +811,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             plan.setAbbreviation(problem.getAbbreviation());
             plan.setIsLearning(improvementPlanMap.get(problemId) != null);
 
+            if (schedule.getYear() != null) {
+                plan.setYear(schedule.getYear());
+            }
             if (schedule.getMonth() != null) {
                 plan.setMonth(schedule.getMonth());
             }
@@ -858,9 +861,13 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         List<PersonalSchedulePlan.SchedulePlan> waitingMinor = runningPlans.stream().filter(plan -> !plan.getIsLearning() && plan.getType() != CourseSchedule.Type.MAJOR).collect(Collectors.toList());
 
         List<PersonalSchedulePlan.SchedulePlan> targetPlans = Lists.newArrayList();
-        targetPlans.addAll(runningMajor.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getMonth).reversed()).collect(Collectors.toList()));
+        targetPlans.addAll(runningMajor.stream().sorted((plan1, plan2) ->
+                -(plan1.getYear() * 100 + plan1.getMonth() - plan2.getYear() * 100 - plan2.getMonth())
+        ).collect(Collectors.toList()));
         targetPlans.addAll(runningMinor);
-        targetPlans.addAll(waitingMajor.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getMonth).reversed()).collect(Collectors.toList()));
+        targetPlans.addAll(waitingMajor.stream().sorted((plan1, plan2) ->
+                -(plan1.getYear() * 100 + plan1.getMonth() - plan2.getYear() * 100 - plan2.getMonth())
+        ).collect(Collectors.toList()));
         targetPlans.addAll(waitingMinor);
 
         return targetPlans;
