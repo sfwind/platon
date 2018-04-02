@@ -56,12 +56,8 @@ public class ProblemController {
         Assert.notNull(unionUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
-        //TODO:专业版可以学习problemId = 5, 11, 13
+        //TODO:专业版可以学习problemId = 11, 13
         List<Integer> problemIds = problems.stream().map(Problem::getId).collect(Collectors.toList());
-        // 逻辑谬误
-        if(!problemIds.contains(5)){
-            problems.add(problemService.getProblem(5));
-        }
         // 行为分析
         if(!problemIds.contains(11)){
             problems.add(problemService.getProblem(11));

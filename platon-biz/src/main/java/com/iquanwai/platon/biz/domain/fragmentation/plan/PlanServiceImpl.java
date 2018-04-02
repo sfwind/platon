@@ -373,8 +373,8 @@ public class PlanServiceImpl implements PlanService {
         if (!problem.getPublish()) {
             //TODO:专业版都过期后逻辑删除
             if(riseMember.getMemberTypeId() == RiseMember.ANNUAL || riseMember.getMemberTypeId() == RiseMember.HALF){
-                if(problem.getId() == 5 || problem.getId() == 11 || problem.getId() == 13){
-                    //专业版可以学习problemId = 5, 11, 13
+                if(problem.getId() == 11 || problem.getId() == 13){
+                    //专业版可以学习problemId = 11, 13
                 }else{
                     throw new CreateCourseException("该课程还在开发中，敬请期待");
                 }
