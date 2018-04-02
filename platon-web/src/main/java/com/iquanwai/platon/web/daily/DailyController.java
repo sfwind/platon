@@ -93,6 +93,7 @@ public class DailyController {
             RiseMember riseMember = accountService.getValidRiseMember(profileId);
             Integer percent = customerService.calSyncDefeatPercent(riseMember);
 
+
             if(riseMember==null){
                 return WebUtils.error("非会员类型");
             }

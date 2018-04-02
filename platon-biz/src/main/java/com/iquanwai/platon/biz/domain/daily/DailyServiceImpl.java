@@ -42,7 +42,7 @@ public class DailyServiceImpl implements DailyService {
     private SubscribePushDao subscribePushDao;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/backend_final.jpg";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_backend_0402.jpg";
     private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/source/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_line.png";
@@ -119,11 +119,11 @@ public class DailyServiceImpl implements DailyService {
                         BufferedImage headBuffer = ImageUtils.copy(headImgBuffer);
                         //圆形
                         headBuffer = ImageUtils.convertCircular(headBuffer);
-                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 80, 82, 100, 100);
+                        inputImage = ImageUtils.overlapFixImage(inputImage, headBuffer, 70, 69, 120, 120);
                     }
                 }
-                inputImage = ImageUtils.writeText(inputImage, 200, 124, nickName, font.deriveFont(50f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 200, 182, welcome, font.deriveFont(34f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 235, 124, nickName, font.deriveFont(51f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 235, 184, welcome, font.deriveFont(33f), grey);
 
                 if (url != null) {
                     BufferedImage contentImg = ImageUtils.copy(ImageUtils.getBufferedImageByUrl(url));
@@ -146,13 +146,13 @@ public class DailyServiceImpl implements DailyService {
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 600, 1125, 756);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage, 90, 422, loginDay.toString(), font.deriveFont(80f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 90 + 50 * loginDay.toString().length(), 422, "天", font.deriveFont(30f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 70, 442, loginDay.toString(), font.deriveFont(102f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 70 + 60 * loginDay.toString().length(), 442, "天", font.deriveFont(33f), grey);
 
-                inputImage = ImageUtils.writeText(inputImage, 390, 422, learnKnowledge.toString(), font.deriveFont(80f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 390 + 50 * learnKnowledge.toString().length(), 422, "个", font.deriveFont(30f), grey);
-                inputImage = ImageUtils.writeText(inputImage, 760, 422, percent + "%", font.deriveFont(80f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 840 + 50 * percent.toString().length(), 422, "的同学", font.deriveFont(30f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 370, 442, learnKnowledge.toString(), font.deriveFont(102f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 370 + 60 * learnKnowledge.toString().length(), 442, "个", font.deriveFont(33f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 745, 442, percent + "%", font.deriveFont(102f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 845 + 60 * percent.toString().length(), 442, "的同学", font.deriveFont(33f), grey);
 
                 inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1460,220,220);
 
