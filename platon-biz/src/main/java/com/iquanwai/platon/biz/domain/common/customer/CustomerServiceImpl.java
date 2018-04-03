@@ -287,7 +287,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         Long result = profiles.stream().filter(profile1 -> profile1.getPoint()==null || profile1.getPoint()<=point).count();
-        logger.info("超过人数为："+result,"总人数为："+profiles.size());
+        logger.info("超过人数为："+result+ ",总人数为："+profiles.size());
         Integer percent = result.intValue()*100/profiles.size();
         logger.info("计算出的比例为："+percent+"%");
         return percent;
