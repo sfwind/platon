@@ -407,5 +407,10 @@ public class ConfigUtils {
         return getValue("landing.page.banner");
     }
 
+    public static String getSensorsProject() {
+        return getValue("sensors.project");
+    }
+
+
 }
 

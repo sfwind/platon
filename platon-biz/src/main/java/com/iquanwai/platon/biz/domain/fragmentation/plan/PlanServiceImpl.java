@@ -4,17 +4,44 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.BusinessSchoolConfigDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.BusinessSchoolConfig;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.EssenceCard;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -81,6 +108,12 @@ public class PlanServiceImpl implements PlanService {
     private QuanwaiEmployeeDao quanwaiEmployeeDao;
     @Autowired
     private BusinessSchoolConfigDao businessSchoolConfigDao;
+    @Autowired
+    private OperationLogService operationLogService;
+    @Autowired
+    private ProblemDao problemDao;
+    @Autowired
+    private WarmupSubmitDao warmupSubmitDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -454,7 +487,40 @@ public class PlanServiceImpl implements PlanService {
             // 设置关闭时间
             improvementPlanDao.updateCloseTime(planId);
             sendCloseMsg(plan, percent);
+            operationLogService.trace(plan.getProfileId(), "closeCourse",
+                    () -> {
+                        Problem problem = problemDao.load(Problem.class, plan.getProblemId());
+                        int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
+                        int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
+                        return OperationLogService
+                                .props()
+                                .add("problemId", plan.getProblemId())
+                                .add("totalWarmup", warmupSubmitCount)
+                                .add("rightWarmup", warmupRightCount)
+                                .add("useDays", DateUtils.interval(plan.getStartDate()))
+                                .add("manualClose", true);
+                    }
+            );
+        } else if (status == ImprovementPlan.COMPLETE) {
+            // 打点
+            traceCompletePlan(plan);
         }
+    }
+
+    private void traceCompletePlan(ImprovementPlan plan) {
+        operationLogService.trace(plan.getProfileId(), "completeCourse",
+                () -> {
+                    Problem problem = problemDao.load(Problem.class, plan.getProblemId());
+                    int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
+                    int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
+                    return OperationLogService
+                            .props()
+                            .add("problemId", plan.getProblemId())
+                            .add("totalWarmup", warmupSubmitCount)
+                            .add("rightWarmup", warmupRightCount)
+                            .add("useDays", DateUtils.interval(plan.getStartDate()));
+                }
+        );
     }
 
     private void sendCloseMsg(ImprovementPlan plan, Integer percent) {
@@ -585,6 +651,7 @@ public class PlanServiceImpl implements PlanService {
             // 过期了不让改
             improvementPlanDao.updateCompleteTime(planId);
             improvementPlanDao.updateStatus(planId, ImprovementPlan.COMPLETE);
+            traceCompletePlan(improvementPlan);
         }
     }
 
