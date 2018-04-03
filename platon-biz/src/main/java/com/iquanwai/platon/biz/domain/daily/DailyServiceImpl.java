@@ -50,7 +50,7 @@ public class DailyServiceImpl implements DailyService {
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
     private static final Color grey = new Color(51, 51, 51);
-    private static final Integer CONTENTSIZE = 22;
+    private static final Integer CONTENTSIZE = 23;
     private static final String PRESCENE = "daily_talk_";
     private final static String FTP_TALK_STORE = "/data/static/images/dailytalk/";
     private final static String PREFIX = "/images/dailytalk/";
