@@ -103,8 +103,8 @@ public class OperationLogServiceImpl implements OperationLogService {
                 logger.info("trace:\nprofielId:{}\neventName:{}\nprops:{}", profileId, eventName, properties);
                 sa.track(profile.getRiseId(), true, eventName, properties);
 
-                // TODO 上线前删掉
-                sa.flush();
+                // 上线前删掉
+//                sa.flush();
             } catch (InvalidArgumentException e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
