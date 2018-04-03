@@ -58,7 +58,7 @@ public class DailyController {
         String value = redisUtil.get(key);
         String currentDate = DateUtils.parseDateToString(new Date());
         if (value != null && value.equals(currentDate)) {
-            return WebUtils.error("当天已经显示过");
+            return WebUtils.result(false);
         }
 
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
