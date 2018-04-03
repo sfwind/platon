@@ -229,6 +229,19 @@ public class ImageUtils {
         return big;
     }
 
+    public static BufferedImage overlapFixImage(BufferedImage big,BufferedImage small,int x,int y,int width,int height){
+        if (big == null || small == null) {
+            logger.error("input image is null");
+            return big;
+        }
+        Graphics2D g = big.createGraphics();
+        g.drawImage(small, x, y,width,height,null);
+        g.dispose();
+        return big;
+    }
+
+
+
     public static void writeToFile(BufferedImage image, String format, File file) {
         try {
             ImageIO.write(image, format, file);
@@ -244,4 +257,13 @@ public class ImageUtils {
             logger.error("write to outputStream error", e);
         }
     }
+
+
+
+
+
+
+
+
+
 }

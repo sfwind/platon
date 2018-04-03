@@ -271,4 +271,27 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return Lists.newArrayList();
     }
+
+    /**
+     * 获得用户所有的学习的课程（包括已经删除的）
+     * @param profileId
+     * @return
+     */
+    public List<ImprovementPlan> loadUserAllPlans(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ?";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
+
+        try {
+            return runner.query(sql,h,profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return Lists.newArrayList();
+    }
+
+
+
+
+
 }

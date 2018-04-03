@@ -3,14 +3,14 @@ package com.iquanwai.platon.biz.domain.common.customer;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.common.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.Announce;
-import com.iquanwai.platon.biz.po.AnnualSummary;
-import com.iquanwai.platon.biz.po.PrizeCard;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
@@ -60,6 +60,13 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerStatusDao customerStatusDao;
     @Autowired
     private BusinessSchoolApplicationDao businessSchoolApplicationDao;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private PracticePlanDao practicePlanDao;
+    @Autowired
+    private AccountService accountService;
+
 
     // 申请通过 status id
     private static final Integer PASS_STATUS_ID = 3;
@@ -237,6 +244,47 @@ public class CustomerServiceImpl implements CustomerService {
         } else {
             return new MutablePair<>(false, null);
         }
+    }
+
+    @Override
+    public Integer loadLearnedKnowledgesCount(Integer profileId) {
+        List<ImprovementPlan> improvementPlanList = improvementPlanDao.loadUserAllPlans(profileId);
+        List<Integer> planIds = improvementPlanList.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
+        List<PracticePlan> practicePlanList = practicePlanDao.loadByPlanIds(planIds);
+        Long result = practicePlanList.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.KNOWLEDGE && practicePlan.getStatus() == PracticePlan.STATUS.COMPLETED).count();
+        return result.intValue();
+    }
+
+    @Override
+    public Integer calSyncDefeatPercent(RiseMember riseMember) {
+        if(riseMember==null){
+            return 0;
+        }
+        Integer profileId = riseMember.getProfileId();
+        Profile profile = accountService.getProfile(profileId);
+        if(profile==null){
+            return 0;
+        }
+        Integer point = profile.getPoint();
+        Date openDate = riseMember.getOpenDate();
+        if(openDate==null){
+            return 0;
+        }
+        String currentDate = openDate.toString().substring(0,7);
+
+        List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate,riseMember.getMemberTypeId());
+        List<Integer> profileIds = riseMemberList.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+
+        List<Profile> profiles = accountService.getProfiles(profileIds);
+
+        if(profiles.size()==0){
+            return 0;
+        }
+
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint()==null || profile1.getPoint()<=point).count();
+
+
+        return  result.intValue()/profiles.size()*100;
     }
 
 }

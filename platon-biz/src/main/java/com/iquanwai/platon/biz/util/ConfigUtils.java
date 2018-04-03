@@ -407,6 +407,21 @@ public class ConfigUtils {
         return getValue("landing.page.banner");
     }
 
+    public static String getDailyTalkWelcome(){return getValue("daily.talk.welcome");}
+
+    public static String getFtpUser() {
+        return getValue("ftp.username");
+    }
+
+    public static String getFtpPassword() {
+        return getValue("ftp.password");
+    }
+
+    public static String getFtpHost() {
+        return getValue("ftp.host");
+    }
+
+    public static String getResourceDomain(){return getValue("resource.domain");}
     public static String getSensorsProject() {
         return getValue("sensors.project");
     }

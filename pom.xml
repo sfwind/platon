@@ -376,6 +376,11 @@
                 <version>2.7.0</version>
             </dependency>
             <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.54</version>
+            </dependency>
+            <dependency>
                 <groupId>com.sensorsdata.analytics.javasdk</groupId>
                 <artifactId>SensorsAnalyticsSDK</artifactId>
                 <version>3.1.6</version>
