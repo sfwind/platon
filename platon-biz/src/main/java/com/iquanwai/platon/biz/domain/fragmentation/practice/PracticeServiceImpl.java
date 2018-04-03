@@ -760,17 +760,24 @@ public class PracticeServiceImpl implements PracticeService {
         List<Profile> profiles = accountService.getProfiles(profileIds);
         Map<Integer, Profile> profileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key2));
 
-        for (CommentEvaluation evaluation : evaluations) {
-            Comment comment = commentMap.get(evaluation.getCommentId());
-            if (comment == null) {
-                continue;
-            }
-            Profile profile = profileMap.get(comment.getCommentProfileId());
-            if (profile == null) {
-                continue;
-            }
-            evaluation.setNickName(profile.getNickname());
-        }
+        evaluations = evaluations.stream()
+                .filter(commentEvaluation -> {
+                    Comment comment = commentMap.get(commentEvaluation.getCommentId());
+                    if (comment != null) {
+                        Profile profile = profileMap.get(comment.getCommentProfileId());
+                        if (profile != null) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .map(commentEvaluation -> {
+                    Comment comment = commentMap.get(commentEvaluation.getCommentId());
+                    Profile profile = profileMap.get(comment.getCommentProfileId());
+                    commentEvaluation.setNickName(profile.getNickname());
+                    return commentEvaluation;
+                })
+                .collect(Collectors.toList());
         return evaluations;
     }
 
