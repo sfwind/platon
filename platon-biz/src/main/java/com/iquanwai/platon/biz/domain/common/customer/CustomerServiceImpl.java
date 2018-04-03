@@ -258,18 +258,22 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Integer calSyncDefeatPercent(RiseMember riseMember) {
         if(riseMember==null){
+            logger.info("该用户不是会员，返回比例为0");
             return 0;
         }
         Integer profileId = riseMember.getProfileId();
         Profile profile = accountService.getProfile(profileId);
         if(profile==null){
+            logger.info("未找到{}用户，返回比例为0",profileId);
             return 0;
         }
         Integer point = profile.getPoint();
         Date openDate = riseMember.getOpenDate();
-        if(openDate==null){
+        if(openDate==null || openDate.toString().length()<7){
+            logger.info("{}用户的入学日期为空或者不规范，返回比例为0",profileId);
             return 0;
         }
+
         String currentDate = openDate.toString().substring(0,7);
 
         List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate,riseMember.getMemberTypeId());
@@ -278,13 +282,15 @@ public class CustomerServiceImpl implements CustomerService {
         List<Profile> profiles = accountService.getProfiles(profileIds);
 
         if(profiles.size()==0){
+            logger.info("{}用户不存在同期同学，返回比例为0",profileId);
             return 0;
         }
 
         Long result = profiles.stream().filter(profile1 -> profile1.getPoint()==null || profile1.getPoint()<=point).count();
-
-
-        return  result.intValue()/profiles.size()*100;
+        logger.info("超过人数为："+result,"总人数为："+profiles.size());
+        Integer percent = result.intValue()*100/profiles.size();
+        logger.info("计算出的比例为："+percent+"%");
+        return percent;
     }
 
 }
