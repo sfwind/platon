@@ -1,16 +1,13 @@
 package com.iquanwai.platon.biz.domain.daily;
 
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.SubscribePushDao;
 import com.iquanwai.platon.biz.dao.daily.DailyTalkDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.daily.DailyTalk;
 import com.iquanwai.platon.biz.util.*;
-import com.sun.imageio.plugins.common.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +39,7 @@ public class DailyServiceImpl implements DailyService {
     private SubscribePushDao subscribePushDao;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_backend_0402.jpg";
+    private static final String DAILY_TALK_BACKEND = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/backend_04_02.jpg";
     private static final String DAILY_TALK_TITLE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_title.png";
     private static final String DAILY_TALK_AUTHOR =ConfigUtils.getPicturePrefix()+ "images/dailytalk/source/daily_talk_author.png";
     private static final String DAILY_TALK_LINE = ConfigUtils.getPicturePrefix()+"images/dailytalk/source/daily_talk_line.png";
@@ -142,19 +139,20 @@ public class DailyServiceImpl implements DailyService {
                         }
                     }
                     contentImg = ImageUtils.overlapFixImage(contentImg, authorImg, 460, 380, 64, 1);
-                    contentImg = ImageUtils.writeText(contentImg, 540, 390, author, simsunFont.deriveFont(30f), Color.WHITE);
+                    contentImg = ImageUtils.writeText(contentImg, 540, 395, author, simsunFont.deriveFont(39f), Color.WHITE);
                     inputImage = ImageUtils.overlapFixImage(inputImage, contentImg, 0, 600, 1125, 756);
                 }
 
-                inputImage = ImageUtils.writeText(inputImage, 70, 442, loginDay.toString(), font.deriveFont(102f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 70 + 60 * loginDay.toString().length(), 442, "天", font.deriveFont(33f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 70, 452, loginDay.toString(), font.deriveFont(96f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 70 + 60 * loginDay.toString().length(), 452, "天", font.deriveFont(33f), grey);
 
-                inputImage = ImageUtils.writeText(inputImage, 370, 442, learnKnowledge.toString(), font.deriveFont(102f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 370 + 60 * learnKnowledge.toString().length(), 442, "个", font.deriveFont(33f), grey);
-                inputImage = ImageUtils.writeText(inputImage, 745, 442, percent + "%", font.deriveFont(102f), Color.BLACK);
-                inputImage = ImageUtils.writeText(inputImage, 845 + 60 * percent.toString().length(), 442, "的同学", font.deriveFont(33f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 370, 452, learnKnowledge.toString(), font.deriveFont(96f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 370 + 60 * learnKnowledge.toString().length(), 452, "个", font.deriveFont(33f), grey);
+                inputImage = ImageUtils.writeText(inputImage, 745, 452, percent + "%", font.deriveFont(96f), Color.BLACK);
+                inputImage = ImageUtils.writeText(inputImage, 840 + 60 * percent.toString().length(), 452, "的同学", font.deriveFont(33f), grey);
 
-                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1460,220,220);
+                inputImage = ImageUtils.overlapFixImage(inputImage,qrImg,790,1440,220,220);
+                inputImage = ImageUtils.writeText(inputImage,790,1690,"长按识别二维码",simsunFont.deriveFont(30f),grey);
 
                 Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpg");
                 ImageWriter writer=null;
