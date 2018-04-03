@@ -166,7 +166,7 @@ public class BackendController {
 
         String memberId = riseMemberService.getMemberId(openidDto.getOpenid());
         if (memberId == null) {
-            return WebUtils.error(201, "这个用户没有学号");
+            return WebUtils.error(201, "该用户没有学号");
         }else{
             return WebUtils.result(memberId);
         }
