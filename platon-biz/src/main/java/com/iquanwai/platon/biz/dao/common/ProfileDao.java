@@ -35,7 +35,7 @@ public class ProfileDao extends DBUtil {
         ResultSetHandler<Profile> h = new BeanHandler<>(Profile.class);
 
         try {
-            return run.query("SELECT * FROM Profile where Openid=?", h, openId);
+            return run.query("SELECT * FROM Profile where Openid = ? AND Del = 0", h, openId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -48,7 +48,7 @@ public class ProfileDao extends DBUtil {
         ResultSetHandler<Profile> h = new BeanHandler<>(Profile.class);
 
         try {
-            return run.query("SELECT * FROM Profile where RiseId=?", h, riseId);
+            return run.query("SELECT * FROM Profile where RiseId = ? AND Del = 0", h, riseId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -58,7 +58,7 @@ public class ProfileDao extends DBUtil {
 
     public Profile queryByUnionId(String unionId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM Profile WHERE UnionId = ?";
+        String sql = "SELECT * FROM Profile WHERE UnionId = ? AND Del = 0";
         ResultSetHandler<Profile> h = new BeanHandler<Profile>(Profile.class);
         try {
             return runner.query(sql, h, unionId);
@@ -227,7 +227,6 @@ public class ProfileDao extends DBUtil {
         }
         return true;
     }
-
 
     public boolean submitCertificateProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());

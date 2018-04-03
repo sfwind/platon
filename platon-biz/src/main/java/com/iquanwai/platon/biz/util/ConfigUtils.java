@@ -422,5 +422,10 @@ public class ConfigUtils {
     }
 
     public static String getResourceDomain(){return getValue("resource.domain");}
+    public static String getSensorsProject() {
+        return getValue("sensors.project");
+    }
+
+
 }
 

@@ -13,6 +13,7 @@
         reactMountPoint: "react-app",
         showExplore:"${showExplore}",
         configUrl:'',
+        sensorsProject:"${sensorsProject}",
     }
 </script>
 <script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>

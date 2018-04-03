@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -61,6 +62,8 @@ public class ProblemServiceImpl implements ProblemService {
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
+    @Autowired
+    private OperationLogService operationLogService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -90,7 +93,6 @@ public class ProblemServiceImpl implements ProblemService {
         }
         problem.setChapterList(chapters);
         problem.setProblemType(problemScheduleManager.getProblemType(problemId, profileId));
-
         return problem;
     }
 
@@ -125,7 +127,19 @@ public class ProblemServiceImpl implements ProblemService {
         problemScores.forEach(item -> {
             item.setProfileId(profileId);
             item.setProblemId(problem);
+            Integer question = item.getQuestion();
+            Integer choice = item.getChoice();
+            if (choice != null) {
+                operationLogService.trace(profileId, "gradeCourse", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    prop.add("problemId", problem);
+                    prop.add("question", question);
+                    prop.add("choice", choice);
+                    return prop;
+                });
+            }
         });
+
         problemScoreDao.gradeProblem(problemScores);
     }
 
@@ -243,15 +257,15 @@ public class ProblemServiceImpl implements ProblemService {
     public Integer getFinishedCards(Integer profileId) {
         List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
         Integer sum = 0;
-        for(ImprovementPlan plan:plans){
+        for (ImprovementPlan plan : plans) {
             List<Chapter> chapters = problemScheduleManager.loadRoadMap(plan.getId());
             Integer completeSeries = plan.getCompleteSeries();
 
-            for(Chapter chapter:chapters){
+            for (Chapter chapter : chapters) {
                 List<Section> sections = chapter.getSections();
                 Long resultCnt = sections.stream().filter(section -> section.getSeries() > completeSeries).count();
                 Integer completedChapter = resultCnt > 0 ? chapter.getChapter() - 1 : chapter.getChapter();
-                sum+=completedChapter;
+                sum += completedChapter;
             }
         }
 

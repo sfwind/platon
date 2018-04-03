@@ -24,7 +24,7 @@ public class FollowUserDao extends DBUtil {
 
     public Account queryByUnionId(String unionId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM FollowUsers WHERE UnionId = ?";
+        String sql = "SELECT * FROM FollowUsers WHERE UnionId = ? AND Del = 0";
         ResultSetHandler<Account> h = new BeanHandler<>(Account.class);
         try {
             return runner.query(sql, h, unionId);
@@ -41,7 +41,7 @@ public class FollowUserDao extends DBUtil {
         String questionMarks = produceQuestionMark(openids.size());
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<Account>> h = new BeanListHandler<>(Account.class);
-        String sql = "SELECT * FROM FollowUsers where Openid in (" + questionMarks + ")";
+        String sql = "SELECT * FROM FollowUsers where Openid in (" + questionMarks + ") AND Del = 0";
         try {
             return run.query(sql, h, openids.toArray());
         } catch (SQLException e) {

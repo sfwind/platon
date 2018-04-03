@@ -12,7 +12,6 @@ import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.util.Asserts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -86,7 +85,7 @@ public class PrizeCardController {
 
     @RequestMapping("/card/send/message")
     public ResponseEntity<Map<String, Object>> sendMessage(LoginUser loginUser) {
-        Asserts.notNull(loginUser, "登录用户不能为空");
+        Assert.notNull(loginUser, "登录用户不能为空");
 
         OperationLog operationLog = OperationLog.create()
                 .module("礼品卡管理")

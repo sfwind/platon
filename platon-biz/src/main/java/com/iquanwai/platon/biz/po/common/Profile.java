@@ -44,6 +44,8 @@ public class Profile {
     private String receiver;//收件人
     private String married;//婚恋情况
 
+    private Date addTime;
+
 
     //默认头像
     public static final String DEFAULT_AVATAR = "https://www.iqycamp.com/images/default_avatar.png";
