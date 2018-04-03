@@ -197,15 +197,15 @@ public class CustomerServiceImpl implements CustomerService {
         int memberTypeId = riseMember == null ? 0 : riseMember.getMemberTypeId();
         List<Announce> announces = announceDao.loadByMemberTypeId(memberTypeId);
         Announce validAnnounce = announces.stream().filter(announce -> announce.getStartTime() != null
-                && announce.getEndTime() != null
-                && new Date().compareTo(announce.getStartTime()) >= 0
-                && announce.getEndTime().compareTo(new Date()) >= 0
+                        && announce.getEndTime() != null
+                        && new Date().compareTo(announce.getStartTime()) >= 0
+                        && announce.getEndTime().compareTo(new Date()) >= 0
         ).findAny().orElse(null);
 
         // 将已经超时的 announce del 置为 1
         List<Integer> expiredIds = announces.stream().filter(announce -> announce.getStartTime() != null
-                && announce.getEndTime() != null
-                && new Date().compareTo(announce.getEndTime()) > 0
+                        && announce.getEndTime() != null
+                        && new Date().compareTo(announce.getEndTime()) > 0
         ).map(Announce::getId).collect(Collectors.toList());
         if (expiredIds.size() > 0) {
             announceDao.delExpiredAnnounce(expiredIds);
@@ -257,39 +257,40 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Integer calSyncDefeatPercent(RiseMember riseMember) {
-        if(riseMember==null){
+        if (riseMember == null) {
             logger.info("该用户不是会员，返回比例为0");
             return 0;
         }
         Integer profileId = riseMember.getProfileId();
         Profile profile = accountService.getProfile(profileId);
-        if(profile==null){
-            logger.info("未找到{}用户，返回比例为0",profileId);
+        if (profile == null) {
+            logger.info("未找到{}用户，返回比例为0", profileId);
             return 0;
         }
         Integer point = profile.getPoint();
         Date openDate = riseMember.getOpenDate();
-        if(openDate==null || openDate.toString().length()<7){
-            logger.info("{}用户的入学日期为空或者不规范，返回比例为0",profileId);
+        if (openDate == null || openDate.toString().length() < 7) {
+            logger.info("{}用户的入学日期为空或者不规范，返回比例为0", profileId);
             return 0;
         }
 
-        String currentDate = openDate.toString().substring(0,7);
+        String currentDate = openDate.toString().substring(0, 7);
 
-        List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate,riseMember.getMemberTypeId());
+        List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate, riseMember.getMemberTypeId());
         List<Integer> profileIds = riseMemberList.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
 
         List<Profile> profiles = accountService.getProfiles(profileIds);
 
-        if(profiles.size()==0){
-            logger.info("{}用户不存在同期同学，返回比例为0",profileId);
+        if (profiles.size() == 0) {
+            logger.info("{}用户不存在同期同学，返回比例为0", profileId);
             return 0;
         }
 
-        Long result = profiles.stream().filter(profile1 -> profile1.getPoint()==null || profile1.getPoint()<=point).count();
-        logger.info("超过人数为："+result+ ",总人数为："+profiles.size());
-        Integer percent = result.intValue()*100/profiles.size();
-        logger.info("计算出的比例为："+percent+"%");
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint() == null || profile1.getPoint() <= point).count();
+        logger.info("超过人数为：" + result + ",总人数为：" + profiles.size());
+        int size = profiles.size();
+        Integer percent = (result.intValue() + size) * 100 / (size * 2);
+        logger.info("计算出的比例为：" + percent + "%");
         return percent;
     }
 
