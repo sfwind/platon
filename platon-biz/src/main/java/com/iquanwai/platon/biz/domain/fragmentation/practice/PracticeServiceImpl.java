@@ -203,6 +203,8 @@ public class PracticeServiceImpl implements PracticeService {
                 prop.add("warmupId", practice.getId());
                 prop.add("problemId", practice.getProblemId());
                 prop.add("series", practicePlan.getSeries());
+                prop.add("sequence", practice.getSequence());
+                prop.add("isRight", accurate);
                 return prop;
             });
         }
