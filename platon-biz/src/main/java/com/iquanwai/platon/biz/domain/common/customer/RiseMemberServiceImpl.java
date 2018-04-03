@@ -1,10 +1,13 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
-import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.MemberTypeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.MemberType;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +23,11 @@ public class RiseMemberServiceImpl implements RiseMemberService {
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
+    @Autowired
     private MemberTypeDao memberTypeDao;
+    @Autowired
+    private AccountService accountService;
 
     @Override
     public RiseMember getRiseMember(Integer profileId) {
@@ -83,22 +90,6 @@ public class RiseMemberServiceImpl implements RiseMemberService {
         return false;
     }
 
-    /**
-     * 获取有效的商学院用户
-     */
-    @Override
-    public List<RiseMember> getValidElites() {
-
-        List<RiseMember> riseMembers = riseMemberDao.loadValidRiseMembers();
-        List<RiseMember> validRiseMembers = Lists.newArrayList();
-        riseMembers.forEach(riseMember -> {
-            Integer typeId = riseMember.getMemberTypeId();
-            if (typeId.equals(RiseMember.ELITE) || typeId.equals(RiseMember.HALF_ELITE)) {
-                validRiseMembers.add(riseMember);
-            }
-        });
-        return validRiseMembers;
-    }
 
     @Override
     public Boolean isValidCamp(Integer profileId) {
@@ -106,11 +97,24 @@ public class RiseMemberServiceImpl implements RiseMemberService {
 
         if (riseMember != null) {
             Integer typeId = riseMember.getMemberTypeId();
-            if (typeId.equals(RiseMember.CAMP)){
+            if (typeId.equals(RiseMember.CAMP)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public String getMemberId(String openid) {
+        String memberId = null;
+        Profile profile = accountService.getProfile(openid);
+        if (profile != null) {
+            RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profile.getId());
+            if(riseClassMember!=null){
+                memberId = riseClassMember.getMemberId();
+            }
+        }
+        return memberId;
     }
 
 
