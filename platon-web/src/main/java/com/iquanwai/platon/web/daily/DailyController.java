@@ -57,9 +57,9 @@ public class DailyController {
         String key = DAILYTALK + "_" + profileId;
         String value = redisUtil.get(key);
         String currentDate = DateUtils.parseDateToString(new Date());
-//        if (value != null && value.equals(currentDate)) {
-//            return WebUtils.result(false);
-//        }
+        if (value != null && value.equals(currentDate)) {
+            return WebUtils.result(false);
+        }
 
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
         //非会员不展示
@@ -82,9 +82,9 @@ public class DailyController {
             String key = DAILYTALK + "_" + profileId;
             String value = redisUtil.get(key);
             String currentDate = DateUtils.parseDateToString(new Date());
-//            if (value != null && value.equals(currentDate)) {
-//                return WebUtils.error("当天已经显示过");
-//            }
+            if (value != null && value.equals(currentDate)) {
+                return WebUtils.error("当天已经显示过");
+            }
             redisUtil.set(key, currentDate);
 
             Integer loginDay = customerService.loadContinuousLoginCount(profileId);
