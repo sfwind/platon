@@ -27,7 +27,7 @@ public class SubscribePushReceiver {
     public static final String TOPIC = "subscribe_quanwai";
     private static final String QUEUE = "subscribe_push_queue";
     private static final String PREFIX = "subscribe_push_";
-    private static final String DAILTTALK = "daily_talk_";
+    private static final String DAILY_TALK = "daily_talk_";
 
 
     @Autowired
@@ -60,7 +60,7 @@ public class SubscribePushReceiver {
                     logger.error("缺少push对象:{}", message);
                     return;
                 }
-                if(push.getScene().startsWith(DAILTTALK)){
+                if(push.getScene().startsWith(DAILY_TALK)){
                     dailyService.sendMsg(openId);
                 } else  if (push.getScene().startsWith("prize_card_")) {
                     String[] sceneStrArr = push.getScene().split("_");
