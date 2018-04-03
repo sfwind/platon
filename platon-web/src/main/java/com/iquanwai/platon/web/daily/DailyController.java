@@ -44,26 +44,26 @@ public class DailyController {
     private static final String DAILYTALK = "daily_talk";
 
 
-    @RequestMapping(value = "/talk/check",method = RequestMethod.GET)
+    @RequestMapping(value = "/talk/check", method = RequestMethod.GET)
     @ApiOperation("是否显示每日圈语")
-    public ResponseEntity<Map<String,Object>> checkDailyTalk(UnionUser unionUser){
+    public ResponseEntity<Map<String, Object>> checkDailyTalk(UnionUser unionUser) {
         Integer profileId = unionUser.getId();
         Calendar c = Calendar.getInstance();
         Integer hour = c.get(Calendar.HOUR_OF_DAY);
         //6点过后才会展示
-        if(hour<MINHOUR){
+        if (hour < MINHOUR) {
             return WebUtils.result(false);
         }
-        String key = DAILYTALK + "_"+profileId;
+        String key = DAILYTALK + "_" + profileId;
         String value = redisUtil.get(key);
         String currentDate = DateUtils.parseDateToString(new Date());
-        //            if (value != null && value.equals(currentDate)) {
-//                return WebUtils.error("当天已经显示过");
-//            }
+        if (value != null && value.equals(currentDate)) {
+            return WebUtils.error("当天已经显示过");
+        }
 
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
         //非会员不展示
-        if(riseMember==null){
+        if (riseMember == null) {
             return WebUtils.result(false);
         }
 
@@ -79,14 +79,14 @@ public class DailyController {
         Calendar c = Calendar.getInstance();
         Integer hour = c.get(Calendar.HOUR_OF_DAY);
         if (hour >= MINHOUR) {
-            String key = DAILYTALK + "_"+profileId;
+            String key = DAILYTALK + "_" + profileId;
             String value = redisUtil.get(key);
             String currentDate = DateUtils.parseDateToString(new Date());
             //TODO:判断当天是否显示过，这段逻辑需要加回来
-//            if (value != null && value.equals(currentDate)) {
-//                return WebUtils.error("当天已经显示过");
-//            }
-//            redisUtil.set(key, currentDate);
+            if (value != null && value.equals(currentDate)) {
+                return WebUtils.error("当天已经显示过");
+            }
+            redisUtil.set(key, currentDate);
 
             Integer loginDay = customerService.loadContinuousLoginCount(profileId);
             Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
@@ -94,13 +94,13 @@ public class DailyController {
             Integer percent = customerService.calSyncDefeatPercent(riseMember);
 
 
-            if(riseMember==null){
+            if (riseMember == null) {
                 return WebUtils.error("非会员类型");
             }
 
-            String  result = dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent);
+            String result = dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent);
 
-            if(result==null){
+            if (result == null) {
                 return WebUtils.error("不需要展示圈语");
             }
             return WebUtils.result(result);
