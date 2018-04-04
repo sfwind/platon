@@ -791,21 +791,6 @@ public class CertificateServiceImpl implements CertificateService {
         Integer month = riseCertificate.getMonth();
         String problemName = riseCertificate.getProblemName();
 
-        // Integer category = accountService.loadUserScheduleCategory(profile.getId());
-        // List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-        // CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
-        // Integer problemId = courseScheduleDefault.getProblemId();
-        // if (problemId != null) {
-        //     Problem problem = cacheService.getProblem(problemId);
-        //     if (problem != null) {
-        //         problemName = problem.getProblem();
-        //     }
-        // }
-
-        // if (problemName == null) {
-        //     return new MutablePair<>(false, null);
-        // }
-
         Integer groupNo = riseCertificate.getGroupNo();
         String certificateNo = riseCertificate.getCertificateNo();
 

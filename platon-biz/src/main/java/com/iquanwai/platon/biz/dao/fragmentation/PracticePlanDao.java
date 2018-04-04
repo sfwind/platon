@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.po.PracticePlan;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -223,19 +222,6 @@ public class PracticePlanDao extends PracticeDBUtil {
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId, PracticePlan.WARM_UP,
                     PracticePlan.WARM_UP_REVIEW);
-            return practicePlans;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
-
-    public List<PracticePlan> loadWarmupPracticeByPlanId(Integer planId) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=1 or Type=2) and Del = 0";
-        try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
             return practicePlans;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
