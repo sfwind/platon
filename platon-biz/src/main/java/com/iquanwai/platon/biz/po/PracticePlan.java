@@ -9,7 +9,7 @@ import lombok.Data;
 public class PracticePlan {
     private int id;
     private Integer planId; //训练id
-    private Integer type; //题目类型（0-课程介绍 1-选择题，2-选择题，11-应用题，12-应用题，13-案例题, 14-思考题, 21-小目标，31-知识理解，32-知识回顾）
+    private Integer type; //题目类型（0-课程介绍 1-选择题，2-选择题，11-应用题，12-应用题，13-案例题, 21-小目标，31-知识理解，32-知识回顾）
     private String practiceId; //练习id,多个时用逗号隔开
     private Boolean unlocked; // 是否解锁
     private Integer series; // 节号
@@ -28,7 +28,7 @@ public class PracticePlan {
     public static final int APPLICATION_BASE = 11; // 简单应用题
     public static final int APPLICATION_UPGRADED = 12; // 困难应用题
     public static final int APPLICATION_GROUP = 13; // 小组案例题
-    public static final int APPLICATION_THINKING = 14; // 思考题
+    public static final int PREVIEW = 41; // 课前思考
 
     public interface STATUS {
         /**
@@ -46,36 +46,33 @@ public class PracticePlan {
     }
 
     public static boolean isWarmupPractice(Integer type){
-        return type == PracticePlan.WARM_UP || type == PracticePlan.WARM_UP_REVIEW;
+        return type == WARM_UP || type == WARM_UP_REVIEW;
     }
 
     public static boolean isApplicationPractice(Integer type){
-        return type == PracticePlan.APPLICATION_BASE || type == PracticePlan.APPLICATION_UPGRADED
-                || type == PracticePlan.APPLICATION_GROUP || type == PracticePlan.APPLICATION_THINKING;
+        return type == APPLICATION_BASE || type == APPLICATION_UPGRADED || type == APPLICATION_GROUP;
     }
 
     public static boolean isKnowledge(Integer type){
-        return type == PracticePlan.KNOWLEDGE || type == PracticePlan.KNOWLEDGE_REVIEW;
+        return type == KNOWLEDGE || type == KNOWLEDGE_REVIEW;
     }
 
-    public static String getPracticePlanTitle(Integer type){
-        if(isKnowledge(type)){
+    public static boolean isPreview(Integer type){
+        return type == PREVIEW;
+    }
+
+    public static String getPracticePlanTitle(Integer type) {
+        if (isPreview(type)) {
+            return "课前思考";
+        } else if (isKnowledge(type)) {
             return "知识点";
-        }else if(isWarmupPractice(type)){
+        } else if (isWarmupPractice(type)) {
             return "选择题";
-        }else if(isApplicationPractice(type)){
-            if(type == PracticePlan.APPLICATION_BASE){
-                return "应用题";
-            }else if(type == PracticePlan.APPLICATION_UPGRADED){
-                return "附加题";
-            }else if(type == PracticePlan.APPLICATION_GROUP){
-                return "案例题";
-            } else if(type == PracticePlan.APPLICATION_THINKING){
-                return "思考题";
-            }
+        } else if (isApplicationPractice(type)) {
+            return "应用题";
         }
 
         //默认
-        return "练习";
+        return "课程练习";
     }
 }

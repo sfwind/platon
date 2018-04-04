@@ -38,6 +38,7 @@ public class Problem {
     private String categoryPic; //分类图示
     private String abbreviation; // 缩略名
     private Boolean publish; // 是否已经上线
+    private Integer project; // 项目 1-核心能力 2-商业思维
 
     private Boolean done; // 非db字段 用户是否做过
     private Integer status; // 非db字段 用户选过课程（0-未选过,1-正在进行,2-已完成）
@@ -67,6 +68,7 @@ public class Problem {
         problem.setAbbreviation(this.abbreviation);
         problem.setPublish(this.publish);
         problem.setLength(this.length);
+        problem.setProject(this.project);
         return problem;
     }
 
