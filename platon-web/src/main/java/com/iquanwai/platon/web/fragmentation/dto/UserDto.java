@@ -7,9 +7,11 @@ import lombok.Data;
 /**
  * Created by justin on 2018/4/3.
  */
-@ApiModel("openid model")
+@ApiModel("user model")
 @Data
-public class OpenidDto {
+public class UserDto {
     @ApiModelProperty("openid")
     private String openid;
+    @ApiModelProperty("memberid")
+    private String memberid;
 }
