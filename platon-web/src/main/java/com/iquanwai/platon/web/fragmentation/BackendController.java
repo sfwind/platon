@@ -180,11 +180,11 @@ public class BackendController {
                 .action("根据学号获取openid");
         operationLogService.log(operationLog);
 
-        String memberId = riseMemberService.getMemberId(userDto.getOpenid());
-        if (memberId == null) {
-            return WebUtils.error(201, "该用户没有学号");
+        String openid = riseMemberService.getOpenid(userDto.getMemberid());
+        if (openid == null) {
+            return WebUtils.error(201, "没有查到学员");
         }else{
-            return WebUtils.result(memberId);
+            return WebUtils.result(openid);
         }
     }
 
