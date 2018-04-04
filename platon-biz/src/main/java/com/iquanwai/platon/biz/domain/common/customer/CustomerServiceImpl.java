@@ -3,22 +3,24 @@ package com.iquanwai.platon.biz.domain.common.customer;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.common.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.Announce;
-import com.iquanwai.platon.biz.po.AnnualSummary;
-import com.iquanwai.platon.biz.po.PrizeCard;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,13 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerStatusDao customerStatusDao;
     @Autowired
     private BusinessSchoolApplicationDao businessSchoolApplicationDao;
+    @Autowired
+    private ImprovementPlanDao improvementPlanDao;
+    @Autowired
+    private PracticePlanDao practicePlanDao;
+    @Autowired
+    private AccountService accountService;
+
 
     // 申请通过 status id
     private static final Integer PASS_STATUS_ID = 3;
@@ -138,7 +147,7 @@ public class CustomerServiceImpl implements CustomerService {
             data.put("keyword2", new TemplateMessage.Keyword("H5个人中心反馈问题需处理"));
             data.put("keyword3", new TemplateMessage.Keyword(
                     (DateUtils.parseDateTimeToString(new Date()))));
-            data.put("remark", new TemplateMessage.Keyword("\n"+feedback.getWords()));
+            data.put("remark", new TemplateMessage.Keyword("\n" + feedback.getWords()));
             templateMessage.setData(data);
             templateMessageService.sendMessage(templateMessage);
         }
@@ -147,8 +156,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public int loadContinuousLoginCount(Integer profileId) {
         List<RiseUserLogin> riseUserLogins = riseUserLoginDao.loadByProfileId(profileId);
+
         int dayCount = 1;
         Date compareDate = new Date();
+        if (DateTime.now().getHourOfDay() <= 6) {
+            compareDate = DateUtils.beforeDays(new Date(), 1);
+        }
+
         for (RiseUserLogin riseUserLogin : riseUserLogins) {
             if (DateUtils.interval(compareDate, riseUserLogin.getLoginDate()) <= 1) {
                 dayCount++;
@@ -183,15 +197,15 @@ public class CustomerServiceImpl implements CustomerService {
         int memberTypeId = riseMember == null ? 0 : riseMember.getMemberTypeId();
         List<Announce> announces = announceDao.loadByMemberTypeId(memberTypeId);
         Announce validAnnounce = announces.stream().filter(announce -> announce.getStartTime() != null
-                && announce.getEndTime() != null
-                && new Date().compareTo(announce.getStartTime()) >= 0
-                && announce.getEndTime().compareTo(new Date()) >= 0
+                        && announce.getEndTime() != null
+                        && new Date().compareTo(announce.getStartTime()) >= 0
+                        && announce.getEndTime().compareTo(new Date()) >= 0
         ).findAny().orElse(null);
 
         // 将已经超时的 announce del 置为 1
         List<Integer> expiredIds = announces.stream().filter(announce -> announce.getStartTime() != null
-                && announce.getEndTime() != null
-                && new Date().compareTo(announce.getEndTime()) > 0
+                        && announce.getEndTime() != null
+                        && new Date().compareTo(announce.getEndTime()) > 0
         ).map(Announce::getId).collect(Collectors.toList());
         if (expiredIds.size() > 0) {
             announceDao.delExpiredAnnounce(expiredIds);
@@ -230,6 +244,54 @@ public class CustomerServiceImpl implements CustomerService {
         } else {
             return new MutablePair<>(false, null);
         }
+    }
+
+    @Override
+    public Integer loadLearnedKnowledgesCount(Integer profileId) {
+        List<ImprovementPlan> improvementPlanList = improvementPlanDao.loadUserAllPlans(profileId);
+        List<Integer> planIds = improvementPlanList.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
+        List<PracticePlan> practicePlanList = practicePlanDao.loadByPlanIds(planIds);
+        Long result = practicePlanList.stream().filter(practicePlan -> practicePlan.getType() == PracticePlan.KNOWLEDGE && practicePlan.getStatus() == PracticePlan.STATUS.COMPLETED).count();
+        return result.intValue();
+    }
+
+    @Override
+    public Integer calSyncDefeatPercent(RiseMember riseMember) {
+        if (riseMember == null) {
+            logger.info("该用户不是会员，返回比例为0");
+            return 0;
+        }
+        Integer profileId = riseMember.getProfileId();
+        Profile profile = accountService.getProfile(profileId);
+        if (profile == null) {
+            logger.info("未找到{}用户，返回比例为0", profileId);
+            return 0;
+        }
+        Integer point = profile.getPoint();
+        Date openDate = riseMember.getOpenDate();
+        if (openDate == null || openDate.toString().length() < 7) {
+            logger.info("{}用户的入学日期为空或者不规范，返回比例为0", profileId);
+            return 0;
+        }
+
+        String currentDate = openDate.toString().substring(0, 7);
+
+        List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate, riseMember.getMemberTypeId());
+        List<Integer> profileIds = riseMemberList.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+
+        List<Profile> profiles = accountService.getProfiles(profileIds);
+
+        if (profiles.size() == 0) {
+            logger.info("{}用户不存在同期同学，返回比例为0", profileId);
+            return 0;
+        }
+
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint() == null || profile1.getPoint() <= point).count();
+        logger.info("超过人数为：" + result + ",总人数为：" + profiles.size());
+        int size = profiles.size();
+        Integer percent = (result.intValue() + size) * 100 / (size * 2);
+        logger.info("计算出的比例为：" + percent + "%");
+        return percent;
     }
 
 }

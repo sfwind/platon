@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -47,6 +48,8 @@ public class PracticeController {
     private PlanService planService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private OperationLogService operationLogService;
 
     @RequestMapping(value = "/challenge/start/{challengeId}", method = RequestMethod.GET)
     @ApiOperation("加载小目标")
@@ -259,7 +262,7 @@ public class PracticeController {
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
             UserRole userRole = accountService.getUserRole(unionUser.getId());
             Integer roleId = 0;
-            if(userRole != null){
+            if (userRole != null) {
                 roleId = userRole.getRoleId();
             }
             resultDto.setRole(roleId);
@@ -271,6 +274,7 @@ public class PracticeController {
             if (Role.isAsst(roleId) && !applicationSubmit.getProfileId().equals(unionUser.getId())) {
                 practiceService.initCommentEvaluation(submitId, resultDto.getId());
             }
+
 
             return WebUtils.result(resultDto);
         } else {
@@ -313,7 +317,7 @@ public class PracticeController {
             resultDto.setDiscussTime(DateUtils.parseDateToString(new Date()));
             UserRole userRole = accountService.getUserRole(unionUser.getId());
             Integer roleId = 0;
-            if(userRole != null){
+            if (userRole != null) {
                 roleId = userRole.getRoleId();
             }
             resultDto.setRole(roleId);

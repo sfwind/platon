@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
+import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
@@ -87,10 +88,17 @@ public class BusinessApplyController {
             // 检查是否可以申请
             applyService.checkApplyPrivilege(loginUser.getId());
         } catch (ApplyException e) {
+
             return WebUtils.error(e.getMessage());
         }
+        Account account = accountService.getAccountByUnionId(loginUser.getUnionId());
 
-        return WebUtils.success();
+        if (account.getSubscribe() == 1) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.result(ConfigUtils.isDevelopment() ? "https://static.iqycamp.com/images/fragment/apply_qr_beta.jpeg?imageslim"
+                    : "https://static.iqycamp.com/images/fragment/apply_qr_pro_1.jpeg?imageslim");
+        }
     }
 
     /**

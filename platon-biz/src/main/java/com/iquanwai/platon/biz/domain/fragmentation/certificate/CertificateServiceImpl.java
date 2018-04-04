@@ -857,10 +857,11 @@ public class CertificateServiceImpl implements CertificateService {
                     RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(riseCertificate.getProfileId());
                     String className = riseClassMember.getClassName();
                     String classNumber = className.substring(4);
+                    String monthNumber = className.substring(2, 4);
                     ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀团队", font.deriveFont(92f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 650, NumberToHanZi.formatInteger(month) + "月" + NumberToHanZi.formatInteger(Integer.parseInt(classNumber)) + "班" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(78f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 650, NumberToHanZi.formatInteger(Integer.parseInt(monthNumber)) + "月" + NumberToHanZi.formatInteger(Integer.parseInt(classNumber)) + "班" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(78f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));

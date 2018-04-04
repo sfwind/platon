@@ -176,15 +176,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
                     break;
                 case RiseMember.HALF:
                 case RiseMember.ANNUAL:
-                    int category = accountService.loadUserScheduleCategory(profileId);
-                    List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-                    CourseScheduleDefault professionDefault = courseScheduleDefaults.stream()
-                            .filter(courseScheduleDefault -> month.equals(courseScheduleDefault.getMonth()))
-                            .findAny()
-                            .orElse(null);
-                    if (professionDefault != null) {
-                        return professionDefault.getProblemId();
-                    }
                     break;
                 case RiseMember.ELITE:
                 case RiseMember.HALF_ELITE:
