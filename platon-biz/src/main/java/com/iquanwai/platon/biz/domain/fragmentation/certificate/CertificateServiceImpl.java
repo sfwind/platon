@@ -198,6 +198,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 .collect(Collectors.toList());
 
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                        // TODO: 改成不需要加载应用题内容的接口
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
                         Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
                                 .collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
@@ -326,6 +327,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
                                 .collect(Collectors.toList());
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                        // TODO: 改成不需要加载应用题内容的接口
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
                         Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
 

@@ -112,19 +112,4 @@ public class WarmupSubmitDao extends PracticeDBUtil {
 
         return null;
     }
-
-    public List<WarmupSubmit> getWarmupSubmits(Integer planId, Integer profileId) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        ResultSetHandler<List<WarmupSubmit>> h = new BeanListHandler<>(WarmupSubmit.class);
-        try {
-            List<WarmupSubmit> submit = run.query("SELECT * FROM WarmupSubmit where PlanId=? and ProfileId=? and Del=0",
-                    h, planId, profileId);
-
-            return submit;
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-
-        return Lists.newArrayList();
-    }
 }

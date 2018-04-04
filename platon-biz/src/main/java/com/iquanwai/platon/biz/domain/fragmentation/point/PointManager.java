@@ -33,22 +33,6 @@ public interface PointManager {
      */
     Pair<Integer, Boolean> warmupScore(WarmupPractice warmupPractice, List<Integer> userChoiceList);
 
-    /**
-     * 选择题得分
-     *
-     * @param planId    训练计划id
-     * @param profileId 用户id
-     */
-    Integer warmupPoint(Integer planId, Integer profileId);
-
-    /**
-     * 应用题得分
-     *
-     * @param planId    训练计划id
-     * @param profileId 用户id
-     */
-    Integer applicationPoint(Integer planId, Integer profileId);
-
     //简单选择题分数
     int WARMUP_EASY_SCORE = 20;
     //普通选择题分数
@@ -63,12 +47,10 @@ public interface PointManager {
     //困难选择题分数
     int APPLICATION_HARD_SCORE = 100;
 
-    //选择题总分
-    int WARMUP_TOTAL = 30;
-    //应用题总分
-    int APPLICATION_TOTAL = 15;
-    //应用题加精得分
-    int APPLICATION_HIGHLIGHT = 5;
-
+    /**
+     * 计算应用题的分数
+     *
+     * @param difficulty 难度
+     * */
     Integer calcApplicationScore(Integer difficulty);
 }
