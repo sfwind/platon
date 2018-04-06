@@ -62,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -344,10 +345,15 @@ public class PracticeServiceImpl implements PracticeService {
         }
 
         // 检查该道题是否是简单应用题还是复杂应用题
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
         PracticePlan targetPracticePlan = practicePlans.stream()
                 .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
+        PracticePlan lastPracticePlan = practicePlans.stream()
+                .filter(planItem -> planItem.getSeries().equals(targetPracticePlan.getSeries()))
+                .max((p1, p2) -> p1.getSequence() - p2.getSequence()).orElse(null);
+
         applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
+        applicationPractice.setIsLastApplication(lastPracticePlan.getPracticeId().equals(id.toString()));
 
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
