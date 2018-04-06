@@ -349,6 +349,7 @@ public class PracticeServiceImpl implements PracticeService {
         PracticePlan targetPracticePlan = practicePlans.stream()
                 .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
         PracticePlan lastPracticePlan = practicePlans.stream()
+                .filter(planItem -> planItem.getSeries().equals(targetPracticePlan.getSeries()))
                 .max((p1, p2) -> p1.getSequence() - p2.getSequence()).orElse(null);
 
         applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
