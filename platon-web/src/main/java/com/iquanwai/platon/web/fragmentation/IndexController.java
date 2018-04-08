@@ -174,7 +174,6 @@ public class IndexController {
                 item.getMemberTypeId() == RiseMember.HALF);
         Profile profile = accountService.getProfile(unionUser.getId());
 
-        // 如果不是会员，直接跳转着陆页
         if (!isMember) {
             response.sendRedirect(HOME_LANDING_PAGE);
             return null;
