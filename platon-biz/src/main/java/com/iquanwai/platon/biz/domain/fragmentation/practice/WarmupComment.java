@@ -33,8 +33,8 @@ public class WarmupComment {
 
 
     @ApiModelProperty("选择题主要评论")
-    private WarmupPracticeDiscuss primaryDiscuss;
+    private WarmupPracticeDiscuss originDiscuss;
     @ApiModelProperty("选择题次要评论")
-    private WarmupPracticeDiscuss secondaryDiscuss;
+    private WarmupPracticeDiscuss priorityDiscuss;
 
 }

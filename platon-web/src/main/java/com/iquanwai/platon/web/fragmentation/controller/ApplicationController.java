@@ -1,12 +1,14 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.DiscussDistrictDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseRefreshListDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseWorkInfoDto;
 import com.iquanwai.platon.web.fragmentation.dto.SubmitDto;
@@ -42,6 +44,8 @@ public class ApplicationController {
     private PlanService planService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private PracticeDiscussService practiceDiscussService;
     //分页文章数量
     private static final int PAGE_SIZE = 10;
 
@@ -49,8 +53,7 @@ public class ApplicationController {
     @ApiOperation("加载应用题")
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "planId", value = "计划id", required = false)})
-    public ResponseEntity<Map<String, Object>> startApplication(UnionUser unionUser, @PathVariable Integer applicationId,
-                                                                @RequestParam(name = "planId", required = false) Integer planId) {
+    public ResponseEntity<Map<String, Object>> startApplication(UnionUser unionUser, @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
         Assert.notNull(unionUser, "用户不能为空");
 
         ApplicationPractice applicationPractice = practiceService.getApplicationPractice(applicationId,
@@ -63,10 +66,7 @@ public class ApplicationController {
     @ApiOperation("提交应用题")
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "planId", value = "计划id")})
-    public ResponseEntity<Map<String, Object>> submitApplication(UnionUser unionUser,
-                                                                 @PathVariable("planId") Integer planId,
-                                                                 @PathVariable("applicationId") Integer applicationId,
-                                                                 @RequestBody SubmitDto submitDto) {
+    public ResponseEntity<Map<String, Object>> submitApplication(UnionUser unionUser, @PathVariable("planId") Integer planId, @PathVariable("applicationId") Integer applicationId, @RequestBody SubmitDto submitDto) {
         Assert.notNull(unionUser, "用户不能为空");
         // 如果没有则生成，之后走之前逻辑
         Pair<ApplicationPractice, Boolean> applicationPracticeBooleanPair = practiceService.getApplicationPractice(applicationId,
@@ -110,10 +110,7 @@ public class ApplicationController {
     @ApiOperation("应用题自动保存")
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "planId", value = "计划id")})
-    public ResponseEntity<Map<String, Object>> autoSaveApplication(UnionUser unionUser,
-                                                                   @PathVariable("planId") Integer planId,
-                                                                   @PathVariable("applicationId") Integer applicationId,
-                                                                   @RequestBody SubmitDto submitDto) {
+    public ResponseEntity<Map<String, Object>> autoSaveApplication(UnionUser unionUser, @PathVariable("planId") Integer planId, @PathVariable("applicationId") Integer applicationId, @RequestBody SubmitDto submitDto) {
         Assert.notNull(unionUser, "用户不能为空");
         Integer result = practiceService.insertApplicationSubmitDraft(unionUser.getId(), applicationId, planId, submitDto.getDraft());
         if (result > 0) {
@@ -124,16 +121,13 @@ public class ApplicationController {
     }
 
     /**
-     *
-     * @param unionUser     登陆人
+     * @param unionUser 登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping(value = "/list/other/{applicationId}", method = RequestMethod.GET)
     @ApiOperation("加载其他用户的应用题作业")
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id")})
-    public ResponseEntity<Map<String, Object>> loadOtherApplicationList(UnionUser unionUser,
-                                                                        @PathVariable Integer applicationId,
-                                                                        @ModelAttribute Page page) {
+    public ResponseEntity<Map<String, Object>> loadOtherApplicationList(UnionUser unionUser, @PathVariable Integer applicationId, @ModelAttribute Page page) {
         Assert.notNull(unionUser, "用户信息不能为空");
         page.setPageSize(PAGE_SIZE);
         // 该计划的应用练习是否提交
@@ -143,17 +137,14 @@ public class ApplicationController {
 
     /**
      * 应用任务列表页加载他人的任务信息
-     *
-     * @param unionUser     登陆人
+     * @param unionUser 登陆人
      * @param applicationId 应用任务Id
      */
     @RequestMapping(value = "/list/other/{applicationId}/{pageIndex}", method = RequestMethod.GET)
     @ApiOperation("分页加载其他用户的应用题作业")
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "pageIndex", value = "页码")})
-    public ResponseEntity<Map<String, Object>> loadOtherApplicationListBatch(UnionUser unionUser,
-                                                                             @PathVariable Integer applicationId,
-                                                                             @PathVariable Integer pageIndex) {
+    public ResponseEntity<Map<String, Object>> loadOtherApplicationListBatch(UnionUser unionUser, @PathVariable Integer applicationId, @PathVariable Integer pageIndex) {
         Assert.notNull(unionUser, "用户信息不能为空");
         Page page = new Page();
         page.setPageSize(PAGE_SIZE * pageIndex);
@@ -227,4 +218,13 @@ public class ApplicationController {
         practiceService.updateEvaluation(commentId, useful, reason);
         return WebUtils.success();
     }
+
+    @RequestMapping(value = "/load/priority/submits")
+    public ResponseEntity<Map<String, Object>> loadPriorityApplicationSubmits(UnionUser unionUser, @RequestParam("applicationId") Integer applicationId, @RequestParam("planId") Integer planId) {
+        DiscussDistrictDto districtDto = new DiscussDistrictDto();
+        districtDto.setPersonal(practiceDiscussService.loadPersonalApplicationSubmitDiscussList(unionUser.getId(), applicationId, planId));
+        districtDto.setPriorities(practiceDiscussService.loadPriorityApplicationSubmitDiscussList(applicationId));
+        return WebUtils.result(districtDto);
+    }
+
 }

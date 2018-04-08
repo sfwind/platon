@@ -29,5 +29,4 @@ public abstract class AbstractComment {
     private Boolean isMine; //是否是本人的回复 非db字段
 
     private Integer referenceId; // 引用id 是db字段的映射，减少代码量
-
 }

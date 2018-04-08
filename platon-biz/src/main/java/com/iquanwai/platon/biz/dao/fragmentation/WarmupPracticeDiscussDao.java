@@ -54,6 +54,34 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<WarmupPracticeDiscuss> loadDiscussByProfileId(Integer profileId, Integer warmupPracticeId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM WarmupPracticeDiscuss WHERE ProfileId = ? AND WarmupPracticeId = ? AND Del = 0";
+        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
+        try {
+            return runner.query(sql, h, profileId, warmupPracticeId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<WarmupPracticeDiscuss> loadDiscussByRepliedIds(List<Integer> repliedIds) {
+        if (repliedIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM WarmupPracticeDiscuss WHERE RepliedId IN (" + produceQuestionMark(repliedIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
+
+        try {
+            return runner.query(sql, h, repliedIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public void deleteComment(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update WarmupPracticeDiscuss set Del = 1 where Id = ?";
@@ -86,16 +114,32 @@ public class WarmupPracticeDiscussDao extends PracticeDBUtil {
 
     /**
      * 获取官方加精之后的选择题评论列表
-     * @param warmupPraticeId 评论对应的选择题 id
+     * @param warmUpPraticeId 评论对应的选择题 id
+     */
+    public List<WarmupPracticeDiscuss> loadPriorityWarmUpDiscuss(Integer warmUpPraticeId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
+        String sql = "SELECT * FROM WarmupPracticeDiscuss WHERE WarmupPracticeId = ? AND Priority = 1 AND Del = 0 ";
+        try {
+            return runner.query(sql, h, warmUpPraticeId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 获取官方加精之后的选择题评论列表
+     * @param warmUpPraticeId 评论对应的选择题 id
      * @param page 分页信息
      */
-    public List<WarmupPracticeDiscuss> loadPriorityWarmupDiscuss(Integer warmupPraticeId, Page page) {
+    public List<WarmupPracticeDiscuss> loadPriorityWarmUpDiscuss(Integer warmUpPraticeId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<WarmupPracticeDiscuss>> h = new BeanListHandler<>(WarmupPracticeDiscuss.class);
         String sql = "SELECT * FROM WarmupPracticeDiscuss WHERE WarmupPracticeId = ? AND Del = 0 ORDER BY Priority DESC, " +
                 "AddTime DESC LIMIT " + page.getOffset() + ", " + page.getLimit();
         try {
-            return runner.query(sql, h, warmupPraticeId);
+            return runner.query(sql, h, warmUpPraticeId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

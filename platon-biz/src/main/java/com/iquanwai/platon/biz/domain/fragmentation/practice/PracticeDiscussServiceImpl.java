@@ -2,15 +2,17 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.ProfileDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
 import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AbstractComment;
-import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
-import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.biz.util.ExecutorUtil;
 import com.iquanwai.platon.biz.util.page.Page;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -38,6 +40,12 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private AccountService accountService;
     @Autowired
     private KnowledgeDiscussDao knowledgeDiscussDao;
+    @Autowired
+    private ProfileDao profileDao;
+    @Autowired
+    private ApplicationSubmitDao applicationSubmitDao;
+    @Autowired
+    private CommentDao commentDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -74,7 +82,6 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     Objects.toString(profileId), url);
         }
     }
-
 
     @Override
     public void discussKnowledge(Integer profileId, Integer knowledgeId, String comment, Integer repliedId) {
@@ -245,24 +252,98 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         return discuss;
     }
 
-    public Map<Integer, List<WarmupComment>> loadWarmUpDiscuss(Integer profileId, List<Integer> warmUpPracticeIds, Page page) {
-        Map<Integer, List<WarmupComment>> discussListMap = Maps.newHashMap();
+    @Override
+    public List<PersonalDiscuss> loadPersonalKnowledgeDiscussList(Integer profileId, Integer knowledgeId) {
+        List<PersonalDiscuss> personalElements = Lists.newArrayList();
 
-        Map<Integer, FutureTask<List<WarmupComment>>> futureTaskMap = Maps.newHashMap();
-        warmUpPracticeIds.forEach(practiceId -> {
+        List<KnowledgeDiscuss> personalDiscusses = knowledgeDiscussDao.loadDiscussesByProfileId(profileId, knowledgeId);
+        List<Integer> personalIds = personalDiscusses.stream().map(KnowledgeDiscuss::getId).collect(Collectors.toList());
+
+        // 根据自己的评论，查看所有评论自己的内容
+        List<KnowledgeDiscuss> commentDiscuss = knowledgeDiscussDao.loadKnowledgeDiscussByRepliedIds(personalIds);
+        Map<Integer, List<KnowledgeDiscuss>> commentDiscussMap = commentDiscuss.stream().collect(Collectors.groupingBy(KnowledgeDiscuss::getRepliedId));
+
+        // 获取所有涉及到的人员 ProfileId, 以及 Profile 对应 map 集合
+        List<Integer> profileIds = Lists.newArrayList();
+        profileIds.addAll(personalDiscusses.stream().map(KnowledgeDiscuss::getProfileId).collect(Collectors.toList()));
+        profileIds.addAll(commentDiscuss.stream().map(KnowledgeDiscuss::getProfileId).collect(Collectors.toList()));
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
+        Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
+
+        personalDiscusses.forEach(discuss -> {
+            PersonalDiscuss personalDiscuss = new PersonalDiscuss();
+            personalDiscuss.setDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
+            List<KnowledgeDiscuss> knowledgeComments = commentDiscussMap.getOrDefault(discuss.getId(), Lists.newArrayList());
+            List<DiscussElement> discussElementsComments = knowledgeComments.stream().map(comment -> convertDiscussToElement(comment, involvedProfileMap)).collect(Collectors.toList());
+            personalDiscuss.setComments(discussElementsComments);
+            personalElements.add(personalDiscuss);
+        });
+        return personalElements;
+    }
+
+    @Override
+    public List<DiscussElementsPair> loadPriorityKnowledgeDiscuss(Integer knowledgeId) {
+        List<DiscussElementsPair> discussElementsPairs = Lists.newArrayList();
+
+        // 精彩评论
+        List<KnowledgeDiscuss> priorityDiscuss = knowledgeDiscussDao.loadPriorityKnowledgeDiscuss(knowledgeId);
+
+        // 被回复的评论
+        List<Integer> repliedIds = priorityDiscuss.stream()
+                .filter(priority -> priority.getRepliedId() != null && priority.getDel() == 0)
+                .map(KnowledgeDiscuss::getRepliedId)
+                .collect(Collectors.toList());
+        List<KnowledgeDiscuss> repliedDiscuss = knowledgeDiscussDao.loadKnowledgeDiscussByIds(repliedIds);
+        Map<Integer, KnowledgeDiscuss> repliedDiscussMap = repliedDiscuss.stream()
+                .collect(Collectors.toMap(KnowledgeDiscuss::getId, knowledgeDiscuss -> knowledgeDiscuss, (key1, key2) -> key1));
+
+
+        // 获取所有涉及到的人员 ProfileId, 以及 Profile 对应 map 集合
+        List<Integer> profileIds = Lists.newArrayList();
+        profileIds.addAll(priorityDiscuss.stream().map(KnowledgeDiscuss::getProfileId).collect(Collectors.toList()));
+        profileIds.addAll(repliedDiscuss.stream().map(KnowledgeDiscuss::getProfileId).collect(Collectors.toList()));
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
+        Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
+
+
+        priorityDiscuss.forEach(discuss -> {
+            DiscussElementsPair discussElementsPair = new DiscussElementsPair();
+
+            discussElementsPair.setPriorityDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
+
+            if (discuss.getRepliedId() != null && discuss.getRepliedDel() == 0) {
+                discussElementsPair.setOriginDiscuss(convertDiscussToElement(repliedDiscussMap.get(discuss.getRepliedId()), involvedProfileMap));
+            }
+
+            discussElementsPairs.add(discussElementsPair);
+        });
+
+        return discussElementsPairs;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<Integer, WarmupDiscussDistrict> loadWarmUpDiscuss(Integer profileId, List<Integer> warmUpPracticeIds) {
+        Map<Integer, WarmupDiscussDistrict> discussListMap = Maps.newHashMap();
+
+        Map<Integer, FutureTask<WarmupDiscussDistrict>> futureTaskMap = Maps.newHashMap();
+        warmUpPracticeIds.forEach(warmUpPracticeId -> {
             FutureTask futureTask = new FutureTask(() -> {
-                // 获取数据
-                return 1;
+                WarmupDiscussDistrict warmupDiscussDistrict = new WarmupDiscussDistrict();
+
+                warmupDiscussDistrict.setPersonal(loadPersonalWarmUpDiscuss(profileId, warmUpPracticeId));
+                warmupDiscussDistrict.setPriorities(loadPriorityWarmUpDiscuss(warmUpPracticeId));
+                return warmupDiscussDistrict;
             });
-            new Thread(futureTask).start();
-            futureTaskMap.put(practiceId, futureTask);
+            ExecutorUtil.submit(futureTask);
+            futureTaskMap.put(warmUpPracticeId, futureTask);
         });
 
         for (Integer key : futureTaskMap.keySet()) {
             try {
-                List<WarmupComment> warmUpComments = futureTaskMap.get(key).get();
-                if (warmUpComments != null) {
-                    discussListMap.put(key, warmUpComments);
+                WarmupDiscussDistrict warmupDiscussDistrict = futureTaskMap.get(key).get();
+                if (warmupDiscussDistrict != null) {
+                    discussListMap.put(key, warmupDiscussDistrict);
                 }
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage(), e);
@@ -272,6 +353,194 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         return discussListMap;
     }
 
+    private List<PersonalDiscuss> loadPersonalWarmUpDiscuss(Integer profileId, Integer warmUpPracticeId) {
+        List<PersonalDiscuss> personalElements = Lists.newArrayList();
+
+        List<WarmupPracticeDiscuss> personalDiscusses = warmupPracticeDiscussDao.loadDiscussByProfileId(profileId, warmUpPracticeId);
+        List<Integer> personalIds = personalDiscusses.stream().map(WarmupPracticeDiscuss::getId).collect(Collectors.toList());
+
+        // 根据自己的评论，查看所有评论自己的内容
+        List<WarmupPracticeDiscuss> commentDiscuss = warmupPracticeDiscussDao.loadDiscussByRepliedIds(personalIds);
+        Map<Integer, List<WarmupPracticeDiscuss>> commentDiscussMap = commentDiscuss.stream().collect(Collectors.groupingBy(WarmupPracticeDiscuss::getRepliedId));
+
+        // 获取所有涉及到的人员 ProfileId, 以及 Profile 对应 map 集合
+        List<Integer> profileIds = Lists.newArrayList();
+        profileIds.addAll(personalDiscusses.stream().map(WarmupPracticeDiscuss::getProfileId).collect(Collectors.toList()));
+        profileIds.addAll(commentDiscuss.stream().map(WarmupPracticeDiscuss::getProfileId).collect(Collectors.toList()));
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
+        Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
+
+        personalDiscusses.forEach(discuss -> {
+            PersonalDiscuss personalDiscuss = new PersonalDiscuss();
+            personalDiscuss.setDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
+            List<WarmupPracticeDiscuss> warmupPracticeDiscusses = commentDiscussMap.getOrDefault(discuss.getId(), Lists.newArrayList());
+            List<DiscussElement> discussElementsComments = warmupPracticeDiscusses.stream()
+                    .map(comment -> convertDiscussToElement(comment, involvedProfileMap))
+                    .filter(element -> element != null)
+                    .collect(Collectors.toList());
+            personalDiscuss.setComments(discussElementsComments);
+            personalElements.add(personalDiscuss);
+        });
+        return personalElements;
+    }
+
+    private List<DiscussElementsPair> loadPriorityWarmUpDiscuss(Integer warmUpPracticeId) {
+        List<DiscussElementsPair> discussElementsPairs = Lists.newArrayList();
+
+        // 获取全部的精彩评论
+        List<WarmupPracticeDiscuss> priorityDiscuss = warmupPracticeDiscussDao.loadPriorityWarmUpDiscuss(warmUpPracticeId);
+
+        // 被回复的评论
+        List<Integer> repliedIds = priorityDiscuss.stream()
+                .filter(priority -> priority.getRepliedId() != null && priority.getDel() == 0)
+                .map(WarmupPracticeDiscuss::getRepliedId)
+                .collect(Collectors.toList());
+        List<WarmupPracticeDiscuss> repliedDiscuss = warmupPracticeDiscussDao.loadWarmupDiscussById(repliedIds);
+        Map<Integer, WarmupPracticeDiscuss> repliedDiscussMap = repliedDiscuss.stream()
+                .collect(Collectors.toMap(WarmupPracticeDiscuss::getId, warmupPracticeDiscuss -> warmupPracticeDiscuss, (key1, key2) -> key1));
+
+        // 获取所有涉及到的人员 ProfileId, 以及 Profile 对应 map 集合
+        List<Integer> profileIds = Lists.newArrayList();
+        profileIds.addAll(priorityDiscuss.stream().map(WarmupPracticeDiscuss::getProfileId).collect(Collectors.toList()));
+        profileIds.addAll(repliedDiscuss.stream().map(WarmupPracticeDiscuss::getProfileId).collect(Collectors.toList()));
+        List<Profile> profiles = profileDao.queryAccounts(profileIds);
+        Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
+
+        priorityDiscuss.forEach(discuss -> {
+            DiscussElementsPair discussElementsPair = new DiscussElementsPair();
+
+            discussElementsPair.setPriorityDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
+
+            if (discuss.getRepliedId() != null && discuss.getRepliedDel() == 0) {
+                discussElementsPair.setOriginDiscuss(convertDiscussToElement(repliedDiscussMap.get(discuss.getRepliedId()), involvedProfileMap));
+            }
+
+            discussElementsPairs.add(discussElementsPair);
+        });
+        return discussElementsPairs;
+    }
+
+    @Override
+    public List<PersonalDiscuss> loadPersonalApplicationSubmitDiscussList(Integer profileId, Integer applicationId, Integer planId) {
+        // 维护数据结构的一致性（方便前端组件统一）
+        List<PersonalDiscuss> personalElements = Lists.newArrayList();
+        PersonalDiscuss personalDiscuss = new PersonalDiscuss();
+        // 获取个人作业以及相关评论
+        ApplicationSubmit applicationSubmit = applicationSubmitDao.load(applicationId, planId, profileId);
+        if (applicationSubmit == null) {
+            return Lists.newArrayList();
+        }
+
+        List<Comment> comments = commentDao.loadApplicationComments(applicationSubmit.getId());
+        // 获取作业以及评论涉及的人员
+        List<Integer> profileIds = Lists.newArrayList();
+        profileIds.add(applicationSubmit.getProfileId());
+        profileIds.addAll(comments.stream().map(Comment::getCommentProfileId).collect(Collectors.toList()));
+        List<Profile> involvedProfiles = profileDao.queryAccounts(profileIds);
+        Map<Integer, Profile> involvedProfileMap = involvedProfiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
+
+        // 转换用户作业数据
+        DiscussElement discussElement = new DiscussElement();
+        discussElement.setContent(applicationSubmit.getContent());
+        Profile submitProfile = involvedProfileMap.getOrDefault(applicationSubmit.getProfileId(), null);
+        if (submitProfile != null) {
+            discussElement.setNickname(submitProfile.getNickname());
+            discussElement.setAvatar(submitProfile.getHeadimgurl());
+            discussElement.setContent(applicationSubmit.getContent());
+            discussElement.setPublishTime(applicationSubmit.getPublishTime());
+            personalDiscuss.setDiscuss(discussElement);
+        }
+
+        // 专用评论作业
+        List<DiscussElement> discussElements = Lists.newArrayList();
+        comments.forEach(comment -> {
+            DiscussElement element = new DiscussElement();
+            Profile singleProfile = involvedProfileMap.getOrDefault(comment.getCommentProfileId(), null);
+            if (singleProfile != null) {
+                element.setNickname(singleProfile.getNickname());
+                element.setAvatar(singleProfile.getHeadimgurl());
+                element.setContent(comment.getContent());
+                element.setPublishTime(comment.getAddTime());
+                discussElements.add(element);
+            }
+        });
+
+        personalDiscuss.setComments(discussElements);
+
+        personalElements.add(personalDiscuss);
+        return personalElements;
+    }
+
+    // 获取精华区的作业和讨论
+    @Override
+    public List<DiscussElementsPair> loadPriorityApplicationSubmitDiscussList(Integer applicationId) {
+        List<DiscussElementsPair> discussElementsPairs = Lists.newArrayList();
+
+        List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadPriorityApplicationSubmitsByApplicationId(applicationId);
+        List<Integer> submitsIds = applicationSubmits.stream().map(ApplicationSubmit::getId).collect(Collectors.toList());
+
+        List<Comment> comments = commentDao.loadAllCommentsByReferenceIds(submitsIds);
+        Map<Integer, List<Comment>> commentsMap = comments.stream().collect(Collectors.groupingBy(Comment::getReferencedId));
+
+        // 获取所有涉及的人员数据
+        List<Integer> profileIds = Lists.newArrayList();
+        profileIds.addAll(applicationSubmits.stream().map(ApplicationSubmit::getProfileId).collect(Collectors.toList()));
+        profileIds.addAll(comments.stream().map(Comment::getCommentProfileId).collect(Collectors.toList()));
+        List<Profile> involvedProfiles = profileDao.queryAccounts(profileIds);
+        Map<Integer, Profile> involvedProfileMap = involvedProfiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
+
+        // 拼装数据
+        applicationSubmits.forEach(applicationSubmit -> {
+            DiscussElementsPair discussElementsPair = new DiscussElementsPair();
+
+            Integer referenceId = applicationSubmit.getId();
+            List<Comment> referenceComments = commentsMap.getOrDefault(referenceId, Lists.newArrayList());
+
+            Profile priorityProfile = involvedProfileMap.getOrDefault(applicationSubmit.getProfileId(), null);
+            if (priorityProfile != null) {
+                DiscussElement priorityDiscuss = new DiscussElement();
+                priorityDiscuss.setContent(applicationSubmit.getContent());
+                priorityDiscuss.setPublishTime(applicationSubmit.getPublishTime());
+                priorityDiscuss.setAvatar(priorityProfile.getHeadimgurl());
+                priorityDiscuss.setNickname(priorityProfile.getNickname());
+                discussElementsPair.setPriorityDiscuss(priorityDiscuss);
+            }
+
+            List<DiscussElement> discussComments = Lists.newArrayList();
+            referenceComments.forEach(comment -> {
+                Profile discussProfile = involvedProfileMap.getOrDefault(comment.getCommentProfileId(), null);
+                if (discussProfile != null) {
+                    DiscussElement discussComment = new DiscussElement();
+                    discussComment.setContent(comment.getContent());
+                    discussComment.setPublishTime(comment.getAddTime());
+                    discussComment.setAvatar(discussProfile.getHeadimgurl());
+                    discussComment.setNickname(discussProfile.getNickname());
+                    discussComments.add(discussComment);
+                }
+            });
+
+            discussElementsPair.setMultiComments(discussComments);
+            discussElementsPairs.add(discussElementsPair);
+        });
+
+        return discussElementsPairs;
+    }
+
+    // 将知识点评论转化为评论对象
+    private <T extends AbstractComment> DiscussElement convertDiscussToElement(T abstractComment, Map<Integer, Profile> involvedProfileMap) {
+        if (abstractComment.getProfileId() == null || involvedProfileMap.get(abstractComment.getProfileId()) == null) {
+            // 失效数据，返回 null
+            return null;
+        } else {
+            DiscussElement discussElement = new DiscussElement();
+            Profile profile = involvedProfileMap.get(abstractComment.getProfileId());
+            discussElement.setAvatar(profile.getHeadimgurl());
+            discussElement.setNickname(profile.getNickname());
+            discussElement.setPublishTime(abstractComment.getAddTime());
+            discussElement.setContent(abstractComment.getComment());
+            return discussElement;
+        }
+    }
 
     //填充评论的其他字段
     private void fulfilDiscuss(List<? extends AbstractComment> discuss) {
