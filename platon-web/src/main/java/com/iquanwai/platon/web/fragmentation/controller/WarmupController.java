@@ -151,6 +151,12 @@ public class WarmupController {
         return WebUtils.result(warmUpPracticeDto);
     }
 
+    @RequestMapping(value = "/analysis/priority/single/{warmupPracticeId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadSingleWarmUpPriorityDiscuss(UnionUser unionUser, @PathVariable Integer warmupPracticeId) {
+        WarmupDiscussDistrict warmupDiscussDistrict = practiceDiscussService.loadSingleWarmUpDiscuss(unionUser.getId(), warmupPracticeId);
+        return WebUtils.result(warmupDiscussDistrict);
+    }
+
     private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupComment>> discuss) {
         warmupPracticeList.forEach(warmupPractice -> {
             List<WarmupComment> list = discuss.get(warmupPractice.getId());

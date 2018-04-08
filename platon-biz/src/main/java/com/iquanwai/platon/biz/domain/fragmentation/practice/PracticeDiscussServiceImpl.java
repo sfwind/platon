@@ -353,6 +353,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         return discussListMap;
     }
 
+    @Override
+    public WarmupDiscussDistrict loadSingleWarmUpDiscuss(Integer profileId, Integer warmUpPracticeId) {
+        WarmupDiscussDistrict warmupDiscussDistrict = new WarmupDiscussDistrict();
+        warmupDiscussDistrict.setPersonal(loadPersonalWarmUpDiscuss(profileId, warmUpPracticeId));
+        warmupDiscussDistrict.setPriorities(loadPriorityWarmUpDiscuss(warmUpPracticeId));
+        return warmupDiscussDistrict;
+    }
+
+
     private List<PersonalDiscuss> loadPersonalWarmUpDiscuss(Integer profileId, Integer warmUpPracticeId) {
         List<PersonalDiscuss> personalElements = Lists.newArrayList();
 

@@ -90,6 +90,13 @@ public interface PracticeDiscussService {
     // 获取精华区的作业和讨论
 
     /**
+     * 根据选择题 id 获取对应的所有评论内容
+     * @param profileId 用户 id
+     * @param warmUpPracticeId 巩固练习的 id
+     */
+    WarmupDiscussDistrict loadSingleWarmUpDiscuss(Integer profileId, Integer warmUpPracticeId);
+
+    /**
      * 获取个人应用题提交和评论
      */
     List<PersonalDiscuss> loadPersonalApplicationSubmitDiscussList(Integer profileId, Integer applicationId, Integer planId);
