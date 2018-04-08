@@ -3,19 +3,14 @@ package com.iquanwai.platon.web.daily;
 import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.daily.DailyService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.daily.DailyTalk;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
-import org.joda.time.DateTime;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -36,7 +32,7 @@ public class DailyController {
     @Autowired
     private CustomerService customerService;
     @Autowired
-    private AccountService accountService;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private RedisUtil redisUtil;
 
@@ -61,13 +57,13 @@ public class DailyController {
             return WebUtils.result(false);
         }
 
-        RiseMember riseMember = accountService.getValidRiseMember(profileId);
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         //非会员不展示
-        if (riseMember == null) {
+        if(CollectionUtils.isEmpty(riseMembers)){
             return WebUtils.result(false);
+        }else{
+            return WebUtils.result(true);
         }
-
-        return WebUtils.result(true);
 
     }
 
@@ -89,13 +85,14 @@ public class DailyController {
 
             Integer loginDay = customerService.loadContinuousLoginCount(profileId);
             Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
-            RiseMember riseMember = accountService.getValidRiseMember(profileId);
-            Integer percent = customerService.calSyncDefeatPercent(riseMember);
-
-
-            if (riseMember == null) {
+            // TODO: 待验证
+            List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+            if(CollectionUtils.isEmpty(riseMembers)){
                 return WebUtils.error("非会员类型");
             }
+
+            RiseMember riseMember = riseMembers.get(0);
+            Integer percent = customerService.calSyncDefeatPercent(riseMember);
 
             String result = dailyService.drawDailyTalk(unionUser.getId(), currentDate, loginDay, learnedKnowledge, percent);
 

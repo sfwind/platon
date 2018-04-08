@@ -3,9 +3,9 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
@@ -47,6 +47,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,7 @@ public class CustomerController {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private EventWallService eventWallService;
     @Autowired
@@ -186,7 +187,7 @@ public class CustomerController {
             riseDto.setMemberId(riseClassMember.getMemberId());
         }
 
-        RiseMember riseMember = riseMemberService.getRiseMember(unionUser.getId());
+        RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
         }
@@ -479,10 +480,10 @@ public class CustomerController {
     @ApiOperation("查询用户会员信息")
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
-        RiseMember riseMember = riseMemberService.getRiseMember(unionUser.getId());
-
-        if (riseMember != null) {
-            return WebUtils.result(riseMember.simple());
+        List<RiseMember> riseMember = riseMemberManager.member(unionUser.getId());
+        //TODO: 待验证
+        if (CollectionUtils.isNotEmpty(riseMember)) {
+            return WebUtils.result(riseMember.get(0).simple());
         } else {
             return WebUtils.result(null);
         }
@@ -493,8 +494,8 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> notifyExpire(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
-        boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
-        boolean expiredRiseMember = riseMemberService.expiredRiseMember(unionUser.getId());
+        boolean expiredRiseMemberInSevenDays = riseMemberManager.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
+        boolean expiredRiseMember = riseMemberManager.expiredRiseMember(unionUser.getId());
         riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
         riseMember.setExpired(expiredRiseMember);
         riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSevenDays);

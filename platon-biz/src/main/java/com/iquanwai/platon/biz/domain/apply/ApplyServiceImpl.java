@@ -6,7 +6,7 @@ import com.iquanwai.platon.biz.dao.apply.BusinessApplyQuestionDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplySubmitDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationOrderDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ApplyException;
@@ -50,7 +50,7 @@ public class ApplyServiceImpl implements ApplyService {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private BusinessApplySubmitDao businessApplySubmitDao;
     @Autowired
@@ -132,7 +132,9 @@ public class ApplyServiceImpl implements ApplyService {
             application.setLastVerified(0);
         }
 
-        Optional<RiseMember> optional = riseMemberDao.loadRiseMembersByProfileId(profileId).stream().sorted(((o1, o2) -> o2.getId() - o1.getId())).findFirst();
+        // TODO:待验证
+        Optional<RiseMember> optional = riseMemberManager.member(profileId).stream()
+                .sorted(((o1, o2) -> o2.getId() - o1.getId())).findFirst();
         optional.ifPresent(riseMember -> application.setOriginMemberType(riseMember.getMemberTypeId()));
 
         Integer applyId = businessSchoolApplicationDao.insert(application);
@@ -152,9 +154,8 @@ public class ApplyServiceImpl implements ApplyService {
     @Override
     public void checkApplyPrivilege(Integer profileId) throws ApplyException {
         // 已经是商学院用户
-        RiseMember riseMember = accountService.getValidRiseMember(profileId);
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
+        if (riseMember != null) {
             throw new ApplyException("您已经是商学院用户,无需重复申请");
         }
 

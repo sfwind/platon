@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
@@ -59,7 +60,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Autowired
     private AuditionClassMemberDao auditionClassMemberDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
 
@@ -318,8 +319,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 用户选择的选项id
         List<Integer> choices = Lists.newArrayList();
         scheduleQuestions.forEach(question -> question.getScheduleChoices().forEach(item -> choices.add(item.getId())));
-        // 用户购买记录
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证 用户购买记录
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
 
         if (CollectionUtils.isEmpty(userSchedule)) {
             // 插入用户选择

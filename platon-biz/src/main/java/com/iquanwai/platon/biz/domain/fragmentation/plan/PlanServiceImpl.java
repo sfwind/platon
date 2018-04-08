@@ -19,10 +19,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -89,7 +86,7 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
@@ -319,8 +316,19 @@ public class PlanServiceImpl implements PlanService {
                 .filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
                 .collect(Collectors.toList());
 
-        // 是精英会员用户才会有选课上限
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证 选课
+        Problem problem = cacheService.getProblem(problemId);
+        if(problem == null){
+            throw new CreateCourseException("课程不存在");
+        }
+
+        RiseMember riseMember = null;
+        if(problem.getProject() == Constants.Project.MINI_MBA_PROJECT){
+            riseMember = riseMemberManager.miniMbaMember(profileId);
+        }else if(problem.getProject() == Constants.Project.CORE_PROJECT){
+            riseMember = riseMemberManager.quanwaiMember(profileId);
+        }
+
         //员工没有选课限制
         if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
             return true;
@@ -398,7 +406,6 @@ public class PlanServiceImpl implements PlanService {
             }
         }
 
-        Problem problem = cacheService.getProblem(problemId);
         if (!problem.getPublish()) {
             throw new CreateCourseException("该课程还在开发中，敬请期待");
         }
@@ -410,10 +417,9 @@ public class PlanServiceImpl implements PlanService {
         }
 
         // 这里生成课程训练计划，另外在检查一下是否是会员或者购买了这个课程
-        Boolean isRiseMember = accountService.isRiseMember(profileId);
-        Integer trialProblemId = ConfigUtils.getTrialProblemId();
-        if (!isRiseMember && !problemId.equals(trialProblemId)) {
-            // 既没有购买过这个课程，又不是rise会员,也不是限免课程
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+        if (CollectionUtils.isEmpty(riseMembers)) {
+            // 不是会员
             throw new CreateCourseException("您不是商学院会员，需要先购买会员哦");
         }
         return true;
@@ -791,7 +797,8 @@ public class PlanServiceImpl implements PlanService {
         // 不显示按钮
         int buttonStatus = -1;
 
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证
+        RiseMember riseMember = riseMemberManager.quanwaiMember(profileId);
         if (plan == null) {
             // 2 - 去上课 1 - 加入商学院 5 - 选择该课程
             if (riseMember == null) {

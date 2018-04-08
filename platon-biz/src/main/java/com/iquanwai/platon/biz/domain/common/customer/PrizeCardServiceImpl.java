@@ -3,11 +3,8 @@ package com.iquanwai.platon.biz.domain.common.customer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.AnnualSummaryDao;
-import com.iquanwai.platon.biz.dao.fragmentation.GroupPromotionDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardConfigDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -15,14 +12,11 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.AnnualSummary;
 import com.iquanwai.platon.biz.po.PrizeCard;
 import com.iquanwai.platon.biz.po.PrizeCardConfig;
-import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class PrizeCardServiceImpl implements PrizeCardService {
@@ -40,14 +33,7 @@ public class PrizeCardServiceImpl implements PrizeCardService {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private GeneratePlanService generatePlanService;
-    @Autowired
     private CustomerMessageService customerMessageService;
-
-    @Autowired
-    private RiseMemberDao riseMemberDao;
-    @Autowired
-    private GroupPromotionDao groupPromotionDao;
     @Autowired
     private AnnualSummaryDao annualSummaryDao;
     @Autowired
@@ -92,16 +78,16 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         prizeCards.sort((o1, o2) -> {
             int count1 = 0;
             int count2 = 0;
-            if(o1.isExpired()){
+            if (o1.isExpired()) {
                 count1 = count1 + 10;
             }
-            if(o2.isExpired()){
+            if (o2.isExpired()) {
                 count2 = count2 + 10;
             }
-            if(o1.getReceiverProfileId() != null){
+            if (o1.getReceiverProfileId() != null) {
                 count1 = count1 + 1;
             }
-            if(o2.getReceiverProfileId() != null){
+            if (o2.getReceiverProfileId() != null) {
                 count2 = count2 + 1;
             }
 
@@ -109,39 +95,6 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         });
 
         return prizeCards;
-    }
-
-    /**
-     * 领取年度礼品卡
-     */
-    @Override
-    public String receiveAnnualPrizeCards(String cardNo, Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        if (riseMembers.size() > 0) {
-            logger.info("用户不在可领取范围内");
-            return "优秀如你，已经早早开始了在圈外商学院的学习，请把体验的机会留给尚未体验过的小伙伴吧～";
-        }
-        if (groupPromotionDao.loadByProfileId(profileId) != null) {
-            logger.info("用户已经参加一带二活动");
-            return "你已经获得体验资格，把机会留给需要的小伙伴吧！";
-        }
-        if (prizeCardDao.loadReceiveAnnualCard(profileId).size() > 0) {
-            logger.info("用户已经领取过一张");
-            return "你已经获得体验资格，把机会留给需要的小伙伴吧！";
-        }
-        Profile profile = accountService.getProfile(profileId);
-        if (profile == null) {
-            logger.info("用户不存在");
-            return "用户不存在";
-        }
-        //成功更新认为领取成功
-        if (prizeCardDao.updateAnnualCard(cardNo, profile.getOpenid(), profileId) == 1) {
-            //开课
-            generatePlanService.createTeamLearningPlan(profileId);
-            return "领取成功";
-        } else {
-            return "你晚来一步,礼品卡已被其他小伙伴领取";
-        }
     }
 
     @Override
@@ -191,35 +144,6 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         prizeCards = prizeCardDao.getAnnualPrizeCards(profileId);
 
         return prizeCards;
-    }
-
-    @Override
-    public Pair<Integer, String> isPreviewCardReceived(String cardId, Integer profileId) {
-        if (!accountService.isPreviewNewUser(profileId)) {
-            return new ImmutablePair<>(-1, "亲，请给新用户一点机会吧~");
-        }
-        //判断礼品卡是否已经被领取
-        PrizeCard prizeCard = prizeCardDao.loadCardByCardNo(cardId);
-        if (prizeCard == null) {
-            return new ImmutablePair<>(-1, "该礼品卡不存在");
-        }
-        if (prizeCard.getUsed()) {
-            return new ImmutablePair<>(-1, "该礼品卡已经被领取");
-        }
-        if (prizeCard.getExpiredTime().before(new Date())) {
-            return new ImmutablePair<>(-2, "抱歉，商学院体验卡已过期。");
-        }
-        //领取礼品卡
-        if (prizeCardDao.updatePreviewCard(prizeCard.getId(), profileId) == 0) {
-            return new ImmutablePair<>(-1, "该礼品卡已经被领取");
-        }
-
-        if (prizeCard.getProfileId().equals(profileId)) {
-            return new ImmutablePair<>(1, "本人的礼品卡");
-        }
-        //暂时不开课
-        generatePlanService.createTeamLearningPlan(profileId);
-        return new ImmutablePair<>(0, "恭喜您获得该礼品卡");
     }
 
     /**
@@ -280,37 +204,4 @@ public class PrizeCardServiceImpl implements PrizeCardService {
         data.put("first", new TemplateMessage.Keyword(receiver + "领取了你的商学院邀请函，开启了7天线上体验之旅！\n"));
         templateMessageService.sendMessage(templateMessage);
     }
-
-    /**
-     * 只有参加一带二活动或者礼品卡活动的人才具有复购资格
-     *
-     * @param profileId
-     * @return
-     */
-    @Override
-    public boolean checkJanPay(Integer profileId) {
-        //判断是否参加了一带二或者礼品卡活动
-        if ((prizeCardDao.loadAnnualCardByReceiver(profileId) == null) && (prizeCardDao.loadReceiveAnnualCard(profileId).size() == 0) && (groupPromotionDao.loadByProfileId(profileId) == null)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * 根据年终回顾生成礼品卡(临时方案)
-     */
-//    @Override
-//    public void genPrizeCardsByAnnSummary() {
-//        //获得年终回顾的数据
-//        List<AnnualSummary> annualSummaries = annualSummaryDao.loadAll(AnnualSummary.class);
-//        List<AnnualSummary> realAnnualSummaries = annualSummaries.stream().filter(annualSummary -> annualSummary.getDel()==0).collect(Collectors.toList());
-//
-//        realAnnualSummaries.stream().forEach(annualSummary -> {
-//            Integer profileId = annualSummary.getProfileId();
-//            if(profileId != null){
-//                //生成礼品卡
-//                generateAnnualPrizeCards(profileId);
-//            }
-//        });
-//    }
 }

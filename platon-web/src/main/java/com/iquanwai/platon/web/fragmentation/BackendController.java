@@ -1,7 +1,7 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
@@ -40,7 +40,7 @@ public class BackendController {
     @Autowired
     private GeneratePlanService generatePlanService;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private RiseMemberManager riseMemberManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -164,7 +164,7 @@ public class BackendController {
                 .action("根据openid获取学号");
         operationLogService.log(operationLog);
 
-        String memberId = riseMemberService.getMemberId(openidDto.getOpenid());
+        String memberId = riseMemberManager.getMemberId(openidDto.getOpenid());
         if (memberId == null) {
             return WebUtils.error(201, "该用户没有学号");
         }else{

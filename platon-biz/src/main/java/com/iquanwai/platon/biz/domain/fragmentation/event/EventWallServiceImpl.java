@@ -55,22 +55,7 @@ public class EventWallServiceImpl implements EventWallService {
 
     @Override
     public List<EventWall> getEventWall(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        List<ImprovementPlan> plans = improvementPlanDao.loadRunningPlan(profileId);
-
-        List<EventWall> eventWalls = eventWallDao
-                .loadAll(EventWall.class)
-                .stream().filter((item) -> this.visibleCheck(item, riseMember, plans))
-                .collect(Collectors.toList());
-        eventWalls.sort((o1, o2) -> {
-            if (o1.getStartTime() == null) {
-                return 1;
-            } else if (o2.getStartTime() == null) {
-                return -1;
-            }
-            return o2.getStartTime().before(o1.getStartTime()) ? -1 : 1;
-        });
-        return eventWalls;
+        return Lists.newArrayList();
     }
 
     private Boolean visibleCheck(EventWall eventWall, RiseMember riseMember, List<ImprovementPlan> plans) {

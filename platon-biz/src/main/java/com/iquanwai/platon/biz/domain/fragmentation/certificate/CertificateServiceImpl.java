@@ -6,8 +6,8 @@ import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -48,8 +48,6 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private RiseMemberService riseMemberService;
-    @Autowired
     private PointManager pointManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
@@ -66,7 +64,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private FullAttendanceRewardDao fullAttendanceRewardDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
@@ -416,11 +414,11 @@ public class CertificateServiceImpl implements CertificateService {
                         if (isGenerate) {
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            Boolean validElite = riseMemberService.isValidElite(profileId);
-                            Boolean validCamp = riseMemberService.isValidCamp(profileId);
+                            RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
+                            RiseMember campMember = riseMemberManager.campMember(profileId);
 
                             //判断是否是当月训练营或者商学院用户
-                            if (validElite || validCamp) {
+                            if (riseMember != null || campMember != null) {
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
@@ -755,7 +753,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
+        RiseMember riseMember = riseMemberManager.quanwaiMember(profile.getId());
         if (riseMember != null) {
             if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
                 coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
@@ -767,6 +765,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {

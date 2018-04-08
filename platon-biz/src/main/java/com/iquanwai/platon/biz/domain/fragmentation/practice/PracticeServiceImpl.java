@@ -309,13 +309,6 @@ public class PracticeServiceImpl implements PracticeService {
         }
         if (plan != null && plan.getRequestCommentCount() > 0) {
             applicationPractice.setRequestCommentCount(plan.getRequestCommentCount());
-        } else {
-            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-            if (riseMember != null) {
-                if (riseMember.getMemberTypeId().equals(RiseMember.ELITE) || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
-                    applicationPractice.setRequestCommentCount(0);
-                }
-            }
         }
 
         // 检查该道题是否是简单应用题还是复杂应用题
@@ -511,7 +504,8 @@ public class PracticeServiceImpl implements PracticeService {
                 operationLogService.trace(profileId, "voteApplication", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
                     Profile profile = accountService.getProfile(submitProfileId);
-                    RiseMember validRiseMember = accountService.getValidRiseMember(submitProfileId);
+                    // TODO: 子康
+                    RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(submitProfileId);
                     Problem problem = problemDao.load(Problem.class, submit.getProblemId());
                     prop.add("votedRolename", validRiseMember == null ? 0 : validRiseMember.getMemberTypeId());
                     prop.add("applicationId", submit.getApplicationId());
@@ -598,7 +592,8 @@ public class PracticeServiceImpl implements PracticeService {
                 asstCoachComment(load.getProfileId(), load.getProblemId());
             }
             operationLogService.trace(profileId, "replyCommentApplication", () -> {
-                RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
+                // TODO: 子康
+                RiseMember riseMember = riseMemberDao.loadValidRiseMember(load.getProfileId());
                 RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
                 Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();
@@ -697,7 +692,8 @@ public class PracticeServiceImpl implements PracticeService {
             operationLogService.trace(profileId, "commentApplication", () -> {
                 OperationLogService.Prop prop = OperationLogService.props();
                 Profile discussedProfile = accountService.getProfile(load.getProfileId());
-                RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
+                // TODO: 子康
+                RiseMember riseMember = riseMemberDao.loadValidRiseMember(load.getProfileId());
                 prop.add("discussedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                 prop.add("applicationId", load.getApplicationId());
 //                prop.add("discussedProfileId", load.getProfileId());

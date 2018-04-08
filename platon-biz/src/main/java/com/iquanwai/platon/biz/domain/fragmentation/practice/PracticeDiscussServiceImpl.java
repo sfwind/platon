@@ -75,6 +75,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
                 operationLogService.trace(profileId, "replyWarumupDiscuss", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
+                    // TODO: 子康
                     RiseMember riseMember = riseMemberDao.loadValidRiseMember(repliedDiscuss.getProfileId());
                     WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
                     RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(repliedDiscuss.getProfileId());
