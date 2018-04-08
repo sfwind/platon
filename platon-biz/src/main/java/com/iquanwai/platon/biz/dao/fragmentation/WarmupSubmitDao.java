@@ -37,6 +37,30 @@ public class WarmupSubmitDao extends PracticeDBUtil {
         }
     }
 
+    public int getPlanSubmitCount(Integer planId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "select count(*) from WarmupSubmit where PlanId = ?";
+        try {
+            return run.query(sql, h, planId).intValue();
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
+    }
+
+    public int getPlanRightCount(Integer planId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        ScalarHandler<Long> h = new ScalarHandler<>();
+        String sql = "select count(*) from WarmupSubmit where PlanId = ? and IsRight = 1";
+        try {
+            return run.query(sql, h, planId).intValue();
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return 0;
+    }
+
     public List<WarmupSubmit> getWarmupSubmit(int planId, List<Integer> questionIds) {
         if (CollectionUtils.isEmpty(questionIds)) {
             return Lists.newArrayList();

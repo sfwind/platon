@@ -2,16 +2,49 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDraftDao;
+import com.iquanwai.platon.biz.dao.fragmentation.AsstCoachCommentDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ChallengeSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CommentEvaluationDao;
+import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.SubjectArticleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManagerImpl;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.AnswerException;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.ApplicationSubmitDraft;
+import com.iquanwai.platon.biz.po.AsstCoachComment;
+import com.iquanwai.platon.biz.po.ChallengePractice;
+import com.iquanwai.platon.biz.po.ChallengeSubmit;
+import com.iquanwai.platon.biz.po.Comment;
+import com.iquanwai.platon.biz.po.CommentEvaluation;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.SubjectArticle;
+import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupSubmit;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.po.common.UserRole;
@@ -29,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +113,12 @@ public class PracticeServiceImpl implements PracticeService {
     private CertificateService certificateService;
     @Autowired
     private PracticePlanStatusManager practicePlanStatusManager;
+    @Autowired
+    private OperationLogService operationLogService;
+    @Autowired
+    private ProblemDao problemDao;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -129,7 +169,8 @@ public class PracticeServiceImpl implements PracticeService {
         warmupResult.setTotal(warmupPracticeList.size());
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         Integer planId = practicePlan.getPlanId();
-        for (WarmupPractice userAnswer : warmupPracticeList) {
+        for (int i = 0; i < warmupPracticeList.size(); i++) {
+            WarmupPractice userAnswer = warmupPracticeList.get(i);
             List<Integer> userChoice = userAnswer.getChoice();
             WarmupPractice practice = cacheService.getWarmupPractice(userAnswer.getId());
             if (practice == null) {
@@ -157,6 +198,16 @@ public class PracticeServiceImpl implements PracticeService {
             warmupSubmit.setScore(score);
             warmupSubmit.setProfileId(profileId);
             warmupSubmitDao.insert(warmupSubmit);
+
+            operationLogService.trace(profileId, "submitWarmup", () -> {
+                OperationLogService.Prop prop = OperationLogService.props();
+                prop.add("warmupId", practice.getId());
+                prop.add("problemId", practice.getProblemId());
+                prop.add("series", practicePlan.getSeries());
+                prop.add("sequence", practice.getSequence());
+                prop.add("isRight", accurate);
+                return prop;
+            });
         }
         if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
             practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
@@ -166,7 +217,6 @@ public class PracticeServiceImpl implements PracticeService {
         poinManager.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
-
         return warmupResult;
     }
 
@@ -295,10 +345,15 @@ public class PracticeServiceImpl implements PracticeService {
         }
 
         // 检查该道题是否是简单应用题还是复杂应用题
-        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
         PracticePlan targetPracticePlan = practicePlans.stream()
                 .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
+        PracticePlan lastPracticePlan = practicePlans.stream()
+                .filter(planItem -> planItem.getSeries().equals(targetPracticePlan.getSeries()))
+                .max((p1, p2) -> p1.getSequence() - p2.getSequence()).orElse(null);
+
         applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
+        applicationPractice.setIsLastApplication(lastPracticePlan.getPracticeId().equals(id.toString()));
 
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
@@ -317,6 +372,7 @@ public class PracticeServiceImpl implements PracticeService {
         } else {
             result = applicationSubmitDao.answer(id, content, length);
         }
+
         if (result && submit.getPointStatus() == 0) {
             // 修改应用任务记录
             ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
@@ -441,13 +497,10 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public boolean vote(Integer type, Integer referencedId, Integer profileId, Integer device) {
-        if (device == null) {
-            device = Constants.Device.MOBILE;
-        }
         HomeworkVote vote = homeworkVoteDao.loadVoteRecord(referencedId, profileId);
         if (vote == null) {
             Integer planId = null;
-            Integer submitProfileId = null;
+            Integer submitProfileId;
             if (type == Constants.VoteType.CHALLENGE) {
                 // 挑战任务点赞
                 ChallengeSubmit submit = challengeSubmitDao.load(ChallengeSubmit.class, referencedId);
@@ -464,6 +517,20 @@ public class PracticeServiceImpl implements PracticeService {
                 }
                 planId = submit.getPlanId();
                 submitProfileId = submit.getProfileId();
+                operationLogService.trace(profileId, "voteApplication", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    Profile profile = accountService.getProfile(submitProfileId);
+                    RiseMember validRiseMember = accountService.getValidRiseMember(submitProfileId);
+                    Problem problem = problemDao.load(Problem.class, submit.getProblemId());
+                    prop.add("votedRolename", validRiseMember == null ? 0 : validRiseMember.getMemberTypeId());
+                    prop.add("applicationId", submit.getApplicationId());
+                    prop.add("votedRiseId", profile.getRiseId());
+                    prop.add("problemId", problem.getId());
+                    prop.add("deviceType", device);
+                    return prop;
+                });
+            } else {
+                submitProfileId = null;
             }
             HomeworkVote homeworkVote = new HomeworkVote();
             homeworkVote.setReferencedId(referencedId);
@@ -473,6 +540,8 @@ public class PracticeServiceImpl implements PracticeService {
             homeworkVote.setDevice(device);
             homeworkVoteDao.vote(homeworkVote);
             poinManager.risePoint(planId, ConfigUtils.getVoteScore());
+
+
         } else {
             homeworkVoteDao.reVote(vote.getId());
         }
@@ -537,6 +606,26 @@ public class PracticeServiceImpl implements PracticeService {
                 applicationSubmitDao.asstFeedback(load.getId());
                 asstCoachComment(load.getProfileId(), load.getProblemId());
             }
+            operationLogService.trace(profileId, "replyCommentApplication", () -> {
+                RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
+                RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
+                Profile repliesProfile = accountService.getProfile(load.getProfileId());
+                OperationLogService.Prop prop = OperationLogService.props();
+                prop.add("repliedRiseId", repliesProfile.getRiseId());
+//                prop.add("repliedProfileId", load.getProfileId());
+                prop.add("applicationId", load.getApplicationId());
+                prop.add("problemId", load.getProblemId());
+                prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                if (riseClassMember != null) {
+                    if (riseClassMember.getClassName() != null) {
+                        prop.add("repliedClassname", riseClassMember.getClassName());
+                    }
+                    if (riseClassMember.getGroupId() != null) {
+                        prop.add("repliedGroupid", riseClassMember.getGroupId());
+                    }
+                }
+                return prop;
+            });
         }
 
         //被回复的评论
@@ -614,6 +703,17 @@ public class PracticeServiceImpl implements PracticeService {
                 String url = "/rise/static/message/application/reply?submitId=" + referId + "&commentId=" + id;
                 messageService.sendMessage("评论了我的应用题", load.getProfileId().toString(), profileId.toString(), url);
             }
+            operationLogService.trace(profileId, "commentApplication", () -> {
+                OperationLogService.Prop prop = OperationLogService.props();
+                Profile discussedProfile = accountService.getProfile(load.getProfileId());
+                RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
+                prop.add("discussedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                prop.add("applicationId", load.getApplicationId());
+//                prop.add("discussedProfileId", load.getProfileId());
+                prop.add("discussedRiseId", discussedProfile.getRiseId());
+                prop.add("problemId", load.getProblemId());
+                return prop;
+            });
         }
         return new MutablePair<>(id, "评论成功");
     }
@@ -775,6 +875,13 @@ public class PracticeServiceImpl implements PracticeService {
                 improvementPlanDao.updateRequestComment(planId, improvementPlan.getRequestCommentCount() - 1);
                 //求点评
                 applicationSubmitDao.requestComment(applicationSubmit.getId());
+
+                operationLogService.trace(profileId, "requestComment", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    prop.add("problemId", improvementPlan.getProblemId());
+                    prop.add("applicationId", applicationSubmit.getApplicationId());
+                    return prop;
+                });
                 return true;
             }
         }

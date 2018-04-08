@@ -1,26 +1,13 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -204,9 +191,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (courseSchedules.size() > 0) {
             runningSchedules.addAll(courseSchedules.stream().filter(schedule
                     -> (schedule.getMonth() == currentMonth && schedule.getSelected())
-                    || (
-                    ((schedule.getYear() == currentYear && schedule.getMonth() <= currentMonth)
-                            || schedule.getYear() < currentYear) && schedule.getType() == 1 && schedule.getSelected()))
+                    || (((schedule.getYear() == currentYear && schedule.getMonth() <= currentMonth) || schedule.getYear() < currentYear) && schedule.getType() == 1 && schedule.getSelected()))
                     .filter(schedule -> !completeProblemIds.contains(schedule.getProblemId()))
                     .collect(Collectors.toList()));
 
@@ -218,9 +203,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     CourseSchedule courseSchedule = new CourseSchedule();
                     courseSchedule.setProblemId(runningProblemId);
                     courseSchedule.setMonth(currentMonth);
+                    courseSchedule.setYear(currentYear);
                     runningSchedules.add(courseSchedule);
                 }
             });
+
             completeProblemIds.forEach(completeProblemId -> {
                 CourseSchedule tempSchedule = courseScheduleMap.get(completeProblemId);
                 if (tempSchedule != null) {
@@ -229,6 +216,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                     CourseSchedule courseSchedule = new CourseSchedule();
                     courseSchedule.setProblemId(completeProblemId);
                     courseSchedule.setMonth(currentMonth);
+                    courseSchedule.setYear(currentYear);
                     completeSchedules.add(courseSchedule);
                 }
             });
@@ -237,12 +225,14 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 CourseSchedule courseSchedule = new CourseSchedule();
                 courseSchedule.setProblemId(runningProblemId);
                 courseSchedule.setMonth(currentMonth);
+                courseSchedule.setYear(currentYear);
                 runningSchedules.add(courseSchedule);
             });
             completeProblemIds.forEach(completeProblemId -> {
                 CourseSchedule courseSchedule = new CourseSchedule();
                 courseSchedule.setProblemId(completeProblemId);
                 courseSchedule.setMonth(currentMonth);
+                courseSchedule.setYear(currentYear);
                 completeSchedules.add(courseSchedule);
             });
         }
@@ -551,7 +541,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     /**
      * 查看当前用户正在学习的课程 id
-     *
      * @param profileId 用户 id
      * @return 正在学习的课程 id
      */
@@ -812,6 +801,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             plan.setName(problem.getProblem());
             plan.setAbbreviation(problem.getAbbreviation());
             plan.setIsLearning(improvementPlanMap.get(problemId) != null);
+            plan.setYear(schedule.getYear());
+            plan.setMonth(schedule.getMonth());
 
             if (schedule.getType() != null) {
                 plan.setType(schedule.getType());
@@ -847,15 +838,25 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 plan.setRemainDaysCount(DateUtils.interval(new Date(), improvementPlan.getCloseDate()));
 
             }
-            int priorityPart1 = schedule.getType() == null ? 0 : schedule.getType() == CourseSchedule.Type.MAJOR ? 2 : 1;
-            int priorityPart2 = improvementPlanMap.get(schedule.getProblemId()) != null ? 2 : 0;
-            plan.setPriority(priorityPart1 + priorityPart2);
             runningPlans.add(plan);
         }
-        runningPlans = runningPlans.stream()
-                .sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getPriority).reversed())
-                .collect(Collectors.toList());
-        return runningPlans;
+
+        List<PersonalSchedulePlan.SchedulePlan> runningMajor = runningPlans.stream().filter(plan -> plan.getIsLearning() && plan.getType() == CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> runningMinor = runningPlans.stream().filter(plan -> plan.getIsLearning() && plan.getType() != CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> waitingMajor = runningPlans.stream().filter(plan -> !plan.getIsLearning() && plan.getType() == CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+        List<PersonalSchedulePlan.SchedulePlan> waitingMinor = runningPlans.stream().filter(plan -> !plan.getIsLearning() && plan.getType() != CourseSchedule.Type.MAJOR).collect(Collectors.toList());
+
+        List<PersonalSchedulePlan.SchedulePlan> targetPlans = Lists.newArrayList();
+        targetPlans.addAll(runningMajor.stream().sorted((plan1, plan2) ->
+                -(plan1.getYear() * 100 + plan1.getMonth() - plan2.getYear() * 100 - plan2.getMonth())
+        ).collect(Collectors.toList()));
+        targetPlans.addAll(runningMinor);
+        targetPlans.addAll(waitingMajor.stream().sorted((plan1, plan2) ->
+                -(plan1.getYear() * 100 + plan1.getMonth() - plan2.getYear() * 100 - plan2.getMonth())
+        ).collect(Collectors.toList()));
+        targetPlans.addAll(waitingMinor);
+
+        return targetPlans;
     }
 
     public List<PersonalSchedulePlan.SchedulePlan> buildCompletePlans(Map<Integer, ImprovementPlan> improvementPlanMap,

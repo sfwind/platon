@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.po.PracticePlan;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -33,6 +34,22 @@ public class PracticePlanDao extends PracticeDBUtil {
             return runner.query(sql, h, planIds.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<PracticePlan> loadByPlanIds(List<Integer> planIds){
+        if(CollectionUtils.isEmpty(planIds)){
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM PracticePlan WHERE PlanId in (" +produceQuestionMark(planIds.size())+") AND DEL = 0";
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
+
+        try {
+            return runner.query(sql,h,planIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
         }
         return Lists.newArrayList();
     }
@@ -194,6 +211,19 @@ public class PracticePlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12) and Del = 0";
+        try {
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
+            return practicePlans;
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<PracticePlan> loadWarmupPracticeByPlanId(Integer planId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=1 or Type=2) and Del = 0";
         try {
             List<PracticePlan> practicePlans = runner.query(sql, h, planId);
             return practicePlans;

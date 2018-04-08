@@ -6,9 +6,19 @@ import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
 import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.AbstractComment;
+import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
+import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -46,6 +56,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
     private CommentDao commentDao;
+    @Autowired
+    private OperationLogService operationLogService;
+    @Autowired
+    private RiseClassMemberDao riseClassMemberDao;
+    @Autowired
+    private WarmupPracticeDao warmupPracticeDao;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
+
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,6 +76,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         warmupPracticeDiscuss.setDel(0);
         warmupPracticeDiscuss.setProfileId(profileId);
         if (repliedId != null) {
+            // 回复讨论
             WarmupPracticeDiscuss repliedDiscuss = warmupPracticeDiscussDao.load(WarmupPracticeDiscuss.class, repliedId);
             if (repliedDiscuss != null) {
                 warmupPracticeDiscuss.setRepliedId(repliedId);
@@ -64,7 +84,36 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setRepliedProfileId(repliedDiscuss.getProfileId());
                 warmupPracticeDiscuss.setRepliedDel(0);
                 warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
+                operationLogService.trace(profileId, "replyWarumupDiscuss", () -> {
+                    OperationLogService.Prop prop = OperationLogService.props();
+                    RiseMember riseMember = riseMemberDao.loadValidRiseMember(repliedDiscuss.getProfileId());
+                    WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
+                    RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(repliedDiscuss.getProfileId());
+                    if (riseClassMember != null) {
+                        if (riseClassMember.getClassName() != null) {
+                            prop.add("repliedClassName", riseClassMember.getClassName());
+                        }
+                        if (riseClassMember.getGroupId() != null) {
+                            prop.add("repliedGroupId", riseClassMember.getGroupId());
+                        }
+                    }
+                    prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                    prop.add("warmupId", warmupPracticeId);
+                    prop.add("problemId", warmupPractice.getProblemId());
+                    Profile profile = accountService.getProfile(repliedDiscuss.getProfileId());
+                    prop.add("repliedRiseId", profile.getRiseId());
+                    return prop;
+                });
             }
+        } else {
+            // 提交讨论
+            operationLogService.trace(profileId, "discussWarmup", () -> {
+                OperationLogService.Prop prop = OperationLogService.props();
+                WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
+                prop.add("problemId", warmupPractice.getProblemId());
+                prop.add("warmupId", warmupPracticeId);
+                return prop;
+            });
         }
         warmupPracticeDiscuss.setPriority(0);
         Integer id = warmupPracticeDiscussDao.insert(warmupPracticeDiscuss);

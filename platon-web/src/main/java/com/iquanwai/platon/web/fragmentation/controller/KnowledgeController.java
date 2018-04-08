@@ -74,6 +74,7 @@ public class KnowledgeController {
         practiceService.learnKnowledge(loginUser.getId(), practicePlanId);
         planService.checkPlanComplete(practicePlanId);
 
+
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("知识点")
                 .function("知识点")
