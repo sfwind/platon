@@ -33,10 +33,24 @@ public interface RiseMemberService {
     Boolean isValidElite(Integer profileId);
 
     /**
-     * 获取所有有效的商学院用户
+     * 判断是否是有效的专项课用户
+     * @param profileId
      * @return
      */
-    List<RiseMember> getValidElites();
-
     Boolean isValidCamp(Integer profileId);
+
+
+    /**
+     * 根据openid获取学号
+     * @param openid
+     * @return
+     */
+    String getMemberId(String openid);
+
+    /**
+     * 根据学号获取openid
+     * @param memberId
+     * @return
+     */
+    String getOpenid(String memberId);
 }

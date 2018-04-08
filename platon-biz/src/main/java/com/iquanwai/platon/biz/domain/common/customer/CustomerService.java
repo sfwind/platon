@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.iquanwai.platon.biz.po.AnnualSummary;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -21,6 +22,7 @@ public interface CustomerService {
 
     /**
      * 获取年度报告
+     *
      * @param riseId 圈外id
      * @return 年度报告
      */
@@ -30,8 +32,6 @@ public interface CustomerService {
      * 学员提交意见反馈
      */
     void sendFeedback(Feedback feedback);
-
-    Boolean hasAnnualSummaryAuthority(Integer profileId);
 
     /**
      * 获取用户连续登录天数
@@ -50,8 +50,24 @@ public interface CustomerService {
      */
     String loadAnnounceMessage(Integer profileId);
 
+
     /**
      * 是否提示申请通过通知
      */
     Pair<Boolean, Long> isAlertApplicationPassMessage(Integer profileId);
+
+
+    /**
+     * 获得用户学习过的知识点个数
+     */
+    Integer loadLearnedKnowledgesCount(Integer profileId);
+
+    /**
+     * 计算同期打败的比例
+     * @param riseMember
+     * @return
+     */
+    Integer calSyncDefeatPercent(RiseMember riseMember);
+
+
 }

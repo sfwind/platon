@@ -3,12 +3,26 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Knowledge;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.ProblemSchedule;
+import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -53,6 +67,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private UserProblemScheduleDao userProblemScheduleDao;
     @Autowired
     private QuanwaiEmployeeDao quanwaiEmployeeDao;
+    @Autowired
+    private OperationLogService operationLogService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -91,6 +107,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         //生成训练计划
         int planId = createPlan(problem, profileId, startDate, closeDate);
 
+        // 打点
+        operationLogService.trace(profileId, "chooseCourse",
+                () -> OperationLogService
+                        .props()
+                        .add("problemId", problemId));
+
         List<PracticePlan> practicePlans = Lists.newArrayList();
         List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
 
@@ -125,6 +147,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         }
         //插入数据库
         practicePlanDao.batchInsert(practicePlans);
+
 
         return planId;
     }
@@ -162,9 +185,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             PracticePlan practicePlan = new PracticePlan();
             Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
             practicePlan.setUnlocked(false);
-            if(Knowledge.isReview(knowledgeId)){
+            if (Knowledge.isReview(knowledgeId)) {
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
-            }else{
+            } else {
                 practicePlan.setType(PracticePlan.KNOWLEDGE);
             }
 

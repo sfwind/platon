@@ -6,25 +6,13 @@ import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ImprovementReport;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanSeriesStatus;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.ReportService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyLine;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -45,11 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -116,7 +100,7 @@ public class PlanController {
         try {
             // 检查是否能开新课
             planService.checkChooseNewProblem(improvementPlans, loginUser.getId(), problemId);
-        } catch(CreateCourseException ex){
+        } catch (CreateCourseException ex) {
             return WebUtils.error(ex.getMessage());
         }
 
@@ -299,6 +283,7 @@ public class PlanController {
         }
         // 可以关闭，进行关闭
         planService.completePlan(improvementPlan.getId(), ImprovementPlan.CLOSE);
+
 
         return WebUtils.success();
     }
@@ -696,12 +681,10 @@ public class PlanController {
             dto.setPlanId(ownedAudition.getId());
         }
         dto.setSubscribe(true);
-        try {
-            accountService.getAccount(loginUser.getOpenId(), true);
-        } catch (NotFollowingException e) {
+        Account account = accountService.getAccountByUnionId(loginUser.getUnionId());
+        if (account.getSubscribe() == 0) {
             dto.setSubscribe(false);
         }
-
         return WebUtils.result(dto);
     }
 

@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.weixin.message;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.iquanwai.platon.biz.dao.common.CustomerMessageLogDao;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.CustomerMessageLog;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -30,6 +31,21 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private CustomerMessageLogDao customerMessageLogDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private OperationLogService operationLogService;
+
+    @Override
+    public boolean sendSelfCompleteMessage(String eventName, String openId) {
+        TemplateMessage templateMessage = new TemplateMessage();
+        templateMessage.setTouser(openId);
+        templateMessage.setTemplate_id(ConfigUtils.incompleteTaskMsg());
+        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+        data.put("keyword1", new TemplateMessage.Keyword(eventName));
+        data.put("keyword2", new TemplateMessage.Keyword("处理完成"));
+        data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
+        templateMessage.setData(data);
+        return sendMessage(templateMessage);
+    }
 
     @Override
     public boolean sendMessage(TemplateMessage templateMessage) {
@@ -53,7 +69,14 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
             String json = new Gson().toJson(templateMessage);
             body = restfulHelper.post(SEND_MESSAGE_URL, json);
         }
-        return StringUtils.isNoneEmpty(body) && !CommonUtils.isErrorNoException(body);
+        boolean success = StringUtils.isNoneEmpty(body) && !CommonUtils.isErrorNoException(body);
+
+        operationLogService.trace(() -> {
+            Profile profile = accountService.getProfile(templateMessage.getTouser());
+            return profile.getId();
+        }, "sendWechatMessage", () -> OperationLogService.props().add("success", success));
+
+        return success;
     }
 
     @Override
@@ -77,7 +100,6 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
      * 5. 用户每天最多收到2条消息
      * 6. 用户三小时内最多收到1条消息
      * 7. 活动提醒通知，文字尽量简洁，不要用推销的口吻
-     *
      * @return 是否允许发送模板消息
      */
     private boolean checkTemplateMessageAuthority(TemplateMessage templateMessage, boolean forwardlyPush) {
@@ -157,9 +179,9 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     private void addHook(TemplateMessage templateMessage) {
         if (templateMessage.getUrl() != null) {
             String url = templateMessage.getUrl();
-            if (url.contains("?") && !url.contains("_tm")){
+            if (url.contains("?") && !url.contains("_tm")) {
                 url = url + "&_tm=template_message";
-            }else{
+            } else {
                 url = url + "?_tm=template_message";
             }
             templateMessage.setUrl(url);

@@ -7,14 +7,12 @@ import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
-import com.iquanwai.platon.biz.exception.NotFollowingException;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
-import com.iquanwai.platon.web.resolver.UnionUserService;
 import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import lombok.Data;
@@ -122,21 +120,6 @@ public class IndexController {
             return null;
         }
 
-        String state = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
-        String openid;
-        Account account;
-        if (state != null) {
-            openid = oAuthService.openId(state);
-            try {
-                account = accountService.getAccount(openid, false);
-                logger.info("account:{}", account);
-            } catch (NotFollowingException e) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
-            }
-        }
-
         if (whiteListService.checkRiseMenuWhiteList(unionUser.getId())) {
             response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
             return null;
@@ -156,32 +139,20 @@ public class IndexController {
      */
     @RequestMapping(value = "/rise/static/rise", method = RequestMethod.GET)
     public ModelAndView getRiseIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        logger.info("点击商学院按钮");
         if (unionUser == null) {
-            logger.info("unionUser 为空");
             WebUtils.auth(request, response);
             return null;
         }
-        logger.info("unionUser 不为空");
 
-        String accessToken = CookieUtils.getCookie(request, UnionUserService.MOBILE_STATE_COOKIE_NAME);
-        String openid;
-        Account account;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
-            try {
-                account = accountService.getAccount(openid, false);
-                logger.info("account:{}", account);
-            } catch (NotFollowingException e) {
-                SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-                if (subscribeRouterConfig != null) {
-                    // 未关注
-                    response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-                    return null;
-                } else {
-                    response.sendRedirect(SUBSCRIBE_URL);
-                    return null;
-                }
+        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
+            SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+            if (subscribeRouterConfig != null) {
+                // 未关注
+                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                return null;
+            } else {
+                response.sendRedirect(SUBSCRIBE_URL);
+                return null;
             }
         }
 
@@ -248,17 +219,13 @@ public class IndexController {
             WebUtils.auth(request, response);
             return null;
         }
-
-        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
-        String openid;
-        Account account;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
-            try {
-                account = accountService.getAccount(openid, false);
-                logger.info("account:{}", account);
-            } catch (NotFollowingException e) {
+        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
+            SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+            if (subscribeRouterConfig != null) {
                 // 未关注
+                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                return null;
+            } else {
                 response.sendRedirect(SUBSCRIBE_URL);
                 return null;
             }
@@ -324,32 +291,20 @@ public class IndexController {
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
                                  @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        logger.info("进入 rise/static/**");
         if (unionUser == null) {
-            logger.info("unionUser 为空");
             WebUtils.auth(request, response);
             return null;
         }
-        logger.info("unionUser 不为空");
 
-        String accessToken = CookieUtils.getCookie(request, OAuthService.MOBILE_STATE_COOKIE_NAME);
-        String openid;
-        Account account;
-        if (accessToken != null) {
-            openid = oAuthService.openId(accessToken);
-            try {
-                account = accountService.getAccount(openid, false);
-                logger.info("account:{}", account);
-            } catch (NotFollowingException e) {
-                SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-                if (subscribeRouterConfig != null) {
-                    // 未关注
-                    response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-                    return null;
-                } else {
-                    response.sendRedirect(SUBSCRIBE_URL);
-                    return null;
-                }
+        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
+            SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
+            if (subscribeRouterConfig != null) {
+                // 未关注
+                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                return null;
+            } else {
+                response.sendRedirect(SUBSCRIBE_URL);
+                return null;
             }
         }
 
@@ -390,7 +345,6 @@ public class IndexController {
     @RequestMapping(value = "/rise/index/msg", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getIndexMsg(UnionUser unionUser) {
         if (unionUser == null) {
-            logger.info("游客访问");
             return WebUtils.error(202, "游客访问");
         }
 
@@ -430,6 +384,7 @@ public class IndexController {
         if (moduleShow != null) {
             mav.addObject("showExplore", moduleShow.getShowExplore());
         }
+        mav.addObject("sensorsProject", ConfigUtils.getSensorsProject());
         return mav;
     }
 }

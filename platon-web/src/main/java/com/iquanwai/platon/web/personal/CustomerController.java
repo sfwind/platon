@@ -11,7 +11,12 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseCertificate;
+import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -19,7 +24,21 @@ import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
-import com.iquanwai.platon.web.personal.dto.*;
+import com.iquanwai.platon.web.personal.dto.AreaDto;
+import com.iquanwai.platon.web.personal.dto.Base64ConvertDto;
+import com.iquanwai.platon.web.personal.dto.CertificateDto;
+import com.iquanwai.platon.web.personal.dto.CertificateListDto;
+import com.iquanwai.platon.web.personal.dto.CouponDto;
+import com.iquanwai.platon.web.personal.dto.CustomerInfoDto;
+import com.iquanwai.platon.web.personal.dto.NicknameDto;
+import com.iquanwai.platon.web.personal.dto.PlanDto;
+import com.iquanwai.platon.web.personal.dto.PlanListDto;
+import com.iquanwai.platon.web.personal.dto.ProfileDto;
+import com.iquanwai.platon.web.personal.dto.RegionDto;
+import com.iquanwai.platon.web.personal.dto.RiseMemberStatusDto;
+import com.iquanwai.platon.web.personal.dto.UserStudyDto;
+import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
+import com.iquanwai.platon.web.personal.dto.WeixinDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
@@ -36,7 +55,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -80,10 +104,26 @@ public class CustomerController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
-
-        Profile profile = new Profile();
+        CustomerInfoDto profile = new CustomerInfoDto();
+        Profile profilePojo = accountService.getProfile(unionUser.getId());
+        profile.setRiseId(profilePojo.getRiseId());
         profile.setNickname(unionUser.getNickName());
         profile.setHeadimgurl(unionUser.getHeadImgUrl());
+        // 查询他的用户信息
+        RiseMember validRiseMember = accountService.getValidRiseMember(unionUser.getId());
+        if (validRiseMember != null) {
+            profile.setRoleName(validRiseMember.getMemberTypeId());
+        } else {
+            profile.setRoleName(0);
+        }
+        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
+        if (riseClassMember != null) {
+            profile.setClassName(riseClassMember.getClassName());
+            profile.setGroupId(riseClassMember.getGroupId());
+        }
+
+        profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
+
         return WebUtils.result(profile);
     }
 
@@ -190,7 +230,7 @@ public class CustomerController {
             profileDto.setMemberTypeId(0);
         }
         profileDto.setRiseId(account.getRiseId());
-        profileDto.setIsFull(account.getIsFull()==1);
+        profileDto.setIsFull(account.getIsFull() == 1);
         profileDto.setNickName(account.getNickname());
         profileDto.setHeadImgUrl(account.getHeadimgurl());
         profileDto.setBindMobile(bindMobile);
@@ -212,9 +252,9 @@ public class CustomerController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value="/new/profile",method = RequestMethod.POST)
+    @RequestMapping(value = "/new/profile", method = RequestMethod.POST)
     @ApiOperation("提交个人中心信息")
-    public ResponseEntity<Map<String,Object>> submitNewProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto){
+    public ResponseEntity<Map<String, Object>> submitNewProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
 
         Profile profile = new Profile();
@@ -224,6 +264,7 @@ public class CustomerController {
         accountService.submitNewProfile(profile);
         return WebUtils.success();
     }
+
 
     @RequestMapping(value = "/profile/headImg/upload", method = RequestMethod.POST)
     @ApiOperation("上传个人头像")
@@ -586,7 +627,7 @@ public class CustomerController {
         if (type == 6) {
             return "优秀助教";
         }
-        if( type == 7){
+        if (type == 7) {
             return "优秀班委";
         }
         return "未知类型";
@@ -602,19 +643,18 @@ public class CustomerController {
     }
 
 
-    private String getClassName(String className){
-       String tempName =  Integer.valueOf(className.substring(2, 4)) + "月" +
-                        Integer.valueOf(className.substring(4, 6)) + "班";
+    private String getClassName(String className) {
+        String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
+                Integer.valueOf(className.substring(4, 6)) + "班";
 
-       if(tempName.charAt(3)=='0'){
-           tempName = tempName.substring(0,3)+tempName.substring(4);
-       }
-       if(tempName.charAt(0)=='0'){
-           tempName = tempName.substring(1);
-       }
-       return tempName;
+        if (tempName.charAt(3) == '0') {
+            tempName = tempName.substring(0, 3) + tempName.substring(4);
+        }
+        if (tempName.charAt(0) == '0') {
+            tempName = tempName.substring(1);
+        }
+        return tempName;
     }
-
 
 
 }

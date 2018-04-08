@@ -5,9 +5,19 @@ import com.iquanwai.platon.biz.TestBase;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.ImageUtils;
+import com.sun.imageio.plugins.common.ImageUtil;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -16,6 +26,8 @@ import java.util.Map;
 public class TemplateMessageServiceTest extends TestBase {
     @Autowired
     private TemplateMessageService templateMessageService;
+
+    private ImageUtils imageUtil;
 
     @Test
     public void testSend(){
@@ -33,5 +45,30 @@ public class TemplateMessageServiceTest extends TestBase {
         data.put("keyword2", new TemplateMessage.Keyword("明天凌晨"));
         data.put("remark", new TemplateMessage.Keyword(remark));
         templateMessageService.sendMessage(templateMessage);
+    }
+
+
+    @Test
+    public void getImg() throws Exception {
+        BufferedImage bufferedImage = ImageUtils.getBufferedImageByUrl("https://static.iqycamp.com/images/dailytalk/005.png");
+        Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("png");
+        ImageWriter writer=null;
+        while(it.hasNext()) {
+            writer=it.next();
+            break;
+            //System.out.println(it.next());
+        }
+        if(writer!=null) {
+            ImageWriteParam params = writer.getDefaultWriteParam();
+            params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
+            ImageOutputStream output = ImageIO.createImageOutputStream(new File("/Users/iquanwai_yang/Desktop/test.png"));
+
+            writer.setOutput(output);
+            writer.write(null,new IIOImage(bufferedImage,null,null), params);
+            output.flush();
+            writer.dispose();
+            System.out.println("ok");
+        }
+
     }
 }
