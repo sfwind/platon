@@ -87,7 +87,7 @@ public class PracticeServiceImpl implements PracticeService {
     private RiseClassMemberDao riseClassMemberDao;
 
     // 商业思维项目字数下限50字
-    private static final int MINI_MBA_PROJECT_WORD_AT_LEAST = 50;
+    private static final int BUSINESS_THOUGHT_PROJECT_WORD_AT_LEAST = 50;
     // 核心能力项目字数下限50字
     private static final int CORE_PROJECT_WORD_AT_LEAST = 10;
 
@@ -346,7 +346,7 @@ public class PracticeServiceImpl implements PracticeService {
                 Problem problem = cacheService.getProblem(problemId);
                 // 至少达到一定字数才能加分
                 if (problem.getProject() == Constants.Project.CORE_PROJECT &&
-                        (length >= MINI_MBA_PROJECT_WORD_AT_LEAST || hasImage)) {
+                        (length >= BUSINESS_THOUGHT_PROJECT_WORD_AT_LEAST || hasImage)) {
                     Integer practicePlan = applicationAddPoint(id, submit);
                     if (practicePlan != null) {
                         return practicePlan;
