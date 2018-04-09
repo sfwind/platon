@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -77,7 +78,7 @@ public class BusinessApplyController {
      * @param loginUser 用户
      */
     @RequestMapping(value = "/check/submit/apply", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> checkApplySubmit(LoginUser loginUser) {
+    public ResponseEntity<Map<String, Object>> checkApplySubmit(LoginUser loginUser, @RequestParam(name = "project") Integer project) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("商学院")
                 .function("申请")
@@ -86,9 +87,8 @@ public class BusinessApplyController {
 
         try {
             // 检查是否可以申请
-            applyService.checkApplyPrivilege(loginUser.getId());
+            applyService.checkApplyPrivilege(loginUser.getId(), project);
         } catch (ApplyException e) {
-
             return WebUtils.error(e.getMessage());
         }
         Account account = accountService.getAccountByUnionId(loginUser.getUnionId());
@@ -117,19 +117,10 @@ public class BusinessApplyController {
 
         try {
             // 检查是否可以申请
-            applyService.checkApplyPrivilege(loginUser.getId());
+            applyService.checkApplyPrivilege(loginUser.getId(), applySubmitDto.getProject());
         } catch (ApplyException e) {
             return WebUtils.error(e.getMessage());
         }
-//        String orderId = null;
-//        if (ConfigUtils.getPayApplyFlag()) {
-//            // 检查是否有可用申请订单
-//            BusinessSchoolApplicationOrder order = applyService.loadUnAppliedOrder(loginUser.getId());
-//            if (order == null) {
-//                return WebUtils.error("您还没有成功支付哦");
-//            }
-//            orderId = order.getOrderId();
-//        }
 
         // 提交申请信息
         List<BusinessApplySubmit> userApplySubmits = applySubmitDto.getUserSubmits().stream().map(applySubmitVO -> {

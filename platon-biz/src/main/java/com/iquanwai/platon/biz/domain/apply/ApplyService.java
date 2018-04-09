@@ -4,7 +4,6 @@ import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 
 import java.util.List;
 
@@ -21,13 +20,6 @@ public interface ApplyService {
      */
     List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId);
 
-    /**
-     * 获取正在审批中的记录
-     *
-     * @param profileId 用户id
-     * @return 审批记录
-     */
-    BusinessSchoolApplication loadCheckingApply(Integer profileId);
 
     /**
      * 获取用户的所有审核信息
@@ -36,14 +28,6 @@ public interface ApplyService {
      * @return 所有审核记录
      */
     List<BusinessSchoolApplication> loadApplyList(Integer profileId);
-
-    /**
-     * 获取还未申请的订单
-     *
-     * @param profileId 用户id
-     * @return 审批订单
-     */
-    BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId);
 
     /**
      * 提交商学院申请
@@ -60,5 +44,5 @@ public interface ApplyService {
      * @param profileId 用户id
      * @throws ApplyException 申请异常
      */
-    void checkApplyPrivilege(Integer profileId) throws ApplyException;
+    void checkApplyPrivilege(Integer profileId,Integer project) throws ApplyException;
 }

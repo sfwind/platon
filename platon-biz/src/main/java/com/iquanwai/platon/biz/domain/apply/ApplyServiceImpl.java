@@ -5,7 +5,6 @@ import com.iquanwai.platon.biz.dao.apply.BusinessApplyChoiceDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplyQuestionDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplySubmitDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
-import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationOrderDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -15,7 +14,6 @@ import com.iquanwai.platon.biz.po.apply.BusinessApplyChoice;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -53,8 +51,6 @@ public class ApplyServiceImpl implements ApplyService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private BusinessApplySubmitDao businessApplySubmitDao;
-    @Autowired
-    private BusinessSchoolApplicationOrderDao businessSchoolApplicationOrderDao;
     @Autowired
     private OperationLogService operationLogService;
 
@@ -97,20 +93,12 @@ public class ApplyServiceImpl implements ApplyService {
         return questions;
     }
 
-    @Override
-    public BusinessSchoolApplication loadCheckingApply(Integer profileId) {
-        return businessSchoolApplicationDao.loadCheckingApplication(profileId);
-    }
 
     @Override
     public List<BusinessSchoolApplication> loadApplyList(Integer profileId) {
         return businessSchoolApplicationDao.loadApplyList(profileId);
     }
 
-    @Override
-    public BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId) {
-        return businessSchoolApplicationOrderDao.loadUnAppliedOrder(profileId);
-    }
 
     @Override
     public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid) {
@@ -150,7 +138,7 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public void checkApplyPrivilege(Integer profileId) throws ApplyException {
+    public void checkApplyPrivilege(Integer profileId, Integer project) throws ApplyException {
         // 已经是商学院用户
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
