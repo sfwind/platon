@@ -18,7 +18,6 @@ import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
-import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -234,7 +233,7 @@ public class CustomerServiceImpl implements CustomerService {
             // TODO: 待验证
             List<Integer> memberTypes = Lists.newArrayList();
             memberTypes.add(RiseMember.ELITE);
-            memberTypes.add(RiseMember.MINI_MBA);
+            memberTypes.add(RiseMember.BUSINESS_THOUGHT);
             List<RiseMember> riseMember = riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, memberTypes);
             notifyTag = CollectionUtils.isNotEmpty(riseMember);
         }

@@ -10,7 +10,6 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -68,9 +67,9 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
     }
 
     @Override
-    public RiseMember miniMbaMember(Integer profileId) {
+    public RiseMember businessThought(Integer profileId) {
         List<Integer> members = Lists.newArrayList();
-        members.add(RiseMember.MINI_MBA);
+        members.add(RiseMember.BUSINESS_THOUGHT);
 
         return getRiseMember(profileId, members);
     }
@@ -92,7 +91,7 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
         members.add(RiseMember.HALF_ELITE);
         members.add(RiseMember.ELITE);
         members.add(RiseMember.CAMP);
-        members.add(RiseMember.MINI_MBA);
+        members.add(RiseMember.BUSINESS_THOUGHT);
 
         return riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, members);
     }
@@ -102,7 +101,7 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
         List<Integer> members = Lists.newArrayList();
         members.add(RiseMember.HALF_ELITE);
         members.add(RiseMember.ELITE);
-        members.add(RiseMember.MINI_MBA);
+        members.add(RiseMember.BUSINESS_THOUGHT);
 
         return riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, members);
     }

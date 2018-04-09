@@ -318,8 +318,8 @@ public class PlanServiceImpl implements PlanService {
         }
 
         RiseMember riseMember = null;
-        if(problem.getProject() == Constants.Project.MINI_MBA_PROJECT){
-            riseMember = riseMemberManager.miniMbaMember(profileId);
+        if(problem.getProject() == Constants.Project.BUSINESS_THOUGHT_PROJECT){
+            riseMember = riseMemberManager.businessThought(profileId);
         }else if(problem.getProject() == Constants.Project.CORE_PROJECT){
             riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         }

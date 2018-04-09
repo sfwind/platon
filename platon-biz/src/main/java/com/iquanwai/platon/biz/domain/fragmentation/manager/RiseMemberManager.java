@@ -27,7 +27,7 @@ public interface RiseMemberManager {
     /**
      * 商业思维类用户
      * */
-    RiseMember miniMbaMember(Integer profileId);
+    RiseMember businessThought(Integer profileId);
 
     /**
      * 专业版用户

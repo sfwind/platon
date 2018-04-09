@@ -351,7 +351,7 @@ public class PracticeServiceImpl implements PracticeService {
                     if (practicePlan != null) {
                         return practicePlan;
                     }
-                } else if (problem.getProject() == Constants.Project.MINI_MBA_PROJECT &&
+                } else if (problem.getProject() == Constants.Project.BUSINESS_THOUGHT_PROJECT &&
                         (length >= CORE_PROJECT_WORD_AT_LEAST || hasImage)) {
                     Integer practicePlan = applicationAddPoint(id, submit);
                     if (practicePlan != null) {

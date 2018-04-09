@@ -68,5 +68,5 @@ public class RiseMember {
     /**
      * 商业思维
      */
-    public static final int MINI_MBA = 8;
+    public static final int BUSINESS_THOUGHT = 8;
 }
