@@ -117,6 +117,7 @@ public class ApplyServiceImpl implements ApplyService {
         application.setIsDuplicate(false);
         application.setValid(valid);
         application.setDeal(false);
+        application.setProject(project);
 
         if (lastBusinessApplication != null) {
             application.setLastVerified(lastBusinessApplication.getStatus());
