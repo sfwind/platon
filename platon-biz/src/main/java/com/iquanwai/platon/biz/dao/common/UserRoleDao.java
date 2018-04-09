@@ -15,9 +15,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Created by nethunder on 2016/12/29.
- */
 @Repository
 public class UserRoleDao extends DBUtil {
 
@@ -36,7 +33,7 @@ public class UserRoleDao extends DBUtil {
         return Lists.newArrayList();
     }
 
-    public UserRole getAssist(Integer profileId){
+    public UserRole getAssist(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<UserRole> h = new BeanHandler<>(UserRole.class);
         String sql = "SELECT * FROM UserRole where ProfileId=? and RoleId in (3,4,5,6,11,12,13,14,15) and Del=0";
@@ -46,5 +43,20 @@ public class UserRoleDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return null;
+    }
+
+    public List<UserRole> loadUserRoleByRoleIds(List<Integer> roleIds) {
+        if (roleIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM UserRole WHERE RoleId in (" + produceQuestionMark(roleIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<UserRole>> h = new BeanListHandler<UserRole>(UserRole.class);
+        try {
+            return runner.query(sql, h, roleIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 }

@@ -27,11 +27,11 @@ public class Role {
     public static final Integer ADMIN = 9; //管理员
     public static final Integer CONTENT_OPERATION = 10; //内容运营
     public static final Integer COACH_LEVEL11 = 11; // 候选教练
+    // 12 13 14 15
 
-    private static List<Integer> asstRoleLevel = Lists.newArrayList(COACH_LEVEL_1, COACH_LEVEL_2,
-            COACH_LEVEL_3, COACH_LEVEL_4, CONTENT_OPERATION, CONTENT_ADMIN);
+    private static List<Integer> asstRoleLevel = Lists.newArrayList(COACH_LEVEL_1, COACH_LEVEL_2, COACH_LEVEL_3, COACH_LEVEL_4);
 
-    public static Role stranger(){
+    public static Role stranger() {
         Role stranger = new Role();
         stranger.setId(STRANGE);
         stranger.setName("陌生人");
@@ -39,7 +39,7 @@ public class Role {
         return stranger;
     }
 
-    public static Role student(){
+    public static Role student() {
         Role stranger = new Role();
         stranger.setId(STUDENT);
         stranger.setName("学生");
@@ -47,8 +47,21 @@ public class Role {
         return stranger;
     }
 
-    public static boolean isAsst(int roleLevel){
+    // 判断是否是教练
+    public static boolean isAsst(int roleLevel) {
         return asstRoleLevel.contains(roleLevel);
+    }
+
+    /**
+     * 获取助教的 roleId 集合
+     */
+    public static List<Integer> loadAsstRoleIds() {
+        List<Integer> asstIds = Lists.newArrayList();
+        asstIds.add(COACH_LEVEL_1);
+        asstIds.add(COACH_LEVEL_2);
+        asstIds.add(COACH_LEVEL_3);
+        asstIds.add(COACH_LEVEL_4);
+        return asstIds;
     }
 
 }

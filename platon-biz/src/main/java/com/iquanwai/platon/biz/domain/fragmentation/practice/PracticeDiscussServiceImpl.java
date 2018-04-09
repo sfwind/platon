@@ -3,24 +3,15 @@ package com.iquanwai.platon.biz.domain.fragmentation.practice;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
-import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
+import com.iquanwai.platon.biz.dao.common.UserRoleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AbstractComment;
-import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
-import com.iquanwai.platon.biz.po.RiseClassMember;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Role;
+import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.ExecutorUtil;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -64,6 +55,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private UserRoleDao userRoleDao;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -319,11 +312,16 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<Profile> profiles = profileDao.queryAccounts(profileIds);
         Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
 
+        // 所有助教人员的 ProfileId 集合
+        List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
+
         personalDiscusses.forEach(discuss -> {
             PersonalDiscuss personalDiscuss = new PersonalDiscuss();
-            personalDiscuss.setDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
+            personalDiscuss.setDiscuss(convertDiscussToElement(discuss, involvedProfileMap, asstProfileIds));
             List<KnowledgeDiscuss> knowledgeComments = commentDiscussMap.getOrDefault(discuss.getId(), Lists.newArrayList());
-            List<DiscussElement> discussElementsComments = knowledgeComments.stream().map(comment -> convertDiscussToElement(comment, involvedProfileMap)).collect(Collectors.toList());
+            List<DiscussElement> discussElementsComments = knowledgeComments.stream()
+                    .map(comment -> convertDiscussToElement(comment, involvedProfileMap, asstProfileIds))
+                    .filter(Objects::nonNull).collect(Collectors.toList());
             personalDiscuss.setComments(discussElementsComments);
             personalElements.add(personalDiscuss);
         });
@@ -354,16 +352,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<Profile> profiles = profileDao.queryAccounts(profileIds);
         Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
 
+        // 所有助教人员的 ProfileId 集合
+        List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
 
         priorityDiscuss.forEach(discuss -> {
             DiscussElementsPair discussElementsPair = new DiscussElementsPair();
-
-            discussElementsPair.setPriorityDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
-
+            discussElementsPair.setPriorityDiscuss(convertDiscussToElement(discuss, involvedProfileMap, asstProfileIds));
             if (discuss.getRepliedId() != null && discuss.getRepliedDel() == 0) {
-                discussElementsPair.setOriginDiscuss(convertDiscussToElement(repliedDiscussMap.get(discuss.getRepliedId()), involvedProfileMap));
+                discussElementsPair.setOriginDiscuss(convertDiscussToElement(repliedDiscussMap.get(discuss.getRepliedId()), involvedProfileMap, asstProfileIds));
             }
-
             discussElementsPairs.add(discussElementsPair);
         });
 
@@ -428,13 +425,16 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<Profile> profiles = profileDao.queryAccounts(profileIds);
         Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
 
+        // 所有助教人员的 ProfileId 集合
+        List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
+
         personalDiscusses.forEach(discuss -> {
             PersonalDiscuss personalDiscuss = new PersonalDiscuss();
-            personalDiscuss.setDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
+            personalDiscuss.setDiscuss(convertDiscussToElement(discuss, involvedProfileMap, asstProfileIds));
             List<WarmupPracticeDiscuss> warmupPracticeDiscusses = commentDiscussMap.getOrDefault(discuss.getId(), Lists.newArrayList());
             List<DiscussElement> discussElementsComments = warmupPracticeDiscusses.stream()
-                    .map(comment -> convertDiscussToElement(comment, involvedProfileMap))
-                    .filter(element -> element != null)
+                    .map(comment -> convertDiscussToElement(comment, involvedProfileMap, asstProfileIds))
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             personalDiscuss.setComments(discussElementsComments);
             personalElements.add(personalDiscuss);
@@ -464,15 +464,15 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<Profile> profiles = profileDao.queryAccounts(profileIds);
         Map<Integer, Profile> involvedProfileMap = profiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile, (key1, key2) -> key1));
 
+        // 所有助教人员的 ProfileId 集合
+        List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
+
         priorityDiscuss.forEach(discuss -> {
             DiscussElementsPair discussElementsPair = new DiscussElementsPair();
-
-            discussElementsPair.setPriorityDiscuss(convertDiscussToElement(discuss, involvedProfileMap));
-
+            discussElementsPair.setPriorityDiscuss(convertDiscussToElement(discuss, involvedProfileMap, asstProfileIds));
             if (discuss.getRepliedId() != null && discuss.getRepliedDel() == 0) {
-                discussElementsPair.setOriginDiscuss(convertDiscussToElement(repliedDiscussMap.get(discuss.getRepliedId()), involvedProfileMap));
+                discussElementsPair.setOriginDiscuss(convertDiscussToElement(repliedDiscussMap.get(discuss.getRepliedId()), involvedProfileMap, asstProfileIds));
             }
-
             discussElementsPairs.add(discussElementsPair);
         });
         return discussElementsPairs;
@@ -497,6 +497,9 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<Profile> involvedProfiles = profileDao.queryAccounts(profileIds);
         Map<Integer, Profile> involvedProfileMap = involvedProfiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
 
+        // 所有助教人员的 ProfileId 集合
+        List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
+
         // 转换用户作业数据
         DiscussElement discussElement = new DiscussElement();
         discussElement.setContent(applicationSubmit.getContent());
@@ -506,6 +509,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             discussElement.setAvatar(submitProfile.getHeadimgurl());
             discussElement.setContent(applicationSubmit.getContent());
             discussElement.setPublishTime(applicationSubmit.getPublishTime());
+            discussElement.setIsAsst(asstProfileIds.contains(submitProfile.getId()));
             personalDiscuss.setDiscuss(discussElement);
         }
 
@@ -519,6 +523,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 element.setAvatar(singleProfile.getHeadimgurl());
                 element.setContent(comment.getContent());
                 element.setPublishTime(comment.getAddTime());
+                element.setIsAsst(asstProfileIds.contains(singleProfile.getId()));
                 discussElements.add(element);
             }
         });
@@ -547,6 +552,9 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         List<Profile> involvedProfiles = profileDao.queryAccounts(profileIds);
         Map<Integer, Profile> involvedProfileMap = involvedProfiles.stream().collect(Collectors.toMap(Profile::getId, profile -> profile));
 
+        // 所有助教人员的 ProfileId 集合
+        List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
+
         // 拼装数据
         applicationSubmits.forEach(applicationSubmit -> {
             DiscussElementsPair discussElementsPair = new DiscussElementsPair();
@@ -561,6 +569,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 priorityDiscuss.setPublishTime(applicationSubmit.getPublishTime());
                 priorityDiscuss.setAvatar(priorityProfile.getHeadimgurl());
                 priorityDiscuss.setNickname(priorityProfile.getNickname());
+                priorityDiscuss.setIsAsst(asstProfileIds.contains(priorityProfile.getId()));
                 discussElementsPair.setPriorityDiscuss(priorityDiscuss);
             }
 
@@ -573,6 +582,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                     discussComment.setPublishTime(comment.getAddTime());
                     discussComment.setAvatar(discussProfile.getHeadimgurl());
                     discussComment.setNickname(discussProfile.getNickname());
+                    discussComment.setIsAsst(asstProfileIds.contains(discussProfile.getId()));
                     discussComments.add(discussComment);
                 }
             });
@@ -585,7 +595,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     }
 
     // 将知识点评论转化为评论对象
-    private <T extends AbstractComment> DiscussElement convertDiscussToElement(T abstractComment, Map<Integer, Profile> involvedProfileMap) {
+    private <T extends AbstractComment> DiscussElement convertDiscussToElement(T abstractComment, Map<Integer, Profile> involvedProfileMap, List<Integer> asstProfileIds) {
         if (abstractComment.getProfileId() == null || involvedProfileMap.get(abstractComment.getProfileId()) == null) {
             // 失效数据，返回 null
             return null;
@@ -596,6 +606,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             discussElement.setNickname(profile.getNickname());
             discussElement.setPublishTime(abstractComment.getAddTime());
             discussElement.setContent(abstractComment.getComment());
+            discussElement.setIsAsst(asstProfileIds.contains(abstractComment.getProfileId()));
             return discussElement;
         }
     }

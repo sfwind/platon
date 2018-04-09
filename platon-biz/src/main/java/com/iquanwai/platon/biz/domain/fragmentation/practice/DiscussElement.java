@@ -21,7 +21,9 @@ public class DiscussElement {
     private Date publishTime;
     @ApiModelProperty("评论内容")
     private String content;
-    @ApiModelProperty("身份 id")
-    private Integer roleId;
+    @ApiModelProperty("是否助教")
+    private Boolean isAsst;
+    // TODO 头衔图片链接
+    private String titleImageUrl;
 
 }
