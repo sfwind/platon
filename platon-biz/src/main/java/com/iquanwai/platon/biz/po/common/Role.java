@@ -26,8 +26,11 @@ public class Role {
     public static final Integer CONTENT_ADMIN = 8; //内容管理员
     public static final Integer ADMIN = 9; //管理员
     public static final Integer CONTENT_OPERATION = 10; //内容运营
-    public static final Integer COACH_LEVEL11 = 11; // 候选教练
-    // 12 13 14 15
+    public static final Integer COACH_LEVEL_11 = 11; // 候选教练
+    public static final Integer COACH_LEVEL_12 = 12; // 候选教练
+    public static final Integer COACH_LEVEL_13 = 13; // 候选教练
+    public static final Integer COACH_LEVEL_14 = 14; // 候选教练
+    public static final Integer COACH_LEVEL_15 = 15; // 候选教练
 
     private static List<Integer> asstRoleLevel = Lists.newArrayList(COACH_LEVEL_1, COACH_LEVEL_2, COACH_LEVEL_3, COACH_LEVEL_4);
 
@@ -61,6 +64,10 @@ public class Role {
         asstIds.add(COACH_LEVEL_2);
         asstIds.add(COACH_LEVEL_3);
         asstIds.add(COACH_LEVEL_4);
+        asstIds.add(COACH_LEVEL_12);
+        asstIds.add(COACH_LEVEL_13);
+        asstIds.add(COACH_LEVEL_14);
+        asstIds.add(COACH_LEVEL_15);
         return asstIds;
     }
 
