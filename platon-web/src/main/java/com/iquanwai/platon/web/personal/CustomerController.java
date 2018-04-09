@@ -138,7 +138,7 @@ public class CustomerController {
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
         if (riseClassMember != null) {
-            userStudyDto.setMemberId(riseClassMember.getMemberId());
+            userStudyDto.setMemberId(profile.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
                 userStudyDto.setClassName(getClassName(className));
@@ -184,7 +184,7 @@ public class CustomerController {
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
         if (riseClassMember != null) {
-            riseDto.setMemberId(riseClassMember.getMemberId());
+            riseDto.setMemberId(profile.getMemberId());
         }
 
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
@@ -203,22 +203,22 @@ public class CustomerController {
         Assert.notNull(unionUser, "用户信息不能为空");
 
         ProfileDto profileDto = new ProfileDto();
-        Profile account = accountService.getProfile(unionUser.getId());
+        Profile profile = accountService.getProfile(unionUser.getId());
 
-        BeanUtils.copyProperties(account, profileDto);
+        BeanUtils.copyProperties(profile, profileDto);
         // 查询id
-        Region city = accountService.loadCityByName(account.getCity());
-        Region province = accountService.loadProvinceByName(account.getProvince());
+        Region city = accountService.loadCityByName(profile.getCity());
+        Region province = accountService.loadProvinceByName(profile.getProvince());
         profileDto.setCityId(city == null ? null : city.getId());
         profileDto.setProvinceId(province == null ? null : province.getId());
         boolean bindMobile = true;
-        if (StringUtils.isEmpty(account.getMobileNo()) && StringUtils.isEmpty(account.getWeixinId())) {
+        if (StringUtils.isEmpty(profile.getMobileNo()) && StringUtils.isEmpty(profile.getWeixinId())) {
             bindMobile = false;
         }
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
         if (riseClassMember != null) {
-            profileDto.setMemberId(riseClassMember.getMemberId());
+            profileDto.setMemberId(profile.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
                 profileDto.setClassName(getClassName(className));
@@ -230,14 +230,14 @@ public class CustomerController {
         } else {
             profileDto.setMemberTypeId(0);
         }
-        profileDto.setRiseId(account.getRiseId());
-        profileDto.setIsFull(account.getIsFull() == 1);
-        profileDto.setNickName(account.getNickname());
-        profileDto.setHeadImgUrl(account.getHeadimgurl());
+        profileDto.setRiseId(profile.getRiseId());
+        profileDto.setIsFull(profile.getIsFull() == 1);
+        profileDto.setNickName(profile.getNickname());
+        profileDto.setHeadImgUrl(profile.getHeadimgurl());
         profileDto.setBindMobile(bindMobile);
-        profileDto.setPhone(account.getMobileNo());
-        profileDto.setWeixinId(account.getWeixinId());
-        profileDto.setReceiver(account.getReceiver());
+        profileDto.setPhone(profile.getMobileNo());
+        profileDto.setWeixinId(profile.getWeixinId());
+        profileDto.setReceiver(profile.getReceiver());
         return WebUtils.result(profileDto);
     }
 

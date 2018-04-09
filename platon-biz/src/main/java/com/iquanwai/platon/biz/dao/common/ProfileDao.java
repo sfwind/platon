@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.dao.common;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
-import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.collections.CollectionUtils;
@@ -11,7 +10,6 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -59,7 +57,7 @@ public class ProfileDao extends DBUtil {
     public Profile queryByUnionId(String unionId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM Profile WHERE UnionId = ? AND Del = 0";
-        ResultSetHandler<Profile> h = new BeanHandler<Profile>(Profile.class);
+        ResultSetHandler<Profile> h = new BeanHandler<>(Profile.class);
         try {
             return runner.query(sql, h, unionId);
         } catch (SQLException e) {
@@ -77,22 +75,6 @@ public class ProfileDao extends DBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-    }
-
-    public int insertProfile(Profile profile) throws SQLException {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName, RiseId, UnionId)" + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try {
-            Long insertRs = runner.insert(sql, new ScalarHandler<>(), profile.getOpenid(), profile.getNickname(), profile.getCity(), profile.getCountry(), profile.getProvince(), profile.getHeadimgurl(), profile.getMobileNo(), profile.getEmail(), profile.getIndustry(), profile.getFunction(), profile.getWorkingLife(), profile.getRealName(), profile.getRiseId(), profile.getUnionid());
-            return insertRs.intValue();
-        } catch (SQLException e) {
-            if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
-                throw e;
-            }
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
     }
 
     public int updateOpenRise(Integer id) {
@@ -183,19 +165,21 @@ public class ProfileDao extends DBUtil {
         return Lists.newArrayList();
     }
 
-    public boolean submitPersonalCenterProfile(Profile profile) {
+    public List<Profile> queryAccountsByMemberIds(List<String> memberIds) {
+        if (CollectionUtils.isEmpty(memberIds)) {
+            return Lists.newArrayList();
+        }
+        String questionMarks = produceQuestionMark(memberIds.size());
         QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?, " +
-                "Receiver=?, Married=?, RealName=? where id=?";
+        ResultSetHandler<List<Profile>> h = new BeanListHandler<>(Profile.class);
+        String sql = "SELECT * FROM Profile where MemberId in (" + questionMarks + ")";
         try {
-            run.update(updateSql, profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
-                    profile.getCity(), profile.getProvince(), profile.getReceiver(), profile.getMarried(),
-                    profile.getRealName(), profile.getId());
+            return run.query(sql, h, memberIds.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
-            return false;
         }
-        return true;
+
+        return Lists.newArrayList();
     }
 
     public boolean submitPersonalCenterProfileWithMoreDetail(Profile profile) {
