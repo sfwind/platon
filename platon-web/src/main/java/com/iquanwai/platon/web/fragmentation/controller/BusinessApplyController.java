@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionGroupDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySubmitDto;
@@ -96,8 +97,14 @@ public class BusinessApplyController {
         if (account.getSubscribe() == 1) {
             return WebUtils.success();
         } else {
-            return WebUtils.result(ConfigUtils.isDevelopment() ? "https://static.iqycamp.com/images/fragment/apply_qr_beta.jpeg?imageslim"
-                    : "https://static.iqycamp.com/images/fragment/apply_qr_pro_1.jpeg?imageslim");
+            String qrCode = "";
+            if (Constants.Project.CORE_PROJECT == project) {
+                // https://static.iqycamp.com/images/fragment/apply_qr_pro_1.jpeg?imageslim
+                qrCode = ConfigUtils.getCoreApplyQrCode();
+            } else if (Constants.Project.BUSINESS_THOUGHT_PROJECT == project) {
+                qrCode = ConfigUtils.getBusinessThoughtApplyQrCode();
+            }
+            return WebUtils.result(qrCode);
         }
     }
 

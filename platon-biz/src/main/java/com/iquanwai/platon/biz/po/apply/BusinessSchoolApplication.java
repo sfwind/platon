@@ -27,6 +27,7 @@ public class BusinessSchoolApplication {
     private String originMemberTypeName;
     private Integer lastVerified;
     private Boolean valid;
+    private Integer project;
 
     public static final int APPLYING = 0;
     public static final int APPROVE = 1;

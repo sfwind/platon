@@ -407,7 +407,9 @@ public class ConfigUtils {
         return getValue("landing.page.banner");
     }
 
-    public static String getDailyTalkWelcome(){return getValue("daily.talk.welcome");}
+    public static String getDailyTalkWelcome() {
+        return getValue("daily.talk.welcome");
+    }
 
     public static String getFtpUser() {
         return getValue("ftp.username");
@@ -421,11 +423,20 @@ public class ConfigUtils {
         return getValue("ftp.host");
     }
 
-    public static String getResourceDomain(){return getValue("resource.domain");}
+    public static String getResourceDomain() {
+        return getValue("resource.domain");
+    }
+
     public static String getSensorsProject() {
         return getValue("sensors.project");
     }
 
+    public static String getCoreApplyQrCode() {
+        return getValue("core.apply.qr.code");
+    }
 
+    public static String getBusinessThoughtApplyQrCode() {
+        return getValue("thought.apply.qr.code");
+    }
 }
 

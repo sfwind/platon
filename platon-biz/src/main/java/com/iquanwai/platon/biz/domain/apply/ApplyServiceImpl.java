@@ -16,6 +16,7 @@ import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
@@ -139,6 +140,25 @@ public class ApplyServiceImpl implements ApplyService {
         operationLogService.trace(profileId, "submitApply");
     }
 
+    private void checkApplyMiniMba(Integer profileId) throws ApplyException {
+        RiseMember riseMember = riseMemberManager.businessThought(profileId);
+        if (riseMember != null) {
+            throw new ApplyException("您已经是商业进阶课用户，无需重复申请");
+        }
+        Boolean applyPass = accountService.hasStatusId(profileId, CustomerStatus.APPLY_BUSINESS_THOUGHT_SUCCESS);
+        if (applyPass) {
+            throw new ApplyException("您已经有报名权限,无需重复申请");
+        }
+        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId)
+                .stream()
+                .filter(item -> item.getProject().equals(Constants.Project.BUSINESS_THOUGHT_PROJECT))
+                .collect(Collectors.toList());
+        Boolean checking = applyList.stream().anyMatch(item -> !item.getDeal());
+        if (checking) {
+            throw new ApplyException("您的申请正在审核中哦");
+        }
+    }
+
     private void checkApplyBusiness(Integer profileId) throws ApplyException {
         // 已经是商学院用户
         RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
@@ -146,7 +166,10 @@ public class ApplyServiceImpl implements ApplyService {
             throw new ApplyException("您已经是商学院用户,无需重复申请");
         }
 
-        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId);
+        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId)
+                .stream()
+                .filter(item -> item.getProject().equals(Constants.Project.CORE_PROJECT))
+                .collect(Collectors.toList());
         // 已有报名权限
         Boolean applyPass = accountService.hasStatusId(profileId, CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
         if (applyPass) {
@@ -177,5 +200,18 @@ public class ApplyServiceImpl implements ApplyService {
 
     @Override
     public void checkApplyPrivilege(Integer profileId, Integer project) throws ApplyException {
+        switch (project) {
+            case Constants.Project.CORE_PROJECT: {
+                checkApplyBusiness(profileId);
+                break;
+            }
+            case Constants.Project.BUSINESS_THOUGHT_PROJECT: {
+                checkApplyMiniMba(profileId);
+                break;
+            }
+            default: {
+                throw new ApplyException("项目类型异常");
+            }
+        }
     }
 }
