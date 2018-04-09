@@ -137,8 +137,7 @@ public class ApplyServiceImpl implements ApplyService {
         operationLogService.trace(profileId, "submitApply");
     }
 
-    @Override
-    public void checkApplyPrivilege(Integer profileId, Integer project) throws ApplyException {
+    private void checkApplyBusiness(Integer profileId) throws ApplyException {
         // 已经是商学院用户
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
@@ -173,5 +172,9 @@ public class ApplyServiceImpl implements ApplyService {
                     .orElse(0);
             throw new ApplyException("还有 " + maxWaitDays + " 天才能再次申请哦");
         }
+    }
+
+    @Override
+    public void checkApplyPrivilege(Integer profileId, Integer project) throws ApplyException {
     }
 }
