@@ -165,4 +165,16 @@ public class RiseCertificateDao extends PracticeDBUtil {
         }
     }
 
+    public RiseCertificate loadGraduateByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from RiseCertificate where ProfileId = ? and Type in (1,2,3,5) AND Del = 0";
+        ResultSetHandler<RiseCertificate> h = new BeanHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return null;
+    }
+
 }

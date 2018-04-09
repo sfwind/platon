@@ -5,16 +5,17 @@ import com.iquanwai.platon.biz.dao.apply.BusinessApplyChoiceDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplyQuestionDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplySubmitDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseCertificateDao;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ApplyException;
+import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyChoice;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -54,6 +55,8 @@ public class ApplyServiceImpl implements ApplyService {
     private BusinessApplySubmitDao businessApplySubmitDao;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private RiseCertificateDao riseCertificateDao;
 
     @Override
     public List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId) {
@@ -102,7 +105,7 @@ public class ApplyServiceImpl implements ApplyService {
 
 
     @Override
-    public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid) {
+    public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid, Integer project) {
         //获取上次审核的结果
         BusinessSchoolApplication lastBusinessApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
 
@@ -145,19 +148,26 @@ public class ApplyServiceImpl implements ApplyService {
         if (riseMember != null) {
             throw new ApplyException("您已经是商业进阶课用户，无需重复申请");
         }
-        Boolean applyPass = accountService.hasStatusId(profileId, CustomerStatus.APPLY_BUSINESS_THOUGHT_SUCCESS);
-        if (applyPass) {
-            throw new ApplyException("您已经有报名权限,无需重复申请");
-        }
+
         List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId)
                 .stream()
                 .filter(item -> item.getProject().equals(Constants.Project.BUSINESS_THOUGHT_PROJECT))
                 .collect(Collectors.toList());
+        Boolean applyPass = applyList
+                .stream()
+                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
+                .filter(BusinessSchoolApplication::getDeal)
+                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
+
+        if (applyPass) {
+            throw new ApplyException("您已经有报名权限,无需重复申请");
+        }
         Boolean checking = applyList.stream().anyMatch(item -> !item.getDeal());
         if (checking) {
             throw new ApplyException("您的申请正在审核中哦");
         }
     }
+
 
     private void checkApplyBusiness(Integer profileId) throws ApplyException {
         // 已经是商学院用户
@@ -170,10 +180,20 @@ public class ApplyServiceImpl implements ApplyService {
                 .stream()
                 .filter(item -> item.getProject().equals(Constants.Project.CORE_PROJECT))
                 .collect(Collectors.toList());
-        // 已有报名权限
-        Boolean applyPass = accountService.hasStatusId(profileId, CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS);
+        // 已有报名权限，申请通过
+        boolean applyPass = applyList
+                .stream()
+                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
+                .filter(BusinessSchoolApplication::getDeal)
+                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
         if (applyPass) {
             throw new ApplyException("您已经有报名权限,无需重复申请");
+        }
+        // 已有报名权限，优秀证书
+        RiseCertificate riseCertificate = riseCertificateDao.loadGraduateByProfileId(profileId);
+        applyPass = riseCertificate != null;
+        if (applyPass) {
+            throw new ApplyException("优秀学员有报名权限,无需重复申请");
         }
 
         // 检查是否有申请中订单

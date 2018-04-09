@@ -36,7 +36,7 @@ public interface ApplyService {
      * @param userApplySubmits 用户的申请记录
      * @param valid            是否有效
      */
-    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid);
+    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid,Integer project);
 
     /**
      * 检查是否有申请权限

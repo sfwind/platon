@@ -138,7 +138,7 @@ public class BusinessApplyController {
             return submit;
         }).collect(Collectors.toList());
         // 如果不需要支付，则直接有效，否则先设置为无效
-        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, !ConfigUtils.getPayApplyFlag());
+        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, !ConfigUtils.getPayApplyFlag(),applySubmitDto.getProject());
         return WebUtils.success();
     }
 }

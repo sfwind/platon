@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation;
 
+import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMessageService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMsg;
 import com.iquanwai.platon.biz.domain.common.subscribe.SubscribeRouterService;
@@ -8,9 +9,13 @@ import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.SubscribeRouterConfig;
+import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.CookieUtils;
@@ -31,6 +36,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +59,8 @@ public class IndexController {
     private ActivityMessageService activityMessageService;
     @Autowired
     private RiseMemberManager riseMemberManager;
+    @Autowired
+    private ApplyService applyService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     // 商学院按钮url
@@ -144,25 +152,8 @@ public class IndexController {
             return null;
         }
 
-        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
-            SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-            if (subscribeRouterConfig != null) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-                return null;
-            } else {
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
-            }
-        }
-
-        if (ConfigUtils.isDevelopment()) {
-            //如果不在白名单中,直接403报错
-            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, unionUser.getId());
-            if (!result) {
-                response.sendRedirect(FORBID_URL);
-                return null;
-            }
+        if (notFollowCheck(request, response, unionUser)) {
+            return null;
         }
 
         ModuleShow moduleShow = getModuleShow(unionUser);
@@ -177,6 +168,15 @@ public class IndexController {
             response.sendRedirect(HOME_LANDING_PAGE);
             return null;
         }
+
+        List<BusinessSchoolApplication> applyList = applyService.loadApplyList(unionUser.getId());
+        boolean coreApplied = applyList
+                .stream()
+                .filter(item -> item.getProject().equals(Constants.Project.CORE_PROJECT))
+                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
+                .filter(BusinessSchoolApplication::getDeal)
+                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
+
 
         if (isInfoInComplete(profile)) {
             // 未填写信息的已购买商学院的 “新” 会员
@@ -194,7 +194,7 @@ public class IndexController {
             // 进入新的学习页面
             response.sendRedirect(NEW_SCHEDULE_PLAN);
             return null;
-        } else if (accountService.hasStatusId(unionUser.getId(), CustomerStatus.APPLY_BUSINESS_SCHOOL_SUCCESS) && !whiteListService.checkRunningRiseMenuWhiteList(unionUser.getId())) {
+        } else if (coreApplied && !whiteListService.checkRunningRiseMenuWhiteList(unionUser.getId())) {
             // 已经申请成功，有购买权限，非默认可购买的人(专业版)
             response.sendRedirect(APPLY_SUCCESS);
             return null;
@@ -218,25 +218,8 @@ public class IndexController {
             WebUtils.auth(request, response);
             return null;
         }
-        if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
-            SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
-            if (subscribeRouterConfig != null) {
-                // 未关注
-                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-                return null;
-            } else {
-                response.sendRedirect(SUBSCRIBE_URL);
-                return null;
-            }
-        }
-
-        if (ConfigUtils.isDevelopment()) {
-            //如果不在白名单中,直接403报错
-            boolean result = whiteListService.isInWhiteList(WhiteList.TEST, unionUser.getId());
-            if (!result) {
-                response.sendRedirect(FORBID_URL);
-                return null;
-            }
+        if (notFollowCheck(request, response, unionUser)) {
+            return null;
         }
 
         ModuleShow moduleShow = getModuleShow(unionUser);
@@ -286,23 +269,19 @@ public class IndexController {
         return profile.getRealName() == null || (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
     }
 
-    @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
-    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
-                                 @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        if (unionUser == null) {
-            WebUtils.auth(request, response);
-            return null;
-        }
-
+    /**
+     * 检查是否关注，以及测试环境权限
+     */
+    private boolean notFollowCheck(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser) throws IOException {
         if (!accountService.checkIsSubscribe(unionUser.getOpenId(), unionUser.getUnionId())) {
             SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
             if (subscribeRouterConfig != null) {
                 // 未关注
                 response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
-                return null;
+                return true;
             } else {
                 response.sendRedirect(SUBSCRIBE_URL);
-                return null;
+                return true;
             }
         }
 
@@ -311,8 +290,22 @@ public class IndexController {
             boolean result = whiteListService.isInWhiteList(WhiteList.TEST, unionUser.getId());
             if (!result) {
                 response.sendRedirect(FORBID_URL);
-                return null;
+                return true;
             }
+        }
+        return false;
+    }
+
+    @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
+    public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
+                                 @RequestParam(value = "_tm", required = false) String channel) throws Exception {
+        if (unionUser == null) {
+            WebUtils.auth(request, response);
+            return null;
+        }
+
+        if (notFollowCheck(request, response, unionUser)) {
+            return null;
         }
 
         // 加载首屏广告信息
