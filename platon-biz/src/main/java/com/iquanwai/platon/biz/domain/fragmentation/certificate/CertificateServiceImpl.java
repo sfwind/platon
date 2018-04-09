@@ -753,7 +753,8 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        RiseMember riseMember = riseMemberManager.quanwaiMember(profile.getId());
+        //TODO: 有问题
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profile.getId());
         if (riseMember != null) {
             if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
                 coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));

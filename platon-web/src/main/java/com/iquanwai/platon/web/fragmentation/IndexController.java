@@ -328,7 +328,7 @@ public class IndexController {
         ModuleShow moduleShow = new ModuleShow();
 
         // TODO: 待验证
-        RiseMember riseMember = riseMemberManager.preMember(unionUser.getId());
+        RiseMember riseMember = riseMemberManager.proMember(unionUser.getId());
 
         if (riseMember != null) {
             moduleShow.setShowExplore(true);

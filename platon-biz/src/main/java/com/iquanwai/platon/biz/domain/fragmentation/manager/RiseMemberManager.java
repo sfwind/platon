@@ -10,14 +10,14 @@ import java.util.List;
 public interface RiseMemberManager {
 
     /**
-     * 核心能力项目用户
+     * 商学院核心能力项目
      * */
     RiseMember coreBusinessSchoolMember(Integer profileId);
 
     /**
-     * 核心能力项目用户
+     * 核心能力项目用户（商学院+专业版+专项课）
      * */
-    RiseMember quanwaiMember(Integer profileId);
+    RiseMember coreBusinessSchoolUser(Integer profileId);
 
     /**
      * 专项课用户
@@ -32,7 +32,7 @@ public interface RiseMemberManager {
     /**
      * 专业版用户
      * */
-    RiseMember preMember(Integer profileId);
+    RiseMember proMember(Integer profileId);
 
     /**
      * 所有用户信息

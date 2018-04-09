@@ -123,8 +123,8 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             return courseSchedule.getType();
         }
 
-        // TODO: 待验证
-        RiseMember riseMember = riseMemberManager.quanwaiMember(profileId);
+        // TODO: 有问题
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         List<CourseScheduleDefault> courseSchedules;
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
                 riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {

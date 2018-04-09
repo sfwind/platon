@@ -47,7 +47,8 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
     }
 
     @Override
-    public RiseMember quanwaiMember(Integer profileId) {
+    public RiseMember coreBusinessSchoolUser(Integer profileId) {
+        //TODO: 可能有多个身份
         List<Integer> members = Lists.newArrayList();
         members.add(RiseMember.HALF);
         members.add(RiseMember.ANNUAL);
@@ -75,7 +76,7 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
     }
 
     @Override
-    public RiseMember preMember(Integer profileId) {
+    public RiseMember proMember(Integer profileId) {
         List<Integer> members = Lists.newArrayList();
         members.add(RiseMember.HALF);
         members.add(RiseMember.ANNUAL);

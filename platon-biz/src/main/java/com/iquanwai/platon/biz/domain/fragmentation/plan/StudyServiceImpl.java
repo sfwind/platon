@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.po.*;
@@ -128,7 +127,7 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public Pair<Boolean, Integer> shouldGoCountDownPage(Integer profileId) {
         // TODO: 待验证
-        RiseMember validRiseMember = riseMemberManager.quanwaiMember(profileId);
+        RiseMember validRiseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         if (validRiseMember == null) {
             return new MutablePair<>(false, null);
         } else {
