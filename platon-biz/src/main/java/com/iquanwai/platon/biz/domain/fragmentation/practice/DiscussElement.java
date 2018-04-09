@@ -13,6 +13,8 @@ import java.util.Date;
 @ApiModel("讨论区基础数据对象")
 public class DiscussElement {
 
+    @ApiModelProperty("评论id")
+    private Integer id;
     @ApiModelProperty("昵称")
     private String nickname;
     @ApiModelProperty("头像")
@@ -23,6 +25,12 @@ public class DiscussElement {
     private String content;
     @ApiModelProperty("是否助教")
     private Boolean isAsst;
+    @ApiModelProperty("自身是否点赞")
+    private Boolean selfVoted;
+    @ApiModelProperty("点赞总人数")
+    private Integer voteCount;
+
+
     // TODO 头衔图片链接
     private String titleImageUrl;
 

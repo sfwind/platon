@@ -223,7 +223,7 @@ public class ApplicationController {
     public ResponseEntity<Map<String, Object>> loadPriorityApplicationSubmits(UnionUser unionUser, @RequestParam("applicationId") Integer applicationId, @RequestParam("planId") Integer planId) {
         DiscussDistrictDto districtDto = new DiscussDistrictDto();
         districtDto.setPersonal(practiceDiscussService.loadPersonalApplicationSubmitDiscussList(unionUser.getId(), applicationId, planId));
-        districtDto.setPriorities(practiceDiscussService.loadPriorityApplicationSubmitDiscussList(applicationId));
+        districtDto.setPriorities(practiceDiscussService.loadPriorityApplicationSubmitDiscussList(unionUser.getId(), applicationId));
         return WebUtils.result(districtDto);
     }
 

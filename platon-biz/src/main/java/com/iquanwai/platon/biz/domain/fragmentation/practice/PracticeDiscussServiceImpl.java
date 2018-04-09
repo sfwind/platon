@@ -57,6 +57,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private HomeworkVoteDao homeworkVoteDao;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -500,16 +502,23 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         // 所有助教人员的 ProfileId 集合
         List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
 
+        // 获取点赞数据
+        List<HomeworkVote> homeworkVotes = homeworkVoteDao.getHomeworkVotesByReferenceId(applicationSubmit.getId());
+        List<Integer> homeworkVoteProfileIds = homeworkVotes.stream().map(HomeworkVote::getVoteProfileId).collect(Collectors.toList());
+
         // 转换用户作业数据
         DiscussElement discussElement = new DiscussElement();
         discussElement.setContent(applicationSubmit.getContent());
         Profile submitProfile = involvedProfileMap.getOrDefault(applicationSubmit.getProfileId(), null);
         if (submitProfile != null) {
+            discussElement.setId(applicationSubmit.getId());
             discussElement.setNickname(submitProfile.getNickname());
             discussElement.setAvatar(submitProfile.getHeadimgurl());
             discussElement.setContent(applicationSubmit.getContent());
             discussElement.setPublishTime(applicationSubmit.getPublishTime());
             discussElement.setIsAsst(asstProfileIds.contains(submitProfile.getId()));
+            discussElement.setSelfVoted(homeworkVoteProfileIds.contains(submitProfile.getId()));
+            discussElement.setVoteCount(homeworkVotes.size());
             personalDiscuss.setDiscuss(discussElement);
         }
 
@@ -536,7 +545,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
 
     // 获取精华区的作业和讨论
     @Override
-    public List<DiscussElementsPair> loadPriorityApplicationSubmitDiscussList(Integer applicationId) {
+    public List<DiscussElementsPair> loadPriorityApplicationSubmitDiscussList(Integer profileId, Integer applicationId) {
         List<DiscussElementsPair> discussElementsPairs = Lists.newArrayList();
 
         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadPriorityApplicationSubmitsByApplicationId(applicationId);
@@ -555,6 +564,11 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         // 所有助教人员的 ProfileId 集合
         List<Integer> asstProfileIds = userRoleDao.loadUserRoleByRoleIds(Role.loadAsstRoleIds()).stream().map(UserRole::getProfileId).collect(Collectors.toList());
 
+        // 获取所有应用题作业对应的点赞集合
+        List<HomeworkVote> homeworkVotes = homeworkVoteDao.getHomeworkVotesByReferenceIds(submitsIds);
+        // 生成 key 为应用题提交 id，value 为该道应用题对应的所有点赞数据集合
+        Map<Integer, List<HomeworkVote>> homeworkSubmitMap = homeworkVotes.stream().collect(Collectors.groupingBy(HomeworkVote::getReferencedId));
+
         // 拼装数据
         applicationSubmits.forEach(applicationSubmit -> {
             DiscussElementsPair discussElementsPair = new DiscussElementsPair();
@@ -565,11 +579,18 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             Profile priorityProfile = involvedProfileMap.getOrDefault(applicationSubmit.getProfileId(), null);
             if (priorityProfile != null) {
                 DiscussElement priorityDiscuss = new DiscussElement();
+                priorityDiscuss.setId(applicationSubmit.getId());
                 priorityDiscuss.setContent(applicationSubmit.getContent());
                 priorityDiscuss.setPublishTime(applicationSubmit.getPublishTime());
                 priorityDiscuss.setAvatar(priorityProfile.getHeadimgurl());
                 priorityDiscuss.setNickname(priorityProfile.getNickname());
                 priorityDiscuss.setIsAsst(asstProfileIds.contains(priorityProfile.getId()));
+                // 自己是否已经点赞
+                List<HomeworkVote> homeworkVoteList = homeworkSubmitMap.getOrDefault(applicationSubmit.getId(), Lists.newArrayList());
+                List<Integer> voteListProfileIds = homeworkVoteList.stream().map(HomeworkVote::getVoteProfileId).collect(Collectors.toList());
+                priorityDiscuss.setSelfVoted(voteListProfileIds.contains(profileId));
+                priorityDiscuss.setVoteCount(homeworkVoteList.size());
+                // 当前点赞人数
                 discussElementsPair.setPriorityDiscuss(priorityDiscuss);
             }
 
@@ -578,6 +599,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 Profile discussProfile = involvedProfileMap.getOrDefault(comment.getCommentProfileId(), null);
                 if (discussProfile != null) {
                     DiscussElement discussComment = new DiscussElement();
+                    discussComment.setId(comment.getId());
                     discussComment.setContent(comment.getContent());
                     discussComment.setPublishTime(comment.getAddTime());
                     discussComment.setAvatar(discussProfile.getHeadimgurl());
@@ -602,6 +624,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
         } else {
             DiscussElement discussElement = new DiscussElement();
             Profile profile = involvedProfileMap.get(abstractComment.getProfileId());
+            discussElement.setId(abstractComment.getId());
             discussElement.setAvatar(profile.getHeadimgurl());
             discussElement.setNickname(profile.getNickname());
             discussElement.setPublishTime(abstractComment.getAddTime());

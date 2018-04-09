@@ -104,5 +104,5 @@ public interface PracticeDiscussService {
     /**
      * 获取精华应用题和对应的评论信息
      */
-    List<DiscussElementsPair> loadPriorityApplicationSubmitDiscussList(Integer applicationId);
+    List<DiscussElementsPair> loadPriorityApplicationSubmitDiscussList(Integer profileId, Integer applicationId);
 }
