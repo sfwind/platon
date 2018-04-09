@@ -4,12 +4,8 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.po.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,7 +34,7 @@ public class StudyServiceImpl implements StudyService {
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
 
@@ -130,7 +126,8 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public Pair<Boolean, Integer> shouldGoCountDownPage(Integer profileId) {
-        RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证
+        RiseMember validRiseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         if (validRiseMember == null) {
             return new MutablePair<>(false, null);
         } else {

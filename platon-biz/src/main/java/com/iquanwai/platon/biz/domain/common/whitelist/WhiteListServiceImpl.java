@@ -1,8 +1,9 @@
 package com.iquanwai.platon.biz.domain.common.whitelist;
 
 import com.iquanwai.platon.biz.dao.common.WhiteListDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
-import com.iquanwai.platon.biz.po.GroupPromotion;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -11,7 +12,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,15 +23,11 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Autowired
     private WhiteListDao whiteListDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
-    private GroupPromotionDao groupPromotionDao;
-    @Autowired
     private RiseClassMemberDao riseClassMemberDao;
-    @Autowired
-    private PrizeCardDao prizeCardDao;
 
     @Override
     public boolean isInWhiteList(String function, Integer profileId) {
@@ -62,7 +58,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public boolean checkRiseMenuWhiteList(Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         Long riseCount = riseMembers.stream().filter(riseMember ->
                         // 商学院会员（半年、一年）、课程单买用户
                         riseMember.getMemberTypeId() == RiseMember.HALF
@@ -76,7 +72,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public boolean checkRunningRiseMenuWhiteList(Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         Long riseCount = riseMembers.stream()
                 .filter(riseMember -> !riseMember.getExpired())
                 .filter(riseMember ->
@@ -92,7 +88,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public boolean checkCampMenuWhiteList(Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         Long risememberCount = riseMembers.stream().filter(riseMember ->
                         // 半年/一年 精英版
                         riseMember.getMemberTypeId() == RiseMember.ELITE ||
@@ -133,7 +129,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public boolean isGoCampCountDownPage(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        RiseMember riseMember = riseMemberManager.campMember(profileId);
         return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
     }
 

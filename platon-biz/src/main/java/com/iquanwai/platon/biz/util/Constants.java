@@ -119,6 +119,11 @@ public interface Constants {
 
     int DISCUSS_PAGE_SIZE = 100;
 
+    interface Project{
+        int CORE_PROJECT = 1;
+        int BUSINESS_THOUGHT_PROJECT = 2;
+    }
+
     String TEMP_IMAGE_PATH = "/data/static/images/";
 
 }

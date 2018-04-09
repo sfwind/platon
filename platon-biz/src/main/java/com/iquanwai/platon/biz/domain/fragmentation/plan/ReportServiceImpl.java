@@ -46,6 +46,8 @@ public class ReportServiceImpl implements ReportService {
     private ApplicationSubmitDao applicationSubmitDao;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
+    @Autowired
+    private PointManager pointManager;
 
     @Override
     public ImprovementReport loadUserImprovementReport(ImprovementPlan plan) {
@@ -119,9 +121,8 @@ public class ReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
         // 应用练习
         List<PracticePlan> applicationPlanList = practicePlans.stream()
-                .filter(item -> item.getType().equals(PracticePlan.APPLICATION_BASE) ||
-                        item.getType().equals(PracticePlan.APPLICATION_UPGRADED))
-                .collect(Collectors.toList());
+                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
+                        .collect(Collectors.toList());
 
         // 计算章节练习分数
         calculateWarmupScores(report, plan, warmPlanList);
@@ -148,7 +149,7 @@ public class ReportServiceImpl implements ReportService {
             // 已完成，计算分数
             Optional<ApplicationPractice> first = applicationPractices.stream().filter(app -> app.getId() == Integer.parseInt(item.getPracticeId())).findFirst();
             first.ifPresent(practice -> {
-                Integer point = PointManagerImpl.score.get(practice.getDifficulty());
+                Integer point = pointManager.calcApplicationScore(practice.getDifficulty());
                 if (item.getStatus() == 1) {
                     report.setApplicationScore(report.getApplicationScore() + point);
                 }
@@ -238,11 +239,11 @@ public class ReportServiceImpl implements ReportService {
                     } else {
                         Integer difficulty = warmupPractice.getDifficulty();
                         if (difficulty == 1) {
-                            score = PointManager.EASY_SCORE;
+                            score = PointManager.WARMUP_EASY_SCORE;
                         } else if (difficulty == 2) {
-                            score = PointManager.NORMAL_SCORE;
+                            score = PointManager.WARMUP_NORMAL_SCORE;
                         } else if (difficulty == 3) {
-                            score = PointManager.HARD_SCORE;
+                            score = PointManager.WARMUP_HARD_SCORE;
                         } else {
                             logger.error("难度系数不正常,{},{}", difficulty, practiceId);
                             score = 0;

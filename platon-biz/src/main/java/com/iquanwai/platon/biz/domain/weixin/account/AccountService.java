@@ -129,13 +129,6 @@ public interface AccountService {
     boolean validCode(String code, Integer profileId);
 
     /**
-     * 是否是rise会员
-     *
-     * @param profileId profileId
-     */
-    Boolean isRiseMember(Integer profileId);
-
-    /**
      * 获取优惠券信息
      *
      * @param profileId 用户id
@@ -175,14 +168,6 @@ public interface AccountService {
      */
     Boolean hasStatusId(Integer profileId, Integer statusId);
 
-    /**
-     * 获取所有该用户会员信息
-     *
-     * @param profileId 用户id
-     */
-    List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId);
-
-    Integer getProfileRiseMember(Integer profileId);
 
     /**
      * 创建关注推送消息
@@ -220,22 +205,10 @@ public interface AccountService {
     void updateWeixinId(Integer profileId, String weixinId);
 
     /**
-     * 获取用户的有效会员类别
-     */
-    RiseMember getValidRiseMember(Integer profileId);
-
-    /**
-     * 是否参加过商学院、专项课、试听课、"一带二"活动
-     */
-    boolean isPreviewNewUser(Integer profileId);
-
-    /**
-     * 现在是否是会员
-     */
-    boolean isBusinessRiseMember(Integer profileId);
-
-    /**
      * 根据学号获取用户 id
      */
     List<Integer> getProfileIdsByMemberId(List<String> memberIds);
+
+    @Deprecated
+    RiseMember getValidRiseMember(Integer profileId);
 }

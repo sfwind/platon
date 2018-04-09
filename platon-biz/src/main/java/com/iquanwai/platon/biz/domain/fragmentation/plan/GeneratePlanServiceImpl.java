@@ -279,21 +279,30 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用练习
             for (int i = 0; i < practices.size(); i++) {
+                ApplicationPractice applicationPractice = practices.get(i);
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
-                if (practices.get(i) != null && practices.get(i).getSequence() == 1) {
-                    practicePlan.setType(PracticePlan.APPLICATION_BASE);
-                } else {
-                    practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
+                if (applicationPractice != null) {
+                    // TODO:附加题和应用题最好能合并
+                    if(applicationPractice.getType() == PracticePlan.APPLICATION_BASE){
+                        if (applicationPractice.getSequence() == 1) {
+                            practicePlan.setType(PracticePlan.APPLICATION_BASE);
+                        } else {
+                            practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
+                        }
+                    }else{
+                        practicePlan.setType(applicationPractice.getType());
+                    }
+
+                    practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
+                    practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
+                    //设置节序号
+                    practicePlan.setSeries(sequence);
+                    practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
+                    practicePlan.setPracticeId(applicationPractice.getId() + "");
+                    selectedPractice.add(practicePlan);
                 }
-                practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
-                practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
-                //设置节序号
-                practicePlan.setSeries(sequence);
-                practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
-                practicePlan.setPracticeId(practices.get(i).getId() + "");
-                selectedPractice.add(practicePlan);
             }
         }
 
@@ -368,7 +377,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         Profile profile = accountService.getProfile(profileId);
         int length = problem.getLength();
         ImprovementPlan improvementPlan = new ImprovementPlan();
-//        improvementPlan.setOpenid(profile.getOpenid());
         improvementPlan.setProfileId(profileId);
         improvementPlan.setWarmupComplete(0);
         improvementPlan.setApplicationComplete(0);

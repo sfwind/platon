@@ -3,17 +3,16 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.flow.FlowService;
 import com.iquanwai.platon.biz.domain.common.flow.LandingPageBanner;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.ActivitiesFlow;
-import com.iquanwai.platon.biz.po.ArticlesFlow;
-import com.iquanwai.platon.biz.po.LivesFlow;
-import com.iquanwai.platon.biz.po.ProblemsFlow;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.web.fragmentation.dto.LandingPageDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +35,7 @@ public class LandingPageController {
     @Autowired
     private MessageService messageService;
     @Autowired
-    private AccountService accountService;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private CustomerService customerService;
 
@@ -51,9 +50,10 @@ public class LandingPageController {
         List<ArticlesFlow> articlesFlows = flowService.loadArticlesFlow(unionUser.getId(), 4, false);
         List<ActivitiesFlow> activitiesFlows = flowService.loadActivitiesFlow(unionUser.getId(), 4);
 
-
         LandingPageDto dto = new LandingPageDto();
-        dto.setIsBusinessMember(accountService.isBusinessRiseMember(unionUser.getId()));
+        // TODO: 待验证
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(unionUser.getId());
+        dto.setIsBusinessMember(CollectionUtils.isNotEmpty(riseMembers));
         dto.setIsShowPassNotify(applicationPass.getLeft());
         dto.setRemainTime(applicationPass.getRight());
         dto.setNotify(unReadCount != null && unReadCount > 0);

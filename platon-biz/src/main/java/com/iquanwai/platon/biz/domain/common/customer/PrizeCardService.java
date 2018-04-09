@@ -12,15 +12,6 @@ public interface PrizeCardService {
     List<PrizeCard> loadNoOwnerPrizeCard(Integer profileId);
 
     /**
-     * 领取年度礼品卡
-     *
-     * @param cardNo
-     * @param profileId
-     * @return
-     */
-    String receiveAnnualPrizeCards(String cardNo, Integer profileId);
-
-    /**
      * 是否是本人的礼品卡
      * @param cardNo
      * @param openid
@@ -32,15 +23,6 @@ public interface PrizeCardService {
      * @param profileId
      * */
     List<PrizeCard> generateAnnualPrizeCards(Integer profileId);
-
-    /**
-     * 是否成功领取预先生成的礼品卡
-     *
-     * @param cardId
-     * @param profileId
-     * @return
-     */
-    Pair<Integer, String> isPreviewCardReceived(String cardId, Integer profileId);
 
     /**
      * 领取卡片成功消息
@@ -62,13 +44,5 @@ public interface PrizeCardService {
      * @param cardNum
      */
     void sendAnnualOwnerMsg(String cardNum, String receiver);
-
-    /**
-     * 根据年终回顾的数据生成礼品卡
-     */
-//    void genPrizeCardsByAnnSummary();
-
-
-    boolean checkJanPay(Integer profileId);
 
 }

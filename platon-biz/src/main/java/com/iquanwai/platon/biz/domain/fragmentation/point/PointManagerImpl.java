@@ -1,12 +1,9 @@
 package com.iquanwai.platon.biz.domain.fragmentation.point;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.po.Choice;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -16,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -27,24 +22,10 @@ import java.util.stream.Collectors;
 @Service
 public class PointManagerImpl implements PointManager {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProfileDao profileDao;
-
-    public static Map<Integer, Integer> score = Maps.newHashMap();
-
-
-    @PostConstruct
-    public void initPoint() {
-        List<Integer> scores = Lists.newArrayList(40, 60, 100);
-        logger.info("score init");
-        for (int i = 0; i < scores.size(); i++) {
-            score.put(i + 1, scores.get(i));
-        }
-        logger.info("score map:{}", score);
-    }
 
     @Override
     public void risePoint(Integer planId, Integer increment) {
@@ -89,14 +70,38 @@ public class PointManagerImpl implements PointManager {
         }
 
         if (right.size() == userChoiceList.size()) {
-            if (warmupPractice.getDifficulty() == 1) {
-                return new ImmutablePair<>(EASY_SCORE, true);
-            } else if (warmupPractice.getDifficulty() == 2) {
-                return new ImmutablePair<>(NORMAL_SCORE, true);
-            } else if (warmupPractice.getDifficulty() == 3) {
-                return new ImmutablePair<>(HARD_SCORE, true);
+            int score = calcWarmupScore(warmupPractice.getDifficulty());
+            if (score > 0) {
+                return new ImmutablePair<>(score, true);
             }
         }
         return new ImmutablePair<>(0, false);
     }
+
+
+    private Integer calcWarmupScore(Integer difficulty) {
+        if (difficulty == 1) {
+            return WARMUP_EASY_SCORE;
+        } else if (difficulty == 2) {
+            return WARMUP_NORMAL_SCORE;
+        } else if (difficulty == 3) {
+            return WARMUP_HARD_SCORE;
+        }
+
+        return 0;
+    }
+
+    @Override
+    public Integer calcApplicationScore(Integer difficulty) {
+        if (difficulty == 1) {
+            return APPLICATION_EASY_SCORE;
+        } else if (difficulty == 2) {
+            return APPLICATION_NORMAL_SCORE;
+        } else if (difficulty == 3) {
+            return APPLICATION_HARD_SCORE;
+        }
+
+        return 0;
+    }
+
 }

@@ -6,8 +6,8 @@ import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -48,8 +48,6 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private RiseMemberService riseMemberService;
-    @Autowired
     private PointManager pointManager;
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
@@ -66,7 +64,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private FullAttendanceRewardDao fullAttendanceRewardDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
@@ -159,7 +157,6 @@ public class CertificateServiceImpl implements CertificateService {
         logger.info("riseClassMember 人员获取结束: {}", riseClassMemberProfileIds.size());
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
-            logger.info("开始获取证书生成人员信息profileId: {}", classMemberProfileId);
             Integer majorProblemId = problemScheduleManager.getMajorProblemIdByYearAndMonth(classMemberProfileId, year, month);
             if (majorProblemId != null) {
                 ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, majorProblemId);
@@ -168,7 +165,6 @@ public class CertificateServiceImpl implements CertificateService {
                 }
             }
         });
-        logger.info("improvementPlan 获取结束");
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
 
@@ -176,7 +172,6 @@ public class CertificateServiceImpl implements CertificateService {
         certificateNoSequence.add(1);
 
         riseClassMemberPlanIds.forEach(planId -> {
-            logger.info("开始处理证书学习计划：{}", planId);
             try {
                 boolean generateCertificateTag = true;
 
@@ -197,11 +192,11 @@ public class CertificateServiceImpl implements CertificateService {
                         // 所有必须完成的知识点、选择题都已经完成
                         // 对应用题完成情况进行复查
                         List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                                .filter(practicePlan -> PracticePlan.APPLICATION_BASE == practicePlan.getType()
-                                        || PracticePlan.APPLICATION_UPGRADED == practicePlan.getType())
+                                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
                                 .collect(Collectors.toList());
 
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                        // TODO: 改成不需要加载应用题内容的接口
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
                         Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
                                 .collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
@@ -270,7 +265,6 @@ public class CertificateServiceImpl implements CertificateService {
                 }
             } catch (Exception e) {
                 logger.error("证书处理异常 planId: {}", planId);
-                logger.info(e.getLocalizedMessage(), e);
             }
         });
         logger.info("证书生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
@@ -298,7 +292,6 @@ public class CertificateServiceImpl implements CertificateService {
         List<ImprovementPlan> improvementPlans = Lists.newArrayList();
         //根据profileId获得主修课的improvementPlan
         riseClassMemberProfileIds.forEach(classMemberProfileId -> {
-            logger.info("开始获取优惠券生成人员信息profileId: {}", classMemberProfileId);
             Integer problemId = problemScheduleManager.getMajorProblemIdByYearAndMonth(classMemberProfileId, year, month);
             if (problemId != null) {
                 ImprovementPlan selfPlan = improvementPlanDao.loadPlanByProblemId(classMemberProfileId, problemId);
@@ -307,7 +300,6 @@ public class CertificateServiceImpl implements CertificateService {
                 }
             }
         });
-        logger.info("improvementPlan 获取结束");
 
         Map<Integer, ImprovementPlan> improvementPlanMap = improvementPlans.stream().collect(Collectors.toMap(ImprovementPlan::getId, improvementPlan -> improvementPlan, (key1, key2) -> key2));
         List<Integer> riseClassMemberPlanIds = improvementPlans.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
@@ -330,10 +322,10 @@ public class CertificateServiceImpl implements CertificateService {
                     } else {
                         // 完成所有练习之后，对应用题完成情况进行复查
                         List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-                                .filter(practicePlan -> PracticePlan.APPLICATION_BASE == practicePlan.getType()
-                                        || PracticePlan.APPLICATION_UPGRADED == practicePlan.getType())
+                                .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
                                 .collect(Collectors.toList());
                         List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                        // TODO: 改成不需要加载应用题内容的接口
                         List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
                         Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
 
@@ -403,11 +395,8 @@ public class CertificateServiceImpl implements CertificateService {
                 }
                 problemId = improvementPlan.getProblemId();
                 Integer learningProblemId = problemScheduleManager.getLearningMajorProblemId(profileId);
-                logger.info("当前主修的problemId为：" + learningProblemId);
-                logger.info("您目前的problemId为：" + problemId);
                 //判断是否是当前主修的problemId
                 if (problemId.equals(learningProblemId)) {
-                    logger.info("当前课程是主修课程");
                     //判断是否应该发送全勤奖
                     boolean isGenerate = true;
                     //获得学习内容完成情况列表
@@ -423,15 +412,13 @@ public class CertificateServiceImpl implements CertificateService {
                         }
                         //有发送全勤奖的资格
                         if (isGenerate) {
-                            logger.info("进入发送全勤奖流程");
                             int year = ConfigUtils.getLearningYear();
                             int month = ConfigUtils.getLearningMonth();
-                            Boolean validElite = riseMemberService.isValidElite(profileId);
-                            Boolean validCamp = riseMemberService.isValidCamp(profileId);
+                            RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
+                            RiseMember campMember = riseMemberManager.campMember(profileId);
 
                             //判断是否是当月训练营或者商学院用户
-                            if (validElite || validCamp) {
-                                logger.info("是商学院或者当月训练营用户");
+                            if (riseMember != null || campMember != null) {
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
                                     logger.info("开始发送全勤奖");
@@ -579,7 +566,7 @@ public class CertificateServiceImpl implements CertificateService {
                 Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                 templateMessage.setData(data);
 
-                data.put("first", new TemplateMessage.Keyword("恭喜您" + month + "月训练营结课，" +
+                data.put("first", new TemplateMessage.Keyword("恭喜您" + month + "月课程结课，" +
                         "您已获得商学院免申请入学资格！办理入学请点击下方“商学院”按钮。\n"));
                 data.put("keyword1", new TemplateMessage.Keyword("圈外同学"));
                 data.put("keyword2", new TemplateMessage.Keyword("圈外商学院"));
@@ -619,7 +606,7 @@ public class CertificateServiceImpl implements CertificateService {
         templateMessage.setData(data);
 
         data.put("keyword1", new TemplateMessage.Keyword(
-                "您的" + riseCertificate.getMonth() + "月训练营" + amount + "元优惠券奖励已到账"));
+                "您的" + riseCertificate.getMonth() + "月课程" + amount + "元优惠券奖励已到账"));
         data.put("keyword2", new TemplateMessage.Keyword("点击详情，了解优惠券领取位置及使用方式"));
         data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
 
@@ -641,7 +628,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀班长\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月课程优秀班长\n" +
                             "点击详情，领取优秀班长荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -660,7 +647,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀组长\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月课程优秀组长\n" +
                             "点击详情，领取优秀组长荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -679,7 +666,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀学员\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月课程优秀学员\n" +
                             "点击详情，领取优秀学员荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -700,7 +687,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您所在的小组荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀团队\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您所在的小组荣膺［圈外同学］" + riseCertificate.getMonth() + "月课程优秀团队\n" +
                             "点击详情，领取优秀团队荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -716,12 +703,12 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月训练营\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您完成［圈外同学］" + riseCertificate.getMonth() + "月课程\n" +
                             "点击详情，领取结课证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
                     data.put("keyword3", new TemplateMessage.Keyword(profile.getNickname()));
-                    data.put("remark", new TemplateMessage.Keyword("\n荣誉证书也可以在［商学院/训练营］－［我的］－［我的课程］中查询"));
+                    data.put("remark", new TemplateMessage.Keyword("\n荣誉证书也可以在［我的］－［我的课程］中查询"));
 
                 } catch (Exception e) {
                     logger.error(riseCertificate.getProfileId() + " 发送证书失败", e);
@@ -731,7 +718,7 @@ public class CertificateServiceImpl implements CertificateService {
                 try {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀助教\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月课程优秀助教\n" +
                             "点击详情，领取优秀助教荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -746,7 +733,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                     templateMessage.setData(data);
 
-                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月训练营优秀班委\n" +
+                    data.put("first", new TemplateMessage.Keyword("恭喜您荣膺［圈外同学］" + riseCertificate.getMonth() + "月课程优秀班委\n" +
                             "点击详情，领取优秀班委荣誉证书\n"));
                     data.put("keyword1", new TemplateMessage.Keyword(riseCertificate.getProblemName()));
                     data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
@@ -765,68 +752,9 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    private void buildDetail(RiseCertificate riseCertificate) {
-        Integer type = riseCertificate.getType();
-        Profile profile = accountService.getProfile(riseCertificate.getProfileId());
-        switch (type) {
-            case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月训练营中担任班长一职，表现突出，荣膺\"优秀班长\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.CLASS_LEADER);
-                break;
-            case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月训练营中担任组长一职，表现优异，荣膺\"优秀组长\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.GROUP_LEADER);
-                break;
-            case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月训练营中成绩名列前茅，荣膺\"优秀学员\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_MEMBER);
-                break;
-            case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
-                String monthStr = NumberToHanZi.formatInteger(riseCertificate.getMonth());
-                String groupNoStr = NumberToHanZi.formatInteger(riseCertificate.getGroupNo());
-                riseCertificate.setName(monthStr + "月训练营" + groupNoStr + "组");
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月训练营中小组表现优异，荣膺\"优秀小组\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.SUPERB_GROUP);
-                break;
-            case Constants.CERTIFICATE.TYPE.ORDINARY:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月训练营中完成课程学习" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ORDINARY);
-                break;
-            case Constants.CERTIFICATE.TYPE.ASST_COACH:
-                riseCertificate.setName(profile.getRealName());
-                riseCertificate.setCongratulation("在【圈外同学】" + riseCertificate.getYear() + "年" +
-                        riseCertificate.getMonth() + "月训练营中表现卓越，荣膺\"优秀助教\"称号" +
-                        "\n\n" +
-                        "特发此证，以资鼓励");
-                riseCertificate.setTypeName(Constants.CERTIFICATE.NAME.ASST_COACH);
-                break;
-            default:
-                logger.error("证书类型{}不存在", type);
-                break;
-        }
-    }
-
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profile.getId());
+        //TODO: 有问题
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profile.getId());
         if (riseMember != null) {
             if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
                 coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
@@ -838,6 +766,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
@@ -864,21 +793,6 @@ public class CertificateServiceImpl implements CertificateService {
         Integer month = riseCertificate.getMonth();
         String problemName = riseCertificate.getProblemName();
 
-        // Integer category = accountService.loadUserScheduleCategory(profile.getId());
-        // List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
-        // CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream().filter(schedule -> schedule.getMonth().equals(month)).findAny().orElse(null);
-        // Integer problemId = courseScheduleDefault.getProblemId();
-        // if (problemId != null) {
-        //     Problem problem = cacheService.getProblem(problemId);
-        //     if (problem != null) {
-        //         problemName = problem.getProblem();
-        //     }
-        // }
-
-        // if (problemName == null) {
-        //     return new MutablePair<>(false, null);
-        // }
-
         Integer groupNo = riseCertificate.getGroupNo();
         String certificateNo = riseCertificate.getCertificateNo();
 
@@ -894,33 +808,33 @@ public class CertificateServiceImpl implements CertificateService {
             switch (type) {
                 case Constants.CERTIFICATE.TYPE.CLASS_LEADER:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀班长", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "担任班长一职，表现突出，荣膺“优秀班长”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.GROUP_LEADER:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀组长", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "担任组长一职，表现优异，荣膺“优秀组长”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.SUPERB_MEMBER:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀学员", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "成绩名列前茅，荣膺“优秀学员”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
@@ -931,44 +845,44 @@ public class CertificateServiceImpl implements CertificateService {
                     String className = riseClassMember.getClassName();
                     String classNumber = className.substring(4);
                     String monthNumber = className.substring(2, 4);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀团队", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, NumberToHanZi.formatInteger(Integer.parseInt(monthNumber)) + "月" + NumberToHanZi.formatInteger(Integer.parseInt(classNumber)) + "班" + NumberToHanZi.formatInteger(groupNo) + "组", font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "小组表现优异，荣膺“优秀小组”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.ORDINARY:
                     inputImage = ImageUtils.copy(ordinaryImage);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "结课证书", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "完成课程学习", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.ASST_COACH:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀助教", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "表现卓越，荣膺“优秀助教”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
                     break;
                 case Constants.CERTIFICATE.TYPE.CLASS_NORMAL:
                     inputImage = ImageUtils.copy(excellentImage);
-                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月训练营", font.deriveFont(28f), new Color(255, 255, 255));
+                    ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 265, "《" + problemName + "》", font.deriveFont(42f), new Color(255, 255, 255));
                     ImageUtils.writeTextCenter(inputImage, 450, "优秀班委", font.deriveFont(92f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 650, profile.getRealName(), font.deriveFont(78f), new Color(102, 102, 102));
-                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月训练营中", font.deriveFont(48f), new Color(102, 102, 102));
+                    ImageUtils.writeTextCenter(inputImage, 765, "在【圈外同学】" + year + "年" + month + "月课程中", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 850, "担任班委一职，表现突出，荣膺“优秀班委”称号", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 950, "特发此证，以资鼓励", font.deriveFont(48f), new Color(102, 102, 102));
                     ImageUtils.writeTextCenter(inputImage, 1555, "证书编号：" + certificateNo, font.deriveFont(30f), new Color(182, 144, 47));
@@ -997,7 +911,6 @@ public class CertificateServiceImpl implements CertificateService {
                 }
                 builder.append(riseCertificate.getProfileId()).append("/");
 
-                logger.info(builder.toString());
                 File dirPath = new File(builder.toString());
                 if (!dirPath.exists()) {
                     dirPath.mkdirs();

@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -26,8 +25,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private AccountService accountService;
-    @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private UserProblemScheduleDao userProblemScheduleDao;
@@ -37,6 +34,8 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     private ProblemScheduleDao problemScheduleDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
@@ -124,7 +123,8 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             return courseSchedule.getType();
         }
 
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 有问题
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         List<CourseScheduleDefault> courseSchedules;
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
                 riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
@@ -159,6 +159,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     @Override
     public Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month) {
         // 针对不同身份的学员，查看当前主修课的 ProblemId
+        // TODO: 杨仁
         RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
         if (riseMember != null && riseMember.getMemberTypeId() != null) {
             switch (riseMember.getMemberTypeId()) {
@@ -176,6 +177,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
                     break;
                 case RiseMember.HALF:
                 case RiseMember.ANNUAL:
+                case RiseMember.COURSE:
                     break;
                 case RiseMember.ELITE:
                 case RiseMember.HALF_ELITE:
@@ -189,7 +191,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
                         return riseMemberCourseSchedule.getProblemId();
                     }
                     break;
-                case RiseMember.COURSE:
+                default:
                     break;
             }
         }

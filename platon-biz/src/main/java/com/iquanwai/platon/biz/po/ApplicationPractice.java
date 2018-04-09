@@ -2,8 +2,6 @@ package com.iquanwai.platon.biz.po;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * Created by justin on 16/12/4.
  */
@@ -21,7 +19,9 @@ public class  ApplicationPractice {
     private Boolean del; //是否删除(0-否,1-是)
     private String practiceUid; //任务唯一编号
     private String pic; //题目图片
+    private Integer type; //题目类型(1-应用题,2-案例题)
 
+    private String name; //应用题名字，非db字段
     private String content; //提交内容，非db字段
     private Integer submitId; // 提交id，非db字段
     private String submitUpdateTime;// 非db字段
@@ -29,16 +29,14 @@ public class  ApplicationPractice {
     private Integer commentCount; // 评论数 非db字段
     private Integer applicationScore; // 应用题得分
     private Integer voteStatus; // 点赞状态，是否可以点赞 非db字段
-    private List<String> picList; // 图片列表 非db字段
     private Integer planId; // 计划id 非db字段
     private Integer requestCommentCount; //求点赞 非db字段
     private Boolean request; //是否已经求点评 非db字段
-    private Boolean feedback; // 是否已经被教练点评
-
-    private String draft; // 草稿内容
-    private Integer draftId; // 草稿 id
-    private Boolean overrideLocalStorage; // 是否覆盖本地 localStorage
-    private Boolean isBaseApplication; // 是否是基础应用题
+    private Boolean feedback; // 是否已经被教练点评，非db字段
+    private String draft; // 草稿内容，非db字段
+    private Integer draftId; // 草稿 id，非db字段
+    private Boolean overrideLocalStorage; // 是否覆盖本地 localStorage，非db字段
+    private Boolean isBaseApplication; // 是否是基础应用题，非db字段
 
     /**
      * 草稿内容和提交内容是否相等

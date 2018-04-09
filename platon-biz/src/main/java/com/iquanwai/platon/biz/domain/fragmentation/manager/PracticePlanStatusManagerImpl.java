@@ -159,40 +159,40 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 break;
             // 如果完成的是小目标
             case PracticePlan.CHALLENGE:
+                // 解锁第一小节的第一个练习
                 targetPracticePlan = practicePlans.stream()
-                        .filter(plan -> plan.getType() == PracticePlan.KNOWLEDGE && plan.getSeries() == 1)
-                        .findAny().orElse(null);
+                        .filter(plan -> plan.getSeries() == 1)
+                        .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
+                        .orElse(null);
                 if (targetPracticePlan != null) {
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
                 break;
-            // 如果完成的是知识点
+            // 完成知识点或者课前思考,解锁下一个练习
             case PracticePlan.KNOWLEDGE:
             case PracticePlan.KNOWLEDGE_REVIEW:
+            case PracticePlan.PREVIEW:
                 targetPracticePlan = practicePlans.stream()
-                        .filter(plan -> (plan.getType() == PracticePlan.WARM_UP
-                                || plan.getType() == PracticePlan.WARM_UP_REVIEW)
-                                && plan.getSeries() == series)
-                        .findAny().orElse(null);
+                        .filter(plan -> plan.getSeries() == series && plan.getSequence() > practicePlan.getSequence())
+                        .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
+                        .orElse(null);
                 if (targetPracticePlan != null) {
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
                 break;
-            // 如果完成的是巩固练习，解锁简单应用题
+            // 如果完成的是选择题，解锁所有应用题以及下一节的第一个练习
             case PracticePlan.WARM_UP:
             case PracticePlan.WARM_UP_REVIEW:
                 List<PracticePlan> practicePlanList = practicePlans.stream()
-                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
-                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
+                        .filter(plan -> (PracticePlan.isApplicationPractice(plan.getType()))
                                 && plan.getSeries() == series).collect(Collectors.toList());
 
                 practicePlanList.forEach(practicePlan1 -> practicePlanDao.unlock(practicePlan1.getId()));
 
                 targetPracticePlan = practicePlans.stream()
-                        .filter(plan -> (plan.getType() == PracticePlan.KNOWLEDGE
-                                || plan.getType() == PracticePlan.KNOWLEDGE_REVIEW)
-                                && plan.getSeries() == series + 1)
-                        .findAny().orElse(null);
+                        .filter(plan -> plan.getSeries() == series + 1)
+                        .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
+                        .orElse(null);
                 if (targetPracticePlan != null) {
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
@@ -200,22 +200,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             // 如果是第一道应用题,则解锁下一道应用题和下一节的知识点
             case PracticePlan.APPLICATION_BASE:
             case PracticePlan.APPLICATION_UPGRADED:
-//                targetPracticePlan = practicePlans.stream()
-//                        .filter(plan -> (plan.getType() == PracticePlan.APPLICATION_BASE
-//                                || plan.getType() == PracticePlan.APPLICATION_UPGRADED)
-//                                && plan.getSeries() == series && plan.getSequence() == sequence + 1)
-//                        .findAny().orElse(null);
-//                if (targetPracticePlan != null) {
-//                    practicePlanDao.unlock(targetPracticePlan.getId());
-//                    targetPracticePlan = practicePlans.stream()
-//                            .filter(plan -> (plan.getType() == PracticePlan.KNOWLEDGE
-//                                    || plan.getType() == PracticePlan.KNOWLEDGE_REVIEW)
-//                                    && plan.getSeries() == series + 1)
-//                            .findAny().orElse(null);
-//                    if (targetPracticePlan != null) {
-//                        practicePlanDao.unlock(targetPracticePlan.getId());
-//                    }
-//                }
+            case PracticePlan.APPLICATION_GROUP:
                 break;
             default:
                 break;
@@ -230,8 +215,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .reduce((lock1, lock2) -> lock1 || lock2).orElse(false);
         boolean complete = practicePlans.stream()
                 .filter(plan -> series.equals(plan.getSeries()))
-                .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
-                        plan.getType() != PracticePlan.APPLICATION_UPGRADED))
+                .filter(plan -> !PracticePlan.isApplicationPractice(plan.getType()))
                 .map(PracticePlan::getStatus)
                 .reduce((status1, status2) -> status1 * status2).orElse(0).equals(1);
 
@@ -250,8 +234,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     @Override
     public boolean calculateProblemUnlocked(List<PracticePlan> practicePlans) {
         return practicePlans.stream()
-                .filter(plan -> (plan.getType() != PracticePlan.APPLICATION_BASE &&
-                        plan.getType() != PracticePlan.APPLICATION_UPGRADED))
+                .filter(plan -> !PracticePlan.isApplicationPractice(plan.getType()))
                 .map(PracticePlan::getUnlocked)
                 .reduce((lock1, lock2) -> lock1 && lock2)
                 .orElse(false);

@@ -65,4 +65,8 @@ public class RiseMember {
      * 单买课程
      */
     public static final int COURSE = 6;
+    /**
+     * 商业思维
+     */
+    public static final int BUSINESS_THOUGHT = 8;
 }

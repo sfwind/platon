@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
@@ -16,12 +17,10 @@ import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -61,11 +60,9 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Autowired
     private AuditionClassMemberDao auditionClassMemberDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
-    @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -296,30 +293,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     @Override
-    public List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId) {
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadCourseScheduleDefault();
-        List<CourseSchedule> courseSchedules = courseScheduleDefaults.stream().map(courseScheduleDefault -> {
-            ModelMapper modelMapper = new ModelMapper();
-            return modelMapper.map(courseScheduleDefault, CourseSchedule.class);
-        }).collect(Collectors.toList());
-        courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
-        List<List<CourseSchedule>> courseScheduleLists = Lists.newArrayList();
-        Map<Integer, List<CourseSchedule>> courseScheduleMap = courseSchedules.stream().collect(Collectors.groupingBy(CourseSchedule::getMonth));
-        courseScheduleMap.forEach((k, v) -> courseScheduleLists.add(v));
-        return courseScheduleLists;
-    }
-
-    @Override
-    public boolean checkProblemModifyAccess(Integer profileId, Integer problemId) {
-        CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
-        if (courseSchedule != null && courseSchedule.getType() == CourseScheduleDefault.Type.MINOR) {
-            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-            return improvementPlan == null;
-        }
-        return false;
-    }
-
-    @Override
     public boolean modifyProblemSchedule(Integer profileId, Integer problemId, Integer targetYear, Integer targetMonth) {
         CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
         if (courseSchedule != null) {
@@ -346,8 +319,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 用户选择的选项id
         List<Integer> choices = Lists.newArrayList();
         scheduleQuestions.forEach(question -> question.getScheduleChoices().forEach(item -> choices.add(item.getId())));
-        // 用户购买记录
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证 用户购买记录
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
 
         if (CollectionUtils.isEmpty(userSchedule)) {
             // 插入用户选择
@@ -537,22 +510,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             Boolean selected = schedule.getSelected();
             courseScheduleDao.modifyScheduleYearMonth(id, year, month, selected ? 1 : 0);
         });
-    }
-
-    /**
-     * 查看当前用户正在学习的课程 id
-     * @param profileId 用户 id
-     * @return 正在学习的课程 id
-     */
-    @Override
-    public Integer getLearningProblemId(Integer profileId) {
-        Assert.notNull(profileId, "用户 Id 不能为空");
-        Integer category = accountService.loadUserScheduleCategory(profileId);
-        List<CourseScheduleDefault> courseScheduleDefaults = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(category);
-        CourseScheduleDefault courseScheduleDefault = courseScheduleDefaults.stream()
-                .filter(scheduleDefault -> ConfigUtils.getLearningMonth().equals(scheduleDefault.getMonth()))
-                .findAny().orElse(null);
-        return courseScheduleDefault == null ? null : courseScheduleDefault.getProblemId();
     }
 
     // 将 problem 的数据放入 CourseSchedule 之中

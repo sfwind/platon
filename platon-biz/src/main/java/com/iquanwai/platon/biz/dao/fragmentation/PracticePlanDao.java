@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.dao.fragmentation;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.PracticeDBUtil;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.Practice;
 import com.iquanwai.platon.biz.po.PracticePlan;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -96,9 +95,7 @@ public class PracticePlanDao extends PracticeDBUtil {
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type=? and Del = 0";
         try {
-            PracticePlan practicePlan = run.query(sql, h,
-                    planId, practiceId, type);
-            return practicePlan;
+            return run.query(sql, h, planId, practiceId, type);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -111,9 +108,7 @@ public class PracticePlanDao extends PracticeDBUtil {
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
         String sql = "SELECT * FROM PracticePlan where PlanId=? and Type=? and Del = 0";
         try {
-            PracticePlan practicePlan = run.query(sql, h,
-                    planId, PracticePlan.CHALLENGE);
-            return practicePlan;
+            return run.query(sql, h, planId, PracticePlan.CHALLENGE);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -136,12 +131,11 @@ public class PracticePlanDao extends PracticeDBUtil {
     public PracticePlan loadApplicationPractice(Integer planId, Integer practiceId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<PracticePlan> h = new BeanHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type in (11,12)" +
+        String sql = "SELECT * FROM PracticePlan where PlanId=? and PracticeId=? and Type in (?,?,?)" +
                 " and Del = 0";
         try {
-            PracticePlan practicePlan = run.query(sql, h,
-                    planId, practiceId);
-            return practicePlan;
+            return run.query(sql, h, planId, practiceId, PracticePlan.APPLICATION_BASE,
+                    PracticePlan.APPLICATION_UPGRADED, PracticePlan.APPLICATION_GROUP);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -210,9 +204,10 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadApplicationPracticeByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=11 or Type=12) and Del = 0";
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (?,?,?) and Del = 0";
         try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId, PracticePlan.APPLICATION_BASE,
+                    PracticePlan.APPLICATION_UPGRADED, PracticePlan.APPLICATION_GROUP);
             return practicePlans;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -223,9 +218,10 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadWarmupPracticeByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId = ? and (Type=1 or Type=2) and Del = 0";
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (?,?) and Del = 0";
         try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId, PracticePlan.WARM_UP,
+                    PracticePlan.WARM_UP_REVIEW);
             return practicePlans;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
@@ -236,9 +232,11 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadKnowledgeAndWarmupPracticePlansByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (20, 21, 31, 32, 1, 2) and Del = 0";
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (?,?,?,?,?,?) and Del = 0";
         try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planId);
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId, PracticePlan.WARM_UP,
+                    PracticePlan.WARM_UP_REVIEW, PracticePlan.INTRODUCTION, PracticePlan.CHALLENGE,
+                    PracticePlan.KNOWLEDGE, PracticePlan.KNOWLEDGE_REVIEW);
             return practicePlans;
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);

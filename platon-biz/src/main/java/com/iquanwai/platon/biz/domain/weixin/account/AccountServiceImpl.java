@@ -3,9 +3,11 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.*;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
@@ -16,8 +18,6 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -28,8 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
-import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +43,6 @@ public class AccountServiceImpl implements AccountService {
     private RegionDao regionDao;
     @Autowired
     private ProfileDao profileDao;
-    @Autowired
-    private RedisUtil redisUtil;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
     @Autowired
@@ -70,32 +64,18 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
-    private GroupPromotionDao groupPromotionDao;
-    @Autowired
-    private PrizeCardDao prizeCardDao;
-    @Autowired
-    private RabbitMQFactory rabbitMQFactory;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private RiseMemberDao riseMemberDao;
 
     private List<Region> provinceList;
     private List<Region> cityList;
     private Map<Integer, Integer> userRoleMap = Maps.newHashMap();
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
-    // 用户头像失效校验 mq
-    private RabbitMQPublisher headImgUrlCheckPublisher;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    @PostConstruct
-    public void init() {
-        List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
-        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getProfileId(), userRole.getRoleId()));
-        logger.info("role init complete");
-        headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
-    }
 
     @Override
     public boolean initUserByUnionId(String unionId, Boolean realTime) {
@@ -136,7 +116,7 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfileByRiseId(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
+//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -154,7 +134,7 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfileByUnionId(String unionId) {
         Profile profile = profileDao.queryByUnionId(unionId);
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
+//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -179,7 +159,7 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
+//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -217,7 +197,7 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByOpenId(openid);
 
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
+//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -236,76 +216,6 @@ public class AccountServiceImpl implements AccountService {
     public Account getAccountByUnionId(String unionId) {
         return followUserDao.queryByUnionId(unionId);
     }
-
-    // private Account getAccountFromWeixin(String openid) throws NotFollowingException {
-    //     //调用api查询account对象
-    //     String url = USER_INFO_URL;
-    //     Map<String, String> map = Maps.newHashMap();
-    //     map.put("openid", openid);
-    //     logger.info("请求用户信息:{}", openid);
-    //     url = CommonUtils.placeholderReplace(url, map);
-    //
-    //     String body = restfulHelper.get(url);
-    //     logger.info("请求用户信息结果:{}", body);
-    //     Map<String, Object> result = CommonUtils.jsonToMap(body);
-    //     Account accountNew = new Account();
-    //     try {
-    //         ConvertUtils.register((aClass, value) -> {
-    //             if (value == null) {
-    //                 return null;
-    //             }
-    //
-    //             if (!(value instanceof Double)) {
-    //                 logger.error("不是日期类型");
-    //                 throw new ConversionException("不是日期类型");
-    //             }
-    //             Double time = (Double) value * 1000;
-    //
-    //             return new DateTime(time.longValue()).toDate();
-    //         }, Date.class);
-    //         BeanUtils.populate(accountNew, result);
-    //         if (accountNew.getSubscribe() == 0) {
-    //             //未关注直接抛异常
-    //             throw new NotFollowingException();
-    //         }
-    //         redisUtil.lock("lock:wx:user:insert", (lock) -> {
-    //             Account finalQuery = followUserDao.queryByOpenId(openid);
-    //             if (finalQuery == null) {
-    //                 if (accountNew.getNickname() != null) {
-    //                     logger.info("插入用户信息:{}", accountNew);
-    //                     followUserDao.insert(accountNew);
-    //                     // 插入profile表
-    //                     Profile profile = getProfileFromDB(accountNew.getOpenid());
-    //                     if (profile == null) {
-    //                         try {
-    //                             ModelMapper modelMapper = new ModelMapper();
-    //                             profile = modelMapper.map(accountNew, Profile.class);
-    //                             logger.info("插入Profile表信息:{}", profile);
-    //                             profile.setRiseId(CommonUtils.randomString(7));
-    //                             profileDao.insertProfile(profile);
-    //                         } catch (SQLException err) {
-    //                             profile.setRiseId(CommonUtils.randomString(7));
-    //                             try {
-    //                                 profileDao.insertProfile(profile);
-    //                             } catch (SQLException subErr) {
-    //                                 logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             } else {
-    //                 if (accountNew.getNickname() != null) {
-    //                     followUserDao.updateMeta(accountNew);
-    //                 }
-    //             }
-    //         });
-    //     } catch (NotFollowingException e1) {
-    //         throw new NotFollowingException();
-    //     } catch (Exception e) {
-    //         logger.error(e.getMessage(), e);
-    //     }
-    //     return accountNew;
-    // }
 
     @Override
     public List<Region> loadAllProvinces() {
@@ -548,11 +458,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean isRiseMember(Integer profileId) {
-        return riseMemberDao.loadValidRiseMember(profileId) != null;
-    }
-
-    @Override
     public List<Coupon> loadCoupons(Integer profileId) {
         List<Coupon> targetCoupons = Lists.newArrayList();
         // 过滤出未使用并且未过期的优惠券
@@ -592,35 +497,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId) {
-        return riseMemberDao.loadRiseMembersByProfileId(profileId);
-    }
-
-    @Override
-    public Integer getProfileRiseMember(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember == null) {
-            return 0;
-        }
-        Integer memberTypeId = riseMember.getMemberTypeId();
-        if (memberTypeId == null) {
-            return 0;
-        }
-        // 精英或者专业版用户
-        if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
-            return 1;
-            // 专项课用户
-        } else if (memberTypeId == RiseMember.CAMP) {
-            return 3;
-            // 课程单买用户
-        } else if (memberTypeId == RiseMember.COURSE) {
-            return 2;
-        }
-
-        return 0;
-    }
-
-    @Override
     public String createSubscribePush(String openid, String callback, String scene) {
         Integer result = subscribePushDao.insert(openid, callback, scene);
         String sceneCode = SUBSCRIBE_PUSH_PREFIX + result;
@@ -654,59 +530,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public RiseMember getValidRiseMember(Integer profileId) {
-        return riseMemberDao.loadValidRiseMember(profileId);
-    }
-
-    @Override
-    public boolean isPreviewNewUser(Integer profileId) {
-        //判断是否参加过商学院和专项课
-        if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
-            return false;
-        }
-        //判断是否参加"一带二"活动
-        if (groupPromotionDao.loadByProfileId(profileId) != null) {
-            return false;
-        }
-        //判断是否领取过礼品卡
-        if (prizeCardDao.loadAnnualCardByReceiver(profileId) != null) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean isBusinessRiseMember(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
-    }
-
-    @Override
     public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberIds(memberIds);
-        List<Integer> profileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).distinct().collect(Collectors.toList());
+        List<Integer> profileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId)
+                .distinct().collect(Collectors.toList());
         return profileIds;
     }
 
-    // 生成用来发送更新 mq 的信息
-    private void checkHeadImgUrlEffectiveness(Profile profile) {
-        if (profile == null) {
-            return;
-        }
-        Integer profileId = profile.getId();
-        String headImgUrl = profile.getHeadimgurl();
-        Date headImgUrlCheckTime = profile.getHeadImgUrlCheckTime();
-        if (headImgUrl.indexOf("wx.qlogo.cn") > 0 && (headImgUrlCheckTime == null || DateUtils.interval(headImgUrlCheckTime) >= 7)) {
-            JSONObject json = new JSONObject();
-            json.put("profileId", profileId);
-            json.put("openId", profile.getOpenid());
-            json.put("headImgUrl", headImgUrl);
-            try {
-                headImgUrlCheckPublisher.publish(json.toString());
-            } catch (ConnectException e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
+    @Override
+    public RiseMember getValidRiseMember(Integer profileId) {
+        // TODO: 杨仁
+        return riseMemberDao.loadValidRiseMember(profileId);
     }
 }
 

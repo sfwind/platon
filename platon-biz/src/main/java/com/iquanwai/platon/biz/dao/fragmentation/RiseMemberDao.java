@@ -18,6 +18,24 @@ import java.util.List;
 public class RiseMemberDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    public List<RiseMember> loadValidRiseMemberByMemberTypeId(Integer profileId, List<Integer> memberTypes) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String mask = produceQuestionMark(memberTypes.size());
+        List<Object> params = Lists.newArrayList();
+        params.add(profileId);
+        params.addAll(memberTypes);
+        String sql = "SELECT * FROM RiseMember WHERE ProfileId = ? AND memberTypeId in ("
+                + mask + ") AND Expired=0 AND Del = 0";
+        ResultSetHandler<List<RiseMember>> h = new BeanListHandler<>(RiseMember.class);
+        try {
+            return runner.query(sql, h, params.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    @Deprecated
     public RiseMember loadValidRiseMember(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from RiseMember where ProfileId = ? and Expired = 0 AND Del = 0";
@@ -43,32 +61,16 @@ public class RiseMemberDao extends DBUtil {
         return Lists.newArrayList();
     }
 
-    /**
-     * 获取所有有效的商学院用户
-     */
-    public List<RiseMember> loadValidRiseMembers() {
+
+    public List<RiseMember> loadSyncRiseMembers(String currentDate, Integer memberTypeId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM RiseMember WHERE DEL = 0";
+        String sql = "SELECT * FROM RiseMember WHERE MemberTypeId = ? AND  OpenDate like ? AND EXPIRED = 0   AND DEL = 0 ";
         ResultSetHandler<List<RiseMember>> h = new BeanListHandler<>(RiseMember.class);
 
         try {
-            return runner.query(sql, h);
+            return runner.query(sql, h, memberTypeId, currentDate + "%");
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
-        }
-        return Lists.newArrayList();
-    }
-
-
-    public List<RiseMember> loadSyncRiseMembers(String currentDate,Integer memberTypeId){
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM RiseMember WHERE MemberTypeId = ? AND  OpenDate like ? AND EXPIRED = 0   AND DEL = 0 ";
-        ResultSetHandler<List<RiseMember>> h = new BeanListHandler<RiseMember>(RiseMember.class);
-
-        try {
-            return runner.query(sql,h,memberTypeId,currentDate+"%");
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
         }
         return Lists.newArrayList();
     }
