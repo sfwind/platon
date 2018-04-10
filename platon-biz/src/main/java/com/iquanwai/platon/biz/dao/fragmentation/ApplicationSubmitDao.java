@@ -42,9 +42,8 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     /**
      * 查询用户提交记录
-     *
      * @param applicationId 应用练习id
-     * @param planId        计划id
+     * @param planId 计划id
      */
     public ApplicationSubmit load(Integer applicationId, Integer planId, Integer profileId) {
         QueryRunner run = new QueryRunner(getDataSource());
@@ -116,7 +115,8 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
     }
-    public void asstFeedBackAndTime(Integer id){
+
+    public void asstFeedBackAndTime(Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set Feedback=1,FeedBackTime=CURRENT_TIMESTAMP where Id=?";
         try {
@@ -208,6 +208,18 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
 
+        return Lists.newArrayList();
+    }
+
+    public List<ApplicationSubmit> loadPriorityApplicationSubmitsByApplicationId(Integer applicationId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ApplicationSubmit WHERE ApplicationId = ? AND Priority = 1 AND Del = 0";
+        ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
+        try {
+            return runner.query(sql, h, applicationId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
         return Lists.newArrayList();
     }
 

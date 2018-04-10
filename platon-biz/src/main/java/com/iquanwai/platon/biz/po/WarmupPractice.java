@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.po;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupComment;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupDiscussDistrict;
 import lombok.Data;
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * Created by justin on 16/12/4.
  */
 @Data
-public class WarmupPractice implements Cloneable{
+public class WarmupPractice implements Cloneable {
     private int id;
     private String question; //题干
     private Integer type; //题型（1-单选题，2-多选题）
@@ -32,6 +33,7 @@ public class WarmupPractice implements Cloneable{
     private List<Integer> choice; //非db字段 用户选择选项
     private Knowledge knowledge; //非db字段 知识点
 
+    private WarmupDiscussDistrict warmupDiscussDistrict;
 
     @Override
     public WarmupPractice clone() throws CloneNotSupportedException {
@@ -42,7 +44,7 @@ public class WarmupPractice implements Cloneable{
             e.printStackTrace();
         }
         List<Choice> choices = Lists.newArrayList();
-        this.choiceList.forEach(choice ->{
+        this.choiceList.forEach(choice -> {
             Choice newOne = new Choice();
             try {
                 BeanUtils.copyProperties(newOne, choice);
