@@ -45,4 +45,8 @@ public interface ApplyService {
      * @throws ApplyException 申请异常
      */
     void checkApplyPrivilege(Integer profileId,Integer project) throws ApplyException;
+
+    boolean hasAvailableApply(Integer profileId, Integer project);
+
+    boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer project);
 }

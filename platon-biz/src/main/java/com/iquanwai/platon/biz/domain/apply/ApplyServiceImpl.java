@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -150,22 +151,18 @@ public class ApplyServiceImpl implements ApplyService {
             throw new ApplyException("您已经是商业进阶课用户，无需重复申请");
         }
 
-        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId)
-                .stream()
-                .filter(item -> item.getProject().equals(Constants.Project.BUSINESS_THOUGHT_PROJECT))
-                .collect(Collectors.toList());
-        Boolean applyPass = applyList
-                .stream()
-                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
-                .filter(BusinessSchoolApplication::getDeal)
-                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
+        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId);
 
-        if (applyPass) {
+        if (this.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT)) {
             throw new ApplyException("您已经有报名权限,无需重复申请");
         }
-        Boolean checking = applyList.stream().anyMatch(item -> !item.getDeal());
-        if (checking) {
+
+        if (applyList.stream().anyMatch(item -> !item.getDeal() && item.getProject().equals(Constants.Project.BUSINESS_THOUGHT_PROJECT))) {
             throw new ApplyException("您的申请正在审核中哦");
+        }
+
+        if (applyList.stream().anyMatch(item -> !item.getDeal() && item.getProject().equals(Constants.Project.CORE_PROJECT))) {
+            throw new ApplyException("您已申请核心能力项，可联系圈外更改申请新项目");
         }
     }
 
@@ -177,19 +174,16 @@ public class ApplyServiceImpl implements ApplyService {
             throw new ApplyException("您已经是商学院用户,无需重复申请");
         }
 
-        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId)
-                .stream()
-                .filter(item -> item.getProject().equals(Constants.Project.CORE_PROJECT))
-                .collect(Collectors.toList());
+        List<BusinessSchoolApplication> applyList = this.loadApplyList(profileId);
         // 已有报名权限，申请通过
-        boolean applyPass = applyList
-                .stream()
-                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
-                .filter(BusinessSchoolApplication::getDeal)
-                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
+        boolean applyPass = this.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         if (applyPass) {
             throw new ApplyException("您已经有报名权限,无需重复申请");
         }
+        if (this.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT)) {
+            throw new ApplyException("您已经有商业进阶课报名权限,可联系圈外更改报名项目");
+        }
+
         // 已有报名权限，优秀证书
         RiseCertificate riseCertificate = riseCertificateDao.loadGraduateByProfileId(profileId);
         applyPass = riseCertificate != null;
@@ -198,14 +192,17 @@ public class ApplyServiceImpl implements ApplyService {
         }
 
         // 检查是否有申请中订单
-        Boolean checking = applyList.stream().anyMatch(item -> !item.getDeal());
-        if (checking) {
+        if (applyList.stream().anyMatch(item -> !item.getDeal() && item.getProject().equals(Constants.Project.CORE_PROJECT))) {
             throw new ApplyException("您的申请正在审核中哦");
+        }
+        if (applyList.stream().anyMatch(item -> !item.getDeal() && item.getProject().equals(Constants.Project.BUSINESS_THOUGHT_PROJECT))) {
+            throw new ApplyException("您已申请商业进阶课，可联系圈外更改申请新项目");
         }
 
         // 一个月之内被拒绝过
         List<BusinessSchoolApplication> rejectLists = applyList
                 .stream()
+                .filter(item -> item.getProject().equals(Constants.Project.CORE_PROJECT))
                 .filter(item -> item.getStatus() == BusinessSchoolApplication.REJECT)
                 .filter(item -> new DateTime(item.getDealTime()).withTimeAtStartOfDay().plusMonths(1).isAfter(new DateTime().withTimeAtStartOfDay()))
                 .collect(Collectors.toList());
@@ -234,5 +231,20 @@ public class ApplyServiceImpl implements ApplyService {
                 throw new ApplyException("项目类型异常");
             }
         }
+    }
+
+    @Override
+    public boolean hasAvailableApply(Integer profileId, Integer project) {
+        return this.hasAvailableApply(businessSchoolApplicationDao.loadApplyList(profileId), project);
+    }
+
+    @Override
+    public boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer project) {
+        return applyList
+                .stream()
+                .filter(item -> Objects.equals(item.getProject(), project))
+                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
+                .filter(BusinessSchoolApplication::getDeal)
+                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
     }
 }
