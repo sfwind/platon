@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -176,6 +178,40 @@ public class StudyServiceImpl implements StudyService {
         reviewPractices.add(studyExtension);
 
         return reviewPractices;
+    }
+
+    @Override
+    public CountDownElement loadLatestCountDownElement(Integer profileId) {
+        List<RiseMember> validRiseMembers = riseMemberManager.member(profileId);
+        RiseMember latestRiseMember = validRiseMembers.stream()
+                .filter(riseMember -> riseMember.getOpenDate().compareTo(new Date()) > 0)
+                .sorted(Comparator.comparing(RiseMember::getOpenDate))
+                .findFirst().orElse(null);
+        if (latestRiseMember != null) {
+            CountDownElement countDownElement = new CountDownElement();
+            int memberTypeId = latestRiseMember.getMemberTypeId();
+            countDownElement.setMemberTypeId(memberTypeId);
+            countDownElement.setRemainCount(DateUtils.interval(latestRiseMember.getOpenDate()));
+            switch (memberTypeId) {
+                case RiseMember.ELITE:
+                    // 核心能力项
+                    countDownElement.setDescription("核心能力");
+                    break;
+                case RiseMember.CAMP:
+                    // 专项课
+                    countDownElement.setDescription("专项课");
+                    break;
+                case RiseMember.BUSINESS_THOUGHT:
+                    // 商业进阶
+                    countDownElement.setDescription("商业进阶");
+                    break;
+                default:
+                    return null;
+            }
+            return countDownElement;
+        } else {
+            return null;
+        }
     }
 
 }

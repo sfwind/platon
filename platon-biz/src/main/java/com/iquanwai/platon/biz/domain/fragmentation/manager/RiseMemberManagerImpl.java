@@ -84,8 +84,8 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
         List<Integer> members = Lists.newArrayList();
         members.add(RiseMember.HALF);
         members.add(RiseMember.ANNUAL);
-        members.add(RiseMember.HALF_ELITE);
         members.add(RiseMember.ELITE);
+        members.add(RiseMember.HALF_ELITE);
         members.add(RiseMember.CAMP);
         members.add(RiseMember.BUSINESS_THOUGHT);
 
