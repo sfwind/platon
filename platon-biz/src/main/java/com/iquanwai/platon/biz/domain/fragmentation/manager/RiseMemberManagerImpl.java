@@ -1,10 +1,8 @@
 package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -22,8 +20,6 @@ import java.util.List;
 public class RiseMemberManagerImpl implements RiseMemberManager{
     @Autowired
     private RiseMemberDao riseMemberDao;
-    @Autowired
-    private RiseClassMemberDao riseClassMemberDao;
     @Autowired
     private AccountService accountService;
 
@@ -146,10 +142,7 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
         String memberId = null;
         Profile profile = accountService.getProfile(openid);
         if (profile != null) {
-            RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profile.getId());
-            if(riseClassMember!=null){
-                memberId = riseClassMember.getMemberId();
-            }
+            memberId = profile.getMemberId();
         }
         return memberId;
     }

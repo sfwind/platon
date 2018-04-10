@@ -146,20 +146,23 @@ public class FlowServiceImpl implements FlowService {
 
     private Boolean getVisibility(FlowData flowData, Integer profileId) {
         String authority = flowData.getAuthority();
-        // TODO: 小段
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        Integer memberTypeId = 0;
-        if (riseMember != null && riseMember.getMemberTypeId() != null) {
-            memberTypeId = riseMember.getMemberTypeId();
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+
+        for (RiseMember riseMember : riseMembers) {
+            Integer memberTypeId = 0;
+            if (riseMember != null && riseMember.getMemberTypeId() != null) {
+                memberTypeId = riseMember.getMemberTypeId();
+            }
+            try {
+                char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
+                String tagValue = String.valueOf(tagChar);
+                return "1".equals(tagValue);
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
         }
-        try {
-            char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
-            String tagValue = String.valueOf(tagChar);
-            return "1".equals(tagValue);
-        } catch (Exception e) {
-            logger.error(e.getLocalizedMessage(), e);
-            return false;
-        }
+
+        return false;
     }
 
 }

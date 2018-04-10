@@ -229,6 +229,7 @@ public class CertificateServiceImpl implements CertificateService {
                         Integer profileId = improvementPlan.getProfileId();
 
                         RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(year, month, profileId);
+                        Profile profile = accountService.getProfile(profileId);
                         if (riseClassMember != null) {
                             RiseCertificate existRiseCertificate = riseCertificateDao.loadSingleGraduateByProfileId(year, month, profileId);
                             if (existRiseCertificate == null) {
@@ -239,7 +240,7 @@ public class CertificateServiceImpl implements CertificateService {
                                 riseCertificate.setType(Constants.CERTIFICATE.TYPE.ORDINARY);
                                 StringBuilder certificateNoBuilder = new StringBuilder("IQW");
                                 certificateNoBuilder.append(String.format("%02d", Constants.CERTIFICATE.TYPE.ORDINARY));
-                                certificateNoBuilder.append(riseClassMember.getMemberId());
+                                certificateNoBuilder.append(profile.getMemberId());
                                 certificateNoBuilder.append(String.format("%02d", month));
                                 Integer noSequence = certificateNoSequence.get(0);
                                 certificateNoSequence.clear();

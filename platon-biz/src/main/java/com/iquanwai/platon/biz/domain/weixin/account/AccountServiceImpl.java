@@ -116,7 +116,6 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfileByRiseId(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         if (profile != null) {
-//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -134,7 +133,6 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfileByUnionId(String unionId) {
         Profile profile = profileDao.queryByUnionId(unionId);
         if (profile != null) {
-//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -150,16 +148,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Profile getProfile(String openid) {
-        Profile profile = getProfileFromDB(openid);
-        // checkHeadImgUrlEffectiveness(profile);
-        return profile;
+        return getProfileFromDB(openid);
     }
 
     @Override
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
         if (profile != null) {
-//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -169,7 +164,6 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
-            // checkHeadImgUrlEffectiveness(profile);
         }
         return profile;
     }
@@ -197,7 +191,6 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByOpenId(openid);
 
         if (profile != null) {
-//            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -531,8 +524,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
-        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberIds(memberIds);
-        List<Integer> profileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId)
+        List<Profile> profiles = profileDao.queryAccountsByMemberIds(memberIds);
+        List<Integer> profileIds = profiles.stream().map(Profile::getId)
                 .distinct().collect(Collectors.toList());
         return profileIds;
     }

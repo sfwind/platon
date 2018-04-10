@@ -43,8 +43,7 @@ public class Profile {
     private String weixinId; //微信id
     private String receiver;//收件人
     private String married;//婚恋情况
-
-    private Date addTime;
+    private String memberId; //学号
 
 
     //默认头像
