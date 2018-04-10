@@ -106,7 +106,7 @@ public class ApplyServiceImpl implements ApplyService {
 
 
     @Override
-    public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid, Integer project) {
+    public void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid, Integer goodsId) {
         //获取上次审核的结果
         BusinessSchoolApplication lastBusinessApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
 
@@ -118,8 +118,11 @@ public class ApplyServiceImpl implements ApplyService {
         application.setIsDuplicate(false);
         application.setValid(valid);
         application.setDeal(false);
-        application.setProject(project);
-
+        if (goodsId == RiseMember.BS_APPLICATION) {
+            application.setProject(Constants.Project.CORE_PROJECT);
+        } else if (goodsId == RiseMember.BUSINESS_THOUGHT_APPLY) {
+            application.setProject(Constants.Project.BUSINESS_THOUGHT_PROJECT);
+        }
         if (lastBusinessApplication != null) {
             application.setLastVerified(lastBusinessApplication.getStatus());
         } else {
@@ -217,13 +220,13 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public void checkApplyPrivilege(Integer profileId, Integer project) throws ApplyException {
-        switch (project) {
-            case Constants.Project.CORE_PROJECT: {
+    public void checkApplyPrivilege(Integer profileId, Integer goodsId) throws ApplyException {
+        switch (goodsId) {
+            case RiseMember.BS_APPLICATION: {
                 checkApplyBusiness(profileId);
                 break;
             }
-            case Constants.Project.BUSINESS_THOUGHT_PROJECT: {
+            case RiseMember.BUSINESS_THOUGHT_APPLY: {
                 checkApplyMiniMba(profileId);
                 break;
             }

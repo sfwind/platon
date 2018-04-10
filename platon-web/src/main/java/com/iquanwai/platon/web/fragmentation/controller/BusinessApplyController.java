@@ -5,12 +5,12 @@ import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.exception.ApplyException;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionGroupDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySubmitDto;
@@ -79,7 +79,7 @@ public class BusinessApplyController {
      * @param loginUser 用户
      */
     @RequestMapping(value = "/check/submit/apply", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> checkApplySubmit(LoginUser loginUser, @RequestParam(name = "project") Integer project) {
+    public ResponseEntity<Map<String, Object>> checkApplySubmit(LoginUser loginUser, @RequestParam(name = "goodsId") Integer goodsId) {
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
                 .module("商学院")
                 .function("申请")
@@ -88,7 +88,7 @@ public class BusinessApplyController {
 
         try {
             // 检查是否可以申请
-            applyService.checkApplyPrivilege(loginUser.getId(), project);
+            applyService.checkApplyPrivilege(loginUser.getId(), goodsId);
         } catch (ApplyException e) {
             return WebUtils.error(e.getMessage());
         }
@@ -98,10 +98,10 @@ public class BusinessApplyController {
             return WebUtils.success();
         } else {
             String qrCode = "";
-            if (Constants.Project.CORE_PROJECT == project) {
+            if (RiseMember.BS_APPLICATION == goodsId) {
                 // https://static.iqycamp.com/images/fragment/apply_qr_pro_1.jpeg?imageslim
                 qrCode = ConfigUtils.getCoreApplyQrCode();
-            } else if (Constants.Project.BUSINESS_THOUGHT_PROJECT == project) {
+            } else if (RiseMember.BUSINESS_THOUGHT_APPLY == goodsId) {
                 qrCode = ConfigUtils.getBusinessThoughtApplyQrCode();
             }
             return WebUtils.result(qrCode);
@@ -124,7 +124,7 @@ public class BusinessApplyController {
 
         try {
             // 检查是否可以申请
-            applyService.checkApplyPrivilege(loginUser.getId(), applySubmitDto.getProject());
+            applyService.checkApplyPrivilege(loginUser.getId(), applySubmitDto.getGoodsId());
         } catch (ApplyException e) {
             return WebUtils.error(e.getMessage());
         }
@@ -138,7 +138,7 @@ public class BusinessApplyController {
             return submit;
         }).collect(Collectors.toList());
         // 如果不需要支付，则直接有效，否则先设置为无效
-        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, !ConfigUtils.getPayApplyFlag(),applySubmitDto.getProject());
+        applyService.submitBusinessApply(loginUser.getId(), userApplySubmits, !ConfigUtils.getPayApplyFlag(),applySubmitDto.getGoodsId());
         return WebUtils.success();
     }
 }
