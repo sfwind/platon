@@ -74,7 +74,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "update ApplicationSubmit set Content=?, Length=?, hasImage=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
-            runner.update(sql, content, length, id, hasImage);
+            runner.update(sql, content, length, hasImage, id);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
