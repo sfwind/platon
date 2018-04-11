@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -115,6 +116,22 @@ public class RiseMemberServiceImpl implements RiseMemberService {
             }
         }
         return memberId;
+    }
+
+
+    @Override
+    public String getOpenid(String memberId) {
+        String openid = null;
+        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberId(memberId);
+        if(CollectionUtils.isNotEmpty(riseClassMembers)){
+            RiseClassMember riseClassMember = riseClassMembers.get(0);
+            Profile profile = accountService.getProfile(riseClassMember.getProfileId());
+            if (profile != null) {
+                openid = profile.getOpenid();
+            }
+        }
+
+        return openid;
     }
 
 

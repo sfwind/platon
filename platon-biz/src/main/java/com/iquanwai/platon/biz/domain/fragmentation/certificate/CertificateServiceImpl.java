@@ -90,6 +90,9 @@ public class CertificateServiceImpl implements CertificateService {
     private static BufferedImage ordinaryImage = null;
     private static BufferedImage excellentImage = null;
 
+    private static final Double AWARD_AMOUNT = 50.00;
+
+
     @PostConstruct
     public void init() {
 
@@ -365,7 +368,7 @@ public class CertificateServiceImpl implements CertificateService {
                             fullAttendanceReward.setProfileId(profileId);
                             fullAttendanceReward.setYear(year);
                             fullAttendanceReward.setMonth(month);
-                            fullAttendanceReward.setAmount(199.00);
+                            fullAttendanceReward.setAmount(AWARD_AMOUNT);
                             fullAttendanceRewardDao.insert(fullAttendanceReward);
                         }
                     }
@@ -423,12 +426,11 @@ public class CertificateServiceImpl implements CertificateService {
                             if (validElite || validCamp) {
                                 FullAttendanceReward existFullAttendanceReward = fullAttendanceRewardDao.loadFullAttendanceRewardByProfileId(year, month, profileId);
                                 if (existFullAttendanceReward == null) {
-                                    logger.info("开始发送全勤奖");
                                     FullAttendanceReward fullAttendanceReward = new FullAttendanceReward();
                                     fullAttendanceReward.setProfileId(profileId);
                                     fullAttendanceReward.setYear(year);
                                     fullAttendanceReward.setMonth(month);
-                                    fullAttendanceReward.setAmount(199.00);
+                                    fullAttendanceReward.setAmount(AWARD_AMOUNT);
                                     fullAttendanceRewardDao.insert(fullAttendanceReward);
                                     sendSingleFullAttendanceCoupon(year, month, profileId);
                                 }
@@ -498,10 +500,10 @@ public class CertificateServiceImpl implements CertificateService {
                 templateMessage.setTouser(profile.getOpenid());
                 Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                 templateMessage.setData(data);
-                data.put("first", new TemplateMessage.Keyword("价值199元的“全勤奖学金”已经放入您的账户！\n"));
+                data.put("first", new TemplateMessage.Keyword("价值"+AWARD_AMOUNT.intValue()+"元的“全勤奖学金”已经放入您的账户！\n"));
                 data.put("keyword1", new TemplateMessage.Keyword(DateUtils.parseDateToFormat6(new Date())));
                 data.put("keyword2", new TemplateMessage.Keyword("奖学金（优惠券）"));
-                data.put("keyword3", new TemplateMessage.Keyword("价值199元"));
+                data.put("keyword3", new TemplateMessage.Keyword("价值"+AWARD_AMOUNT.intValue()+"元"));
 
                 templateMessageService.sendMessage(templateMessage);
             }
@@ -540,10 +542,10 @@ public class CertificateServiceImpl implements CertificateService {
             templateMessage.setTouser(profile.getOpenid());
             Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
             templateMessage.setData(data);
-            data.put("first", new TemplateMessage.Keyword("价值199元的“全勤奖学金”已经放入您的账户！\n"));
+            data.put("first", new TemplateMessage.Keyword("价值"+AWARD_AMOUNT.intValue()+"元的“全勤奖学金”已经放入您的账户！\n"));
             data.put("keyword1", new TemplateMessage.Keyword(DateUtils.parseDateToFormat6(new Date())));
             data.put("keyword2", new TemplateMessage.Keyword("奖学金（优惠券）"));
-            data.put("keyword3", new TemplateMessage.Keyword("价值199元"));
+            data.put("keyword3", new TemplateMessage.Keyword("价值"+AWARD_AMOUNT.intValue()+"元"));
 
             templateMessageService.sendMessage(templateMessage);
         }

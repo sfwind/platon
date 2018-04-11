@@ -46,4 +46,11 @@ public interface RiseMemberService {
      * @return
      */
     String getMemberId(String openid);
+
+    /**
+     * 根据学号获取openid
+     * @param memberId
+     * @return
+     */
+    String getOpenid(String memberId);
 }

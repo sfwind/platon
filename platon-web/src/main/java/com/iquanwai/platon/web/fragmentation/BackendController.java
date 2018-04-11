@@ -11,7 +11,7 @@ import com.iquanwai.platon.biz.util.ThreadPool;
 import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ForceOpenPlanParams;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
-import com.iquanwai.platon.web.fragmentation.dto.OpenidDto;
+import com.iquanwai.platon.web.fragmentation.dto.UserDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -157,18 +157,34 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/get/memberid", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> getOpenid(@RequestBody OpenidDto openidDto) {
+    public ResponseEntity<Map<String, Object>> getMemberid(@RequestBody UserDto userDto) {
         OperationLog operationLog = OperationLog.create()
                 .module("后台功能")
                 .function("根据openid获取学号")
                 .action("根据openid获取学号");
         operationLogService.log(operationLog);
 
-        String memberId = riseMemberService.getMemberId(openidDto.getOpenid());
+        String memberId = riseMemberService.getMemberId(userDto.getOpenid());
         if (memberId == null) {
             return WebUtils.error(201, "该用户没有学号");
         }else{
             return WebUtils.result(memberId);
+        }
+    }
+
+    @RequestMapping(value = "/get/openid", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> getOpenid(@RequestBody UserDto userDto) {
+        OperationLog operationLog = OperationLog.create()
+                .module("后台功能")
+                .function("根据学号获取openid")
+                .action("根据学号获取openid");
+        operationLogService.log(operationLog);
+
+        String openid = riseMemberService.getOpenid(userDto.getMemberid());
+        if (openid == null) {
+            return WebUtils.error(201, "没有查到学员");
+        }else{
+            return WebUtils.result(openid);
         }
     }
 
