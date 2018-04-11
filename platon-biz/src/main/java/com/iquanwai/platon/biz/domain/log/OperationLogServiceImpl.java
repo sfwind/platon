@@ -1,11 +1,13 @@
 package com.iquanwai.platon.biz.domain.log;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.ActionLogDao;
 import com.iquanwai.platon.biz.dao.common.OperationLogDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.ActionLog;
@@ -22,8 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.support.Assert;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/9/3.
@@ -46,6 +50,8 @@ public class OperationLogServiceImpl implements OperationLogService {
     private ProfileDao profileDao;
     @Autowired
     private UserRoleDao userRoleDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
 
     @Override
     public void log(OperationLog operationLog) {
@@ -81,10 +87,21 @@ public class OperationLogServiceImpl implements OperationLogService {
                 Integer roleName = 0;
                 // TODO: 子康
                 RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
+                List<RiseMember> riseMemberList = riseMemberManager.member(profileId);
 
                 RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
                 if (riseClassMember == null) {
                     riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
+                }
+                if (!riseMemberList.isEmpty()) {
+                    properties.put("roleNames", riseMemberList
+                            .stream()
+                            .map(RiseMember::getMemberTypeId)
+                            .map(Object::toString)
+                            .distinct()
+                            .collect(Collectors.toList()));
+                } else {
+                    properties.put("roleNames", Lists.newArrayList("0"));
                 }
 
                 if (riseClassMember != null) {
@@ -95,10 +112,10 @@ public class OperationLogServiceImpl implements OperationLogService {
                         properties.put("groupId", riseClassMember.getGroupId());
                     }
                 }
-                if (validRiseMember != null) {
-                    roleName = validRiseMember.getMemberTypeId();
-                }
-                properties.put("roleName", roleName);
+//                if (validRiseMember != null) {
+//                    roleName = validRiseMember.getMemberTypeId();
+//                }
+//                properties.put("roleName", roleName);
                 properties.put("isAsst", role != null);
                 properties.put("riseId", profile.getRiseId());
                 logger.info("trace:\nprofielId:{}\neventName:{}\nprops:{}", profileId, eventName, properties);

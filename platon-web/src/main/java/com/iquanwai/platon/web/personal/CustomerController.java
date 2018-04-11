@@ -124,6 +124,12 @@ public class CustomerController {
         }
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
+        List<RiseMember> members = riseMemberManager.member(unionUser.getId());
+        if (members.isEmpty()) {
+            profile.setRoleNames(Lists.newArrayList("0"));
+        } else {
+            profile.setRoleNames(members.stream().map(RiseMember::getMemberTypeId).map(Object::toString).collect(Collectors.toList()));
+        }
 
         return WebUtils.result(profile);
     }
