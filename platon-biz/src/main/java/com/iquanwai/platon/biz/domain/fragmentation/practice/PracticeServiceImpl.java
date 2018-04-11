@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -85,6 +86,8 @@ public class PracticeServiceImpl implements PracticeService {
     private ProblemDao problemDao;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
 
     // 商业思维项目字数下限50字
     private static final int BUSINESS_THOUGHT_PROJECT_WORD_AT_LEAST = 50;
@@ -504,10 +507,13 @@ public class PracticeServiceImpl implements PracticeService {
                 operationLogService.trace(profileId, "voteApplication", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
                     Profile profile = accountService.getProfile(submitProfileId);
-                    // TODO: 子康
-                    RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(submitProfileId);
                     Problem problem = problemDao.load(Problem.class, submit.getProblemId());
-                    prop.add("votedRolename", validRiseMember == null ? 0 : validRiseMember.getMemberTypeId());
+                    List<RiseMember> riseMembers = riseMemberManager.member(submitProfileId);
+                    if (riseMembers.isEmpty()) {
+                        prop.add("votedRolenames", Lists.newArrayList("0"));
+                    } else {
+                        prop.add("votedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                    }
                     prop.add("applicationId", submit.getApplicationId());
                     prop.add("votedRiseId", profile.getRiseId());
                     prop.add("problemId", problem.getId());
@@ -592,8 +598,7 @@ public class PracticeServiceImpl implements PracticeService {
                 asstCoachComment(load.getProfileId(), load.getProblemId());
             }
             operationLogService.trace(profileId, "replyCommentApplication", () -> {
-                // TODO: 子康
-                RiseMember riseMember = riseMemberDao.loadValidRiseMember(load.getProfileId());
+                List<RiseMember> riseMembers = riseMemberManager.member(load.getProfileId());
                 RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
                 Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();
@@ -601,7 +606,11 @@ public class PracticeServiceImpl implements PracticeService {
 //                prop.add("repliedProfileId", load.getProfileId());
                 prop.add("applicationId", load.getApplicationId());
                 prop.add("problemId", load.getProblemId());
-                prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                if (riseMembers.isEmpty()) {
+                    prop.add("repliedRolenames", Lists.newArrayList("0"));
+                } else {
+                    prop.add("repliedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                }
                 if (riseClassMember != null) {
                     if (riseClassMember.getClassName() != null) {
                         prop.add("repliedClassname", riseClassMember.getClassName());
@@ -692,10 +701,13 @@ public class PracticeServiceImpl implements PracticeService {
             operationLogService.trace(profileId, "commentApplication", () -> {
                 OperationLogService.Prop prop = OperationLogService.props();
                 Profile discussedProfile = accountService.getProfile(load.getProfileId());
-                // TODO: 子康
-                RiseMember riseMember = riseMemberDao.loadValidRiseMember(load.getProfileId());
-                prop.add("discussedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                List<RiseMember> riseMembers = riseMemberManager.member(load.getProfileId());
                 prop.add("applicationId", load.getApplicationId());
+                if (riseMembers.isEmpty()) {
+                    prop.add("discussedRolenames", Lists.newArrayList("0"));
+                } else {
+                    prop.add("discussedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                }
 //                prop.add("discussedProfileId", load.getProfileId());
                 prop.add("discussedRiseId", discussedProfile.getRiseId());
                 prop.add("problemId", load.getProblemId());

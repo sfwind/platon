@@ -84,9 +84,6 @@ public class OperationLogServiceImpl implements OperationLogService {
                 Profile profile = profileDao.load(Profile.class, profileId);
                 UserRole role = userRoleDao.getAssist(profileId);
 
-                Integer roleName = 0;
-                // TODO: 子康
-                RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
                 List<RiseMember> riseMemberList = riseMemberManager.member(profileId);
 
                 RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
