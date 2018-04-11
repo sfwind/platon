@@ -75,13 +75,6 @@ public interface PlanService {
     List<UserProblemSchedule> getChapterList(ImprovementPlan plan);
 
     /**
-     * 获取知识点
-     *
-     * @param knowledgeId 知识点id
-     */
-    Knowledge getKnowledge(Integer knowledgeId);
-
-    /**
      * 训练计划结束
      *
      * @param planId 训练计划id
@@ -196,11 +189,11 @@ public interface PlanService {
     List<PlanSeriesStatus> loadPlanSeries(Integer practicePlanId);
 
     /**
-     * 获取该小节对应知识点的名称标题
+     * 获取该小节对应知识点的名称标题和序号
      * @param practicePlanId
      * @return
      */
-    String loadPlanSeriesTitle(Integer practicePlanId);
+    Pair<String, Integer> loadPlanSeriesInfo(Integer practicePlanId);
 
     /**
      * 解锁之前用不解锁的计划

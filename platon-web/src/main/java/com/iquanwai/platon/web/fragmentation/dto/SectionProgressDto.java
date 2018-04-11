@@ -10,5 +10,6 @@ public class SectionProgressDto {
 
     private String planSeriesTitle; // 当前小节名称
     private List<PlanSeriesStatus> planSeriesStatuses; // 当前小节各个类型题目的完成状态
+    private int index; // 当前小节的序号
 
 }

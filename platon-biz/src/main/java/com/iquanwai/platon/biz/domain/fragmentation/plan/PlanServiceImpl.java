@@ -48,6 +48,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
@@ -288,24 +289,6 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
         return practice;
-    }
-
-    @Override
-    public Knowledge getKnowledge(Integer knowledgeId) {
-        //小目标的knowledgeId=null
-        if (knowledgeId == null) {
-            Knowledge knowledge = new Knowledge();
-            //文案写死
-            knowledge.setKnowledge("让你的训练更有效");
-            return knowledge;
-        }
-        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledgeId);
-        if (warmupPractice != null) {
-            warmupPractice = cacheService.getWarmupPractice(warmupPractice.getId());
-            knowledge.setExample(warmupPractice);
-        }
-        return knowledge;
     }
 
     @Override
@@ -914,7 +897,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadPlanSeriesTitle(Integer practicePlanId) {
+    public Pair<String, Integer> loadPlanSeriesInfo(Integer practicePlanId) {
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return null;
@@ -943,7 +926,7 @@ public class PlanServiceImpl implements PlanService {
             String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
             titleBuilder.append(knowledgeStr);
         }
-        return titleBuilder.toString();
+        return new ImmutablePair<>(titleBuilder.toString(), practicePlan.getSequence());
     }
 
     @Override
