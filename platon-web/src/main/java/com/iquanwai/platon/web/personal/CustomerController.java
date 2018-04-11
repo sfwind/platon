@@ -174,7 +174,7 @@ public class CustomerController {
         return WebUtils.result(eventWall);
     }
 
-    @RequestMapping(value = "/profile", method = RequestMethod.GET)
+    @RequestMapping(value = "/account", method = RequestMethod.GET)
     @ApiOperation("查询账号信息")
     public ResponseEntity<Map<String, Object>> loadRiseInfo(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
