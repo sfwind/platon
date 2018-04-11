@@ -46,17 +46,19 @@ public class OperationController {
         Integer month = riseCertificate.getMonth();
         Integer year = riseCertificate.getYear();
         ThreadPool.execute(() -> {
-                    logger.info("开始进入生成证书线程");
+                    logger.info("开始生成证书任务");
                     certificateService.generateCertificate(year, month);
                     templateMessageService.sendSelfCompleteMessage("生成证书", unionUser.getOpenId());
                 }
         );
+
         return WebUtils.result("正在进行中");
     }
 
     @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendCertificate(UnionUser unionUser, @RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
         ThreadPool.execute(() -> {
+            logger.info("开始发送证书任务");
             certificateService.sendCertificate(year, month);
             templateMessageService.sendSelfCompleteMessage("发送证书", unionUser.getOpenId());
         });

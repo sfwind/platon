@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.certificate;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.common.ClassMemberDao;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
@@ -69,6 +70,11 @@ public class CertificateServiceImpl implements CertificateService {
     private UserRoleDao userRoleDao;
     @Autowired
     private RiseCertificateDao riseCertificateDao;
+    @Autowired
+    private ClassMemberDao classMemberDao;
+    @Autowired
+    private CourseScheduleDao courseScheduleDao;
+
 
     //优秀学员,优秀团队奖励积分
     private static final int PRIZE_POINT = 200;
@@ -376,9 +382,6 @@ public class CertificateServiceImpl implements CertificateService {
         logger.info("全勤奖优惠券待发人员生成完毕，停止时间：{}", DateUtils.parseDateTimeToString(new Date()));
     }
 
-    /**
-     * 判断单个用户是否能够获得全勤券
-     */
     @Override
     public void generateSingleFullAttendanceCoupon(Integer practicePlanId) {
         int planId;
@@ -508,6 +511,39 @@ public class CertificateServiceImpl implements CertificateService {
         logger.info("全勤奖消息通知发送完毕，时间：{}", new Date());
     }
 
+    @Override
+    public List<RiseCertificate> getCertificates(Integer profileId) {
+        return riseCertificateDao.loadByProfileId(profileId);
+    }
+
+    @Override
+    public void sendOfferMsg(Integer year, Integer month) {
+        List<RiseCertificate> certificateList = riseCertificateDao.loadGraduates(year, month);
+
+        certificateList.stream().map(RiseCertificate::getProfileId).distinct().forEach(profileId -> {
+            Profile profile = accountService.getProfile(profileId);
+            //只发非会员用户
+            if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
+                TemplateMessage templateMessage = new TemplateMessage();
+                templateMessage.setTouser(profile.getOpenid());
+                templateMessage.setTemplate_id(ConfigUtils.productChangeMsg());
+                Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+                templateMessage.setData(data);
+
+                data.put("first", new TemplateMessage.Keyword("恭喜您" + month + "月课程结课，" +
+                        "您已获得商学院免申请入学资格！办理入学请点击下方“商学院”按钮。\n"));
+                data.put("keyword1", new TemplateMessage.Keyword("圈外同学"));
+                data.put("keyword2", new TemplateMessage.Keyword("圈外商学院"));
+                data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
+                data.put("keyword4", new TemplateMessage.Keyword("已获得免申请入学资格"));
+
+                //发送结课消息
+                templateMessageService.sendMessage(templateMessage);
+            }
+
+        });
+    }
+
     /**
      * 发送该用户对应的全勤优惠券
      */
@@ -546,39 +582,6 @@ public class CertificateServiceImpl implements CertificateService {
 
             templateMessageService.sendMessage(templateMessage);
         }
-    }
-
-    @Override
-    public List<RiseCertificate> getCertificates(Integer profileId) {
-        return riseCertificateDao.loadByProfileId(profileId);
-    }
-
-    @Override
-    public void sendOfferMsg(Integer year, Integer month) {
-        List<RiseCertificate> certificateList = riseCertificateDao.loadGraduates(year, month);
-
-        certificateList.stream().map(RiseCertificate::getProfileId).distinct().forEach(profileId -> {
-            Profile profile = accountService.getProfile(profileId);
-            //只发非会员用户
-            if (profile.getRiseMember() != Constants.RISE_MEMBER.MEMBERSHIP) {
-                TemplateMessage templateMessage = new TemplateMessage();
-                templateMessage.setTouser(profile.getOpenid());
-                templateMessage.setTemplate_id(ConfigUtils.productChangeMsg());
-                Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-                templateMessage.setData(data);
-
-                data.put("first", new TemplateMessage.Keyword("恭喜您" + month + "月课程结课，" +
-                        "您已获得商学院免申请入学资格！办理入学请点击下方“商学院”按钮。\n"));
-                data.put("keyword1", new TemplateMessage.Keyword("圈外同学"));
-                data.put("keyword2", new TemplateMessage.Keyword("圈外商学院"));
-                data.put("keyword3", new TemplateMessage.Keyword(DateUtils.parseDateToString(new Date())));
-                data.put("keyword4", new TemplateMessage.Keyword("已获得免申请入学资格"));
-
-                //发送结课消息
-                templateMessageService.sendMessage(templateMessage);
-            }
-
-        });
     }
 
     private void sendCouponMessage(RiseCertificate riseCertificate, Integer type, TemplateMessage templateMessage, Profile profile) {
@@ -767,7 +770,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
-     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {
@@ -944,6 +946,79 @@ public class CertificateServiceImpl implements CertificateService {
             }
         }
         return new MutablePair<>(false, null);
+    }
+
+    // TODO 新
+    public void generateCertificateNew(Integer year, Integer month, Integer memberTypeId) {
+        // 根据身份，获取所有该身份的人员
+        List<ClassMember> classMembers = classMemberDao.loadByMemberTypeId(memberTypeId);
+        // 获取身份还在有效期的人员
+        List<ClassMember> activeClassMembers = classMembers.stream().filter(ClassMember::getActive).collect(Collectors.toList());
+
+        activeClassMembers.forEach(classMember -> {
+            Integer profileId = classMember.getProfileId();
+            List<Integer> majorProblemIds = problemScheduleManager.getMajorProblemIds(profileId, memberTypeId, year, month);
+            List<ImprovementPlan> majorPlans = improvementPlanDao.loadPlansByProblemIds(profileId, majorProblemIds);
+
+        });
+
+    }
+
+    public boolean checkGeneratePermission(ImprovementPlan improvementPlan) {
+        boolean generateCertificateTag = true;
+
+        int planId = improvementPlan.getId();
+        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
+        if (practicePlans.size() != 0) {
+            // 应该完成的知识点、选择题中未完成的题数
+            Long unCompleteNecessaryCountLong = practicePlans.stream()
+                    .filter(practicePlan ->
+                            PracticePlan.WARM_UP == practicePlan.getType() || PracticePlan.WARM_UP_REVIEW == practicePlan.getType()
+                                    || PracticePlan.KNOWLEDGE == practicePlan.getType() || PracticePlan.KNOWLEDGE_REVIEW == practicePlan.getType())
+                    .filter(practicePlan -> practicePlan.getStatus() == 0)
+                    .count();
+            if ((unCompleteNecessaryCountLong.intValue()) > 0) {
+                // 必须完成知识点、选择题的题数大于 0，不发结课证书
+                generateCertificateTag = false;
+            } else {
+                // 所有必须完成的知识点、选择题都已经完成
+                // 对应用题完成情况进行复查
+                List<PracticePlan> applicationPracticePlans = practicePlans.stream()
+                        .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
+                        .collect(Collectors.toList());
+
+                List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
+                // TODO: 改成不需要加载应用题内容的接口
+                List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
+                Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
+                        .collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
+
+                // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
+                Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
+
+                // Plan 中每节至少优质完成一道应用题的小节数
+                Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
+                    List<Integer> practiceIds = applicationPracticePlans.stream()
+                            .filter(practicePlan -> practicePlan.getSeries().equals(series))
+                            .map(PracticePlan::getPracticeId)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                    // 每个 Series 中至少存在一节内容完成
+                    Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
+                        ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
+                        return applicationSubmit != null && (applicationSubmit.getContent().contains("img") || applicationSubmit.getLength() > 10);
+                    }).count();
+                    return seriesApplicationCheckLong.intValue() > 0;
+                }).count();
+
+                if (planApplicationCheckLong.intValue() != seriesSet.size()) {
+                    generateCertificateTag = false;
+                }
+            }
+        } else {
+            generateCertificateTag = false;
+        }
+        return generateCertificateTag;
     }
 
 }
