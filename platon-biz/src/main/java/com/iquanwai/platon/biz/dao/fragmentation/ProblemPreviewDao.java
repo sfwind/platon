@@ -21,7 +21,7 @@ public class ProblemPreviewDao extends PracticeDBUtil {
     public ProblemPreview loadProblemPreview(Integer problemScheduleId) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<ProblemPreview> h = new BeanHandler<>(ProblemPreview.class);
-        String sql = "SELECT * FROM ProblemSchedule where ProblemScheduleId=? and Del=0";
+        String sql = "SELECT * FROM ProblemPreview where ProblemScheduleId=? and Del=0";
         try {
             return run.query(sql, h, problemScheduleId);
         } catch (SQLException e) {

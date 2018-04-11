@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.domain.weixin.account;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.RedisUtil;
 import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
@@ -17,7 +16,6 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.util.*;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +42,6 @@ public class AccountServiceImpl implements AccountService {
     private RegionDao regionDao;
     @Autowired
     private ProfileDao profileDao;
-    @Autowired
-    private RedisUtil redisUtil;
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
@@ -84,8 +79,6 @@ public class AccountServiceImpl implements AccountService {
     private List<Region> cityList;
     private Map<Integer, Integer> userRoleMap = Maps.newHashMap();
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
-    // 用户头像失效校验 mq
-    private RabbitMQPublisher headImgUrlCheckPublisher;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -94,7 +87,6 @@ public class AccountServiceImpl implements AccountService {
         List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
         userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getProfileId(), userRole.getRoleId()));
         logger.info("role init complete");
-        headImgUrlCheckPublisher = rabbitMQFactory.initFanoutPublisher("profile_headImgUrl_check");
     }
 
     @Override
@@ -236,76 +228,6 @@ public class AccountServiceImpl implements AccountService {
     public Account getAccountByUnionId(String unionId) {
         return followUserDao.queryByUnionId(unionId);
     }
-
-    // private Account getAccountFromWeixin(String openid) throws NotFollowingException {
-    //     //调用api查询account对象
-    //     String url = USER_INFO_URL;
-    //     Map<String, String> map = Maps.newHashMap();
-    //     map.put("openid", openid);
-    //     logger.info("请求用户信息:{}", openid);
-    //     url = CommonUtils.placeholderReplace(url, map);
-    //
-    //     String body = restfulHelper.get(url);
-    //     logger.info("请求用户信息结果:{}", body);
-    //     Map<String, Object> result = CommonUtils.jsonToMap(body);
-    //     Account accountNew = new Account();
-    //     try {
-    //         ConvertUtils.register((aClass, value) -> {
-    //             if (value == null) {
-    //                 return null;
-    //             }
-    //
-    //             if (!(value instanceof Double)) {
-    //                 logger.error("不是日期类型");
-    //                 throw new ConversionException("不是日期类型");
-    //             }
-    //             Double time = (Double) value * 1000;
-    //
-    //             return new DateTime(time.longValue()).toDate();
-    //         }, Date.class);
-    //         BeanUtils.populate(accountNew, result);
-    //         if (accountNew.getSubscribe() == 0) {
-    //             //未关注直接抛异常
-    //             throw new NotFollowingException();
-    //         }
-    //         redisUtil.lock("lock:wx:user:insert", (lock) -> {
-    //             Account finalQuery = followUserDao.queryByOpenId(openid);
-    //             if (finalQuery == null) {
-    //                 if (accountNew.getNickname() != null) {
-    //                     logger.info("插入用户信息:{}", accountNew);
-    //                     followUserDao.insert(accountNew);
-    //                     // 插入profile表
-    //                     Profile profile = getProfileFromDB(accountNew.getOpenid());
-    //                     if (profile == null) {
-    //                         try {
-    //                             ModelMapper modelMapper = new ModelMapper();
-    //                             profile = modelMapper.map(accountNew, Profile.class);
-    //                             logger.info("插入Profile表信息:{}", profile);
-    //                             profile.setRiseId(CommonUtils.randomString(7));
-    //                             profileDao.insertProfile(profile);
-    //                         } catch (SQLException err) {
-    //                             profile.setRiseId(CommonUtils.randomString(7));
-    //                             try {
-    //                                 profileDao.insertProfile(profile);
-    //                             } catch (SQLException subErr) {
-    //                                 logger.error("插入Profile失败，openId:{},riseId:{}", profile.getOpenid(), profile.getRiseId());
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             } else {
-    //                 if (accountNew.getNickname() != null) {
-    //                     followUserDao.updateMeta(accountNew);
-    //                 }
-    //             }
-    //         });
-    //     } catch (NotFollowingException e1) {
-    //         throw new NotFollowingException();
-    //     } catch (Exception e) {
-    //         logger.error(e.getMessage(), e);
-    //     }
-    //     return accountNew;
-    // }
 
     @Override
     public List<Region> loadAllProvinces() {
@@ -688,25 +610,5 @@ public class AccountServiceImpl implements AccountService {
         return profileIds;
     }
 
-    // 生成用来发送更新 mq 的信息
-    private void checkHeadImgUrlEffectiveness(Profile profile) {
-        if (profile == null) {
-            return;
-        }
-        Integer profileId = profile.getId();
-        String headImgUrl = profile.getHeadimgurl();
-        Date headImgUrlCheckTime = profile.getHeadImgUrlCheckTime();
-        if (headImgUrl.indexOf("wx.qlogo.cn") > 0 && (headImgUrlCheckTime == null || DateUtils.interval(headImgUrlCheckTime) >= 7)) {
-            JSONObject json = new JSONObject();
-            json.put("profileId", profileId);
-            json.put("openId", profile.getOpenid());
-            json.put("headImgUrl", headImgUrl);
-            try {
-                headImgUrlCheckPublisher.publish(json.toString());
-            } catch (ConnectException e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
-    }
 }
 

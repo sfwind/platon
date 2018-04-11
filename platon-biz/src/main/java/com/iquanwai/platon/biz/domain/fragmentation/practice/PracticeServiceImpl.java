@@ -837,7 +837,7 @@ public class PracticeServiceImpl implements PracticeService {
         }
         String practiceId = practicePlan.getPracticeId();
 
-        return problemPreviewDao.loadProblemPreview(Integer.valueOf(practiceId));
+        return problemPreviewDao.load(ProblemPreview.class, Integer.valueOf(practiceId));
     }
 
     @Override
