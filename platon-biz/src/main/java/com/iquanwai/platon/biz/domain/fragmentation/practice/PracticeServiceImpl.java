@@ -341,7 +341,7 @@ public class PracticeServiceImpl implements PracticeService {
             return null;
         }
         boolean result;
-        boolean hasImage = content.contains("img");
+        boolean hasImage = content.contains("<img");
         int length = CommonUtils.removeHTMLTag(content).length();
         if (submit.getContent() == null) {
             result = applicationSubmitDao.firstAnswer(id, content, length, hasImage);

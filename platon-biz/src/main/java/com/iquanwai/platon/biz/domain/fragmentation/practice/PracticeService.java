@@ -71,7 +71,10 @@ public interface PracticeService {
      */
     Integer applicationSubmit(Integer id, String content);
 
-
+    /**
+     * 提交应用训练草稿
+     *
+     */
     Integer insertApplicationSubmitDraft(Integer profileId, Integer applicationId, Integer planId, String content);
 
     /**
