@@ -150,13 +150,15 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setUnlocked(false);
             practicePlan.setPlanId(planId);
             ProblemPreview problemPreview = problemPreviewDao.loadProblemPreview(problemSchedule.getId());
-            practicePlan.setPracticeId(problemPreview.getId() + "");
-            practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
-            int practiceSequence = problemSchedule.getPracticeSequence() + 1;
-            practicePlan.setSequence(practiceSequence);
-            problemSchedule.setPracticeSequence(practiceSequence);
-            practicePlan.setSeries(sequence);
-            selected.add(practicePlan);
+            if (problemPreview != null) {
+                practicePlan.setPracticeId(problemPreview.getId() + "");
+                practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
+                int practiceSequence = problemSchedule.getPracticeSequence() + 1;
+                practicePlan.setSequence(practiceSequence);
+                problemSchedule.setPracticeSequence(practiceSequence);
+                practicePlan.setSeries(sequence);
+                selected.add(practicePlan);
+            }
         }
 
         return selected;
@@ -289,20 +291,19 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用练习
-            for (int i = 0; i < practices.size(); i++) {
-                ApplicationPractice applicationPractice = practices.get(i);
+            for (ApplicationPractice applicationPractice : practices) {
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 if (applicationPractice != null) {
                     // TODO:附加题和应用题最好能合并
-                    if(applicationPractice.getType() == PracticePlan.APPLICATION_BASE){
+                    if (applicationPractice.getType() == PracticePlan.APPLICATION_BASE) {
                         if (applicationPractice.getSequence() == 1) {
                             practicePlan.setType(PracticePlan.APPLICATION_BASE);
                         } else {
                             practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
                         }
-                    }else{
+                    } else {
                         practicePlan.setType(applicationPractice.getType());
                     }
 
