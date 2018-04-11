@@ -156,6 +156,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 practicePlan.setSequence(practiceSequence);
                 problemSchedule.setPracticeSequence(practiceSequence);
                 practicePlan.setSeries(sequence);
+                practicePlan.setType(PracticePlan.PREVIEW);
                 selected.add(practicePlan);
             }
         }

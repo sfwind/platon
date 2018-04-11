@@ -279,7 +279,7 @@ public class ProblemController {
             buttonStatus = planService.problemIntroductionButtonStatus(unionUser.getId(), problemId, plan, autoOpen);
         }
         if (practicePlanId != null) {
-            practiceService.learnProblemIntroduction(unionUser.getId(), practicePlanId);
+            practiceService.learnPracticePlan(unionUser.getId(), practicePlanId);
         }
 
         dto.setButtonStatus(buttonStatus);

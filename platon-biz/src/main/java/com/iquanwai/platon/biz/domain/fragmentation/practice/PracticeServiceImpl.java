@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +85,8 @@ public class PracticeServiceImpl implements PracticeService {
     private ProblemDao problemDao;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
+    @Autowired
+    private ProblemPreviewDao problemPreviewDao;
 
     // 商业思维项目字数下限50字
     private static final int MINI_MBA_PROJECT_WORD_AT_LEAST = 50;
@@ -814,7 +815,10 @@ public class PracticeServiceImpl implements PracticeService {
     public List<Knowledge> loadKnowledges(Integer practicePlanId) {
         List<Knowledge> knowledges = Lists.newArrayList();
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
-
+        if(practicePlan == null){
+            logger.error("{} is not existed", practicePlanId);
+            return Lists.newArrayList();
+        }
         String practiceId = practicePlan.getPracticeId();
         String[] knowledgeIds = practiceId.split(",");
         for (String knowledgeId : knowledgeIds) {
@@ -822,6 +826,23 @@ public class PracticeServiceImpl implements PracticeService {
             knowledges.add(knowledge);
         }
         return knowledges;
+    }
+
+    @Override
+    public ProblemPreview loadProblemPreview(Integer practicePlanId) {
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        if(practicePlan == null){
+            logger.error("{} is not existed", practicePlanId);
+            return null;
+        }
+        String practiceId = practicePlan.getPracticeId();
+
+        return problemPreviewDao.loadProblemPreview(Integer.valueOf(practiceId));
+    }
+
+    @Override
+    public void learnPracticePlan(Integer profileId, Integer practicePlanId) {
+        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
     }
 
     @Override
@@ -849,12 +870,6 @@ public class PracticeServiceImpl implements PracticeService {
             knowledge.setExample(cacheService.getWarmupPractice(warmupPractice.getId()));
         }
         return knowledge;
-    }
-
-    @Override
-    public void learnKnowledge(Integer profileId, Integer practicePlanId) {
-        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
-        certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
     }
 
     @Override
@@ -893,11 +908,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId) {
         return applicationSubmitDao.load(ApplicationSubmit.class, applicationSubmitId);
-    }
-
-    @Override
-    public void learnProblemIntroduction(Integer profileId, Integer practicePlanId) {
-        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
     }
 
     @Override

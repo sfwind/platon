@@ -212,18 +212,25 @@ public interface PracticeService {
     List<Knowledge> loadKnowledges(Integer practicePlanId);
 
     /**
+     * 根据训练id获取课前思考
+     *
+     * @param practicePlanId 训练id
+     */
+    ProblemPreview loadProblemPreview(Integer practicePlanId);
+
+    /**
+     * 完成练习
+     *
+     * @param practicePlanId 练习id
+     */
+    void learnPracticePlan(Integer profileId, Integer practicePlanId);
+
+    /**
      * 根据知识点id获取知识
      *
      * @param knowledgeId 知识点id
      */
     Knowledge loadKnowledge(Integer knowledgeId);
-
-    /**
-     * 学习知识点
-     *
-     * @param practicePlanId 练习id
-     */
-    void learnKnowledge(Integer profileId, Integer practicePlanId);
 
     /**
      * 求点评
@@ -246,11 +253,6 @@ public interface PracticeService {
     ApplicationSubmit loadApplicationSubmitById(Integer applicationSubmitId);
 
     /**
-     * 完成课程介绍
-     */
-    void learnProblemIntroduction(Integer profileId, Integer practicePlanId);
-
-    /**
      * 根据Id获取ApplicationSubmit对象
      *
      * @param id 主键
@@ -270,6 +272,9 @@ public interface PracticeService {
      */
     Boolean isModifiedAfterFeedback(Integer submitId, Integer commentProfileId, Date commentAddDate);
 
+    /**
+     * 获取完成的应用题数字
+     */
     Integer loadCompletedApplicationCnt(Integer planId);
 
     /**
