@@ -211,4 +211,6 @@ public interface AccountService {
 
     @Deprecated
     RiseMember getValidRiseMember(Integer profileId);
+
+    String getOpenidByMemberId(String memberId);
 }

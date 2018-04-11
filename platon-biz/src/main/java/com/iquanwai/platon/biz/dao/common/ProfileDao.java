@@ -182,6 +182,19 @@ public class ProfileDao extends DBUtil {
         return Lists.newArrayList();
     }
 
+    public Profile queryAccountByMemberId(String memberId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        BeanHandler<Profile> h = new BeanHandler<Profile>(Profile.class);
+        String sql = "SELECT * FROM Profile where MemberId = ?";
+        try {
+            return run.query(sql, h, memberId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
+    }
+
     public boolean submitPersonalCenterProfileWithMoreDetail(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set Industry=?, Function=?, WorkingYear=?, City=?, Province=?," +
@@ -202,7 +215,7 @@ public class ProfileDao extends DBUtil {
         String updateSql = "Update Profile Set NickName = ?, Industry=?, Function=?, WorkingYear=?, City=?, Province=?," +
                 "RealName=?,Address=?,Receiver=?,Married=? where id=?";
         try {
-            run.update(updateSql, profile.getNickname(),profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
+            run.update(updateSql, profile.getNickname(), profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
                     profile.getCity(), profile.getProvince(), profile.getRealName(), profile.getAddress(),
                     profile.getReceiver(), profile.getMarried(), profile.getId());
         } catch (SQLException e) {

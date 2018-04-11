@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateServi
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -18,7 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +46,8 @@ public class BackendController {
     private GeneratePlanService generatePlanService;
     @Autowired
     private RiseMemberManager riseMemberManager;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -167,7 +174,7 @@ public class BackendController {
         String memberId = riseMemberManager.getMemberId(userDto.getOpenid());
         if (memberId == null) {
             return WebUtils.error(201, "该用户没有学号");
-        }else{
+        } else {
             return WebUtils.result(memberId);
         }
     }
@@ -180,10 +187,10 @@ public class BackendController {
                 .action("根据学号获取openid");
         operationLogService.log(operationLog);
 
-        String openid = riseMemberService.getOpenid(userDto.getMemberid());
+        String openid = accountService.getOpenidByMemberId(userDto.getMemberid());
         if (openid == null) {
             return WebUtils.error(201, "没有查到学员");
-        }else{
+        } else {
             return WebUtils.result(openid);
         }
     }

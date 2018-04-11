@@ -535,5 +535,16 @@ public class AccountServiceImpl implements AccountService {
         // TODO: 杨仁
         return riseMemberDao.loadValidRiseMember(profileId);
     }
+
+
+    @Override
+    public String getOpenidByMemberId(String memberId) {
+        Profile profile = profileDao.queryAccountByMemberId(memberId);
+        if (profile == null) {
+            return null;
+        } else {
+            return profile.getOpenid();
+        }
+    }
 }
 
