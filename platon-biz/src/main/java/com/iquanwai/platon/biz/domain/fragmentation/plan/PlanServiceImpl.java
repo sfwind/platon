@@ -18,7 +18,11 @@ import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
@@ -37,7 +41,6 @@ import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
-import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -216,11 +219,12 @@ public class PlanServiceImpl implements PlanService {
         if (CollectionUtils.isNotEmpty(runningPractices)) {
             for (PracticePlan practicePlan : runningPractices) {
                 //巩固练习或理解练习未完成时,返回false
-                if ((practicePlan.getType() == PracticePlan.WARM_UP ||
+                boolean isMustPractice = practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) &&
-                        practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW;
+                boolean isCompleted = practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED;
+                if (isMustPractice && isCompleted) {
                     return false;
                 }
             }
@@ -282,23 +286,6 @@ public class PlanServiceImpl implements PlanService {
         return practice;
     }
 
-    @Override
-    public Knowledge getKnowledge(Integer knowledgeId) {
-        //小目标的knowledgeId=null
-        if (knowledgeId == null) {
-            Knowledge knowledge = new Knowledge();
-            //文案写死
-            knowledge.setKnowledge("让你的训练更有效");
-            return knowledge;
-        }
-        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledgeId);
-        if (warmupPractice != null) {
-            warmupPractice = cacheService.getWarmupPractice(warmupPractice.getId());
-            knowledge.setExample(warmupPractice);
-        }
-        return knowledge;
-    }
 
     @Override
     public List<ImprovementPlan> getRunningPlan(Integer profileId) {
@@ -313,14 +300,14 @@ public class PlanServiceImpl implements PlanService {
 
         // TODO: 待验证 选课
         Problem problem = cacheService.getProblem(problemId);
-        if(problem == null){
+        if (problem == null) {
             throw new CreateCourseException("课程不存在");
         }
 
         RiseMember riseMember = null;
-        if(problem.getProject() == Constants.Project.BUSINESS_THOUGHT_PROJECT){
+        if (problem.getProject() == Constants.Project.BUSINESS_THOUGHT_PROJECT) {
             riseMember = riseMemberManager.businessThought(profileId);
-        }else if(problem.getProject() == Constants.Project.CORE_PROJECT){
+        } else if (problem.getProject() == Constants.Project.CORE_PROJECT) {
             riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         }
 

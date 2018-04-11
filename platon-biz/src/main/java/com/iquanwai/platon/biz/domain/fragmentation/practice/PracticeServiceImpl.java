@@ -316,9 +316,9 @@ public class PracticeServiceImpl implements PracticeService {
 
         // 检查该道题是否是简单应用题还是复杂应用题
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-        PracticePlan targetPracticePlan = practicePlans.stream()
-                .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
-        applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
+        practicePlans.stream()
+                .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny()
+                .ifPresent(item -> applicationPractice.setIsBaseApplication(item.getSequence() == 3));
 
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
@@ -603,7 +603,6 @@ public class PracticeServiceImpl implements PracticeService {
                 Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();
                 prop.add("repliedRiseId", repliesProfile.getRiseId());
-//                prop.add("repliedProfileId", load.getProfileId());
                 prop.add("applicationId", load.getApplicationId());
                 prop.add("problemId", load.getProblemId());
                 if (riseMembers.isEmpty()) {
@@ -708,7 +707,6 @@ public class PracticeServiceImpl implements PracticeService {
                 } else {
                     prop.add("discussedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
                 }
-//                prop.add("discussedProfileId", load.getProfileId());
                 prop.add("discussedRiseId", discussedProfile.getRiseId());
                 prop.add("problemId", load.getProblemId());
                 return prop;
@@ -778,11 +776,10 @@ public class PracticeServiceImpl implements PracticeService {
                     }
                     return false;
                 })
-                .map(commentEvaluation -> {
+                .peek(commentEvaluation -> {
                     Comment comment = commentMap.get(commentEvaluation.getCommentId());
                     Profile profile = profileMap.get(comment.getCommentProfileId());
                     commentEvaluation.setNickName(profile.getNickname());
-                    return commentEvaluation;
                 })
                 .collect(Collectors.toList());
         return evaluations;
