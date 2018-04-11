@@ -65,7 +65,7 @@ public class IndexController {
     private static final String FORBID_URL = "/403.jsp";
     // 专项课售卖页
     private static final String CAMP_SALE_URL = "http://mp.weixin.qq.com/s?__biz=MzI1OTQ2OTY1OA==&mid=100000747&idx=1&sn=cffa80cc2c9303f102d40df574e3981c&chksm=6a793bde5d0eb2c89cf04523362a1ba1e1f49030e6bb6be38d167b4a6be9dd31a4e47465f6d2#rd";
-    //    private static final String CAMP_SALE_URL = "/pay/camp";
+    // private static final String CAMP_SALE_URL = "/pay/camp";
     // 专项课倒计时页面
     private static final String CAMP_COUNT_DOWN_URL = "/rise/static/camp/count/down";
     // 商学院售卖页
@@ -182,10 +182,6 @@ public class IndexController {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
-        } else if (whiteListService.isGoToCountDownNotice(unionUser.getId(), riseMembers)) {
-            // 填完身份信息之后，开始学习日期未到
-            response.sendRedirect(BUSINESS_COUNT_DOWN_URL);
-            return null;
         } else if (whiteListService.isGoToScheduleNotice(unionUser.getId(), riseMembers)) {
             // 进入课程计划提示页面
             response.sendRedirect(SCHEDULE_NOTICE);
@@ -257,10 +253,6 @@ public class IndexController {
         if (isCampMember && isPersonalInfoInComplete(profile)) {
             // 未填写信息的已购买专项课的 “新” 会员
             response.sendRedirect(PROFILE_CAMP_SUBMIT);
-            return null;
-        } else if (whiteListService.isGoCampCountDownPage(unionUser.getId())) {
-            // 填完身份信息之后，开始学习日期未到
-            response.sendRedirect(CAMP_COUNT_DOWN_URL);
             return null;
         } else if (whiteListService.checkCampMenuWhiteList(unionUser.getId())) {
             // 加载首屏广告信息
