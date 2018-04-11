@@ -40,6 +40,18 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
         return -1;
     }
 
+    public List<KnowledgeDiscuss> loadDiscussesByProfileId(Integer profileId, Integer knowledgeId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM KnowledgeDiscuss WHERE ProfileId = ? AND KnowledgeId = ? AND Del = 0";
+        ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler<KnowledgeDiscuss>(KnowledgeDiscuss.class);
+        try {
+            return runner.query(sql, h, profileId, knowledgeId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public List<KnowledgeDiscuss> loadDiscuss(Integer practiceId, Page page) {
         QueryRunner run = new QueryRunner(getDataSource());
         ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler<>(KnowledgeDiscuss.class);
@@ -53,11 +65,50 @@ public class KnowledgeDiscussDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<KnowledgeDiscuss> loadPriorityKnowledgeDiscuss(Integer practiceId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler<>(KnowledgeDiscuss.class);
+        String sql = "SELECT * FROM KnowledgeDiscuss WHERE KnowledgeId = ? AND Priority = 1 and Del = 0";
+        try {
+            return runner.query(sql, h, practiceId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<KnowledgeDiscuss> loadKnowledgeDiscussByIds(List<Integer> ids) {
+        if (ids.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM KnowledgeDiscuss WHERE Id IN (" + produceQuestionMark(ids.size()) + " ) AND Del = 0";
+        ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler<>(KnowledgeDiscuss.class);
+        try {
+            return runner.query(sql, h, ids.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<KnowledgeDiscuss> loadKnowledgeDiscussByRepliedIds(List<Integer> repliedIds) {
+        if (repliedIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM KnowledgeDiscuss WHERE RepliedId in (" + produceQuestionMark(repliedIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<KnowledgeDiscuss>> h = new BeanListHandler<>(KnowledgeDiscuss.class);
+        try {
+            return runner.query(sql, h, repliedIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     /**
      * 根据id更新该条记录的del字段
-     *
-     * @param id
-     * @return
      */
     public int updateDelById(Integer delValue, Integer id) {
         QueryRunner runner = new QueryRunner(getDataSource());

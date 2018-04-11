@@ -34,7 +34,7 @@ public class ProfileDto {
     private Boolean bindMobile;
     @ApiModelProperty("真名")
     private String realName;
-    @ApiModelProperty("地址")
+    @ApiModelProperty("收件地址")
     private String address;
     @ApiModelProperty("手机号码")
     private String phone;

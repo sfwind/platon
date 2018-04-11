@@ -2,10 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupComment;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.WarmupResult;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -17,6 +14,7 @@ import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +43,8 @@ public class WarmupController {
     private OperationLogService operationLogService;
     @Autowired
     private PracticeDiscussService practiceDiscussService;
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @RequestMapping("/{id}")
     public ResponseEntity<Map<String, Object>> loadWarmup(LoginUser loginUser,
@@ -130,6 +130,31 @@ public class WarmupController {
                 .memo(practicePlanId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeDto);
+    }
+
+    @RequestMapping("/analysis/priority/{practicePlanId}")
+    public ResponseEntity<Map<String, Object>> loadWarmUpPriorityDiscuss(UnionUser unionUser, @PathVariable Integer practicePlanId) {
+        List<WarmupPractice> warmUpPracticeList = practiceService.getWarmupPractices(practicePlanId);
+        List<Integer> questionIds = warmUpPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
+
+        // 获取用户提交
+        List<WarmupSubmit> submits = practiceService.getWarmupSubmit(practicePlanId, questionIds);
+        setUserChoices(warmUpPracticeList, submits);
+
+        Map<Integer, WarmupDiscussDistrict> warmUpDiscuss = practiceDiscussService.loadWarmUpDiscuss(unionUser.getId(), questionIds);
+        warmUpPracticeList.forEach(practice -> {
+            practice.setWarmupDiscussDistrict(warmUpDiscuss.getOrDefault(practice.getId(), null));
+        });
+
+        WarmupPracticeDto warmUpPracticeDto = new WarmupPracticeDto();
+        warmUpPracticeDto.setPractice(warmUpPracticeList);
+        return WebUtils.result(warmUpPracticeDto);
+    }
+
+    @RequestMapping(value = "/analysis/priority/single/{warmupPracticeId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadSingleWarmUpPriorityDiscuss(UnionUser unionUser, @PathVariable Integer warmupPracticeId) {
+        WarmupDiscussDistrict warmupDiscussDistrict = practiceDiscussService.loadSingleWarmUpDiscuss(unionUser.getId(), warmupPracticeId);
+        return WebUtils.result(warmupDiscussDistrict);
     }
 
     private void setDiscuss(List<WarmupPractice> warmupPracticeList, Map<Integer, List<WarmupComment>> discuss) {

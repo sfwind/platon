@@ -40,7 +40,6 @@ public class HomeworkVoteDao extends PracticeDBUtil {
 
     /**
      * 进行点赞
-     *
      * @return 插入结果
      */
     public void vote(HomeworkVote homeworkVote) {
@@ -57,10 +56,8 @@ public class HomeworkVoteDao extends PracticeDBUtil {
 
     /**
      * voteProfileId对某条记录的点赞记录
-     *
-     * @param referencedId  被依赖的id
+     * @param referencedId 被依赖的id
      * @param voteProfileId 点赞的人
-     * @return
      */
     public HomeworkVote loadVoteRecord(Integer referencedId, Integer voteProfileId) {
         QueryRunner run = new QueryRunner(getDataSource());
@@ -77,7 +74,6 @@ public class HomeworkVoteDao extends PracticeDBUtil {
 
     /**
      * 重新点赞
-     *
      * @param id 点赞的id
      */
     public void reVote(Integer id) {
@@ -98,9 +94,24 @@ public class HomeworkVoteDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler<>(HomeworkVote.class);
         String questionMark = produceQuestionMark(referencedIds.size());
-        String sql = "select * from HomeworkVote where ReferencedId in (" + questionMark + ") AND Type=2 AND DEL=0";
+        String sql = "select * from HomeworkVote where ReferencedId in (" + questionMark + ") AND Type = 2 AND Del = 0";
         try {
             return runner.query(sql, h, referencedIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 作业评论 id
+     */
+    public List<HomeworkVote> getHomeworkVotesByReferenceId(Integer referenceId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM HomeworkVote WHERE ReferencedId = ? AND Type = 2 AND Del = 0";
+        ResultSetHandler<List<HomeworkVote>> h = new BeanListHandler<>(HomeworkVote.class);
+        try {
+            return runner.query(sql, h, referenceId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

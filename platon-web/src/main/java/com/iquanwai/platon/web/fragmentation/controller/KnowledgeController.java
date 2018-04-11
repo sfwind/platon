@@ -1,16 +1,19 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeDiscussService;
-import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
+import com.iquanwai.platon.biz.domain.fragmentation.practice.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
+import com.iquanwai.platon.web.fragmentation.dto.DiscussDistrictDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import java.util.Map;
  * Created by justin on 2018/2/16.
  */
 @RestController
+@Api(description = "知识点相关接口")
 @RequestMapping("/rise/practice/knowledge")
 public class KnowledgeController {
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -38,8 +42,7 @@ public class KnowledgeController {
     private PracticeDiscussService practiceDiscussService;
 
     @RequestMapping("/start/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> startKnowledge(LoginUser loginUser,
-                                                              @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> startKnowledge(LoginUser loginUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         List<Knowledge> knowledges = practiceService.loadKnowledges(practicePlanId);
         OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
@@ -66,8 +69,7 @@ public class KnowledgeController {
     }
 
     @RequestMapping(value = "/learn/{practicePlanId}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser,
-                                                              @PathVariable Integer practicePlanId) {
+    public ResponseEntity<Map<String, Object>> learnKnowledge(LoginUser loginUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
         practiceService.learnKnowledge(loginUser.getId(), practicePlanId);
         planService.checkPlanComplete(practicePlanId);
@@ -83,9 +85,7 @@ public class KnowledgeController {
     }
 
     @RequestMapping("/discuss/{knowledgeId}/{offset}")
-    public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
-                                                               @PathVariable Integer knowledgeId,
-                                                               @PathVariable Integer offset) {
+    public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser, @PathVariable Integer knowledgeId, @PathVariable Integer offset) {
         Assert.notNull(loginUser, "用户不能为空");
         Page page = new Page();
         page.setPageSize(Constants.DISCUSS_PAGE_SIZE);
@@ -103,6 +103,19 @@ public class KnowledgeController {
                 .memo(knowledgeId.toString());
         operationLogService.log(operationLog);
         return WebUtils.result(discusses);
+    }
+
+    @ApiOperation("获取当前知识点加精过后的讨论")
+    @RequestMapping(value = "/priority/discuss/{knowledgeId}", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadKnowledgeDiscuss(UnionUser unionUser, @PathVariable("knowledgeId") Integer knowledgeId) {
+        List<PersonalDiscuss> personalDiscusses = practiceDiscussService.loadPersonalKnowledgeDiscussList(unionUser.getId(), knowledgeId);
+        List<DiscussElementsPair> elements = practiceDiscussService.loadPriorityKnowledgeDiscuss(knowledgeId);
+
+        DiscussDistrictDto districtDto = new DiscussDistrictDto();
+        districtDto.setPersonal(personalDiscusses);
+        districtDto.setPriorities(elements);
+
+        return WebUtils.result(districtDto);
     }
 
     @RequestMapping(value = "/discuss", method = RequestMethod.POST)
