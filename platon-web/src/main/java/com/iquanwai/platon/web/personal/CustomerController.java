@@ -144,7 +144,7 @@ public class CustomerController {
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
         if (riseClassMember != null) {
-            userStudyDto.setMemberId(profile.getMemberId());
+            userStudyDto.setMemberId(riseClassMember.getMemberId());
             String className = riseClassMember.getClassName();
             if (className != null && className.length() >= classSize) {
                 userStudyDto.setClassName(getClassName(className));
@@ -174,7 +174,7 @@ public class CustomerController {
         return WebUtils.result(eventWall);
     }
 
-    @RequestMapping(value = "/account", method = RequestMethod.GET)
+    @RequestMapping(value = "/profile", method = RequestMethod.GET)
     @ApiOperation("查询账号信息")
     public ResponseEntity<Map<String, Object>> loadRiseInfo(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
