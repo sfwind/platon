@@ -16,6 +16,6 @@ public class CountDownElement {
     @ApiModelProperty("项目描述")
     private String description;
     @ApiModelProperty("剩余天数")
-    private Integer remainCount;
+    private String remainCount;
 
 }

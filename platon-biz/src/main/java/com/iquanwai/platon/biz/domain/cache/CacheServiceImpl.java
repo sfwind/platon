@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class CacheServiceImpl implements CacheService {
     private MonthlyCampConfigDao monthlyCampConfigDao;
     @Autowired
     private CourseScheduleTopicDao courseScheduleTopicDao;
+    @Autowired
+    private MemberTypeDao memberTypeDao;
 
     //缓存问题
     private List<Problem> problems = Lists.newArrayList();
@@ -59,6 +62,8 @@ public class CacheServiceImpl implements CacheService {
     private MonthlyCampConfig monthlyCampConfig;
     // 商学院学习计划每月主题
     private Map<Integer, List<CourseScheduleTopic>> courseScheduleTopicMap;
+    // 售卖商品缓存
+    private List<MemberType> memberTypes = Lists.newArrayList();
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -165,6 +170,9 @@ public class CacheServiceImpl implements CacheService {
         // 缓存商学院学习计划每月主题
         List<CourseScheduleTopic> courseScheduleTopics = courseScheduleTopicDao.loadAll();
         courseScheduleTopicMap = courseScheduleTopics.stream().collect(Collectors.groupingBy(CourseScheduleTopic::getCategory));
+
+        // 缓存商品售卖类型
+        memberTypes = memberTypeDao.loadAllWithoutDel(MemberType.class);
     }
 
     private void initKnowledgeAudio(Knowledge knowledge) {
@@ -244,7 +252,7 @@ public class CacheServiceImpl implements CacheService {
                 List<Choice> choices = choiceDao.getQuestionChoices(practiceId);
                 choices.sort((o1, o2) -> o1.getSequence() - o2.getSequence());
                 warmupPractice.setChoiceList(choices);
-            }else{
+            } else {
                 warmupPractice = warmupPracticeOrigin.clone();
             }
         } catch (CloneNotSupportedException e) {
@@ -283,6 +291,13 @@ public class CacheServiceImpl implements CacheService {
             monthTopicMap.put(courseScheduleTopic.getMonth(), courseScheduleTopic.getTopic());
         });
         return monthTopicMap;
+    }
+
+    @Override
+    public List<MemberType> loadMemberTypes() {
+        List<MemberType> memberTypeList = Lists.newArrayList();
+        memberTypeList.addAll(this.memberTypes);
+        return memberTypeList;
     }
 
     @Override
