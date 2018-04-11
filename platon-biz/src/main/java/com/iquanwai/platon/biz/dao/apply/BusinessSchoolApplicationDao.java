@@ -6,7 +6,6 @@ import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -55,27 +54,6 @@ public class BusinessSchoolApplicationDao extends DBUtil {
         return -1;
     }
 
-    /**
-     * 插入申请信息
-     * @param businessSchoolApplication 申请记录
-     * @return 主键id
-     */
-    public Integer insert(BusinessSchoolApplication businessSchoolApplication) {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO BusinessSchoolApplication(SubmitId, ProfileId, Status, CheckTime, IsDuplicate, Deal, " +
-                "OriginMemberType,SubmitTime,DealTime,Comment,LastVerified,Valid,Project) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        try {
-            return runner.insert(sql, new ScalarHandler<Long>(), businessSchoolApplication.getSubmitId(), businessSchoolApplication.getProfileId(),
-                    businessSchoolApplication.getStatus(), businessSchoolApplication.getCheckTime(), businessSchoolApplication.getIsDuplicate(),
-                    businessSchoolApplication.getDeal(), businessSchoolApplication.getOriginMemberType(),
-                    businessSchoolApplication.getSubmitTime(), businessSchoolApplication.getDealTime(),
-                    businessSchoolApplication.getComment(), businessSchoolApplication.getLastVerified(),
-                    businessSchoolApplication.getValid(),businessSchoolApplication.getProject()).intValue();
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return null;
-    }
 
 
     /**

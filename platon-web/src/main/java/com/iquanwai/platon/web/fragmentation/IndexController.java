@@ -87,8 +87,10 @@ public class IndexController {
     // 填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
     private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goRise=true&goCamp=true";
-    // 申请成功页面
-    private static final String APPLY_SUCCESS = "/pay/apply";
+    // 申请核心课成功页面
+    private static final String APPLY_CORE_SUCCESS = "/pay/apply?goodsId=3";
+    // 申请思维课成功页面
+    private static final String APPLY_THOUGHT_SUCCESS = "/pay/apply?goodsId=8";
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
 
@@ -169,12 +171,8 @@ public class IndexController {
         }
 
         List<BusinessSchoolApplication> applyList = applyService.loadApplyList(unionUser.getId());
-        boolean coreApplied = applyList
-                .stream()
-                .filter(item -> item.getProject().equals(Constants.Project.CORE_PROJECT))
-                .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
-                .filter(BusinessSchoolApplication::getDeal)
-                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
+        boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
+        boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
 
         if (isInfoInComplete(profile)) {
@@ -195,7 +193,11 @@ public class IndexController {
             return null;
         } else if (coreApplied && !whiteListService.checkRunningRiseMenuWhiteList(unionUser.getId())) {
             // 已经申请成功，有购买权限，非默认可购买的人(专业版)
-            response.sendRedirect(APPLY_SUCCESS);
+            response.sendRedirect(APPLY_CORE_SUCCESS);
+            return null;
+        } else if (thoughtApplied && !whiteListService.checkRunningRiseMenuWhiteList(unionUser.getId())) {
+            // 已经申请成功，有购买权限，非默认可购买的人(专业版)
+            response.sendRedirect(APPLY_THOUGHT_SUCCESS);
             return null;
         } else if (whiteListService.checkRiseMenuWhiteList(unionUser.getId())) {
             // 加载首屏广告信息

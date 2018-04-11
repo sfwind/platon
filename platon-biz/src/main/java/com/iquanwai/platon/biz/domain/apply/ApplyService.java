@@ -1,8 +1,6 @@
 package com.iquanwai.platon.biz.domain.apply;
 
-import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
-import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
 
 import java.util.List;
@@ -20,7 +18,6 @@ public interface ApplyService {
      */
     List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId);
 
-
     /**
      * 获取用户的所有审核信息
      *
@@ -30,23 +27,20 @@ public interface ApplyService {
     List<BusinessSchoolApplication> loadApplyList(Integer profileId);
 
     /**
-     * 提交商学院申请
-     *
-     * @param profileId        用户id
-     * @param userApplySubmits 用户的申请记录
-     * @param valid            是否有效
-     */
-    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid,Integer project);
-
-    /**
-     * 检查是否有申请权限
+     * 检查是否能够申请该项目
      *
      * @param profileId 用户id
-     * @throws ApplyException 申请异常
+     * @param project   项目id
+     * @return 是否能够申请
      */
-    void checkApplyPrivilege(Integer profileId,Integer project) throws ApplyException;
-
     boolean hasAvailableApply(Integer profileId, Integer project);
 
+    /**
+     * 检查是否能够申请该项目
+     *
+     * @param applyList 用户申请记录
+     * @param project   项目id
+     * @return 是否能够申请
+     */
     boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer project);
 }
