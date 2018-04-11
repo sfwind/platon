@@ -48,8 +48,6 @@ public class PracticeController {
     private PlanService planService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private OperationLogService operationLogService;
 
     @RequestMapping(value = "/challenge/start/{challengeId}", method = RequestMethod.GET)
     @ApiOperation("加载小目标")

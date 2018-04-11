@@ -13,4 +13,5 @@ public class ProblemSchedule {
     private Integer knowledgeId; //知识点id
     private Integer chapter; //课程第几章
     private Integer series; //序号
+    private int practiceSequence = 0; //非db字段 练习序号
 }
