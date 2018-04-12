@@ -73,4 +73,19 @@ public class ClassMemberDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<ClassMember> loadByProfileIds(List<Integer> profileIds) {
+        if (profileIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ClassMember WHERE ProfileId in (" + produceQuestionMark(profileIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<ClassMember>> h = new BeanListHandler<>(ClassMember.class);
+        try {
+            return runner.query(sql, h, profileIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return Lists.newArrayList();
+    }
+
 }

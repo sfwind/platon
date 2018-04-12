@@ -202,7 +202,7 @@ public class ProfileDao extends DBUtil {
         String updateSql = "Update Profile Set NickName = ?, Industry=?, Function=?, WorkingYear=?, City=?, Province=?," +
                 "RealName=?,Address=?,Receiver=?,Married=? where id=?";
         try {
-            run.update(updateSql, profile.getNickname(),profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
+            run.update(updateSql, profile.getNickname(), profile.getIndustry(), profile.getFunction(), profile.getWorkingYear(),
                     profile.getCity(), profile.getProvince(), profile.getRealName(), profile.getAddress(),
                     profile.getReceiver(), profile.getMarried(), profile.getId());
         } catch (SQLException e) {
@@ -305,5 +305,20 @@ public class ProfileDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return false;
+    }
+
+    public List<Profile> queryByMemberIds(List<String> memberIds) {
+        if (memberIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Profile WHERE MemberId IN (" + produceQuestionMark(memberIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<Profile>> h = new BeanListHandler<>(Profile.class);
+        try {
+            return runner.query(sql, h, memberIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 }

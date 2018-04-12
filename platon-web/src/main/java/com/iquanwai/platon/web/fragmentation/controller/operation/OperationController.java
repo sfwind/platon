@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
+import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.RiseCertificate;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.util.ThreadPool;
@@ -45,21 +46,38 @@ public class OperationController {
     public ResponseEntity<Map<String, Object>> generateCertificate(UnionUser unionUser, @RequestBody RiseCertificate riseCertificate) {
         Integer month = riseCertificate.getMonth();
         Integer year = riseCertificate.getYear();
+        Integer memberTypeId = riseCertificate.getMemberTypeId();
         ThreadPool.execute(() -> {
                     logger.info("开始生成证书任务");
-                    certificateService.generateCertificate(year, month);
+                    certificateService.generateGraduateCertificateByMemberType(year, month, memberTypeId);
                     templateMessageService.sendSelfCompleteMessage("生成证书", unionUser.getOpenId());
                 }
         );
+        return WebUtils.result("正在进行中");
+    }
 
+    @RequestMapping(value = "/generate/fullattendance", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(UnionUser unionUser, @RequestBody FullAttendanceReward fullAttendanceReward) {
+        Integer month = fullAttendanceReward.getMonth();
+        Integer year = fullAttendanceReward.getYear();
+        Integer memberTypeId = fullAttendanceReward.getMemberTypeId();
+        ThreadPool.execute(() -> {
+                    logger.info("开始生成全勤奖任务");
+                    certificateService.generateBatchFullAttendance(year, month, memberTypeId);
+                    templateMessageService.sendSelfCompleteMessage("生成全勤奖", unionUser.getOpenId());
+                }
+        );
         return WebUtils.result("正在进行中");
     }
 
     @RequestMapping(value = "/send/certificate", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendCertificate(UnionUser unionUser, @RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
+    public ResponseEntity<Map<String, Object>> sendCertificate(UnionUser unionUser, @RequestBody RiseCertificate riseCertificate) {
+        Integer month = riseCertificate.getMonth();
+        Integer year = riseCertificate.getYear();
+        Integer memberTypeId = riseCertificate.getMemberTypeId();
         ThreadPool.execute(() -> {
             logger.info("开始发送证书任务");
-            certificateService.sendCertificate(year, month);
+            certificateService.sendCertificate(year, month, memberTypeId);
             templateMessageService.sendSelfCompleteMessage("发送证书", unionUser.getOpenId());
         });
         return WebUtils.result("正在进行中");

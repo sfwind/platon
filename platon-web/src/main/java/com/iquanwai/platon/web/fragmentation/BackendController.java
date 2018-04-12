@@ -4,7 +4,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateServi
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.ThreadPool;
@@ -107,28 +106,6 @@ public class BackendController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/upload/certificate")
-    public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu(@RequestParam Boolean isOnline) {
-        ThreadPool.execute(() -> certificateService.uploadCertificateToQiNiu(isOnline));
-        return WebUtils.result("正在进行中");
-    }
-
-    @RequestMapping(value = "/generate/fullattendance", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(@RequestBody FullAttendanceReward fullAttendanceReward) {
-        Integer month = fullAttendanceReward.getMonth();
-        Integer year = fullAttendanceReward.getYear();
-        ThreadPool.execute(() ->
-                certificateService.generateFullAttendanceCoupon(year, month)
-        );
-        return WebUtils.result("正在进行中");
-    }
-
-    @RequestMapping(value = "/send/fullattendance", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendFullAttendanceCoupon(@RequestParam("year") Integer year, @RequestParam("month") Integer month) {
-        ThreadPool.execute(() -> certificateService.sendFullAttendanceCoupon(year, month));
-        return WebUtils.result("正在进行中");
-    }
-
     @RequestMapping(value = "/send/camp/offer", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
         ThreadPool.execute(() -> certificateService.sendOfferMsg(year, month));
@@ -167,7 +144,7 @@ public class BackendController {
         String memberId = riseMemberManager.getMemberId(openidDto.getOpenid());
         if (memberId == null) {
             return WebUtils.error(201, "该用户没有学号");
-        }else{
+        } else {
             return WebUtils.result(memberId);
         }
     }

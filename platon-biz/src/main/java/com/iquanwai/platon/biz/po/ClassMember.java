@@ -18,7 +18,7 @@ public class ClassMember {
     @ApiModelProperty("小组号")
     private String groupId;
     @ApiModelProperty("身份类型")
-    private String memberTypeId;
+    private Integer memberTypeId;
     @ApiModelProperty("是否生效")
     private Boolean active;
     @ApiModelProperty("是否删除")

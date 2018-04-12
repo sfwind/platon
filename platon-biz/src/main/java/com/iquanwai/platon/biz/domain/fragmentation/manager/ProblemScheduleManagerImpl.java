@@ -164,6 +164,17 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
         return majorProblemIds;
     }
 
+
+    @Override
+    public List<Integer> getMajorProblemIds(Integer profileId, Integer year, Integer month) {
+        List<CourseSchedule> majorCourseSchedules = courseScheduleDao.loadAllMajorScheduleByProfileId(profileId);
+        List<Integer> majorProblemIds = majorCourseSchedules.stream()
+                .filter(schedule -> year.equals(schedule.getYear()) && month.equals(schedule.getMonth()))
+                .map(CourseSchedule::getProblemId)
+                .collect(Collectors.toList());
+        return majorProblemIds;
+    }
+
     private List<Chapter> getChapters(List<UserProblemSchedule> problemSchedules) {
         Map<Integer, List<UserProblemSchedule>> problemScheduleMap = Maps.newLinkedHashMap();
         //按节组合成一组知识点

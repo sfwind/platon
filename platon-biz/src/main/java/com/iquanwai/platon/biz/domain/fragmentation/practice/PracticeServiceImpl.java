@@ -182,7 +182,6 @@ public class PracticeServiceImpl implements PracticeService {
         }
         if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
             practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
-            certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
         }
         improvementPlanDao.updateWarmupComplete(planId);
         poinManager.risePoint(planId, point);
@@ -370,7 +369,6 @@ public class PracticeServiceImpl implements PracticeService {
         PracticePlan practicePlan = practicePlanDao.loadApplicationPractice(submit.getPlanId(), submit.getApplicationId());
         if (practicePlan != null) {
             practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
-            certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
             Integer point = poinManager.calcApplicationScore(applicationPracticeDao.load(ApplicationPractice.class,
                     submit.getApplicationId()).getDifficulty());
             // 查看难度，加分
@@ -844,7 +842,6 @@ public class PracticeServiceImpl implements PracticeService {
     @Override
     public void learnKnowledge(Integer profileId, Integer practicePlanId) {
         practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
-        certificateService.generateSingleFullAttendanceCoupon(practicePlanId);
     }
 
     @Override
