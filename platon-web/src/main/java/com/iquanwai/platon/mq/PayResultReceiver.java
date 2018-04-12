@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.QuanwaiOrder;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
@@ -38,8 +39,8 @@ public class PayResultReceiver {
     private PlanService planService;
 
     @PostConstruct
-    public void init(){
-        rabbitMQFactory.initReceiver(QUEUE,TOPIC,(messageQueue)->{
+    public void init() {
+        rabbitMQFactory.initReceiver(QUEUE, TOPIC, (messageQueue) -> {
             logger.info("receive message {}", messageQueue.getMessage().toString());
             QuanwaiOrder quanwaiOrder = JSON.parseObject(JSON.toJSONString(messageQueue.getMessage()), QuanwaiOrder.class);
             logger.info("获取支付成功 message {}", quanwaiOrder);
@@ -53,6 +54,12 @@ public class PayResultReceiver {
                 courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
                 // 打开之前永不解锁的小课
                 planService.unlockNeverUnlockPlans(profile.getId());
+                // 生成课表
+                if (quanwaiOrder.getGoodsId().equals(Integer.valueOf(RiseMember.ELITE).toString())) {
+
+                } else if (quanwaiOrder.getGoodsId().equals(Integer.valueOf(RiseMember.BUSINESS_THOUGHT).toString())) {
+
+                }
             }
         });
     }
