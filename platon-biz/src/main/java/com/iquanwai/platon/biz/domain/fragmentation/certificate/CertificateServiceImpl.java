@@ -85,7 +85,8 @@ public class CertificateServiceImpl implements CertificateService {
     private static final String FULL_ATTENDANCE_COUPON_CATEGORY = "ELITE_RISE_MEMBER";
     private static final String FULL_ATTENDANCE_COUPON_DESCRIPTION = "训练营全勤奖";
 
-    private static final Double amount = 50.00;
+    // 全勤奖金额
+    private static final Double FULL_ATTENDANCE_AMOUNT = 50.00;
 
 
     // 正常证书背景
@@ -195,7 +196,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public void generateBatchFullAttendance(Integer year, Integer month, Integer memberTypeId) {
         //商业进阶课程不发送全勤奖
-        if(memberTypeId.equals(RiseMember.BUSINESS_THOUGHT)){
+        if (memberTypeId.equals(RiseMember.BUSINESS_THOUGHT)) {
             return;
         }
         // 根据身份，获取所有该身份的人员
@@ -210,7 +211,7 @@ public class CertificateServiceImpl implements CertificateService {
             majorPlans.forEach(plan -> {
                 boolean generatePermission = checkGenerateFullAttendancePermission(plan);
                 if (generatePermission) {
-                    FullAttendanceReward fullAttendanceReward = insertFullAttendance(profileId, plan.getProblemId(), year, month, amount);
+                    FullAttendanceReward fullAttendanceReward = insertFullAttendance(profileId, plan.getProblemId(), year, month, FULL_ATTENDANCE_AMOUNT);
                     if (fullAttendanceReward != null) {
                         sendSingleFullAttendanceCoupon(year, month, plan.getProfileId());
                     }
@@ -223,19 +224,20 @@ public class CertificateServiceImpl implements CertificateService {
     public void generatePersonalFullAttendance(Integer planId) {
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if (improvementPlan != null) {
-            int profileId = improvementPlan.getProfileId();
             int problemId = improvementPlan.getProblemId();
-            int learningYear = ConfigUtils.getLearningYear();
-            int learningMonth = ConfigUtils.getLearningMonth();
-
-            if(problemManager.isThoughtProblem(problemId)){
+            if (problemManager.isThoughtProblem(problemId)) {
                 logger.info("完成的是商业进阶项目");
                 return;
             }
 
+            int profileId = improvementPlan.getProfileId();
+            int learningYear = ConfigUtils.getLearningYear();
+            int learningMonth = ConfigUtils.getLearningMonth();
+
+
             boolean generatePermission = checkGenerateFullAttendancePermission(improvementPlan);
             if (generatePermission) {
-                FullAttendanceReward fullAttendanceReward = insertFullAttendance(profileId, problemId, learningYear, learningMonth, amount);
+                FullAttendanceReward fullAttendanceReward = insertFullAttendance(profileId, problemId, learningYear, learningMonth, FULL_ATTENDANCE_AMOUNT);
                 if (fullAttendanceReward != null) {
                     sendSingleFullAttendanceCoupon(learningYear, learningMonth, profileId);
                 }
@@ -330,10 +332,10 @@ public class CertificateServiceImpl implements CertificateService {
             templateMessage.setTouser(profile.getOpenid());
             Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
             templateMessage.setData(data);
-            data.put("first", new TemplateMessage.Keyword("价值"+amount.intValue()+"元的“全勤奖学金”已经放入您的账户！\n"));
+            data.put("first", new TemplateMessage.Keyword("价值" + FULL_ATTENDANCE_AMOUNT.intValue() + "元的“全勤奖学金”已经放入您的账户！\n"));
             data.put("keyword1", new TemplateMessage.Keyword(DateUtils.parseDateToFormat6(new Date())));
             data.put("keyword2", new TemplateMessage.Keyword("奖学金（优惠券）"));
-            data.put("keyword3", new TemplateMessage.Keyword("价值"+amount.intValue()+"元"));
+            data.put("keyword3", new TemplateMessage.Keyword("价值" + FULL_ATTENDANCE_AMOUNT.intValue() + "元"));
 
             templateMessageService.sendMessage(templateMessage);
         }
@@ -528,8 +530,12 @@ public class CertificateServiceImpl implements CertificateService {
      * @param improvementPlan 学习计划
      * @return 是否能生成全勤奖
      */
+    private boolean checkGenerateFullAttendancePermission(ImprovementPlan improvementPlan) {
+        if (accountService.getAssist(improvementPlan.getProfileId()) != null) {
+            // 如果是助教，则不发全勤奖
+            return false;
+        }
 
-    private boolean checkGenerateFullAttendancePermission(ImprovementPlan improvementPlan){
         boolean generateFullAttendanceTag = true;
         int planId = improvementPlan.getId();
 
@@ -549,59 +555,6 @@ public class CertificateServiceImpl implements CertificateService {
         }
         return generateFullAttendanceTag;
     }
-
-//    private boolean checkGenerateFullAttendancePermission(ImprovementPlan improvementPlan) {
-//        boolean generateFullAttendanceTag = true;
-//        int planId = improvementPlan.getId();
-//
-//        List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(planId);
-//        if (practicePlans.size() != 0) {
-//            // 完成所有练习
-//            Long unCompleteNecessaryCountLong = practicePlans.stream()
-//                    .filter(practicePlan -> PracticePlan.CHALLENGE != practicePlan.getType())
-//                    .filter(practicePlan -> PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus())
-//                    .count();
-//            if ((unCompleteNecessaryCountLong.intValue()) > 0) {
-//                // 如果存在有没有完成的题数，则不予发送优惠券
-//                generateFullAttendanceTag = false;
-//            } else {
-//                // 完成所有练习之后，对应用题完成情况进行复查
-//                List<PracticePlan> applicationPracticePlans = practicePlans.stream()
-//                        .filter(practicePlan -> PracticePlan.isApplicationPractice(practicePlan.getType()))
-//                        .collect(Collectors.toList());
-//                List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
-//                // TODO: 改成不需要加载应用题内容的接口
-//                List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
-//                Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream().collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
-//
-//                // 根据 planId 和 practicePlan 中的 PracticeId 来获取应用题完成数据
-//                Set<Integer> seriesSet = applicationPracticePlans.stream().map(PracticePlan::getSeries).collect(Collectors.toSet());
-//
-//                // Plan 中每节都是优质完成应用题的小节数
-//                Long planApplicationCheckLong = seriesSet.stream().filter(series -> {
-//                    List<Integer> practiceIds = applicationPracticePlans.stream()
-//                            .filter(practicePlan -> practicePlan.getSeries().equals(series))
-//                            .map(PracticePlan::getPracticeId)
-//                            .map(Integer::parseInt)
-//                            .collect(Collectors.toList());
-//                    // 每个 Series 中每一节都是优质完成
-//                    // 返回不合格完成应用题数，全勤奖去除字数限制
-//                    Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
-//                        ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
-//                        return applicationSubmit == null;
-//                    }).count();
-//                    return seriesApplicationCheckLong.intValue() == 0; // 不合格数为0的话，说明当前小节全部完成，参与计数
-//                }).count();
-//
-//                if (planApplicationCheckLong.intValue() != seriesSet.size()) {
-//                    generateFullAttendanceTag = false;
-//                }
-//            }
-//        } else {
-//            generateFullAttendanceTag = false;
-//        }
-//        return generateFullAttendanceTag;
-//    }
 
     /**
      * 插入全勤奖记录表
