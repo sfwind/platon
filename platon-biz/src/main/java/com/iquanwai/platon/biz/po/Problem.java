@@ -76,4 +76,10 @@ public class Problem {
         return JSON.parseObject(JSON.toJSONString(this), this.getClass());
     }
 
+
+    public interface ProjectId{
+        int ELITE = 1;
+        int THOUGHT = 2;
+    }
+
 }
