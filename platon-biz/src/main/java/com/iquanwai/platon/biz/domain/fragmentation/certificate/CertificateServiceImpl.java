@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ClassMemberDao;
 import com.iquanwai.platon.biz.dao.common.CouponDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
-import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
@@ -67,13 +66,9 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private RiseMemberManager riseMemberManager;
     @Autowired
-    private UserRoleDao userRoleDao;
-    @Autowired
     private RiseCertificateDao riseCertificateDao;
     @Autowired
     private ClassMemberDao classMemberDao;
-    @Autowired
-    private CourseScheduleDao courseScheduleDao;
     @Autowired
     private ProfileDao profileDao;
 
