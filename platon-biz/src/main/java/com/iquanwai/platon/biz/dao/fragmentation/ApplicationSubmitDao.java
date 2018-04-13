@@ -72,7 +72,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean firstAnswer(Integer id, String content, int length, boolean hasImage) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, hasImage=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, HasImage=?, PublishTime = CURRENT_TIMESTAMP, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, hasImage, id);
         } catch (SQLException e) {
@@ -84,7 +84,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
 
     public boolean answer(Integer id, String content, int length, boolean hasImage) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "update ApplicationSubmit set Content=?, Length=?, hasImage=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
+        String sql = "update ApplicationSubmit set Content=?, Length=?, HasImage=?, LastModifiedTime = CURRENT_TIMESTAMP where Id=?";
         try {
             runner.update(sql, content, length, hasImage, id);
         } catch (SQLException e) {
@@ -182,7 +182,7 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
         params.add(problemId);
         params.addAll(refers);
         String sql = "select Id, ProfileId, ApplicationId, PlanId, ProblemId, PointStatus, PublishTime, LastModifiedTime, " +
-                "Priority, HighlightTime, RequestFeedback, Feedback, Length, Del, AddTime, UpdateTime " +
+                "Priority, HighlightTime, RequestFeedback, Feedback, HasImage, Length, Del, AddTime, UpdateTime " +
                 "from ApplicationSubmit where ProblemId = ? and Id in (" + mask + ") and Del=0";
 
         try {
