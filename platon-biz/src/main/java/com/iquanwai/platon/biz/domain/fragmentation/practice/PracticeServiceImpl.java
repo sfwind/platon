@@ -183,10 +183,10 @@ public class PracticeServiceImpl implements PracticeService {
             });
         }
         if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
-            practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
+            practicePlanStatusManager.completePracticePlan(profileId, practicePlan);
+            improvementPlanDao.updateWarmupComplete(planId);
+            poinManager.risePoint(planId, point);
         }
-        improvementPlanDao.updateWarmupComplete(planId);
-        poinManager.risePoint(planId, point);
         warmupResult.setRightNumber(rightNumber);
         warmupResult.setPoint(point);
         return warmupResult;
@@ -355,9 +355,11 @@ public class PracticeServiceImpl implements PracticeService {
                 // 修改应用任务记录
                 ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
                 if (plan != null) {
-                    improvementPlanDao.updateApplicationComplete(plan.getId());
-                    practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
-                    certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
+                    if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
+                        practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan);
+                        improvementPlanDao.updateApplicationComplete(submit.getPlanId());
+                        certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
+                    }
                     // 至少达到一定字数才能加分
                     if (submit.getPointStatus() == 0) {
                         Problem problem = cacheService.getProblem(plan.getProblemId());
@@ -427,7 +429,7 @@ public class PracticeServiceImpl implements PracticeService {
             PracticePlan practicePlan = practicePlanDao.loadPracticePlan(submit.getPlanId(),
                     submit.getChallengeId(), PracticePlan.CHALLENGE);
             if (practicePlan != null) {
-                practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan.getId());
+                practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan);
                 // 加分
                 poinManager.risePoint(submit.getPlanId(), ConfigUtils.getChallengeScore());
                 // 修改status
@@ -836,7 +838,8 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public void learnPracticePlan(Integer profileId, Integer practicePlanId) {
-        practicePlanStatusManager.completePracticePlan(profileId, practicePlanId);
+        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+        practicePlanStatusManager.completePracticePlan(profileId, practicePlan);
     }
 
     @Override
