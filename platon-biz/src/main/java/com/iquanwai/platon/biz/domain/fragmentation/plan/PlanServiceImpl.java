@@ -48,6 +48,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
@@ -276,7 +277,7 @@ public class PlanServiceImpl implements PlanService {
         practice.setPlanId(practicePlan.getPlanId());
         String[] practiceArr = practicePlan.getPracticeId().split(",");
         //设置选做标签,巩固练习和知识理解是必做,其他为选做
-        if (isOptional(practicePlan.getType())) {
+        if (PracticePlan.isApplicationPractice(practicePlan.getType())) {
             practice.setOptional(true);
         } else {
             practice.setOptional(false);
@@ -288,28 +289,6 @@ public class PlanServiceImpl implements PlanService {
         practice.setPracticeIdList(practiceIdList);
         practice.setType(practicePlan.getType());
         return practice;
-    }
-
-    private boolean isOptional(Integer type) {
-        return type == PracticePlan.APPLICATION_BASE || type == PracticePlan.APPLICATION_UPGRADED;
-    }
-
-    @Override
-    public Knowledge getKnowledge(Integer knowledgeId) {
-        //小目标的knowledgeId=null
-        if (knowledgeId == null) {
-            Knowledge knowledge = new Knowledge();
-            //文案写死
-            knowledge.setKnowledge("让你的训练更有效");
-            return knowledge;
-        }
-        Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledgeId);
-        if (warmupPractice != null) {
-            warmupPractice = cacheService.getWarmupPractice(warmupPractice.getId());
-            knowledge.setExample(warmupPractice);
-        }
-        return knowledge;
     }
 
     @Override
@@ -910,6 +889,7 @@ public class PlanServiceImpl implements PlanService {
             seriesStatus.setType(plan.getType());
             seriesStatus.setUnlock(plan.getUnlocked());
             seriesStatus.setComplete(plan.getStatus() == 1);
+            seriesStatus.setName(PracticePlan.getPracticePlanTitle(plan.getType()));
             planSeriesStatuses.add(seriesStatus);
         }
 
@@ -917,7 +897,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadPlanSeriesTitle(Integer practicePlanId) {
+    public Pair<String, Integer> loadPlanSeriesInfo(Integer practicePlanId) {
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return null;
@@ -946,7 +926,7 @@ public class PlanServiceImpl implements PlanService {
             String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
             titleBuilder.append(knowledgeStr);
         }
-        return titleBuilder.toString();
+        return new ImmutablePair<>(titleBuilder.toString(), practicePlan.getSequence());
     }
 
     @Override

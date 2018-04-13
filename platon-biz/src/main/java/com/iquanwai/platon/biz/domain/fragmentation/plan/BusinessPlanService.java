@@ -26,21 +26,6 @@ public interface BusinessPlanService {
     List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId);
 
     /**
-     * 获取默认课程计划安排表
-     *
-     * @param profileId 个人 id
-     */
-    List<List<CourseSchedule>> loadDefaultCourseSchedule(Integer profileId);
-
-    /**
-     * 查看某门课程的计划能否更改
-     *
-     * @param profileId 用户 id
-     * @param problemId 课程 id
-     */
-    boolean checkProblemModifyAccess(Integer profileId, Integer problemId);
-
-    /**
      * 获取用户的课程进度
      *
      * @param profileId 用户 id
@@ -85,11 +70,4 @@ public interface BusinessPlanService {
      * @return 课程表选择题
      */
     List<ScheduleQuestion> loadScheduleQuestions(Integer profileId);
-
-    /**
-     * 获取当前主修课
-     * @param profileId
-     * @return
-     */
-    Integer getLearningProblemId(Integer profileId);
 }

@@ -25,6 +25,7 @@ public class ApplicationSubmit {
     private Integer problemId;//课程id
     private Date requestTime;//求点评时间
     private Date feedBackTime;//首次点评时间
+    private Boolean hasImage; //提交内容中是否含有图片
 
     private Integer voteCount; //非db字段 点赞数
     private boolean voteStatus; //非db字段 是否点赞
