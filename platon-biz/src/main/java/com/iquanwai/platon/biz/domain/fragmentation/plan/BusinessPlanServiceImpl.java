@@ -9,6 +9,7 @@ import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -26,6 +27,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -846,6 +848,55 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
         completePlans = completePlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getCompleteTime).reversed()).collect(Collectors.toList());
         return completePlans;
+    }
+
+    @Override
+    public void initCourseSchedule(Integer profileId, Integer memberTypeId) {
+        List<CourseSchedule> all = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        boolean exists = all.stream().anyMatch(item -> Objects.equals(item.getMemberTypeId(), memberTypeId));
+        if (!exists) {
+            // 生成
+            List<CourseScheduleDefault> defaults = null;
+            Integer category = accountService.loadUserScheduleCategory(profileId);
+            if (Objects.equals(category, CustomerStatus.OLD_SCHEDULE)) {
+                // 老用户用category
+                defaults = courseScheduleDefaultDao.loadCourseScheduleDefaultByCategory(category);
+            } else {
+                // 新用户用membertypeid+category
+                defaults = courseScheduleDefaultDao.loadByCategoryAndMemberTypeId(category, memberTypeId);
+            }
+            RiseMember riseMember = riseMemberManager.getByMemberType(profileId, memberTypeId);
+            // 全部选中插入
+            List<CourseSchedule> schedules = defaults.stream().map(item -> {
+                CourseSchedule schedule = new CourseSchedule();
+                schedule.setSelected(true);
+                schedule.setMonth(item.getMonth());
+                schedule.setProblemId(item.getProblemId());
+                schedule.setRecommend(item.getDefaultSelected());
+                schedule.setProfileId(profileId);
+                schedule.setMemberTypeId(memberTypeId);
+                schedule.setCategory(category);
+                schedule.setType(item.getType());
+
+                Integer year;
+                Integer month;
+                if (item.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
+                    // 新学员，以开营日来计算
+                    month = DateUtils.getMonth(riseMember.getOpenDate());
+                    year = DateUtils.getYear(riseMember.getOpenDate());
+                } else {
+                    // 老学员
+                    year = 2017;
+                    month = 8;
+                }
+                if (item.getMonth() < month) {
+                    year++;
+                }
+                schedule.setYear(year);
+                return schedule;
+            }).collect(Collectors.toList());
+            courseScheduleDao.batchInsertCourseSchedule(schedules);
+        }
     }
 
 }

@@ -17,7 +17,7 @@ import java.util.List;
  * Created by justin on 2018/4/7.
  */
 @Service
-public class RiseMemberManagerImpl implements RiseMemberManager{
+public class RiseMemberManagerImpl implements RiseMemberManager {
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
@@ -34,7 +34,7 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
 
     private RiseMember getRiseMember(Integer profileId, List<Integer> members) {
         List<RiseMember> riseMembers = riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, members);
-        if(CollectionUtils.isEmpty(riseMembers)){
+        if (CollectionUtils.isEmpty(riseMembers)) {
             return null;
         }
 
@@ -150,5 +150,10 @@ public class RiseMemberManagerImpl implements RiseMemberManager{
     @Override
     public List<RiseMember> getAllRiseMember(Integer profileId) {
         return riseMemberDao.loadRiseMembersByProfileId(profileId);
+    }
+
+    @Override
+    public RiseMember getByMemberType(Integer profileId, Integer memberType) {
+        return riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, Lists.newArrayList(memberType)).stream().findAny().orElse(null);
     }
 }

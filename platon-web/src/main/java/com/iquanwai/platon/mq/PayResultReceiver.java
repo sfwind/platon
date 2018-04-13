@@ -1,6 +1,7 @@
 package com.iquanwai.platon.mq;
 
 import com.alibaba.fastjson.JSON;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.operation.OperationEvaluateService;
@@ -37,6 +38,8 @@ public class PayResultReceiver {
     private CourseReductionService courseReductionService;
     @Autowired
     private PlanService planService;
+    @Autowired
+    private BusinessPlanService businessPlanService;
 
     @PostConstruct
     public void init() {
@@ -55,10 +58,9 @@ public class PayResultReceiver {
                 // 打开之前永不解锁的小课
                 planService.unlockNeverUnlockPlans(profile.getId());
                 // 生成课表
-                if (quanwaiOrder.getGoodsId().equals(Integer.valueOf(RiseMember.ELITE).toString())) {
-
-                } else if (quanwaiOrder.getGoodsId().equals(Integer.valueOf(RiseMember.BUSINESS_THOUGHT).toString())) {
-
+                Integer memberTypeId = Integer.valueOf(quanwaiOrder.getGoodsId());
+                if (RiseMember.isMember(memberTypeId)) {
+                    businessPlanService.initCourseSchedule(quanwaiOrder.getProfileId(), memberTypeId);
                 }
             }
         });

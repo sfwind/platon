@@ -15,6 +15,8 @@ public class CourseScheduleDefault {
     private Integer month;
     private String monthTopic;
     private Boolean defaultSelected;
+    private Integer memberTypeId;
+
 
     /**
      * 1-主修 2-辅修
