@@ -365,9 +365,9 @@ public class PracticeServiceImpl implements PracticeService {
                     if (submit.getPointStatus() == 0) {
                         Problem problem = cacheService.getProblem(plan.getProblemId());
                         if (problem.getProject() == Constants.Project.MINI_MBA_PROJECT &&
-                                (length >= CORE_PROJECT_WORD_AT_LEAST || hasImage)) {
+                                (length >= MINI_MBA_PROJECT_WORD_AT_LEAST || hasImage)) {
                             applicationAddPoint(practicePlan, id, submit);
-                        } else if (length >= MINI_MBA_PROJECT_WORD_AT_LEAST || hasImage) {
+                        } else if (length >= CORE_PROJECT_WORD_AT_LEAST || hasImage) {
                             applicationAddPoint(practicePlan, id, submit);
                         }
                     }
