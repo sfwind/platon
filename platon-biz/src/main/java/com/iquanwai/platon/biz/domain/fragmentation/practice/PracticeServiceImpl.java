@@ -352,14 +352,15 @@ public class PracticeServiceImpl implements PracticeService {
         PracticePlan practicePlan = practicePlanDao.loadApplicationPractice(submit.getPlanId(), submit.getApplicationId());
         if (practicePlan != null) {
             if (result) {
+                // 完成练习
+                if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
+                    practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan);
+                    improvementPlanDao.updateApplicationComplete(submit.getPlanId());
+                    certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
+                }
                 // 修改应用任务记录
                 ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
                 if (plan != null) {
-                    if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
-                        practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan);
-                        improvementPlanDao.updateApplicationComplete(submit.getPlanId());
-                        certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
-                    }
                     // 至少达到一定字数才能加分
                     if (submit.getPointStatus() == 0) {
                         Problem problem = cacheService.getProblem(plan.getProblemId());
@@ -373,6 +374,8 @@ public class PracticeServiceImpl implements PracticeService {
                 } else {
                     logger.error("ImprovementPlan is not existed, planId:{}", submit.getPlanId());
                 }
+            } else {
+                logger.error("应用练习{}提交失败", id);
             }
             return practicePlan.getId();
         }
