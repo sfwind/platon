@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
+import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -21,6 +22,7 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
@@ -54,6 +56,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -98,6 +101,8 @@ public class CustomerController {
     private UnionUserService unionUserService;
     @Autowired
     private StudyService studyService;
+    @Autowired
+    private UserInfoService userInfoService;
 
     private final static int classSize = 6;
 
@@ -201,18 +206,15 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> loadProfile(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户信息不能为空");
 
+        Integer profileId = unionUser.getId();
         ProfileDto profileDto = new ProfileDto();
-        Profile account = accountService.getProfile(unionUser.getId());
+        Profile profile = accountService.getProfile(profileId);
 
-        BeanUtils.copyProperties(account, profileDto);
-        // 查询id
-        Region city = accountService.loadCityByName(account.getCity());
-        Region province = accountService.loadProvinceByName(account.getProvince());
-        profileDto.setCityId(city == null ? null : city.getId());
-        profileDto.setProvinceId(province == null ? null : province.getId());
-        boolean bindMobile = true;
-        if (StringUtils.isEmpty(account.getMobileNo()) && StringUtils.isEmpty(account.getWeixinId())) {
-            bindMobile = false;
+        BeanUtils.copyProperties(profile, profileDto);
+        UserInfo userInfo = userInfoService.loadByProfileId(profileId);
+        if (userInfo != null) {
+            BeanUtils.copyProperties(userInfo, profileDto);
+            profileDto.setPhone(userInfo.getMobileNo());
         }
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
@@ -229,14 +231,27 @@ public class CustomerController {
         } else {
             profileDto.setMemberTypeId(0);
         }
-        profileDto.setRiseId(account.getRiseId());
-        profileDto.setIsFull(account.getIsFull() == 1);
-        profileDto.setNickName(account.getNickname());
-        profileDto.setHeadImgUrl(account.getHeadimgurl());
+
+        // 查询id
+        Region city = accountService.loadCityByName(profile.getCity());
+        Region province = accountService.loadProvinceByName(profile.getProvince());
+        profileDto.setCityId(city == null ? null : city.getId());
+        profileDto.setProvinceId(province == null ? null : province.getId());
+        boolean bindMobile = true;
+        //判断是否绑定手机号或者填写微信号
+        if (userInfo == null || (StringUtils.isEmpty(userInfo.getMobile())) && StringUtils.isEmpty(profile.getWeixinId())) {
+            bindMobile = false;
+        }
+        profileDto.setIsFull(profile.getIsFull() == 1);
+        profileDto.setNickName(profile.getNickname());
         profileDto.setBindMobile(bindMobile);
-        profileDto.setPhone(account.getMobileNo());
-        profileDto.setWeixinId(account.getWeixinId());
-        profileDto.setReceiver(account.getReceiver());
+        profileDto.setScore(ConfigUtils.getProfileFullScore());
+        if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {
+            profileDto.setCanSubmit(true);
+        } else {
+            profileDto.setCanSubmit(false);
+        }
+
         return WebUtils.result(profileDto);
     }
 
@@ -248,7 +263,11 @@ public class CustomerController {
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
-        accountService.submitPersonalCenterProfile(profile);
+        UserInfo userInfo = new UserInfo();
+        BeanUtils.copyProperties(profileDto, userInfo);
+        userInfo.setProfileId(unionUser.getId());
+        userInfo.setMobileNo(profileDto.getPhone());
+        accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
 
@@ -256,12 +275,15 @@ public class CustomerController {
     @ApiOperation("提交个人中心信息")
     public ResponseEntity<Map<String, Object>> submitNewProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-
+        UserInfo userInfo = new UserInfo();
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
         profile.setNickname(profileDto.getNickName());
-        accountService.submitNewProfile(profile);
+
+        BeanUtils.copyProperties(profileDto, userInfo);
+        userInfo.setProfileId(unionUser.getId());
+        accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
 

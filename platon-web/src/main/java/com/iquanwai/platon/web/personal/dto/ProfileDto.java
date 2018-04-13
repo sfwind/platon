@@ -34,9 +34,9 @@ public class ProfileDto {
     private Boolean bindMobile;
     @ApiModelProperty("真名")
     private String realName;
-    @ApiModelProperty("收件地址")
+    @ApiModelProperty("地址")
     private String address;
-    @ApiModelProperty("手机号码")
+    @ApiModelProperty("收件人手机号码")
     private String phone;
     @ApiModelProperty("微信id")
     private String weixinId;
@@ -56,4 +56,22 @@ public class ProfileDto {
     private String nickName;
     @ApiModelProperty("头像")
     private String headImgUrl;
+    @ApiModelProperty("用户手机号码")
+    private String mobile;
+    @ApiModelProperty("毕业院校")
+    private String college;
+    @ApiModelProperty("个人简介")
+    private String introduction;
+    @ApiModelProperty("是否显示收件信息")
+    private Boolean isShowInfo;
+    @ApiModelProperty("公司")
+    private String company;
+    @ApiModelProperty("邮箱")
+    private String email;
+    @ApiModelProperty("score")
+    private Integer score;
+    @ApiModelProperty("是否能提交")
+    private Boolean canSubmit;
+    @ApiModelProperty("完成比例")
+    private Integer rate;
 }

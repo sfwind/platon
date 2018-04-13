@@ -5,11 +5,13 @@ import com.iquanwai.platon.biz.domain.common.message.ActivityMsg;
 import com.iquanwai.platon.biz.domain.common.subscribe.SubscribeRouterService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
+import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.oauth.OAuthService;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
+import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.resolver.UnionUser;
@@ -52,6 +54,8 @@ public class IndexController {
     private SubscribeRouterService subscribeRouterService;
     @Autowired
     private ActivityMessageService activityMessageService;
+    @Autowired
+    private UserInfoService userInfoService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     // 商学院按钮url
@@ -77,7 +81,7 @@ public class IndexController {
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
     // 填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
-    private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goRise=true&goCamp=true";
+    private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goCamp=true";
     // 申请成功页面
     private static final String APPLY_SUCCESS = "/pay/apply";
     // 新学习页面
@@ -173,13 +177,14 @@ public class IndexController {
                 item.getMemberTypeId() == RiseMember.HALF_ELITE) || item.getMemberTypeId() == RiseMember.ANNUAL ||
                 item.getMemberTypeId() == RiseMember.HALF);
         Profile profile = accountService.getProfile(unionUser.getId());
+        UserInfo userInfo = userInfoService.loadByProfileId(unionUser.getId());
 
         if (!isMember) {
             response.sendRedirect(HOME_LANDING_PAGE);
             return null;
         }
 
-        if (isInfoInComplete(profile)) {
+        if (isPersonalInfoUnComplete(userInfo)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -255,8 +260,9 @@ public class IndexController {
         //是否买过或曾经买过 商学院/专业版
         Boolean isCampMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
         Profile profile = accountService.getProfile(unionUser.getId());
+        UserInfo userInfo = userInfoService.loadByProfileId(profile.getId());
 
-        if (isCampMember && isPersonalInfoInComplete(profile)) {
+        if (isCampMember && isPersonalInfoUnComplete(userInfo)) {
             // 未填写信息的已购买专项课的 “新” 会员
             response.sendRedirect(PROFILE_CAMP_SUBMIT);
             return null;
@@ -277,15 +283,17 @@ public class IndexController {
         return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
-    //所有信息是否完整
-    private boolean isInfoInComplete(Profile profile) {
-        return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
-                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
-    }
+//    //商学院用户所有信息是否完整
+//    private boolean isInfoUnComplete(UserInfo userInfo) {
+//        return userInfo == null
+//                || userInfo.getWorkingYear() == null || userInfo.getIndustry() == null || userInfo.getFunction() == null
+//                || userInfo.getRealName() == null || userInfo.getReceiver() == null || userInfo.getMobileNo() == null
+//                || userInfo.getAddress() == null;
+//    }
 
-    //个人信息是否完整
-    private boolean isPersonalInfoInComplete(Profile profile) {
-        return profile.getRealName() == null || (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
+    //个人信息是否完整(专项课)
+    private boolean isPersonalInfoUnComplete(UserInfo userInfo) {
+        return userInfo == null || userInfo.getWorkingYear() == null || userInfo.getIndustry() == null || userInfo.getFunction() == null;
     }
 
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)

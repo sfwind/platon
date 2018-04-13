@@ -4,6 +4,7 @@ import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.user.UserInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -86,12 +87,8 @@ public interface AccountService {
     /**
      * 在个人中心里提交用户信息
      */
-    void submitPersonalCenterProfile(Profile profile);
+    void submitPersonalCenterProfile(Profile profile, UserInfo userInfo);
 
-    /**
-     * 在新个人中心提交用户信息
-     */
-    void submitNewProfile(Profile profile);
 
     /**
      * 查看证书时提交用户信息
