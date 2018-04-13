@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface PracticePlanStatusManager {
     /** 根据 PlanId 完成 PracticePlan */
-    void completePracticePlan(Integer profileId, Integer practicePlanId);
+    void completePracticePlan(Integer profileId, PracticePlan practicePlan);
 
     /**
      * 查看小节的状态

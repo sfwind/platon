@@ -104,19 +104,13 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     }
 
     @Override
-    public void completePracticePlan(Integer profileId, Integer practicePlanId) {
-        PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
+    public void completePracticePlan(Integer profileId, PracticePlan practicePlan) {
         if (practicePlan == null) {
             return;
         }
 
-        // 学习计划 ImprovementPlan 的 id
-        int planId = practicePlan.getPlanId();
-
-        // 核实人员信息、并且将 status 改成 1，将该条记录置成完成
-        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
-        ImprovementPlan improvementPlan = improvementPlans.stream()
-                .filter(plan -> plan.getId() == planId).findAny().orElse(null);
+        int practicePlanId = practicePlan.getId();
+        ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
         if (improvementPlan != null) {
             // 神策打点
             tracePracticeComplete(profileId, practicePlan);
