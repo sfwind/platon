@@ -870,7 +870,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
             List<CourseSchedule> schedules = defaults.stream().map(item -> {
                 CourseSchedule schedule = new CourseSchedule();
                 schedule.setSelected(true);
-                schedule.setMonth(item.getMonth());
                 schedule.setProblemId(item.getProblemId());
                 schedule.setRecommend(item.getDefaultSelected());
                 schedule.setProfileId(profileId);
@@ -878,21 +877,30 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 schedule.setCategory(category);
                 schedule.setType(item.getType());
 
-                Integer year;
-                Integer month;
-                if (item.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
-                    // 新学员，以开营日来计算
-                    month = DateUtils.getMonth(riseMember.getOpenDate());
-                    year = DateUtils.getYear(riseMember.getOpenDate());
+                if (item.getMonth() == null) {
+                    // 没有月份
+                    Date date = DateUtils.afterYears(riseMember.getOpenDate(), Integer.valueOf(item.getInitChoice()));
+                    schedule.setMonth(DateUtils.getMonth(date));
+                    schedule.setYear(DateUtils.getYear(date));
                 } else {
-                    // 老学员
-                    year = 2017;
-                    month = 8;
+                    // 有月份
+                    Integer year;
+                    Integer month;
+                    if (item.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
+                        // 新学员，以开营日来计算
+                        month = DateUtils.getMonth(riseMember.getOpenDate());
+                        year = DateUtils.getYear(riseMember.getOpenDate());
+                    } else {
+                        // 老学员
+                        year = 2017;
+                        month = 8;
+                    }
+                    if (item.getMonth() < month) {
+                        year++;
+                    }
+                    schedule.setYear(year);
+                    schedule.setMonth(item.getMonth());
                 }
-                if (item.getMonth() < month) {
-                    year++;
-                }
-                schedule.setYear(year);
                 return schedule;
             }).collect(Collectors.toList());
             courseScheduleDao.batchInsertCourseSchedule(schedules);
