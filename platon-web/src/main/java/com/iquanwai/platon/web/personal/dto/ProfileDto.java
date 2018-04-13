@@ -37,7 +37,7 @@ public class ProfileDto {
     @ApiModelProperty("地址")
     private String address;
     @ApiModelProperty("收件人手机号码")
-    private String phone;
+    private String mobileNo;
     @ApiModelProperty("微信id")
     private String weixinId;
     @ApiModelProperty("收件人")
