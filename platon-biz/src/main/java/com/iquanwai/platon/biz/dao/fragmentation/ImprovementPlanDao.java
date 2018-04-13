@@ -295,8 +295,13 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId = ? AND ProblemId IN (" + produceQuestionMark(problemIds.size()) + ") AND Del = 0";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<ImprovementPlan>(ImprovementPlan.class);
+
+        List<Object> objects = Lists.newArrayList();
+        objects.add(profileId);
+        objects.addAll(problemIds);
+
         try {
-            return runner.query(sql, h, profileId, problemIds.toArray());
+            return runner.query(sql, h, objects.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
