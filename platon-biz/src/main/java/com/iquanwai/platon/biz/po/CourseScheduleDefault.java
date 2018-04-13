@@ -16,6 +16,7 @@ public class CourseScheduleDefault {
     private String monthTopic;
     private Boolean defaultSelected;
     private Integer memberTypeId;
+    private Integer Sequence;
 
 
     /**

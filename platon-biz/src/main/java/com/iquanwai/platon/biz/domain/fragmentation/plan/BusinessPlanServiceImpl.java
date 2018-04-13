@@ -879,7 +879,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
                 if (item.getMonth() == null) {
                     // 没有月份
-                    Date date = DateUtils.afterYears(riseMember.getOpenDate(), Integer.valueOf(item.getInitChoice()));
+                    Date date = DateUtils.afterMonths(riseMember.getOpenDate(), item.getSequence());
                     schedule.setMonth(DateUtils.getMonth(date));
                     schedule.setYear(DateUtils.getYear(date));
                 } else {
