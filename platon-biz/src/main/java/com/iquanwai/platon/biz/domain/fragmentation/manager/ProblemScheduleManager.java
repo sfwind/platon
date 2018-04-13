@@ -38,4 +38,23 @@ public interface ProblemScheduleManager {
      * @param month 月份
      */
     Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month);
+
+    /**
+     * 获取当前年月的主修课程
+     * @param profileId 学员 id
+     * @param memberTypeId 身份 id
+     * @param year 证书年份
+     * @param month 证书月份
+     * @return 主修课程 id 集合
+     */
+    List<Integer> getMajorProblemIds(Integer profileId, Integer memberTypeId, Integer year, Integer month);
+
+    /**
+     * 获取个人对应年月的所有主修课 id
+     * @param profileId 用户 id
+     * @param year 学习对应年份
+     * @param month 学习对应月份
+     * @return 所有主修课课程 id
+     */
+    List<Integer> getMajorProblemIds(Integer profileId, Integer year, Integer month);
 }

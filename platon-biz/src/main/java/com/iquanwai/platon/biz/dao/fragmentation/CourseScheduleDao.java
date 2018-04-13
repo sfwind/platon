@@ -75,6 +75,18 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+    public List<CourseSchedule> loadAllMajorScheduleByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Type = 1 AND Del = 0";
+        ResultSetHandler<List<CourseSchedule>> h = new BeanListHandler<>(CourseSchedule.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
     public int updateProblemSchedule(Integer profileId, Integer problemId, Integer year, Integer month) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE CourseSchedule SET Year = ?, Month = ? WHERE ProfileId = ? AND ProblemId = ? AND Del = 0";

@@ -25,16 +25,18 @@ public class RiseCertificateDao extends PracticeDBUtil {
 
     public int insert(RiseCertificate riseCertificate) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO RiseCertificate (ProfileId, Type, CertificateNo, Year, Month, GroupNo, ProblemName) VALUES " +
-                "( ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO RiseCertificate (ProfileId, MemberTypeId, Type, CertificateNo, Year, Month, GroupNo, ProblemId, ProblemName) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
                     riseCertificate.getProfileId(),
+                    riseCertificate.getMemberTypeId(),
                     riseCertificate.getType(),
                     riseCertificate.getCertificateNo(),
                     riseCertificate.getYear(),
                     riseCertificate.getMonth(),
                     riseCertificate.getGroupNo(),
+                    riseCertificate.getProblemId(),
                     riseCertificate.getProblemName());
             return result.intValue();
         } catch (SQLException e) {
@@ -78,12 +80,12 @@ public class RiseCertificateDao extends PracticeDBUtil {
         return -1;
     }
 
-    public List<RiseCertificate> loadUnNotifiedByMonthAndYear(Integer year, Integer month) {
+    public List<RiseCertificate> loadUnNotifiedByMonthAndYearAndMemberTypeId(Integer year, Integer month, Integer memberTypeId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from RiseCertificate where Year = ? and Month = ? and Notified=0 and Del=0";
+        String sql = "select * from RiseCertificate where Year = ? and Month = ? and MemberTypeId = ? AND Notified = 0 and Del=0";
         ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
         try {
-            return runner.query(sql, h, year, month);
+            return runner.query(sql, h, year, month, memberTypeId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -175,6 +177,18 @@ public class RiseCertificateDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage());
         }
         return null;
+    }
+
+    public List<RiseCertificate> loadExistRiseCertificates(Integer profileId, Integer year, Integer month) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM RiseCertificate WHERE ProfileId = ? AND Year = ? AND Month = ? AND Del = 0";
+        ResultSetHandler<List<RiseCertificate>> h = new BeanListHandler<>(RiseCertificate.class);
+        try {
+            return runner.query(sql, h, profileId, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 
 }

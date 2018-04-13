@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MemberType {
     private Integer id; // MemberId
-    private Double fee; // 会员费用
     private String name; // 会员名
+    private Double fee; // 会员费用
     private String description; // 描述
     private Integer openMonth; // 会员时长
     private String startTime; // 开启时间 非DB字段
     private String endTime; // 结束时间 非DB字段
 
-    public MemberType copy(){
+    public MemberType copy() {
         MemberType temp = new MemberType();
         temp.setId(this.id);
         temp.setFee(this.fee);

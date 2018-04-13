@@ -3,10 +3,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PersonalSchedulePlan;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -59,6 +56,8 @@ public class ScheduleController {
     private PlanService planService;
     @Autowired
     private CustomerService customerService;
+    @Autowired
+    private StudyService studyService;
 
     /**
      * 获取个人的学习计划
@@ -158,6 +157,7 @@ public class ScheduleController {
         dto.setTotalPoint(customerService.loadPersonalTotalPoint(unionUser.getId()));
         dto.setAnnounce(customerService.loadAnnounceMessage(unionUser.getId()));
         dto.setHasCourseSchedule(planService.loadAllCourseSchedules(unionUser.getId()).size() > 0);
+        dto.setCountDownElement(studyService.loadLatestCountDownElement(unionUser.getId()));
         return WebUtils.result(dto);
     }
 

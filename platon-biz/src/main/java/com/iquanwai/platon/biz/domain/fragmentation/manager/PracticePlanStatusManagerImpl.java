@@ -2,9 +2,11 @@ package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
+import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.util.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private CertificateService certificateService;
 
     private void tracePracticeComplete(Integer profileId, PracticePlan practicePlan) {
         switch (practicePlan.getType()) {
@@ -116,7 +120,9 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
         // 核实人员信息、并且将 status 改成 1，将该条记录置成完成
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
         ImprovementPlan improvementPlan = improvementPlans.stream()
-                .filter(plan -> plan.getId() == planId).findAny().orElse(null);
+                .filter(plan -> plan.getId() == planId)
+                .findAny().orElse(null);
+
         if (improvementPlan != null) {
             // 神策打点
             tracePracticeComplete(profileId, practicePlan);
@@ -137,14 +143,6 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
 
         List<PracticePlan> practicePlans = practicePlanDao.loadPracticePlan(practicePlan.getPlanId());
 
-        operationLogService.trace(profileId, "completePractice", () -> {
-            OperationLogService.Prop prop = OperationLogService.props();
-            prop.add("problemId", improvementPlan.getProblemId());
-            prop.add("series", practicePlan.getSeries());
-            prop.add("sequence", practicePlan.getSequence());
-            prop.add("practiceType", practicePlan.getType());
-            return prop;
-        });
         // 根据完成的 type 类型来进行解锁
         PracticePlan targetPracticePlan;
         switch (type) {
@@ -205,6 +203,20 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             default:
                 break;
         }
+
+        // 异步校验生成全勤奖
+        ThreadPool.execute(() -> {
+            certificateService.generatePersonalFullAttendance(planId);
+        });
+
+        operationLogService.trace(profileId, "completePractice", () -> {
+            OperationLogService.Prop prop = OperationLogService.props();
+            prop.add("problemId", improvementPlan.getProblemId());
+            prop.add("series", practicePlan.getSeries());
+            prop.add("sequence", practicePlan.getSequence());
+            prop.add("practiceType", practicePlan.getType());
+            return prop;
+        });
     }
 
     @Override

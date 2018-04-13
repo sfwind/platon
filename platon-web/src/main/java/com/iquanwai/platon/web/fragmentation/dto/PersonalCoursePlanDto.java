@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
+import com.iquanwai.platon.biz.domain.fragmentation.plan.CountDownElement;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PersonalSchedulePlan;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,4 +29,7 @@ public class PersonalCoursePlanDto {
     private String announce;
     @ApiModelProperty("是否制定学习计划")
     private Boolean hasCourseSchedule;
+    @ApiModelProperty("倒计时信息")
+    private CountDownElement countDownElement;
+
 }

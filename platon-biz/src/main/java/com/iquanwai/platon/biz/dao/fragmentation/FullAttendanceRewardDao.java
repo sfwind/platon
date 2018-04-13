@@ -25,14 +25,11 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
 
     public int insert(FullAttendanceReward fullAttendanceReward) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO FullAttendanceReward (ProfileId, ClassName, GroupId, MemberId, Year, Month, Amount) VALUES " +
-                "( ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO FullAttendanceReward (ProfileId, ProblemId, Year, Month, Amount) VALUES (?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
                     fullAttendanceReward.getProfileId(),
-                    fullAttendanceReward.getClassName(),
-                    fullAttendanceReward.getGroupId(),
-                    fullAttendanceReward.getMemberId(),
+                    fullAttendanceReward.getProblemId(),
                     fullAttendanceReward.getYear(),
                     fullAttendanceReward.getMonth(),
                     fullAttendanceReward.getAmount());
@@ -57,19 +54,15 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
 
     /**
      * 查询单个用户对应的全勤奖学金
-     * @param year
-     * @param month
-     * @param profileId
-     * @return
      */
-    public FullAttendanceReward loadUnNotifiedByYearMonthProfileId(Integer year,Integer month,Integer profileId){
+    public FullAttendanceReward loadUnNotifiedByYearMonthProfileId(Integer year, Integer month, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from FullAttendanceReward  where Year = ? AND Month = ? AND ProfileId = ? AND Notified = 0 AND Del = 0";
         ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
         try {
-            return runner.query(sql,h,year,month,profileId);
+            return runner.query(sql, h, year, month, profileId);
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
         return null;
     }
@@ -86,7 +79,7 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
         return null;
     }
 
-    public FullAttendanceReward loadFullAttendanceRewardByProfileId(Integer year,Integer month,Integer profileId){
+    public FullAttendanceReward loadFullAttendanceRewardByProfileId(Integer year, Integer month, Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM FullAttendanceReward WHERE ProfileId = ? AND Year = ? AND Month = ? AND Notified = 1 AND Del = 0";
         ResultSetHandler<FullAttendanceReward> h = new BeanHandler<>(FullAttendanceReward.class);
@@ -98,10 +91,6 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
         return null;
     }
 
-
-
-
-
     public int updateNotify(Integer fullAttendanceRewardId, Integer notified) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "UPDATE FullAttendanceReward SET Notified = ? WHERE Id = ?";
@@ -111,6 +100,18 @@ public class FullAttendanceRewardDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return -1;
+    }
+
+    public FullAttendanceReward loadFullAttendanceRewardByProblemId(Integer profileId, Integer problemId, Integer year, Integer month) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM FullAttendanceReward WHERE ProfileId = ? AND ProblemId = ? AND Year = ? AND Month = ? AND Del = 0";
+        ResultSetHandler<FullAttendanceReward> h = new BeanHandler<FullAttendanceReward>(FullAttendanceReward.class);
+        try {
+            return runner.query(sql, h, profileId, problemId, year, month);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
     }
 
 }

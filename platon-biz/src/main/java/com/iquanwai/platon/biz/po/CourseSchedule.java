@@ -16,6 +16,10 @@ public class CourseSchedule {
      */
     private Integer profileId;
     /**
+     * 学员身份 id
+     */
+    private Integer memberTypeId;
+    /**
      * 分类
      */
     private Integer category;

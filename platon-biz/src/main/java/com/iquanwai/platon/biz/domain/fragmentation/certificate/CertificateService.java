@@ -35,28 +35,19 @@ public interface CertificateService {
      */
     int updateDownloadTime(String certificateNo);
 
-    void generateCertificate(Integer year, Integer month);
-
     /**
-     * 将 RiseCertificate 表中没有上传图片的，生成图片并且上传到七牛云
+     * 生成单人全勤奖
+     * @param planId 课程 id
      */
-    void uploadCertificateToQiNiu(Boolean isOnline);
-
-    void generateFullAttendanceCoupon(Integer year, Integer month);
-
-    /**
-     * 生成单个全勤奖
-     */
-    void generateSingleFullAttendanceCoupon(Integer practicePlanId);
+    void generatePersonalFullAttendance(Integer planId);
 
     /**
      * 发送专项课证书通知
      * @param year 开营年份
      * @param month 开营月份
+     * @param memberTypeId 身份类型
      */
-    void sendCertificate(Integer year, Integer month);
-
-    void sendFullAttendanceCoupon(Integer year, Integer month);
+    void sendCertificate(Integer year, Integer month, Integer memberTypeId);
 
     /**
      * 获取我的证书
@@ -70,4 +61,30 @@ public interface CertificateService {
      * @param month 开营月份
      */
     void sendOfferMsg(Integer year, Integer month);
+
+    /**
+     * 根据选择的年月以及身份情况，生成对应的全勤奖
+     * @param year 生成奖学金年份
+     * @param month 生成奖学金月份
+     * @param memberTypeId 身份类型
+     */
+    void generateBatchFullAttendance(Integer year, Integer month, Integer memberTypeId);
+
+    /**
+     * 对指定身份类型，生成对于月份主修课程的结课证书
+     * @param year 生成结课证书的年份
+     * @param month 生成结课证书的月份
+     * @param memberTypeId 身份类型
+     */
+    void generateGraduateCertificateByMemberType(Integer year, Integer month, Integer memberTypeId);
+
+    /**
+     * 插入特殊人员证书
+     * @param memberIds 学号列表
+     * @param year 正在学习的人员
+     * @param month 正在学习的月份
+     * @param memberTypeId 身份类型
+     * @param type 证书类型
+     */
+    void insertSpecialCertificate(List<String> memberIds, Integer year, Integer month, Integer memberTypeId, Integer type);
 }

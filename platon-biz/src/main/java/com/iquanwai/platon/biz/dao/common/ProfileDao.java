@@ -319,4 +319,19 @@ public class ProfileDao extends DBUtil {
         }
         return false;
     }
+
+    public List<Profile> queryByMemberIds(List<String> memberIds) {
+        if (memberIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Profile WHERE MemberId IN (" + produceQuestionMark(memberIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<Profile>> h = new BeanListHandler<>(Profile.class);
+        try {
+            return runner.query(sql, h, memberIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

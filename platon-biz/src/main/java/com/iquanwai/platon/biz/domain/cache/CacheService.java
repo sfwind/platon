@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.cache;
 
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.MemberType;
 
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,12 @@ public interface CacheService {
      * 获取商学院计划每月主题
      */
     Map<Integer, String> loadMonthTopic(Integer category);
+
+    /**
+     * 获取售卖商品说明
+     * @return
+     */
+    List<MemberType> loadMemberTypes();
 
     /** 更新缓存 */
     void reload();
