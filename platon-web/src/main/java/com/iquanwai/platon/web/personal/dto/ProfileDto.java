@@ -72,6 +72,4 @@ public class ProfileDto {
     private Integer score;
     @ApiModelProperty("是否能提交")
     private Boolean canSubmit;
-    @ApiModelProperty("完成比例")
-    private Integer rate;
 }
