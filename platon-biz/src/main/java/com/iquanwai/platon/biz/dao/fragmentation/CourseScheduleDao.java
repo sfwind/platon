@@ -41,13 +41,13 @@ public class CourseScheduleDao extends PracticeDBUtil {
 
     public void batchInsertCourseSchedule(List<CourseSchedule> schedules) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category,Year, Month, Type, Recommend, Selected) " +
-                " VALUES (?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category,Year, Month, Type, Recommend, Selected,MemberTypeId) " +
+                " VALUES (?,?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[schedules.size()][];
             for (int i = 0; i < schedules.size(); i++) {
                 CourseSchedule courseSchedule = schedules.get(i);
-                param[i] = new Object[8];
+                param[i] = new Object[9];
                 param[i][0] = courseSchedule.getProfileId();
                 param[i][1] = courseSchedule.getProblemId();
                 param[i][2] = courseSchedule.getCategory();
@@ -56,6 +56,7 @@ public class CourseScheduleDao extends PracticeDBUtil {
                 param[i][5] = courseSchedule.getType();
                 param[i][6] = courseSchedule.getRecommend();
                 param[i][7] = courseSchedule.getSelected();
+                param[i][8] = courseSchedule.getMemberTypeId();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {
