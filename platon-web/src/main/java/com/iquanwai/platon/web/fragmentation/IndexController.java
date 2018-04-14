@@ -292,7 +292,7 @@ public class IndexController {
     //个人信息是否完整
     private boolean isPersonalInfoUnComplete(Profile profile,UserInfo userInfo) {
         return
-                userInfo==null || userInfo.getRealName() == null || (userInfo.getMobileNo() == null && profile.getWeixinId() == null) ;
+                userInfo==null || (userInfo.getMobileNo() == null && profile.getWeixinId() == null) ;
     }
 
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
