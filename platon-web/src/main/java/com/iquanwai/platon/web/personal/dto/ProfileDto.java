@@ -74,4 +74,5 @@ public class ProfileDto {
     private Boolean canSubmit;
     @ApiModelProperty("提交比例")
     private Integer rate;
+
 }

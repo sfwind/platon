@@ -153,6 +153,8 @@ public class CustomerController {
         } else {
             userStudyDto.setMemberTypeId(0);
         }
+        userStudyDto.setShowShare(accountService.isBusinessRiseMember(profileId));
+
         userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0, Integer::sum));
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
@@ -230,6 +232,7 @@ public class CustomerController {
         } else {
             profileDto.setMemberTypeId(0);
         }
+        profileDto.setIsShowInfo(accountService.isBusinessRiseMember(unionUser.getId()));
 
         // 查询id
         Region city = accountService.loadCityByName(profile.getCity());
@@ -250,6 +253,7 @@ public class CustomerController {
         } else {
             profileDto.setCanSubmit(false);
         }
+
 
         return WebUtils.result(profileDto);
     }
