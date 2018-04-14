@@ -107,7 +107,9 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId) {
         List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
-        boolean isBusinessRiseMember = accountService.isBusinessRiseMember(profileId);
+       // boolean isBusinessRiseMember = accountService.isBusinessRiseMember(profileId);
+        //todo:临时修改
+        boolean isBusinessRiseMember = accountService.getProfileRiseMember(profileId)==1;
         activitiesFlows = activitiesFlows.stream()
                 .map(activitiesFlow -> {
                     if (activitiesFlow.getStatus() == ActivitiesFlow.Status.PREPARE && activitiesFlow.getEndTime().compareTo(new Date()) < 0) {
