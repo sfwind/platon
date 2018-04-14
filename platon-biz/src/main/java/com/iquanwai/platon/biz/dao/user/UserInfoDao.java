@@ -71,4 +71,16 @@ public class UserInfoDao extends DBUtil {
         }
         return -1;
     }
+
+    public Integer updateIsFull(Integer profileId){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "Update UserInfo set IsFull = 1 where ProfileId = ? AND DEL = 0";
+
+        try {
+            return runner.update(sql,profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return  -1;
+    }
 }
