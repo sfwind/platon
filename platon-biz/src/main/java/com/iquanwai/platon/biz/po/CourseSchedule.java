@@ -69,8 +69,6 @@ public class CourseSchedule {
      */
     private Boolean adjustable;
 
-    private Integer memberTypeId;
-
 
     public interface Type {
         /**
