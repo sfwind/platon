@@ -244,7 +244,11 @@ public class CustomerController {
         if (userInfo == null || (StringUtils.isEmpty(userInfo.getMobile())) && StringUtils.isEmpty(profile.getWeixinId())) {
             bindMobile = false;
         }
-        profileDto.setIsFull(profile.getIsFull() == 1);
+        if(userInfo==null) {
+            profileDto.setIsFull(false);
+        }else {
+            profileDto.setIsFull(userInfo.getIsFull() == 1);
+        }
         profileDto.setNickName(profile.getNickname());
         profileDto.setBindMobile(bindMobile);
         profileDto.setScore(ConfigUtils.getProfileFullScore());

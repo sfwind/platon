@@ -64,4 +64,9 @@ public class UserInfo {
      * 提交完整比例（非DB字段）
      */
     private Integer rate;
+
+    /**
+     * 判断是否已经完整提交
+     */
+    private Integer isFull;
 }
