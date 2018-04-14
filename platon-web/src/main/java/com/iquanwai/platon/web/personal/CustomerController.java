@@ -232,7 +232,15 @@ public class CustomerController {
         } else {
             profileDto.setMemberTypeId(0);
         }
-        profileDto.setIsShowInfo(accountService.isBusinessRiseMember(unionUser.getId()));
+        //TODO:后期修改
+        Boolean isElite = accountService.isBusinessRiseMember(unionUser.getId());
+        profileDto.setIsShowInfo(isElite);
+        Boolean cansSkip = true;
+
+        if(isElite && (userInfo==null || userInfo.getAddress()==null ||userInfo.getRealName()==null || userInfo.getReceiver()==null)){
+            cansSkip = false;
+        }
+        profileDto.setCanSkip(cansSkip);
 
         // 查询id
         Region city = accountService.loadCityByName(profile.getCity());
@@ -252,6 +260,9 @@ public class CustomerController {
         profileDto.setNickName(profile.getNickname());
         profileDto.setBindMobile(bindMobile);
         profileDto.setScore(ConfigUtils.getProfileFullScore());
+
+
+
         if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {
             profileDto.setCanSubmit(true);
         } else {

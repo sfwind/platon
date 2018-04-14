@@ -74,5 +74,7 @@ public class ProfileDto {
     private Boolean canSubmit;
     @ApiModelProperty("提交比例")
     private Integer rate;
+    @ApiModelProperty("是否能跳过信息页")
+    private Boolean canSkip;
 
 }
