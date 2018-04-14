@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.dao.common;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
+import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.collections.CollectionUtils;
@@ -10,6 +11,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -75,6 +77,22 @@ public class ProfileDao extends DBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    public int insertProfile(Profile profile) throws SQLException {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName, RiseId, UnionId)" + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try {
+            Long insertRs = runner.insert(sql, new ScalarHandler<>(), profile.getOpenid(), profile.getNickname(), profile.getCity(), profile.getCountry(), profile.getProvince(), profile.getHeadimgurl(), profile.getMobileNo(), profile.getEmail(), profile.getIndustry(), profile.getFunction(), profile.getWorkingLife(), profile.getRealName(), profile.getRiseId(), profile.getUnionid());
+            return insertRs.intValue();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
+                throw e;
+            }
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
     }
 
     public int updateOpenRise(Integer id) {
@@ -196,7 +214,6 @@ public class ProfileDao extends DBUtil {
         return true;
     }
 
-    //TODO:CHECK
     public boolean submitNewProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set NickName = ?, City=?, Province=?," +
@@ -212,7 +229,6 @@ public class ProfileDao extends DBUtil {
         return true;
     }
 
-    //TODO:CHECK
     public boolean submitCertificateProfile(Profile profile) {
         QueryRunner run = new QueryRunner(getDataSource());
         String updateSql = "Update Profile Set WorkingLife=?, City=?, Province=?, RealName=? where id=?";
