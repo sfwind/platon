@@ -286,13 +286,13 @@ public class IndexController {
     //所有信息是否完整
     private boolean isInfoUnComplete(Profile profile,UserInfo userInfo) {
         return userInfo==null || userInfo.getAddress() == null || userInfo.getRealName() ==null || userInfo.getReceiver()==null ||
-                (userInfo.getMobileNo() == null && profile.getWeixinId() == null);
+                (userInfo.getMobile() == null && profile.getWeixinId() == null);
     }
 
     //个人信息是否完整
     private boolean isPersonalInfoUnComplete(Profile profile,UserInfo userInfo) {
         return
-                userInfo==null || (userInfo.getMobileNo() == null && profile.getWeixinId() == null) ;
+                userInfo==null || (userInfo.getMobile() == null && profile.getWeixinId() == null) ;
     }
 
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
