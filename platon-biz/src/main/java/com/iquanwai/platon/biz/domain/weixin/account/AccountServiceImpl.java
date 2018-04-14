@@ -307,7 +307,7 @@ public class AccountServiceImpl implements AccountService {
             userInfoDao.update(userInfo);
             //判断之前信息是否已经填写完整
             //如果未完整，则增加积分和更新isFull
-            if(userInfo.getIsFull()==0 && userInfo.getRate()==100){
+            if(existUserInfo.getIsFull()==0 && userInfo.getRate()==100){
                 logger.info(profile.getId()+"首次信息填写完整，增加积分");
                 pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
                 userInfoDao.updateIsFull(profile.getId());
