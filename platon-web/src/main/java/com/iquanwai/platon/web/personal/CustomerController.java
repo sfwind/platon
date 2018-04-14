@@ -213,7 +213,7 @@ public class CustomerController {
         UserInfo userInfo = userInfoService.loadByProfileId(profileId);
         if (userInfo != null) {
             BeanUtils.copyProperties(userInfo, profileDto);
-            profileDto.setMobileNo(userInfo.getMobileNo());
+            profileDto.setMobileNo(userInfo.getReceiverMobile());
         }
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
@@ -263,6 +263,7 @@ public class CustomerController {
         profile.setId(unionUser.getId());
         UserInfo userInfo = new UserInfo();
         BeanUtils.copyProperties(profileDto, userInfo);
+        userInfo.setReceiverMobile(profileDto.getMobileNo());
         userInfo.setProfileId(unionUser.getId());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
@@ -279,6 +280,7 @@ public class CustomerController {
         profile.setNickname(profileDto.getNickName());
 
         BeanUtils.copyProperties(profileDto, userInfo);
+        userInfo.setReceiverMobile(profileDto.getMobileNo());
         userInfo.setProfileId(unionUser.getId());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();

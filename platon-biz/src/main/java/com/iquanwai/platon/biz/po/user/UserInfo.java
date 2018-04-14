@@ -33,7 +33,7 @@ public class UserInfo {
     private String college;
 
     /**
-     * 毕业院校
+     * 联系人电话
      */
     private String mobile;
     /**
@@ -49,7 +49,7 @@ public class UserInfo {
     /**
      * 收件电话
      */
-    private String mobileNo;
+    private String receiverMobile;
     /**
      * 真实姓名
      */
