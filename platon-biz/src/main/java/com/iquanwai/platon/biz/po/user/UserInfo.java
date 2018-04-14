@@ -61,8 +61,7 @@ public class UserInfo {
     private String receiver;
 
     /**
-     * 信息完整率
+     * 提交完整比例（非DB字段）
      */
     private Integer rate;
-
 }

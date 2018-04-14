@@ -295,36 +295,23 @@ public class AccountServiceImpl implements AccountService {
 
         UserInfo existUserInfo = userInfoDao.loadByProfileId(profile.getId());
         //首次填写
-        if (existUserInfo == null) {
+        if(existUserInfo==null){
             userInfoDao.insert(userInfo);
-            if (userInfo.getRate() == 100) {
-                //增加积分
-                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
-                // 更新信息状态
+            //如果提交比例为100%，则更新isFull，增加积分
+            if(userInfo.getRate()==100){
+                logger.info(profile.getId()+"首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
                 profileDao.completeProfile(profile.getId());
-            } else {
-                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore() * userInfo.getRate() / 100);
             }
-        }
-        //之前信息已经完整
-        else if (existUserInfo.getRate() == 100) {
-            userInfo.setRate(100);
+        }else{
             userInfoDao.update(userInfo);
-        } else if (userInfo.getRate() == 100) {
-            userInfoDao.update(userInfo);
-            Integer point = ConfigUtils.getProfileFullScore() * (100 - existUserInfo.getRate()) / 100;
-            pointRepo.riseCustomerPoint(profile.getId(), point);
-            // 更新信息状态
-            profileDao.completeProfile(profile.getId());
-        } else {
-            logger.info("进入该方法");
-            userInfoDao.update(userInfo);
-            logger.info("userInfo:" + userInfo.getRate());
-            logger.info("existUser:" + existUserInfo.getRate());
-            Integer point = ConfigUtils.getProfileFullScore() * (userInfo.getRate() - existUserInfo.getRate()) / 100;
-            logger.info("point:" + point);
-            System.out.println("profileid:" + profile.getId());
-            pointRepo.riseCustomerPoint(profile.getId(), point);
+            //判断之前信息是否已经填写完整
+            //如果未完整，则增加积分和更新isFull
+            if(oldProfile.getIsFull()==0 && userInfo.getRate()==100){
+                logger.info(profile.getId()+"首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+                profileDao.completeProfile(profile.getId());
+            }
         }
     }
 
@@ -428,7 +415,6 @@ public class AccountServiceImpl implements AccountService {
                 UserInfo insertUser = new UserInfo();
                 insertUser.setProfileId(profileId);
                 insertUser.setMobile(smsValidCode.getPhone());
-                insertUser.setRate(0);
                 userInfoDao.insert(insertUser);
             } else {
                 userInfoDao.updateMobile(smsValidCode.getPhone(), profileId);

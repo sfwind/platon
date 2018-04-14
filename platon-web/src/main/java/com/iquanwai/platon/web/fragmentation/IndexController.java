@@ -184,7 +184,7 @@ public class IndexController {
             return null;
         }
 
-        if (isPersonalInfoUnComplete(userInfo)) {
+        if (isInfoUnComplete(profile,userInfo)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -262,7 +262,7 @@ public class IndexController {
         Profile profile = accountService.getProfile(unionUser.getId());
         UserInfo userInfo = userInfoService.loadByProfileId(profile.getId());
 
-        if (isCampMember && isPersonalInfoUnComplete(userInfo)) {
+        if (isCampMember && isPersonalInfoUnComplete(profile,userInfo)) {
             // 未填写信息的已购买专项课的 “新” 会员
             response.sendRedirect(PROFILE_CAMP_SUBMIT);
             return null;
@@ -283,17 +283,16 @@ public class IndexController {
         return courseView(request, response, channel, moduleShow, RISE_VIEW);
     }
 
-//    //商学院用户所有信息是否完整
-//    private boolean isInfoUnComplete(UserInfo userInfo) {
-//        return userInfo == null
-//                || userInfo.getWorkingYear() == null || userInfo.getIndustry() == null || userInfo.getFunction() == null
-//                || userInfo.getRealName() == null || userInfo.getReceiver() == null || userInfo.getMobileNo() == null
-//                || userInfo.getAddress() == null;
-//    }
+    //所有信息是否完整
+    private boolean isInfoUnComplete(Profile profile,UserInfo userInfo) {
+        return userInfo==null || userInfo.getAddress() == null || userInfo.getRealName() ==null || userInfo.getReceiver()==null ||
+                (userInfo.getMobileNo() == null && profile.getWeixinId() == null);
+    }
 
-    //个人信息是否完整(专项课)
-    private boolean isPersonalInfoUnComplete(UserInfo userInfo) {
-        return userInfo == null || userInfo.getWorkingYear() == null || userInfo.getIndustry() == null || userInfo.getFunction() == null;
+    //个人信息是否完整
+    private boolean isPersonalInfoUnComplete(Profile profile,UserInfo userInfo) {
+        return
+                userInfo==null || userInfo.getRealName() == null || (userInfo.getMobileNo() == null && profile.getWeixinId() == null) ;
     }
 
     @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)

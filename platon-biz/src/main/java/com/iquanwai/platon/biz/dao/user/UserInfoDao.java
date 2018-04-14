@@ -32,12 +32,12 @@ public class UserInfoDao extends DBUtil {
 
     public Integer insert(UserInfo userInfo){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO UserInfo(ProfileId,Industry,Function,WorkingYear,Company,College,Mobile,Introduction,Address,MobileNo,RealName,Receiver,Rate) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO UserInfo(ProfileId,Industry,Function,WorkingYear,Company,College,Mobile,Introduction,Address,MobileNo,RealName,Receiver) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try {
             Long result =  runner.insert(sql,new ScalarHandler<>(),userInfo.getProfileId(),userInfo.getIndustry(),userInfo.getFunction(),
                     userInfo.getWorkingYear(),userInfo.getCompany(),userInfo.getCollege(),userInfo.getMobile(),userInfo.getIntroduction(),
-                    userInfo.getAddress(),userInfo.getMobileNo(),userInfo.getRealName(),userInfo.getReceiver(),userInfo.getRate());
+                    userInfo.getAddress(),userInfo.getMobileNo(),userInfo.getRealName(),userInfo.getReceiver());
             return result.intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(),e);
@@ -48,12 +48,12 @@ public class UserInfoDao extends DBUtil {
 
     public Integer update(UserInfo userInfo){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "Update UserInfo SET Industry=?,Function=?,WorkingYear=?,Company = ?,College=?,Mobile=?,Introduction=?,Address = ?,MobileNo=?,RealName=?,Receiver=?,Rate=? WHERE ProfileId = ?";
+        String sql = "Update UserInfo SET Industry=?,Function=?,WorkingYear=?,Company = ?,College=?,Mobile=?,Introduction=?,Address = ?,MobileNo=?,RealName=?,Receiver=? WHERE ProfileId = ?";
         try {
             return runner.update(sql,userInfo.getIndustry(),userInfo.getFunction(),
                     userInfo.getWorkingYear(),userInfo.getCompany(),userInfo.getCollege(),
                     userInfo.getMobile(), userInfo.getIntroduction(), userInfo.getAddress(),
-                    userInfo.getMobileNo(),userInfo.getRealName(),userInfo.getReceiver(),userInfo.getRate(),userInfo.getProfileId());
+                    userInfo.getMobileNo(),userInfo.getRealName(),userInfo.getReceiver(),userInfo.getProfileId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(),e);
         }
@@ -71,12 +71,4 @@ public class UserInfoDao extends DBUtil {
         }
         return -1;
     }
-
-
-
-
-
-
-
-
 }

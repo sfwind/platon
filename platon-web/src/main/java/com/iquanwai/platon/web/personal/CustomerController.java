@@ -258,14 +258,12 @@ public class CustomerController {
     @ApiOperation("提交用户个人信息")
     public ResponseEntity<Map<String, Object>> submitProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
         UserInfo userInfo = new UserInfo();
         BeanUtils.copyProperties(profileDto, userInfo);
         userInfo.setProfileId(unionUser.getId());
-        userInfo.setMobileNo(profileDto.getMobileNo());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
