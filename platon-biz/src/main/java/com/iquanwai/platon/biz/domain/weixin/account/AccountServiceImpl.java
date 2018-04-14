@@ -559,6 +559,7 @@ public class AccountServiceImpl implements AccountService {
         return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
     }
 
+
     @Override
     public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
         List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberIds(memberIds);

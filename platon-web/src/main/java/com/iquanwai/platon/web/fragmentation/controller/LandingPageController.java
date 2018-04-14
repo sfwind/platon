@@ -53,7 +53,9 @@ public class LandingPageController {
 
 
         LandingPageDto dto = new LandingPageDto();
-        dto.setIsBusinessMember(accountService.isBusinessRiseMember(unionUser.getId()));
+        //dto.setIsBusinessMember(accountService.isBusinessRiseMember(unionUser.getId()));
+        //TODO:临时修改
+        dto.setIsBusinessMember(accountService.getProfileRiseMember(unionUser.getId())==1);
         dto.setIsShowPassNotify(applicationPass.getLeft());
         dto.setRemainTime(applicationPass.getRight());
         dto.setNotify(unReadCount != null && unReadCount > 0);
