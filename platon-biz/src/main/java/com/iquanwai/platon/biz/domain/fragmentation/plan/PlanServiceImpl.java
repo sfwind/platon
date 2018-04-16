@@ -47,6 +47,7 @@ import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
@@ -862,7 +863,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public String loadPlanSeriesTitle(Integer practicePlanId) {
+    public Pair<String, Integer> loadPlanSeriesInfo(Integer practicePlanId) {
         PracticePlan practicePlan = practicePlanDao.load(PracticePlan.class, practicePlanId);
         if (practicePlan == null) {
             return null;
@@ -891,7 +892,7 @@ public class PlanServiceImpl implements PlanService {
             String knowledgeStr = cacheService.getKnowledge(knowledgeId).getKnowledge();
             titleBuilder.append(knowledgeStr);
         }
-        return titleBuilder.toString();
+        return new ImmutablePair<>(titleBuilder.toString(), practicePlan.getSequence());
     }
 
     @Override

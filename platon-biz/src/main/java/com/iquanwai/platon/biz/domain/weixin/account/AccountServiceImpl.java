@@ -4,19 +4,18 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.*;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.user.UserInfoDao;
+
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
-import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +41,6 @@ public class AccountServiceImpl implements AccountService {
     private RegionDao regionDao;
     @Autowired
     private ProfileDao profileDao;
-    @Autowired
-    private RiseClassMemberDao riseClassMemberDao;
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
@@ -66,9 +62,10 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
-    private OperationLogService operationLogService;
-    @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private UserInfoDao userInfoDao;
+
 
     private List<Region> provinceList;
     private List<Region> cityList;
@@ -76,6 +73,7 @@ public class AccountServiceImpl implements AccountService {
     private static final String SUBSCRIBE_PUSH_PREFIX = "subscribe_push_";
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
 
     @Override
     public boolean initUserByUnionId(String unionId, Boolean realTime) {
@@ -252,30 +250,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void submitPersonalCenterProfile(Profile profile) {
+    public void submitPersonalCenterProfile(Profile profile, UserInfo userInfo) {
         Assert.notNull(profile, "profile 不能为空");
         Profile oldProfile = profileDao.load(Profile.class, profile.getId());
 
-        if (profile.getRealName() != null) {
-            oldProfile.setRealName(profile.getRealName());
-        }
-        if (profile.getAddress() != null) {
-            oldProfile.setAddress(profile.getAddress());
-        }
-        if (profile.getReceiver() != null) {
-            oldProfile.setReceiver(profile.getReceiver());
-        }
         if (profile.getMarried() != null) {
             oldProfile.setMarried(profile.getMarried());
-        }
-        if (profile.getFunction() != null) {
-            oldProfile.setFunction(profile.getFunction());
-        }
-        if (profile.getWorkingYear() != null) {
-            oldProfile.setWorkingYear(profile.getWorkingYear());
-        }
-        if (profile.getIndustry() != null) {
-            oldProfile.setIndustry(profile.getIndustry());
         }
         if (profile.getProvince() != null) {
             oldProfile.setProvince(profile.getProvince());
@@ -283,68 +263,33 @@ public class AccountServiceImpl implements AccountService {
         if (profile.getCity() != null) {
             oldProfile.setCity(profile.getCity());
         }
-        Boolean result = profileDao.submitPersonalCenterProfileWithMoreDetail(oldProfile);
-        if (result && oldProfile.getIsFull() == 0) {
-            logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
-            // 第一次提交，加分
-            pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
-            // 更新信息状态
-            profileDao.completeProfile(profile.getId());
+        if (profile.getEmail() != null) {
+            oldProfile.setEmail(profile.getEmail());
         }
-    }
+        if (profile.getWeixinId() != null) {
+            oldProfile.setWeixinId(profile.getWeixinId());
+        }
+        profileDao.submitPersonalCenterProfileWithMoreDetail(oldProfile);
 
-    @Override
-    public void submitNewProfile(Profile profile) {
-        Assert.notNull(profile, "profile 不能为空");
-        Profile oldProfile = profileDao.load(Profile.class, profile.getId());
-
-        if (profile.getRealName() != null) {
-            oldProfile.setRealName(profile.getRealName());
-            operationLogService.profileSet(oldProfile.getId(), "realname", profile.getRealName());
-        }
-        if (profile.getAddress() != null) {
-            oldProfile.setAddress(profile.getAddress());
-            operationLogService.profileSet(oldProfile.getId(), "address", profile.getAddress());
-        }
-        if (profile.getReceiver() != null) {
-            oldProfile.setReceiver(profile.getReceiver());
-            operationLogService.profileSet(oldProfile.getId(), "receiver", profile.getReceiver());
-        }
-        if (profile.getMarried() != null) {
-            oldProfile.setMarried(profile.getMarried());
-            operationLogService.profileSet(oldProfile.getId(), "married", profile.getMarried());
-        }
-        if (profile.getFunction() != null) {
-            oldProfile.setFunction(profile.getFunction());
-            operationLogService.profileSet(oldProfile.getId(), "married", profile.getMarried());
-        }
-        if (profile.getWorkingYear() != null) {
-            oldProfile.setWorkingYear(profile.getWorkingYear());
-            operationLogService.profileSet(oldProfile.getId(), "workingYear", profile.getWorkingYear());
-        }
-        if (profile.getIndustry() != null) {
-            oldProfile.setIndustry(profile.getIndustry());
-            operationLogService.profileSet(oldProfile.getId(), "industry", profile.getIndustry());
-        }
-        if (profile.getProvince() != null) {
-            oldProfile.setProvince(profile.getProvince());
-            operationLogService.profileSet(oldProfile.getId(), "province", profile.getProvince());
-        }
-        if (profile.getCity() != null) {
-            oldProfile.setCity(profile.getCity());
-            operationLogService.profileSet(oldProfile.getId(), "city", profile.getCity());
-        }
-        if (profile.getNickname() != null) {
-            oldProfile.setNickname(profile.getNickname());
-            operationLogService.profileSet(oldProfile.getId(), "nickname", profile.getNickname());
-        }
-        Boolean result = profileDao.submitNewProfile(oldProfile);
-        if (result && oldProfile.getIsFull() == 0) {
-            logger.info("用户:{} 完成个人信息填写,加{}积分", profile.getOpenid(), ConfigUtils.getProfileFullScore());
-            // 第一次提交，加分
-            pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
-            // 更新信息状态
-            profileDao.completeProfile(profile.getId());
+        UserInfo existUserInfo = userInfoDao.loadByProfileId(profile.getId());
+        //首次填写
+        if(existUserInfo==null){
+            userInfoDao.insert(userInfo);
+            //如果提交比例为100%，则更新isFull，增加积分
+            if(userInfo.getRate()==100){
+                logger.info(profile.getId()+"首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+                userInfoDao.updateIsFull(profile.getId());
+            }
+        }else{
+            userInfoDao.update(userInfo);
+            //判断之前信息是否已经填写完整
+            //如果未完整，则增加积分和更新isFull
+            if(existUserInfo.getIsFull()==0 && userInfo.getRate()==100){
+                logger.info(profile.getId()+"首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+                userInfoDao.updateIsFull(profile.getId());
+            }
         }
     }
 
@@ -443,7 +388,15 @@ public class AccountServiceImpl implements AccountService {
         }
 
         if (smsValidCode.getCode().equals(code)) {
-            profileDao.updateMobile(smsValidCode.getPhone(), profileId);
+            UserInfo userInfo = userInfoDao.loadByProfileId(profileId);
+            if (userInfo == null) {
+                UserInfo insertUser = new UserInfo();
+                insertUser.setProfileId(profileId);
+                insertUser.setMobile(smsValidCode.getPhone());
+                userInfoDao.insert(insertUser);
+            } else {
+                userInfoDao.updateMobile(smsValidCode.getPhone(), profileId);
+            }
             return true;
         } else {
             return false;
@@ -467,11 +420,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
-        RiseClassMember activeRiseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
-        if (activeRiseClassMember == null) {
-            activeRiseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
-        }
-        return activeRiseClassMember;
+        //TODO: 杨仁
+//        RiseClassMember activeRiseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
+//        if (activeRiseClassMember == null) {
+//            activeRiseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
+//        }
+//        return activeRiseClassMember;
+
+        return null;
     }
 
     @Override
@@ -537,6 +493,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
 
+
     @Override
     public String getOpenidByMemberId(String memberId) {
         Profile profile = profileDao.queryAccountByMemberId(memberId);
@@ -546,5 +503,6 @@ public class AccountServiceImpl implements AccountService {
             return profile.getOpenid();
         }
     }
+
 }
 

@@ -8,10 +8,6 @@ import java.util.Date;
 public interface GeneratePlanService {
     // 每节的应用练习数量
     int APPLICATION_TASK_NUMBER = 2;
-    //知识点顺序
-    int KNOWLEDGE_SEQUENCE = 1;
-    //巩固练习顺序
-    int WARMUP_SEQUENCE = 2;
     //课程最长开放时间
     int PROBLEM_MAX_LENGTH = 30;
 

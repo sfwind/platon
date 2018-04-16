@@ -3,26 +3,13 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationPracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.UserProblemSchedule;
-import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -36,10 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +53,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     private QuanwaiEmployeeDao quanwaiEmployeeDao;
     @Autowired
     private OperationLogService operationLogService;
+    @Autowired
+    private ProblemPreviewDao problemPreviewDao;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -136,12 +122,14 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlans.addAll(createIntroduction(problem, planId));
         // 生成小目标
         practicePlans.addAll(createChallengePractice(problem, planId));
+        // 生成课前思考
+        practicePlans.addAll(createPreviewPractice(planId, problemSchedules));
         // 生成知识点
         practicePlans.addAll(createKnowledge(planId, problemSchedules));
         // 生成巩固练习
         practicePlans.addAll(createWarmupPractice(planId, problemSchedules));
         // 生成应用练习
-        practicePlans.addAll(createApplicationPractice(problem, planId, problemSchedules));
+        practicePlans.addAll(createApplicationPractice(planId, problemSchedules));
         if (maxSeries != null) {
             practicePlans.stream().filter(item -> item.getSeries() > maxSeries).forEach(item -> item.setStatus(PracticePlan.STATUS.NEVER_UNLOCK));
         }
@@ -150,6 +138,30 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
 
         return planId;
+    }
+
+    private List<PracticePlan> createPreviewPractice(int planId, List<ProblemSchedule> problemScheduleList) {
+        List<PracticePlan> selected = Lists.newArrayList();
+
+        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
+            PracticePlan practicePlan = new PracticePlan();
+            ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
+            practicePlan.setUnlocked(false);
+            practicePlan.setPlanId(planId);
+            ProblemPreview problemPreview = problemPreviewDao.loadProblemPreview(problemSchedule.getId());
+            if (problemPreview != null) {
+                practicePlan.setPracticeId(problemPreview.getId() + "");
+                practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
+                int practiceSequence = problemSchedule.getPracticeSequence() + 1;
+                practicePlan.setSequence(practiceSequence);
+                problemSchedule.setPracticeSequence(practiceSequence);
+                practicePlan.setSeries(sequence);
+                practicePlan.setType(PracticePlan.PREVIEW);
+                selected.add(practicePlan);
+            }
+        }
+
+        return selected;
     }
 
     private List<PracticePlan> createIntroduction(Problem problem, Integer planId) {
@@ -183,7 +195,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
 
         for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             PracticePlan practicePlan = new PracticePlan();
-            Integer knowledgeId = problemScheduleList.get(sequence - 1).getKnowledgeId();
+            ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
+            Integer knowledgeId = problemSchedule.getKnowledgeId();
             practicePlan.setUnlocked(false);
             if (Knowledge.isReview(knowledgeId)) {
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
@@ -194,7 +207,9 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             practicePlan.setPlanId(planId);
             practicePlan.setPracticeId(knowledgeId.toString());
             practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
-            practicePlan.setSequence(KNOWLEDGE_SEQUENCE);
+            int practiceSequence = problemSchedule.getPracticeSequence() + 1;
+            practicePlan.setSequence(practiceSequence);
+            problemSchedule.setPracticeSequence(practiceSequence);
             practicePlan.setSeries(sequence);
             selected.add(practicePlan);
         }
@@ -250,7 +265,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         practicePlan.setType(PracticePlan.CHALLENGE);
         practicePlan.setPracticeId(problem.getId() + "");
         practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
-        practicePlan.setSequence(WARMUP_SEQUENCE + APPLICATION_TASK_NUMBER + 1);
+        practicePlan.setSequence(2);
         practicePlan.setSeries(0);
         selected.add(practicePlan);
 
@@ -264,9 +279,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
      * @param problemScheduleList 应用题课程计划
      * @return 课程计划对象
      */
-    private List<PracticePlan> createApplicationPractice(Problem problem, int planId,
+    private List<PracticePlan> createApplicationPractice(int planId,
                                                          List<ProblemSchedule> problemScheduleList) {
-        Assert.notNull(problem, "problem不能为空");
         List<PracticePlan> selectedPractice = Lists.newArrayList();
 
         for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
@@ -277,24 +291,25 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             List<ApplicationPractice> practices = applicationPracticeDao.loadPractice(knowledgeId, problemId);
             practices = practices.stream().filter(applicationPractice -> !applicationPractice.getDel()).collect(Collectors.toList());
             //设置应用练习
-            for (int i = 0; i < practices.size(); i++) {
-                ApplicationPractice applicationPractice = practices.get(i);
+            for (ApplicationPractice applicationPractice : practices) {
                 PracticePlan practicePlan = new PracticePlan();
                 practicePlan.setUnlocked(false);
                 practicePlan.setPlanId(planId);
                 if (applicationPractice != null) {
                     // TODO:附加题和应用题最好能合并
-                    if(applicationPractice.getType() == PracticePlan.APPLICATION_BASE){
+                    if (applicationPractice.getType() == PracticePlan.APPLICATION_BASE) {
                         if (applicationPractice.getSequence() == 1) {
                             practicePlan.setType(PracticePlan.APPLICATION_BASE);
                         } else {
                             practicePlan.setType(PracticePlan.APPLICATION_UPGRADED);
                         }
-                    }else{
+                    } else {
                         practicePlan.setType(applicationPractice.getType());
                     }
 
-                    practicePlan.setSequence(WARMUP_SEQUENCE + 1 + i);
+                    int practiceSequence = problemSchedule.getPracticeSequence() + 1;
+                    practicePlan.setSequence(practiceSequence);
+                    problemSchedule.setPracticeSequence(practiceSequence);
                     practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
                     //设置节序号
                     practicePlan.setSeries(sequence);
@@ -333,11 +348,12 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             } else {
                 practicePlan.setType(PracticePlan.WARM_UP_REVIEW);
             }
-            practicePlan.setSequence(WARMUP_SEQUENCE);
+            int practiceSequence = problemSchedule.getPracticeSequence() + 1;
+            practicePlan.setSequence(practiceSequence);
+            problemSchedule.setPracticeSequence(practiceSequence);
             practicePlan.setSeries(sequence);
             practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
             practicePlan.setKnowledgeId(problemSchedule.getKnowledgeId());
-//            practicePlan.setSummary(false);
             int problemId = problemSchedule.getProblemId();
             List<WarmupPractice> practices = warmupPracticeDao.loadPractice(knowledgeId, problemId);
             //设置巩固练习的id

@@ -65,11 +65,11 @@ public class PracticePlan {
         if (isPreview(type)) {
             return "课前思考";
         } else if (isKnowledge(type)) {
-            return "知识点";
+            return "知识学习";
         } else if (isWarmupPractice(type)) {
-            return "选择题";
+            return "知识测验";
         } else if (isApplicationPractice(type)) {
-            return "应用题";
+            return "实战演练";
         }
 
         //默认

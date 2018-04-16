@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
+import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
@@ -21,6 +22,7 @@ import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
@@ -99,6 +101,8 @@ public class CustomerController {
     private UnionUserService unionUserService;
     @Autowired
     private StudyService studyService;
+    @Autowired
+    private UserInfoService userInfoService;
 
     private final static int classSize = 6;
 
@@ -156,6 +160,8 @@ public class CustomerController {
         } else {
             userStudyDto.setMemberTypeId(0);
         }
+        userStudyDto.setShowShare(CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId)));
+
         userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0, Integer::sum));
         userStudyDto.setPoint(profile.getPoint());
         Integer certificateSum = certificateService.getCertificates(profileId).size();
@@ -208,18 +214,17 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> loadProfile(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户信息不能为空");
 
+        Integer profileId = unionUser.getId();
         ProfileDto profileDto = new ProfileDto();
-        Profile profile = accountService.getProfile(unionUser.getId());
+
+        Profile profile = accountService.getProfile(profileId);
 
         BeanUtils.copyProperties(profile, profileDto);
-        // 查询id
-        Region city = accountService.loadCityByName(profile.getCity());
-        Region province = accountService.loadProvinceByName(profile.getProvince());
-        profileDto.setCityId(city == null ? null : city.getId());
-        profileDto.setProvinceId(province == null ? null : province.getId());
-        boolean bindMobile = true;
-        if (StringUtils.isEmpty(profile.getMobileNo()) && StringUtils.isEmpty(profile.getWeixinId())) {
-            bindMobile = false;
+        UserInfo userInfo = userInfoService.loadByProfileId(profileId);
+        if (userInfo != null) {
+            BeanUtils.copyProperties(userInfo, profileDto);
+            profileDto.setMobileNo(userInfo.getReceiverMobile());
+
         }
 
         RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
@@ -236,14 +241,44 @@ public class CustomerController {
         } else {
             profileDto.setMemberTypeId(0);
         }
-        profileDto.setRiseId(profile.getRiseId());
-        profileDto.setIsFull(profile.getIsFull() == 1);
+
+        Boolean isElite = CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId));
+        profileDto.setIsShowInfo(isElite);
+        Boolean cansSkip = true;
+
+        if(isElite && (userInfo==null || userInfo.getAddress()==null ||userInfo.getRealName()==null || userInfo.getReceiver()==null)){
+            cansSkip = false;
+        }
+        profileDto.setCanSkip(cansSkip);
+
+        // 查询id
+        Region city = accountService.loadCityByName(profile.getCity());
+        Region province = accountService.loadProvinceByName(profile.getProvince());
+        profileDto.setCityId(city == null ? null : city.getId());
+        profileDto.setProvinceId(province == null ? null : province.getId());
+        boolean bindMobile = true;
+        //判断是否绑定手机号或者填写微信号
+        if (userInfo == null || (StringUtils.isEmpty(userInfo.getMobile())) && StringUtils.isEmpty(profile.getWeixinId())) {
+            bindMobile = false;
+        }
+        if(userInfo==null) {
+            profileDto.setIsFull(false);
+        }else {
+            profileDto.setIsFull(userInfo.getIsFull() == 1);
+        }
         profileDto.setNickName(profile.getNickname());
-        profileDto.setHeadImgUrl(profile.getHeadimgurl());
         profileDto.setBindMobile(bindMobile);
-        profileDto.setPhone(profile.getMobileNo());
-        profileDto.setWeixinId(profile.getWeixinId());
-        profileDto.setReceiver(profile.getReceiver());
+        profileDto.setScore(ConfigUtils.getProfileFullScore());
+
+
+
+        if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {
+            profileDto.setCanSubmit(true);
+        } else {
+            profileDto.setCanSubmit(false);
+        }
+
+
         return WebUtils.result(profileDto);
     }
 
@@ -251,11 +286,14 @@ public class CustomerController {
     @ApiOperation("提交用户个人信息")
     public ResponseEntity<Map<String, Object>> submitProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
-        accountService.submitPersonalCenterProfile(profile);
+        UserInfo userInfo = new UserInfo();
+        BeanUtils.copyProperties(profileDto, userInfo);
+        userInfo.setReceiverMobile(profileDto.getMobileNo());
+        userInfo.setProfileId(unionUser.getId());
+        accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
 
@@ -263,12 +301,16 @@ public class CustomerController {
     @ApiOperation("提交个人中心信息")
     public ResponseEntity<Map<String, Object>> submitNewProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-
+        UserInfo userInfo = new UserInfo();
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
         profile.setNickname(profileDto.getNickName());
-        accountService.submitNewProfile(profile);
+
+        BeanUtils.copyProperties(profileDto, userInfo);
+        userInfo.setReceiverMobile(profileDto.getMobileNo());
+        userInfo.setProfileId(unionUser.getId());
+        accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
 

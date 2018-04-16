@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.common.subscribe.SubscribeRouterService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
+import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
@@ -14,6 +15,7 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.SubscribeRouterConfig;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.po.interlocution.InterlocutionAnswer;
+import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -61,6 +63,9 @@ public class IndexController {
     private RiseMemberManager riseMemberManager;
     @Autowired
     private ApplyService applyService;
+    @Autowired
+    private UserInfoService userInfoService;
+
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     // 商学院按钮url
@@ -82,11 +87,13 @@ public class IndexController {
     private static final String QUANQUAN_ANSWER = "/rise/static/guest/inter/quan/answer?date=";
     // 填写信息页面
     private static final String PROFILE_SUBMIT = "/rise/static/customer/profile?goRise=true";
-    private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goRise=true&goCamp=true";
     // 申请核心课成功页面
     private static final String APPLY_CORE_SUCCESS = "/pay/apply?goodsId=3";
     // 申请思维课成功页面
     private static final String APPLY_THOUGHT_SUCCESS = "/pay/apply?goodsId=8";
+
+    private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goCamp=true";
+
     // 新学习页面
     private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
 
@@ -160,6 +167,7 @@ public class IndexController {
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
         Profile profile = accountService.getProfile(unionUser.getId());
+        UserInfo userInfo = userInfoService.loadByProfileId(unionUser.getId());
 
         if (!isMember) {
             response.sendRedirect(HOME_LANDING_PAGE);
@@ -170,8 +178,7 @@ public class IndexController {
         boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
-
-        if (isInfoInComplete(profile)) {
+        if (isInfoUnComplete(profile,userInfo)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -229,8 +236,9 @@ public class IndexController {
         //是否买过专业版
         Boolean isCampMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
         Profile profile = accountService.getProfile(unionUser.getId());
+        UserInfo userInfo = userInfoService.loadByProfileId(profile.getId());
 
-        if (isCampMember && isPersonalInfoInComplete(profile)) {
+        if (isCampMember && isPersonalInfoUnComplete(profile,userInfo)) {
             // 未填写信息的已购买专项课的 “新” 会员
             response.sendRedirect(PROFILE_CAMP_SUBMIT);
             return null;
@@ -248,14 +256,15 @@ public class IndexController {
     }
 
     //所有信息是否完整
-    private boolean isInfoInComplete(Profile profile) {
-        return profile.getAddress() == null || profile.getRealName() == null || profile.getReceiver() == null ||
-                (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
+    private boolean isInfoUnComplete(Profile profile,UserInfo userInfo) {
+        return userInfo==null || userInfo.getAddress() == null || userInfo.getRealName() ==null || userInfo.getReceiver()==null ||
+                (userInfo.getMobile() == null && profile.getWeixinId() == null);
     }
 
     //个人信息是否完整
-    private boolean isPersonalInfoInComplete(Profile profile) {
-        return profile.getRealName() == null || (profile.getMobileNo() == null && profile.getWeixinId() == null) || profile.getIsFull() == 0;
+    private boolean isPersonalInfoUnComplete(Profile profile,UserInfo userInfo) {
+        return
+                userInfo==null || (userInfo.getMobile() == null && profile.getWeixinId() == null) ;
     }
 
     /**
@@ -344,9 +353,9 @@ public class IndexController {
                 resourceUrl = ConfigUtils.staticResourceUrl(domainName);
         }
 
-        //设置渠道漏洞监控参数,浏览器关闭后cookie自动失效
+        // FIX BUG
         if (channel != null) {
-            CookieUtils.addCookie("_tm", channel, response);
+            CookieUtils.removeCookie("_tm", channel, response);
         }
 
         if (request.getParameter("debug") != null) {

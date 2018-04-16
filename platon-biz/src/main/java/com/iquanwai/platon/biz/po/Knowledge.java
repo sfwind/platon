@@ -33,7 +33,7 @@ public class Knowledge {
     private String videoPoster;//视频第一帧
     private String videoWords;//视频文字
     private Integer audioId; // 语音id
-    private String audioWords;
+    private String audioWords; //语音文字
     private Integer appear; //非db字段,是否出现过
     private WarmupPractice example; //非db字段 例题
 

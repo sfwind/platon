@@ -26,4 +26,6 @@ public class UserStudyDto {
     private Integer point;
     @ApiModelProperty("会员类型")
     private Integer memberTypeId;
+    @ApiModelProperty("是否展示分享商学院")
+    private Boolean showShare;
 }
