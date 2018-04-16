@@ -121,11 +121,12 @@ public class CustomerController {
         } else {
             profile.setRoleName(0);
         }
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if (riseClassMember != null) {
-            profile.setClassName(riseClassMember.getClassName());
-            profile.setGroupId(riseClassMember.getGroupId());
-        }
+        //TODO:修改班级和小组
+//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
+//        if (riseClassMember != null) {
+//            profile.setClassName(riseClassMember.getClassName());
+//            profile.setGroupId(riseClassMember.getGroupId());
+//        }
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
         List<RiseMember> members = riseMemberManager.member(unionUser.getId());
@@ -146,20 +147,17 @@ public class CustomerController {
         Profile profile = accountService.getProfile(profileId);
         userStudyDto.setNickName(profile.getNickname());
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
-        if (riseClassMember != null) {
-            userStudyDto.setMemberId(riseClassMember.getMemberId());
-            String className = riseClassMember.getClassName();
-            if (className != null && className.length() >= classSize) {
-                userStudyDto.setClassName(getClassName(className));
-            }
-        }
+        userStudyDto.setMemberId(profile.getMemberId());
+
+
+        //TODO:待修改
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
         if (riseMember != null) {
             userStudyDto.setMemberTypeId(riseMember.getMemberTypeId());
         } else {
             userStudyDto.setMemberTypeId(0);
         }
+
         userStudyDto.setShowShare(CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId)));
 
         userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0, Integer::sum));
@@ -193,11 +191,7 @@ public class CustomerController {
         riseDto.setIsRiseMember(profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP);
         riseDto.setNickName(profile.getNickname());
         riseDto.setHeadImgUrl(profile.getHeadimgurl());
-
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if (riseClassMember != null) {
-            riseDto.setMemberId(profile.getMemberId());
-        }
+        riseDto.setMemberId(profile.getMemberId());
 
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
         if (riseMember != null) {
@@ -227,14 +221,15 @@ public class CustomerController {
 
         }
 
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if (riseClassMember != null) {
-            profileDto.setMemberId(profile.getMemberId());
-            String className = riseClassMember.getClassName();
-            if (className != null && className.length() >= classSize) {
-                profileDto.setClassName(getClassName(className));
-            }
-        }
+        //TODO:获得学号
+//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
+//        if (riseClassMember != null) {
+//            profileDto.setMemberId(profile.getMemberId());
+//            String className = riseClassMember.getClassName();
+//            if (className != null && className.length() >= classSize) {
+//                profileDto.setClassName(getClassName(className));
+//            }
+//        }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
         if (riseMember != null) {
             profileDto.setMemberTypeId(riseMember.getMemberTypeId());

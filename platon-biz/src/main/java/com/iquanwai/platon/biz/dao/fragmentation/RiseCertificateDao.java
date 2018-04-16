@@ -26,7 +26,7 @@ public class RiseCertificateDao extends PracticeDBUtil {
     public int insert(RiseCertificate riseCertificate) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "INSERT INTO RiseCertificate (ProfileId, MemberTypeId, Type, CertificateNo, Year, Month, GroupNo, ProblemId, ProblemName) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?)";
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             Long result = runner.insert(sql, new ScalarHandler<>(),
                     riseCertificate.getProfileId(),
