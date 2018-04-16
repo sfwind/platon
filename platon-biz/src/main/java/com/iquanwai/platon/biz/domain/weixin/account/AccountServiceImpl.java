@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -273,21 +274,21 @@ public class AccountServiceImpl implements AccountService {
 
         UserInfo existUserInfo = userInfoDao.loadByProfileId(profile.getId());
         //首次填写
-        if(existUserInfo==null){
+        if (existUserInfo == null) {
             userInfoDao.insert(userInfo);
             //如果提交比例为100%，则更新isFull，增加积分
-            if(userInfo.getRate()==100){
-                logger.info(profile.getId()+"首次信息填写完整，增加积分");
-                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+            if (userInfo.getRate() == 100) {
+                logger.info(profile.getId() + "首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
                 userInfoDao.updateIsFull(profile.getId());
             }
-        }else{
+        } else {
             userInfoDao.update(userInfo);
             //判断之前信息是否已经填写完整
             //如果未完整，则增加积分和更新isFull
-            if(existUserInfo.getIsFull()==0 && userInfo.getRate()==100){
-                logger.info(profile.getId()+"首次信息填写完整，增加积分");
-                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+            if (existUserInfo.getIsFull() == 0 && userInfo.getRate() == 100) {
+                logger.info(profile.getId() + "首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
                 userInfoDao.updateIsFull(profile.getId());
             }
         }
@@ -447,7 +448,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Integer loadUserScheduleCategory(Integer profileId) {
-        CourseSchedule courseSchedule = courseScheduleDao.loadOldestCourseSchedule(profileId);
+        // TODO 修复因为其他课表原因导致不能正常显示的问题
+        CourseSchedule courseSchedule = courseScheduleDao.loadOldestCoreCourseSchedule(profileId);
         if (courseSchedule != null) {
             return courseSchedule.getCategory();
         }
@@ -479,7 +481,6 @@ public class AccountServiceImpl implements AccountService {
         // TODO: 杨仁
         return riseMemberDao.loadValidRiseMember(profileId);
     }
-
 
 
     @Override

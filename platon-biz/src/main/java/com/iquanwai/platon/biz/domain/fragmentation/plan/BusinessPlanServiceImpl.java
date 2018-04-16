@@ -258,7 +258,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Override
     public List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId) {
         List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-        courseSchedules = courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMemberTypeId() == RiseMember.ELITE).collect(Collectors.toList());
+        // courseSchedules = courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMemberTypeId() == RiseMember.ELITE).collect(Collectors.toList());
 
         courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
 
@@ -278,7 +278,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (CourseScheduleDefault.CategoryType.OLD_STUDENT == category) {
             startMonth = 8;
         } else {
-            CourseSchedule oldestCourseSchedule = courseScheduleDao.loadOldestCourseSchedule(profileId);
+            CourseSchedule oldestCourseSchedule = courseScheduleDao.loadOldestCoreCourseSchedule(profileId);
             if (oldestCourseSchedule != null) {
                 startMonth = oldestCourseSchedule.getMonth();
             } else {
