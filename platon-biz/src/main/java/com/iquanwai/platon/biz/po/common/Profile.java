@@ -25,6 +25,7 @@ public class Profile {
     private String realName; //真名
     private String signature; //签名
     private Integer point; //总积分
+    @Deprecated
     private Integer isFull; //资料是否填写完毕
     private String riseId; //riseid
     private Boolean openRise; // 是否打开过rise

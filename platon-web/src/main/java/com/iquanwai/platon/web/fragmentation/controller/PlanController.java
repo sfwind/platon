@@ -436,13 +436,14 @@ public class PlanController {
     public ResponseEntity<Map<String, Object>> loadPlanSeriesStatus(UnionUser unionUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(unionUser, "登录用户不能为空");
         List<PlanSeriesStatus> planSeriesStatuses = planService.loadPlanSeries(practicePlanId);
-        String planSeriesTitle = planService.loadPlanSeriesTitle(practicePlanId);
+        Pair<String, Integer> planSeriesInfo = planService.loadPlanSeriesInfo(practicePlanId);
 
         if (planSeriesStatuses.size() == 0) {
             return WebUtils.error("小节数据完成情况为空");
         } else {
             SectionProgressDto sectionProgressDto = new SectionProgressDto();
-            sectionProgressDto.setPlanSeriesTitle(planSeriesTitle);
+            sectionProgressDto.setPlanSeriesTitle(planSeriesInfo.getLeft());
+            sectionProgressDto.setIndex(planSeriesInfo.getRight());
             sectionProgressDto.setPlanSeriesStatuses(planSeriesStatuses);
             return WebUtils.result(sectionProgressDto);
         }

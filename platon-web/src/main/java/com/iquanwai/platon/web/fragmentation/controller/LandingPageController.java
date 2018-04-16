@@ -57,7 +57,7 @@ public class LandingPageController {
 
         List<LandingPageBanner> pageBanners = flowService.loadLandingPageBanners();
         List<ProblemsFlow> problemsFlows = flowService.loadProblemsFlow(unionUser.getId());
-        List<LivesFlow> livesFlows = flowService.loadLivesFlow(unionUser.getId(), 4);
+        List<LivesFlow> livesFlows = flowService.loadLivesFlow(unionUser.getId(), 6);
         List<ArticlesFlow> articlesFlows = flowService.loadArticlesFlow(unionUser.getId(), 4, false);
         List<ActivitiesFlow> activitiesFlows = flowService.loadActivitiesFlow(unionUser.getId(), 4);
 
