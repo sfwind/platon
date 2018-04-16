@@ -20,4 +20,5 @@ public class StudyLine {
     private Integer problemType; //课程类型 1-主修 2-辅修
     private Integer status; //状态 1-进行中 2-结束 3-关闭
     private Boolean grade; //是否打分
+    private String problemPic;//课程介绍图
 }
