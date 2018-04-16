@@ -3,12 +3,14 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.web.fragmentation.dto.*;
@@ -18,6 +20,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +52,8 @@ public class ProblemController {
     @Autowired
     private AccountService accountService;
     @Autowired
+    private RiseMemberManager riseMemberManager;
+    @Autowired
     private PracticeService practiceService;
 
     @RequestMapping(value = "/list/unchoose", method = RequestMethod.GET)
@@ -56,6 +62,7 @@ public class ProblemController {
         Assert.notNull(unionUser, "用户不能为空");
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
+
         //TODO:专业版可以学习problemId = 5, 11, 13
         List<Integer> problemIds = problems.stream().map(Problem::getId).collect(Collectors.toList());
         // 逻辑谬误
@@ -132,9 +139,10 @@ public class ProblemController {
         result.setHotList(hotList);
         result.setName(unionUser.getNickName());
         result.setCatalogList(catalogListDtos);
-        result.setRiseMember(accountService.getProfileRiseMember(unionUser.getId()) != 0);
+        // TODO: 待验证
+        List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
+        result.setRiseMember(CollectionUtils.isNotEmpty(riseMembers));
         result.setBanners(problemService.loadExploreBanner());
-
         return WebUtils.result(result);
     }
 
@@ -165,11 +173,10 @@ public class ProblemController {
         return rightScore > leftScore ? 1 : -1;
     }
 
-    @RequestMapping(value = "/list/{catalog}", method = RequestMethod.GET)
+    @RequestMapping(value ="/list/{catalog}", method = RequestMethod.GET)
     @ApiOperation("获取某个分类的课程")
     @ApiImplicitParams({@ApiImplicitParam(name = "catalogId", value = "类别id")})
-    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(UnionUser unionUser,
-                                                                    @PathVariable(value = "catalog") Integer catalogId) {
+    public ResponseEntity<Map<String, Object>> loadUnChooseProblems(UnionUser unionUser, @PathVariable(value = "catalog") Integer catalogId) {
         Assert.notNull(unionUser, "用户不能为空");
         Assert.notNull(catalogId, "课程分类不能为空");
 
@@ -250,12 +257,13 @@ public class ProblemController {
         return WebUtils.result(list);
     }
 
-    @RequestMapping(value = "/get/{problemId}", method = RequestMethod.GET)
+    @RequestMapping(value ="/get/{problemId}", method = RequestMethod.GET)
     @ApiOperation("获取的课程信息")
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
     public ResponseEntity<Map<String, Object>> loadProblem(UnionUser unionUser, @PathVariable Integer problemId) {
         Assert.notNull(unionUser, "用户不能为空");
         Problem problem = problemService.getProblemForSchedule(problemId, unionUser.getId());
+
         return WebUtils.result(problem);
     }
 
@@ -284,17 +292,22 @@ public class ProblemController {
 
         dto.setButtonStatus(buttonStatus);
         dto.setProblem(problem);
+        Profile profile = accountService.getProfile(unionUser.getId());
+        dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
+        dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
+
+        dto.setProblemCollected(problemService.hasCollectedProblem(unionUser.getId(), problemId));
 
         return WebUtils.result(dto);
     }
 
-    @RequestMapping(value = "/grade/{problemId}", method = RequestMethod.POST)
+    @RequestMapping(value ="/grade/{problemId}", method = RequestMethod.POST)
     @ApiOperation("获取的课程信息")
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
-    public ResponseEntity<Map<String, Object>> gradeScore(UnionUser unionUser, @PathVariable Integer problemId,
-                                                          @RequestBody List<ProblemScore> problemScores) {
+    public ResponseEntity<Map<String, Object>> gradeScore(UnionUser unionUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores) {
         Assert.notNull(unionUser, "用户不能为空");
         problemService.gradeProblem(problemId, unionUser.getId(), problemScores);
+
         return WebUtils.success();
     }
 
@@ -304,6 +317,7 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemExtension(UnionUser unionUser, @PathVariable Integer problemId) {
         Assert.notNull(unionUser, "用户不能为空");
         Assert.notNull(problemId, "请求 ProblemId 不能为空");
+
         ProblemExtension extension = problemService.loadProblemExtensionByProblemId(problemId);
         List<ProblemActivity> activities = problemService.loadProblemActivitiesByProblemId(problemId);
         if (extension != null && activities != null) {
@@ -331,13 +345,15 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemCards(UnionUser unionUser, @PathVariable Integer planId) {
         Assert.notNull(unionUser, "登录用户不能为空");
         Pair<Problem, List<EssenceCard>> essenceCards = problemService.loadProblemCardsByPlanId(planId);
+
         if (essenceCards == null) {
             return WebUtils.error("未找到当前课程相关卡包信息");
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
-                int riseMemberType = accountService.getProfileRiseMember(unionUser.getId());
-                dto.setIsRiseMember(riseMemberType == 1);
+                // TODO: 待验证
+                List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
+                dto.setIsRiseMember(CollectionUtils.isNotEmpty(riseMembers));
                 dto.setProblemId(essenceCards.getLeft().getId());
                 dto.setProblem(essenceCards.getLeft().getProblem());
             }
@@ -349,11 +365,10 @@ public class ProblemController {
     @RequestMapping(value = "/card/{problemId}/{chapterId}", method = RequestMethod.GET)
     @ApiOperation("获取某一张卡片的base64信息")
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id"),
-            @ApiImplicitParam(name = "chapterId", value = "章id")})
-    public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(UnionUser unionUser,
-                                                                      @PathVariable Integer problemId,
-                                                                      @PathVariable Integer chapterId) {
+            @ApiImplicitParam(name = "chapterId", value = "章id")})public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(UnionUser unionUser,
+                                                                      @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(unionUser, "登录用户不能为空");
+
         String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId);
         if (essenceCardImgBase64 != null) {
             return WebUtils.result(essenceCardImgBase64);

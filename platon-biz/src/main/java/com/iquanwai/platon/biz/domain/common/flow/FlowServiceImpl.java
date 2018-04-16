@@ -8,10 +8,11 @@ import com.iquanwai.platon.biz.dao.common.ArticlesFlowDao;
 import com.iquanwai.platon.biz.dao.common.LivesFlowDao;
 import com.iquanwai.platon.biz.dao.common.ProblemsFlowDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class FlowServiceImpl implements FlowService {
     @Autowired
     private RiseMemberDao riseMemberDao;
     @Autowired
-    private AccountService accountService;
+    private RiseMemberManager riseMemberManager;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -107,9 +108,9 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId) {
         List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
-       // boolean isBusinessRiseMember = accountService.isBusinessRiseMember(profileId);
-        //todo:临时修改
-        boolean isBusinessRiseMember = accountService.getProfileRiseMember(profileId)==1;
+
+       boolean isBusinessRiseMember =  riseMemberManager.coreBusinessSchoolMember(profileId)!=null || riseMemberManager.proMember(profileId)!=null;
+
         activitiesFlows = activitiesFlows.stream()
                 .map(activitiesFlow -> {
                     if (activitiesFlow.getStatus() == ActivitiesFlow.Status.PREPARE && activitiesFlow.getEndTime().compareTo(new Date()) < 0) {
@@ -145,19 +146,23 @@ public class FlowServiceImpl implements FlowService {
 
     private Boolean getVisibility(FlowData flowData, Integer profileId) {
         String authority = flowData.getAuthority();
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        Integer memberTypeId = 0;
-        if (riseMember != null && riseMember.getMemberTypeId() != null) {
-            memberTypeId = riseMember.getMemberTypeId();
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+
+        for (RiseMember riseMember : riseMembers) {
+            Integer memberTypeId = 0;
+            if (riseMember != null && riseMember.getMemberTypeId() != null) {
+                memberTypeId = riseMember.getMemberTypeId();
+            }
+            try {
+                char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
+                String tagValue = String.valueOf(tagChar);
+                return "1".equals(tagValue);
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
         }
-        try {
-            char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
-            String tagValue = String.valueOf(tagChar);
-            return "1".equals(tagValue);
-        } catch (Exception e) {
-            logger.error(e.getLocalizedMessage(), e);
-            return false;
-        }
+
+        return false;
     }
 
 }

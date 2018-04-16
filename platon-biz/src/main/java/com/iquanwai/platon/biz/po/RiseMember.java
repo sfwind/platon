@@ -65,4 +65,24 @@ public class RiseMember {
      * 单买课程
      */
     public static final int COURSE = 6;
+    /**
+     * 商学院申请
+     */
+    public static final int BS_APPLICATION = 7;
+    /**
+     * 商业思维
+     */
+    public static final int BUSINESS_THOUGHT = 8;
+    /**
+     * 商业思维申请
+     */
+    public static final int BUSINESS_THOUGHT_APPLY = 9;
+
+    public static boolean isApply(Integer memberTypeId) {
+        return memberTypeId == BS_APPLICATION || memberTypeId == BUSINESS_THOUGHT_APPLY;
+    }
+
+    public static boolean isMember(Integer memberTypeId) {
+        return memberTypeId == ELITE || memberTypeId == BUSINESS_THOUGHT;
+    }
 }

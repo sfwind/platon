@@ -1,19 +1,25 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
+import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.flow.FlowService;
 import com.iquanwai.platon.biz.domain.common.flow.LandingPageBanner;
+import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.ActivitiesFlow;
 import com.iquanwai.platon.biz.po.ArticlesFlow;
 import com.iquanwai.platon.biz.po.LivesFlow;
 import com.iquanwai.platon.biz.po.ProblemsFlow;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.MemberType;
+import com.iquanwai.platon.web.fragmentation.dto.ApplySuccessDto;
 import com.iquanwai.platon.web.fragmentation.dto.LandingPageDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,28 +42,42 @@ public class LandingPageController {
     @Autowired
     private MessageService messageService;
     @Autowired
-    private AccountService accountService;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private CustomerService customerService;
+    @Autowired
+    private ApplyService applyService;
+    @Autowired
+    private RiseMemberTypeRepo riseMemberTypeRepo;
 
     @ApiOperation("获取着陆页所有信息")
     @RequestMapping("/load")
     public ResponseEntity<Map<String, Object>> loadLandingPageData(UnionUser unionUser) {
         Integer unReadCount = messageService.unreadCount(unionUser.getId());
-        Pair<Boolean, Long> applicationPass = customerService.isAlertApplicationPassMessage(unionUser.getId());
+        Pair<Long, Integer> applicationPass = applyService.loadRemainTimeMemberTypeId(unionUser.getId());
+
         List<LandingPageBanner> pageBanners = flowService.loadLandingPageBanners();
         List<ProblemsFlow> problemsFlows = flowService.loadProblemsFlow(unionUser.getId());
         List<LivesFlow> livesFlows = flowService.loadLivesFlow(unionUser.getId(), 6);
         List<ArticlesFlow> articlesFlows = flowService.loadArticlesFlow(unionUser.getId(), 4, false);
         List<ActivitiesFlow> activitiesFlows = flowService.loadActivitiesFlow(unionUser.getId(), 4);
 
-
         LandingPageDto dto = new LandingPageDto();
-        //dto.setIsBusinessMember(accountService.isBusinessRiseMember(unionUser.getId()));
-        //TODO:临时修改
-        dto.setIsBusinessMember(accountService.getProfileRiseMember(unionUser.getId())==1);
-        dto.setIsShowPassNotify(applicationPass.getLeft());
-        dto.setRemainTime(applicationPass.getRight());
+        // TODO: 待验证
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(unionUser.getId());
+        ApplySuccessDto applySuccessDto = new ApplySuccessDto();
+        applySuccessDto.setIsShowPassNotify(applicationPass.getLeft() > 0);
+        applySuccessDto.setRemainTime(applicationPass.getLeft());
+        applySuccessDto.setGoPayMemberTypeId(applicationPass.getRight());
+        if (applicationPass.getRight() != null) {
+            MemberType wanna = riseMemberTypeRepo.memberType(applicationPass.getRight());
+            if (wanna != null) {
+                applySuccessDto.setName(wanna.getDescription());
+            }
+        }
+
+        dto.setApplySuccess(applySuccessDto);
+        dto.setIsBusinessMember(CollectionUtils.isNotEmpty(riseMembers));
         dto.setNotify(unReadCount != null && unReadCount > 0);
         dto.setPageBanners(pageBanners);
         dto.setProblemsFlows(problemsFlows);

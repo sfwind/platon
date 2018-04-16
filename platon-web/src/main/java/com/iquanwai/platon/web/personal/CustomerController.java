@@ -3,9 +3,9 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
@@ -49,6 +49,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,7 @@ public class CustomerController {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private EventWallService eventWallService;
     @Autowired
@@ -120,13 +121,20 @@ public class CustomerController {
         } else {
             profile.setRoleName(0);
         }
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if (riseClassMember != null) {
-            profile.setClassName(riseClassMember.getClassName());
-            profile.setGroupId(riseClassMember.getGroupId());
-        }
+        //TODO:修改班级和小组
+//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
+//        if (riseClassMember != null) {
+//            profile.setClassName(riseClassMember.getClassName());
+//            profile.setGroupId(riseClassMember.getGroupId());
+//        }
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
+        List<RiseMember> members = riseMemberManager.member(unionUser.getId());
+        if (members.isEmpty()) {
+            profile.setRoleNames(Lists.newArrayList("0"));
+        } else {
+            profile.setRoleNames(members.stream().map(RiseMember::getMemberTypeId).map(Object::toString).collect(Collectors.toList()));
+        }
 
         return WebUtils.result(profile);
     }
@@ -139,21 +147,18 @@ public class CustomerController {
         Profile profile = accountService.getProfile(profileId);
         userStudyDto.setNickName(profile.getNickname());
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(profileId);
-        if (riseClassMember != null) {
-            userStudyDto.setMemberId(riseClassMember.getMemberId());
-            String className = riseClassMember.getClassName();
-            if (className != null && className.length() >= classSize) {
-                userStudyDto.setClassName(getClassName(className));
-            }
-        }
+        userStudyDto.setMemberId(profile.getMemberId());
+
+
+        //TODO:待修改
         RiseMember riseMember = accountService.getValidRiseMember(profileId);
         if (riseMember != null) {
             userStudyDto.setMemberTypeId(riseMember.getMemberTypeId());
         } else {
             userStudyDto.setMemberTypeId(0);
         }
-        userStudyDto.setShowShare(accountService.isBusinessRiseMember(profileId));
+
+        userStudyDto.setShowShare(CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId)));
 
         userStudyDto.setCardSum(problemService.loadProblemCardsList(unionUser.getId()).stream().map(ProblemCard::getCompleteCount).reduce(0, Integer::sum));
         userStudyDto.setPoint(profile.getPoint());
@@ -186,13 +191,9 @@ public class CustomerController {
         riseDto.setIsRiseMember(profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP);
         riseDto.setNickName(profile.getNickname());
         riseDto.setHeadImgUrl(profile.getHeadimgurl());
+        riseDto.setMemberId(profile.getMemberId());
 
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if (riseClassMember != null) {
-            riseDto.setMemberId(riseClassMember.getMemberId());
-        }
-
-        RiseMember riseMember = riseMemberService.getRiseMember(unionUser.getId());
+        RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
         if (riseMember != null) {
             riseDto.setMemberType(riseMember.getName());
         }
@@ -209,6 +210,7 @@ public class CustomerController {
 
         Integer profileId = unionUser.getId();
         ProfileDto profileDto = new ProfileDto();
+
         Profile profile = accountService.getProfile(profileId);
 
         BeanUtils.copyProperties(profile, profileDto);
@@ -216,24 +218,26 @@ public class CustomerController {
         if (userInfo != null) {
             BeanUtils.copyProperties(userInfo, profileDto);
             profileDto.setMobileNo(userInfo.getReceiverMobile());
+
         }
 
-        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-        if (riseClassMember != null) {
-            profileDto.setMemberId(riseClassMember.getMemberId());
-            String className = riseClassMember.getClassName();
-            if (className != null && className.length() >= classSize) {
-                profileDto.setClassName(getClassName(className));
-            }
-        }
+        //TODO:获得学号
+//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
+//        if (riseClassMember != null) {
+//            profileDto.setMemberId(profile.getMemberId());
+//            String className = riseClassMember.getClassName();
+//            if (className != null && className.length() >= classSize) {
+//                profileDto.setClassName(getClassName(className));
+//            }
+//        }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
         if (riseMember != null) {
             profileDto.setMemberTypeId(riseMember.getMemberTypeId());
         } else {
             profileDto.setMemberTypeId(0);
         }
-        //TODO:后期修改
-        Boolean isElite = accountService.isBusinessRiseMember(unionUser.getId());
+
+        Boolean isElite = CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId));
         profileDto.setIsShowInfo(isElite);
         Boolean cansSkip = true;
 
@@ -519,10 +523,10 @@ public class CustomerController {
     @ApiOperation("查询用户会员信息")
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
-        RiseMember riseMember = riseMemberService.getRiseMember(unionUser.getId());
-
-        if (riseMember != null) {
-            return WebUtils.result(riseMember.simple());
+        List<RiseMember> riseMember = riseMemberManager.member(unionUser.getId());
+        //TODO: 待验证
+        if (CollectionUtils.isNotEmpty(riseMember)) {
+            return WebUtils.result(riseMember.get(0).simple());
         } else {
             return WebUtils.result(null);
         }
@@ -533,8 +537,8 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> notifyExpire(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
-        boolean expiredRiseMemberInSevenDays = riseMemberService.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
-        boolean expiredRiseMember = riseMemberService.expiredRiseMember(unionUser.getId());
+        boolean expiredRiseMemberInSevenDays = riseMemberManager.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
+        boolean expiredRiseMember = riseMemberManager.expiredRiseMember(unionUser.getId());
         riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
         riseMember.setExpired(expiredRiseMember);
         riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSevenDays);

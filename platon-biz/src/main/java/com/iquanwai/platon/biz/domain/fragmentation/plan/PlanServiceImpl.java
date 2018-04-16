@@ -14,7 +14,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
@@ -22,6 +21,7 @@ import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -41,7 +41,6 @@ import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.ProblemSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
-import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -90,7 +89,7 @@ public class PlanServiceImpl implements PlanService {
     @Autowired
     private EssenceCardDao essenceCardDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private MonthlyCampOrderDao monthlyCampOrderDao;
     @Autowired
@@ -118,10 +117,6 @@ public class PlanServiceImpl implements PlanService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    // 精英会员年费版最大选课数
-    private static final int MAX_ELITE_PROBLEM_LIMIT = 36;
-    // 精英会员半年版最大选课数
-    private static final int MAX_HALF_ELITE_PROBLEM_LIMIT = 18;
     // 普通人最大进行课程数
     private static final int MAX_NORMAL_RUNNING_PROBLEM_NUMBER = 3;
 
@@ -225,11 +220,12 @@ public class PlanServiceImpl implements PlanService {
         if (CollectionUtils.isNotEmpty(runningPractices)) {
             for (PracticePlan practicePlan : runningPractices) {
                 //巩固练习或理解练习未完成时,返回false
-                if ((practicePlan.getType() == PracticePlan.WARM_UP ||
+                boolean isMustPractice = practicePlan.getType() == PracticePlan.WARM_UP ||
                         practicePlan.getType() == PracticePlan.WARM_UP_REVIEW ||
                         practicePlan.getType() == PracticePlan.KNOWLEDGE ||
-                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW) &&
-                        practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED) {
+                        practicePlan.getType() == PracticePlan.KNOWLEDGE_REVIEW;
+                boolean isCompleted = practicePlan.getStatus() == PracticePlan.STATUS.UNCOMPLETED;
+                if (isMustPractice && isCompleted) {
                     return false;
                 }
             }
@@ -291,6 +287,7 @@ public class PlanServiceImpl implements PlanService {
         return practice;
     }
 
+
     @Override
     public List<ImprovementPlan> getRunningPlan(Integer profileId) {
         return improvementPlanDao.loadRunningPlan(profileId);
@@ -302,8 +299,19 @@ public class PlanServiceImpl implements PlanService {
                 .filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
                 .collect(Collectors.toList());
 
-        // 是精英会员用户才会有选课上限
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证 选课
+        Problem problem = cacheService.getProblem(problemId);
+        if (problem == null) {
+            throw new CreateCourseException("课程不存在");
+        }
+
+        RiseMember riseMember = null;
+        if (problem.getProject() == Constants.Project.BUSINESS_THOUGHT_PROJECT) {
+            riseMember = riseMemberManager.businessThought(profileId);
+        } else if (problem.getProject() == Constants.Project.CORE_PROJECT) {
+            riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
+        }
+
         //员工没有选课限制
         if (quanwaiEmployeeDao.loadEmployee(profileId) != null) {
             return true;
@@ -313,7 +321,7 @@ public class PlanServiceImpl implements PlanService {
             throw new CreateCourseException("您暂时没有开课权限哦");
         }
         if (new DateTime().isBefore(riseMember.getOpenDate().getTime())) {
-            throw new CreateCourseException("您在 " + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + " 才能开课哦");
+            throw new CreateCourseException("您在" + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + "才能开课哦");
         }
 
         Integer memberTypeId = riseMember.getMemberTypeId();
@@ -344,44 +352,8 @@ public class PlanServiceImpl implements PlanService {
                     }
                 }
             }
-
-            switch (memberTypeId) {
-                case RiseMember.ELITE:
-                    //商学院用户，限制36门
-                    Date startTime1 = riseMember.getAddTime(); // 会员开始时间
-                    if (startTime1.compareTo(ConfigUtils.getRiseMemberSplitDate()) > 0) {
-                        List<ImprovementPlan> startPlans1 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime1);
-                        Long countLong1 = startPlans1.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                        if (countLong1.intValue() >= MAX_ELITE_PROBLEM_LIMIT) {
-                            throw new CreateCourseException("亲爱的商学院会员，你的选课数量已达" + MAX_ELITE_PROBLEM_LIMIT +
-                                    "门。");
-                        }
-                    }
-                    break;
-                case RiseMember.HALF_ELITE:
-                    Date startTime2 = riseMember.getAddTime(); // 会员开始时间
-                    //精英版半年，限制18门
-                    if (startTime2.compareTo(ConfigUtils.getRiseMemberSplitDate()) > 0) {
-                        List<ImprovementPlan> startPlans2 = improvementPlanDao.loadRiseMemberPlans(profileId, startTime2);
-                        Long countLong2 = startPlans2.stream().filter(plan -> !plan.getProblemId().equals(ConfigUtils.getTrialProblemId())).count();
-                        if (countLong2.intValue() >= MAX_HALF_ELITE_PROBLEM_LIMIT) {
-                            throw new CreateCourseException("亲爱的商学院会员，你的选课数量已达" + MAX_HALF_ELITE_PROBLEM_LIMIT
-                                    + "门。如需升级或续费，请联系班主任");
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-        } else {
-            //非商学院用户
-            if (plans.size() >= MAX_NORMAL_RUNNING_PROBLEM_NUMBER) {
-                throw new CreateCourseException("为了更专注的学习，同时最多进行" + MAX_NORMAL_RUNNING_PROBLEM_NUMBER
-                        + "门课程。先完成进行中的一门，再选新课哦");
-            }
         }
 
-        Problem problem = cacheService.getProblem(problemId);
 
         if (!problem.getPublish()) {
             //TODO:专业版都过期后逻辑删除
@@ -402,13 +374,6 @@ public class PlanServiceImpl implements PlanService {
             throw new CreateCourseException("你已经选过该门课程了，你可以在\"我的\"菜单里找到以前的学习记录哦");
         }
 
-        // 这里生成课程训练计划，另外在检查一下是否是会员或者购买了这个课程
-        Boolean isRiseMember = accountService.isRiseMember(profileId);
-        Integer trialProblemId = ConfigUtils.getTrialProblemId();
-        if (!isRiseMember && !problemId.equals(trialProblemId)) {
-            // 既没有购买过这个课程，又不是rise会员,也不是限免课程
-            throw new CreateCourseException("您不是商学院会员，需要先购买会员哦");
-        }
         return true;
     }
 
@@ -784,7 +749,8 @@ public class PlanServiceImpl implements PlanService {
         // 不显示按钮
         int buttonStatus = -1;
 
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         if (plan == null) {
             // 2 - 去上课 1 - 加入商学院 5 - 选择该课程
             if (riseMember == null) {

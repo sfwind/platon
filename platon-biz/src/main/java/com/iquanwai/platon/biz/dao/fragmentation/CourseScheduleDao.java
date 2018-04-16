@@ -41,13 +41,13 @@ public class CourseScheduleDao extends PracticeDBUtil {
 
     public void batchInsertCourseSchedule(List<CourseSchedule> schedules) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category,Year, Month, Type, Recommend, Selected) " +
-                " VALUES (?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO CourseSchedule(ProfileId, ProblemId, Category,Year, Month, Type, Recommend, Selected,MemberTypeId) " +
+                " VALUES (?,?,?,?,?,?,?,?,?)";
         try {
             Object[][] param = new Object[schedules.size()][];
             for (int i = 0; i < schedules.size(); i++) {
                 CourseSchedule courseSchedule = schedules.get(i);
-                param[i] = new Object[8];
+                param[i] = new Object[9];
                 param[i][0] = courseSchedule.getProfileId();
                 param[i][1] = courseSchedule.getProblemId();
                 param[i][2] = courseSchedule.getCategory();
@@ -56,6 +56,7 @@ public class CourseScheduleDao extends PracticeDBUtil {
                 param[i][5] = courseSchedule.getType();
                 param[i][6] = courseSchedule.getRecommend();
                 param[i][7] = courseSchedule.getSelected();
+                param[i][8] = courseSchedule.getMemberTypeId();
             }
             runner.batch(sql, param);
         } catch (SQLException e) {
@@ -68,6 +69,18 @@ public class CourseScheduleDao extends PracticeDBUtil {
         String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Del = 0";
         try {
             return runner.query(sql, new BeanListHandler<>(CourseSchedule.class), profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<CourseSchedule> loadAllMajorScheduleByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM CourseSchedule WHERE ProfileId = ? AND Type = 1 AND Del = 0";
+        ResultSetHandler<List<CourseSchedule>> h = new BeanListHandler<>(CourseSchedule.class);
+        try {
+            return runner.query(sql, h, profileId);
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -108,9 +121,10 @@ public class CourseScheduleDao extends PracticeDBUtil {
         return null;
     }
 
-    public CourseSchedule loadOldestCourseSchedule(Integer profileId) {
+    public CourseSchedule loadOldestCoreCourseSchedule(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM CourseSchedule WHERE Type = 1 AND Del = 0 AND ProfileId = ? ORDER BY Year ASC, Month ASC";
+        // TODO bug点
+        String sql = "SELECT * FROM CourseSchedule WHERE Type = 1 AND MemberTypeId = 3 AND Del = 0 AND ProfileId = ? ORDER BY Year ASC, Month ASC";
         ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
         try {
             return runner.query(sql, h, profileId);

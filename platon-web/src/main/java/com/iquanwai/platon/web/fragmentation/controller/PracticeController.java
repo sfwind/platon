@@ -3,7 +3,6 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
-import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;

@@ -70,4 +70,6 @@ public interface BusinessPlanService {
      * @return 课程表选择题
      */
     List<ScheduleQuestion> loadScheduleQuestions(Integer profileId);
+
+    void initCourseSchedule(Integer profileId, Integer memberTypeId);
 }

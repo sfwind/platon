@@ -1,9 +1,10 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.FullAttendanceReward;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -18,7 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +45,9 @@ public class BackendController {
     @Autowired
     private GeneratePlanService generatePlanService;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private RiseMemberManager riseMemberManager;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -107,28 +114,6 @@ public class BackendController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/upload/certificate")
-    public ResponseEntity<Map<String, Object>> uploadCertificatePngToQiNiu(@RequestParam Boolean isOnline) {
-        ThreadPool.execute(() -> certificateService.uploadCertificateToQiNiu(isOnline));
-        return WebUtils.result("正在进行中");
-    }
-
-    @RequestMapping(value = "/generate/fullattendance", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(@RequestBody FullAttendanceReward fullAttendanceReward) {
-        Integer month = fullAttendanceReward.getMonth();
-        Integer year = fullAttendanceReward.getYear();
-        ThreadPool.execute(() ->
-                certificateService.generateFullAttendanceCoupon(year, month)
-        );
-        return WebUtils.result("正在进行中");
-    }
-
-    @RequestMapping(value = "/send/fullattendance", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> sendFullAttendanceCoupon(@RequestParam("year") Integer year, @RequestParam("month") Integer month) {
-        ThreadPool.execute(() -> certificateService.sendFullAttendanceCoupon(year, month));
-        return WebUtils.result("正在进行中");
-    }
-
     @RequestMapping(value = "/send/camp/offer", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> sendOffer(@RequestParam(value = "year") Integer year, @RequestParam(value = "month") Integer month) {
         ThreadPool.execute(() -> certificateService.sendOfferMsg(year, month));
@@ -164,10 +149,10 @@ public class BackendController {
                 .action("根据openid获取学号");
         operationLogService.log(operationLog);
 
-        String memberId = riseMemberService.getMemberId(userDto.getOpenid());
+        String memberId = riseMemberManager.getMemberId(userDto.getOpenid());
         if (memberId == null) {
             return WebUtils.error(201, "该用户没有学号");
-        }else{
+        } else {
             return WebUtils.result(memberId);
         }
     }
@@ -180,10 +165,10 @@ public class BackendController {
                 .action("根据学号获取openid");
         operationLogService.log(operationLog);
 
-        String openid = riseMemberService.getOpenid(userDto.getMemberid());
+        String openid = accountService.getOpenidByMemberId(userDto.getMemberid());
         if (openid == null) {
             return WebUtils.error(201, "没有查到学员");
-        }else{
+        } else {
             return WebUtils.result(openid);
         }
     }

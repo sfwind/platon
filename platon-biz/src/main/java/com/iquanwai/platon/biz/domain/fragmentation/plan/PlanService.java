@@ -3,7 +3,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -73,6 +72,7 @@ public interface PlanService {
      * @param plan 训练计划
      */
     List<UserProblemSchedule> getChapterList(ImprovementPlan plan);
+
 
     /**
      * 训练计划结束

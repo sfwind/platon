@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.util;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Days;
+import org.joda.time.Minutes;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -84,6 +85,10 @@ public class DateUtils {
 
     public static int interval(Date date1, Date date2) {
         return Math.abs(Days.daysBetween(new DateTime(date1), new DateTime(date2)).getDays());
+    }
+
+    public static int intervalMinute(Date date) {
+        return Minutes.minutesBetween(new DateTime(), new DateTime(date)).getMinutes();
     }
 
     public static long currentTimestamp() {

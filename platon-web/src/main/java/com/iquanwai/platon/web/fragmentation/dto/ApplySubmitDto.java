@@ -14,4 +14,5 @@ import java.util.List;
 @Data
 public class ApplySubmitDto {
     private List<BusinessApplySubmitVO> userSubmits;
+    private Integer goodsId;
 }

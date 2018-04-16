@@ -4,13 +4,11 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.MemberType;
+import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -18,8 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +38,7 @@ public class StudyServiceImpl implements StudyService {
     @Autowired
     private ProblemScheduleManager problemScheduleManager;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
 
@@ -130,7 +130,8 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public Pair<Boolean, Integer> shouldGoCountDownPage(Integer profileId) {
-        RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证
+        RiseMember validRiseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         if (validRiseMember == null) {
             return new MutablePair<>(false, null);
         } else {
@@ -179,6 +180,49 @@ public class StudyServiceImpl implements StudyService {
         reviewPractices.add(studyExtension);
 
         return reviewPractices;
+    }
+
+    @Override
+    public CountDownElement loadLatestCountDownElement(Integer profileId) {
+        List<RiseMember> validRiseMembers = riseMemberManager.member(profileId);
+        RiseMember latestRiseMember = validRiseMembers.stream()
+                .filter(riseMember -> riseMember.getOpenDate().compareTo(new Date()) > 0)
+                .sorted(Comparator.comparing(RiseMember::getOpenDate))
+                .findFirst().orElse(null);
+
+        List<MemberType> memberTypes = cacheService.loadMemberTypes();
+        Map<Integer, MemberType> memberTypeMap = memberTypes.stream().collect(Collectors.toMap(MemberType::getId, memberType -> memberType, (key1, key2) -> key1));
+
+        if (latestRiseMember != null) {
+            CountDownElement countDownElement = new CountDownElement();
+            int memberTypeId = latestRiseMember.getMemberTypeId();
+            countDownElement.setMemberTypeId(memberTypeId);
+            int remainCountNumber = DateUtils.interval(latestRiseMember.getOpenDate());
+            countDownElement.setRemainCount(String.format("%02d", remainCountNumber));
+            MemberType memberType;
+            switch (memberTypeId) {
+                case RiseMember.ELITE:
+                    // 核心能力项
+                    memberType = memberTypeMap.getOrDefault(RiseMember.ELITE, null);
+                    break;
+                case RiseMember.CAMP:
+                    // 专项课
+                    memberType = memberTypeMap.getOrDefault(RiseMember.CAMP, null);
+                    break;
+                case RiseMember.BUSINESS_THOUGHT:
+                    // 商业进阶
+                    memberType = memberTypeMap.getOrDefault(RiseMember.BUSINESS_THOUGHT, null);
+                    break;
+                default:
+                    return null;
+            }
+            if (memberType != null) {
+                countDownElement.setDescription(memberType.getDescription());
+            }
+            return countDownElement;
+        } else {
+            return null;
+        }
     }
 
 }

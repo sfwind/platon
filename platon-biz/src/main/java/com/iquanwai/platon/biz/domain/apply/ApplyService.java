@@ -1,10 +1,8 @@
 package com.iquanwai.platon.biz.domain.apply;
 
-import com.iquanwai.platon.biz.exception.ApplyException;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
-import com.iquanwai.platon.biz.po.apply.BusinessApplySubmit;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplicationOrder;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -22,14 +20,6 @@ public interface ApplyService {
     List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId);
 
     /**
-     * 获取正在审批中的记录
-     *
-     * @param profileId 用户id
-     * @return 审批记录
-     */
-    BusinessSchoolApplication loadCheckingApply(Integer profileId);
-
-    /**
      * 获取用户的所有审核信息
      *
      * @param profileId 用户id
@@ -38,27 +28,22 @@ public interface ApplyService {
     List<BusinessSchoolApplication> loadApplyList(Integer profileId);
 
     /**
-     * 获取还未申请的订单
+     * 检查是否能够申请该项目
      *
      * @param profileId 用户id
-     * @return 审批订单
+     * @param project   项目id
+     * @return 是否能够申请
      */
-    BusinessSchoolApplicationOrder loadUnAppliedOrder(Integer profileId);
+    boolean hasAvailableApply(Integer profileId, Integer project);
 
     /**
-     * 提交商学院申请
+     * 检查是否能够申请该项目
      *
-     * @param profileId        用户id
-     * @param userApplySubmits 用户的申请记录
-     * @param valid            是否有效
+     * @param applyList 用户申请记录
+     * @param project   项目id
+     * @return 是否能够申请
      */
-    void submitBusinessApply(Integer profileId, List<BusinessApplySubmit> userApplySubmits, Boolean valid);
+    boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer project);
 
-    /**
-     * 检查是否有申请权限
-     *
-     * @param profileId 用户id
-     * @throws ApplyException 申请异常
-     */
-    void checkApplyPrivilege(Integer profileId) throws ApplyException;
+    Pair<Long, Integer> loadRemainTimeMemberTypeId(Integer profileId);
 }

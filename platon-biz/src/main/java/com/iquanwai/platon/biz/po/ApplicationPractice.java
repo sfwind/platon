@@ -38,6 +38,7 @@ public class  ApplicationPractice {
     private Boolean overrideLocalStorage; // 是否覆盖本地 localStorage，非db字段
     private Boolean isBaseApplication; // 是否是基础应用题，非db字段
     private Boolean isLastApplication; // 是否是最后一题
+
     /**
      * 草稿内容和提交内容是否相等
      */

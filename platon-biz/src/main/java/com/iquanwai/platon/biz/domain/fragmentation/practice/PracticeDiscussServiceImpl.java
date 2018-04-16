@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -59,6 +60,8 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     private UserRoleDao userRoleDao;
     @Autowired
     private HomeworkVoteDao homeworkVoteDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
 
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -81,7 +84,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
                 operationLogService.trace(profileId, "replyWarumupDiscuss", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
-                    RiseMember riseMember = riseMemberDao.loadValidRiseMember(repliedDiscuss.getProfileId());
+//                    RiseMember riseMember = riseMemberDao.loadValidRiseMember(repliedDiscuss.getProfileId());
                     WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
                     RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(repliedDiscuss.getProfileId());
                     if (riseClassMember != null) {
@@ -92,7 +95,13 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                             prop.add("repliedGroupId", riseClassMember.getGroupId());
                         }
                     }
-                    prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                    List<RiseMember> riseMembers = riseMemberManager.member(repliedDiscuss.getProfileId());
+                    if (riseMembers.isEmpty()) {
+                        prop.add("repliedRolenames", Lists.newArrayList("0"));
+                    } else {
+                        prop.add("repliedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                    }
+//                    prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                     prop.add("warmupId", warmupPracticeId);
                     prop.add("problemId", warmupPractice.getProblemId());
                     Profile profile = accountService.getProfile(repliedDiscuss.getProfileId());

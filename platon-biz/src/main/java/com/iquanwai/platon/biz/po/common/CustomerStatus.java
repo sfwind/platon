@@ -26,8 +26,10 @@ public class CustomerStatus {
      * 申请通过
      */
     public static final Integer APPLY_BUSINESS_SCHOOL_SUCCESS = 3;
+    public static final Integer APPLY_BUSINESS_THOUGHT_SUCCESS = 6;
     /**
      * 学过试听课
+     *
      * @deprecated
      */
     public static final Integer LEARNED_AUDITION = 4;

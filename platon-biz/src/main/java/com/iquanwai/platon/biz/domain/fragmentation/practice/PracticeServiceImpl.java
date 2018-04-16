@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.PracticePlanStatusManager;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -86,10 +88,13 @@ public class PracticeServiceImpl implements PracticeService {
     @Autowired
     private RiseClassMemberDao riseClassMemberDao;
     @Autowired
+    private RiseMemberManager riseMemberManager;
+    @Autowired
     private ProblemPreviewDao problemPreviewDao;
 
+
     // 商业思维项目字数下限50字
-    private static final int MINI_MBA_PROJECT_WORD_AT_LEAST = 50;
+    private static final int BUSINESS_THOUGHT_PROJECT_WORD_AT_LEAST = 50;
     // 核心能力项目字数下限50字
     private static final int CORE_PROJECT_WORD_AT_LEAST = 10;
 
@@ -310,26 +315,24 @@ public class PracticeServiceImpl implements PracticeService {
         }
         if (plan != null && plan.getRequestCommentCount() > 0) {
             applicationPractice.setRequestCommentCount(plan.getRequestCommentCount());
-        } else {
-            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-            if (riseMember != null) {
-                if (riseMember.getMemberTypeId().equals(RiseMember.ELITE) || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE)) {
-                    applicationPractice.setRequestCommentCount(0);
-                }
-            }
         }
 
         // 检查该道题是否是简单应用题还是复杂应用题
         List<PracticePlan> practicePlans = practicePlanDao.loadApplicationPracticeByPlanId(planId);
-        PracticePlan targetPracticePlan = practicePlans.stream()
-                .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny().orElse(null);
-        PracticePlan lastPracticePlan = practicePlans.stream()
-                .filter(planItem -> planItem.getSeries().equals(targetPracticePlan.getSeries()))
-                .max((p1, p2) -> p1.getSequence() - p2.getSequence()).orElse(null);
-
-        applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
-        applicationPractice.setIsLastApplication(lastPracticePlan.getPracticeId().equals(id.toString()));
-
+        practicePlans
+                .stream()
+                .filter(planItem -> planItem.getPracticeId().equals(id.toString())).findAny()
+                .ifPresent(targetPracticePlan -> {
+                    // 找到目标练习
+                    practicePlans.stream()
+                            // 同组最大者
+                            .filter(planItem -> planItem.getSeries().equals(targetPracticePlan.getSeries()))
+                            .max(Comparator.comparingInt(PracticePlan::getSequence))
+                            // 判断下这道题是不是最后一道
+                            .ifPresent(item -> applicationPractice.setIsLastApplication(item.getPracticeId().equals(id.toString())));
+                    // 是不是base
+                    applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
+                });
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
 
@@ -356,7 +359,7 @@ public class PracticeServiceImpl implements PracticeService {
                 if (PracticePlan.STATUS.UNCOMPLETED == practicePlan.getStatus()) {
                     practicePlanStatusManager.completePracticePlan(submit.getProfileId(), practicePlan);
                     improvementPlanDao.updateApplicationComplete(submit.getPlanId());
-                    certificateService.generateSingleFullAttendanceCoupon(practicePlan.getId());
+                    certificateService.generatePersonalFullAttendance(practicePlan.getId());
                 }
                 // 修改应用任务记录
                 ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, submit.getPlanId());
@@ -364,8 +367,8 @@ public class PracticeServiceImpl implements PracticeService {
                     // 至少达到一定字数才能加分
                     if (submit.getPointStatus() == 0) {
                         Problem problem = cacheService.getProblem(plan.getProblemId());
-                        if (problem.getProject() == Constants.Project.MINI_MBA_PROJECT &&
-                                (length >= MINI_MBA_PROJECT_WORD_AT_LEAST || hasImage)) {
+                        if (problem.getProject() == Constants.Project.BUSINESS_THOUGHT_PROJECT &&
+                                (length >= BUSINESS_THOUGHT_PROJECT_WORD_AT_LEAST || hasImage)) {
                             applicationAddPoint(practicePlan, id, submit);
                         } else if (length >= CORE_PROJECT_WORD_AT_LEAST || hasImage) {
                             applicationAddPoint(practicePlan, id, submit);
@@ -386,6 +389,7 @@ public class PracticeServiceImpl implements PracticeService {
     private void applicationAddPoint(PracticePlan practicePlan, Integer id, ApplicationSubmit submit) {
         if (practicePlan != null) {
             logger.info("应用练习加分:{}", id);
+
             Integer point = poinManager.calcApplicationScore(applicationPracticeDao.load(ApplicationPractice.class,
                     submit.getApplicationId()).getDifficulty());
             // 查看难度，加分
@@ -517,9 +521,13 @@ public class PracticeServiceImpl implements PracticeService {
                 operationLogService.trace(profileId, "voteApplication", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
                     Profile profile = accountService.getProfile(submitProfileId);
-                    RiseMember validRiseMember = accountService.getValidRiseMember(submitProfileId);
                     Problem problem = problemDao.load(Problem.class, submit.getProblemId());
-                    prop.add("votedRolename", validRiseMember == null ? 0 : validRiseMember.getMemberTypeId());
+                    List<RiseMember> riseMembers = riseMemberManager.member(submitProfileId);
+                    if (riseMembers.isEmpty()) {
+                        prop.add("votedRolenames", Lists.newArrayList("0"));
+                    } else {
+                        prop.add("votedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                    }
                     prop.add("applicationId", submit.getApplicationId());
                     prop.add("votedRiseId", profile.getRiseId());
                     prop.add("problemId", problem.getId());
@@ -604,15 +612,18 @@ public class PracticeServiceImpl implements PracticeService {
                 asstCoachComment(load.getProfileId(), load.getProblemId());
             }
             operationLogService.trace(profileId, "replyCommentApplication", () -> {
-                RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
+                List<RiseMember> riseMembers = riseMemberManager.member(load.getProfileId());
                 RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
                 Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();
                 prop.add("repliedRiseId", repliesProfile.getRiseId());
-//                prop.add("repliedProfileId", load.getProfileId());
                 prop.add("applicationId", load.getApplicationId());
                 prop.add("problemId", load.getProblemId());
-                prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                if (riseMembers.isEmpty()) {
+                    prop.add("repliedRolenames", Lists.newArrayList("0"));
+                } else {
+                    prop.add("repliedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                }
                 if (riseClassMember != null) {
                     if (riseClassMember.getClassName() != null) {
                         prop.add("repliedClassname", riseClassMember.getClassName());
@@ -703,10 +714,13 @@ public class PracticeServiceImpl implements PracticeService {
             operationLogService.trace(profileId, "commentApplication", () -> {
                 OperationLogService.Prop prop = OperationLogService.props();
                 Profile discussedProfile = accountService.getProfile(load.getProfileId());
-                RiseMember riseMember = accountService.getValidRiseMember(load.getProfileId());
-                prop.add("discussedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
+                List<RiseMember> riseMembers = riseMemberManager.member(load.getProfileId());
                 prop.add("applicationId", load.getApplicationId());
-//                prop.add("discussedProfileId", load.getProfileId());
+                if (riseMembers.isEmpty()) {
+                    prop.add("discussedRolenames", Lists.newArrayList("0"));
+                } else {
+                    prop.add("discussedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
+                }
                 prop.add("discussedRiseId", discussedProfile.getRiseId());
                 prop.add("problemId", load.getProblemId());
                 return prop;
@@ -776,11 +790,10 @@ public class PracticeServiceImpl implements PracticeService {
                     }
                     return false;
                 })
-                .map(commentEvaluation -> {
+                .peek(commentEvaluation -> {
                     Comment comment = commentMap.get(commentEvaluation.getCommentId());
                     Profile profile = profileMap.get(comment.getCommentProfileId());
                     commentEvaluation.setNickName(profile.getNickname());
-                    return commentEvaluation;
                 })
                 .collect(Collectors.toList());
         return evaluations;

@@ -86,10 +86,6 @@ public class SensorsTest extends TestBase {
                     sa.profileSet(distinctId, true, "address", profile.getAddress());
 
                 }
-                if (profile.getAddTime() != null) {
-                    sa.profileSet(distinctId, true, "subscribeTime", profile.getAddTime());
-
-                }
                 if (profile.getIsFull() != null) {
                     sa.profileSet(distinctId, true, "isFull", profile.getIsFull());
 

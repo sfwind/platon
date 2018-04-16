@@ -1,17 +1,12 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
-import com.iquanwai.platon.biz.domain.common.customer.RiseMemberService;
 import com.iquanwai.platon.biz.domain.fragmentation.audition.AuditionService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PersonalSchedulePlan;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.SchedulePlan;
-import com.iquanwai.platon.biz.domain.log.OperationLogService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.po.AuditionClassMember;
 import com.iquanwai.platon.biz.po.CourseSchedule;
 import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -21,7 +16,6 @@ import com.iquanwai.platon.web.fragmentation.dto.plan.CourseScheduleModifyDto;
 import com.iquanwai.platon.web.fragmentation.dto.plan.MonthCourseScheduleDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.CountDownDto;
 import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
-import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.ApiOperation;
@@ -55,28 +49,24 @@ public class ScheduleController {
     @Autowired
     private BusinessPlanService businessPlanService;
     @Autowired
-    private OperationLogService operationLogService;
-    @Autowired
     private AuditionService auditionService;
     @Autowired
-    private RiseMemberService riseMemberService;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private PlanService planService;
     @Autowired
     private CustomerService customerService;
+    @Autowired
+    private StudyService studyService;
 
     /**
      * 获取个人的学习计划
      */
     @RequestMapping("/load/personal")
-    public ResponseEntity<Map<String, Object>> loadPersonalCourseSchedulePlan(LoginUser loginUser) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("获取个人学习计划");
-        operationLogService.log(operationLog);
-        List<List<CourseSchedule>> courseScheduleMap = businessPlanService.loadPersonalCourseSchedule(loginUser.getId());
+    public ResponseEntity<Map<String, Object>> loadPersonalCourseSchedulePlan(UnionUser unionUser) {
+        Assert.notNull(unionUser, "登录用户不能为空");
+
+        List<List<CourseSchedule>> courseScheduleMap = businessPlanService.loadPersonalCourseSchedule(unionUser.getId());
         return WebUtils.result(courseScheduleMap);
     }
 
@@ -84,20 +74,14 @@ public class ScheduleController {
      * 更新单门课程的年月信息
      */
     @RequestMapping(value = "/update/problem", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> modifyProblemSchedule(LoginUser loginUser, @RequestBody CourseScheduleDto courseScheduleDto) {
-        Assert.notNull(loginUser, "登录用户不能为空");
+    public ResponseEntity<Map<String, Object>> modifyProblemSchedule(UnionUser unionUser, @RequestBody CourseScheduleDto courseScheduleDto) {
+        Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(courseScheduleDto, "课程更改参数不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("课程计划更改")
-                .memo(courseScheduleDto.getProblemId().toString());
-        operationLogService.log(operationLog);
 
         Integer problemId = courseScheduleDto.getProblemId();
         Integer year = courseScheduleDto.getTargetYear();
         Integer month = courseScheduleDto.getTargetMonth();
-        boolean updateResult = businessPlanService.modifyProblemSchedule(loginUser.getId(), problemId, year, month);
+        boolean updateResult = businessPlanService.modifyProblemSchedule(unionUser.getId(), problemId, year, month);
         if (updateResult) {
             return WebUtils.success();
         } else {
@@ -109,14 +93,10 @@ public class ScheduleController {
      * 单门课程更新是否选择
      */
     @RequestMapping(value = "/update/selected", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> updateProblemScheduleSelectedStatus(LoginUser loginUser, @RequestBody CourseScheduleDto courseScheduleDto) {
-        Assert.notNull(loginUser, "登录用户不能为空");
+    public ResponseEntity<Map<String, Object>> updateProblemScheduleSelectedStatus(UnionUser unionUser, @RequestBody CourseScheduleDto courseScheduleDto) {
+        Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(courseScheduleDto, "课程更改参数不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("课程计划更改");
-        operationLogService.log(operationLog);
+
         Integer courseScheduleId = courseScheduleDto.getId();
         Boolean selected = courseScheduleDto.getSelected();
         businessPlanService.updateProblemScheduleSelected(courseScheduleId, selected);
@@ -127,14 +107,10 @@ public class ScheduleController {
      * 全量更新课程的选择情况
      */
     @RequestMapping(value = "/update/all", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> modifyCourseSchedule(LoginUser loginUser, @RequestBody CourseScheduleModifyDto courseScheduleModifyDto) {
-        Assert.notNull(loginUser, "登录用户不能为空");
+    public ResponseEntity<Map<String, Object>> modifyCourseSchedule(UnionUser unionUser, @RequestBody CourseScheduleModifyDto courseScheduleModifyDto) {
+        Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(courseScheduleModifyDto, "课程更改参数不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("课程计划整体更改");
-        operationLogService.log(operationLog);
+
         List<MonthCourseScheduleDto> monthCourseScheduleDtos = courseScheduleModifyDto.getMonthCourseSchedules();
 
         monthCourseScheduleDtos.forEach(monthCourseScheduleDto -> {
@@ -147,40 +123,31 @@ public class ScheduleController {
     }
 
     @RequestMapping(value = "/load/questions", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadScheduleQuestions(LoginUser loginUser) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("获取学习计划题目");
-        operationLogService.log(operationLog);
-        List<ScheduleQuestion> questions = businessPlanService.loadScheduleQuestions(loginUser.getId());
+    public ResponseEntity<Map<String, Object>> loadScheduleQuestions(UnionUser unionUser) {
+        Assert.notNull(unionUser, "登录用户不能为空");
+
+        List<ScheduleQuestion> questions = businessPlanService.loadScheduleQuestions(unionUser.getId());
         return WebUtils.result(questions);
     }
 
     @RequestMapping(value = "/init", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitQuestions(LoginUser loginUser, @RequestBody ScheduleInitDto initDto) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("学习")
-                .function("课程表")
-                .action("初始化课程表");
-        operationLogService.log(operationLog);
+    public ResponseEntity<Map<String, Object>> submitQuestions(UnionUser unionUser, @RequestBody ScheduleInitDto initDto) {
+        Assert.notNull(unionUser, "登录用户不能为空");
         Assert.notNull(initDto);
         List<ScheduleQuestion> questions = initDto.getQuestionList();
-        businessPlanService.initCourseSchedule(loginUser.getId(), questions);
+        businessPlanService.initCourseSchedule(unionUser.getId(), questions);
         return WebUtils.success();
     }
 
     @RequestMapping("/load/plan")
-    public ResponseEntity<Map<String, Object>> loadCoursePlan(LoginUser loginUser) {
-        SchedulePlan schedulePlan = businessPlanService.getSchedulePlan(loginUser.getId());
+    public ResponseEntity<Map<String, Object>> loadCoursePlan(UnionUser unionUser) {
+        SchedulePlan schedulePlan = businessPlanService.getSchedulePlan(unionUser.getId());
         return WebUtils.result(schedulePlan);
     }
 
     @ApiOperation("获取个人课表")
     @RequestMapping("/load/person/plan")
-    public ResponseEntity<Map<String, Object>> loadCoursePlan(UnionUser unionUser) {
+    public ResponseEntity<Map<String, Object>> loadPersonalCoursePlan(UnionUser unionUser) {
         PersonalSchedulePlan schedulePlan = businessPlanService.getPersonalSchedulePlans(unionUser.getId());
         PersonalCoursePlanDto dto = new PersonalCoursePlanDto();
         dto.setRunningPlans(schedulePlan.getRunningPlans());
@@ -190,23 +157,21 @@ public class ScheduleController {
         dto.setTotalPoint(customerService.loadPersonalTotalPoint(unionUser.getId()));
         dto.setAnnounce(customerService.loadAnnounceMessage(unionUser.getId()));
         dto.setHasCourseSchedule(planService.loadAllCourseSchedules(unionUser.getId()).size() > 0);
+        dto.setCountDownElement(studyService.loadLatestCountDownElement(unionUser.getId()));
         return WebUtils.result(dto);
     }
 
     @RequestMapping(value = "/count/down", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadBusinessCountDown(LoginUser loginUser) {
-        Assert.notNull(loginUser, "登录用户不能为空");
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("商学院")
-                .function("学习计划")
-                .action("倒计时查询");
-        operationLogService.log(operationLog);
-        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+    public ResponseEntity<Map<String, Object>> loadBusinessCountDown(UnionUser unionUser) {
+        Assert.notNull(unionUser, "登录用户不能为空");
+
+        //TODO: 待验证
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(unionUser.getId());
+        if (riseMember != null) {
             Integer days = Days.daysBetween(DateTime.now().withTimeAtStartOfDay(), new DateTime(riseMember.getOpenDate())).getDays();
-            List<CourseSchedule> plan = businessPlanService.getPlan(loginUser.getId());
-            AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(loginUser.getId());
-            boolean hasPlan = planService.loadUserPlans(loginUser.getId()).stream().anyMatch(item -> !item.getDel() && item.getProblemId().equals(ConfigUtils.getTrialProblemId()));
+            List<CourseSchedule> plan = businessPlanService.getPlan(unionUser.getId());
+            AuditionClassMember auditionClassMember = auditionService.loadAuditionClassMember(unionUser.getId());
+            boolean hasPlan = planService.loadUserPlans(unionUser.getId()).stream().anyMatch(item -> !item.getDel() && item.getProblemId().equals(ConfigUtils.getTrialProblemId()));
             CountDownDto dto = new CountDownDto();
             dto.setDays(days);
             dto.setHasSchedule(!CollectionUtils.isEmpty(plan));
@@ -219,8 +184,9 @@ public class ScheduleController {
     }
 
     @RequestMapping(value = "/camp/count/down", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadMonthlyCampCountDown(LoginUser loginUser) {
-        RiseMember riseMember = riseMemberService.getRiseMember(loginUser.getId());
+    public ResponseEntity<Map<String, Object>> loadMonthlyCampCountDown(UnionUser unionUser) {
+        //TODO: 待验证
+        RiseMember riseMember = riseMemberManager.campMember(unionUser.getId());
         if (riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new Date()) > 0) {
             int interval = DateUtils.interval(riseMember.getOpenDate());
             return WebUtils.result(String.format("%02d", interval));

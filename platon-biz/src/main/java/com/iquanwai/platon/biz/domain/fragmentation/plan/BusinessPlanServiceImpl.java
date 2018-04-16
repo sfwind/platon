@@ -1,13 +1,27 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
+import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
+import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleChoiceSubmitDao;
 import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.AuditionClassMember;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.MonthlyCampConfig;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -25,6 +39,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -59,9 +74,11 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Autowired
     private AuditionClassMemberDao auditionClassMemberDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
+    @Autowired
+    private CustomerStatusDao customerStatusDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -245,6 +262,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Override
     public List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId) {
         List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        courseSchedules = courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMemberTypeId() == RiseMember.ELITE).collect(Collectors.toList());
         courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
 
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);
@@ -263,7 +281,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (CourseScheduleDefault.CategoryType.OLD_STUDENT == category) {
             startMonth = 8;
         } else {
-            CourseSchedule oldestCourseSchedule = courseScheduleDao.loadOldestCourseSchedule(profileId);
+            CourseSchedule oldestCourseSchedule = courseScheduleDao.loadOldestCoreCourseSchedule(profileId);
             if (oldestCourseSchedule != null) {
                 startMonth = oldestCourseSchedule.getMonth();
             } else {
@@ -318,8 +336,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 用户选择的选项id
         List<Integer> choices = Lists.newArrayList();
         scheduleQuestions.forEach(question -> question.getScheduleChoices().forEach(item -> choices.add(item.getId())));
-        // 用户购买记录
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证 用户购买记录
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
 
         if (CollectionUtils.isEmpty(userSchedule)) {
             // 插入用户选择
@@ -845,6 +863,52 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         }
         completePlans = completePlans.stream().sorted(Comparator.comparing(PersonalSchedulePlan.SchedulePlan::getCompleteTime).reversed()).collect(Collectors.toList());
         return completePlans;
+    }
+
+    @Override
+    public void initCourseSchedule(Integer profileId, Integer memberTypeId) {
+        List<CourseSchedule> all = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        boolean exists = all.stream().anyMatch(item -> Objects.equals(item.getMemberTypeId(), memberTypeId));
+        if (!exists) {
+            // 生成
+            // TODO 无效的category 2/3/4
+            List<Integer> invliadCategory = Lists.newArrayList(2, 3, 4);
+            List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadByCategoryAndMemberTypeId(memberTypeId).stream().filter(item -> !invliadCategory.contains(item.getCategory())).collect(Collectors.toList());
+            RiseMember riseMember = riseMemberManager.getByMemberType(profileId, memberTypeId);
+            // 全部选中插入
+            List<CourseSchedule> schedules = defaults.stream().map(item -> {
+                CourseSchedule schedule = new CourseSchedule();
+                schedule.setSelected(true);
+                schedule.setProblemId(item.getProblemId());
+                schedule.setRecommend(item.getDefaultSelected());
+                schedule.setProfileId(profileId);
+                schedule.setMemberTypeId(memberTypeId);
+                schedule.setCategory(item.getCategory());
+                schedule.setType(item.getType());
+                // 有月份
+                Integer year;
+                Integer month;
+                CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE);
+                if (status != null && item.getMemberTypeId().equals(RiseMember.ELITE)) {
+                    // 老学员、报名核心能力
+                    year = 2017;
+                    month = 8;
+                } else {
+                    // 新学员，以开营日来计算
+                    month = DateUtils.getMonth(riseMember.getOpenDate());
+                    year = DateUtils.getYear(riseMember.getOpenDate());
+                }
+
+                if (item.getMonth() < month) {
+                    year++;
+                }
+                schedule.setYear(year);
+                schedule.setMonth(item.getMonth());
+                return schedule;
+            }).collect(Collectors.toList());
+
+            courseScheduleDao.batchInsertCourseSchedule(schedules);
+        }
     }
 
 }

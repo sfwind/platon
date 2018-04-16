@@ -16,6 +16,10 @@ public class CourseSchedule {
      */
     private Integer profileId;
     /**
+     * 学员身份 id
+     */
+    private Integer memberTypeId;
+    /**
      * 分类
      */
     private Integer category;
@@ -64,6 +68,7 @@ public class CourseSchedule {
      * 是否是可调整的
      */
     private Boolean adjustable;
+
 
     public interface Type {
         /**

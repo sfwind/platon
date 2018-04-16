@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.dao.common;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
-import com.iquanwai.platon.biz.exception.ErrorConstants;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ThreadPool;
 import org.apache.commons.collections.CollectionUtils;
@@ -11,7 +10,6 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -77,22 +75,6 @@ public class ProfileDao extends DBUtil {
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
-    }
-
-    public int insertProfile(Profile profile) throws SQLException {
-        QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO Profile(Openid, Nickname, City, Country, Province, Headimgurl, MobileNo, Email, Industry, Function, WorkingLife, RealName, RiseId, UnionId)" + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try {
-            Long insertRs = runner.insert(sql, new ScalarHandler<>(), profile.getOpenid(), profile.getNickname(), profile.getCity(), profile.getCountry(), profile.getProvince(), profile.getHeadimgurl(), profile.getMobileNo(), profile.getEmail(), profile.getIndustry(), profile.getFunction(), profile.getWorkingLife(), profile.getRealName(), profile.getRiseId(), profile.getUnionid());
-            return insertRs.intValue();
-        } catch (SQLException e) {
-            if (e.getErrorCode() == ErrorConstants.DUPLICATE_CODE) {
-                throw e;
-            }
-            logger.error(e.getLocalizedMessage(), e);
-        }
-        return -1;
     }
 
     public int updateOpenRise(Integer id) {
@@ -198,6 +180,20 @@ public class ProfileDao extends DBUtil {
         }
 
         return Lists.newArrayList();
+
+    }
+
+    public Profile queryAccountByMemberId(String memberId) {
+        QueryRunner run = new QueryRunner(getDataSource());
+        BeanHandler<Profile> h = new BeanHandler<Profile>(Profile.class);
+        String sql = "SELECT * FROM Profile where MemberId = ?";
+        try {
+            return run.query(sql, h, memberId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+        return null;
     }
 
     public boolean submitPersonalCenterProfileWithMoreDetail(Profile profile) {
@@ -207,21 +203,6 @@ public class ProfileDao extends DBUtil {
         try {
             run.update(updateSql,
                     profile.getCity(), profile.getProvince(),profile.getMarried(),profile.getEmail(),profile.getWeixinId(),profile.getId());
-        } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage(), e);
-            return false;
-        }
-        return true;
-    }
-
-    public boolean submitNewProfile(Profile profile) {
-        QueryRunner run = new QueryRunner(getDataSource());
-        String updateSql = "Update Profile Set NickName = ?, City=?, Province=?," +
-                "RealName=?,Address=?,Receiver=?,Married=?,WeixinId=?,Email = ?  where id=?";
-        try {
-            run.update(updateSql, profile.getNickname(),
-                    profile.getCity(), profile.getProvince(), profile.getRealName(), profile.getAddress(),
-                    profile.getReceiver(), profile.getMarried(),profile.getWeixinId(),profile.getEmail(), profile.getId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
             return false;
@@ -322,5 +303,20 @@ public class ProfileDao extends DBUtil {
             logger.error(e.getLocalizedMessage(), e);
         }
         return false;
+    }
+
+    public List<Profile> queryByMemberIds(List<String> memberIds) {
+        if (memberIds.size() == 0) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM Profile WHERE MemberId IN (" + produceQuestionMark(memberIds.size()) + ") AND Del = 0";
+        ResultSetHandler<List<Profile>> h = new BeanListHandler<>(Profile.class);
+        try {
+            return runner.query(sql, h, memberIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
     }
 }

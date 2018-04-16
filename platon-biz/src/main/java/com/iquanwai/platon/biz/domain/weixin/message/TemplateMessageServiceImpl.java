@@ -53,7 +53,7 @@ public class TemplateMessageServiceImpl implements TemplateMessageService {
     }
 
     private boolean sendMessage(TemplateMessage templateMessage, boolean forwardlyPush) {
-        addHook(templateMessage);
+//        addHook(templateMessage);
         boolean sendTag = true;
         if (forwardlyPush) {
             // 发送权限校验

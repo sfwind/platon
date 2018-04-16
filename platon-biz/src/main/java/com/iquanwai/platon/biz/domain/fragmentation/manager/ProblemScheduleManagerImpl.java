@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -26,8 +25,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private AccountService accountService;
-    @Autowired
     private MonthlyCampScheduleDao monthlyCampScheduleDao;
     @Autowired
     private UserProblemScheduleDao userProblemScheduleDao;
@@ -37,6 +34,8 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     private ProblemScheduleDao problemScheduleDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private CourseScheduleDefaultDao courseScheduleDefaultDao;
     @Autowired
@@ -58,6 +57,122 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
         }
 
         return getChapters(problemSchedules);
+    }
+
+    @Override
+    public List<Chapter> loadDefaultRoadMap(Integer problemId) {
+
+        List<ProblemSchedule> problemSchedules1 = problemScheduleDao.loadProblemSchedule(problemId);
+
+        List<UserProblemSchedule> problemSchedules = problemSchedules1.stream()
+                .map(problemSchedule -> getUserProblemSchedule(problemSchedule, null))
+                .collect(Collectors.toList());
+
+        return getChapters(problemSchedules);
+    }
+
+    @Override
+    public Integer getProblemType(Integer problemId, Integer profileId) {
+        //查询用户是否生成了课表
+        CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
+        if (courseSchedule != null) {
+            return courseSchedule.getType();
+        }
+
+        // TODO: 有问题
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
+        List<CourseScheduleDefault> courseSchedules;
+        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
+                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
+
+            //老学员用老课表
+            if (customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE) != null) {
+                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
+                        CourseScheduleDefault.CategoryType.OLD_STUDENT);
+            } else {
+                //新学员用新课表
+                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
+                        CourseScheduleDefault.CategoryType.NEW_STUDENT);
+            }
+        } else {
+            //非商学院用户,使用新课表
+            courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
+                    CourseScheduleDefault.CategoryType.NEW_STUDENT);
+        }
+
+        boolean major = courseSchedules.stream().anyMatch(courseScheduleDefault ->
+                courseScheduleDefault.getProblemId().equals(problemId));
+
+        return major ? CourseScheduleDefault.Type.MAJOR : CourseScheduleDefault.Type.MINOR;
+    }
+
+    @Override
+    public Integer getLearningMajorProblemId(Integer profileId) {
+        // 针对不同身份的学员，查看当前主修课的 ProblemId
+        return getMajorProblemIdByYearAndMonth(profileId, ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
+    }
+
+    @Override
+    public Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month) {
+        // 针对不同身份的学员，查看当前主修课的 ProblemId
+        // TODO: 杨仁
+        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        if (riseMember != null && riseMember.getMemberTypeId() != null) {
+            switch (riseMember.getMemberTypeId()) {
+                case RiseMember.CAMP:
+                    List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
+                    MonthlyCampSchedule campMajorCampSchedule = monthlyCampSchedules.stream()
+                            .filter(monthlyCampSchedule -> month.equals(monthlyCampSchedule.getMonth()))
+                            .filter(monthlyCampSchedule -> year.equals(monthlyCampSchedule.getYear()))
+                            .filter(monthlyCampSchedule -> MonthlyCampSchedule.MAJOR_TYPE == monthlyCampSchedule.getType())
+                            .findAny()
+                            .orElse(null);
+                    if (campMajorCampSchedule != null) {
+                        return campMajorCampSchedule.getProblemId();
+                    }
+                    break;
+                case RiseMember.HALF:
+                case RiseMember.ANNUAL:
+                case RiseMember.COURSE:
+                    break;
+                case RiseMember.ELITE:
+                case RiseMember.HALF_ELITE:
+                    List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+                    CourseSchedule riseMemberCourseSchedule = courseSchedules.stream()
+                            .filter(courseSchedule -> year.equals(courseSchedule.getYear()))
+                            .filter(courseSchedule -> month.equals(courseSchedule.getMonth()))
+                            .filter(courseSchedule -> CourseSchedule.Type.MAJOR == courseSchedule.getType())
+                            .findAny().orElse(null);
+                    if (riseMemberCourseSchedule != null) {
+                        return riseMemberCourseSchedule.getProblemId();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<Integer> getMajorProblemIds(Integer profileId, Integer memberTypeId, Integer year, Integer month) {
+        List<CourseSchedule> majorCourseSchedules = courseScheduleDao.loadAllMajorScheduleByProfileId(profileId);
+        List<Integer> majorProblemIds = majorCourseSchedules.stream()
+                .filter(schedule -> memberTypeId.equals(schedule.getMemberTypeId()) && year.equals(schedule.getYear()) && month.equals(schedule.getMonth()))
+                .map(CourseSchedule::getProblemId)
+                .collect(Collectors.toList());
+        return majorProblemIds;
+    }
+
+
+    @Override
+    public List<Integer> getMajorProblemIds(Integer profileId, Integer year, Integer month) {
+        List<CourseSchedule> majorCourseSchedules = courseScheduleDao.loadAllMajorScheduleByProfileId(profileId);
+        List<Integer> majorProblemIds = majorCourseSchedules.stream()
+                .filter(schedule -> year.equals(schedule.getYear()) && month.equals(schedule.getMonth()))
+                .map(CourseSchedule::getProblemId)
+                .collect(Collectors.toList());
+        return majorProblemIds;
     }
 
     private List<Chapter> getChapters(List<UserProblemSchedule> problemSchedules) {
@@ -102,98 +217,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
 
         chapterList.sort((o1, o2) -> o1.getChapter() - o2.getChapter());
         return chapterList;
-    }
-
-    @Override
-    public List<Chapter> loadDefaultRoadMap(Integer problemId) {
-
-        List<ProblemSchedule> problemSchedules1 = problemScheduleDao.loadProblemSchedule(problemId);
-
-        List<UserProblemSchedule> problemSchedules = problemSchedules1.stream()
-                .map(problemSchedule -> getUserProblemSchedule(problemSchedule, null))
-                .collect(Collectors.toList());
-
-        return getChapters(problemSchedules);
-    }
-
-    @Override
-    public Integer getProblemType(Integer problemId, Integer profileId) {
-        //查询用户是否生成了课表
-        CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(profileId, problemId);
-        if (courseSchedule != null) {
-            return courseSchedule.getType();
-        }
-
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        List<CourseScheduleDefault> courseSchedules;
-        if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||
-                riseMember.getMemberTypeId() == RiseMember.HALF_ELITE)) {
-
-            //老学员用老课表
-            if (customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE) != null) {
-                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
-                        CourseScheduleDefault.CategoryType.OLD_STUDENT);
-            } else {
-                //新学员用新课表
-                courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
-                        CourseScheduleDefault.CategoryType.NEW_STUDENT);
-            }
-        } else {
-            //非商学院用户,使用新课表
-            courseSchedules = courseScheduleDefaultDao.loadMajorCourseScheduleDefaultByCategory(
-                    CourseScheduleDefault.CategoryType.NEW_STUDENT);
-        }
-
-        boolean major = courseSchedules.stream().anyMatch(courseScheduleDefault ->
-                courseScheduleDefault.getProblemId().equals(problemId));
-
-        return major ? CourseScheduleDefault.Type.MAJOR : CourseScheduleDefault.Type.MINOR;
-    }
-
-    @Override
-    public Integer getLearningMajorProblemId(Integer profileId) {
-        // 针对不同身份的学员，查看当前主修课的 ProblemId
-        return getMajorProblemIdByYearAndMonth(profileId, ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
-    }
-
-    @Override
-    public Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month) {
-        // 针对不同身份的学员，查看当前主修课的 ProblemId
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember != null && riseMember.getMemberTypeId() != null) {
-            switch (riseMember.getMemberTypeId()) {
-                case RiseMember.CAMP:
-                    List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
-                    MonthlyCampSchedule campMajorCampSchedule = monthlyCampSchedules.stream()
-                            .filter(monthlyCampSchedule -> month.equals(monthlyCampSchedule.getMonth()))
-                            .filter(monthlyCampSchedule -> year.equals(monthlyCampSchedule.getYear()))
-                            .filter(monthlyCampSchedule -> MonthlyCampSchedule.MAJOR_TYPE == monthlyCampSchedule.getType())
-                            .findAny()
-                            .orElse(null);
-                    if (campMajorCampSchedule != null) {
-                        return campMajorCampSchedule.getProblemId();
-                    }
-                    break;
-                case RiseMember.HALF:
-                case RiseMember.ANNUAL:
-                    break;
-                case RiseMember.ELITE:
-                case RiseMember.HALF_ELITE:
-                    List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-                    CourseSchedule riseMemberCourseSchedule = courseSchedules.stream()
-                            .filter(courseSchedule -> year.equals(courseSchedule.getYear()))
-                            .filter(courseSchedule -> month.equals(courseSchedule.getMonth()))
-                            .filter(courseSchedule -> CourseSchedule.Type.MAJOR == courseSchedule.getType())
-                            .findAny().orElse(null);
-                    if (riseMemberCourseSchedule != null) {
-                        return riseMemberCourseSchedule.getProblemId();
-                    }
-                    break;
-                case RiseMember.COURSE:
-                    break;
-            }
-        }
-        return null;
     }
 
     private String chapterName(List<Section> sectionList) {

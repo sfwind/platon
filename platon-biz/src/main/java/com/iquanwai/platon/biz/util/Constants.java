@@ -121,7 +121,7 @@ public interface Constants {
 
     interface Project{
         int CORE_PROJECT = 1;
-        int MINI_MBA_PROJECT = 2;
+        int BUSINESS_THOUGHT_PROJECT = 2;
     }
 
     String TEMP_IMAGE_PATH = "/data/static/images/";

@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.dao.user.UserInfoDao;
+
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
@@ -16,7 +17,6 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.*;
-import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +42,6 @@ public class AccountServiceImpl implements AccountService {
     private RegionDao regionDao;
     @Autowired
     private ProfileDao profileDao;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
-    @Autowired
-    private RiseClassMemberDao riseClassMemberDao;
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
@@ -66,15 +61,12 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private CourseScheduleDao courseScheduleDao;
     @Autowired
-    private GroupPromotionDao groupPromotionDao;
-    @Autowired
-    private PrizeCardDao prizeCardDao;
-    @Autowired
-    private RabbitMQFactory rabbitMQFactory;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
+    private RiseMemberDao riseMemberDao;
+    @Autowired
     private UserInfoDao userInfoDao;
+
 
     private List<Region> provinceList;
     private List<Region> cityList;
@@ -83,12 +75,6 @@ public class AccountServiceImpl implements AccountService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @PostConstruct
-    public void init() {
-        List<UserRole> userRoleList = userRoleDao.loadAll(UserRole.class);
-        userRoleList.stream().filter(userRole1 -> !userRole1.getDel()).forEach(userRole -> userRoleMap.put(userRole.getProfileId(), userRole.getRoleId()));
-        logger.info("role init complete");
-    }
 
     @Override
     public boolean initUserByUnionId(String unionId, Boolean realTime) {
@@ -129,7 +115,6 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfileByRiseId(String riseId) {
         Profile profile = profileDao.queryByRiseId(riseId);
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -147,7 +132,6 @@ public class AccountServiceImpl implements AccountService {
     public Profile getProfileByUnionId(String unionId) {
         Profile profile = profileDao.queryByUnionId(unionId);
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -163,16 +147,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Profile getProfile(String openid) {
-        Profile profile = getProfileFromDB(openid);
-        // checkHeadImgUrlEffectiveness(profile);
-        return profile;
+        return getProfileFromDB(openid);
     }
 
     @Override
     public Profile getProfile(Integer profileId) {
         Profile profile = profileDao.load(Profile.class, profileId);
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -182,7 +163,6 @@ public class AccountServiceImpl implements AccountService {
             } else {
                 profile.setRole(role);
             }
-            // checkHeadImgUrlEffectiveness(profile);
         }
         return profile;
     }
@@ -210,7 +190,6 @@ public class AccountServiceImpl implements AccountService {
         Profile profile = profileDao.queryByOpenId(openid);
 
         if (profile != null) {
-            profile.setRiseMember(getProfileRiseMember(profile.getId()));
             if (profile.getHeadimgurl() != null) {
                 profile.setHeadimgurl(profile.getHeadimgurl().replace("http:", "https:"));
             }
@@ -295,21 +274,21 @@ public class AccountServiceImpl implements AccountService {
 
         UserInfo existUserInfo = userInfoDao.loadByProfileId(profile.getId());
         //首次填写
-        if(existUserInfo==null){
+        if (existUserInfo == null) {
             userInfoDao.insert(userInfo);
             //如果提交比例为100%，则更新isFull，增加积分
-            if(userInfo.getRate()==100){
-                logger.info(profile.getId()+"首次信息填写完整，增加积分");
-                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+            if (userInfo.getRate() == 100) {
+                logger.info(profile.getId() + "首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
                 userInfoDao.updateIsFull(profile.getId());
             }
-        }else{
+        } else {
             userInfoDao.update(userInfo);
             //判断之前信息是否已经填写完整
             //如果未完整，则增加积分和更新isFull
-            if(existUserInfo.getIsFull()==0 && userInfo.getRate()==100){
-                logger.info(profile.getId()+"首次信息填写完整，增加积分");
-                pointRepo.riseCustomerPoint(profile.getId(),ConfigUtils.getProfileFullScore());
+            if (existUserInfo.getIsFull() == 0 && userInfo.getRate() == 100) {
+                logger.info(profile.getId() + "首次信息填写完整，增加积分");
+                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
                 userInfoDao.updateIsFull(profile.getId());
             }
         }
@@ -426,11 +405,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean isRiseMember(Integer profileId) {
-        return riseMemberDao.loadValidRiseMember(profileId) != null;
-    }
-
-    @Override
     public List<Coupon> loadCoupons(Integer profileId) {
         List<Coupon> targetCoupons = Lists.newArrayList();
         // 过滤出未使用并且未过期的优惠券
@@ -443,15 +417,6 @@ public class AccountServiceImpl implements AccountService {
             targetCoupons.add(tempCoupon);
         }
         return targetCoupons;
-    }
-
-    @Override
-    public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
-        RiseClassMember activeRiseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
-        if (activeRiseClassMember == null) {
-            activeRiseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
-        }
-        return activeRiseClassMember;
     }
 
     @Override
@@ -470,35 +435,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<RiseMember> loadAllRiseMembersByProfileId(Integer profileId) {
-        return riseMemberDao.loadRiseMembersByProfileId(profileId);
-    }
-
-    @Override
-    public Integer getProfileRiseMember(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember == null) {
-            return 0;
-        }
-        Integer memberTypeId = riseMember.getMemberTypeId();
-        if (memberTypeId == null) {
-            return 0;
-        }
-        // 精英或者专业版用户
-        if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE) {
-            return 1;
-            // 专项课用户
-        } else if (memberTypeId == RiseMember.CAMP) {
-            return 3;
-            // 课程单买用户
-        } else if (memberTypeId == RiseMember.COURSE) {
-            return 2;
-        }
-
-        return 0;
-    }
-
-    @Override
     public String createSubscribePush(String openid, String callback, String scene) {
         Integer result = subscribePushDao.insert(openid, callback, scene);
         String sceneCode = SUBSCRIBE_PUSH_PREFIX + result;
@@ -512,7 +448,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Integer loadUserScheduleCategory(Integer profileId) {
-        CourseSchedule courseSchedule = courseScheduleDao.loadOldestCourseSchedule(profileId);
+        // TODO 修复因为其他课表原因导致不能正常显示的问题
+        CourseSchedule courseSchedule = courseScheduleDao.loadOldestCoreCourseSchedule(profileId);
         if (courseSchedule != null) {
             return courseSchedule.getCategory();
         }
@@ -532,39 +469,28 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
+        List<Profile> profiles = profileDao.queryAccountsByMemberIds(memberIds);
+        List<Integer> profileIds = profiles.stream().map(Profile::getId)
+                .distinct().collect(Collectors.toList());
+        return profileIds;
+    }
+
+    @Override
     public RiseMember getValidRiseMember(Integer profileId) {
+        // TODO: 杨仁
         return riseMemberDao.loadValidRiseMember(profileId);
     }
 
-    @Override
-    public boolean isPreviewNewUser(Integer profileId) {
-        //判断是否参加过商学院和专项课
-        if (riseMemberDao.loadRiseMembersByProfileId(profileId).size() > 0) {
-            return false;
-        }
-        //判断是否参加"一带二"活动
-        if (groupPromotionDao.loadByProfileId(profileId) != null) {
-            return false;
-        }
-        //判断是否领取过礼品卡
-        if (prizeCardDao.loadAnnualCardByReceiver(profileId) != null) {
-            return false;
-        }
-        return true;
-    }
 
     @Override
-    public boolean isBusinessRiseMember(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        return riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE);
-    }
-
-
-    @Override
-    public List<Integer> getProfileIdsByMemberId(List<String> memberIds) {
-        List<RiseClassMember> riseClassMembers = riseClassMemberDao.loadByMemberIds(memberIds);
-        List<Integer> profileIds = riseClassMembers.stream().map(RiseClassMember::getProfileId).distinct().collect(Collectors.toList());
-        return profileIds;
+    public String getOpenidByMemberId(String memberId) {
+        Profile profile = profileDao.queryAccountByMemberId(memberId);
+        if (profile == null) {
+            return null;
+        } else {
+            return profile.getOpenid();
+        }
     }
 
 }

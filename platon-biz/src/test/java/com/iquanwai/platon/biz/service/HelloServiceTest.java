@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.service;
 
 import com.iquanwai.platon.biz.TestBase;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
+import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.GeneratePlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.interlocution.InterlocutionService;
@@ -21,6 +22,8 @@ public class HelloServiceTest extends TestBase {
     private GeneratePlanService generatePlanService;
     @Autowired
     private PlanService planService;
+    @Autowired
+    private BusinessPlanService businessPlanService;
 
     @Test
     public void sendTest() {
@@ -31,8 +34,8 @@ public class HelloServiceTest extends TestBase {
 
     @Test
     public void teamLearningTest() {
-        int login = customerService.loadContinuousLoginCount(12957);
-        System.out.println(login);
+
+        businessPlanService.initCourseSchedule(30, 8);
     }
 
 }

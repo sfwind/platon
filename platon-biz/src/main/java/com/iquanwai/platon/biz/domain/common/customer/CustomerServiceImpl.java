@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.domain.common.customer;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.common.*;
@@ -7,6 +8,7 @@ import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PrizeCardDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
@@ -16,7 +18,6 @@ import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
-import com.iquanwai.platon.biz.po.common.UserRole;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -55,6 +56,8 @@ public class CustomerServiceImpl implements CustomerService {
     private RiseUserLoginDao riseUserLoginDao;
     @Autowired
     private RiseMemberDao riseMemberDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
     @Autowired
     private AnnounceDao announceDao;
     @Autowired
@@ -194,7 +197,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public String loadAnnounceMessage(Integer profileId) {
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
+        // TODO: 待验证,取第一个身份展示信息
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+        RiseMember riseMember = null;
+        if(CollectionUtils.isNotEmpty(riseMembers)){
+            riseMember = riseMembers.get(0);
+        }
         int memberTypeId = riseMember == null ? 0 : riseMember.getMemberTypeId();
         List<Announce> announces = announceDao.loadByMemberTypeId(memberTypeId);
         Announce validAnnounce = announces.stream().filter(announce -> announce.getStartTime() != null
@@ -222,16 +230,12 @@ public class CustomerServiceImpl implements CustomerService {
         if (customerStatus == null) {
             notifyTag = false;
         } else {
-            RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-            if (riseMember == null) {
-                notifyTag = true;
-            } else {
-                if (riseMember.getMemberTypeId() == RiseMember.ELITE || riseMember.getMemberTypeId() == RiseMember.HALF_ELITE) {
-                    notifyTag = false;
-                } else {
-                    notifyTag = true;
-                }
-            }
+            // TODO: 待验证
+            List<Integer> memberTypes = Lists.newArrayList();
+            memberTypes.add(RiseMember.ELITE);
+            memberTypes.add(RiseMember.BUSINESS_THOUGHT);
+            List<RiseMember> riseMember = riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, memberTypes);
+            notifyTag = CollectionUtils.isNotEmpty(riseMember);
         }
         if (notifyTag) {
             BusinessSchoolApplication businessSchoolApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
