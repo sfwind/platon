@@ -27,7 +27,13 @@ public class BusinessSchoolApplication {
     private String originMemberTypeName;
     private Integer lastVerified;
     private Boolean valid;
-    private Integer project;
+    private Boolean expired;
+    private Boolean entry;
+
+    /**
+     * 项目类型
+     */
+    private Integer memberTypeId;
 
     public static final int APPLYING = 0;
     public static final int APPROVE = 1;

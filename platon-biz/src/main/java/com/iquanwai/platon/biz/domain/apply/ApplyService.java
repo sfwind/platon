@@ -2,6 +2,7 @@ package com.iquanwai.platon.biz.domain.apply;
 
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -43,4 +44,6 @@ public interface ApplyService {
      * @return 是否能够申请
      */
     boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer project);
+
+    Pair<Long, Integer> loadRemainTimeMemberTypeId(Integer profileId);
 }
