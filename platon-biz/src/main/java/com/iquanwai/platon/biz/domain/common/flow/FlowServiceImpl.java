@@ -109,9 +109,7 @@ public class FlowServiceImpl implements FlowService {
     public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId) {
         List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
 
-        // TODO: 杨仁
-        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-        boolean isBusinessRiseMember = CollectionUtils.isNotEmpty(riseMembers);
+       boolean isBusinessRiseMember =  riseMemberManager.coreBusinessSchoolMember(profileId)!=null || riseMemberManager.proMember(profileId)!=null;
 
         activitiesFlows = activitiesFlows.stream()
                 .map(activitiesFlow -> {

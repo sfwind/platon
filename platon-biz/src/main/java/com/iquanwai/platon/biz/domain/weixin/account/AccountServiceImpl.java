@@ -419,18 +419,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public RiseClassMember loadDisplayRiseClassMember(Integer profileId) {
-        //TODO: 杨仁
-//        RiseClassMember activeRiseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
-//        if (activeRiseClassMember == null) {
-//            activeRiseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
-//        }
-//        return activeRiseClassMember;
-
-        return null;
-    }
-
-    @Override
     public Boolean openLearningNotify(Integer profileId) {
         return profileDao.updateLearningNotifyStatus(profileId, 1);
     }

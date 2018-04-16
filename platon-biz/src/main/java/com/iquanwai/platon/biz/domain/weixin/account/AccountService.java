@@ -132,13 +132,6 @@ public interface AccountService {
      */
     List<Coupon> loadCoupons(Integer profileId);
 
-    /**
-     * 获取用户当前的RiseClassMember记录
-     *
-     * @param profileId 用户id
-     * @return 当前的学号记录
-     */
-    RiseClassMember loadDisplayRiseClassMember(Integer profileId);
 
     /**
      * 打开每日学习提醒
