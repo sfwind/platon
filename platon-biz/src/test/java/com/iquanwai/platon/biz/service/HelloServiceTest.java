@@ -35,7 +35,7 @@ public class HelloServiceTest extends TestBase {
     @Test
     public void teamLearningTest() {
 
-        businessPlanService.initCourseSchedule(25556, 8);
+        businessPlanService.initCourseSchedule(30, 8);
     }
 
 }
