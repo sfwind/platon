@@ -321,7 +321,7 @@ public class PlanServiceImpl implements PlanService {
             throw new CreateCourseException("您暂时没有开课权限哦");
         }
         if (new DateTime().isBefore(riseMember.getOpenDate().getTime())) {
-            throw new CreateCourseException("您在 " + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + " 才能开课哦");
+            throw new CreateCourseException("您在" + DateUtils.parseDateToFormat5(riseMember.getOpenDate()) + "才能开课哦");
         }
 
         Integer memberTypeId = riseMember.getMemberTypeId();
