@@ -56,6 +56,22 @@ public class OperationController {
         return WebUtils.result("正在进行中");
     }
 
+    @RequestMapping(value = "/generate/special/certificate", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generateSpecialCertificate(UnionUser unionUser, @RequestBody RiseCertificate riseCertificate) {
+        Integer year = riseCertificate.getYear();
+        Integer month = riseCertificate.getMonth();
+        Integer memberTypeId = riseCertificate.getMemberTypeId();
+        Integer type = riseCertificate.getType();
+        List<String> memberIds = riseCertificate.getMemberIds();
+
+        ThreadPool.execute(() -> {
+            logger.info("开始插入特别身份证书");
+            certificateService.insertSpecialCertificate(memberIds, year, month, memberTypeId, type);
+            templateMessageService.sendSelfCompleteMessage("插入特别身份证书", unionUser.getOpenId());
+        });
+        return WebUtils.result("正在进行中");
+    }
+
     @RequestMapping(value = "/generate/fullattendance", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> generateFullAttendanceReward(UnionUser unionUser, @RequestBody FullAttendanceReward fullAttendanceReward) {
         Integer month = fullAttendanceReward.getMonth();

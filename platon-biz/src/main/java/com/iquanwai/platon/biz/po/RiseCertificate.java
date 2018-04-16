@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.po;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by justin on 17/8/29.
@@ -34,6 +35,8 @@ public class RiseCertificate {
     private String typeName; //证书类型名称 非db字段
     private String congratulation; //证书描述 非db字段
     private String nextCertificateNo; // 下一位证书的证书 No，下载证书图片用
+
+    private List<String> memberIds;
 
     public interface Type {
         /**
