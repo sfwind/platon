@@ -798,8 +798,9 @@ public class CertificateServiceImpl implements CertificateService {
                     break;
                 case Constants.CERTIFICATE.TYPE.SUPERB_GROUP:
                     inputImage = ImageUtils.copy(excellentImage);
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(riseCertificate.getProfileId());
-                    String className = riseClassMember.getClassName();
+                    // RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(riseCertificate.getProfileId());
+                    ClassMember classMember = classMemberDao.loadByProfileId(riseCertificate.getProfileId(), riseCertificate.getMemberTypeId());
+                    String className = classMember.getClassName();
                     String classNumber = className.substring(4);
                     String monthNumber = className.substring(2, 4);
                     ImageUtils.writeTextCenter(inputImage, 200, "圈外同学 • " + month + "月课程", font.deriveFont(28f), new Color(255, 255, 255));
