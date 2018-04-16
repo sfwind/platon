@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.ArticlesFlow;
 import com.iquanwai.platon.biz.po.LivesFlow;
 import com.iquanwai.platon.biz.po.ProblemsFlow;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySuccessDto;
 import com.iquanwai.platon.web.fragmentation.dto.LandingPageDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
@@ -68,7 +69,12 @@ public class LandingPageController {
         applySuccessDto.setIsShowPassNotify(applicationPass.getLeft() > 0);
         applySuccessDto.setRemainTime(applicationPass.getLeft());
         applySuccessDto.setGoPayMemberTypeId(applicationPass.getRight());
-        applySuccessDto.setName(riseMemberTypeRepo.memberType(applicationPass.getRight()).getDescription());
+        if (applicationPass.getRight() != null) {
+            MemberType wanna = riseMemberTypeRepo.memberType(applicationPass.getRight());
+            if (wanna != null) {
+                applySuccessDto.setName(wanna.getDescription());
+            }
+        }
 
         dto.setApplySuccess(applySuccessDto);
         dto.setIsBusinessMember(CollectionUtils.isNotEmpty(riseMembers));
