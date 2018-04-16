@@ -74,4 +74,15 @@ public class BusinessSchoolApplicationDao extends DBUtil {
 
         return null;
     }
+
+    public Integer expiredApply(Integer id) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "UPDATE BusinessSchoolApplication SET Expired = 1 WHERE Id = ?";
+        try {
+            return runner.update(sql, id);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
 }

@@ -4,12 +4,16 @@ package com.iquanwai.platon.biz.domain.apply;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplyChoiceDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessApplyQuestionDao;
 import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
+import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyChoice;
 import com.iquanwai.platon.biz.po.apply.BusinessApplyQuestion;
 import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +38,8 @@ public class ApplyServiceImpl implements ApplyService {
     private BusinessApplyChoiceDao businessApplyChoiceDao;
     @Autowired
     private BusinessSchoolApplicationDao businessSchoolApplicationDao;
+    @Autowired
+    private RiseMemberTypeRepo riseMemberTypeRepo;
 
     @Override
     public List<BusinessApplyQuestion> loadBusinessApplyQuestions(Integer profileId) {
@@ -82,17 +88,43 @@ public class ApplyServiceImpl implements ApplyService {
 
 
     @Override
-    public boolean hasAvailableApply(Integer profileId, Integer project) {
-        return this.hasAvailableApply(businessSchoolApplicationDao.loadApplyList(profileId), project);
+    public boolean hasAvailableApply(Integer profileId, Integer memberTypeId) {
+        return this.hasAvailableApply(businessSchoolApplicationDao.loadApplyList(profileId), memberTypeId);
     }
 
     @Override
-    public boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer project) {
+    public boolean hasAvailableApply(List<BusinessSchoolApplication> applyList, Integer memberTypeId) {
         return applyList
                 .stream()
-                .filter(item -> Objects.equals(item.getProject(), project))
+                .filter(item -> Objects.equals(item.getMemberTypeId(), memberTypeId))
                 .filter(item -> item.getStatus() == BusinessSchoolApplication.APPROVE)
                 .filter(BusinessSchoolApplication::getDeal)
-                .anyMatch(item -> DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) > 0);
+                .filter(item -> !item.getExpired())
+                .peek(item -> {
+                    if (DateUtils.intervalMinute(DateUtils.afterHours(item.getDealTime(), 24)) <= 0) {
+                        // 已经过期
+                        item.setExpired(true);
+                        businessSchoolApplicationDao.expiredApply(item.getId());
+                    }
+                })
+                .filter(item -> !item.getEntry())
+                .anyMatch(item -> !item.getExpired());
+    }
+
+    @Override
+    public Pair<Long, Integer> loadRemainTimeMemberTypeId(Integer profileId) {
+        List<BusinessSchoolApplication> applies = this.loadApplyList(profileId);
+        List<MemberType> memberTypes = riseMemberTypeRepo.loadAll().stream().filter(item -> RiseMember.isMember(item.getId())).collect(Collectors.toList());
+        Integer finalMemberType = memberTypes.stream().map(MemberType::getId).filter(item -> hasAvailableApply(applies, item)).findAny().orElse(null);
+        if (finalMemberType != null) {
+            // 可以付款这个,拿出id最大的
+            BusinessSchoolApplication apply = applies.stream().filter(item -> item.getMemberTypeId().equals(finalMemberType)).sorted(((o1, o2) -> o2.getId() - o1.getId())).findFirst().orElse(null);
+            if (apply != null) {
+                Long intervalLong = DateUtils.afterDays(apply.getDealTime(), 1).getTime() -
+                        System.currentTimeMillis();
+                return Pair.of(intervalLong, finalMemberType);
+            }
+        }
+        return Pair.of(0L, null);
     }
 }
