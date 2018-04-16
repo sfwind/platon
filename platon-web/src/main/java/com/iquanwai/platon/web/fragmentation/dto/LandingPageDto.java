@@ -22,10 +22,6 @@ public class LandingPageDto {
     private Boolean isBusinessMember;
     @ApiModelProperty("个人中心通知图标是否显示红点")
     private Boolean notify;
-    @ApiModelProperty("是否显示商学院申请通过通知")
-    private Boolean isShowPassNotify;
-    @ApiModelProperty("申请有效期剩余时间")
-    private Long remainTime;
     @ApiModelProperty("首页上面的 Banner 配置")
     private List<LandingPageBanner> pageBanners;
     @ApiModelProperty("课程数据")
@@ -36,5 +32,6 @@ public class LandingPageDto {
     private List<ArticlesFlow> articlesFlows;
     @ApiModelProperty("活动数据")
     private List<ActivitiesFlow> activitiesFlows;
-
+    @ApiModelProperty("申请通过记录")
+    private ApplySuccessDto applySuccess;
 }
