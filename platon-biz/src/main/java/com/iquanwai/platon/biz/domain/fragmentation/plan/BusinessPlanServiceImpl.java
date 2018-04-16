@@ -890,15 +890,16 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 Integer year;
                 Integer month;
                 CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE);
-                if (status == null) {
+                if (status != null && item.getMemberTypeId().equals(RiseMember.ELITE)) {
+                    // 老学员、报名核心能力
+                    year = 2017;
+                    month = 8;
+                } else {
                     // 新学员，以开营日来计算
                     month = DateUtils.getMonth(riseMember.getOpenDate());
                     year = DateUtils.getYear(riseMember.getOpenDate());
-                } else {
-                    // 老学员
-                    year = 2017;
-                    month = 8;
                 }
+
                 if (item.getMonth() < month) {
                     year++;
                 }
