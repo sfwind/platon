@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
 import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
@@ -20,6 +21,7 @@ import com.iquanwai.platon.biz.po.MonthlyCampConfig;
 import com.iquanwai.platon.biz.po.PracticePlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
@@ -75,6 +77,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private RiseMemberManager riseMemberManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
+    @Autowired
+    private CustomerStatusDao customerStatusDao;
 
     @Override
     public List<CourseSchedule> getPlan(Integer profileId) {
@@ -883,7 +887,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 // 有月份
                 Integer year;
                 Integer month;
-                if (item.getCategory() == CourseScheduleDefault.CategoryType.NEW_STUDENT) {
+                CustomerStatus status = customerStatusDao.load(profileId, CustomerStatus.OLD_SCHEDULE);
+                if (status != null) {
                     // 新学员，以开营日来计算
                     month = DateUtils.getMonth(riseMember.getOpenDate());
                     year = DateUtils.getYear(riseMember.getOpenDate());
@@ -899,6 +904,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 schedule.setMonth(item.getMonth());
                 return schedule;
             }).collect(Collectors.toList());
+
             courseScheduleDao.batchInsertCourseSchedule(schedules);
         }
     }
