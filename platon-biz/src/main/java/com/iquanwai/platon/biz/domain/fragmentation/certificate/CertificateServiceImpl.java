@@ -649,7 +649,10 @@ public class CertificateServiceImpl implements CertificateService {
     private void insertAndDrawCertificate(ClassMember classMember, Integer year, Integer month, Integer type, Integer problemId) {
         RiseCertificate certificate = insertCertificateRecord(classMember, year, month, type, problemId);
         if (certificate != null) {
-            drawRiseCertificate(certificate, true);
+            Pair<Boolean, String> drawResult = drawRiseCertificate(certificate, true);
+            if (drawResult.getLeft()) {
+                riseCertificateDao.updateImageUrl(certificate.getId(), ConfigUtils.getPicturePrefix() + drawResult.getRight());
+            }
         }
     }
 
@@ -689,6 +692,7 @@ public class CertificateServiceImpl implements CertificateService {
             certificate.setProblemName(cacheService.getProblem(problemId).getAbbreviation());
             int result = riseCertificateDao.insert(certificate);
             if (result > 0) {
+                certificate.setId(result);
                 return certificate;
             }
         }
