@@ -224,11 +224,14 @@ public class CertificateServiceImpl implements CertificateService {
             int learningYear = ConfigUtils.getLearningYear();
             int learningMonth = ConfigUtils.getLearningMonth();
 
-            boolean generatePermission = checkGenerateFullAttendancePermission(improvementPlan);
-            if (generatePermission) {
-                FullAttendanceReward fullAttendanceReward = insertFullAttendance(profileId, problemId, learningYear, learningMonth, FULL_ATTENDANCE_AMOUNT);
-                if (fullAttendanceReward != null) {
-                    sendSingleFullAttendanceCoupon(learningYear, learningMonth, profileId);
+            List<Integer> majorProblemIds = problemScheduleManager.getMajorProblemIds(profileId, ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
+            if (majorProblemIds.contains(improvementPlan.getProblemId())) {
+                boolean generatePermission = checkGenerateFullAttendancePermission(improvementPlan);
+                if (generatePermission) {
+                    FullAttendanceReward fullAttendanceReward = insertFullAttendance(profileId, problemId, learningYear, learningMonth, FULL_ATTENDANCE_AMOUNT);
+                    if (fullAttendanceReward != null) {
+                        sendSingleFullAttendanceCoupon(learningYear, learningMonth, profileId);
+                    }
                 }
             }
         }
