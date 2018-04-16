@@ -55,12 +55,13 @@ public class PayResultReceiver {
                 operationEvaluateService.recordPayAction(profile.getId());
                 // 优惠推广活动
                 courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
-                // 打开之前永不解锁的小课
-                planService.unlockNeverUnlockPlans(profile.getId());
+
                 // 生成课表
                 Integer memberTypeId = Integer.valueOf(quanwaiOrder.getGoodsId());
                 if (RiseMember.isMember(memberTypeId)) {
                     businessPlanService.initCourseSchedule(quanwaiOrder.getProfileId(), memberTypeId);
+                    // 打开之前永不解锁的小课
+                    planService.unlockNeverUnlockPlans(profile.getId());
                 }
             }
         });
