@@ -262,6 +262,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     @Override
     public List<List<CourseSchedule>> loadPersonalCourseSchedule(Integer profileId) {
         List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
+        courseSchedules = courseSchedules.stream().filter(courseSchedule -> courseSchedule.getMemberTypeId() == RiseMember.ELITE).collect(Collectors.toList());
         courseSchedules.forEach((item) -> this.buildProblemData(item, profileId));
 
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);

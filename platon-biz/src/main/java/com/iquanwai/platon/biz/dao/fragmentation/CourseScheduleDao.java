@@ -124,7 +124,7 @@ public class CourseScheduleDao extends PracticeDBUtil {
     public CourseSchedule loadOldestCoreCourseSchedule(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         // TODO bug点
-        String sql = "SELECT * FROM CourseSchedule WHERE Type = 1 AND Del = 0 AND ProfileId = ? ORDER BY Year ASC, Month ASC";
+        String sql = "SELECT * FROM CourseSchedule WHERE Type = 1 AND MemberTypeId = 3 AND Del = 0 AND ProfileId = ? ORDER BY Year ASC, Month ASC";
         ResultSetHandler<CourseSchedule> h = new BeanHandler<>(CourseSchedule.class);
         try {
             return runner.query(sql, h, profileId);
