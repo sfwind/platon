@@ -61,7 +61,7 @@ public class StudyServiceImpl implements StudyService {
         studyLine.setProblemId(problem.getId());
         studyLine.setProblemName(problem.getProblem());
         studyLine.setProblemType(problemScheduleManager.getProblemType(problem.getId(), improvementPlan.getProfileId()));
-
+        studyLine.setProblemPic(problem.getPic());
         List<PracticePlan> preview = practicePlans.stream()
                 .filter(practicePlan -> practicePlan.getSeries() == 0)
                 .map(practicePlan -> {
