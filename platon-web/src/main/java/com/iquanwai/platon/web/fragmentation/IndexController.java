@@ -163,7 +163,7 @@ public class IndexController {
 
         ModuleShow moduleShow = getModuleShow(unionUser);
 
-        List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
+        List<RiseMember> riseMembers = riseMemberManager.coreRiseMembers(unionUser.getId());
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
         Profile profile = accountService.getProfile(unionUser.getId());
@@ -178,7 +178,7 @@ public class IndexController {
         boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
-        if (isInfoUnComplete(profile,userInfo)) {
+        if (isInfoUnComplete(profile, userInfo)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -238,7 +238,7 @@ public class IndexController {
         Profile profile = accountService.getProfile(unionUser.getId());
         UserInfo userInfo = userInfoService.loadByProfileId(profile.getId());
 
-        if (isCampMember && isPersonalInfoUnComplete(profile,userInfo)) {
+        if (isCampMember && isPersonalInfoUnComplete(profile, userInfo)) {
             // 未填写信息的已购买专项课的 “新” 会员
             response.sendRedirect(PROFILE_CAMP_SUBMIT);
             return null;
@@ -256,15 +256,15 @@ public class IndexController {
     }
 
     //所有信息是否完整
-    private boolean isInfoUnComplete(Profile profile,UserInfo userInfo) {
-        return userInfo==null || userInfo.getAddress() == null || userInfo.getRealName() ==null || userInfo.getReceiver()==null ||
+    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo) {
+        return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
                 (userInfo.getMobile() == null && profile.getWeixinId() == null);
     }
 
     //个人信息是否完整
-    private boolean isPersonalInfoUnComplete(Profile profile,UserInfo userInfo) {
+    private boolean isPersonalInfoUnComplete(Profile profile, UserInfo userInfo) {
         return
-                userInfo==null || (userInfo.getMobile() == null && profile.getWeixinId() == null) ;
+                userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
     }
 
     /**

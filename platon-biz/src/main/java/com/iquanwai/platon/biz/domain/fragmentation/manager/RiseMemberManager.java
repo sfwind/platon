@@ -39,6 +39,8 @@ public interface RiseMemberManager {
      */
     List<RiseMember> member(Integer profileId);
 
+    List<RiseMember> coreRiseMembers(Integer profileId);
+
     /**
      * 商学院用户信息
      */

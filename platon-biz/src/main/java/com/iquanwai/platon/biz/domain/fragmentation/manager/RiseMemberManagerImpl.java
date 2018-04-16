@@ -93,6 +93,17 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
     }
 
     @Override
+    public List<RiseMember> coreRiseMembers(Integer profileId) {
+        List<Integer> members = Lists.newArrayList();
+        members.add(RiseMember.HALF);
+        members.add(RiseMember.ANNUAL);
+        members.add(RiseMember.ELITE);
+        members.add(RiseMember.HALF_ELITE);
+
+        return riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, members);
+    }
+
+    @Override
     public List<RiseMember> businessSchoolMember(Integer profileId) {
         List<Integer> members = Lists.newArrayList();
         members.add(RiseMember.HALF_ELITE);
