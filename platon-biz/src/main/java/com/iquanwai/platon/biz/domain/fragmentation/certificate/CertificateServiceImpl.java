@@ -88,7 +88,6 @@ public class CertificateServiceImpl implements CertificateService {
     // 全勤奖金额
     private static final Double FULL_ATTENDANCE_AMOUNT = 50.00;
 
-
     // 正常证书背景
     private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_5.jpg?imageslim";
     // 优秀证书背景
@@ -97,9 +96,6 @@ public class CertificateServiceImpl implements CertificateService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static BufferedImage ordinaryImage = null;
     private static BufferedImage excellentImage = null;
-
-    private static final Double AWARD_AMOUNT = 50.00;
-
 
     @PostConstruct
     public void init() {
@@ -198,10 +194,6 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void generateBatchFullAttendance(Integer year, Integer month, Integer memberTypeId) {
-        //商业进阶课程不发送全勤奖
-        if (memberTypeId.equals(RiseMember.BUSINESS_THOUGHT)) {
-            return;
-        }
         // 根据身份，获取所有该身份的人员
         List<ClassMember> classMembers = classMemberDao.loadByMemberTypeId(memberTypeId);
         List<ClassMember> activeClassMembers = classMembers.stream().filter(ClassMember::getActive).collect(Collectors.toList());
@@ -228,15 +220,9 @@ public class CertificateServiceImpl implements CertificateService {
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, planId);
         if (improvementPlan != null) {
             int problemId = improvementPlan.getProblemId();
-            if (problemManager.isThoughtProblem(problemId)) {
-                logger.info("完成的是商业进阶项目");
-                return;
-            }
-
             int profileId = improvementPlan.getProfileId();
             int learningYear = ConfigUtils.getLearningYear();
             int learningMonth = ConfigUtils.getLearningMonth();
-
 
             boolean generatePermission = checkGenerateFullAttendancePermission(improvementPlan);
             if (generatePermission) {
@@ -534,6 +520,11 @@ public class CertificateServiceImpl implements CertificateService {
      * @return 是否能生成全勤奖
      */
     private boolean checkGenerateFullAttendancePermission(ImprovementPlan improvementPlan) {
+        if (problemManager.isThoughtProblem(improvementPlan.getProblemId())) {
+            // 如果是商业思维课程，不生成全勤奖
+            return false;
+        }
+
         if (accountService.getAssist(improvementPlan.getProfileId()) != null) {
             // 如果是助教，则不发全勤奖
             return false;
