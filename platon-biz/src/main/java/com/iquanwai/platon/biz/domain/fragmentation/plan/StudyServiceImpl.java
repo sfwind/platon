@@ -113,9 +113,11 @@ public class StudyServiceImpl implements StudyService {
                     practicePlan = practicePlans.stream()
                             .filter(plan -> plan.getSeries().equals(section.getSeries()) && plan.getSequence() == 1)
                             .findAny().orElse(null);
-                    section.setType(practicePlan.getType());
-                    section.setPracticePlanId(practicePlan.getId());
-                    section.setPracticeId(practicePlan.getPracticeId());
+                    if(practicePlan!=null) {
+                        section.setType(practicePlan.getType());
+                        section.setPracticePlanId(practicePlan.getId());
+                        section.setPracticeId(practicePlan.getPracticeId());
+                    }
                 }
             });
         });
