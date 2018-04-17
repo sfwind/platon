@@ -527,6 +527,42 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         return resultPlanId;
     }
 
+    @Override
+    public void createPartPracticePlans(Integer profileId, Integer problemId, Integer startSeries, Integer endSeries) {
+            //添加UserProblemSchedule,添加PracticePlan
+            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId,problemId);
+            List<ProblemSchedule> problemSchedules = problemScheduleDao.loadProblemSchedule(problemId);
+
+            if(improvementPlan!=null){
+                Integer planId = improvementPlan.getId();
+                problemSchedules.sort((o1, o2) -> {
+                    if (!o1.getChapter().equals(o2.getChapter())) {
+                        return o1.getChapter() - o2.getChapter();
+                    }
+                    return o1.getSection() - o2.getSection();
+                });
+                //生成章节和计划的映射关系
+                List<UserProblemSchedule> userProblemSchedules = problemSchedules.stream().map(problemSchedule -> {
+                    ModelMapper modelMapper = new ModelMapper();
+                    UserProblemSchedule userProblemSchedule = modelMapper.map(problemSchedule, UserProblemSchedule.class);
+                    userProblemSchedule.setPlanId(planId);
+
+                    return userProblemSchedule;
+                }).collect(Collectors.toList());
+                userProblemScheduleDao.batchInsert(userProblemSchedules);
+                //TODO:插入PracticePlan
+                List<PracticePlan> practicePlans = Lists.newArrayList();
+                // 生成知识点
+                practicePlans.addAll(createKnowledge(planId, problemSchedules));
+                // 生成巩固练习
+                practicePlans.addAll(createWarmupPractice(planId, problemSchedules));
+                // 生成应用练习
+                practicePlans.addAll(createApplicationPractice(planId, problemSchedules));
+
+                practicePlanDao.batchInsert(practicePlans);
+            }
+    }
+
     private boolean isDone(List<PracticePlan> runningPractices) {
         if (CollectionUtils.isNotEmpty(runningPractices)) {
             // 练习题
