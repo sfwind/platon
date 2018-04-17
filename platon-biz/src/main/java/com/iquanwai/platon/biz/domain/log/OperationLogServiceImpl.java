@@ -100,12 +100,6 @@ public class OperationLogServiceImpl implements OperationLogService {
                 UserRole role = userRoleDao.getAssist(profileId);
 
                 List<RiseMember> riseMemberList = riseMemberManager.member(profileId);
-
-
-                List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
-                if (classMembers == null) {
-                    classMembers = Lists.newArrayList(classMemberDao.loadLatestByProfileId(profileId));
-                }
                 if (!riseMemberList.isEmpty()) {
                     properties.put("roleNames", riseMemberList
                             .stream()
@@ -117,7 +111,10 @@ public class OperationLogServiceImpl implements OperationLogService {
                     properties.put("roleNames", Lists.newArrayList("0"));
                 }
 
-
+                List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
+                if (classMembers == null) {
+                    classMembers = Lists.newArrayList(classMemberDao.loadLatestByProfileId(profileId));
+                }
                 if (!classMembers.isEmpty()) {
                     classMembers.forEach(item -> {
                         if (item.getClassName() != null) {
