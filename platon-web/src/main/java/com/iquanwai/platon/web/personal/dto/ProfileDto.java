@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 @ApiModel("用户信息")
 public class ProfileDto {
+    @ApiModelProperty("用户id")
+    private int id;
     @ApiModelProperty("行业")
     private String industry;
     @ApiModelProperty("职业")
