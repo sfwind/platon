@@ -116,12 +116,12 @@ public class CustomerController {
         profile.setNickname(unionUser.getNickName());
         profile.setHeadimgurl(unionUser.getHeadImgUrl());
         // 查询他的用户信息
-        RiseMember validRiseMember = accountService.getValidRiseMember(unionUser.getId());
-        if (validRiseMember != null) {
-            profile.setRoleName(validRiseMember.getMemberTypeId());
-        } else {
-            profile.setRoleName(0);
-        }
+//        RiseMember validRiseMember = accountService.getValidRiseMember(unionUser.getId());
+//        if (validRiseMember != null) {
+//            profile.setRoleName(validRiseMember.getMemberTypeId());
+//        } else {
+//            profile.setRoleName(0);
+//        }
 
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
@@ -132,7 +132,7 @@ public class CustomerController {
             profile.setRoleNames(members.stream().map(RiseMember::getMemberTypeId).map(Object::toString).collect(Collectors.toList()));
         }
 
-        List<Pair<String, String>> propsValues = customerService.loadClassGroup(unionUser.getId());
+        Map<String, String> propsValues = customerService.loadClassGroup(unionUser.getId());
         profile.setClassGroupMaps(propsValues);
 
         return WebUtils.result(profile);

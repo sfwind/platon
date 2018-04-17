@@ -6,7 +6,7 @@ import com.iquanwai.platon.biz.po.common.Feedback;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
-import java.util.List;
+import java.util.Map;
 
 public interface CustomerService {
     /**
@@ -76,5 +76,5 @@ public interface CustomerService {
      *
      * @param profileId 用户id
      */
-    List<Pair<String, String>> loadClassGroup(Integer profileId);
+    Map<String, String> loadClassGroup(Integer profileId);
 }

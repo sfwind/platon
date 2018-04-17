@@ -316,7 +316,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<Pair<String, String>> loadClassGroup(Integer profileId) {
+    public Map<String, String> loadClassGroup(Integer profileId) {
         List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
         if (classMembers.isEmpty()) {
             ClassMember exist = classMemberDao.loadLatestByProfileId(profileId);
@@ -324,16 +324,16 @@ public class CustomerServiceImpl implements CustomerService {
                 classMembers = Lists.newArrayList(exist);
             }
         }
-        List<Pair<String, String>> propsList = Lists.newArrayList();
+        Map<String, String> classGroupMap = Maps.newHashMap();
         classMembers.forEach(item -> {
             if (item.getClassName() != null) {
-                propsList.add(Pair.of(riseMemberManager.classNameKey(item.getMemberTypeId()), item.getClassName()));
+                classGroupMap.put(riseMemberManager.classNameKey(item.getMemberTypeId()), item.getClassName());
             }
             if (item.getGroupId() != null) {
-                propsList.add(Pair.of(riseMemberManager.groupIdKey(item.getMemberTypeId()), item.getGroupId()));
+                classGroupMap.put(riseMemberManager.groupIdKey(item.getMemberTypeId()), item.getGroupId());
             }
         });
-        return propsList;
+        return classGroupMap;
     }
 
 }
