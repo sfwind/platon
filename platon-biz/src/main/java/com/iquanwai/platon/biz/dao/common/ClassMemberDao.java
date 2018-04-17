@@ -5,6 +5,7 @@ import com.iquanwai.platon.biz.dao.PracticeDBUtil;
 import com.iquanwai.platon.biz.po.ClassMember;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
@@ -86,6 +87,18 @@ public class ClassMemberDao extends PracticeDBUtil {
             logger.error(e.getLocalizedMessage());
         }
         return Lists.newArrayList();
+    }
+
+    public ClassMember loadByProfileId(Integer profileId, Integer memberTypeId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ClassMember WHERE ProfileId = ? AND MemberTypeId = ? AND Del = 0";
+        ResultSetHandler<ClassMember> h = new BeanHandler<ClassMember>(ClassMember.class);
+        try {
+            return runner.query(sql, h, profileId, memberTypeId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage());
+        }
+        return null;
     }
 
 }
