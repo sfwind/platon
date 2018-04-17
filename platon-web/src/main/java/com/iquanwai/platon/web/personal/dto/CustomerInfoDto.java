@@ -1,6 +1,7 @@
 package com.iquanwai.platon.web.personal.dto;
 
 import lombok.Data;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -14,4 +15,5 @@ public class CustomerInfoDto {
     private String groupId;
     private Boolean isAsst;
     private List<String> roleNames;
+    private List<Pair<String, String>> classGroupMaps;
 }

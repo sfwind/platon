@@ -2,15 +2,18 @@ package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.dao.fragmentation.MemberTypeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,8 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private MemberTypeDao memberTypeDao;
 
     private static Map<Integer, String> classMemberPrefixes = Maps.newHashMap();
 
@@ -31,6 +36,29 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
         classMemberPrefixes.put(RiseMember.ELITE, "C");
         classMemberPrefixes.put(RiseMember.BUSINESS_THOUGHT, "S");
         classMemberPrefixes.put(RiseMember.CAMP, "M");
+    }
+
+
+    private Map<Integer, String> classNameMap = Maps.newHashMap();
+    private Map<Integer, String> groupIdMap = Maps.newHashMap();
+
+
+    @PostConstruct
+    public void init() {
+        memberTypeDao.loadAll(MemberType.class).forEach(item -> {
+            classNameMap.put(item.getId(), "className:" + item.getId());
+            groupIdMap.put(item.getId(), "groupId:" + item.getId());
+        });
+    }
+
+    @Override
+    public String classNameKey(Integer memberTypeId) {
+        return classNameMap.get(memberTypeId);
+    }
+
+    @Override
+    public String groupIdKey(Integer memberTypeId) {
+        return groupIdMap.get(memberTypeId);
     }
 
 

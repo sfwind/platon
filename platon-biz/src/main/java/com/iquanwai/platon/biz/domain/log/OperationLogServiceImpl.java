@@ -1,7 +1,6 @@
 package com.iquanwai.platon.biz.domain.log;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ActionLogDao;
 import com.iquanwai.platon.biz.dao.common.ClassMemberDao;
 import com.iquanwai.platon.biz.dao.common.OperationLogDao;
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.support.Assert;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -55,18 +53,6 @@ public class OperationLogServiceImpl implements OperationLogService {
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
 
-
-    private Map<Integer, String> classNameMap = Maps.newHashMap();
-    private Map<Integer, String> groupIdMap = Maps.newHashMap();
-
-
-    @PostConstruct
-    public void init() {
-        riseMemberTypeRepo.loadAll().forEach(item -> {
-            classNameMap.put(item.getId(), item.getId() + "className");
-            groupIdMap.put(item.getId(), item.getId() + "groupId");
-        });
-    }
 
     @Override
     public void log(OperationLog operationLog) {
@@ -112,16 +98,19 @@ public class OperationLogServiceImpl implements OperationLogService {
                 }
 
                 List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
-                if (classMembers == null) {
-                    classMembers = Lists.newArrayList(classMemberDao.loadLatestByProfileId(profileId));
+                if (classMembers.isEmpty()) {
+                    ClassMember exist = classMemberDao.loadLatestByProfileId(profileId);
+                    if (exist != null) {
+                        classMembers = Lists.newArrayList(exist);
+                    }
                 }
                 if (!classMembers.isEmpty()) {
                     classMembers.forEach(item -> {
                         if (item.getClassName() != null) {
-                            properties.put(classNameMap.get(item.getMemberTypeId()), item.getClassName());
+                            properties.put(riseMemberManager.classNameKey(item.getMemberTypeId()), item.getClassName());
                         }
                         if (item.getGroupId() != null) {
-                            properties.put(groupIdMap.get(item.getMemberTypeId()), item.getGroupId());
+                            properties.put(riseMemberManager.groupIdKey(item.getMemberTypeId()), item.getGroupId());
                         }
                     });
                 }

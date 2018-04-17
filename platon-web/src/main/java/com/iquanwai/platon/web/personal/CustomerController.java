@@ -16,7 +16,6 @@ import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.RiseCertificate;
-import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.Feedback;
@@ -109,6 +108,8 @@ public class CustomerController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
+
+
         CustomerInfoDto profile = new CustomerInfoDto();
         Profile profilePojo = accountService.getProfile(unionUser.getId());
         profile.setRiseId(profilePojo.getRiseId());
@@ -121,12 +122,7 @@ public class CustomerController {
         } else {
             profile.setRoleName(0);
         }
-        //TODO:修改班级和小组
-//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-//        if (riseClassMember != null) {
-//            profile.setClassName(riseClassMember.getClassName());
-//            profile.setGroupId(riseClassMember.getGroupId());
-//        }
+
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
         List<RiseMember> members = riseMemberManager.member(unionUser.getId());
@@ -135,6 +131,9 @@ public class CustomerController {
         } else {
             profile.setRoleNames(members.stream().map(RiseMember::getMemberTypeId).map(Object::toString).collect(Collectors.toList()));
         }
+
+        List<Pair<String, String>> propsValues = customerService.loadClassGroup(unionUser.getId());
+        profile.setClassGroupMaps(propsValues);
 
         return WebUtils.result(profile);
     }
@@ -241,7 +240,7 @@ public class CustomerController {
         profileDto.setIsShowInfo(isElite);
         Boolean cansSkip = true;
 
-        if(isElite && (userInfo==null || userInfo.getAddress()==null ||userInfo.getRealName()==null || userInfo.getReceiver()==null)){
+        if (isElite && (userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null)) {
             cansSkip = false;
         }
         profileDto.setCanSkip(cansSkip);
@@ -256,15 +255,14 @@ public class CustomerController {
         if (userInfo == null || (StringUtils.isEmpty(userInfo.getMobile())) && StringUtils.isEmpty(profile.getWeixinId())) {
             bindMobile = false;
         }
-        if(userInfo==null) {
+        if (userInfo == null) {
             profileDto.setIsFull(false);
-        }else {
+        } else {
             profileDto.setIsFull(userInfo.getIsFull() == 1);
         }
         profileDto.setNickName(profile.getNickname());
         profileDto.setBindMobile(bindMobile);
         profileDto.setScore(ConfigUtils.getProfileFullScore());
-
 
 
         if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {

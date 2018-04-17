@@ -9,6 +9,28 @@ import java.util.List;
  */
 public interface RiseMemberManager {
 
+    /**
+     * 获取班级key
+     *
+     * @param memberTypeId id如3
+     * @return 例如className3
+     */
+    String classNameKey(Integer memberTypeId);
+
+    /**
+     * 获取小组key
+     *
+     * @param memberTypeId id如3
+     * @return 例如groupId3
+     */
+    String groupIdKey(Integer memberTypeId);
+
+    /**
+     * 获取类别英文字母
+     *
+     * @param memberType 类别
+     * @return 字母前缀
+     */
     String memberPrefix(Integer memberType);
 
     /**
@@ -41,6 +63,9 @@ public interface RiseMemberManager {
      */
     List<RiseMember> member(Integer profileId);
 
+    /**
+     * 专业版+商学院
+     */
     List<RiseMember> coreRiseMembers(Integer profileId);
 
     /**
