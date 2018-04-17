@@ -506,19 +506,17 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        //TODO: 有问题
-        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profile.getId());
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profile.getId());
         if (riseMember != null) {
-            if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
-                coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
-            } else {
-                coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
-            }
+            coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
+        } else {
+            coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
         }
     }
 
     /**
      * 校验当前学习计划是否有权限生成全勤奖
+     *
      * @param improvementPlan 学习计划
      * @return 是否能生成全勤奖
      */
@@ -555,11 +553,12 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 插入全勤奖记录表
+     *
      * @param profileId 学员身份 id
      * @param problemId 课程 id
-     * @param year 全勤奖对应学习年份
-     * @param month 全勤奖对应学习月份
-     * @param amount 全勤奖金额
+     * @param year      全勤奖对应学习年份
+     * @param month     全勤奖对应学习月份
+     * @param amount    全勤奖金额
      * @return 全勤奖对象
      */
     private FullAttendanceReward insertFullAttendance(Integer profileId, Integer problemId, Integer year, Integer month, Double amount) {
@@ -581,6 +580,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 校验学习情况，是否有权限生成证书
+     *
      * @param improvementPlan 学习记录
      * @return 是否有权限生成证书
      */
@@ -643,11 +643,12 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 在 RiseCertificate 表中插入相应数据，并将相应证书图片上传七牛云
+     *
      * @param classMember 班级信息对象
-     * @param year 生成证书年份
-     * @param month 生成证书月份
-     * @param type 生成证书类型
-     * @param problemId 生成证书的课程 id
+     * @param year        生成证书年份
+     * @param month       生成证书月份
+     * @param type        生成证书类型
+     * @param problemId   生成证书的课程 id
      */
     private void insertAndDrawCertificate(ClassMember classMember, Integer year, Integer month, Integer type, Integer problemId) {
         RiseCertificate certificate = insertCertificateRecord(classMember, year, month, type, problemId);
@@ -661,11 +662,12 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 数据库 insert 证书记录
+     *
      * @param classMember 班级信息对象
-     * @param year 生成证书年份
-     * @param month 生成证书月份
-     * @param type 生成证书类型
-     * @param problemId 生成证书的课程 id
+     * @param year        生成证书年份
+     * @param month       生成证书月份
+     * @param type        生成证书类型
+     * @param problemId   生成证书的课程 id
      * @return 是否在数据库中成功 insert 证书数据
      */
     private RiseCertificate insertCertificateRecord(ClassMember classMember, Integer year, Integer month, Integer type, Integer problemId) {
@@ -704,8 +706,9 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 生成随机证书号
+     *
      * @param memberId 学号
-     * @param month 月份
+     * @param month    月份
      * @return 证书号
      */
     private String generateCertificateNo(String memberId, Integer month) {
@@ -720,6 +723,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     /**
      * 将证书上传至七牛云
+     *
      * @return 是否上传成功，上传文件名称
      */
     private Pair<Boolean, String> drawRiseCertificate(RiseCertificate riseCertificate, Boolean isOnline) {

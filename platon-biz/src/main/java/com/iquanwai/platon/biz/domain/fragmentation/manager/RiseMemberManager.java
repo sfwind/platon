@@ -39,8 +39,6 @@ public interface RiseMemberManager {
      */
     List<RiseMember> member(Integer profileId);
 
-    List<RiseMember> coreRiseMembers(Integer profileId);
-
     /**
      * 商学院用户信息
      */
@@ -64,11 +62,6 @@ public interface RiseMemberManager {
      * @return
      */
     String getMemberId(String openid);
-
-    /**
-     * 所有会员信息包含已过期的信息
-     */
-    List<RiseMember> getAllRiseMember(Integer profileId);
 
     RiseMember getByMemberType(Integer profileId, Integer memberType);
 }

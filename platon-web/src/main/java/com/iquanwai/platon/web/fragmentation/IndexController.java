@@ -1,5 +1,6 @@
 package com.iquanwai.platon.web.fragmentation;
 
+import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMessageService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMsg;
@@ -162,8 +163,12 @@ public class IndexController {
         }
 
         ModuleShow moduleShow = getModuleShow(unionUser);
+        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(unionUser.getId());
+        List<RiseMember> riseMembers = Lists.newArrayList();
+        if (riseMember != null) {
+            riseMembers.add(riseMember);
+        }
 
-        List<RiseMember> riseMembers = riseMemberManager.coreRiseMembers(unionUser.getId());
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
         Profile profile = accountService.getProfile(unionUser.getId());
