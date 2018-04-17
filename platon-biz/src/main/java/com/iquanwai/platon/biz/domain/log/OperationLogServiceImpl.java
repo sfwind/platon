@@ -1,14 +1,15 @@
 package com.iquanwai.platon.biz.domain.log;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ActionLogDao;
+import com.iquanwai.platon.biz.dao.common.ClassMemberDao;
 import com.iquanwai.platon.biz.dao.common.OperationLogDao;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
-import com.iquanwai.platon.biz.po.RiseClassMember;
+import com.iquanwai.platon.biz.po.ClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.ActionLog;
 import com.iquanwai.platon.biz.po.common.OperationLog;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.support.Assert;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -43,15 +45,28 @@ public class OperationLogServiceImpl implements OperationLogService {
     @Autowired
     private SensorsAnalytics sa;
     @Autowired
-    private RiseClassMemberDao riseClassMemberDao;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
-    @Autowired
     private ProfileDao profileDao;
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
     private RiseMemberManager riseMemberManager;
+    @Autowired
+    private ClassMemberDao classMemberDao;
+    @Autowired
+    private RiseMemberTypeRepo riseMemberTypeRepo;
+
+
+    private Map<Integer, String> classNameMap = Maps.newHashMap();
+    private Map<Integer, String> groupIdMap = Maps.newHashMap();
+
+
+    @PostConstruct
+    public void init() {
+        riseMemberTypeRepo.loadAll().forEach(item -> {
+            classNameMap.put(item.getId(), item.getId() + "className");
+            groupIdMap.put(item.getId(), item.getId() + "groupId");
+        });
+    }
 
     @Override
     public void log(OperationLog operationLog) {
@@ -86,9 +101,10 @@ public class OperationLogServiceImpl implements OperationLogService {
 
                 List<RiseMember> riseMemberList = riseMemberManager.member(profileId);
 
-                RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
-                if (riseClassMember == null) {
-                    riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(profileId);
+
+                List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
+                if (classMembers == null) {
+                    classMembers = Lists.newArrayList(classMemberDao.loadLatestByProfileId(profileId));
                 }
                 if (!riseMemberList.isEmpty()) {
                     properties.put("roleNames", riseMemberList
@@ -101,20 +117,20 @@ public class OperationLogServiceImpl implements OperationLogService {
                     properties.put("roleNames", Lists.newArrayList("0"));
                 }
 
-                if (riseClassMember != null) {
-                    if (riseClassMember.getClassName() != null) {
-                        properties.put("className", riseClassMember.getClassName());
-                    }
-                    if (riseClassMember.getGroupId() != null) {
-                        properties.put("groupId", riseClassMember.getGroupId());
-                    }
+
+                if (!classMembers.isEmpty()) {
+                    classMembers.forEach(item -> {
+                        if (item.getClassName() != null) {
+                            properties.put(classNameMap.get(item.getMemberTypeId()), item.getClassName());
+                        }
+                        if (item.getGroupId() != null) {
+                            properties.put(groupIdMap.get(item.getMemberTypeId()), item.getGroupId());
+                        }
+                    });
                 }
-//                if (validRiseMember != null) {
-//                    roleName = validRiseMember.getMemberTypeId();
-//                }
-//                properties.put("roleName", roleName);
                 properties.put("isAsst", role != null);
                 properties.put("riseId", profile.getRiseId());
+
                 logger.info("trace:\nprofielId:{}\neventName:{}\nprops:{}", profileId, eventName, properties);
                 sa.track(profile.getRiseId(), true, eventName, properties);
 

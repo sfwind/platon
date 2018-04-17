@@ -402,6 +402,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 if (planProblemIds.contains(item.getProblemId())) {
                     item.setSelected(true);
                 }
+                // TODO 简单fix
+                item.setMemberTypeId(RiseMember.ELITE);
             });
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
         } else {

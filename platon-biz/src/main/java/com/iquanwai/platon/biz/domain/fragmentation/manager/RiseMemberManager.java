@@ -9,6 +9,8 @@ import java.util.List;
  */
 public interface RiseMemberManager {
 
+    String memberPrefix(Integer memberType);
+
     /**
      * 商学院核心能力项目
      */

@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by justin on 2018/4/7.
@@ -22,6 +24,20 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
     private RiseMemberDao riseMemberDao;
     @Autowired
     private AccountService accountService;
+
+    private static Map<Integer, String> classMemberPrefixes = Maps.newHashMap();
+
+    static {
+        classMemberPrefixes.put(RiseMember.ELITE, "C");
+        classMemberPrefixes.put(RiseMember.BUSINESS_THOUGHT, "S");
+        classMemberPrefixes.put(RiseMember.CAMP, "M");
+    }
+
+
+    @Override
+    public String memberPrefix(Integer memberType) {
+        return classMemberPrefixes.get(memberType);
+    }
 
     @Override
     public RiseMember coreBusinessSchoolMember(Integer profileId) {
