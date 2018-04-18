@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author justin
@@ -163,7 +164,7 @@ public class IndexController {
 
         ModuleShow moduleShow = getModuleShow(unionUser);
 
-        List<RiseMember> riseMembers = riseMemberManager.coreRiseMembers(unionUser.getId());
+        List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
         Profile profile = accountService.getProfile(unionUser.getId());
@@ -178,7 +179,7 @@ public class IndexController {
         boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
-        if (isInfoUnComplete(profile, userInfo)) {
+        if (isInfoUnComplete(profile, userInfo,riseMembers)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -256,9 +257,17 @@ public class IndexController {
     }
 
     //所有信息是否完整
-    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo) {
-        return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
-                (userInfo.getMobile() == null && profile.getWeixinId() == null);
+    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo,List<RiseMember> riseMembers) {
+        List<Integer> riseMemberTypes = riseMembers.stream().map(RiseMember::getMemberTypeId).collect(Collectors.toList());
+        if(riseMemberTypes.contains(RiseMember.ELITE)||riseMembers.contains(RiseMember.HALF_ELITE)||riseMembers.contains(RiseMember.BUSINESS_THOUGHT)){
+            return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
+                    (userInfo.getMobile() == null && profile.getWeixinId() == null);
+        }else if(riseMemberTypes.contains(RiseMember.CAMP)) {
+            return userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
+        }else if(riseMemberTypes.contains(RiseMember.HALF)||riseMemberTypes.contains(RiseMember.ANNUAL)){
+            return false;
+        }
+        return false;
     }
 
     //个人信息是否完整
