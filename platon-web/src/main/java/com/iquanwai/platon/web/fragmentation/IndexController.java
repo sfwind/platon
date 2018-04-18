@@ -179,7 +179,7 @@ public class IndexController {
         boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
-        if (isInfoUnComplete(profile, userInfo, profile.getId())) {
+        if (isInfoUnComplete(profile, userInfo)){
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -257,13 +257,13 @@ public class IndexController {
     }
 
     //所有信息是否完整
-    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo, Integer profileId) {
-        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(profileId);
+    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo) {
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(profile.getId());
         if (CollectionUtils.isNotEmpty(riseMembers)) {
             return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
                     (userInfo.getMobile() == null && profile.getWeixinId() == null);
         } else {
-            RiseMember riseMember = riseMemberManager.campMember(profileId);
+            RiseMember riseMember = riseMemberManager.campMember(profile.getId());
             if (riseMember != null) {
                 return userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
             } else {
