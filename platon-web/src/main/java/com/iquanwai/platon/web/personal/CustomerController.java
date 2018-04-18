@@ -16,7 +16,6 @@ import com.iquanwai.platon.biz.po.Coupon;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.RiseCertificate;
-import com.iquanwai.platon.biz.po.RiseClassMember;
 import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.EventWall;
 import com.iquanwai.platon.biz.po.common.Feedback;
@@ -104,28 +103,16 @@ public class CustomerController {
     @Autowired
     private UserInfoService userInfoService;
 
-
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
     public ResponseEntity<Map<String, Object>> getUserInfo(UnionUser unionUser) {
+
+
         CustomerInfoDto profile = new CustomerInfoDto();
         Profile profilePojo = accountService.getProfile(unionUser.getId());
         profile.setRiseId(profilePojo.getRiseId());
         profile.setNickname(unionUser.getNickName());
         profile.setHeadimgurl(unionUser.getHeadImgUrl());
-        // 查询他的用户信息
-        RiseMember validRiseMember = accountService.getValidRiseMember(unionUser.getId());
-        if (validRiseMember != null) {
-            profile.setRoleName(validRiseMember.getMemberTypeId());
-        } else {
-            profile.setRoleName(0);
-        }
-        //TODO:修改班级和小组
-//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-//        if (riseClassMember != null) {
-//            profile.setClassName(riseClassMember.getClassName());
-//            profile.setGroupId(riseClassMember.getGroupId());
-//        }
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
         List<RiseMember> members = riseMemberManager.member(unionUser.getId());
@@ -134,6 +121,9 @@ public class CustomerController {
         } else {
             profile.setRoleNames(members.stream().map(RiseMember::getMemberTypeId).map(Object::toString).collect(Collectors.toList()));
         }
+
+        Map<String, String> propsValues = customerService.loadClassGroup(unionUser.getId());
+        profile.setClassGroupMaps(propsValues);
 
         return WebUtils.result(profile);
     }
@@ -213,15 +203,6 @@ public class CustomerController {
 
         }
 
-        //TODO:获得学号
-//        RiseClassMember riseClassMember = accountService.loadDisplayRiseClassMember(unionUser.getId());
-//        if (riseClassMember != null) {
-//            profileDto.setMemberId(profile.getMemberId());
-//            String className = riseClassMember.getClassName();
-//            if (className != null && className.length() >= classSize) {
-//                profileDto.setClassName(getClassName(className));
-//            }
-//        }
         RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
         if (riseMember != null) {
             profileDto.setMemberTypeId(riseMember.getMemberTypeId());
@@ -232,7 +213,7 @@ public class CustomerController {
         profileDto.setIsShowInfo(isElite);
         Boolean cansSkip = true;
 
-        if(isElite && (userInfo==null || userInfo.getAddress()==null ||userInfo.getRealName()==null || userInfo.getReceiver()==null)){
+        if (isElite && (userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null)) {
             cansSkip = false;
         }
         profileDto.setCanSkip(cansSkip);
@@ -247,9 +228,9 @@ public class CustomerController {
         if (userInfo == null || (StringUtils.isEmpty(userInfo.getMobile())) && StringUtils.isEmpty(profile.getWeixinId())) {
             bindMobile = false;
         }
-        if(userInfo==null) {
+        if (userInfo == null) {
             profileDto.setIsFull(false);
-        }else {
+        } else {
             profileDto.setIsFull(userInfo.getIsFull() == 1);
         }
         profileDto.setNickName(profile.getNickname());
@@ -675,20 +656,5 @@ public class CustomerController {
 
         return WebUtils.success();
     }
-
-
-    private String getClassName(String className) {
-        String tempName = Integer.valueOf(className.substring(2, 4)) + "月" +
-                Integer.valueOf(className.substring(4, 6)) + "班";
-
-        if (tempName.charAt(3) == '0') {
-            tempName = tempName.substring(0, 3) + tempName.substring(4);
-        }
-        if (tempName.charAt(0) == '0') {
-            tempName = tempName.substring(1);
-        }
-        return tempName;
-    }
-
 
 }

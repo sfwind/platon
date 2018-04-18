@@ -506,15 +506,17 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        //TODO: 有问题
-        RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profile.getId());
-        if (riseMember != null) {
-            if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
-                coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
-            } else {
-                coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
-            }
-        }
+        // TODO: 有问题
+        // RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profile.getId());
+        // if (riseMember != null) {
+        //     if (Constants.RISE_MEMBER.MEMBERSHIP == profile.getRiseMember()) {
+        //         coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
+        //     } else {
+        //         coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
+        //     }
+        // }
+        // 奖学金有效期改成发放日+1年
+        coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
     }
 
     /**

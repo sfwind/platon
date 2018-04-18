@@ -101,4 +101,29 @@ public class ClassMemberDao extends PracticeDBUtil {
         return null;
     }
 
+    public List<ClassMember> loadActiveByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ClassMember WHERE ProfileId = ? AND Active = 1 AND Del = 0";
+        ResultSetHandler<List<ClassMember>> h = new BeanListHandler<>(ClassMember.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public ClassMember loadLatestByProfileId(Integer profileId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ClassMember WHERE ProfileId = ? AND Del = 0 ORDER BY AddTime DESC";
+        ResultSetHandler<ClassMember> h = new BeanHandler<>(ClassMember.class);
+        try {
+            return runner.query(sql, h, profileId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return null;
+    }
+
+
 }
