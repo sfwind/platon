@@ -179,7 +179,7 @@ public class IndexController {
         boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
-        if (isInfoUnComplete(profile, userInfo)){
+        if (isInfoUnComplete(profile, userInfo)) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
