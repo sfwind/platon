@@ -537,11 +537,11 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> notifyExpire(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
-        boolean expiredRiseMemberInSevenDays = riseMemberManager.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
+        boolean expiredRiseMemberInSomeDays = riseMemberManager.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
         boolean expiredRiseMember = riseMemberManager.expiredRiseMember(unionUser.getId());
-        riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
+        riseMember.setExpiredInSevenDays(expiredRiseMemberInSomeDays);
         riseMember.setExpired(expiredRiseMember);
-        riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSevenDays);
+        riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSomeDays);
         return WebUtils.result(riseMember);
     }
 

@@ -10,13 +10,14 @@ import java.util.List;
 public interface RiseMemberManager {
 
     /**
-     * 商学院核心能力项目
+     * 核心能力用户
      */
     RiseMember coreBusinessSchoolMember(Integer profileId);
 
     /**
      * 核心能力项目用户（商学院+专业版+专项课）
      */
+    @Deprecated
     RiseMember coreBusinessSchoolUser(Integer profileId);
 
     /**
@@ -25,7 +26,7 @@ public interface RiseMemberManager {
     RiseMember campMember(Integer profileId);
 
     /**
-     * 商业思维类用户
+     * 商业思维用户
      */
     RiseMember businessThought(Integer profileId);
 
@@ -40,7 +41,7 @@ public interface RiseMemberManager {
     List<RiseMember> member(Integer profileId);
 
     /**
-     * 商学院用户信息
+     * 商学院用户信息（核心能力+商业思维）
      */
     List<RiseMember> businessSchoolMember(Integer profileId);
 
@@ -63,5 +64,10 @@ public interface RiseMemberManager {
      */
     String getMemberId(String openid);
 
+    /**
+     * 根据用户id获取学号
+     *
+     * @return
+     */
     RiseMember getByMemberType(Integer profileId, Integer memberType);
 }
