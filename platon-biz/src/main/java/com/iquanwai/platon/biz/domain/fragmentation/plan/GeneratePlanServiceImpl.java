@@ -558,6 +558,8 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                 }).collect(Collectors.toList());
                 userProblemScheduleDao.batchInsert(userProblemSchedules);
                 List<PracticePlan> practicePlans = Lists.newArrayList();
+                //生成课前思考
+                practicePlans.addAll(createPreviewPracticeBySeries(planId, problemSchedules,startSeries));
                 // 生成知识点
                 practicePlans.addAll(createKnowledgeBySeries(planId, problemSchedules,startSeries));
                 // 生成巩固练习
@@ -705,5 +707,31 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         }
 
         return selectedPractice;
+    }
+
+
+    //TODO:待删除
+    private List<PracticePlan> createPreviewPracticeBySeries(int planId, List<ProblemSchedule> problemScheduleList,int startseries) {
+        List<PracticePlan> selected = Lists.newArrayList();
+
+        for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
+            PracticePlan practicePlan = new PracticePlan();
+            ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
+            practicePlan.setUnlocked(false);
+            practicePlan.setPlanId(planId);
+            ProblemPreview problemPreview = problemPreviewDao.loadProblemPreview(problemSchedule.getId());
+            if (problemPreview != null) {
+                practicePlan.setPracticeId(problemPreview.getId() + "");
+                practicePlan.setStatus(PracticePlan.STATUS.UNCOMPLETED);
+                int practiceSequence = problemSchedule.getPracticeSequence() + 1;
+                practicePlan.setSequence(practiceSequence);
+                problemSchedule.setPracticeSequence(practiceSequence);
+                practicePlan.setSeries(sequence+startseries-1);
+                practicePlan.setType(PracticePlan.PREVIEW);
+                selected.add(practicePlan);
+            }
+        }
+
+        return selected;
     }
 }
