@@ -12,7 +12,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +108,7 @@ public class FlowServiceImpl implements FlowService {
     public List<ActivitiesFlow> loadActivitiesFlow(Integer profileId) {
         List<ActivitiesFlow> activitiesFlows = activitiesFlowDao.loadAllWithoutDel(ActivitiesFlow.class);
 
-       boolean isBusinessRiseMember =  riseMemberManager.coreBusinessSchoolMember(profileId)!=null || riseMemberManager.proMember(profileId)!=null;
+        boolean isBusinessRiseMember = riseMemberManager.coreBusinessSchoolMember(profileId) != null || riseMemberManager.proMember(profileId) != null;
 
         activitiesFlows = activitiesFlows.stream()
                 .map(activitiesFlow -> {
@@ -148,17 +147,25 @@ public class FlowServiceImpl implements FlowService {
         String authority = flowData.getAuthority();
         List<RiseMember> riseMembers = riseMemberManager.member(profileId);
 
-        for (RiseMember riseMember : riseMembers) {
-            Integer memberTypeId = 0;
-            if (riseMember != null && riseMember.getMemberTypeId() != null) {
-                memberTypeId = riseMember.getMemberTypeId();
+        if (riseMembers.size() == 0) {
+            // 当前身份为普通人
+            if (authority != null) {
+                char c = authority.charAt(authority.length() - 1);
+                return "1".equals(String.valueOf(c));
             }
-            try {
-                char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
-                String tagValue = String.valueOf(tagChar);
-                return "1".equals(tagValue);
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
+        } else {
+            for (RiseMember riseMember : riseMembers) {
+                Integer memberTypeId = 0;
+                if (riseMember != null && riseMember.getMemberTypeId() != null) {
+                    memberTypeId = riseMember.getMemberTypeId();
+                }
+                try {
+                    char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
+                    String tagValue = String.valueOf(tagChar);
+                    return "1".equals(tagValue);
+                } catch (Exception e) {
+                    logger.error(e.getLocalizedMessage(), e);
+                }
             }
         }
 

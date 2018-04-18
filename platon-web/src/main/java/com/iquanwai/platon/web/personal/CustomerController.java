@@ -235,7 +235,6 @@ public class CustomerController {
         } else {
             profileDto.setMemberTypeId(0);
         }
-
         Boolean isElite = CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId));
         profileDto.setIsShowInfo(isElite);
         Boolean cansSkip = true;

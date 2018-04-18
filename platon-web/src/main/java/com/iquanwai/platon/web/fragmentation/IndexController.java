@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author justin
@@ -163,7 +164,7 @@ public class IndexController {
 
         ModuleShow moduleShow = getModuleShow(unionUser);
 
-        List<RiseMember> riseMembers = riseMemberManager.coreRiseMembers(unionUser.getId());
+        List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
         Profile profile = accountService.getProfile(unionUser.getId());
@@ -257,8 +258,18 @@ public class IndexController {
 
     //所有信息是否完整
     private boolean isInfoUnComplete(Profile profile, UserInfo userInfo) {
-        return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
-                (userInfo.getMobile() == null && profile.getWeixinId() == null);
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(profile.getId());
+        if (CollectionUtils.isNotEmpty(riseMembers)) {
+            return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
+                    (userInfo.getMobile() == null && profile.getWeixinId() == null);
+        } else {
+            RiseMember riseMember = riseMemberManager.campMember(profile.getId());
+            if (riseMember != null) {
+                return userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
+            } else {
+                return false;
+            }
+        }
     }
 
     //个人信息是否完整
