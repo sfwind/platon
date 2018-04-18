@@ -13,6 +13,7 @@ import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
 import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.*;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
@@ -63,7 +64,11 @@ public class ProblemController {
         // 所有问题
         List<Problem> problems = problemService.loadProblems();
 
-        //TODO:专业版可以学习problemId = 5, 11, 13
+        //专业版只能选核心能力项目
+        problems = problems.stream().filter(problem1 ->
+                problem1.getProject() == Constants.Project.CORE_PROJECT).collect(Collectors.toList());
+
+        //TODO:专业版可以学习problemId = 5, 11, 13, 19
         List<Integer> problemIds = problems.stream().map(Problem::getId).collect(Collectors.toList());
         // 逻辑谬误
         if(!problemIds.contains(5)){
@@ -76,6 +81,10 @@ public class ProblemController {
         // 公开演讲
         if(!problemIds.contains(13)){
             problems.add(problemService.getProblem(13));
+        }
+        // 结识牛人
+        if(!problemIds.contains(19)){
+            problems.add(problemService.getProblem(19));
         }
 
         //非天使用户去除试用版课程
