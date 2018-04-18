@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.po.common.Feedback;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
+import java.util.Map;
 
 public interface CustomerService {
     /**
@@ -64,10 +65,16 @@ public interface CustomerService {
 
     /**
      * 计算同期打败的比例
+     *
      * @param riseMember
-     * @return
      */
     Integer calSyncDefeatPercent(RiseMember riseMember);
 
 
+    /**
+     * 获取班组信息
+     *
+     * @param profileId 用户id
+     */
+    Map<String, String> loadClassGroup(Integer profileId);
 }

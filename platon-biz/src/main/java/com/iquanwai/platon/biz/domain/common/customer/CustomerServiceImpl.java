@@ -70,6 +70,8 @@ public class CustomerServiceImpl implements CustomerService {
     private PracticePlanDao practicePlanDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ClassMemberDao classMemberDao;
 
 
     // 申请通过 status id
@@ -200,21 +202,21 @@ public class CustomerServiceImpl implements CustomerService {
         // TODO: 待验证,取第一个身份展示信息
         List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         RiseMember riseMember = null;
-        if(CollectionUtils.isNotEmpty(riseMembers)){
+        if (CollectionUtils.isNotEmpty(riseMembers)) {
             riseMember = riseMembers.get(0);
         }
         int memberTypeId = riseMember == null ? 0 : riseMember.getMemberTypeId();
         List<Announce> announces = announceDao.loadByMemberTypeId(memberTypeId);
         Announce validAnnounce = announces.stream().filter(announce -> announce.getStartTime() != null
-                        && announce.getEndTime() != null
-                        && new Date().compareTo(announce.getStartTime()) >= 0
-                        && announce.getEndTime().compareTo(new Date()) >= 0
+                && announce.getEndTime() != null
+                && new Date().compareTo(announce.getStartTime()) >= 0
+                && announce.getEndTime().compareTo(new Date()) >= 0
         ).findAny().orElse(null);
 
         // 将已经超时的 announce del 置为 1
         List<Integer> expiredIds = announces.stream().filter(announce -> announce.getStartTime() != null
-                        && announce.getEndTime() != null
-                        && new Date().compareTo(announce.getEndTime()) > 0
+                && announce.getEndTime() != null
+                && new Date().compareTo(announce.getEndTime()) > 0
         ).map(Announce::getId).collect(Collectors.toList());
         if (expiredIds.size() > 0) {
             announceDao.delExpiredAnnounce(expiredIds);
@@ -311,6 +313,27 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         return percent;
+    }
+
+    @Override
+    public Map<String, String> loadClassGroup(Integer profileId) {
+        List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
+        if (classMembers.isEmpty()) {
+            ClassMember exist = classMemberDao.loadLatestByProfileId(profileId);
+            if (exist != null) {
+                classMembers = Lists.newArrayList(exist);
+            }
+        }
+        Map<String, String> classGroupMap = Maps.newHashMap();
+        classMembers.forEach(item -> {
+            if (item.getClassName() != null) {
+                classGroupMap.put(riseMemberManager.classNameKey(item.getMemberTypeId()), item.getClassName());
+            }
+            if (item.getGroupId() != null) {
+                classGroupMap.put(riseMemberManager.groupIdKey(item.getMemberTypeId()), item.getGroupId());
+            }
+        });
+        return classGroupMap;
     }
 
 }

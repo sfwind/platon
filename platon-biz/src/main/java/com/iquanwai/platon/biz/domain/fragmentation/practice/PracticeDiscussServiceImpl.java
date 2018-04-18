@@ -4,12 +4,24 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
+import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
+import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
+import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.AbstractComment;
+import com.iquanwai.platon.biz.po.ApplicationSubmit;
+import com.iquanwai.platon.biz.po.Comment;
+import com.iquanwai.platon.biz.po.HomeworkVote;
+import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
+import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.WarmupPractice;
+import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.po.common.UserRole;
@@ -51,11 +63,7 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
     @Autowired
     private OperationLogService operationLogService;
     @Autowired
-    private RiseClassMemberDao riseClassMemberDao;
-    @Autowired
     private WarmupPracticeDao warmupPracticeDao;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
     @Autowired
     private UserRoleDao userRoleDao;
     @Autowired
@@ -84,24 +92,13 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
                 warmupPracticeDiscuss.setOriginDiscussId(repliedDiscuss.getOriginDiscussId());
                 operationLogService.trace(profileId, "replyWarumupDiscuss", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
-//                    RiseMember riseMember = riseMemberDao.loadValidRiseMember(repliedDiscuss.getProfileId());
                     WarmupPractice warmupPractice = warmupPracticeDao.load(WarmupPractice.class, warmupPracticeId);
-                    RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(repliedDiscuss.getProfileId());
-                    if (riseClassMember != null) {
-                        if (riseClassMember.getClassName() != null) {
-                            prop.add("repliedClassName", riseClassMember.getClassName());
-                        }
-                        if (riseClassMember.getGroupId() != null) {
-                            prop.add("repliedGroupId", riseClassMember.getGroupId());
-                        }
-                    }
                     List<RiseMember> riseMembers = riseMemberManager.member(repliedDiscuss.getProfileId());
                     if (riseMembers.isEmpty()) {
                         prop.add("repliedRolenames", Lists.newArrayList("0"));
                     } else {
                         prop.add("repliedRolenames", riseMembers.stream().map(RiseMember::getMemberTypeId).map(Object::toString).distinct().collect(Collectors.toList()));
                     }
-//                    prop.add("repliedRolename", riseMember == null ? 0 : riseMember.getMemberTypeId());
                     prop.add("warmupId", warmupPracticeId);
                     prop.add("problemId", warmupPractice.getProblemId());
                     Profile profile = accountService.getProfile(repliedDiscuss.getProfileId());
