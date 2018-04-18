@@ -179,7 +179,7 @@ public class IndexController {
         boolean coreApplied = applyService.hasAvailableApply(applyList, Constants.Project.CORE_PROJECT);
         boolean thoughtApplied = applyService.hasAvailableApply(applyList, Constants.Project.BUSINESS_THOUGHT_PROJECT);
 
-        if (isInfoUnComplete(profile, userInfo, riseMembers)) {
+        if (isInfoUnComplete(profile, userInfo, profile.getId())) {
             // 未填写信息的已购买商学院的 “新” 会员
             response.sendRedirect(PROFILE_SUBMIT);
             return null;
@@ -257,17 +257,19 @@ public class IndexController {
     }
 
     //所有信息是否完整
-    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo, List<RiseMember> riseMembers) {
-        List<Integer> riseMemberTypes = riseMembers.stream().map(RiseMember::getMemberTypeId).collect(Collectors.toList());
-        if (riseMemberTypes.contains(RiseMember.ELITE) || riseMemberTypes.contains(RiseMember.HALF_ELITE) || riseMemberTypes.contains(RiseMember.BUSINESS_THOUGHT)) {
+    private boolean isInfoUnComplete(Profile profile, UserInfo userInfo, Integer profileId) {
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(profileId);
+        if (CollectionUtils.isNotEmpty(riseMembers)) {
             return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
                     (userInfo.getMobile() == null && profile.getWeixinId() == null);
-        } else if (riseMemberTypes.contains(RiseMember.CAMP)) {
-            return userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
-        } else if (riseMemberTypes.contains(RiseMember.HALF) || riseMemberTypes.contains(RiseMember.ANNUAL)) {
-            return false;
+        } else {
+            RiseMember riseMember = riseMemberManager.campMember(profileId);
+            if (riseMember != null) {
+                return userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
+            } else {
+                return false;
+            }
         }
-        return false;
     }
 
     //个人信息是否完整
