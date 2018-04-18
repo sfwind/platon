@@ -104,7 +104,6 @@ public class CustomerController {
     @Autowired
     private UserInfoService userInfoService;
 
-    private final static int classSize = 6;
 
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
@@ -149,14 +148,7 @@ public class CustomerController {
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         userStudyDto.setMemberId(profile.getMemberId());
 
-
-        //TODO:待修改
-        RiseMember riseMember = accountService.getValidRiseMember(profileId);
-        if (riseMember != null) {
-            userStudyDto.setMemberTypeId(riseMember.getMemberTypeId());
-        } else {
-            userStudyDto.setMemberTypeId(0);
-        }
+        userStudyDto.setIsProMember(riseMemberManager.proMember(profileId)!=null);
 
         userStudyDto.setShowShare(CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId)));
 
@@ -263,7 +255,6 @@ public class CustomerController {
         profileDto.setNickName(profile.getNickname());
         profileDto.setBindMobile(bindMobile);
         profileDto.setScore(ConfigUtils.getProfileFullScore());
-
 
 
         if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {
