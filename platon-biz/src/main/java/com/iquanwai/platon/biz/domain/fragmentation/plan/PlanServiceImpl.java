@@ -4,43 +4,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.BusinessSchoolConfigDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
-import com.iquanwai.platon.biz.dao.fragmentation.EssenceCardDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.MonthlyCampScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ProblemScoreDao;
-import com.iquanwai.platon.biz.dao.fragmentation.UserProblemScheduleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupSubmitDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.CardManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
-import com.iquanwai.platon.biz.po.BusinessSchoolConfig;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.EssenceCard;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Knowledge;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.MonthlyCampSchedule;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.ProblemSchedule;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.UserProblemSchedule;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
@@ -76,8 +48,6 @@ public class PlanServiceImpl implements PlanService {
     private CacheService cacheService;
     @Autowired
     private GeneratePlanService generatePlanService;
-    @Autowired
-    private WarmupPracticeDao warmupPracticeDao;
     @Autowired
     private UserProblemScheduleDao userProblemScheduleDao;
     @Autowired
@@ -358,8 +328,8 @@ public class PlanServiceImpl implements PlanService {
         if (!problem.getPublish()) {
             //TODO:专业版都过期后逻辑删除
             if(riseMember.getMemberTypeId() == RiseMember.ANNUAL || riseMember.getMemberTypeId() == RiseMember.HALF){
-                if(problem.getId() == 5 || problem.getId() == 11 || problem.getId() == 13){
-                    //专业版可以学习problemId = 5, 11, 13
+                if(problem.getId() == 5 || problem.getId() == 11 || problem.getId() == 13 || problem.getId() == 19){
+                    //专业版可以学习problemId = 5, 11, 13, 19
                 }else{
                     throw new CreateCourseException("该课程还在开发中，敬请期待");
                 }
@@ -443,7 +413,6 @@ public class PlanServiceImpl implements PlanService {
             sendCloseMsg(plan, percent);
             operationLogService.trace(plan.getProfileId(), "closeCourse",
                     () -> {
-                        Problem problem = problemDao.load(Problem.class, plan.getProblemId());
                         int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
                         int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
                         return OperationLogService
@@ -464,7 +433,6 @@ public class PlanServiceImpl implements PlanService {
     private void traceCompletePlan(ImprovementPlan plan) {
         operationLogService.trace(plan.getProfileId(), "completeCourse",
                 () -> {
-                    Problem problem = problemDao.load(Problem.class, plan.getProblemId());
                     int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
                     int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
                     return OperationLogService
@@ -821,18 +789,9 @@ public class PlanServiceImpl implements PlanService {
 
 
         plans.stream().filter(item -> unlockPlanIds.contains(item.getId())).forEach(item -> {
-//            DateTime otherCloseDate = new DateTime().plusDays(30);
-//            Date closeDate;
-//            if (otherCloseDate.isAfter(item.getCloseDate().getTime())) {
-//                closeDate = otherCloseDate.toDate();
-//            } else {
-//                closeDate = item.getCloseDate();
-//            }
             // 解锁
             practicePlanDao.revertNeverUnlockPracticePlan(item.getId());
             practicePlanDao.batchUnlockByPlanId(item.getId());
-
-//            generatePlanService.magicUnlockProblem(profileId, item.getProblemId(), closeDate);
         });
     }
 

@@ -16,6 +16,7 @@ import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -506,11 +507,19 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     private void buildCouponExpireDate(Coupon coupon, Profile profile) {
-        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profile.getId());
-        if (riseMember != null) {
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(profile.getId());
+        if (CollectionUtils.isNotEmpty(riseMembers)) {
+            // 商学院用户有效期1年
             coupon.setExpiredDate(DateUtils.afterYears(new Date(), 1));
         } else {
-            coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
+            // 专项课用户过期日期+一个月
+            RiseMember riseMember = riseMemberManager.campMember(profile.getId());
+            if(riseMember != null){
+                coupon.setExpiredDate(DateUtils.afterMonths(riseMember.getExpireDate(), 1));
+            }else{
+                // 默认有效期一个月
+                coupon.setExpiredDate(DateUtils.afterMonths(new Date(), 1));
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package com.iquanwai.platon.web.fragmentation;
 
-import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMessageService;
 import com.iquanwai.platon.biz.domain.common.message.ActivityMsg;
@@ -163,11 +162,7 @@ public class IndexController {
         }
 
         ModuleShow moduleShow = getModuleShow(unionUser);
-        RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(unionUser.getId());
-        List<RiseMember> riseMembers = Lists.newArrayList();
-        if (riseMember != null) {
-            riseMembers.add(riseMember);
-        }
+        List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
 
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
@@ -262,8 +257,18 @@ public class IndexController {
 
     //所有信息是否完整
     private boolean isInfoUnComplete(Profile profile, UserInfo userInfo) {
-        return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
-                (userInfo.getMobile() == null && profile.getWeixinId() == null);
+        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(profile.getId());
+        if (CollectionUtils.isNotEmpty(riseMembers)) {
+            return userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null ||
+                    (userInfo.getMobile() == null && profile.getWeixinId() == null);
+        } else {
+            RiseMember riseMember = riseMemberManager.campMember(profile.getId());
+            if (riseMember != null) {
+                return userInfo == null || (userInfo.getMobile() == null && profile.getWeixinId() == null);
+            } else {
+                return false;
+            }
+        }
     }
 
     //个人信息是否完整
