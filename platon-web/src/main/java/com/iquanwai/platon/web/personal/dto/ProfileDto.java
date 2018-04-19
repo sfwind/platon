@@ -76,5 +76,6 @@ public class ProfileDto {
     private Integer rate;
     @ApiModelProperty("是否能跳过信息页")
     private Boolean canSkip;
-
+    @ApiModelProperty("验证码")
+    private Integer code;
 }
