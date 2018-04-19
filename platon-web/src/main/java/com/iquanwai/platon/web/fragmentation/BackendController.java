@@ -134,10 +134,13 @@ public class BackendController {
         Date closeDate = params.getCloseDate();
         Boolean sendWelcomeMsg = params.getSendWelcomeMsg();
 
-        profileIds.forEach(profileId -> ThreadPool.execute(() -> {
-            Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
-            logger.info("开课: profileId:{},planId:{}", profileId, result);
-        }));
+        ThreadPool.execute(() -> {
+            profileIds.forEach(profileId->{
+                Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
+                logger.info("开课: profileId:{},planId:{}", profileId, result);
+            });
+        });
+
 
         return WebUtils.success();
     }
@@ -187,9 +190,13 @@ public class BackendController {
         Integer endSeries = userInsertPlanDto.getEndSeries();
 
         List<Integer> profileIds = userInsertPlanDto.getProfileIds();
-        profileIds.forEach(profileId-> ThreadPool.execute(()->{
-              generatePlanService.createPartPracticePlans(profileId,problemId,startSeries,endSeries);
-        }));
+
+        ThreadPool.execute(() -> {
+            profileIds.forEach(profileId->{
+                generatePlanService.createPartPracticePlans(profileId,problemId,startSeries,endSeries);
+            });
+        });
+
 
         return WebUtils.success();
     }
