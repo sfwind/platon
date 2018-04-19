@@ -202,48 +202,28 @@ public class CustomerController {
             profileDto.setMobileNo(userInfo.getReceiverMobile());
 
         }
-
-        RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
-        if (riseMember != null) {
-            profileDto.setMemberTypeId(riseMember.getMemberTypeId());
-        } else {
-            profileDto.setMemberTypeId(0);
-        }
+        //判断个人中心首页是否显示分享商学院图片
         Boolean isElite = CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId));
         profileDto.setIsShowInfo(isElite);
-        Boolean cansSkip = true;
-
-        if (isElite && (userInfo == null || userInfo.getAddress() == null || userInfo.getRealName() == null || userInfo.getReceiver() == null)) {
-            cansSkip = false;
-        }
-        profileDto.setCanSkip(cansSkip);
 
         // 查询id
         Region city = accountService.loadCityByName(profile.getCity());
         Region province = accountService.loadProvinceByName(profile.getProvince());
         profileDto.setCityId(city == null ? null : city.getId());
         profileDto.setProvinceId(province == null ? null : province.getId());
-        boolean bindMobile = true;
-        //判断是否绑定手机号或者填写微信号
-        if (userInfo == null || (StringUtils.isEmpty(userInfo.getMobile())) && StringUtils.isEmpty(profile.getWeixinId())) {
-            bindMobile = false;
-        }
         if (userInfo == null) {
             profileDto.setIsFull(false);
         } else {
             profileDto.setIsFull(userInfo.getIsFull() == 1);
         }
         profileDto.setNickName(profile.getNickname());
-        profileDto.setBindMobile(bindMobile);
         profileDto.setScore(ConfigUtils.getProfileFullScore());
-
 
         if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {
             profileDto.setCanSubmit(true);
         } else {
             profileDto.setCanSubmit(false);
         }
-
 
         return WebUtils.result(profileDto);
     }
@@ -270,6 +250,9 @@ public class CustomerController {
     @ApiOperation("提交个人中心信息")
     public ResponseEntity<Map<String, Object>> submitNewProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
+        //如果code匹配则更新手机号，否则不进行更新
+        accountService.validCode(profileDto.getCode(), unionUser.getId());
+
         UserInfo userInfo = new UserInfo();
         Profile profile = new Profile();
         BeanUtils.copyProperties(profileDto, profile);
