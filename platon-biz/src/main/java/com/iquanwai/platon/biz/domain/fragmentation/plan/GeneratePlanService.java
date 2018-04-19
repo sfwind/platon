@@ -100,4 +100,14 @@ public interface GeneratePlanService {
      * @return 小课id
      */
     Integer forceOpenProblem(Integer profileId, Integer problemId, Date startDate, Date closeDate, Boolean sendWelcomeMsg);
+
+    /**
+     * 生成部分小节
+     * @param profileId
+     * @param problemId
+     * @param startSeries
+     * @param endSeries
+     */
+    void createPartPracticePlans(Integer profileId,Integer problemId,Integer startSeries,Integer endSeries);
+
 }

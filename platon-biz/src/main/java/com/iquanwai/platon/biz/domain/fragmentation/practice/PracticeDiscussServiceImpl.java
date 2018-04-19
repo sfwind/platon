@@ -4,24 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.common.UserRoleDao;
-import com.iquanwai.platon.biz.dao.fragmentation.ApplicationSubmitDao;
-import com.iquanwai.platon.biz.dao.fragmentation.CommentDao;
-import com.iquanwai.platon.biz.dao.fragmentation.HomeworkVoteDao;
-import com.iquanwai.platon.biz.dao.fragmentation.KnowledgeDiscussDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDao;
-import com.iquanwai.platon.biz.dao.fragmentation.WarmupPracticeDiscussDao;
+import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AbstractComment;
-import com.iquanwai.platon.biz.po.ApplicationSubmit;
-import com.iquanwai.platon.biz.po.Comment;
-import com.iquanwai.platon.biz.po.HomeworkVote;
-import com.iquanwai.platon.biz.po.KnowledgeDiscuss;
-import com.iquanwai.platon.biz.po.RiseMember;
-import com.iquanwai.platon.biz.po.WarmupPractice;
-import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.Role;
 import com.iquanwai.platon.biz.po.common.UserRole;
@@ -619,7 +607,9 @@ public class PracticeDiscussServiceImpl implements PracticeDiscussService {
             discussElementsPairs.add(discussElementsPair);
         });
 
-        return discussElementsPairs;
+        return discussElementsPairs.stream()
+                .sorted((o1, o2) -> o2.getPriorityDiscuss().getVoteCount() - o1.getPriorityDiscuss().getVoteCount())
+                .collect(Collectors.toList());
     }
 
     // 将知识点评论转化为评论对象

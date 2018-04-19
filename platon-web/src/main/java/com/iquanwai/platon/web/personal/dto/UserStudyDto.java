@@ -24,8 +24,8 @@ public class UserStudyDto {
     private Integer couponSum;
     @ApiModelProperty("课程积分")
     private Integer point;
-    @ApiModelProperty("会员类型")
-    private Integer memberTypeId;
+    @ApiModelProperty("是否是专业版用户")
+    private Boolean isProMember;
     @ApiModelProperty("是否展示分享商学院")
     private Boolean showShare;
 }
