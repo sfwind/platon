@@ -17,6 +17,10 @@
     }
 </script>
 <script src="//res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<!-- 腾讯点播器 -->
+<link href="//imgcache.qq.com/open/qcloud/video/tcplayer/tcplayer.css" rel="stylesheet">
+<script src="//imgcache.qq.com/open/qcloud/video/tcplayer/tcplayer.min.js"></script>
+
 <div id="loading"><img src="//static.iqycamp.com/images/dribz.gif" style="width:300px;display: block;margin: 0 auto;"/></div>
 <div id="react-app"></div>
 <!-- 业务代码-->
