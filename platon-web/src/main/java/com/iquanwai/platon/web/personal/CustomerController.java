@@ -232,7 +232,6 @@ public class CustomerController {
     @ApiOperation("提交用户个人信息")
     public ResponseEntity<Map<String, Object>> submitProfile(UnionUser unionUser, @RequestBody ProfileDto profileDto) {
         Assert.notNull(unionUser, "用户信息不能为空");
-        //修改手机号
         accountService.validCode(profileDto.getCode(), unionUser.getId());
 
         Profile profile = new Profile();

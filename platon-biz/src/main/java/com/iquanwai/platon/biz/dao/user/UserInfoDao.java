@@ -32,11 +32,11 @@ public class UserInfoDao extends DBUtil {
 
     public Integer insert(UserInfo userInfo){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO UserInfo(ProfileId,Industry,Function,WorkingYear,Company,College,Mobile,Introduction,Address,ReceiverMobile,RealName,Receiver) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO UserInfo(ProfileId,Industry,Function,WorkingYear,Company,College,Introduction,Address,ReceiverMobile,RealName,Receiver) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
 
         try {
             Long result =  runner.insert(sql,new ScalarHandler<>(),userInfo.getProfileId(),userInfo.getIndustry(),userInfo.getFunction(),
-                    userInfo.getWorkingYear(),userInfo.getCompany(),userInfo.getCollege(),userInfo.getMobile(),userInfo.getIntroduction(),
+                    userInfo.getWorkingYear(),userInfo.getCompany(),userInfo.getCollege(),userInfo.getIntroduction(),
                     userInfo.getAddress(),userInfo.getReceiverMobile(),userInfo.getRealName(),userInfo.getReceiver());
             return result.intValue();
         } catch (SQLException e) {
@@ -48,12 +48,12 @@ public class UserInfoDao extends DBUtil {
 
     public Integer update(UserInfo userInfo){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "Update UserInfo SET Industry=?,Function=?,WorkingYear=?,Company = ?,College=?,Mobile=?,Introduction=?,Address = ?,ReceiverMobile=?,RealName=?,Receiver=? WHERE ProfileId = ?";
+        String sql = "Update UserInfo SET Industry=?,Function=?,WorkingYear=?,Company = ?,College=?,Introduction=?,Address = ?,ReceiverMobile=?,RealName=?,Receiver=? WHERE ProfileId = ?";
         try {
             return runner.update(sql,userInfo.getIndustry(),userInfo.getFunction(),
                     userInfo.getWorkingYear(),userInfo.getCompany(),userInfo.getCollege(),
-                    userInfo.getMobile(), userInfo.getIntroduction(), userInfo.getAddress(),
-                    userInfo.getReceiverMobile(),userInfo.getRealName(),userInfo.getReceiver(),userInfo.getProfileId());
+                    userInfo.getIntroduction(), userInfo.getAddress(), userInfo.getReceiverMobile(),
+                    userInfo.getRealName(),userInfo.getReceiver(),userInfo.getProfileId());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(),e);
         }
