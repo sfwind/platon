@@ -70,12 +70,8 @@ public class ProfileDto {
     private String email;
     @ApiModelProperty("score")
     private Integer score;
-    @ApiModelProperty("是否能提交")
-    private Boolean canSubmit;
     @ApiModelProperty("提交比例")
     private Integer rate;
-    @ApiModelProperty("是否能跳过信息页")
-    private Boolean canSkip;
     @ApiModelProperty("验证码")
     private String code;
 }

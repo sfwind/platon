@@ -219,12 +219,6 @@ public class CustomerController {
         profileDto.setNickName(profile.getNickname());
         profileDto.setScore(ConfigUtils.getProfileFullScore());
 
-        if (profile.getNickname() != null && userInfo != null && userInfo.getWorkingYear() != null && profile.getProvince() != null && profile.getCity() != null && userInfo.getIndustry() != null && userInfo.getFunction() != null) {
-            profileDto.setCanSubmit(true);
-        } else {
-            profileDto.setCanSubmit(false);
-        }
-
         return WebUtils.result(profileDto);
     }
 
