@@ -36,7 +36,7 @@ public class UserInfoDao extends DBUtil {
 
     public List<UserInfo> loadList(Integer profileId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM UserInfo WHERE Industry is NOT NULL AND COMPANY IS NOT NULL AND profileId !=? AND DEL = 0  LIMIT " + page.getOffset() + "," + page.getLimit();
+        String sql = "SELECT * FROM UserInfo WHERE Industry is NOT NULL AND COMPANY IS NOT NULL AND profileId !=? AND DEL = 0  ORDER BY Priority desc LIMIT " + page.getOffset() + "," + page.getLimit();
         try {
             return runner.query(sql, new BeanListHandler<>(UserInfo.class), profileId);
         } catch (SQLException e) {

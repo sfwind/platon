@@ -43,6 +43,7 @@ public class SchoolFriendController {
     @ApiOperation("分页获得校友录名单")
     public ResponseEntity<Map<String, Object>> getSchoolFriends(UnionUser unionUser, @ModelAttribute Page page) {
         //TODO:只获取商学院、排序问题
+        //TODO:有新的内容加进来时重复问题
         Assert.notNull(unionUser);
         page.setPageSize(SCHOOL_FRIEND_SIZE);
         List<UserInfo> userInfos = schoolFriendService.loadSchoolFriends(unionUser.getId(), page);

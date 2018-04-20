@@ -69,4 +69,8 @@ public class UserInfo {
      * 判断是否已经完整提交
      */
     private Integer isFull;
+    /**
+     * 是否优先
+     */
+    private Integer priority;
 }
