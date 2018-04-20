@@ -74,4 +74,6 @@ public class RiseMemberDao extends DBUtil {
         }
         return Lists.newArrayList();
     }
+
+
 }

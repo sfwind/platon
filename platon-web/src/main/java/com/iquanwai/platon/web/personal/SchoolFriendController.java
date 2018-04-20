@@ -1,8 +1,10 @@
 package com.iquanwai.platon.web.personal;
 
 import com.google.common.collect.Lists;
+import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.personal.SchoolFriendService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.support.Assert;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,20 +33,34 @@ import java.util.stream.Collectors;
 @Api(description = "校友录功能")
 public class SchoolFriendController {
 
-
     private static final Integer SCHOOL_FRIEND_SIZE = 10;
-
 
     @Autowired
     private SchoolFriendService schoolFriendService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
+
+    public List<SchoolFriendDto> schoolFriendDtos = Lists.newArrayList();
+
+
+
+    @PostConstruct
+    public void init(){
+    }
+
+
+
 
     @RequestMapping(value = "/school/friend", method = RequestMethod.GET)
     @ApiOperation("分页获得校友录名单")
     public ResponseEntity<Map<String, Object>> getSchoolFriends(UnionUser unionUser, @ModelAttribute Page page) {
-        //TODO:只获取商学院、排序问题
+        //TODO:只获取商学院
         //TODO:有新的内容加进来时重复问题
+        //TODO:分页问题
+        //TODO:过滤信息不完整的人
+
         Assert.notNull(unionUser);
         page.setPageSize(SCHOOL_FRIEND_SIZE);
         List<UserInfo> userInfos = schoolFriendService.loadSchoolFriends(unionUser.getId(), page);
