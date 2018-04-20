@@ -210,4 +210,14 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
     public RiseMember getByMemberType(Integer profileId, Integer memberType) {
         return riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, Lists.newArrayList(memberType)).stream().findAny().orElse(null);
     }
+
+    @Override
+    public List<RiseMember> getAllValidElites() {
+        List<Integer> members = Lists.newArrayList();
+        members.add(RiseMember.ELITE);
+        members.add(RiseMember.HALF_ELITE);
+        members.add(RiseMember.BUSINESS_THOUGHT);
+
+        return riseMemberDao.loadAllByMembers(members);
+    }
 }

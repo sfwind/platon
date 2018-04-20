@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.page.Page;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -33,6 +34,25 @@ public class UserInfoDao extends DBUtil {
         }
         return null;
     }
+
+    public List<UserInfo> loadByProfileIds(List<Integer> profileIds){
+        if(CollectionUtils.isEmpty(profileIds)){
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String mask = produceQuestionMark(profileIds.size());
+        ResultSetHandler<List<UserInfo>> h = new BeanListHandler<UserInfo>(UserInfo.class);
+        String sql = "SELECT * FROM UserInfo WHERE ProfileId in (" + mask +" ) AND DEL = 0";
+
+        try {
+            return runner.query(sql,h,profileIds.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
+        }
+        return Lists.newArrayList();
+    }
+
+
 
     public List<UserInfo> loadList(Integer profileId, Page page) {
         QueryRunner runner = new QueryRunner(getDataSource());

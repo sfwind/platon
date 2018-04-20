@@ -98,4 +98,6 @@ public interface RiseMemberManager {
     List<RiseMember> getAllRiseMember(Integer profileId);
 
     RiseMember getByMemberType(Integer profileId, Integer memberType);
+
+    List<RiseMember> getAllValidElites();
 }
