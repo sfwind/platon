@@ -42,6 +42,7 @@ public class SchoolFriendController {
     @RequestMapping(value = "/school/friend", method = RequestMethod.GET)
     @ApiOperation("分页获得校友录名单")
     public ResponseEntity<Map<String, Object>> getSchoolFriends(UnionUser unionUser, @ModelAttribute Page page) {
+        //TODO:只获取商学院、排序问题
         Assert.notNull(unionUser);
         page.setPageSize(SCHOOL_FRIEND_SIZE);
         List<UserInfo> userInfos = schoolFriendService.loadSchoolFriends(unionUser.getId(), page);
