@@ -73,4 +73,6 @@ public class UserInfo {
      * 是否优先
      */
     private Integer priority;
+
+
 }

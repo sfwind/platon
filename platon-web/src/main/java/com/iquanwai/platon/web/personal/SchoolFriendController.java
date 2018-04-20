@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.domain.personal.SchoolFriendService;
 import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.SchoolFriend;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.page.Page;
@@ -45,11 +46,7 @@ public class SchoolFriendController {
     @Autowired
     private UserInfoService userInfoService;
 
-
-
-    public List<SchoolFriendDto> schoolFriendDtos = Lists.newArrayList();
-
-
+    public List<SchoolFriend> schoolFriends = Lists.newArrayList();
 
     @PostConstruct
     public void init(){
@@ -58,11 +55,11 @@ public class SchoolFriendController {
         List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
         List<Integer> profileIds = userInfos.stream().map(UserInfo::getProfileId).collect(Collectors.toList());;
         List<Profile> profiles = accountService.getProfiles(profileIds);
-        if(CollectionUtils.isNotEmpty(schoolFriendDtos)){
-            schoolFriendDtos.clear();
+        if(CollectionUtils.isNotEmpty(schoolFriends)){
+            schoolFriends.clear();
         }
         userInfos.forEach(userInfo -> {
-            SchoolFriendDto schoolFriendDto = new SchoolFriendDto();
+            SchoolFriend schoolFriendDto = new SchoolFriend();
             Profile profile = profiles.stream().filter(profile1 -> profile1.getId() == userInfo.getProfileId()).findFirst().orElse(null);
             if (profile != null) {
                 BeanUtils.copyProperties(profile, schoolFriendDto);
@@ -70,7 +67,7 @@ public class SchoolFriendController {
                 schoolFriendDto.setHeadImgUrl(profile.getHeadimgurl());
             }
             BeanUtils.copyProperties(userInfo, schoolFriendDto);
-            schoolFriendDtos.add(schoolFriendDto);
+            schoolFriends.add(schoolFriendDto);
         });
     }
 
@@ -80,6 +77,15 @@ public class SchoolFriendController {
     @ApiOperation("分页获得校友录名单")
     public ResponseEntity<Map<String, Object>> getSchoolFriends(UnionUser unionUser, @ModelAttribute Page page) {
         Assert.notNull(unionUser);
+        //过滤自己
+        List<SchoolFriend> excludeFriends = schoolFriends.stream().filter(schoolFriend -> !schoolFriend.getProfileId().equals(unionUser.getId())).collect(Collectors.toList());
+        List<SchoolFriendDto> schoolFriendDtos = Lists.newArrayList();
+        excludeFriends.forEach(schoolFriend -> {
+            SchoolFriendDto schoolFriendDto = new SchoolFriendDto();
+            BeanUtils.copyProperties(schoolFriend,schoolFriendDto);
+            schoolFriendDtos.add(schoolFriendDto);
+        });
+
         if(page.getPage()*SCHOOL_FRIEND_SIZE>schoolFriendDtos.size()){
             return WebUtils.result(schoolFriendDtos.subList((page.getPage()-1)*SCHOOL_FRIEND_SIZE,schoolFriendDtos.size()));
         }else{
