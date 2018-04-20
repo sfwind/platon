@@ -50,6 +50,7 @@ public class SchoolFriendController {
 
     @PostConstruct
     public void init(){
+        //TODO:刷新mq
         //获得所有的商学院用户
         List<Integer> riseMemberIds = riseMemberManager.getAllValidElites().stream().map(RiseMember::getProfileId).distinct().collect(Collectors.toList());;
         List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
@@ -85,8 +86,11 @@ public class SchoolFriendController {
             BeanUtils.copyProperties(schoolFriend,schoolFriendDto);
             schoolFriendDtos.add(schoolFriendDto);
         });
-
-        if(page.getPage()*SCHOOL_FRIEND_SIZE>schoolFriendDtos.size()){
+        Integer pageId = page.getPage();
+        if((pageId-1)*SCHOOL_FRIEND_SIZE>schoolFriendDtos.size()){
+            return WebUtils.result(Lists.newArrayList());
+        }
+        else if(page.getPage()*SCHOOL_FRIEND_SIZE>schoolFriendDtos.size()){
             return WebUtils.result(schoolFriendDtos.subList((page.getPage()-1)*SCHOOL_FRIEND_SIZE,schoolFriendDtos.size()));
         }else{
             return WebUtils.result(schoolFriendDtos.subList((page.getPage()-1)*SCHOOL_FRIEND_SIZE,page.getPage()*SCHOOL_FRIEND_SIZE));
