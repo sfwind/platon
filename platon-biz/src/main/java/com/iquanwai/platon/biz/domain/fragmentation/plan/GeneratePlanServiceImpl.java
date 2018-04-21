@@ -146,7 +146,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         for (int sequence = 1; sequence <= problemScheduleList.size(); sequence++) {
             PracticePlan practicePlan = new PracticePlan();
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
-            practicePlan.setUnlocked(false);
+            practicePlan.setUnlocked(true);
             practicePlan.setPlanId(planId);
             ProblemPreview problemPreview = problemPreviewDao.loadProblemPreview(problemSchedule.getId());
             if (problemPreview != null) {
@@ -197,7 +197,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             PracticePlan practicePlan = new PracticePlan();
             ProblemSchedule problemSchedule = problemScheduleList.get(sequence - 1);
             Integer knowledgeId = problemSchedule.getKnowledgeId();
-            practicePlan.setUnlocked(false);
+            practicePlan.setUnlocked(true);
             if (Knowledge.isReview(knowledgeId)) {
                 practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
             } else {
@@ -260,7 +260,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         List<PracticePlan> selected = Lists.newArrayList();
 
         PracticePlan practicePlan = new PracticePlan();
-        practicePlan.setUnlocked(false);
+        practicePlan.setUnlocked(true);
         practicePlan.setPlanId(planId);
         practicePlan.setType(PracticePlan.CHALLENGE);
         practicePlan.setPracticeId(problem.getId() + "");
@@ -293,7 +293,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             //设置应用练习
             for (ApplicationPractice applicationPractice : practices) {
                 PracticePlan practicePlan = new PracticePlan();
-                practicePlan.setUnlocked(false);
+                practicePlan.setUnlocked(true);
                 practicePlan.setPlanId(planId);
                 if (applicationPractice != null) {
                     // TODO:附加题和应用题最好能合并
@@ -341,7 +341,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             //该节是否是综合练习
             boolean review = Knowledge.isReview(knowledgeId);
-            practicePlan.setUnlocked(false);
+            practicePlan.setUnlocked(true);
             practicePlan.setPlanId(planId);
             if (!review) {
                 practicePlan.setType(PracticePlan.WARM_UP);
