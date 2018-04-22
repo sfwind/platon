@@ -36,10 +36,8 @@ public class SchoolFriendServiceImpl implements SchoolFriendService {
     public void init() {
         //获得所有的商学院用户
         List<Integer> riseMemberIds = riseMemberManager.getAllValidElites().stream().map(RiseMember::getProfileId).distinct().collect(Collectors.toList());
-        ;
-        List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
+        List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().filter(userInfo -> userInfo.getIndustry()!=null && userInfo.getCompany()!=null).sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
         List<Integer> profileIds = userInfos.stream().map(UserInfo::getProfileId).collect(Collectors.toList());
-        ;
         List<Profile> profiles = accountService.getProfiles(profileIds);
         if (CollectionUtils.isNotEmpty(schoolFriends)) {
             schoolFriends.clear();
