@@ -13,6 +13,7 @@ import com.iquanwai.platon.web.fragmentation.dto.ErrorLogDto;
 import com.iquanwai.platon.web.fragmentation.dto.ForceOpenPlanParams;
 import com.iquanwai.platon.web.fragmentation.dto.MarkDto;
 import com.iquanwai.platon.web.fragmentation.dto.UserDto;
+import com.iquanwai.platon.web.fragmentation.dto.plan.UserInsertPlanDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -133,10 +134,13 @@ public class BackendController {
         Date closeDate = params.getCloseDate();
         Boolean sendWelcomeMsg = params.getSendWelcomeMsg();
 
-        profileIds.forEach(profileId -> ThreadPool.execute(() -> {
-            Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
-            logger.info("开课: profileId:{},planId:{}", profileId, result);
-        }));
+        ThreadPool.execute(() -> {
+            profileIds.forEach(profileId->{
+                Integer result = generatePlanService.magicOpenProblem(profileId, problemId, startDate, closeDate, sendWelcomeMsg);
+                logger.info("开课: profileId:{},planId:{}", profileId, result);
+            });
+        });
+
 
         return WebUtils.success();
     }
@@ -171,6 +175,30 @@ public class BackendController {
         } else {
             return WebUtils.result(openid);
         }
+    }
+
+    @RequestMapping(value = "/insert/plan",method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Object>> insertPlan(UnionUser unionUser,@RequestBody UserInsertPlanDto userInsertPlanDto){
+
+        logger.info("==========="+userInsertPlanDto.toString());
+        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
+                .module("后台功能").function("增加章节").action("增加章节");
+
+        operationLogService.log(operationLog);
+        Integer problemId = userInsertPlanDto.getProblemId();
+        Integer startSeries = userInsertPlanDto.getStartSeries();
+        Integer endSeries = userInsertPlanDto.getEndSeries();
+
+        List<Integer> profileIds = userInsertPlanDto.getProfileIds();
+
+        ThreadPool.execute(() -> {
+            profileIds.forEach(profileId->{
+                generatePlanService.createPartPracticePlans(profileId,problemId,startSeries,endSeries);
+            });
+        });
+
+
+        return WebUtils.success();
     }
 
 }

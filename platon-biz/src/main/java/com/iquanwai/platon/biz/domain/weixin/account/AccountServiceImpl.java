@@ -273,20 +273,14 @@ public class AccountServiceImpl implements AccountService {
         profileDao.submitPersonalCenterProfileWithMoreDetail(oldProfile);
 
         UserInfo existUserInfo = userInfoDao.loadByProfileId(profile.getId());
-        //首次填写
         if (existUserInfo == null) {
+            //表示手机号没有通过检验，不进行加积分操作
             userInfoDao.insert(userInfo);
-            //如果提交比例为100%，则更新isFull，增加积分
-            if (userInfo.getRate() == 100) {
-                logger.info(profile.getId() + "首次信息填写完整，增加积分");
-                pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
-                userInfoDao.updateIsFull(profile.getId());
-            }
         } else {
             userInfoDao.update(userInfo);
             //判断之前信息是否已经填写完整
             //如果未完整，则增加积分和更新isFull
-            if (existUserInfo.getIsFull() == 0 && userInfo.getRate() == 100) {
+            if (existUserInfo.getIsFull() == 0 && userInfo.getRate() == 100 && existUserInfo.getMobile()!=null) {
                 logger.info(profile.getId() + "首次信息填写完整，增加积分");
                 pointRepo.riseCustomerPoint(profile.getId(), ConfigUtils.getProfileFullScore());
                 userInfoDao.updateIsFull(profile.getId());
