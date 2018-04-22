@@ -116,9 +116,11 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public boolean isStillLearningCamp(Integer profileId) {
-        Integer learningYear = ConfigUtils.getLearningYear();
-        Integer learningMonth = ConfigUtils.getLearningMonth();
-        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
-        return riseClassMember != null;
+//        Integer learningYear = ConfigUtils.getLearningYear();
+//        Integer learningMonth = ConfigUtils.getLearningMonth();
+//        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
+//        return riseClassMember != null;
+
+        return false;
     }
 }

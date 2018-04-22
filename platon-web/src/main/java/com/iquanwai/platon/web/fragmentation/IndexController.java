@@ -127,26 +127,6 @@ public class IndexController {
         return courseView(request, response, channel, new ModuleShow(), RISE_VIEW);
     }
 
-    @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
-    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        if (unionUser == null) {
-            WebUtils.auth(request, response);
-            return null;
-        }
-
-        if (whiteListService.checkRiseMenuWhiteList(unionUser.getId())) {
-            response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
-            return null;
-        } else if (whiteListService.checkCampMenuWhiteList(unionUser.getId())) {
-            response.sendRedirect(INDEX_CAMP_URL);
-            return null;
-        } else {
-            ModuleShow moduleShow = getModuleShow(unionUser);
-
-            return courseView(request, response, channel, moduleShow, RISE_VIEW);
-        }
-    }
-
     /**
      * 主菜单：商学院
      */

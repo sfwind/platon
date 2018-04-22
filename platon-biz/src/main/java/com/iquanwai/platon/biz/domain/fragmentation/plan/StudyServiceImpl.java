@@ -128,34 +128,6 @@ public class StudyServiceImpl implements StudyService {
         return studyLine;
     }
 
-    @Override
-    public Pair<Boolean, Integer> shouldGoCountDownPage(Integer profileId) {
-        // TODO: 待验证
-        RiseMember validRiseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
-        if (validRiseMember == null) {
-            return new MutablePair<>(false, null);
-        } else {
-            int memberTypeId = validRiseMember.getMemberTypeId();
-            if (memberTypeId == RiseMember.HALF || memberTypeId == RiseMember.ANNUAL
-                    || memberTypeId == RiseMember.ELITE || memberTypeId == RiseMember.HALF_ELITE
-                    || memberTypeId == RiseMember.CAMP) {
-                // 有正在进行的学习
-                RiseClassMember riseClassMember = riseClassMemberDao.loadActiveRiseClassMember(profileId);
-                if (riseClassMember != null) {
-                    return new MutablePair<>(false, null);
-                }
-
-                // 已经进入会员有效期
-                if (new Date().compareTo(validRiseMember.getOpenDate()) >= 0) {
-                    return new MutablePair<>(false, null);
-                }
-            } else {
-                return new MutablePair<>(false, null);
-            }
-            return new MutablePair<>(true, memberTypeId);
-        }
-    }
-
     private List<ReviewPractice> buildReviewPractice(List<PracticePlan> practicePlans, boolean close) {
         boolean unlocked = practicePlanStatusManager.calculateProblemUnlocked(practicePlans);
         //设置解锁状态
