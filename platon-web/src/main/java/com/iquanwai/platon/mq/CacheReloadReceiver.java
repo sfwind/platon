@@ -2,6 +2,7 @@ package com.iquanwai.platon.mq;
 
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.message.MQService;
+import com.iquanwai.platon.biz.domain.personal.SchoolFriendService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import com.iquanwai.platon.web.resolver.UnionUserService;
@@ -30,6 +31,8 @@ public class CacheReloadReceiver {
     private MQService mqService;
     @Autowired
     private UnionUserService unionUserService;
+    @Autowired
+    private SchoolFriendService schoolFriendService;
 
     @PostConstruct
     public void init() {
@@ -51,6 +54,11 @@ public class CacheReloadReceiver {
                 case "mqip": {
                     mqService.reload();
                     logger.info("刷新ip");
+                    break;
+                }
+                case "school_friend":{
+                    schoolFriendService.reload();
+                    logger.info("刷新校友录");
                     break;
                 }
                 default: {

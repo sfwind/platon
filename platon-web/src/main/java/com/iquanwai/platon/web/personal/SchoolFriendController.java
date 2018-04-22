@@ -40,44 +40,13 @@ public class SchoolFriendController {
     private static final Integer SCHOOL_FRIEND_SIZE = 10;
 
     @Autowired
-    private AccountService accountService;
-    @Autowired
-    private RiseMemberManager riseMemberManager;
-    @Autowired
-    private UserInfoService userInfoService;
-
-    public List<SchoolFriend> schoolFriends = Lists.newArrayList();
-
-    @PostConstruct
-    public void init(){
-        //TODO:刷新mq
-        //获得所有的商学院用户
-        List<Integer> riseMemberIds = riseMemberManager.getAllValidElites().stream().map(RiseMember::getProfileId).distinct().collect(Collectors.toList());;
-        List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
-        List<Integer> profileIds = userInfos.stream().map(UserInfo::getProfileId).collect(Collectors.toList());;
-        List<Profile> profiles = accountService.getProfiles(profileIds);
-        if(CollectionUtils.isNotEmpty(schoolFriends)){
-            schoolFriends.clear();
-        }
-        userInfos.forEach(userInfo -> {
-            SchoolFriend schoolFriendDto = new SchoolFriend();
-            Profile profile = profiles.stream().filter(profile1 -> profile1.getId() == userInfo.getProfileId()).findFirst().orElse(null);
-            if (profile != null) {
-                BeanUtils.copyProperties(profile, schoolFriendDto);
-                schoolFriendDto.setNickName(profile.getNickname());
-                schoolFriendDto.setHeadImgUrl(profile.getHeadimgurl());
-            }
-            BeanUtils.copyProperties(userInfo, schoolFriendDto);
-            schoolFriends.add(schoolFriendDto);
-        });
-    }
-
-
+    private SchoolFriendService schoolFriendService;
 
     @RequestMapping(value = "/school/friend", method = RequestMethod.GET)
     @ApiOperation("分页获得校友录名单")
     public ResponseEntity<Map<String, Object>> getSchoolFriends(UnionUser unionUser, @ModelAttribute Page page) {
         Assert.notNull(unionUser);
+        List<SchoolFriend> schoolFriends = schoolFriendService.loadSchoolFriends();
         //过滤自己
         List<SchoolFriend> excludeFriends = schoolFriends.stream().filter(schoolFriend -> !schoolFriend.getProfileId().equals(unionUser.getId())).collect(Collectors.toList());
         List<SchoolFriendDto> schoolFriendDtos = Lists.newArrayList();
