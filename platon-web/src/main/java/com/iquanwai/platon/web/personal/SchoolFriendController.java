@@ -48,9 +48,8 @@ public class SchoolFriendController {
         Assert.notNull(unionUser);
         List<SchoolFriend> schoolFriends = schoolFriendService.loadSchoolFriends();
         //过滤自己
-        List<SchoolFriend> excludeFriends = schoolFriends.stream().filter(schoolFriend -> !schoolFriend.getProfileId().equals(unionUser.getId())).collect(Collectors.toList());
         List<SchoolFriendDto> schoolFriendDtos = Lists.newArrayList();
-        excludeFriends.forEach(schoolFriend -> {
+        schoolFriends.forEach(schoolFriend -> {
             SchoolFriendDto schoolFriendDto = new SchoolFriendDto();
             BeanUtils.copyProperties(schoolFriend,schoolFriendDto);
             schoolFriendDtos.add(schoolFriendDto);
