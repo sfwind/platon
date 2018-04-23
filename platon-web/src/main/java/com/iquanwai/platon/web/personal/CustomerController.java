@@ -653,7 +653,7 @@ public class CustomerController {
             if(memberTypeId!=null){
                 MemberType memberType = memberTypes.stream().filter(memberType1 -> memberTypeId.equals(memberType1.getId())).findFirst().orElse(null);
                 if(memberType!=null){
-                    String expireMember = memberType.getDescription()+"： " + riseMember.getExpireDate();
+                    String expireMember = memberType.getDescription()+"截止日期： " + riseMember.getExpireDate();
                     expireMembers.add(expireMember);
                 }
             }
