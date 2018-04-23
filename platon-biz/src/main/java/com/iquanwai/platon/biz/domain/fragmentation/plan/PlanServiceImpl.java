@@ -327,13 +327,13 @@ public class PlanServiceImpl implements PlanService {
 
         if (!problem.getPublish()) {
             //TODO:专业版都过期后逻辑删除
-            if(riseMember.getMemberTypeId() == RiseMember.ANNUAL || riseMember.getMemberTypeId() == RiseMember.HALF){
-                if(problem.getId() == 5 || problem.getId() == 11 || problem.getId() == 13 || problem.getId() == 19){
+            if (riseMember.getMemberTypeId() == RiseMember.ANNUAL || riseMember.getMemberTypeId() == RiseMember.HALF) {
+                if (problem.getId() == 5 || problem.getId() == 11 || problem.getId() == 13 || problem.getId() == 19) {
                     //专业版可以学习problemId = 5, 11, 13, 19
-                }else{
+                } else {
                     throw new CreateCourseException("该课程还在开发中，敬请期待");
                 }
-            }else{
+            } else {
                 throw new CreateCourseException("该课程还在开发中，敬请期待");
             }
         }
@@ -435,11 +435,18 @@ public class PlanServiceImpl implements PlanService {
                 () -> {
                     int warmupSubmitCount = warmupSubmitDao.getPlanSubmitCount(plan.getId());
                     int warmupRightCount = warmupSubmitDao.getPlanRightCount(plan.getId());
+                    // 计算是不是主修课
+                    CourseSchedule courseSchedule = courseScheduleDao.loadSingleCourseSchedule(plan.getProfileId(), plan.getProblemId());
+                    Integer courseType = 0;
+                    if (courseSchedule != null) {
+                        courseType = courseSchedule.getType();
+                    }
                     return OperationLogService
                             .props()
                             .add("problemId", plan.getProblemId())
                             .add("totalWarmup", warmupSubmitCount)
                             .add("rightWarmup", warmupRightCount)
+                            .add("courseMajorType", courseType)
                             .add("useDays", DateUtils.interval(plan.getStartDate()));
                 }
         );
