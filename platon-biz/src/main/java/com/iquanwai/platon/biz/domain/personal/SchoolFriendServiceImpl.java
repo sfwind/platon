@@ -35,8 +35,8 @@ public class SchoolFriendServiceImpl implements SchoolFriendService {
     @PostConstruct
     public void init() {
         //获得所有的商学院用户
-        List<Integer> riseMemberIds = riseMemberManager.getAllValidElites().stream().filter(riseMember -> riseMember.getVip()==0).map(RiseMember::getProfileId).distinct().collect(Collectors.toList());
-        List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().filter(userInfo -> userInfo.getIndustry()!=null && userInfo.getCompany()!=null).sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
+        List<Integer> riseMemberIds = riseMemberManager.getAllValidElites().stream().filter(riseMember -> riseMember.getVip() == 0).map(RiseMember::getProfileId).distinct().collect(Collectors.toList());
+        List<UserInfo> userInfos = userInfoService.loadByProfileIds(riseMemberIds).stream().filter(userInfo -> userInfo.getIndustry() != null && userInfo.getCompany() != null).sorted(Comparator.comparing(UserInfo::getPriority).reversed()).collect(Collectors.toList());
         List<Integer> profileIds = userInfos.stream().map(UserInfo::getProfileId).collect(Collectors.toList());
         List<Profile> profiles = accountService.getProfiles(profileIds);
         if (CollectionUtils.isNotEmpty(schoolFriends)) {
@@ -45,14 +45,13 @@ public class SchoolFriendServiceImpl implements SchoolFriendService {
         userInfos.forEach(userInfo -> {
             SchoolFriend schoolFriendDto = new SchoolFriend();
             Profile profile = profiles.stream().filter(profile1 -> profile1.getId() == userInfo.getProfileId()).findFirst().orElse(null);
-            if (profile != null) {
+            if (profile != null && profile.getMemberId() != null && profile.getCity() != null) {
                 BeanUtils.copyProperties(profile, schoolFriendDto);
                 schoolFriendDto.setNickName(profile.getNickname());
                 schoolFriendDto.setHeadImgUrl(profile.getHeadimgurl());
-                //TODO:学号没有，省份城市没有需要展示么？
+                BeanUtils.copyProperties(userInfo, schoolFriendDto);
+                schoolFriends.add(schoolFriendDto);
             }
-            BeanUtils.copyProperties(userInfo, schoolFriendDto);
-            schoolFriends.add(schoolFriendDto);
         });
     }
 
