@@ -178,11 +178,9 @@ public class BackendController {
     }
 
     @RequestMapping(value = "/insert/plan",method = RequestMethod.POST)
-    public ResponseEntity<Map<String,Object>> insertPlan(UnionUser unionUser,@RequestBody UserInsertPlanDto userInsertPlanDto){
+    public ResponseEntity<Map<String,Object>> insertPlan(@RequestBody UserInsertPlanDto userInsertPlanDto){
 
-        logger.info("==========="+userInsertPlanDto.toString());
-        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
-                .module("后台功能").function("增加章节").action("增加章节");
+        OperationLog operationLog = OperationLog.create().module("后台功能").function("增加章节").action("增加章节");
 
         operationLogService.log(operationLog);
         Integer problemId = userInsertPlanDto.getProblemId();
