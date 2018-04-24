@@ -52,6 +52,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             }
             case PracticePlan.APPLICATION_BASE:
             case PracticePlan.APPLICATION_UPGRADED: {
+                // 查看是否满足应用题完课
+
                 operationLogService.trace(profileId, "submitApplication", () -> {
                     OperationLogService.Prop prop = OperationLogService.props();
                     ImprovementPlan plan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
@@ -117,8 +119,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
         ImprovementPlan improvementPlan = improvementPlanDao.load(ImprovementPlan.class, practicePlan.getPlanId());
 
         if (improvementPlan != null) {
-            // 神策打点
-            tracePracticeComplete(profileId, practicePlan);
+            // 神策打点 -> 不做特殊打点
+//            tracePracticeComplete(profileId, practicePlan);
             practicePlanDao.complete(practicePlanId);
         } else {
             //没找到课程
@@ -202,12 +204,31 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
             certificateService.generatePersonalFullAttendance(improvementPlan.getId());
         });
 
-        operationLogService.trace(profileId, "completePractice", () -> {
+        // 记录完成练习
+        operationLogService.trace(profileId, "completePracticePlan", () -> {
+            boolean exist = practicePlanDao.loadWarmupPracticeByPlanId(practicePlan.getPlanId())
+                    .stream()
+                    .filter(item -> item.getId() != practicePlan.getId())
+                    .anyMatch(item -> item.getSeries().equals(practicePlan.getSeries()) && item.getStatus() == 1);
             OperationLogService.Prop prop = OperationLogService.props();
             prop.add("problemId", improvementPlan.getProblemId());
             prop.add("series", practicePlan.getSeries());
             prop.add("sequence", practicePlan.getSequence());
             prop.add("practiceType", practicePlan.getType());
+            if (PracticePlan.isWarmupPractice(practicePlan.getType())) {
+                // 选择题特殊属性
+                prop.add("isReview", practicePlan.getType().equals(PracticePlan.WARM_UP_REVIEW));
+            }
+            if (PracticePlan.isKnowledge(practicePlan.getType())) {
+                // 知识点特殊值
+                prop.add("isReview", practicePlan.getType().equals(PracticePlan.KNOWLEDGE_REVIEW));
+            }
+            if (PracticePlan.isApplicationPractice(practicePlan.getType())) {
+                // 应用题特殊值
+                prop.add("applicationId", Integer.valueOf(practicePlan.getPracticeId()));
+                prop.add("isUpgraded", practicePlan.getType().equals(PracticePlan.APPLICATION_UPGRADED));
+            }
+            prop.add("isSeriesFirst", !exist);
             return prop;
         });
     }
