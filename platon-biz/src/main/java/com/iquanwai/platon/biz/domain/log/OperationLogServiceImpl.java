@@ -151,6 +151,7 @@ public class OperationLogServiceImpl implements OperationLogService {
             Integer profileId = supplier.get();
             Profile profile = profileDao.load(Profile.class, profileId);
             try {
+                logger.info("trace:\nprofielId:{}\nkey:{}\nvalue:{}", profileId, key, value);
                 sa.profileSet(profile.getRiseId(), true, key, value);
                 if (ConfigUtils.isDevelopment()) {
                     sa.flush();
