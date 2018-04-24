@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.point;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.ProfileDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -26,6 +27,8 @@ public class PointManagerImpl implements PointManager {
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProfileDao profileDao;
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public void risePoint(Integer planId, Integer increment) {
@@ -36,6 +39,8 @@ public class PointManagerImpl implements PointManager {
             Profile profile = profileDao.load(Profile.class, profileId);
             if (profile != null) {
                 profileDao.updatePoint(profileId, profile.getPoint() + increment);
+                // 神策加分
+                operationLogService.profileSet(profileId, "point", profile.getPoint() + increment);
             } else {
                 logger.error("用户{} 加{}积分失败,缺少Profile记录", profileId, increment);
             }
