@@ -143,8 +143,4 @@ public class LandingPageController {
         }
     }
 
-    public ResponseEntity<Map<String, Object>> loadSubscribeQrCode (UnionUser unionUser, ) {
-        qrCodeService.loadQrBase64("");
-    }
-
 }
