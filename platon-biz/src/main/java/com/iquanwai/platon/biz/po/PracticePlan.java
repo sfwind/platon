@@ -50,7 +50,10 @@ public class PracticePlan {
     }
 
     public static boolean isApplicationPractice(Integer type){
-        return type == APPLICATION_BASE || type == APPLICATION_UPGRADED || type == APPLICATION_GROUP;
+        return type == APPLICATION_BASE || type == APPLICATION_UPGRADED;
+    }
+    public static boolean isGroupWork(Integer type){
+        return  type == APPLICATION_GROUP;
     }
 
     public static boolean isKnowledge(Integer type){
@@ -70,8 +73,9 @@ public class PracticePlan {
             return "知识测验";
         } else if (isApplicationPractice(type)) {
             return "实战演练";
+        }else if(isGroupWork(type)){
+            return "小组作业";
         }
-
         //默认
         return "课程练习";
     }
