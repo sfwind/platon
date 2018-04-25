@@ -41,7 +41,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * @author justin
@@ -286,7 +287,17 @@ public class IndexController {
             SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
             if (subscribeRouterConfig != null) {
                 // 未关注
-                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                String scene = subscribeRouterConfig.getScene();
+
+                String requestUri = request.getRequestURI();
+                if (Pattern.compile("/rise/static/home/live/order").matcher(requestUri).find()) {
+                    String liveId = Objects.toString(request.getParameter("liveId"), "0");
+                    String promotionRiseId = Objects.toString(request.getParameter("promotionRiseId"), "0");
+                    scene = scene + "_" + liveId + promotionRiseId;
+                    logger.info("scene：{}", scene);
+                }
+
+                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + scene);
                 return true;
             } else {
                 response.sendRedirect(SUBSCRIBE_URL);

@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.po.common.Profile;
@@ -43,6 +44,8 @@ public class LandingPageController {
     private ApplyService applyService;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private QRCodeService qrCodeService;
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
 
@@ -140,5 +143,8 @@ public class LandingPageController {
         }
     }
 
+    public ResponseEntity<Map<String, Object>> loadSubscribeQrCode (UnionUser unionUser, ) {
+        qrCodeService.loadQrBase64("");
+    }
 
 }
