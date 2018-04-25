@@ -5,6 +5,8 @@ import com.iquanwai.platon.biz.po.user.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
@@ -14,5 +16,10 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Override
     public UserInfo loadByProfileId(Integer profileId) {
         return userInfoDao.loadByProfileId(profileId);
+    }
+
+    @Override
+    public List<UserInfo> loadByProfileIds(List<Integer> profileIds) {
+        return userInfoDao.loadByProfileIds(profileIds);
     }
 }

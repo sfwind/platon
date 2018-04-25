@@ -94,4 +94,6 @@ public interface RiseMemberManager {
      * @return
      */
     RiseMember getByMemberType(Integer profileId, Integer memberType);
+
+    List<RiseMember> getAllValidElites();
 }

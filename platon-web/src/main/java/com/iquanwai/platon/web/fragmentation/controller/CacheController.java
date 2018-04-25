@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.net.ConnectException;
 import java.util.Map;
 
 /**
@@ -78,4 +79,17 @@ public class CacheController {
         }
         return WebUtils.error("reload config error");
     }
+
+    @RequestMapping("/reload/school/friend")
+    public ResponseEntity<Map<String,Object>> reloadSchoolFriend(){
+        try {
+            rabbitMQPublisher.publish("school_friend");
+            return WebUtils.success();
+        } catch (ConnectException e) {
+            logger.error("reload school friend",e);
+        }
+            return WebUtils.error("reload school friend error");
+    }
+
+
 }

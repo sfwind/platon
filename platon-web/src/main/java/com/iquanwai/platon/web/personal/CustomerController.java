@@ -3,6 +3,7 @@ package com.iquanwai.platon.web.personal;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
+import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepoImpl;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -11,9 +12,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.Feedback;
-import com.iquanwai.platon.biz.po.common.Profile;
-import com.iquanwai.platon.biz.po.common.Region;
+import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
@@ -33,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +71,8 @@ public class CustomerController {
     private UnionUserService unionUserService;
     @Autowired
     private UserInfoService userInfoService;
+    @Autowired
+    private RiseMemberTypeRepoImpl riseMemberTypeRepo;
 
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     @ApiOperation("查询小程序用户基本信息")
@@ -117,6 +119,11 @@ public class CustomerController {
         userStudyDto.setCertificateSum(certificateSum);
         List<Coupon> coupons = accountService.loadCoupons(profileId);
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+        List<MemberType> memberTypes  = riseMemberTypeRepo.loadAll();
+        List<String> memberExpiredDate = generateMemberExpiredDate(riseMembers,memberTypes);
+        userStudyDto.setMemberExpiredDate(memberExpiredDate);
+
         return WebUtils.result(userStudyDto);
     }
 
@@ -434,7 +441,7 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         List<RiseMember> riseMember = riseMemberManager.member(unionUser.getId());
-        //TODO: 待验证
+
         if (CollectionUtils.isNotEmpty(riseMember)) {
             return WebUtils.result(riseMember.get(0).simple());
         } else {
@@ -507,6 +514,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/get/certificate", method = RequestMethod.GET)
+    @ApiOperation("获取用户证书")
     public ResponseEntity<Map<String, Object>> getCertificates(UnionUser unionUser) {
         List<RiseCertificate> certificateList = certificateService.getCertificates(unionUser.getId());
 
@@ -553,6 +561,15 @@ public class CustomerController {
         return WebUtils.result(certificateListDto);
     }
 
+    @RequestMapping(value = "/feedback", method = RequestMethod.POST)
+    @ApiOperation("用户提交意见反馈")
+    public ResponseEntity<Map<String, Object>> submitFeedback(UnionUser unionUser, @RequestBody Feedback feedback) {
+        feedback.setProfileId(unionUser.getId());
+        customerService.sendFeedback(feedback);
+
+        return WebUtils.success();
+    }
+
     private String getCertificateName(Integer type) {
         if (type == 1) {
             return "优秀班长";
@@ -578,13 +595,23 @@ public class CustomerController {
         return "未知类型";
     }
 
-    @RequestMapping(value = "/feedback", method = RequestMethod.POST)
-    @ApiOperation("用户提交意见反馈")
-    public ResponseEntity<Map<String, Object>> submitFeedback(UnionUser unionUser, @RequestBody Feedback feedback) {
-        feedback.setProfileId(unionUser.getId());
-        customerService.sendFeedback(feedback);
 
-        return WebUtils.success();
+    private List<String> generateMemberExpiredDate(List<RiseMember> riseMembers,List<MemberType> memberTypes){
+        if(CollectionUtils.isEmpty(riseMembers)){
+            return Lists.newArrayList();
+        }
+        List<String> expireMembers = Lists.newArrayList();
+        riseMembers.forEach(riseMember -> {
+            Integer memberTypeId = riseMember.getMemberTypeId();
+            if (memberTypeId != null) {
+                MemberType memberType = memberTypes.stream().filter(memberType1 -> memberTypeId.equals(memberType1.getId())).findFirst().orElse(null);
+                if (memberType != null) {
+                    String expireMember = memberType.getDescription() + "截止日期： " + riseMember.getExpireDate();
+                    expireMembers.add(expireMember);
+                }
+            }
+        });
+        return expireMembers;
     }
 
 }

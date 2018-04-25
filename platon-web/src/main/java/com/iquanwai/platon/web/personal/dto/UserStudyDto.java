@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @ApiModel("用户学习信息Model")
 public class UserStudyDto {
@@ -28,4 +30,7 @@ public class UserStudyDto {
     private Boolean isProMember;
     @ApiModelProperty("是否展示分享商学院")
     private Boolean showShare;
+    @ApiModelProperty("会员类型及到期时间")
+    private List<String> memberExpiredDate;
 }
+
