@@ -1,18 +1,15 @@
 package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.iquanwai.platon.biz.domain.apply.ApplyService;
-import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.flow.FlowService;
 import com.iquanwai.platon.biz.domain.common.flow.LandingPageBanner;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.po.ActivitiesFlow;
-import com.iquanwai.platon.biz.po.ArticlesFlow;
-import com.iquanwai.platon.biz.po.LivesFlow;
-import com.iquanwai.platon.biz.po.ProblemsFlow;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MemberType;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySuccessDto;
 import com.iquanwai.platon.web.fragmentation.dto.LandingPageDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
@@ -23,8 +20,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -44,9 +40,9 @@ public class LandingPageController {
     @Autowired
     private RiseMemberManager riseMemberManager;
     @Autowired
-    private CustomerService customerService;
-    @Autowired
     private ApplyService applyService;
+    @Autowired
+    private AccountService accountService;
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
 
@@ -110,5 +106,39 @@ public class LandingPageController {
     public ResponseEntity<Map<String, Object>> loadAllActivities(UnionUser unionUser) {
         return WebUtils.result(flowService.loadActivitiesFlow(unionUser.getId()));
     }
+
+    @ApiOperation("获取单个直播内容")
+    @RequestMapping(value = "/load/live", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> loadLiveFlowById(UnionUser unionUser, @RequestParam("liveId") Integer liveId) {
+        LivesFlow livesFlow = flowService.loadLiveFlowById(unionUser.getId(), liveId);
+        if (livesFlow != null) {
+            return WebUtils.result(livesFlow);
+        } else {
+            return WebUtils.error("未加载到当前直播内容");
+        }
+    }
+
+    @ApiOperation("预约单个直播")
+    @RequestMapping(value = "/order/live", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> orderLive(UnionUser unionUser, @RequestBody LivesOrder livesOrder) {
+        boolean orderResult;
+        Integer liveId = livesOrder.getLiveId();
+
+        String promotionRiseId = livesOrder.getPromotionRiseId();
+        Profile profile = accountService.getProfileByRiseId(promotionRiseId);
+        if (profile != null) {
+            Integer promotionId = profile.getId();
+            orderResult = flowService.orderLive(unionUser.getId(), promotionId, liveId);
+        } else {
+            orderResult = flowService.orderLive(unionUser.getId(), liveId);
+        }
+
+        if (orderResult) {
+            return WebUtils.success();
+        } else {
+            return WebUtils.error("直播预约失败，请稍后重试");
+        }
+    }
+
 
 }

@@ -3,13 +3,11 @@ package com.iquanwai.platon.biz.domain.common.flow;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.common.ActivitiesFlowDao;
-import com.iquanwai.platon.biz.dao.common.ArticlesFlowDao;
-import com.iquanwai.platon.biz.dao.common.LivesFlowDao;
-import com.iquanwai.platon.biz.dao.common.ProblemsFlowDao;
-import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
+import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.slf4j.Logger;
@@ -38,9 +36,11 @@ public class FlowServiceImpl implements FlowService {
     @Autowired
     private ActivitiesFlowDao activitiesFlowDao;
     @Autowired
-    private RiseMemberDao riseMemberDao;
+    private LivesOrderDao livesOrderDao;
     @Autowired
     private RiseMemberManager riseMemberManager;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -141,6 +141,36 @@ public class FlowServiceImpl implements FlowService {
         List<ActivitiesFlow> activitiesFlows = loadActivitiesFlow(profileId);
         activitiesFlows = activitiesFlows.stream().limit(limit).collect(Collectors.toList());
         return activitiesFlows;
+    }
+
+    @Override
+    public LivesFlow loadLiveFlowById(Integer profileId, Integer liveId) {
+        LivesFlow livesFlow = livesFlowDao.load(LivesFlow.class, liveId);
+        if (livesFlow != null) {
+            if (livesFlow.getStartTime() != null) {
+                livesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(livesFlow.getStartTime()));
+            }
+            LivesOrder livesOrder = livesOrderDao.loadByOrderIdAndLiveId(profileId, liveId);
+            livesFlow.setIsOrdered(livesOrder != null);
+
+            Profile profile = accountService.getProfile(profileId);
+            livesFlow.setRiseId(profile.getRiseId());
+        }
+        return livesFlow;
+    }
+
+    @Override
+    public boolean orderLive(Integer orderId, Integer liveId) {
+        return orderLive(orderId, null, liveId);
+    }
+
+    @Override
+    public boolean orderLive(Integer orderId, Integer promotionId, Integer liveId) {
+        LivesOrder livesOrder = new LivesOrder();
+        livesOrder.setOrderId(orderId);
+        livesOrder.setPromotionId(promotionId);
+        livesOrder.setLiveId(liveId);
+        return livesOrderDao.insert(livesOrder) > 0;
     }
 
     private Boolean getVisibility(FlowData flowData, Integer profileId) {
