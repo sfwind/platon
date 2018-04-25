@@ -293,7 +293,7 @@ public class IndexController {
                 if (Pattern.compile("/rise/static/home/live/order").matcher(requestUri).find()) {
                     String liveId = Objects.toString(request.getParameter("liveId"), "0");
                     String promotionRiseId = Objects.toString(request.getParameter("promotionRiseId"), "0");
-                    scene = scene + "_" + liveId + promotionRiseId;
+                    scene = scene + "_" + liveId + "_" + promotionRiseId;
                     logger.info("scene：{}", scene);
                 }
 
