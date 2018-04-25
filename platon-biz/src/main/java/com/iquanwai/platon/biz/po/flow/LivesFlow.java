@@ -1,5 +1,6 @@
-package com.iquanwai.platon.biz.po;
+package com.iquanwai.platon.biz.po.flow;
 
+import com.iquanwai.platon.biz.po.FlowData;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -28,8 +29,11 @@ public class LivesFlow extends FlowData {
     private Date endTime;
     @ApiModelProperty("链接地址")
     private String linkUrl;
-
-    @ApiModelProperty("开始时间 str")
+    @ApiModelProperty("开始时间字符串形式表示")
     private String startTimeStr;
+    @ApiModelProperty("直播状态, 1-倒计时,2-直播中,3-回看")
+    private Integer status;
+    @ApiModelProperty("排序")
+    private Integer sequence;
 
 }

@@ -1,5 +1,6 @@
-package com.iquanwai.platon.biz.po;
+package com.iquanwai.platon.biz.po.flow;
 
+import com.iquanwai.platon.biz.po.FlowData;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class ActivitiesFlow extends FlowData {
     private Date startTime;
     @ApiModelProperty("结束时间")
     private Date endTime;
-    @ApiModelProperty("活动状态")
+    @ApiModelProperty("活动状态, 1-准备中, 2-已关闭报名, 3-REVIEW")
     private Integer status;
     @ApiModelProperty("会员售卖链接")
     private String vipSaleLinkUrl;
@@ -38,16 +39,7 @@ public class ActivitiesFlow extends FlowData {
     private String targetUrl;
     @ApiModelProperty("链接参数")
     private String linkParam;
-
+    @ApiModelProperty("开始时间字符串形式表示")
     private String startTimeStr;
-
-    public interface Status {
-        /** 准备中 */
-        int PREPARE = 1;
-        /** 已关闭报名 */
-        int CLOSED = 2;
-        /** 有回顾链接 */
-        int REVIEW = 3;
-    }
 
 }

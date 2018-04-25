@@ -190,9 +190,7 @@ public class BackendController {
         List<Integer> profileIds = userInsertPlanDto.getProfileIds();
 
         ThreadPool.execute(() -> {
-            profileIds.forEach(profileId->{
-                generatePlanService.createPartPracticePlans(profileId,problemId,startSeries,endSeries);
-            });
+            profileIds.forEach(profileId-> generatePlanService.createPartPracticePlans(profileId,problemId,startSeries,endSeries));
         });
 
 

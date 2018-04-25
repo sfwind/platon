@@ -1,5 +1,6 @@
-package com.iquanwai.platon.biz.po;
+package com.iquanwai.platon.biz.po.flow;
 
+import com.iquanwai.platon.biz.po.FlowData;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

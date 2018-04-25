@@ -1,4 +1,4 @@
-package com.iquanwai.platon.biz.dao.fragmentation;
+package com.iquanwai.platon.biz.dao.common;
 
 import com.iquanwai.platon.biz.dao.DBUtil;
 import org.slf4j.Logger;

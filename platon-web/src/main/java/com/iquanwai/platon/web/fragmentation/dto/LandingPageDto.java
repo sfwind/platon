@@ -1,10 +1,7 @@
 package com.iquanwai.platon.web.fragmentation.dto;
 
 import com.iquanwai.platon.biz.domain.common.flow.LandingPageBanner;
-import com.iquanwai.platon.biz.po.ActivitiesFlow;
-import com.iquanwai.platon.biz.po.ArticlesFlow;
-import com.iquanwai.platon.biz.po.LivesFlow;
-import com.iquanwai.platon.biz.po.ProblemsFlow;
+import com.iquanwai.platon.biz.po.flow.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,6 +23,8 @@ public class LandingPageDto {
     private List<LandingPageBanner> pageBanners;
     @ApiModelProperty("课程数据")
     private List<ProblemsFlow> problemsFlows;
+    @ApiModelProperty("项目数据")
+    private List<ProgramsFlow> programsFlows;
     @ApiModelProperty("直播数据")
     private List<LivesFlow> livesFlows;
     @ApiModelProperty("文章数据")

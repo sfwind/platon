@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.domain.common.member;
 
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.MemberTypeDao;
+import com.iquanwai.platon.biz.dao.common.MemberTypeDao;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.slf4j.Logger;

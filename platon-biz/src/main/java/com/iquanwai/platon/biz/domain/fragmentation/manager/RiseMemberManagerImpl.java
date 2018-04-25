@@ -2,7 +2,7 @@ package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.fragmentation.MemberTypeDao;
+import com.iquanwai.platon.biz.dao.common.MemberTypeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseMemberDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
