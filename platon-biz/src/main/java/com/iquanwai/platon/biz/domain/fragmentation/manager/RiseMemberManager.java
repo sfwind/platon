@@ -41,6 +41,7 @@ public interface RiseMemberManager {
     /**
      * 核心能力项目用户（商学院+专业版+专项课）
      */
+    @Deprecated
     RiseMember coreBusinessSchoolUser(Integer profileId);
 
     /**
@@ -49,7 +50,7 @@ public interface RiseMemberManager {
     RiseMember campMember(Integer profileId);
 
     /**
-     * 商业思维类用户
+     * 商业思维用户
      */
     RiseMember businessThought(Integer profileId);
 
@@ -64,12 +65,7 @@ public interface RiseMemberManager {
     List<RiseMember> member(Integer profileId);
 
     /**
-     * 专业版+商学院
-     */
-    List<RiseMember> coreRiseMembers(Integer profileId);
-
-    /**
-     * 商学院用户信息
+     * 商学院用户信息（核心能力+商业思维）
      */
     List<RiseMember> businessSchoolMember(Integer profileId);
 
@@ -93,10 +89,10 @@ public interface RiseMemberManager {
     String getMemberId(String openid);
 
     /**
-     * 所有会员信息包含已过期的信息
+     * 根据用户id获取学号
+     *
+     * @return
      */
-    List<RiseMember> getAllRiseMember(Integer profileId);
-
     RiseMember getByMemberType(Integer profileId, Integer memberType);
 
     List<RiseMember> getAllValidElites();

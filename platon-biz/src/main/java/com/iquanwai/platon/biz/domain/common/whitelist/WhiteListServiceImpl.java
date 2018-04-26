@@ -35,13 +35,6 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public boolean isGoToCountDownNotice(Integer profileId, List<RiseMember> riseMembers) {
-        return riseMembers.stream()
-                .anyMatch(item -> (item.getMemberTypeId() == RiseMember.ELITE || item.getMemberTypeId() == RiseMember.HALF_ELITE)
-                        && new DateTime(item.getOpenDate()).isAfterNow() && !item.getExpired());
-    }
-
-    @Override
     public boolean isGoToScheduleNotice(Integer profileId, List<RiseMember> riseMembers) {
         // 是商学院
         Boolean isElite = riseMembers.stream().anyMatch(item -> !item.getExpired() &&
@@ -122,22 +115,12 @@ public class WhiteListServiceImpl implements WhiteListService {
     }
 
     @Override
-    public Boolean isShowExploreTab(Integer profileId, List<RiseMember> riseMembers) {
-        // 去新课程计划表则不显示
-        return !this.isGoToNewSchedulePlans(profileId, riseMembers);
-    }
-
-    @Override
-    public boolean isGoCampCountDownPage(Integer profileId) {
-        RiseMember riseMember = riseMemberManager.campMember(profileId);
-        return riseMember != null && riseMember.getMemberTypeId() == RiseMember.CAMP && riseMember.getOpenDate().compareTo(new DateTime().withTimeAtStartOfDay().toDate()) > 0;
-    }
-
-    @Override
     public boolean isStillLearningCamp(Integer profileId) {
-        Integer learningYear = ConfigUtils.getLearningYear();
-        Integer learningMonth = ConfigUtils.getLearningMonth();
-        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
-        return riseClassMember != null;
+//        Integer learningYear = ConfigUtils.getLearningYear();
+//        Integer learningMonth = ConfigUtils.getLearningMonth();
+//        RiseClassMember riseClassMember = riseClassMemberDao.loadSingleByProfileId(learningYear, learningMonth, profileId);
+//        return riseClassMember != null;
+
+        return false;
     }
 }

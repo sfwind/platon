@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author justin
@@ -128,26 +127,6 @@ public class IndexController {
         return courseView(request, response, channel, new ModuleShow(), RISE_VIEW);
     }
 
-    @RequestMapping(value = "/rise/static/learn", method = RequestMethod.GET)
-    public ModelAndView getLearnPage(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser, @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        if (unionUser == null) {
-            WebUtils.auth(request, response);
-            return null;
-        }
-
-        if (whiteListService.checkRiseMenuWhiteList(unionUser.getId())) {
-            response.sendRedirect(INDEX_BUSINESS_SCHOOL_URL);
-            return null;
-        } else if (whiteListService.checkCampMenuWhiteList(unionUser.getId())) {
-            response.sendRedirect(INDEX_CAMP_URL);
-            return null;
-        } else {
-            ModuleShow moduleShow = getModuleShow(unionUser);
-
-            return courseView(request, response, channel, moduleShow, RISE_VIEW);
-        }
-    }
-
     /**
      * 主菜单：商学院
      */
@@ -163,8 +142,8 @@ public class IndexController {
         }
 
         ModuleShow moduleShow = getModuleShow(unionUser);
-
         List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
+
         //是否是会员
         Boolean isMember = CollectionUtils.isNotEmpty(riseMembers);
         Profile profile = accountService.getProfile(unionUser.getId());

@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
@@ -13,15 +12,11 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +56,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private AnnounceDao announceDao;
     @Autowired
-    private CustomerStatusDao customerStatusDao;
-    @Autowired
-    private BusinessSchoolApplicationDao businessSchoolApplicationDao;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private PracticePlanDao practicePlanDao;
@@ -72,10 +63,6 @@ public class CustomerServiceImpl implements CustomerService {
     private AccountService accountService;
     @Autowired
     private ClassMemberDao classMemberDao;
-
-
-    // 申请通过 status id
-    private static final Integer PASS_STATUS_ID = 3;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -223,34 +210,6 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         return validAnnounce == null ? null : validAnnounce.getMessage();
-    }
-
-    @Override
-    public Pair<Boolean, Long> isAlertApplicationPassMessage(Integer profileId) {
-        CustomerStatus customerStatus = customerStatusDao.load(profileId, PASS_STATUS_ID);
-        Boolean notifyTag;
-        if (customerStatus == null) {
-            notifyTag = false;
-        } else {
-            // TODO: 待验证
-            List<Integer> memberTypes = Lists.newArrayList();
-            memberTypes.add(RiseMember.ELITE);
-            memberTypes.add(RiseMember.BUSINESS_THOUGHT);
-            List<RiseMember> riseMember = riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, memberTypes);
-            notifyTag = CollectionUtils.isNotEmpty(riseMember);
-        }
-        if (notifyTag) {
-            BusinessSchoolApplication businessSchoolApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
-            if (businessSchoolApplication != null && DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).compareTo(new Date()) > 0) {
-                Long intervalLong = DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).getTime() -
-                        System.currentTimeMillis();
-                return new MutablePair<>(true, intervalLong);
-            } else {
-                return new MutablePair<>(false, null);
-            }
-        } else {
-            return new MutablePair<>(false, null);
-        }
     }
 
     @Override

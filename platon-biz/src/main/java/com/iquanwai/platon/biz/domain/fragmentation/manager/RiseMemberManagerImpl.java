@@ -137,17 +137,6 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
     }
 
     @Override
-    public List<RiseMember> coreRiseMembers(Integer profileId) {
-        List<Integer> members = Lists.newArrayList();
-        members.add(RiseMember.HALF);
-        members.add(RiseMember.ANNUAL);
-        members.add(RiseMember.ELITE);
-        members.add(RiseMember.HALF_ELITE);
-
-        return riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, members);
-    }
-
-    @Override
     public List<RiseMember> businessSchoolMember(Integer profileId) {
         List<Integer> members = Lists.newArrayList();
         members.add(RiseMember.HALF_ELITE);
@@ -158,12 +147,8 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
 
     @Override
     public Boolean expiredRiseMemberInSomeDays(Integer profileId, Integer dayCount) {
-        // TODO: justin
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember != null && (riseMember.getMemberTypeId().equals(RiseMember.HALF)
-                || riseMember.getMemberTypeId().equals(RiseMember.ANNUAL)
-                || riseMember.getMemberTypeId().equals(RiseMember.ELITE)
-                || riseMember.getMemberTypeId().equals(RiseMember.HALF_ELITE))) {
+        RiseMember riseMember = proMember(profileId);
+        if (riseMember != null) {
             return DateUtils.afterDays(new Date(), dayCount).compareTo(riseMember.getExpireDate()) > 0;
         } else {
             return false;
@@ -172,23 +157,13 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
 
     @Override
     public Boolean expiredRiseMember(Integer profileId) {
-        // TODO: justin
-        RiseMember validRiseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (validRiseMember != null) {
-            return false;
-        }
-
-        boolean tag = false;
         List<RiseMember> riseMembers = riseMemberDao.loadRiseMembersByProfileId(profileId);
-        for (RiseMember riseMember : riseMembers) {
-            Integer memberTypeId = riseMember.getMemberTypeId();
-            if ((memberTypeId.equals(RiseMember.HALF) || memberTypeId.equals(RiseMember.ANNUAL)
-                    || memberTypeId.equals(RiseMember.ELITE) || memberTypeId.equals(RiseMember.HALF_ELITE))
-                    && riseMember.getExpired()) {
-                tag = true;
-            }
-        }
-        return tag;
+        // 合法会员数量
+        Long valid = riseMembers.stream().filter(riseMember -> !riseMember.getExpired()).count();
+        // 过期会员数量
+        Long expired = riseMembers.stream().filter(RiseMember::getExpired).count();
+
+        return valid == 0 && expired > 0;
     }
 
     @Override
@@ -199,11 +174,6 @@ public class RiseMemberManagerImpl implements RiseMemberManager {
             memberId = profile.getMemberId();
         }
         return memberId;
-    }
-
-    @Override
-    public List<RiseMember> getAllRiseMember(Integer profileId) {
-        return riseMemberDao.loadRiseMembersByProfileId(profileId);
     }
 
     @Override

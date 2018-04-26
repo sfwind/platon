@@ -611,6 +611,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             operationLogService.trace(profileId, "replyCommentApplication", () -> {
                 List<RiseMember> riseMembers = riseMemberManager.member(load.getProfileId());
+                //TODO:子康
                 RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
                 Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();
