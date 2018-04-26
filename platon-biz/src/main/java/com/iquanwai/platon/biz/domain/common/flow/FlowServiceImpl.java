@@ -155,6 +155,8 @@ public class FlowServiceImpl implements FlowService {
 
             Profile profile = accountService.getProfile(profileId);
             livesFlow.setRiseId(profile.getRiseId());
+
+            livesFlow.setVisibility(getVisibility(livesFlow, profileId));
         }
         return livesFlow;
     }
