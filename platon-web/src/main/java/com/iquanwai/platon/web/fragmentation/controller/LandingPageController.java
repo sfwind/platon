@@ -43,7 +43,7 @@ public class LandingPageController {
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
 
-    @ApiOperation(value = "获取着陆页所有信息", response = Map.class)
+    @ApiOperation(value = "获取着陆页所有信息", response = LandingPageDto.class)
     @RequestMapping(value = "/load", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadLandingPageData(UnionUser unionUser) {
         Integer unReadCount = messageService.unreadCount(unionUser.getId());
@@ -85,25 +85,25 @@ public class LandingPageController {
         return WebUtils.result(dto);
     }
 
-    @ApiOperation("获取随机乱序文章")
+    @ApiOperation(value = "获取随机乱序文章", response = ArticlesFlow.class, responseContainer="List")
     @RequestMapping(value = "/load/shuffle/articles", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadShuffleArticles(UnionUser unionUser) {
         return WebUtils.result(flowService.loadArticlesFlow(unionUser.getId(), 3, true));
     }
 
-    @ApiOperation("获取所有直播内容")
+    @ApiOperation(value = "获取所有直播内容", response = LivesFlow.class, responseContainer="List")
     @RequestMapping(value = "/load/lives", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadAllLives(UnionUser unionUser) {
         return WebUtils.result(flowService.loadLivesFlow(unionUser.getId()));
     }
 
-    @ApiOperation("获取所有文章")
+    @ApiOperation(value = "获取所有文章", response = ArticlesFlow.class, responseContainer="List")
     @RequestMapping(value = "/load/articles", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadAllArticles(UnionUser unionUser) {
         return WebUtils.result(flowService.loadArticlesFlow(unionUser.getId()));
     }
 
-    @ApiOperation("获取活动列表")
+    @ApiOperation(value = "获取活动列表", response = ActivitiesFlow.class, responseContainer="List")
     @RequestMapping(value = "/load/activities", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadAllActivities(UnionUser unionUser) {
         return WebUtils.result(flowService.loadActivitiesFlow(unionUser.getId()));
