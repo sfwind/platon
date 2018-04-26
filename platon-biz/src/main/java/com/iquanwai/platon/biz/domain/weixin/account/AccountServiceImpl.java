@@ -424,11 +424,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean hasStatusId(Integer profileId, Integer statusId) {
-        return customerStatusDao.load(profileId, statusId) != null;
-    }
-
-    @Override
     public String createSubscribePush(String openid, String callback, String scene) {
         Integer result = subscribePushDao.insert(openid, callback, scene);
         String sceneCode = SUBSCRIBE_PUSH_PREFIX + result;

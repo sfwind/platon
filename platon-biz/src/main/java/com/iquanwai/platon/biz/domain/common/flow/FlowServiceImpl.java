@@ -189,6 +189,7 @@ public class FlowServiceImpl implements FlowService {
                     tags.add(tag);
                 }
             }
+            articlesFlow.setTags(tags);
         });
         return articlesFlows;
     }

@@ -15,8 +15,6 @@ import java.util.List;
 @ApiModel("首页对象")
 public class LandingPageDto {
 
-    @ApiModelProperty("是否是商学院会员")
-    private Boolean isBusinessMember;
     @ApiModelProperty("个人中心通知图标是否显示红点")
     private Boolean notify;
     @ApiModelProperty("首页上面的 Banner 配置")

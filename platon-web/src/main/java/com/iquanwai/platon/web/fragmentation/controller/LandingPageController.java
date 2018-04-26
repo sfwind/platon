@@ -4,18 +4,18 @@ import com.iquanwai.platon.biz.domain.apply.ApplyService;
 import com.iquanwai.platon.biz.domain.common.flow.FlowService;
 import com.iquanwai.platon.biz.domain.common.flow.LandingPageBanner;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepo;
-import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.message.MessageService;
-import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MemberType;
-import com.iquanwai.platon.biz.po.flow.*;
+import com.iquanwai.platon.biz.po.flow.ActivitiesFlow;
+import com.iquanwai.platon.biz.po.flow.ArticlesFlow;
+import com.iquanwai.platon.biz.po.flow.LivesFlow;
+import com.iquanwai.platon.biz.po.flow.ProgramsFlow;
 import com.iquanwai.platon.web.fragmentation.dto.ApplySuccessDto;
 import com.iquanwai.platon.web.fragmentation.dto.LandingPageDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/rise/landing")
-@Api(description = "获取登录页面的")
+@Api(description = "登录页面相关接口")
 public class LandingPageController {
 
     @Autowired
@@ -39,13 +39,11 @@ public class LandingPageController {
     @Autowired
     private MessageService messageService;
     @Autowired
-    private RiseMemberManager riseMemberManager;
-    @Autowired
     private ApplyService applyService;
     @Autowired
     private RiseMemberTypeRepo riseMemberTypeRepo;
 
-    @ApiOperation("获取着陆页所有信息")
+    @ApiOperation(value = "获取着陆页所有信息", response = Map.class)
     @RequestMapping(value = "/load", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> loadLandingPageData(UnionUser unionUser) {
         Integer unReadCount = messageService.unreadCount(unionUser.getId());
@@ -65,7 +63,6 @@ public class LandingPageController {
 
         LandingPageDto dto = new LandingPageDto();
 
-        List<RiseMember> riseMembers = riseMemberManager.businessSchoolMember(unionUser.getId());
         ApplySuccessDto applySuccessDto = new ApplySuccessDto();
         applySuccessDto.setIsShowPassNotify(applicationPass.getLeft() > 0);
         applySuccessDto.setRemainTime(applicationPass.getLeft());
@@ -78,7 +75,6 @@ public class LandingPageController {
         }
 
         dto.setApplySuccess(applySuccessDto);
-        dto.setIsBusinessMember(CollectionUtils.isNotEmpty(riseMembers));
         dto.setNotify(unReadCount != null && unReadCount > 0);
         dto.setPageBanners(pageBanners);
 //        dto.setProblemsFlows(problemsFlows);
