@@ -12,4 +12,5 @@ public class SchoolFriend {
     private String industry;
     private String company;
     private String memberId;
+    private String riseId;
 }
