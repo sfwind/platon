@@ -301,11 +301,6 @@ public class ProblemController {
 
         dto.setButtonStatus(buttonStatus);
         dto.setProblem(problem);
-        Profile profile = accountService.getProfile(unionUser.getId());
-        dto.setIsFull(new Integer(1).equals(profile.getIsFull()));
-        dto.setBindMobile(StringUtils.isNotBlank(profile.getMobileNo()));
-
-        dto.setProblemCollected(problemService.hasCollectedProblem(unionUser.getId(), problemId));
 
         return WebUtils.result(dto);
     }
