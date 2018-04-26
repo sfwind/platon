@@ -257,10 +257,10 @@ public class CustomerController {
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
         profile.setNickname(profileDto.getNickName());
-
         BeanUtils.copyProperties(profileDto, userInfo);
         userInfo.setReceiverMobile(profileDto.getMobileNo());
         userInfo.setProfileId(unionUser.getId());
+        customerService.updateNickName(unionUser.getId(),profileDto.getNickName());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
