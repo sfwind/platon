@@ -92,6 +92,7 @@ public class CacheServiceImpl implements CacheService {
                         problem.setVideoUrl(video.getUrl());
                         problem.setVideoPoster(video.getPicUrl());
                         problem.setVideoWords(video.getWords());
+                        problem.setFileId(video.getFileId());
                     }
                 } else if (problem.getAudioId() != null) {
                     Audio audio = audioDao.load(Audio.class, problem.getAudioId());
@@ -182,6 +183,7 @@ public class CacheServiceImpl implements CacheService {
                 knowledge.setVideoUrl(video.getUrl());
                 knowledge.setVideoPoster(video.getPicUrl());
                 knowledge.setVideoWords(video.getWords());
+                knowledge.setFileId(video.getFileId());
             }
         } else {
             if (knowledge.getAudioId() != null) {

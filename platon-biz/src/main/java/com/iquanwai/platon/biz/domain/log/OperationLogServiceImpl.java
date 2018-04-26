@@ -121,7 +121,9 @@ public class OperationLogServiceImpl implements OperationLogService {
                 sa.track(profile.getRiseId(), true, eventName, properties);
 
                 // 上线前删掉
-//                sa.flush();
+                if (ConfigUtils.isDevelopment()) {
+                    sa.flush();
+                }
             } catch (InvalidArgumentException e) {
                 logger.error(e.getLocalizedMessage(), e);
             }
@@ -149,7 +151,11 @@ public class OperationLogServiceImpl implements OperationLogService {
             Integer profileId = supplier.get();
             Profile profile = profileDao.load(Profile.class, profileId);
             try {
+                logger.info("trace:\nprofielId:{}\nkey:{}\nvalue:{}", profileId, key, value);
                 sa.profileSet(profile.getRiseId(), true, key, value);
+                if (ConfigUtils.isDevelopment()) {
+                    sa.flush();
+                }
             } catch (InvalidArgumentException e) {
                 logger.error(e.getLocalizedMessage(), e);
             }

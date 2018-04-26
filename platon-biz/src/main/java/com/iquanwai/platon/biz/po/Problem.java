@@ -25,10 +25,11 @@ public class Problem {
     private String audio; //语音链接
     private Integer audioId; //语音id
     private String audioWords; //语音文字稿
-    private Integer videoId;
-    private String videoUrl;
+    private Integer videoId;  //视频id
+    private String videoUrl; //视频源地址
     private String videoPoster;//视频第一帧
     private String videoWords;//视频文字
+    private String fileId;//腾讯云上传得到的视频id
     private String who; //适合人群
     private String how; //如何学习
     private String why; //为什么学习

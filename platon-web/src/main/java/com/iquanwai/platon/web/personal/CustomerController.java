@@ -112,8 +112,8 @@ public class CustomerController {
         CustomerInfoDto profile = new CustomerInfoDto();
         Profile profilePojo = accountService.getProfile(unionUser.getId());
         profile.setRiseId(profilePojo.getRiseId());
-        profile.setNickname(unionUser.getNickName());
-        profile.setHeadimgurl(unionUser.getHeadImgUrl());
+        profile.setNickname(profilePojo.getNickname());
+        profile.setHeadimgurl(profilePojo.getHeadimgurl());
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
         List<RiseMember> members = riseMemberManager.member(unionUser.getId());
@@ -257,10 +257,10 @@ public class CustomerController {
         BeanUtils.copyProperties(profileDto, profile);
         profile.setId(unionUser.getId());
         profile.setNickname(profileDto.getNickName());
-
         BeanUtils.copyProperties(profileDto, userInfo);
         userInfo.setReceiverMobile(profileDto.getMobileNo());
         userInfo.setProfileId(unionUser.getId());
+        customerService.updateNickName(unionUser.getId(),profileDto.getNickName());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
@@ -653,7 +653,7 @@ public class CustomerController {
             if(memberTypeId!=null){
                 MemberType memberType = memberTypes.stream().filter(memberType1 -> memberTypeId.equals(memberType1.getId())).findFirst().orElse(null);
                 if(memberType!=null){
-                    String expireMember = memberType.getDescription()+"： " + riseMember.getExpireDate();
+                    String expireMember = memberType.getDescription()+"截止日期： " + riseMember.getExpireDate();
                     expireMembers.add(expireMember);
                 }
             }

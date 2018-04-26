@@ -31,13 +31,14 @@ public class Knowledge {
     private String keynoteAudio;// 要点语音
     private Integer keynoteAudioId;
     private String keynoteAudioWords;
-    private String audio; //语音链接
-    private Integer videoId;//视频id
-    private String videoUrl;//视频url
+    private Integer videoId;  //视频id
+    private String videoUrl; //视频源地址
     private String videoPoster;//视频第一帧
     private String videoWords;//视频文字
+    private String fileId;//腾讯云上传得到的视频id
     private Integer audioId; // 语音id
     private String audioWords; //语音文字
+    private String audio; //语音链接
     private Integer appear; //非db字段,是否出现过
     private WarmupPractice example; //非db字段 例题
 
