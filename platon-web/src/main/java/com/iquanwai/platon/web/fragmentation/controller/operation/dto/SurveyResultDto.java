@@ -8,4 +8,5 @@ public class SurveyResultDto {
     private String subscribeQrCode;
     private Integer resultId;
     private Boolean self;
+    private Boolean privilege;
 }

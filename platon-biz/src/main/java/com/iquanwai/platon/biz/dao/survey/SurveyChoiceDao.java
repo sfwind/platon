@@ -39,4 +39,20 @@ public class SurveyChoiceDao extends DBUtil {
         }
         return Lists.newArrayList();
     }
+
+    public List<SurveyChoice> loadChoicesByIds(List<Integer> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        ResultSetHandler<List<SurveyChoice>> h = new BeanListHandler<>(SurveyChoice.class);
+        String mask = produceQuestionMark(ids.size());
+        String sql = "SELECT * FROM SurveyChoice WHERE Id in (" + mask + ") AND Del = 0";
+        try {
+            return runner.query(sql, h, ids.toArray());
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

@@ -213,4 +213,8 @@ public class CommonUtils {
 
     }
 
+    public static boolean isBetween(double number, double lower, double upper) {
+        return lower <= number && number <= upper;
+    }
+
 }

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.support.Assert;
 
@@ -150,6 +151,7 @@ public class SurveyController {
                 "https://static.iqycamp.com/images/fragment/self_test_qr_beta.jpeg?imageslim" :
                 "https://static.iqycamp.com/images/fragment/self_test_qr_pro.jpeg?imageslim");
         dto.setResultId(result != null ? result.getId() : null);
+        dto.setPrivilege(true);
         return WebUtils.result(dto);
     }
 
@@ -184,5 +186,13 @@ public class SurveyController {
         Profile profile = accountService.getProfile(result.getOpenid());
         return WebUtils.result(profile.getNickname());
     }
+
+    @RequestMapping(value = "wq/simple/report", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Object>> load(GuestUser guestUser, @RequestParam(required = false) Integer submitId) {
+        Assert.notNull(guestUser);
+        return null;
+
+    }
+
 
 }

@@ -6,15 +6,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.dao.survey.SurveyChoiceDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionResultDao;
+import com.iquanwai.platon.biz.dao.survey.SurveyQuestionTypeDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyResultDao;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyChoice;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestionResult;
+import com.iquanwai.platon.biz.po.survey.SurveyQuestionType;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.po.survey.SurveySubmitVo;
+import com.iquanwai.platon.biz.util.CommonUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +49,9 @@ public class SurveyServiceImpl implements SurveyService {
     private SurveyResultDao surveyResultDao;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private SurveyQuestionTypeDao surveyQuestionTypeDao;
+
 
     @Override
     public List<SurveyQuestion> loadQuestionsByCategory(String category) {
@@ -130,5 +139,101 @@ public class SurveyServiceImpl implements SurveyService {
     public SurveyResult loadSubmit(Integer id) {
         return surveyResultDao.load(SurveyResult.class, id);
     }
+
+
+    public List<SurveyQuestionType> calculatePoint(Integer submitId) {
+        List<SurveyQuestionResult> results = surveyQuestionSubmitDao.loadSubmitQuestions(submitId);
+        List<SurveyQuestionType> types = surveyQuestionTypeDao.loadQuestionTypes(results.stream().map(SurveyQuestionResult::getQuestionCode).collect(Collectors.toList()));
+
+        List<Integer> userChoiceIds = results
+                .stream()
+                .filter(item -> types
+                        .stream()
+                        .anyMatch(type -> type.getQuestionCode().equals(item.getQuestionCode())))
+                .map(SurveyQuestionResult::getChoiceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        List<SurveyChoice> choices = surveyChoiceDao.loadChoicesByIds(userChoiceIds);
+        /*
+        计算分数，返回
+        [{category,variable,point},{category,variable,point}]
+         */
+        return types.stream()
+                .peek(type -> {
+                    // 算分
+                    double point = results
+                            .stream()
+                            .filter(item -> item.getQuestionCode().equals(type.getQuestionCode()))
+                            .mapToInt(item -> {
+                                SurveyChoice userChoice = choices.stream().filter(choice -> choice.getId().equals(item.getChoiceId())).findFirst().orElse(null);
+                                if (userChoice == null) {
+                                    return 0;
+                                } else {
+                                    if (type.getReverse()) {
+                                        return 7 - userChoice.getSequence();
+                                    } else {
+                                        return userChoice.getSequence();
+                                    }
+                                }
+                            }).sum();
+                    type.setPoint(point);
+                })
+                .collect(Collectors.groupingBy(SurveyQuestionType::getVariable))
+                .values().stream().map(list -> {
+                    // 聚合
+                    SurveyQuestionType type = list.stream().findFirst().orElse(null);
+                    if (type == null) {
+                        return null;
+                    } else {
+                        double totalPoint = list.stream().mapToDouble(SurveyQuestionType::getPoint).sum();
+                        type.setPoint(totalPoint);
+                    }
+                    return type;
+                }).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public Pair<List<String>, List<SurveyQuestionType>> getSurveyReport(Integer submitId) {
+        List<SurveyResult> otherSurveyResults = surveyResultDao.loadByReferId(submitId);
+        List<SurveyQuestionType> selfs = this.calculatePoint(submitId);
+
+        if (otherSurveyResults.size() >= 3) {
+            Optional<List<SurveyQuestionType>> reduce = otherSurveyResults.stream().map(item -> this.calculatePoint(item.getId())).reduce((finalList, list) -> {
+                finalList.forEach(item ->
+                        list.stream().filter(listItem -> item.getVariable().equals(listItem.getVariable())).forEach(listItem ->
+                                item.setPoint(item.getPoint() + listItem.getPoint())));
+                return finalList;
+            });
+            if (reduce.isPresent()) {
+                // 有他评
+                List<SurveyQuestionType> others = reduce.get();
+                // 查看比重
+                double selfPercent;
+                double otherPercent;
+                Double average = selfs.stream().filter(SurveyQuestionType::getLiar).mapToDouble(SurveyQuestionType::getPoint).average().orElse(3);
+                if (CommonUtils.isBetween(average, 0, 2)) {
+                    // 6:4
+                    selfPercent = 0.6;
+                    otherPercent = 0.4;
+                } else if (CommonUtils.isBetween(average, 2, 4)) {
+                    selfPercent = 0.5;
+                    otherPercent = 0.5;
+                } else {
+                    selfPercent = 0.4;
+                    otherPercent = 0.6;
+                }
+                // 开始计算
+                selfs.forEach(self -> {
+                    double otherPoint = others.stream().filter(item -> self.getVariable().equals(item.getVariable())).mapToDouble(SurveyQuestionType::getPoint).average().orElse(0);
+                    self.setPoint(self.getPoint() * selfPercent + otherPoint * otherPercent);
+                });
+            }
+        } else {
+            // 没有他评
+        }
+
+
+        return null;
+    }
+
 
 }
