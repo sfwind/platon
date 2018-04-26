@@ -112,8 +112,8 @@ public class CustomerController {
         CustomerInfoDto profile = new CustomerInfoDto();
         Profile profilePojo = accountService.getProfile(unionUser.getId());
         profile.setRiseId(profilePojo.getRiseId());
-        profile.setNickname(unionUser.getNickName());
-        profile.setHeadimgurl(unionUser.getHeadImgUrl());
+        profile.setNickname(profilePojo.getNickname());
+        profile.setHeadimgurl(profilePojo.getHeadimgurl());
 
         profile.setIsAsst(accountService.getAssist(unionUser.getId()) != null);
         List<RiseMember> members = riseMemberManager.member(unionUser.getId());
