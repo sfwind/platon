@@ -10,7 +10,6 @@ import com.iquanwai.platon.biz.domain.fragmentation.manager.Chapter;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManager;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
-import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -35,15 +33,11 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private AccountService accountService;
-    @Autowired
     private ProblemScoreDao problemScoreDao;
     @Autowired
     private ProblemExtensionDao problemExtensionDao;
     @Autowired
     private ProblemActivityDao problemActivityDao;
-    @Autowired
-    private ProblemDao problemDao;
     @Autowired
     private ProblemCollectionDao problemCollectionDao;
     @Autowired
@@ -54,14 +48,6 @@ public class ProblemServiceImpl implements ProblemService {
     private ProblemScheduleManager problemScheduleManager;
     @Autowired
     private PracticePlanDao practicePlanDao;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
-    @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
-    private CourseScheduleDefaultDao courseScheduleDefaultDao;
-    @Autowired
-    private CourseScheduleDao courseScheduleDao;
     @Autowired
     private OperationLogService operationLogService;
 
@@ -144,39 +130,6 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Integer insertProblemExtension(ProblemExtension problemExtension) {
-        ProblemExtension extensionTarget = new ProblemExtension();
-        BeanUtils.copyProperties(problemExtension, extensionTarget);
-
-        Integer problemId = problemExtension.getProblemId();
-        Problem cacheProblem = cacheService.getProblem(problemId);
-        if (cacheProblem == null) {
-            return -1;
-        }
-        extensionTarget.setProblem(cacheProblem.getProblem());
-        if (cacheProblem.getCatalogId() != null) {
-            String problemCatalogName = cacheService.getProblemCatalog(cacheProblem.getCatalogId()).getName();
-            if (problemCatalogName != null) {
-                extensionTarget.setCatalog(problemCatalogName);
-            }
-        }
-        if (cacheProblem.getSubCatalogId() != null) {
-            String problemSubCatalogName = cacheService.getProblemSubCatalog(cacheProblem.getSubCatalogId()).getName();
-            if (problemSubCatalogName != null) {
-                extensionTarget.setSubCatalog(problemSubCatalogName);
-            }
-        }
-        Integer result1 = problemExtensionDao.insert(extensionTarget);
-        Integer result2 = problemDao.insertRecommendationById(problemId, problemExtension.getRecommendation());
-        return result1 < result2 ? result1 : result2;
-    }
-
-    @Override
-    public Integer insertProblemActivity(ProblemActivity problemActivity) {
-        return problemActivityDao.insertProblemActivity(problemActivity);
-    }
-
-    @Override
     public ProblemExtension loadProblemExtensionByProblemId(Integer problemId) {
         return problemExtensionDao.loadByProblemId(problemId);
     }
@@ -253,25 +206,6 @@ public class ProblemServiceImpl implements ProblemService {
         return new MutablePair<>(problem, cards);
     }
 
-    @Override
-    public Integer getFinishedCards(Integer profileId) {
-        List<ImprovementPlan> plans = improvementPlanDao.loadAllPlans(profileId);
-        Integer sum = 0;
-        for (ImprovementPlan plan : plans) {
-            List<Chapter> chapters = problemScheduleManager.loadRoadMap(plan.getId());
-            Integer completeSeries = plan.getCompleteSeries();
-
-            for (Chapter chapter : chapters) {
-                List<Section> sections = chapter.getSections();
-                Long resultCnt = sections.stream().filter(section -> section.getSeries() > completeSeries).count();
-                Integer completedChapter = resultCnt > 0 ? chapter.getChapter() - 1 : chapter.getChapter();
-                sum += completedChapter;
-            }
-        }
-
-        return sum;
-    }
-
     // 获取精华卡图
     @Override
     public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
@@ -283,37 +217,6 @@ public class ProblemServiceImpl implements ProblemService {
     public boolean hasCollectedProblem(Integer profileId, Integer problemId) {
         ProblemCollection collection = problemCollectionDao.loadUsefulCollection(profileId, problemId);
         return collection != null;
-    }
-
-    @Override
-    public int collectProblem(Integer profileId, Integer problemId) {
-        int result = -1;
-        // 判断以前是否收藏过这门课程
-        ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
-        if (collection != null) {
-            // 已经存在过这门课，如果 Del 字段为 1，将其置为 0
-            if (collection.getDel() == 1) {
-                result = problemCollectionDao.restoreCollection(collection.getId());
-            }
-        } else {
-            // 收藏名单不存在这门课，直接新增记录
-            result = problemCollectionDao.insert(profileId, problemId);
-        }
-        return result;
-    }
-
-    @Override
-    public int disCollectProblem(Integer profileId, Integer problemId) {
-        int result = -1;
-        // 判断以前是否收藏过这门课程
-        ProblemCollection collection = problemCollectionDao.loadSingleCollection(profileId, problemId);
-        if (collection != null) {
-            // 已经存在过这门课，如果 Del 字段为 0，将其置为 1
-            if (collection.getDel() == 0) {
-                result = problemCollectionDao.delete(collection.getId());
-            }
-        }
-        return result;
     }
 
     @Override

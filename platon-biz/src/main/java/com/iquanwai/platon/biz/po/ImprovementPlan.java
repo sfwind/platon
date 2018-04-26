@@ -14,8 +14,6 @@ public class ImprovementPlan {
     private Integer id;
     private Integer problemId; //问题id
     private Date startDate; //开始日期
-    @Deprecated
-    private Date endDate; //结束日期(当日开始复习)
     private Date closeDate; //课程关闭时间（课程关闭日期）
     private Date completeTime; // 完成时间
     private Date closeTime; // 关闭时间
@@ -24,7 +22,6 @@ public class ImprovementPlan {
     private Integer warmupComplete; //巩固练习完成数量
     private Integer applicationComplete; //应用练习完成数量
     private Integer total; //总节数
-    @Deprecated
     private Integer keycnt; //钥匙数量
     private Integer currentSeries; //当前访问的节数
     private Integer completeSeries; //已完成的节数

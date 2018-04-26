@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.common.CustomerStatusDao;
-import com.iquanwai.platon.biz.dao.fragmentation.AuditionClassMemberDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
 import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDefaultDao;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
@@ -13,19 +12,11 @@ import com.iquanwai.platon.biz.dao.fragmentation.schedule.ScheduleQuestionDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.AuditionClassMember;
-import com.iquanwai.platon.biz.po.CourseSchedule;
-import com.iquanwai.platon.biz.po.CourseScheduleDefault;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.MonthlyCampConfig;
-import com.iquanwai.platon.biz.po.PracticePlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoice;
 import com.iquanwai.platon.biz.po.schedule.ScheduleChoiceSubmit;
 import com.iquanwai.platon.biz.po.schedule.ScheduleQuestion;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -35,11 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -71,8 +58,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private ScheduleChoiceSubmitDao scheduleChoiceSubmitDao;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private AuditionClassMemberDao auditionClassMemberDao;
     @Autowired
     private RiseMemberManager riseMemberManager;
     @Autowired
@@ -386,13 +371,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                         });
                     }
                 });
-            }
-
-            AuditionClassMember auditionClassMember = auditionClassMemberDao.loadByProfileId(profileId);
-            Integer trialProblemId = ConfigUtils.getTrialProblemId();
-            ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, trialProblemId);
-            if (auditionClassMember != null && improvementPlan != null) {
-                waitInserts.removeIf(item -> item.getProblemId().equals(trialProblemId));
             }
 
             List<Integer> planProblemIds = improvementPlanDao.loadAllPlans(profileId).stream().map(ImprovementPlan::getProblemId).collect(Collectors.toList());
@@ -874,8 +852,8 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         if (!exists) {
             // 生成
             // TODO 无效的category 2/3/4
-            List<Integer> invliadCategory = Lists.newArrayList(2, 3, 4);
-            List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadByCategoryAndMemberTypeId(memberTypeId).stream().filter(item -> !invliadCategory.contains(item.getCategory())).collect(Collectors.toList());
+            List<Integer> invalidCategory = Lists.newArrayList(2, 3, 4);
+            List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadByCategoryAndMemberTypeId(memberTypeId).stream().filter(item -> !invalidCategory.contains(item.getCategory())).collect(Collectors.toList());
             RiseMember riseMember = riseMemberManager.getByMemberType(profileId, memberTypeId);
             // 全部选中插入
             List<CourseSchedule> schedules = defaults.stream().map(item -> {

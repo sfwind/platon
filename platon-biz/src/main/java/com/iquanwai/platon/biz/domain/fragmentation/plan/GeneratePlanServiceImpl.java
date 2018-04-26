@@ -408,8 +408,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setTotalSeries(length);
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(startDate);
-        improvementPlan.setEndDate(null);
-
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         improvementPlan.setCloseDate(closeDate);
         improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);
