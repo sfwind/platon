@@ -36,8 +36,6 @@ public class BusinessApplyController {
     private OperationLogService operationLogService;
     @Autowired
     private ApplyService applyService;
-    @Autowired
-    private AccountService accountService;
 
     /**
      * 加载商学院申请题目

@@ -30,8 +30,6 @@ public class CacheReloadReceiver {
     @Autowired
     private MQService mqService;
     @Autowired
-    private UnionUserService unionUserService;
-    @Autowired
     private SchoolFriendService schoolFriendService;
 
     @PostConstruct
@@ -45,11 +43,6 @@ public class CacheReloadReceiver {
                     break;
                 case "reload":
                     cacheService.reload();
-                    break;
-                case "member":
-                    // 返回当前登录人数
-                    Integer memberSize = unionUserService.getAllLoginUsers().size();
-                    logger.info("当前登录人数:{}", memberSize);
                     break;
                 case "mqip": {
                     mqService.reload();

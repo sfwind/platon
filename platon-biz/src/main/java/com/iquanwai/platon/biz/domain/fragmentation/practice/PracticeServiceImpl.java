@@ -330,8 +330,6 @@ public class PracticeServiceImpl implements PracticeService {
                             .max(Comparator.comparingInt(PracticePlan::getSequence))
                             // 判断下这道题是不是最后一道
                             .ifPresent(item -> applicationPractice.setIsLastApplication(item.getPracticeId().equals(id.toString())));
-                    // 是不是base
-                    applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
                 });
         return new MutablePair<>(applicationPractice, isNewApplication);
     }

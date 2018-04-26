@@ -49,7 +49,7 @@ public class PracticeController {
     private AccountService accountService;
 
     @RequestMapping(value = "/challenge/start/{challengeId}", method = RequestMethod.GET)
-    @ApiOperation("加载小目标")
+    @ApiOperation(value = "加载小目标", response = ChallengePractice.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "challengeId", value = "小目标id"),
             @ApiImplicitParam(name = "planId", value = "计划id")})
     public ResponseEntity<Map<String, Object>> startChallenge(UnionUser unionUser,
@@ -69,7 +69,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/challenge/submit/{planId}/{challengeId}", method = RequestMethod.POST)
-    @ApiOperation("提交小目标")
+    @ApiOperation(value = "提交小目标", response = Boolean.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "challengeId", value = "小目标id"),
             @ApiImplicitParam(name = "planId", value = "计划id")})
     public ResponseEntity<Map<String, Object>> submitChallenge(UnionUser unionUser,
@@ -122,7 +122,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.GET)
-    @ApiOperation("加载文章评论")
+    @ApiOperation(value = "加载文章评论", response = RiseRefreshListDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
             @ApiImplicitParam(name = "submitId", value = "提交id")})
     public ResponseEntity<Map<String, Object>> loadComments(UnionUser unionUser,
@@ -177,7 +177,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/comment/message/{submitId}/{commentId}", method = RequestMethod.GET)
-    @ApiOperation("加载应用练习某一条评论")
+    @ApiOperation(value = "加载应用练习某一条评论", response = RiseRefreshListDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "submitId", value = "作业id"),
             @ApiImplicitParam(name = "commentId", value = "评论id")})
     public ResponseEntity<Map<String, Object>> loadApplicationReplyComment(UnionUser unionUser, @PathVariable Integer submitId,
@@ -226,7 +226,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/comment/{moduleId}/{submitId}", method = RequestMethod.POST)
-    @ApiOperation("提交评论")
+    @ApiOperation(value = "提交评论", response = RiseWorkCommentDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
             @ApiImplicitParam(name = "submitId", value = "提交id")})
     public ResponseEntity<Map<String, Object>> comment(UnionUser unionUser,
@@ -281,7 +281,7 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/comment/reply/{moduleId}/{submitId}", method = RequestMethod.POST)
-    @ApiOperation("回复评论")
+    @ApiOperation(value = "回复评论", response = RiseWorkCommentDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "moduleId", value = "评论的媒体id"),
             @ApiImplicitParam(name = "submitId", value = "提交id")})
     public ResponseEntity<Map<String, Object>> commentReply(UnionUser unionUser,
@@ -341,16 +341,13 @@ public class PracticeController {
     }
 
     @RequestMapping(value = "/subject/{submitId}", method = RequestMethod.GET)
-    @ApiOperation("回复评论")
+    @ApiOperation(value = "获取文章", response = RiseWorkInfoDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "submitId", value = "提交id")})
     public ResponseEntity<Map<String, Object>> loadSubject(UnionUser unionUser, @PathVariable("submitId") Integer submitId) {
         Assert.notNull(unionUser, "用户不能为空");
         SubjectArticle subjectArticle = practiceService.loadSubjectArticle(submitId);
         if (subjectArticle != null) {
             RiseWorkInfoDto dto = new RiseWorkInfoDto();
-//            dto.setCommentCount(practiceService.commentCount(Constants.CommentModule.SUBJECT, submitId));
-//            dto.setVoteCount(practiceService.votedCount(Constants.VoteType.SUBJECT, submitId));
-//            dto.setVoteStatus(practiceService.loadVoteRecord(Constants.VoteType.SUBJECT, submitId, unionUser.getId()) != null ? 1 : 0);
             dto.setSubmitId(submitId);
             dto.setAuthorType(subjectArticle.getAuthorType());
             dto.setContent(subjectArticle.getContent());
@@ -367,9 +364,6 @@ public class PracticeController {
             dto.setPerfect(subjectArticle.getSequence() > 0);
             dto.setSubmitUpdateTime(DateUtils.parseDateToString(subjectArticle.getAddTime()));
             dto.setRequest(subjectArticle.getRequestFeedback());
-//            dto.setRequestCommentCount(practiceService.hasRequestComment(subjectArticle.getProblemId(),
-//                    unionUser.getId()));
-//            dto.setLabelList(practiceService.loadArticleActiveLabels(Constants.LabelArticleModule.SUBJECT, submitId));
 
             return WebUtils.result(dto);
         } else {
@@ -395,7 +389,7 @@ public class PracticeController {
         }
     }
 
-    @RequestMapping("/delete/comment/{commentId}")
+    @RequestMapping(value = "/delete/comment/{commentId}", method = RequestMethod.POST)
     @ApiOperation("删除评论")
     @ApiImplicitParams({@ApiImplicitParam(name = "commentId", value = "评论id")})
     public ResponseEntity<Map<String, Object>> deleteComment(UnionUser unionUser,
@@ -406,17 +400,8 @@ public class PracticeController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/article/show/{moduleId}/{submitId}", method = RequestMethod.GET)
-    @Deprecated
-    public ResponseEntity<Map<String, Object>> riseShowCount(UnionUser unionUser,
-                                                             @PathVariable(value = "moduleId") Integer moduleId,
-                                                             @PathVariable(value = "submitId") Integer submitId) {
-
-        return WebUtils.success();
-    }
-
     @RequestMapping(value = "/load/{practicePlanId}", method = RequestMethod.GET)
-    @ApiOperation("加载某个练习")
+    @ApiOperation(value = "加载某个练习", response = PracticePlan.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> loadKnowledgeReview(UnionUser unionUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(unionUser, "用户不能为空");

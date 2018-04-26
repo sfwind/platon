@@ -3,7 +3,6 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSON;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.BusinessPlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
-import com.iquanwai.platon.biz.domain.operation.CourseReductionService;
 import com.iquanwai.platon.biz.domain.operation.OperationEvaluateService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.RiseMember;
@@ -35,8 +34,6 @@ public class PayResultReceiver {
     @Autowired
     private RabbitMQFactory rabbitMQFactory;
     @Autowired
-    private CourseReductionService courseReductionService;
-    @Autowired
     private PlanService planService;
     @Autowired
     private BusinessPlanService businessPlanService;
@@ -53,8 +50,6 @@ public class PayResultReceiver {
                 Profile profile = accountService.getProfile(quanwaiOrder.getProfileId());
                 Assert.notNull(profile, "付费用户不能为空");
                 operationEvaluateService.recordPayAction(profile.getId());
-                // 优惠推广活动
-                courseReductionService.saveCourseReductionPayedLog(quanwaiOrder);
 
                 // 生成课表
                 Integer memberTypeId = Integer.valueOf(quanwaiOrder.getGoodsId());

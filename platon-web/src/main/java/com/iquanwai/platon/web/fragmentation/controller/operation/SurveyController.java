@@ -119,8 +119,7 @@ public class SurveyController {
                         Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
                         templateMessage.setData(data);
                         templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
-                        data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，" +
-                                "你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
+                        data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
                         data.put("keyword1", new TemplateMessage.Keyword(guestUser.getWeixinName()));
                         data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
                         data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));

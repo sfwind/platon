@@ -50,7 +50,7 @@ public class ApplicationController {
     private static final int PAGE_SIZE = 10;
 
     @RequestMapping(value = "/start/{applicationId}", method = RequestMethod.GET)
-    @ApiOperation("加载应用题")
+    @ApiOperation(value = "加载应用题", response = ApplicationPractice.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "planId", value = "计划id", required = false)})
     public ResponseEntity<Map<String, Object>> startApplication(UnionUser unionUser, @PathVariable Integer applicationId, @RequestParam(name = "planId", required = false) Integer planId) {
@@ -63,7 +63,7 @@ public class ApplicationController {
     }
 
     @RequestMapping(value = "/submit/{planId}/{applicationId}", method = RequestMethod.POST)
-    @ApiOperation("提交应用题")
+    @ApiOperation(value = "提交应用题", response = Integer.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "planId", value = "计划id")})
     public ResponseEntity<Map<String, Object>> submitApplication(UnionUser unionUser, @PathVariable("planId") Integer planId, @PathVariable("applicationId") Integer applicationId, @RequestBody SubmitDto submitDto) {
@@ -98,7 +98,7 @@ public class ApplicationController {
     }
 
     @RequestMapping(value = "/completed/count/{planId}", method = RequestMethod.GET)
-    @ApiOperation("加载某个课程的应用题完成数")
+    @ApiOperation(value = "加载某个课程的应用题完成数", response = Integer.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "planId", value = "计划id")})
     public ResponseEntity<Map<String, Object>> loadCompletedApplicationCnt(UnionUser unionUser, @PathVariable Integer planId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -125,7 +125,7 @@ public class ApplicationController {
      * @param applicationId 应用任务Id
      */
     @RequestMapping(value = "/list/other/{applicationId}", method = RequestMethod.GET)
-    @ApiOperation("加载其他用户的应用题作业")
+    @ApiOperation(value = "加载其他用户的应用题作业", response = RiseRefreshListDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id")})
     public ResponseEntity<Map<String, Object>> loadOtherApplicationList(UnionUser unionUser, @PathVariable Integer applicationId, @ModelAttribute Page page) {
         Assert.notNull(unionUser, "用户信息不能为空");
@@ -141,7 +141,7 @@ public class ApplicationController {
      * @param applicationId 应用任务Id
      */
     @RequestMapping(value = "/list/other/{applicationId}/{pageIndex}", method = RequestMethod.GET)
-    @ApiOperation("分页加载其他用户的应用题作业")
+    @ApiOperation(value = "分页加载其他用户的应用题作业", response = RiseRefreshListDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "applicationId", value = "应用练习id"),
             @ApiImplicitParam(name = "pageIndex", value = "页码")})
     public ResponseEntity<Map<String, Object>> loadOtherApplicationListBatch(UnionUser unionUser, @PathVariable Integer applicationId, @PathVariable Integer pageIndex) {
@@ -199,7 +199,7 @@ public class ApplicationController {
     }
 
     @RequestMapping(value = "/article/{submitId}", method = RequestMethod.GET)
-    @ApiOperation("加载某一个作业")
+    @ApiOperation(value = "加载某一个作业", response = ApplicationSubmit.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "submitId", value = "作业id")})
     public ResponseEntity<Map<String, Object>> loadApplicationPracticeBySubmitId(UnionUser unionUser, @PathVariable Integer submitId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -219,7 +219,8 @@ public class ApplicationController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/load/priority/submits")
+    @RequestMapping(value = "/load/priority/submits", method = RequestMethod.GET)
+    @ApiOperation(value = "获取精华作业", response = DiscussDistrictDto.class)
     public ResponseEntity<Map<String, Object>> loadPriorityApplicationSubmits(UnionUser unionUser, @RequestParam("applicationId") Integer applicationId, @RequestParam("planId") Integer planId) {
         DiscussDistrictDto districtDto = new DiscussDistrictDto();
         districtDto.setPersonal(practiceDiscussService.loadPersonalApplicationSubmitDiscussList(unionUser.getId(), applicationId, planId));
