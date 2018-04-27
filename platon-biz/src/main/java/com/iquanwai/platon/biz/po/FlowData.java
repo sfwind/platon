@@ -11,6 +11,8 @@ public class FlowData {
 
     @ApiModelProperty("可见权限")
     private String authority;
+    @ApiModelProperty("是否仅会员可看")
+    private Boolean permission;
     @ApiModelProperty("是否可见")
     private Boolean visibility;
 

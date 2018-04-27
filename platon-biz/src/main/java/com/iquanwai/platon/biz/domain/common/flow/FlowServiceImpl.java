@@ -176,32 +176,40 @@ public class FlowServiceImpl implements FlowService {
     }
 
     private Boolean getVisibility(FlowData flowData, Integer profileId) {
-        String authority = flowData.getAuthority();
+        // String authority = flowData.getAuthority();
+        // List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+        //
+        // if (riseMembers.size() == 0) {
+        //     // 当前身份为普通人
+        //     if (authority != null) {
+        //         char c = authority.charAt(authority.length() - 1);
+        //         return "1".equals(String.valueOf(c));
+        //     }
+        // } else {
+        //     for (RiseMember riseMember : riseMembers) {
+        //         Integer memberTypeId = 0;
+        //         if (riseMember != null && riseMember.getMemberTypeId() != null) {
+        //             memberTypeId = riseMember.getMemberTypeId();
+        //         }
+        //         try {
+        //             char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
+        //             String tagValue = String.valueOf(tagChar);
+        //             return "1".equals(tagValue);
+        //         } catch (Exception e) {
+        //             logger.error(e.getLocalizedMessage(), e);
+        //         }
+        //     }
+        // }
+        //
+        // return false;
         List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-
-        if (riseMembers.size() == 0) {
-            // 当前身份为普通人
-            if (authority != null) {
-                char c = authority.charAt(authority.length() - 1);
-                return "1".equals(String.valueOf(c));
-            }
-        } else {
-            for (RiseMember riseMember : riseMembers) {
-                Integer memberTypeId = 0;
-                if (riseMember != null && riseMember.getMemberTypeId() != null) {
-                    memberTypeId = riseMember.getMemberTypeId();
-                }
-                try {
-                    char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
-                    String tagValue = String.valueOf(tagChar);
-                    return "1".equals(tagValue);
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                }
+        Boolean permission = flowData.getPermission();
+        if (permission) {
+            if (riseMembers.size() == 0) {
+                return false;
             }
         }
-
-        return false;
+        return true;
     }
 
 }
