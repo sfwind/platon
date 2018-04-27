@@ -12,6 +12,7 @@ import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
+import com.iquanwai.platon.biz.po.survey.report.SurveyReport;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
@@ -187,12 +188,11 @@ public class SurveyController {
         return WebUtils.result(profile.getNickname());
     }
 
-    @RequestMapping(value = "wq/simple/report", method = RequestMethod.GET)
+    @RequestMapping(value = "/simple/report", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> load(GuestUser guestUser, @RequestParam(required = false) Integer submitId) {
         Assert.notNull(guestUser);
-        return null;
-
+        SurveyReport report = surveyService.loadSurveyReport(submitId);
+        return WebUtils.result(report);
     }
-
 
 }

@@ -24,6 +24,10 @@ public class SurveyResult {
      */
     private Integer version;
     /**
+     * 层数
+     */
+    private Integer level;
+    /**
      * 用户id
      */
     private Integer profileId;

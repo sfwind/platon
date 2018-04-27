@@ -2,9 +2,10 @@ package com.iquanwai.platon.biz.po.survey.report;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class SurveyCategoryInfo {
-    private String categoryName;
-    private Integer varialeId;
-
+    private String legend;
+    private List<SurveyVariableInfo> detail;
 }

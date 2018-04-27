@@ -4,7 +4,10 @@ import lombok.Data;
 
 @Data
 public class SurveyVariableInfo {
-    private String variableName;
-    private Double point;
+    private String category;
+    private Double value;
+    private Integer max;
+
     private String suggest;
 }
+

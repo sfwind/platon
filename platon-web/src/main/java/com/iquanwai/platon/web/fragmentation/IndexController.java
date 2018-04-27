@@ -24,6 +24,7 @@ import com.iquanwai.platon.web.util.CookieUtils;
 import com.iquanwai.platon.web.util.WebUtils;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author justin
@@ -305,7 +305,13 @@ public class IndexController {
         return false;
     }
 
-    @RequestMapping(value = {"/rise/static/**"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/rise/static/guest/value/evaluation/self", "/rise/static/guest/value/evaluation/other"}, method = RequestMethod.GET)
+    public void getRedirectActivity(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
+                                    @RequestParam(value = "_tm", required = false) String channel) throws Exception {
+        response.sendRedirect(StringUtils.replace(request.getRequestURL().toString(), "rise/static", "rise/activity/rise"));
+    }
+
+    @RequestMapping(value = {"/rise/static/**", "/rise/activity/static/**"}, method = RequestMethod.GET)
     public ModelAndView getIndex(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
                                  @RequestParam(value = "_tm", required = false) String channel) throws Exception {
         if (unionUser == null) {

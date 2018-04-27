@@ -1,7 +1,7 @@
 package com.iquanwai.platon.biz.dao.survey;
 
 import com.google.common.collect.Lists;
-import com.iquanwai.platon.biz.dao.PracticeDBUtil;
+import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestionType;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class SurveyQuestionTypeDao extends PracticeDBUtil {
+public class SurveyQuestionTypeDao extends DBUtil {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public List<SurveyQuestionType> loadQuestionTypes(List<String> questionIds) {
@@ -24,7 +24,7 @@ public class SurveyQuestionTypeDao extends PracticeDBUtil {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "select * from SurveyQuestionType where QuestionCode in (" + this.produceQuestionMark(questionIds.size()) + ") AND Del = 0";
         try {
-            runner.query(sql, new BeanListHandler<>(SurveyQuestionType.class), questionIds.toArray());
+            return runner.query(sql, new BeanListHandler<>(SurveyQuestionType.class), questionIds.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

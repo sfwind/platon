@@ -24,10 +24,10 @@ public class SurveyResultDao extends DBUtil {
 
     public Integer insert(SurveyResult surveyResult) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO SurveyResult(Category, Version, ProfileId, Openid, SubmitTime,ReferSurveyId) VALUE (?,?,?,?,CURRENT_TIMESTAMP,?)";
+        String sql = "INSERT INTO SurveyResult(Category, Version, ProfileId, Openid, SubmitTime,ReferSurveyId, Level) VALUE (?,?,?,?,CURRENT_TIMESTAMP,?,?)";
         try {
             return runner.insert(sql, new ScalarHandler<Long>(), surveyResult.getCategory(), surveyResult.getVersion(),
-                    surveyResult.getProfileId(), surveyResult.getOpenid(), surveyResult.getReferSurveyId()).intValue();
+                    surveyResult.getProfileId(), surveyResult.getOpenid(), surveyResult.getReferSurveyId(), surveyResult.getLevel()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -67,4 +67,14 @@ public class SurveyResultDao extends DBUtil {
         return Lists.newArrayList();
     }
 
+    public List<SurveyResult> loadByOpenIdAndCategory(String openId, String category) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from SurveyResult where Openid = ? and Category = ? Del = 0";
+        try {
+            return runner.query(sql, new BeanListHandler<>(SurveyResult.class), openId, category);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
 }

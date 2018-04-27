@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.domain.survey;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.po.survey.SurveySubmitVo;
+import com.iquanwai.platon.biz.po.survey.report.SurveyReport;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,4 +45,5 @@ public interface SurveyService {
     SurveyResult loadSubmit(Integer id);
 
 
+    SurveyReport loadSurveyReport(Integer submitId);
 }
