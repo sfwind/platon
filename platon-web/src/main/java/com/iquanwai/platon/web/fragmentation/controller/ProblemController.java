@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -12,6 +13,7 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.*;
@@ -56,6 +58,8 @@ public class ProblemController {
     private RiseMemberManager riseMemberManager;
     @Autowired
     private PracticeService practiceService;
+    @Autowired
+    private CustomerService customerService;
 
     @RequestMapping(value = "/list/unchoose", method = RequestMethod.GET)
     @ApiOperation("发现页面拉取课程列表")
@@ -377,8 +381,22 @@ public class ProblemController {
             @ApiImplicitParam(name = "chapterId", value = "章id")})public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(UnionUser unionUser,
                                                                       @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(unionUser, "登录用户不能为空");
+        Integer profileId = unionUser.getId();
+        //TODO:待完善（杨仁）
+        StudyInfo studyInfo = new StudyInfo();
+        //TODO:非会员和当月开这门课的人比较
+        //TODO:有多重身份的人
+//        studyInfo.setLearnedDay(customerService.loadContinuousLoginCount(profileId));
+//        studyInfo.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
+//        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+//        if(CollectionUtils.isEmpty(riseMembers)){
+//            return WebUtils.error("非会员类型");
+//        }
+//        RiseMember riseMember = riseMembers.get(0);
+//
+//
 
-        String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId);
+        String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId,null);
         if (essenceCardImgBase64 != null) {
             return WebUtils.result(essenceCardImgBase64);
         } else {

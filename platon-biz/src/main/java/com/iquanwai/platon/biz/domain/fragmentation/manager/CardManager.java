@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.manager;
 
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 
 import java.awt.image.BufferedImage;
 
@@ -13,7 +14,7 @@ public interface CardManager {
      * 获取精华卡
      * 返回base64
      * */
-    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, Integer planId);
+    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, Integer planId, StudyInfo studyInfo);
 
     /**
      * 获取缩略图url

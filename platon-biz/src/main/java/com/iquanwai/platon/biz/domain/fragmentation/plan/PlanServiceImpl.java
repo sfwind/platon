@@ -15,6 +15,7 @@ import com.iquanwai.platon.biz.exception.CreateCourseException;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.MonthlyCampOrder;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.DateUtils;
@@ -712,8 +713,9 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         // 当前章节 和 完成章节相等
+        //TODO:待完善（杨仁）
         if (isLearningSuccess) {
-            return cardManager.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId());
+            return cardManager.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId(),null);
         } else {
             return null;
         }

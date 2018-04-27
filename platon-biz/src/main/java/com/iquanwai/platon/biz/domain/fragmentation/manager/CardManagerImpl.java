@@ -10,6 +10,7 @@ import com.iquanwai.platon.biz.domain.weixin.qrcode.QRResponse;
 import com.iquanwai.platon.biz.po.EssenceCard;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import com.iquanwai.platon.biz.util.CommonUtils;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.ImageUtils;
@@ -66,6 +67,8 @@ public class CardManagerImpl implements CardManager {
 
     private static final String CARD_ACTIVITY = PromotionConstants.Activities.FREE_LIMIT;
 
+    private static final Color GREY = new Color(51,51,51);
+
     @PostConstruct
     public void init() {
         // 初始化所有背景图的 bufferedImages 缓存
@@ -94,7 +97,7 @@ public class CardManagerImpl implements CardManager {
     }
 
     @Override
-    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, Integer planId) {
+    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, Integer planId, StudyInfo studyInfo) {
         InputStream in = getClass().getResourceAsStream("/fonts/pfmedium.ttf");
         List<Chapter> list = problemScheduleManager.loadRoadMap(planId);
         Integer totalSize = list.size();
@@ -116,57 +119,57 @@ public class CardManagerImpl implements CardManager {
         // TargetImage
         BufferedImage targetImage = loadTargetImageByChapterId(chapterId, totalSize);
         targetImage = ImageUtils.scaleByPercentage(targetImage, 750, 1334);
-        // QrImage
-        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + problemId);
-        qrImage = ImageUtils.scaleByPercentage(qrImage, 220, 220);
-        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 34, 1092);
+
+        //绘制头像
         // HeadImage
         BufferedImage headImg = loadHeadImage(profile);
-        headImg = ImageUtils.scaleByPercentage(headImg, 102, 102);
+        headImg = ImageUtils.scaleByPercentage(headImg, 77, 77);
         headImg = ImageUtils.convertCircular(headImg);
-        targetImage = ImageUtils.overlapImage(targetImage, headImg, 601, 1141);
+        targetImage = ImageUtils.overlapImage(targetImage, headImg, 163, 78);
+        //TODO:转成StudyInfo
+        Integer learnedDay = 2;
+        Integer learnedKnowledge = 3;
+        Integer defeatPercent = 10;
 
+        //绘制学习相关信息
+        targetImage = ImageUtils.writeText(targetImage,118,285,learnedDay.toString(),font.deriveFont(Font.BOLD,30f), GREY);
+        targetImage = ImageUtils.writeText(targetImage,123+18*learnedDay.toString().length(),285,"天",font.deriveFont(20f),GREY);
+
+        targetImage = ImageUtils.writeText(targetImage,322,285,learnedKnowledge.toString(),font.deriveFont(Font.BOLD,30f),GREY);
+        targetImage = ImageUtils.writeText(targetImage,326+18*learnedKnowledge.toString().length(),285,"个",font.deriveFont(20f), GREY);
+        targetImage = ImageUtils.writeText(targetImage,546,285,defeatPercent.toString()+"%",font.deriveFont(Font.BOLD,30f),GREY);
+        targetImage = ImageUtils.writeText(targetImage,555+21*(defeatPercent.toString().length()+1),285,"的同学",font.deriveFont(20f),GREY);
+
+        //标题和内容
+        //TODO:
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
         if (essenceCard == null) {
             return null;
         }
-        // NickName
-        String nickName = CommonUtils.filterEmoji(profile.getNickname());
-        if (nickName == null || nickName.length() == 0) {
-            targetImage = ImageUtils.writeText(targetImage, 330, 1230, "你的好友邀请你学习，",
-                    font.deriveFont(24f), new Color(51, 51, 51));
-        } else {
-            targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
-                    font.deriveFont(24f), new Color(51, 51, 51));
-        }
-        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为" + essenceCard.getTag() + "爆表的人",
-                font.deriveFont(24f), new Color(51, 51, 51));
-        // 课程标题
+        essenceCard.setEssenceTitle("如何制定|个人发展战略");
+       // essenceCard.setEssenceTitle("突破人际 | “Yes”or“No”之困");
         String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
-        targetImage = ImageUtils.writeText(targetImage, 330, 320, titleArr[0],
-                font.deriveFont(60f), new Color(51, 51, 51));
-        targetImage = ImageUtils.writeText(targetImage, 245, 420, titleArr[1],
-                font.deriveFont(60f), new Color(255, 255, 255));
-        // 渲染课程精华卡片文本
-        String[] contentArr = essenceCard.getEssenceContent().split("\\|");
-        targetImage = writeContentOnImage(targetImage, contentArr, 404, 500);
-        // 限免 非限免 图片区分
-        if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
-            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1101);
-        } else {
-            targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
-            targetImage = ImageUtils.writeText(targetImage, 306, 1133, "长按识别二维码",
-                    font.deriveFont(28f), new Color(0, 0, 0));
-            targetImage = ImageUtils.writeText(targetImage, 306, 1169, "查看课程详情",
-                    font.deriveFont(24f), new Color(51, 51, 51));
+        for(int i = 0 ;i<titleArr.length;i++){
+            String title = titleArr[i];
+            for(int j = 0; j < title.length();j++){
+                targetImage = ImageUtils.writeText(targetImage,294-20*title.length()+40*j,496+i*53,title.substring(j,j+1),font.deriveFont(34f),GREY);
+            }
         }
 
+        //昵称和日期
+        targetImage = ImageUtils.writeText(targetImage,320,1002,"2018年4月24日",font.deriveFont(18f),GREY);
+        targetImage = ImageUtils.writeText(targetImage,320,1028,"曹飞扬",font.deriveFont(18f),GREY);
+
+        //二维码
+        BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + problemId);
+        qrImage = ImageUtils.scaleByPercentage(qrImage, 85, 85);
+        targetImage = ImageUtils.overlapImage(targetImage, qrImage, 324, 1185);
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
+        ImageUtils.writeToOutputStream(targetImage, "png", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
         try {
-            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+            return "data:image/png;base64," + encoder.encode(outputStream.toByteArray());
         } finally {
             try {
                 outputStream.close();
@@ -174,6 +177,64 @@ public class CardManagerImpl implements CardManager {
                 logger.error("os close failed", e);
             }
         }
+
+
+
+        // QrImage
+//
+//
+//
+//
+//
+//
+//        EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
+//        if (essenceCard == null) {
+//            return null;
+//        }
+//        // NickName
+//        String nickName = CommonUtils.filterEmoji(profile.getNickname());
+//        if (nickName == null || nickName.length() == 0) {
+//            targetImage = ImageUtils.writeText(targetImage, 330, 1230, "你的好友邀请你学习，",
+//                    font.deriveFont(24f), new Color(51, 51, 51));
+//        } else {
+//            targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
+//                    font.deriveFont(24f), new Color(51, 51, 51));
+//        }
+//        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为" + essenceCard.getTag() + "爆表的人",
+//                font.deriveFont(24f), new Color(51, 51, 51));
+//        // 课程标题
+//        String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
+//        targetImage = ImageUtils.writeText(targetImage, 330, 320, titleArr[0],
+//                font.deriveFont(60f), new Color(51, 51, 51));
+//        targetImage = ImageUtils.writeText(targetImage, 245, 420, titleArr[1],
+//                font.deriveFont(60f), new Color(255, 255, 255));
+//        // 渲染课程精华卡片文本
+//        String[] contentArr = essenceCard.getEssenceContent().split("\\|");
+//        targetImage = writeContentOnImage(targetImage, contentArr, 404, 500);
+//        // 限免 非限免 图片区分
+//        if (problemId.equals(ConfigUtils.getTrialProblemId())) {
+//            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
+//            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1101);
+//        } else {
+//            targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
+//            targetImage = ImageUtils.writeText(targetImage, 306, 1133, "长按识别二维码",
+//                    font.deriveFont(28f), new Color(0, 0, 0));
+//            targetImage = ImageUtils.writeText(targetImage, 306, 1169, "查看课程详情",
+//                    font.deriveFont(24f), new Color(51, 51, 51));
+//        }
+//
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
+//        BASE64Encoder encoder = new BASE64Encoder();
+//        try {
+//            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
+//        } finally {
+//            try {
+//                outputStream.close();
+//            } catch (IOException e) {
+//                logger.error("os close failed", e);
+//            }
+//        }
     }
 
     // 获取二维码，场景值变化

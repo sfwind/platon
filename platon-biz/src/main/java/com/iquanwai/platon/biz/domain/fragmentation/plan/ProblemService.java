@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -96,7 +97,7 @@ public interface ProblemService {
     /**
      * 获取精华卡图
      */
-    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
+    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, StudyInfo studyInfo);
 
     boolean hasCollectedProblem(Integer profileId, Integer problemId);
 
