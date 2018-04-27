@@ -22,4 +22,6 @@ public class SchoolFriendDto {
     private String company;
     @ApiModelProperty("学号")
     private String memberId;
+    @ApiModelProperty("圈外id")
+    private String riseId;
 }
