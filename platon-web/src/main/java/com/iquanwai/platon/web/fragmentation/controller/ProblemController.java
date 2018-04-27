@@ -382,7 +382,6 @@ public class ProblemController {
                                                                       @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(unionUser, "登录用户不能为空");
         Integer profileId = unionUser.getId();
-        //TODO:待完善（杨仁）
         StudyInfo studyInfo = new StudyInfo();
 
         studyInfo.setLearnedDay(customerService.loadContinuousLoginCount(profileId));

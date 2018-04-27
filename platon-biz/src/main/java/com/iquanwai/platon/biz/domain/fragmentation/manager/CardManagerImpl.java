@@ -11,10 +11,7 @@ import com.iquanwai.platon.biz.po.EssenceCard;
 import com.iquanwai.platon.biz.po.common.Account;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.user.StudyInfo;
-import com.iquanwai.platon.biz.util.CommonUtils;
-import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.ImageUtils;
-import com.iquanwai.platon.biz.util.PromotionConstants;
+import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -30,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +65,9 @@ public class CardManagerImpl implements CardManager {
 
     private static final String CARD_ACTIVITY = PromotionConstants.Activities.FREE_LIMIT;
 
-    private static final Color GREY = new Color(51,51,51);
+    private static final Color GREY = new Color(51, 51, 51);
+
+    private static final Integer MAX_LINE_WORDS_LENGTH = 17;
 
     @PostConstruct
     public void init() {
@@ -132,34 +132,41 @@ public class CardManagerImpl implements CardManager {
         Integer defeatPercent = studyInfo.getDefeatPercent();
 
         //绘制学习相关信息
-        targetImage = ImageUtils.writeText(targetImage,118,285,learnedDay.toString(),font.deriveFont(Font.BOLD,30f), GREY);
-        targetImage = ImageUtils.writeText(targetImage,123+18*learnedDay.toString().length(),285,"天",font.deriveFont(20f),GREY);
+        targetImage = ImageUtils.writeText(targetImage, 118, 285, learnedDay.toString(), font.deriveFont(Font.BOLD, 30f), GREY);
+        targetImage = ImageUtils.writeText(targetImage, 123 + 18 * learnedDay.toString().length(), 285, "天", font.deriveFont(20f), GREY);
 
-        targetImage = ImageUtils.writeText(targetImage,322,285,learnedKnowledge.toString(),font.deriveFont(Font.BOLD,30f),GREY);
-        targetImage = ImageUtils.writeText(targetImage,326+18*learnedKnowledge.toString().length(),285,"个",font.deriveFont(20f), GREY);
-        targetImage = ImageUtils.writeText(targetImage,546,285,defeatPercent.toString()+"%",font.deriveFont(Font.BOLD,30f),GREY);
-        targetImage = ImageUtils.writeText(targetImage,555+21*(defeatPercent.toString().length()+1),285,"的同学",font.deriveFont(20f),GREY);
+        targetImage = ImageUtils.writeText(targetImage, 322, 285, learnedKnowledge.toString(), font.deriveFont(Font.BOLD, 30f), GREY);
+        targetImage = ImageUtils.writeText(targetImage, 326 + 18 * learnedKnowledge.toString().length(), 285, "个", font.deriveFont(20f), GREY);
+        targetImage = ImageUtils.writeText(targetImage, 546, 285, defeatPercent.toString() + "%", font.deriveFont(Font.BOLD, 30f), GREY);
+        targetImage = ImageUtils.writeText(targetImage, 555 + 21 * (defeatPercent.toString().length() + 1), 285, "的同学", font.deriveFont(20f), GREY);
 
-        //标题和内容
-        //TODO:
         EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
         if (essenceCard == null) {
             return null;
         }
-        essenceCard.setEssenceTitle("如何制定|个人发展战略");
-       // essenceCard.setEssenceTitle("突破人际 | “Yes”or“No”之困");
-        String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
-        for(int i = 0 ;i<titleArr.length;i++){
+
+        String[] titleArr = essenceCard.getEssenceTitle().replaceAll(" ", "").split("\\|");
+        for (int i = 0; i < titleArr.length; i++) {
             String title = titleArr[i];
-            for(int j = 0; j < title.length();j++){
-                targetImage = ImageUtils.writeText(targetImage,294-20*title.length()+40*j,496+i*53,title.substring(j,j+1),font.deriveFont(34f),GREY);
+            for (int j = 0; j < title.length(); j++) {
+                targetImage = ImageUtils.writeText(targetImage, 282 - 20 * title.length() + 40 * j, 412 + i * 53, title.substring(j, j + 1), font.deriveFont(34f), GREY);
             }
         }
-        //绘制内容
+        String[] contentArr = essenceCard.getEssenceContent().split("\\|");
+        Integer currentHeight = 566;
+        for (int i = 0; i < contentArr.length; i++) {
+            List<String> strs = getByLineWords(contentArr[i]);
+            for (int j = 0; j < strs.size(); j++) {
+                targetImage = ImageUtils.writeText(targetImage, 124, currentHeight, strs.get(j), font.deriveFont(18f), GREY);
+                currentHeight += 30;
+            }
+            currentHeight += 15;
+        }
 
         //昵称和日期
-        targetImage = ImageUtils.writeText(targetImage,320,1002,"2018年4月24日",font.deriveFont(18f),GREY);
-        targetImage = ImageUtils.writeText(targetImage,320,1028,profile.getNickname(),font.deriveFont(18f),GREY);
+        String date = DateUtils.parseDateToFormat5(new Date());
+        targetImage = ImageUtils.writeText(targetImage, 320, 1032, date, font.deriveFont(18f), GREY);
+        targetImage = ImageUtils.writeText(targetImage, 320, 1058, profile.getNickname(), font.deriveFont(18f), GREY);
 
         //二维码
         BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + problemId);
@@ -178,64 +185,6 @@ public class CardManagerImpl implements CardManager {
                 logger.error("os close failed", e);
             }
         }
-
-
-
-        // QrImage
-//
-//
-//
-//
-//
-//
-//        EssenceCard essenceCard = essenceCardDao.loadEssenceCard(problemId, chapterId);
-//        if (essenceCard == null) {
-//            return null;
-//        }
-//        // NickName
-//        String nickName = CommonUtils.filterEmoji(profile.getNickname());
-//        if (nickName == null || nickName.length() == 0) {
-//            targetImage = ImageUtils.writeText(targetImage, 330, 1230, "你的好友邀请你学习，",
-//                    font.deriveFont(24f), new Color(51, 51, 51));
-//        } else {
-//            targetImage = ImageUtils.writeText(targetImage, 330, 1230, subByteString(nickName, 10) + "邀请你学习，",
-//                    font.deriveFont(24f), new Color(51, 51, 51));
-//        }
-//        targetImage = ImageUtils.writeText(targetImage, 330, 1270, "成为" + essenceCard.getTag() + "爆表的人",
-//                font.deriveFont(24f), new Color(51, 51, 51));
-//        // 课程标题
-//        String[] titleArr = essenceCard.getEssenceTitle().split("\\|");
-//        targetImage = ImageUtils.writeText(targetImage, 330, 320, titleArr[0],
-//                font.deriveFont(60f), new Color(51, 51, 51));
-//        targetImage = ImageUtils.writeText(targetImage, 245, 420, titleArr[1],
-//                font.deriveFont(60f), new Color(255, 255, 255));
-//        // 渲染课程精华卡片文本
-//        String[] contentArr = essenceCard.getEssenceContent().split("\\|");
-//        targetImage = writeContentOnImage(targetImage, contentArr, 404, 500);
-//        // 限免 非限免 图片区分
-//        if (problemId.equals(ConfigUtils.getTrialProblemId())) {
-//            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeTop, 542, 113);
-//            targetImage = ImageUtils.overlapImage(targetImage, essenceFreeBottom, 306, 1101);
-//        } else {
-//            targetImage = ImageUtils.overlapImage(targetImage, essenceNormalTop, 542, 113);
-//            targetImage = ImageUtils.writeText(targetImage, 306, 1133, "长按识别二维码",
-//                    font.deriveFont(28f), new Color(0, 0, 0));
-//            targetImage = ImageUtils.writeText(targetImage, 306, 1169, "查看课程详情",
-//                    font.deriveFont(24f), new Color(51, 51, 51));
-//        }
-//
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
-//        BASE64Encoder encoder = new BASE64Encoder();
-//        try {
-//            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
-//        } finally {
-//            try {
-//                outputStream.close();
-//            } catch (IOException e) {
-//                logger.error("os close failed", e);
-//            }
-//        }
     }
 
     // 获取二维码，场景值变化
@@ -389,5 +338,26 @@ public class CardManagerImpl implements CardManager {
     @Override
     public BufferedImage loadCaitongHead() {
         return caitongHead;
+    }
+
+
+    private List<String> getByLineWords(String words) {
+        List<String> strs = Lists.newArrayList();
+        int size = words.length() / MAX_LINE_WORDS_LENGTH;
+
+        for (int i = 1; i <= size; i++) {
+            strs.add(words.substring(MAX_LINE_WORDS_LENGTH * (i - 1), MAX_LINE_WORDS_LENGTH * i));
+        }
+        if (size * MAX_LINE_WORDS_LENGTH < words.length()) {
+            strs.add(words.substring(size * MAX_LINE_WORDS_LENGTH, words.length()));
+        }
+        return strs;
+    }
+
+
+    public static void main(String[] args) {
+        String title = "如何发现 | 错误假设的谬误";
+        System.out.println(title);
+        System.out.println(title.replaceAll(" ", ""));
     }
 }

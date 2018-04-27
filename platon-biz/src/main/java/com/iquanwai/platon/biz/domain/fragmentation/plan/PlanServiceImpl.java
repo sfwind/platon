@@ -6,6 +6,7 @@ import com.iquanwai.platon.biz.dao.common.MonthlyCampOrderDao;
 import com.iquanwai.platon.biz.dao.common.QuanwaiEmployeeDao;
 import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
+import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
@@ -85,6 +86,8 @@ public class PlanServiceImpl implements PlanService {
     private ProblemDao problemDao;
     @Autowired
     private WarmupSubmitDao warmupSubmitDao;
+    @Autowired
+    private CustomerService customerService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -713,9 +716,12 @@ public class PlanServiceImpl implements PlanService {
             }
         }
         // 当前章节 和 完成章节相等
-        //TODO:待完善（杨仁）
         if (isLearningSuccess) {
-            return cardManager.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId(),null);
+            StudyInfo studyInfo = new StudyInfo();
+            studyInfo.setLearnedDay(customerService.loadContinuousLoginCount(profileId));
+            studyInfo.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
+            studyInfo.setDefeatPercent(customerService.calSyncDefeatPercent(profileId,problemId));
+            return cardManager.loadEssenceCardImg(profileId, problemId, targetChapterId, improvementPlan.getId(),studyInfo);
         } else {
             return null;
         }

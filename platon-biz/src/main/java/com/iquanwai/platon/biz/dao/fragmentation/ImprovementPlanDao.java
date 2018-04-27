@@ -318,9 +318,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         String sql = "SELECT * FROM ImprovementPlan WHERE ProblemId = ? AND StartDate like ? AND DEL = 0";
         ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         try {
-            logger.info("problemId:"+problemId);
-            logger.info("startDate:"+"'"+startDate+"%'");
-           return runner.query(sql,h,problemId,"'"+startDate+"%'");
+           return runner.query(sql,h,problemId,startDate+"%");
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(),e);
         }

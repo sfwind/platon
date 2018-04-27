@@ -336,9 +336,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         String openDate = improvementPlan.getStartDate().toString().substring(0,7);
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByStartDate(problemId,openDate);
-        logger.info("improvementPlans:"+improvementPlans.toString());
         List<Integer> profileIds = improvementPlans.stream().map(ImprovementPlan::getProfileId).collect(Collectors.toList());
-        logger.info("profileIds:"+profileIds.toString());
 
         List<Profile> profiles = accountService.getProfiles(profileIds);
 
