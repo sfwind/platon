@@ -3,7 +3,7 @@ package com.iquanwai.platon.mq;
 import com.alibaba.fastjson.JSONObject;
 import com.iquanwai.platon.biz.dao.common.LivesFlowDao;
 import com.iquanwai.platon.biz.domain.weixin.customer.CustomerMessageService;
-import com.iquanwai.platon.biz.po.LivesFlow;
+import com.iquanwai.platon.biz.po.flow.LivesFlow;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQFactory;
 import org.slf4j.Logger;
