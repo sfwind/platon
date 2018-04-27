@@ -13,6 +13,9 @@ import com.iquanwai.platon.biz.po.flow.ActivitiesFlow;
 import com.iquanwai.platon.biz.po.flow.ArticlesFlow;
 import com.iquanwai.platon.biz.po.flow.LivesFlow;
 import com.iquanwai.platon.biz.po.flow.ProgramsFlow;
+import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.DateUtils;
 import com.iquanwai.platon.biz.util.RestfulHelper;
@@ -37,8 +40,6 @@ public class FlowServiceImpl implements FlowService {
     private ArticlesFlowDao articlesFlowDao;
     @Autowired
     private ActivitiesFlowDao activitiesFlowDao;
-    @Autowired
-    private RiseMemberManager riseMemberManager;
     @Autowired
     private MemberTypeDao memberTypeDao;
     @Autowired
@@ -70,6 +71,12 @@ public class FlowServiceImpl implements FlowService {
      * 回放
      */
     private final static int PLAY_BACK = 3;
+    @Autowired
+    private LivesOrderDao livesOrderDao;
+    @Autowired
+    private RiseMemberManager riseMemberManager;
+    @Autowired
+    private AccountService accountService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -243,33 +250,73 @@ public class FlowServiceImpl implements FlowService {
         return activitiesFlows;
     }
 
-    private Boolean getVisibility(FlowData flowData, Integer profileId) {
-        String authority = flowData.getAuthority();
-        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-
-        if (riseMembers.size() == 0) {
-            // 当前身份为普通人
-            if (authority != null) {
-                char c = authority.charAt(authority.length() - 1);
-                return "1".equals(String.valueOf(c));
+    @Override
+    public LivesFlow loadLiveFlowById(Integer profileId, Integer liveId) {
+        LivesFlow livesFlow = livesFlowDao.load(LivesFlow.class, liveId);
+        if (livesFlow != null) {
+            if (livesFlow.getStartTime() != null) {
+                livesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(livesFlow.getStartTime()));
             }
-        } else {
-            for (RiseMember riseMember : riseMembers) {
-                Integer memberTypeId = 0;
-                if (riseMember != null && riseMember.getMemberTypeId() != null) {
-                    memberTypeId = riseMember.getMemberTypeId();
-                }
-                try {
-                    char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
-                    String tagValue = String.valueOf(tagChar);
-                    return "1".equals(tagValue);
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
-                }
+            LivesOrder livesOrder = livesOrderDao.loadByOrderIdAndLiveId(profileId, liveId);
+            livesFlow.setIsOrdered(livesOrder != null);
+
+            Profile profile = accountService.getProfile(profileId);
+            livesFlow.setRiseId(profile.getRiseId());
+
+            livesFlow.setVisibility(getVisibility(livesFlow, profileId));
+        }
+        return livesFlow;
+    }
+
+    @Override
+    public boolean orderLive(Integer orderId, Integer liveId) {
+        return orderLive(orderId, null, liveId);
+    }
+
+    @Override
+    public boolean orderLive(Integer orderId, Integer promotionId, Integer liveId) {
+        LivesOrder livesOrder = new LivesOrder();
+        livesOrder.setOrderId(orderId);
+        livesOrder.setPromotionId(promotionId);
+        livesOrder.setLiveId(liveId);
+        return livesOrderDao.insert(livesOrder) > 0;
+    }
+
+    private Boolean getVisibility(FlowData flowData, Integer profileId) {
+        // String authority = flowData.getAuthority();
+        // List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+        //
+        // if (riseMembers.size() == 0) {
+        //     // 当前身份为普通人
+        //     if (authority != null) {
+        //         char c = authority.charAt(authority.length() - 1);
+        //         return "1".equals(String.valueOf(c));
+        //     }
+        // } else {
+        //     for (RiseMember riseMember : riseMembers) {
+        //         Integer memberTypeId = 0;
+        //         if (riseMember != null && riseMember.getMemberTypeId() != null) {
+        //             memberTypeId = riseMember.getMemberTypeId();
+        //         }
+        //         try {
+        //             char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
+        //             String tagValue = String.valueOf(tagChar);
+        //             return "1".equals(tagValue);
+        //         } catch (Exception e) {
+        //             logger.error(e.getLocalizedMessage(), e);
+        //         }
+        //     }
+        // }
+        //
+        // return false;
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+        Boolean permission = flowData.getPermission();
+        if (permission) {
+            if (riseMembers.size() == 0) {
+                return false;
             }
         }
-
-        return false;
+        return true;
     }
 
 }

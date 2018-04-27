@@ -47,4 +47,20 @@ public interface FlowService {
      * 获取活动资源
      */
     List<ActivitiesFlow> loadActivitiesFlow(Integer profileId, Integer limit);
+
+    /**
+     * 根据直播 id 获取直播内容
+     * @param liveId 直播 id
+     */
+    LivesFlow loadLiveFlowById(Integer profileId, Integer liveId);
+
+    boolean orderLive(Integer orderId, Integer liveId);
+
+    /**
+     * 预约直播
+     * @param orderId 预约人 id
+     * @param promotionId 推广人 id
+     * @param liveId 直播 id
+     */
+    boolean orderLive(Integer orderId, Integer promotionId, Integer liveId);
 }

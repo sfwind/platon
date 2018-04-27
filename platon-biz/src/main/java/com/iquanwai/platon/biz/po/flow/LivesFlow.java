@@ -21,8 +21,12 @@ public class LivesFlow extends FlowData {
     private String speaker;
     @ApiModelProperty("主讲人描述")
     private String speakerDesc;
+    @ApiModelProperty("直播描述")
+    private String liveDesc;
     @ApiModelProperty("缩略图")
     private String thumbnail;
+    @ApiModelProperty("大展示图")
+    private String banner;
     @ApiModelProperty("开始时间")
     private Date startTime;
     @ApiModelProperty("结束时间")
@@ -35,5 +39,9 @@ public class LivesFlow extends FlowData {
     private Integer status;
     @ApiModelProperty("排序")
     private Integer sequence;
+    @ApiModelProperty("是否已经预约")
+    private Boolean isOrdered;
+    @ApiModelProperty("个人 riseId")
+    private String riseId;
 
 }

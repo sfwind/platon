@@ -41,6 +41,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * @author justin
@@ -68,10 +70,6 @@ public class IndexController {
 
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    // 商学院按钮url
-    private static final String INDEX_BUSINESS_SCHOOL_URL = "/rise/static/rise";
-    // 专项课按钮url
-    private static final String INDEX_CAMP_URL = "/rise/static/camp";
     // 关注页面
     private static final String SUBSCRIBE_URL = "/subscribe";
     // 内测页面
@@ -101,6 +99,8 @@ public class IndexController {
     private static final String HOME_LANDING_PAGE = "/rise/static/home";
 
     private static final String RISE_VIEW = "course";
+
+    private static Pattern pattern = Pattern.compile("/rise/static/home/live/order");
 
     @PostConstruct
     public void init() {
@@ -265,7 +265,17 @@ public class IndexController {
             SubscribeRouterConfig subscribeRouterConfig = subscribeRouterService.loadUnSubscribeRouterConfig(request.getRequestURI());
             if (subscribeRouterConfig != null) {
                 // 未关注
-                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + subscribeRouterConfig.getScene());
+                String scene = subscribeRouterConfig.getScene();
+
+                String requestUri = request.getRequestURI();
+                if (pattern.matcher(requestUri).find()) {
+                    String liveId = Objects.toString(request.getParameter("liveId"), "0");
+                    String promotionRiseId = Objects.toString(request.getParameter("promotionRiseId"), "0");
+                    scene = scene + "_" + liveId + "_" + promotionRiseId;
+                    logger.info("scene：{}", scene);
+                }
+
+                response.sendRedirect(SUBSCRIBE_URL + "?scene=" + scene);
                 return true;
             } else {
                 response.sendRedirect(SUBSCRIBE_URL);
@@ -308,7 +318,6 @@ public class IndexController {
         // 菜单白名单 ,之后正式开放时，可以先在zk里关掉test，之后有时间在删掉这段代码，包括前后端,jsp
         ModuleShow moduleShow = new ModuleShow();
 
-        // TODO: 待验证
         RiseMember riseMember = riseMemberManager.proMember(unionUser.getId());
 
         if (riseMember != null) {
