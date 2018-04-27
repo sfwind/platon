@@ -50,14 +50,12 @@ public class LiveOrderSubscribeReceiver {
         String[] sceneParams = scene.split("_");
 
         Integer liveId = Integer.valueOf(sceneParams[1]);
-        String riseId = sceneParams[2];
-
         LivesFlow livesFlow = livesFlowDao.load(LivesFlow.class, liveId);
 
-        StringBuilder customerMessage = new StringBuilder();
-        customerMessage.append(livesFlow.getName());
+        String customerMessage = "Hi，欢迎来到圈外商学院。\n" +
+                "本期大咖直播课，点击领取。\n";
 
-        customerMessageService.sendCustomerMessage(openId, customerMessage.toString(), Constants.WEIXIN_MESSAGE_TYPE.TEXT);
+        customerMessageService.sendCustomerMessage(openId, customerMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
 
 }
