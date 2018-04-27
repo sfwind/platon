@@ -30,4 +30,6 @@ public class ProgramsFlow {
     private Integer type;
     @ApiModelProperty("跳转地址")
     private String url;
+    @ApiModelProperty("售前小助手二维码链接")
+    private String asstWechat;
 }

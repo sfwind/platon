@@ -18,9 +18,7 @@ public class Chapter {
     @ApiModelProperty("小节")
     private List<Section> sections = Lists.newArrayList(); 
     @ApiModelProperty("章节名称")
-    private String name; 
-    @ApiModelProperty("是否是综合练习")
-    private boolean isIntegrated; 
+    private String name;
     @ApiModelProperty("我的选择题得分")
     private Integer myWarmScore;
     @ApiModelProperty("选择题总分")

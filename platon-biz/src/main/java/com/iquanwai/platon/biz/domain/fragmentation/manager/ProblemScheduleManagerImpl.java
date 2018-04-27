@@ -156,9 +156,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             chapter.setName(chapterName(sectionList));
             chapter.setSections(sectionList);
             chapter.setChapter(chapterSequence);
-            if (CollectionUtils.isNotEmpty(sectionList)) {
-                chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledgeId()));
-            }
             chapterList.add(chapter);
         });
 
