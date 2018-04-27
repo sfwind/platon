@@ -70,6 +70,8 @@ public interface CustomerService {
      */
     Integer calSyncDefeatPercent(RiseMember riseMember);
 
+    Integer calSyncDefeatPercent(Integer profileId,Integer problemId);
+
 
     /**
      * 获取班组信息

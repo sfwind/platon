@@ -73,6 +73,7 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
+
     public ImprovementPlan loadPlanByProblemId(Integer profileId, Integer problemId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         String sql = "SELECT * FROM ImprovementPlan WHERE ProfileId=? and ProblemId=? and Del=0";
@@ -84,6 +85,10 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         }
         return null;
     }
+
+
+
+
 
     public ImprovementPlan getLastPlan(Integer profileId) {
         QueryRunner runner = new QueryRunner(getDataSource());
@@ -304,6 +309,19 @@ public class ImprovementPlanDao extends PracticeDBUtil {
             return runner.query(sql, h, objects.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public List<ImprovementPlan> loadPlansByOpenDate(Integer problemId,String openDate){
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProblemId = ? AND OpenDate like ? AND DEL = 0";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<ImprovementPlan>(ImprovementPlan.class);
+
+        try {
+           return runner.query(sql,h,problemId,"%"+openDate+"%");
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(),e);
         }
         return Lists.newArrayList();
     }

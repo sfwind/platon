@@ -316,6 +316,53 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public Integer calSyncDefeatPercent(Integer profileId, Integer problemId) {
+
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId,problemId);
+        if(improvementPlan == null){
+            logger.info("=============用户没有选择这门课==========");
+            return 0;
+        }
+        Profile profile = accountService.getProfile(profileId);
+        if (profile == null) {
+            logger.error("未找到{}用户，返回比例为0", profileId);
+            return 0;
+        }
+        Integer point = profile.getPoint();
+        if (point == 0) {
+            logger.info("{}用户得0分", profileId);
+            return 0;
+        }
+
+        String openDate = improvementPlan.getStartDate().toString().substring(0,7);
+        logger.info("openDate:"+openDate);
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByOpenDate(problemId,openDate);
+        List<Integer> profileIds = improvementPlans.stream().map(ImprovementPlan::getProfileId).collect(Collectors.toList());
+        List<Profile> profiles = accountService.getProfiles(profileIds);
+
+        if (CollectionUtils.isEmpty(profiles)) {
+            logger.info("{}用户不存在同期同学，返回比例为100%", profileId);
+            return 100;
+        }
+
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint() == null || profile1.getPoint() <= point).count();
+        logger.info("超过人数为：" + result + ",总人数为：" + profiles.size());
+        int size = profiles.size();
+        double realPercent = result.intValue() * 1.0 / size;
+        Integer percent;
+        // 20%以下分布在0-60%的区间,20%以上分布在60%-100%区间
+        if (realPercent <= 0.2) {
+            percent = (int) ((realPercent * 5 - realPercent * realPercent * 10) * 100);
+            logger.info("计算出的比例为：" + percent + "%");
+        } else {
+            percent = (result.intValue() + size) * 100 / (size * 2);
+            logger.info("计算出的比例为：" + percent + "%");
+        }
+
+        return percent;
+    }
+
+    @Override
     public Map<String, String> loadClassGroup(Integer profileId) {
         List<ClassMember> classMembers = classMemberDao.loadActiveByProfileId(profileId);
         if (classMembers.isEmpty()) {

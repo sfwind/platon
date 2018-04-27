@@ -384,17 +384,10 @@ public class ProblemController {
         Integer profileId = unionUser.getId();
         //TODO:待完善（杨仁）
         StudyInfo studyInfo = new StudyInfo();
-        //TODO:非会员和当月开这门课的人比较
-        //TODO:有多重身份的人
-//        studyInfo.setLearnedDay(customerService.loadContinuousLoginCount(profileId));
-//        studyInfo.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
-//        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-//        if(CollectionUtils.isEmpty(riseMembers)){
-//            return WebUtils.error("非会员类型");
-//        }
-//        RiseMember riseMember = riseMembers.get(0);
-//
-//
+
+        studyInfo.setLearnedDay(customerService.loadContinuousLoginCount(profileId));
+        studyInfo.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
+        studyInfo.setDefeatPercent(customerService.calSyncDefeatPercent(profileId,problemId));
 
         String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId,null);
         if (essenceCardImgBase64 != null) {
