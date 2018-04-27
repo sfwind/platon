@@ -229,6 +229,7 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public Knowledge getKnowledge(Integer knowledgeId) {
+        logger.info(knowledgeMap.toString());
         Knowledge knowledge = new Knowledge();
         try {
             Knowledge exist = knowledgeMap.get(knowledgeId);
