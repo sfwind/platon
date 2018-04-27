@@ -229,15 +229,17 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public Knowledge getKnowledge(Integer knowledgeId) {
-        logger.info(knowledgeMap.toString());
+        logger.info("knowledgeId:"+knowledgeId);
         Knowledge knowledge = new Knowledge();
         try {
             Knowledge exist = knowledgeMap.get(knowledgeId);
             if (exist != null) {
+                logger.info("已经存在:"+knowledgeMap.get(knowledgeId));
                 BeanUtils.copyProperties(knowledgeMap.get(knowledgeId), knowledge);
             } else {
                 knowledge = knowledgeDao.load(Knowledge.class, knowledgeId);
                 initKnowledge(knowledge);
+                logger.info("查询数据库得到结果："+knowledge);
             }
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage());

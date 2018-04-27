@@ -878,7 +878,6 @@ public class PracticeServiceImpl implements PracticeService {
 
     private Knowledge getKnowledge(Integer knowledgeId) {
         Knowledge knowledge = cacheService.getKnowledge(knowledgeId);
-        logger.info("知识点："+knowledge);
         WarmupPractice warmupPractice = warmupPracticeDao.loadExample(knowledge.getId());
         if (warmupPractice != null) {
             knowledge.setExample(cacheService.getWarmupPractice(warmupPractice.getId()));
