@@ -31,8 +31,8 @@ public class PreviewController {
     @Autowired
     private PracticeService practiceService;
 
-    @RequestMapping("/start/{practicePlanId}")
-    @ApiOperation("加载课前思考")
+    @RequestMapping(value = "/start/{practicePlanId}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载课前思考", response = ProblemPreview.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> startPreview(UnionUser unionUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(unionUser, "用户不能为空");

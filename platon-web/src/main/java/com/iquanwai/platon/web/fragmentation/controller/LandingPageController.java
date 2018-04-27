@@ -50,8 +50,6 @@ public class LandingPageController {
         Pair<Long, Integer> applicationPass = applyService.loadRemainTimeMemberTypeId(unionUser.getId());
 
         List<LandingPageBanner> pageBanners = flowService.loadLandingPageBanners();
-//        // 圈外课程
-//        List<ProblemsFlow> problemsFlows = flowService.loadProblemsFlow(unionUser.getId());
         // 圈外项目
         List<ProgramsFlow> programsFlows = flowService.loadProgramsFlow(unionUser.getId());
         // 圈外直播

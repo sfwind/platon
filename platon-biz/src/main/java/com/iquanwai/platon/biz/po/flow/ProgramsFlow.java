@@ -28,4 +28,6 @@ public class ProgramsFlow {
     private boolean open;
     @ApiModelProperty("项目状态,1-预约,2-打折售卖,3-正常售卖,4-剩余名额")
     private Integer type;
+    @ApiModelProperty("跳转地址")
+    private String url;
 }

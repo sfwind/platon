@@ -19,8 +19,6 @@ public class LandingPageDto {
     private Boolean notify;
     @ApiModelProperty("首页上面的 Banner 配置")
     private List<LandingPageBanner> pageBanners;
-    @ApiModelProperty("课程数据")
-    private List<ProblemsFlow> problemsFlows;
     @ApiModelProperty("项目数据")
     private List<ProgramsFlow> programsFlows;
     @ApiModelProperty("直播数据")

@@ -53,7 +53,7 @@ public class ProblemController {
     private PracticeService practiceService;
 
     @RequestMapping(value = "/list/unchoose", method = RequestMethod.GET)
-    @ApiOperation("发现页面拉取课程列表")
+    @ApiOperation(value = "发现页面拉取课程列表", response = ProblemCatalogDto.class)
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         // 所有问题
@@ -66,19 +66,19 @@ public class ProblemController {
         //TODO:专业版可以学习problemId = 5, 11, 13, 19
         List<Integer> problemIds = problems.stream().map(Problem::getId).collect(Collectors.toList());
         // 逻辑谬误
-        if(!problemIds.contains(5)){
+        if (!problemIds.contains(5)) {
             problems.add(problemService.getProblem(5));
         }
         // 行为分析
-        if(!problemIds.contains(11)){
+        if (!problemIds.contains(11)) {
             problems.add(problemService.getProblem(11));
         }
         // 公开演讲
-        if(!problemIds.contains(13)){
+        if (!problemIds.contains(13)) {
             problems.add(problemService.getProblem(13));
         }
         // 结识牛人
-        if(!problemIds.contains(19)){
+        if (!problemIds.contains(19)) {
             problems.add(problemService.getProblem(19));
         }
 
@@ -143,7 +143,7 @@ public class ProblemController {
         result.setHotList(hotList);
         result.setName(unionUser.getNickName());
         result.setCatalogList(catalogListDtos);
-        // TODO: 待验证
+
         List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
         result.setRiseMember(CollectionUtils.isNotEmpty(riseMembers));
         result.setBanners(problemService.loadExploreBanner());
@@ -177,8 +177,8 @@ public class ProblemController {
         return rightScore > leftScore ? 1 : -1;
     }
 
-    @RequestMapping(value ="/list/{catalog}", method = RequestMethod.GET)
-    @ApiOperation("获取某个分类的课程")
+    @RequestMapping(value = "/list/{catalog}", method = RequestMethod.GET)
+    @ApiOperation(value = "获取某个分类的课程", response = ProblemCatalog.class, responseContainer = "List")
     @ApiImplicitParams({@ApiImplicitParam(name = "catalogId", value = "类别id")})
     public ResponseEntity<Map<String, Object>> loadUnChooseProblems(UnionUser unionUser, @PathVariable(value = "catalog") Integer catalogId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -222,7 +222,7 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/list/all", method = RequestMethod.GET)
-    @ApiOperation("获取所有的课程")
+    @ApiOperation(value = "获取所有的课程", response = ProblemExploreDto.class)
     public ResponseEntity<Map<String, Object>> loadAllProblem(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
 
@@ -261,8 +261,8 @@ public class ProblemController {
         return WebUtils.result(list);
     }
 
-    @RequestMapping(value ="/get/{problemId}", method = RequestMethod.GET)
-    @ApiOperation("获取的课程信息")
+    @RequestMapping(value = "/get/{problemId}", method = RequestMethod.GET)
+    @ApiOperation(value = "获取的课程信息", response = Problem.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
     public ResponseEntity<Map<String, Object>> loadProblem(UnionUser unionUser, @PathVariable Integer problemId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -272,7 +272,7 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/open/{problemId}", method = RequestMethod.GET)
-    @ApiOperation("打开课程介绍页信息")
+    @ApiOperation(value = "打开课程介绍页信息", response = RiseCourseDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "autoOpen", value = "是否自动开课"),
             @ApiImplicitParam(name = "practicePlanId", value = "课程介绍练习id")})
     public ResponseEntity<Map<String, Object>> openProblemIntroduction(UnionUser unionUser, @PathVariable Integer problemId,
@@ -300,7 +300,7 @@ public class ProblemController {
         return WebUtils.result(dto);
     }
 
-    @RequestMapping(value ="/grade/{problemId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/grade/{problemId}", method = RequestMethod.POST)
     @ApiOperation("获取的课程信息")
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
     public ResponseEntity<Map<String, Object>> gradeScore(UnionUser unionUser, @PathVariable Integer problemId, @RequestBody List<ProblemScore> problemScores) {
@@ -311,7 +311,7 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/extension/{problemId}", method = RequestMethod.GET)
-    @ApiOperation("获取所有课程衍生学习信息")
+    @ApiOperation(value = "获取所有课程衍生学习信息", response = ProblemActivity.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
     public ResponseEntity<Map<String, Object>> loadProblemExtension(UnionUser unionUser, @PathVariable Integer problemId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -332,14 +332,14 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/card/list", method = RequestMethod.GET)
-    @ApiOperation("获取所有课程卡片信息")
+    @ApiOperation(value = "获取所有课程卡片信息", response = ProblemCard.class)
     public ResponseEntity<Map<String, Object>> loadCardList(UnionUser unionUser) {
         List<ProblemCard> problemCards = problemService.loadProblemCardsList(unionUser.getId());
         return WebUtils.result(problemCards);
     }
 
     @RequestMapping(value = "/cards/{planId}", method = RequestMethod.GET)
-    @ApiOperation("获取某个课程的卡片")
+    @ApiOperation(value = "获取某个课程的卡片", response = CardCollectionDto.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "planId", value = "计划id")})
     public ResponseEntity<Map<String, Object>> loadProblemCards(UnionUser unionUser, @PathVariable Integer planId) {
         Assert.notNull(unionUser, "登录用户不能为空");
@@ -350,7 +350,6 @@ public class ProblemController {
         } else {
             CardCollectionDto dto = new CardCollectionDto();
             if (essenceCards.getLeft() != null) {
-                // TODO: 待验证
                 List<RiseMember> riseMembers = riseMemberManager.member(unionUser.getId());
                 dto.setIsRiseMember(CollectionUtils.isNotEmpty(riseMembers));
                 dto.setProblemId(essenceCards.getLeft().getId());
@@ -362,9 +361,10 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/card/{problemId}/{chapterId}", method = RequestMethod.GET)
-    @ApiOperation("获取某一张卡片的base64信息")
+    @ApiOperation(value = "获取某一张卡片的base64信息", response = String.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id"),
-            @ApiImplicitParam(name = "chapterId", value = "章id")})public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(UnionUser unionUser,
+            @ApiImplicitParam(name = "chapterId", value = "章id")})
+    public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(UnionUser unionUser,
                                                                       @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(unionUser, "登录用户不能为空");
 
@@ -377,7 +377,7 @@ public class ProblemController {
     }
 
     @RequestMapping(value = "/get/my/{problemId}", method = RequestMethod.GET)
-    @ApiOperation("获取我的课程计划")
+    @ApiOperation(value = "获取我的课程计划", response = ImprovementPlan.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
     public ResponseEntity<Map<String, Object>> getMyProblem(UnionUser unionUser, @PathVariable Integer problemId) {
         Assert.notNull(unionUser, "登录用户不能为空");

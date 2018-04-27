@@ -1,19 +1,30 @@
 package com.iquanwai.platon.biz.po;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
  * Created by justin on 2018/4/11.
  */
 @Data
+@ApiModel("课前预习")
 public class ProblemPreview {
     private int id;
-    private String description; //内容
-    private Integer problemScheduleId; //章节id
-    private Integer audioId; // 语音id
-    private Integer videoId; //视频id
-    private String videoUrl; //视频url
-    private String videoPoster; //非db字段 视频第一帧
-    private String audioWords; //非db字段 语音文字
-    private String audio; //非db字段 语音链接
+    @ApiModelProperty("内容")
+    private String description; 
+    @ApiModelProperty("章节id")
+    private Integer problemScheduleId; 
+    @ApiModelProperty("语音id")
+    private Integer audioId;  
+    @ApiModelProperty("视频id")
+    private Integer videoId; 
+    @ApiModelProperty("视频url")
+    private String videoUrl; 
+    @ApiModelProperty("视频第一帧")
+    private String videoPoster;  
+    @ApiModelProperty("语音文字")
+    private String audioWords;  
+    @ApiModelProperty("语音链接")
+    private String audio;  
 }
