@@ -126,10 +126,10 @@ public class CardManagerImpl implements CardManager {
         headImg = ImageUtils.scaleByPercentage(headImg, 77, 77);
         headImg = ImageUtils.convertCircular(headImg);
         targetImage = ImageUtils.overlapImage(targetImage, headImg, 163, 78);
-        //TODO:转成StudyInfo
-        Integer learnedDay = 2;
-        Integer learnedKnowledge = 3;
-        Integer defeatPercent = 10;
+
+        Integer learnedDay = studyInfo.getLearnedDay();
+        Integer learnedKnowledge = studyInfo.getLearnedKnowledge();
+        Integer defeatPercent = studyInfo.getDefeatPercent();
 
         //绘制学习相关信息
         targetImage = ImageUtils.writeText(targetImage,118,285,learnedDay.toString(),font.deriveFont(Font.BOLD,30f), GREY);
@@ -155,10 +155,11 @@ public class CardManagerImpl implements CardManager {
                 targetImage = ImageUtils.writeText(targetImage,294-20*title.length()+40*j,496+i*53,title.substring(j,j+1),font.deriveFont(34f),GREY);
             }
         }
+        //绘制内容
 
         //昵称和日期
         targetImage = ImageUtils.writeText(targetImage,320,1002,"2018年4月24日",font.deriveFont(18f),GREY);
-        targetImage = ImageUtils.writeText(targetImage,320,1028,"曹飞扬",font.deriveFont(18f),GREY);
+        targetImage = ImageUtils.writeText(targetImage,320,1028,profile.getNickname(),font.deriveFont(18f),GREY);
 
         //二维码
         BufferedImage qrImage = loadQrImage(CARD_ACTIVITY + "_" + profile.getId() + "_" + problemId);

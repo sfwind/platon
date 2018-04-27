@@ -389,7 +389,7 @@ public class ProblemController {
         studyInfo.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
         studyInfo.setDefeatPercent(customerService.calSyncDefeatPercent(profileId,problemId));
 
-        String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId,null);
+        String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId,studyInfo);
         if (essenceCardImgBase64 != null) {
             return WebUtils.result(essenceCardImgBase64);
         } else {

@@ -313,13 +313,14 @@ public class ImprovementPlanDao extends PracticeDBUtil {
         return Lists.newArrayList();
     }
 
-    public List<ImprovementPlan> loadPlansByOpenDate(Integer problemId,String openDate){
+    public List<ImprovementPlan> loadPlansByStartDate(Integer problemId,String startDate){
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ImprovementPlan WHERE ProblemId = ? AND OpenDate like ? AND DEL = 0";
-        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<ImprovementPlan>(ImprovementPlan.class);
-
+        String sql = "SELECT * FROM ImprovementPlan WHERE ProblemId = ? AND StartDate like ? AND DEL = 0";
+        ResultSetHandler<List<ImprovementPlan>> h = new BeanListHandler<>(ImprovementPlan.class);
         try {
-           return runner.query(sql,h,problemId,"%"+openDate+"%");
+            logger.info("problemId:"+problemId);
+            logger.info("startDate:"+"'"+startDate+"%'");
+           return runner.query(sql,h,problemId,"'"+startDate+"%'");
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(),e);
         }
