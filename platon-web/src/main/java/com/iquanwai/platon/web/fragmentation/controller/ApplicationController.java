@@ -19,8 +19,6 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -37,7 +35,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/rise/practice/application")
 @Api(description = "应用题的请求处理类")
 public class ApplicationController {
-    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PracticeService practiceService;
     @Autowired

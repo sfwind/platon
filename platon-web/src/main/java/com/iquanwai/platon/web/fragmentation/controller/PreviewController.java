@@ -8,8 +8,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -27,7 +25,6 @@ import java.util.Map;
 @Api(description = "课前思考相关接口")
 @RequestMapping("/rise/practice/preview")
 public class PreviewController {
-    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PracticeService practiceService;
 

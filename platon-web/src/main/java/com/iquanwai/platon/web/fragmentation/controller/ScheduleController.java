@@ -12,8 +12,6 @@ import com.iquanwai.platon.web.fragmentation.dto.schedule.ScheduleInitDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -32,8 +30,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/rise/schedule")
 public class ScheduleController {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private BusinessPlanService businessPlanService;

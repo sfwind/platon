@@ -21,8 +21,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -40,7 +38,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/rise/problem")
 @Api(description = "课程相关的请求处理类")
 public class ProblemController {
-    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private ProblemService problemService;
     @Autowired

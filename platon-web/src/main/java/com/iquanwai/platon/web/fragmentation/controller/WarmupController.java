@@ -105,7 +105,7 @@ public class WarmupController {
         return WebUtils.result(warmupPracticeDto);
     }
 
-    @RequestMapping("/analysis/priority/{practicePlanId}")
+    @RequestMapping(value = "/analysis/priority/{practicePlanId}", method = RequestMethod.GET)
     @ApiOperation(value = "加载选择题的评论", response = WarmupDiscussDistrict.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> loadWarmUpPriorityDiscuss(UnionUser unionUser, @PathVariable Integer practicePlanId) {

@@ -8,8 +8,6 @@ import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.PrizeCardDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +27,6 @@ public class PrizeCardController {
     private PrizeCardService prizeCardService;
     @Autowired
     private AccountService accountService;
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @RequestMapping("/unreceived/cards")
     public ResponseEntity<Map<String, Object>> loadUnreceivedPrizeCard(UnionUser unionUser) {

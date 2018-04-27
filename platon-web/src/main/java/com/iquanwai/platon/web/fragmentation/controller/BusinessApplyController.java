@@ -10,8 +10,6 @@ import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.dto.ApplyQuestionGroupDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +27,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rise/business")
 public class BusinessApplyController {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private OperationLogService operationLogService;

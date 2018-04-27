@@ -7,6 +7,7 @@ import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
+import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
@@ -19,6 +20,10 @@ import com.iquanwai.platon.web.fragmentation.dto.SectionProgressDto;
 import com.iquanwai.platon.web.personal.dto.PlanDto;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -36,10 +41,10 @@ import java.util.stream.Collectors;
 
 /**
  * Created by justin on 16/12/8.
- * 训练计划相关的请求处理类
  */
 @RestController
 @RequestMapping("/rise/plan")
+@Api(description = "训练计划相关的请求处理类")
 public class PlanController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Autowired
@@ -65,6 +70,8 @@ public class PlanController {
      * 这里不修改旧的学习计划的状态<br/>
      */
     @RequestMapping(value = "/choose/problem/{problemId}", method = RequestMethod.POST)
+    @ApiOperation(value = "生成学习计划", response = Integer.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "problemId", value = "课程id")})
     public ResponseEntity<Map<String, Object>> createPlan(UnionUser unionUser, @PathVariable Integer problemId) {
         Assert.notNull(unionUser, "用户不能为空");
         List<ImprovementPlan> improvementPlans = planService.getPlans(unionUser.getId());
