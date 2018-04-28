@@ -174,10 +174,10 @@ public class CardManagerImpl implements CardManager {
         targetImage = ImageUtils.overlapImage(targetImage, qrImage, 324, 1185);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageUtils.writeToOutputStream(targetImage, "png", outputStream);
+        ImageUtils.writeToOutputStream(targetImage, "jpg", outputStream);
         BASE64Encoder encoder = new BASE64Encoder();
         try {
-            return "data:image/png;base64," + encoder.encode(outputStream.toByteArray());
+            return "data:image/jpg;base64," + encoder.encode(outputStream.toByteArray());
         } finally {
             try {
                 outputStream.close();
