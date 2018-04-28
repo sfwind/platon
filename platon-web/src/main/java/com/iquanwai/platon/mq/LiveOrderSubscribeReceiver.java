@@ -54,7 +54,7 @@ public class LiveOrderSubscribeReceiver {
         LivesFlow livesFlow = livesFlowDao.load(LivesFlow.class, liveId);
 
         String customerMessage = "Hi，欢迎来到圈外商学院。\n" +
-                "本期大咖直播课，<a href='" + ConfigUtils.domainName() + "/rise/static/live/order?liveId=" + livesFlow.getId() + "'>点击领取</a>。\n";
+                "本期大咖直播课，<a href='" + ConfigUtils.domainName() + "/rise/static/home/live/order?liveId=" + livesFlow.getId() + "'>点击领取</a>。\n";
 
         customerMessageService.sendCustomerMessage(openId, customerMessage, Constants.WEIXIN_MESSAGE_TYPE.TEXT);
     }
