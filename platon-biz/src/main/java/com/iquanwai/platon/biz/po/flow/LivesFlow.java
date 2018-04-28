@@ -19,6 +19,8 @@ public class LivesFlow extends FlowData {
     private String name;
     @ApiModelProperty("主讲人")
     private String speaker;
+    @ApiModelProperty("主讲人简介")
+    private String speakerIntro;
     @ApiModelProperty("主讲人描述")
     private String speakerDesc;
     @ApiModelProperty("直播描述")
