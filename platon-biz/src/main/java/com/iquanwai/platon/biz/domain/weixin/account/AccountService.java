@@ -149,15 +149,6 @@ public interface AccountService {
      */
     Boolean closeLearningNotify(Integer profileId);
 
-    /**
-     * 是否有对应status
-     *
-     * @param profileId 用户id
-     * @param statusId  statusId
-     * @return 是否有对应statusId
-     */
-    Boolean hasStatusId(Integer profileId, Integer statusId);
-
 
     /**
      * 创建关注推送消息

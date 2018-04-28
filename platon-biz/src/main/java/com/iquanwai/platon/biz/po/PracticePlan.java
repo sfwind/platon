@@ -1,21 +1,32 @@
 package com.iquanwai.platon.biz.po;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
  * Created by justin on 16/12/4.
  */
 @Data
+@ApiModel("练习model")
 public class PracticePlan {
     private int id;
-    private Integer planId; //训练id
+    @ApiModelProperty("训练id")
+    private Integer planId; //
+    @ApiModelProperty("训练id")
     private Integer type; //题目类型（0-课程介绍 1-选择题，2-选择题，11-应用题，12-应用题，13-案例题, 21-小目标，31-知识理解，32-知识回顾）
+    @ApiModelProperty("训练id")
     private String practiceId; //练习id,多个时用逗号隔开
+    @ApiModelProperty("训练id")
     private Boolean unlocked; // 是否解锁
+    @ApiModelProperty("训练id")
     private Integer series; // 节号
+    @ApiModelProperty("训练id")
     private Integer sequence; //节内顺序
+    @ApiModelProperty("训练id")
     private Integer knowledgeId; //知识点id
-    private Integer status; //题目状态（0-未完成，1-已完成）
+    @ApiModelProperty("题目状态（0-未完成，1-已完成）")
+    private Integer status; //
 
 
     public static final int INTRODUCTION = 20; // 课程介绍

@@ -16,6 +16,8 @@ public class MemberType {
     private Double fee; // 会员费用
     private String description; // 描述
     private Integer openMonth; // 会员时长
+    private Double initPrice; //初始费用
+    private Boolean purchaseSwitch; //开关
     private String startTime; // 开启时间 非DB字段
     private String endTime; // 结束时间 非DB字段
 
@@ -25,6 +27,8 @@ public class MemberType {
         temp.setFee(this.fee);
         temp.setName(this.name);
         temp.setDescription(this.description);
+        temp.setInitPrice(this.initPrice);
+        temp.setPurchaseSwitch(this.purchaseSwitch);
         temp.setOpenMonth(this.openMonth);
         temp.setStartTime(this.startTime);
         temp.setEndTime(this.endTime);

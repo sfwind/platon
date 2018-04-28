@@ -1,6 +1,7 @@
 package com.iquanwai.platon.biz.domain.fragmentation.plan;
 
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -57,16 +58,6 @@ public interface ProblemService {
     void gradeProblem(Integer problemId, Integer profileId, List<ProblemScore> problemScores);
 
     /**
-     * 更新 ProblemExtension 数据
-     */
-    Integer insertProblemExtension(ProblemExtension problemExtension);
-
-    /**
-     * 提交 ProblemActivity 数据
-     */
-    Integer insertProblemActivity(ProblemActivity problemActivity);
-
-    /**
      * 根据 ProblemId 获取 ProblemExtension 信息
      */
     ProblemExtension loadProblemExtensionByProblemId(Integer problemId);
@@ -87,22 +78,11 @@ public interface ProblemService {
     Pair<Problem, List<EssenceCard>> loadProblemCardsByPlanId(Integer planId);
 
     /**
-     * 获得已经完成的知识卡的数量
-     * @param profileId
-     * @return
-     */
-    Integer getFinishedCards(Integer profileId);
-
-    /**
      * 获取精华卡图
      */
-    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId);
+    String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, StudyInfo studyInfo);
 
     boolean hasCollectedProblem(Integer profileId, Integer problemId);
-
-    int collectProblem(Integer profileId, Integer problemId);
-
-    int disCollectProblem(Integer profileId, Integer problemId);
 
     List<Problem> loadProblemCollections(Integer profileId);
 

@@ -26,20 +26,6 @@ public interface ProblemScheduleManager {
     Integer getProblemType(Integer problemId, Integer profileId);
 
     /**
-     * 获取当前学习月份主修课 ProblemId
-     * @param profileId 用户 id
-     */
-    Integer getLearningMajorProblemId(Integer profileId);
-
-    /**
-     * 获取当前学习月份主修课 ProblemId
-     * @param profileId 用户 id
-     * @param year 年份
-     * @param month 月份
-     */
-    Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month);
-
-    /**
      * 获取当前年月的主修课程
      * @param profileId 学员 id
      * @param memberTypeId 身份 id

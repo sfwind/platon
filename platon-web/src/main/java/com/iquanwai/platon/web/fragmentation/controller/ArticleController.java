@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by 三十文
  */
-@Api("富文本相关")
+@Api(description = "富文本相关api")
 @RestController
 @RequestMapping("/rise/article")
 public class ArticleController {
@@ -27,7 +27,7 @@ public class ArticleController {
     @Autowired
     private RichTextService richTextService;
 
-    @ApiOperation("获取富文本")
+    @ApiOperation(value = "获取富文本", response = RichText.class)
     @RequestMapping(value = "/load", method = RequestMethod.GET)
     @ApiImplicitParams({@ApiImplicitParam(name="id", value = "文章id")})
     public ResponseEntity<Map<String, Object>> loadRichText(@RequestParam("id") String id) {

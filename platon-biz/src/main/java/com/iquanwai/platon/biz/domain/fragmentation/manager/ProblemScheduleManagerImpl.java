@@ -7,7 +7,6 @@ import com.iquanwai.platon.biz.dao.fragmentation.*;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.CustomerStatus;
-import com.iquanwai.platon.biz.util.ConfigUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +24,11 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private MonthlyCampScheduleDao monthlyCampScheduleDao;
-    @Autowired
     private UserProblemScheduleDao userProblemScheduleDao;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ProblemScheduleDao problemScheduleDao;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
     @Autowired
     private RiseMemberManager riseMemberManager;
     @Autowired
@@ -107,54 +102,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
     }
 
     @Override
-    public Integer getLearningMajorProblemId(Integer profileId) {
-        // 针对不同身份的学员，查看当前主修课的 ProblemId
-        return getMajorProblemIdByYearAndMonth(profileId, ConfigUtils.getLearningYear(), ConfigUtils.getLearningMonth());
-    }
-
-    @Override
-    public Integer getMajorProblemIdByYearAndMonth(Integer profileId, Integer year, Integer month) {
-        // 针对不同身份的学员，查看当前主修课的 ProblemId
-        // TODO: 杨仁
-        RiseMember riseMember = riseMemberDao.loadValidRiseMember(profileId);
-        if (riseMember != null && riseMember.getMemberTypeId() != null) {
-            switch (riseMember.getMemberTypeId()) {
-                case RiseMember.CAMP:
-                    List<MonthlyCampSchedule> monthlyCampSchedules = monthlyCampScheduleDao.loadAll();
-                    MonthlyCampSchedule campMajorCampSchedule = monthlyCampSchedules.stream()
-                            .filter(monthlyCampSchedule -> month.equals(monthlyCampSchedule.getMonth()))
-                            .filter(monthlyCampSchedule -> year.equals(monthlyCampSchedule.getYear()))
-                            .filter(monthlyCampSchedule -> MonthlyCampSchedule.MAJOR_TYPE == monthlyCampSchedule.getType())
-                            .findAny()
-                            .orElse(null);
-                    if (campMajorCampSchedule != null) {
-                        return campMajorCampSchedule.getProblemId();
-                    }
-                    break;
-                case RiseMember.HALF:
-                case RiseMember.ANNUAL:
-                case RiseMember.COURSE:
-                    break;
-                case RiseMember.ELITE:
-                case RiseMember.HALF_ELITE:
-                    List<CourseSchedule> courseSchedules = courseScheduleDao.getAllScheduleByProfileId(profileId);
-                    CourseSchedule riseMemberCourseSchedule = courseSchedules.stream()
-                            .filter(courseSchedule -> year.equals(courseSchedule.getYear()))
-                            .filter(courseSchedule -> month.equals(courseSchedule.getMonth()))
-                            .filter(courseSchedule -> CourseSchedule.Type.MAJOR == courseSchedule.getType())
-                            .findAny().orElse(null);
-                    if (riseMemberCourseSchedule != null) {
-                        return riseMemberCourseSchedule.getProblemId();
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        return null;
-    }
-
-    @Override
     public List<Integer> getMajorProblemIds(Integer profileId, Integer memberTypeId, Integer year, Integer month) {
         List<CourseSchedule> majorCourseSchedules = courseScheduleDao.loadAllMajorScheduleByProfileId(profileId);
         List<Integer> majorProblemIds = majorCourseSchedules.stream()
@@ -209,9 +156,6 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             chapter.setName(chapterName(sectionList));
             chapter.setSections(sectionList);
             chapter.setChapter(chapterSequence);
-            if (CollectionUtils.isNotEmpty(sectionList)) {
-                chapter.setIntegrated(Knowledge.isReview(sectionList.get(0).getKnowledgeId()));
-            }
             chapterList.add(chapter);
         });
 

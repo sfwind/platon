@@ -72,18 +72,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
     @Override
-    public Integer createTeamLearningPlan(Integer profileId) {
-        MonthlyCampConfig monthlyCampConfig = cacheService.loadMonthlyCampConfig();
-        Date startDate = monthlyCampConfig.getOpenDate() != null && new Date().before(monthlyCampConfig.getOpenDate()) ? monthlyCampConfig.getOpenDate() : new Date();
-        ImprovementPlan plan = improvementPlanDao.loadPlanByProblemId(profileId, TEAM_LEARNING_PROBLEM_ID);
-        if (plan != null) {
-            return this.magicUnlockProblem(profileId, TEAM_LEARNING_PROBLEM_ID, DateUtils.afterDays(startDate, PROBLEM_MAX_LENGTH));
-        } else {
-            return this.generatePlan(profileId, TEAM_LEARNING_PROBLEM_ID, TEAM_LEARNING_MAX_SERIES, startDate, DateUtils.afterDays(startDate, 7));
-        }
-    }
-
-    @Override
     public Integer generatePlan(Integer profileId, Integer problemId, Integer maxSeries, Date startDate, Date closeDate) {
         Assert.notNull(profileId, "profileId不能为空");
         Problem problem = cacheService.getProblem(problemId);
@@ -408,8 +396,6 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
         improvementPlan.setTotalSeries(length);
         improvementPlan.setCurrentSeries(1);
         improvementPlan.setStartDate(startDate);
-        improvementPlan.setEndDate(null);
-
         improvementPlan.setRequestCommentCount(profile.getRequestCommentCount());
         improvementPlan.setCloseDate(closeDate);
         improvementPlan.setRiseMember(profile.getRiseMember() != Constants.RISE_MEMBER.FREE);

@@ -330,8 +330,6 @@ public class PracticeServiceImpl implements PracticeService {
                             .max(Comparator.comparingInt(PracticePlan::getSequence))
                             // 判断下这道题是不是最后一道
                             .ifPresent(item -> applicationPractice.setIsLastApplication(item.getPracticeId().equals(id.toString())));
-                    // 是不是base
-                    applicationPractice.setIsBaseApplication(targetPracticePlan.getSequence() == 3);
                 });
         return new MutablePair<>(applicationPractice, isNewApplication);
     }
@@ -613,6 +611,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
             operationLogService.trace(profileId, "replyCommentApplication", () -> {
                 List<RiseMember> riseMembers = riseMemberManager.member(load.getProfileId());
+                //TODO:子康
                 RiseClassMember riseClassMember = riseClassMemberDao.loadLatestRiseClassMember(load.getProfileId());
                 Profile repliesProfile = accountService.getProfile(load.getProfileId());
                 OperationLogService.Prop prop = OperationLogService.props();

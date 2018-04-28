@@ -1,5 +1,6 @@
 package com.iquanwai.platon.biz.po;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -10,23 +11,38 @@ import java.util.Date;
 @Data
 public abstract class AbstractComment {
     private int id;
-    private Integer repliedId;    //被回复的讨论id
-    private String comment;    //讨论内容
-    private Integer profileId; //用户id
-    private Date addTime;    //回复时间
-    private Integer priority; //排序优先级,1-大咖,圈外工作人员,助教,0-普通人
-    private Integer repliedProfileId;    //被回复人id
-    private String repliedComment; //回复的讨论
-    private Integer del; //是否删除(0-未删除，1-已删除)
-    private Integer repliedDel; //被回复的评论是否删除(0-未删除，1-已删除)
-
-    private String repliedName; //回复讨论的发表人名字 非db字段
-    private String name;  //回复人名字 非db字段
-    private String avatar;//回复人头像 非db字段
-    private String discussTime;//回复时间标准化格式 非db字段
-    private Integer role; //回复人角色 非db字段
-    private String signature; //回复人签名 非db字段
-    private Boolean isMine; //是否是本人的回复 非db字段
-
-    private Integer referenceId; // 引用id 是db字段的映射，减少代码量
+    @ApiModelProperty("被回复的讨论id")
+    private Integer repliedId;    
+    @ApiModelProperty("讨论内容")
+    private String comment;    
+    @ApiModelProperty("用户id")
+    private Integer profileId; 
+    @ApiModelProperty("回复时间")
+    private Date addTime;    
+    @ApiModelProperty("排序优先级")
+    private Integer priority; 
+    @ApiModelProperty("被回复人id")
+    private Integer repliedProfileId;    
+    @ApiModelProperty("回复的讨论")
+    private String repliedComment; 
+    @ApiModelProperty("是否删除(0-未删除，1-已删除)")
+    private Integer del; 
+    @ApiModelProperty("被回复的评论是否删除(0-未删除，1-已删除)")
+    private Integer repliedDel; 
+    @ApiModelProperty("回复讨论的发表人名字")
+    private String repliedName;
+    @ApiModelProperty("回复人名字")
+    private String name;
+    @ApiModelProperty("回复人头像")
+    private String avatar;
+    @ApiModelProperty("回复时间标准化格式")
+    private String discussTime;
+    @ApiModelProperty("回复人角色")
+    private Integer role;
+    @ApiModelProperty("回复人签名")
+    private String signature;
+    @ApiModelProperty("是否是本人的回复")
+    private Boolean isMine;
+    @ApiModelProperty("引用id")
+    private Integer referenceId;
 }

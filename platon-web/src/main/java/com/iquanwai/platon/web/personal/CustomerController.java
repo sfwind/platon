@@ -5,39 +5,19 @@ import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.member.RiseMemberTypeRepoImpl;
 import com.iquanwai.platon.biz.domain.fragmentation.certificate.CertificateService;
-import com.iquanwai.platon.biz.domain.fragmentation.event.EventWallService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemCard;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
-import com.iquanwai.platon.biz.domain.fragmentation.plan.StudyService;
 import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.ImprovementPlan;
-import com.iquanwai.platon.biz.po.Problem;
-import com.iquanwai.platon.biz.po.RiseCertificate;
-import com.iquanwai.platon.biz.po.RiseMember;
+import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
-import com.iquanwai.platon.web.personal.dto.AreaDto;
-import com.iquanwai.platon.web.personal.dto.Base64ConvertDto;
-import com.iquanwai.platon.web.personal.dto.CertificateDto;
-import com.iquanwai.platon.web.personal.dto.CertificateListDto;
-import com.iquanwai.platon.web.personal.dto.CouponDto;
-import com.iquanwai.platon.web.personal.dto.CustomerInfoDto;
-import com.iquanwai.platon.web.personal.dto.NicknameDto;
-import com.iquanwai.platon.web.personal.dto.PlanDto;
-import com.iquanwai.platon.web.personal.dto.PlanListDto;
-import com.iquanwai.platon.web.personal.dto.ProfileDto;
-import com.iquanwai.platon.web.personal.dto.RegionDto;
-import com.iquanwai.platon.web.personal.dto.RiseMemberStatusDto;
-import com.iquanwai.platon.web.personal.dto.UserStudyDto;
-import com.iquanwai.platon.web.personal.dto.ValidCodeDto;
-import com.iquanwai.platon.web.personal.dto.WeixinDto;
+import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.resolver.UnionUserService;
@@ -55,13 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -90,15 +64,11 @@ public class CustomerController {
     @Autowired
     private RiseMemberManager riseMemberManager;
     @Autowired
-    private EventWallService eventWallService;
-    @Autowired
     private CertificateService certificateService;
     @Autowired
     private CustomerService customerService;
     @Autowired
     private UnionUserService unionUserService;
-    @Autowired
-    private StudyService studyService;
     @Autowired
     private UserInfoService userInfoService;
     @Autowired
@@ -139,7 +109,7 @@ public class CustomerController {
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         userStudyDto.setMemberId(profile.getMemberId());
 
-        userStudyDto.setIsProMember(riseMemberManager.proMember(profileId)!=null);
+        userStudyDto.setIsProMember(riseMemberManager.proMember(profileId) != null);
 
         userStudyDto.setShowShare(CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId)));
 
@@ -150,20 +120,11 @@ public class CustomerController {
         List<Coupon> coupons = accountService.loadCoupons(profileId);
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-        List<MemberType> memberTypes  = riseMemberTypeRepo.loadAll();
-        List<String> memberExpiredDate = generateMemberExpiredDate(riseMembers,memberTypes);
+        List<MemberType> memberTypes = riseMemberTypeRepo.loadAll();
+        List<String> memberExpiredDate = generateMemberExpiredDate(riseMembers, memberTypes);
         userStudyDto.setMemberExpiredDate(memberExpiredDate);
 
         return WebUtils.result(userStudyDto);
-    }
-
-    @RequestMapping(value = "/event/list", method = RequestMethod.GET)
-    @ApiOperation("查询活动列表")
-    public ResponseEntity<Map<String, Object>> getEventList(UnionUser unionUser) {
-        Assert.notNull(unionUser, "用户不能为空");
-        List<EventWall> eventWall = eventWallService.getEventWall(unionUser.getId());
-
-        return WebUtils.result(eventWall);
     }
 
     @RequestMapping(value = "/account", method = RequestMethod.GET)
@@ -260,7 +221,7 @@ public class CustomerController {
         BeanUtils.copyProperties(profileDto, userInfo);
         userInfo.setReceiverMobile(profileDto.getMobileNo());
         userInfo.setProfileId(unionUser.getId());
-        customerService.updateNickName(unionUser.getId(),profileDto.getNickName());
+        customerService.updateNickName(unionUser.getId(), profileDto.getNickName());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
@@ -480,7 +441,7 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> riseMember(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         List<RiseMember> riseMember = riseMemberManager.member(unionUser.getId());
-        //TODO: 待验证
+
         if (CollectionUtils.isNotEmpty(riseMember)) {
             return WebUtils.result(riseMember.get(0).simple());
         } else {
@@ -493,11 +454,11 @@ public class CustomerController {
     public ResponseEntity<Map<String, Object>> notifyExpire(UnionUser unionUser) {
         Assert.notNull(unionUser, "用户不能为空");
         RiseMember riseMember = new RiseMember();
-        boolean expiredRiseMemberInSevenDays = riseMemberManager.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
+        boolean expiredRiseMemberInSomeDays = riseMemberManager.expiredRiseMemberInSomeDays(unionUser.getId(), 15);
         boolean expiredRiseMember = riseMemberManager.expiredRiseMember(unionUser.getId());
-        riseMember.setExpiredInSevenDays(expiredRiseMemberInSevenDays);
+        riseMember.setExpiredInSevenDays(expiredRiseMemberInSomeDays);
         riseMember.setExpired(expiredRiseMember);
-        riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSevenDays);
+        riseMember.setShowGlobalNotify(expiredRiseMember || expiredRiseMemberInSomeDays);
         return WebUtils.result(riseMember);
     }
 
@@ -553,6 +514,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/get/certificate", method = RequestMethod.GET)
+    @ApiOperation("获取用户证书")
     public ResponseEntity<Map<String, Object>> getCertificates(UnionUser unionUser) {
         List<RiseCertificate> certificateList = certificateService.getCertificates(unionUser.getId());
 
@@ -568,8 +530,12 @@ public class CustomerController {
             CertificateDto certificateDto = new CertificateDto();
             BeanUtils.copyProperties(riseCertificate, certificateDto);
             certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
-
-            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            List<Problem> problems1;
+            if (riseCertificate.getProblemId() != null) {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemId().equals(problem.getId())).collect(Collectors.toList());
+            } else {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            }
             if (problems1.size() > 0) {
                 certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
             } else {
@@ -582,8 +548,12 @@ public class CustomerController {
             CertificateDto certificateDto = new CertificateDto();
             BeanUtils.copyProperties(riseCertificate, certificateDto);
             certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
-
-            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            List<Problem> problems1;
+            if (riseCertificate.getProblemId() != null) {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemId().equals(problem.getId())).collect(Collectors.toList());
+            } else {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            }
             if (problems1.size() > 0) {
                 certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
             } else {
@@ -597,15 +567,6 @@ public class CustomerController {
         certificateListDto.setGradeDto(gradeDtos);
 
         return WebUtils.result(certificateListDto);
-    }
-
-    @RequestMapping(value = "/get/countdown/status", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> loadCurrentRiseMember(UnionUser unionUser) {
-        RiseMemberStatusDto riseMemberStatusDto = new RiseMemberStatusDto();
-        Pair<Boolean, Integer> result = studyService.shouldGoCountDownPage(unionUser.getId());
-        riseMemberStatusDto.setGoCountDownPage(result.getLeft());
-        riseMemberStatusDto.setMemberTypeId(result.getRight());
-        return WebUtils.result(riseMemberStatusDto);
     }
 
     @RequestMapping(value = "/feedback", method = RequestMethod.POST)
@@ -643,17 +604,17 @@ public class CustomerController {
     }
 
 
-    private List<String> generateMemberExpiredDate(List<RiseMember> riseMembers,List<MemberType> memberTypes){
-        if(CollectionUtils.isEmpty(riseMembers)){
+    private List<String> generateMemberExpiredDate(List<RiseMember> riseMembers, List<MemberType> memberTypes) {
+        if (CollectionUtils.isEmpty(riseMembers)) {
             return Lists.newArrayList();
         }
         List<String> expireMembers = Lists.newArrayList();
         riseMembers.forEach(riseMember -> {
             Integer memberTypeId = riseMember.getMemberTypeId();
-            if(memberTypeId!=null){
+            if (memberTypeId != null) {
                 MemberType memberType = memberTypes.stream().filter(memberType1 -> memberTypeId.equals(memberType1.getId())).findFirst().orElse(null);
-                if(memberType!=null){
-                    String expireMember = memberType.getDescription()+"截止日期： " + riseMember.getExpireDate();
+                if (memberType != null) {
+                    String expireMember = memberType.getDescription() + "截止日期： " + riseMember.getExpireDate();
                     expireMembers.add(expireMember);
                 }
             }

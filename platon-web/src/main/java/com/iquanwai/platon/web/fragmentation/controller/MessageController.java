@@ -15,8 +15,6 @@ import com.iquanwai.platon.web.fragmentation.dto.NotifyMessageDto;
 import com.iquanwai.platon.web.fragmentation.dto.RiseWorkCommentDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.util.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -43,7 +41,6 @@ public class MessageController {
     @Autowired
     private PracticeService practiceService;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
     private final static int MESSAGE_PER_PAGE = 20;
 
     @RequestMapping("/warmup/discuss/reply/{discussId}")

@@ -29,9 +29,7 @@ public class DiscussElement {
     private Boolean selfVoted;
     @ApiModelProperty("点赞总人数")
     private Integer voteCount;
-
-
-    // TODO 头衔图片链接
+    @ApiModelProperty("头衔图片链接")
     private String titleImageUrl;
 
 }

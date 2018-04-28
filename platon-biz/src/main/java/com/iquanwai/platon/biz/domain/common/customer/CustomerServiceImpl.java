@@ -2,7 +2,6 @@ package com.iquanwai.platon.biz.domain.common.customer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.iquanwai.platon.biz.dao.apply.BusinessSchoolApplicationDao;
 import com.iquanwai.platon.biz.dao.common.*;
 import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
@@ -13,15 +12,11 @@ import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.apply.BusinessSchoolApplication;
-import com.iquanwai.platon.biz.po.common.CustomerStatus;
 import com.iquanwai.platon.biz.po.common.Feedback;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.common.RiseUserLogin;
 import com.iquanwai.platon.biz.util.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +56,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private AnnounceDao announceDao;
     @Autowired
-    private CustomerStatusDao customerStatusDao;
-    @Autowired
-    private BusinessSchoolApplicationDao businessSchoolApplicationDao;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private PracticePlanDao practicePlanDao;
@@ -72,10 +63,6 @@ public class CustomerServiceImpl implements CustomerService {
     private AccountService accountService;
     @Autowired
     private ClassMemberDao classMemberDao;
-
-
-    // 申请通过 status id
-    private static final Integer PASS_STATUS_ID = 3;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -226,34 +213,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Pair<Boolean, Long> isAlertApplicationPassMessage(Integer profileId) {
-        CustomerStatus customerStatus = customerStatusDao.load(profileId, PASS_STATUS_ID);
-        Boolean notifyTag;
-        if (customerStatus == null) {
-            notifyTag = false;
-        } else {
-            // TODO: 待验证
-            List<Integer> memberTypes = Lists.newArrayList();
-            memberTypes.add(RiseMember.ELITE);
-            memberTypes.add(RiseMember.BUSINESS_THOUGHT);
-            List<RiseMember> riseMember = riseMemberDao.loadValidRiseMemberByMemberTypeId(profileId, memberTypes);
-            notifyTag = CollectionUtils.isNotEmpty(riseMember);
-        }
-        if (notifyTag) {
-            BusinessSchoolApplication businessSchoolApplication = businessSchoolApplicationDao.getLastVerifiedByProfileId(profileId);
-            if (businessSchoolApplication != null && DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).compareTo(new Date()) > 0) {
-                Long intervalLong = DateUtils.afterDays(businessSchoolApplication.getDealTime(), 1).getTime() -
-                        System.currentTimeMillis();
-                return new MutablePair<>(true, intervalLong);
-            } else {
-                return new MutablePair<>(false, null);
-            }
-        } else {
-            return new MutablePair<>(false, null);
-        }
-    }
-
-    @Override
     public Integer loadLearnedKnowledgesCount(Integer profileId) {
         List<ImprovementPlan> improvementPlanList = improvementPlanDao.loadUserAllPlans(profileId);
         List<Integer> planIds = improvementPlanList.stream().map(ImprovementPlan::getId).collect(Collectors.toList());
@@ -290,6 +249,53 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<RiseMember> riseMemberList = riseMemberDao.loadSyncRiseMembers(currentDate, riseMember.getMemberTypeId());
         List<Integer> profileIds = riseMemberList.stream().map(RiseMember::getProfileId).collect(Collectors.toList());
+
+        List<Profile> profiles = accountService.getProfiles(profileIds);
+
+        if (CollectionUtils.isEmpty(profiles)) {
+            logger.info("{}用户不存在同期同学，返回比例为100%", profileId);
+            return 100;
+        }
+
+        Long result = profiles.stream().filter(profile1 -> profile1.getPoint() == null || profile1.getPoint() <= point).count();
+        logger.info("超过人数为：" + result + ",总人数为：" + profiles.size());
+        int size = profiles.size();
+        double realPercent = result.intValue() * 1.0 / size;
+        Integer percent;
+        // 20%以下分布在0-60%的区间,20%以上分布在60%-100%区间
+        if (realPercent <= 0.2) {
+            percent = (int) ((realPercent * 5 - realPercent * realPercent * 10) * 100);
+            logger.info("计算出的比例为：" + percent + "%");
+        } else {
+            percent = (result.intValue() + size) * 100 / (size * 2);
+            logger.info("计算出的比例为：" + percent + "%");
+        }
+
+        return percent;
+    }
+
+    @Override
+    public Integer calSyncDefeatPercent(Integer profileId, Integer problemId) {
+
+        ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId,problemId);
+        if(improvementPlan == null){
+            logger.info("=============用户没有选择这门课==========");
+            return 0;
+        }
+        Profile profile = accountService.getProfile(profileId);
+        if (profile == null) {
+            logger.error("未找到{}用户，返回比例为0", profileId);
+            return 0;
+        }
+        Integer point = profile.getPoint();
+        if (point == 0) {
+            logger.info("{}用户得0分", profileId);
+            return 0;
+        }
+
+        String openDate = improvementPlan.getStartDate().toString().substring(0,7);
+        List<ImprovementPlan> improvementPlans = improvementPlanDao.loadPlansByStartDate(problemId,openDate);
+        List<Integer> profileIds = improvementPlans.stream().map(ImprovementPlan::getProfileId).collect(Collectors.toList());
 
         List<Profile> profiles = accountService.getProfiles(profileIds);
 

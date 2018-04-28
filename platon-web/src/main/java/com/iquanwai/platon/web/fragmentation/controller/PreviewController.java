@@ -8,8 +8,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -27,12 +25,11 @@ import java.util.Map;
 @Api(description = "课前思考相关接口")
 @RequestMapping("/rise/practice/preview")
 public class PreviewController {
-    private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PracticeService practiceService;
 
-    @RequestMapping("/start/{practicePlanId}")
-    @ApiOperation("加载课前思考")
+    @RequestMapping(value = "/start/{practicePlanId}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载课前思考", response = ProblemPreview.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> startPreview(UnionUser unionUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(unionUser, "用户不能为空");

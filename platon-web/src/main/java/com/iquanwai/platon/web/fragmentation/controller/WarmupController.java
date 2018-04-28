@@ -3,19 +3,21 @@ package com.iquanwai.platon.web.fragmentation.controller;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.*;
-import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.exception.AnswerException;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.WarmupPractice;
 import com.iquanwai.platon.biz.po.WarmupPracticeDiscuss;
 import com.iquanwai.platon.biz.po.WarmupSubmit;
-import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.biz.util.page.Page;
 import com.iquanwai.platon.web.fragmentation.dto.WarmupPracticeDto;
 import com.iquanwai.platon.web.resolver.LoginUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
  * 巩固练习相关的请求处理类
  */
 @RestController
+@Api(description = "选择题相关接口")
 @RequestMapping("/rise/practice/warmup")
 public class WarmupController {
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -40,13 +43,11 @@ public class WarmupController {
     @Autowired
     private PlanService planService;
     @Autowired
-    private OperationLogService operationLogService;
-    @Autowired
     private PracticeDiscussService practiceDiscussService;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
-    @RequestMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @ApiOperation(value = "获取某个选择题", response = WarmupPractice.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "id", value = "选择题id")})
     public ResponseEntity<Map<String, Object>> loadWarmup(LoginUser loginUser,
                                                           @PathVariable Integer id) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -56,32 +57,13 @@ public class WarmupController {
             return WebUtils.result("您还没有制定训练计划哦");
         }
         WarmupPractice warmupPractice = practiceService.getWarmupPractice(id);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("打开巩固练习")
-                .memo(id.toString());
-        operationLogService.log(operationLog);
+
         return WebUtils.result(warmupPractice);
     }
 
-    @RequestMapping("/start/{practicePlanId}")
-    public ResponseEntity<Map<String, Object>> startWarmup(LoginUser loginUser,
-                                                           @PathVariable Integer practicePlanId) {
-        Assert.notNull(loginUser, "用户不能为空");
-        List<WarmupPractice> warmupPracticeList = practiceService.getWarmupPractices(practicePlanId);
-        WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
-        warmupPracticeDto.setPractice(warmupPracticeList);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("打开巩固练习页")
-                .memo(practicePlanId.toString());
-        operationLogService.log(operationLog);
-        return WebUtils.result(warmupPracticeDto);
-    }
-
     @RequestMapping(value = "/answer/{practicePlanId}", method = RequestMethod.POST)
+    @ApiOperation(value = "回答选择题", response = WarmupResult.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> answer(LoginUser loginUser,
                                                       @PathVariable Integer practicePlanId,
                                                       @RequestBody WarmupPracticeDto warmupPracticeDto) {
@@ -96,16 +78,12 @@ public class WarmupController {
         }
         planService.checkPlanComplete(practicePlanId);
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("回答问题")
-                .memo(practicePlanId.toString());
-        operationLogService.log(operationLog);
         return WebUtils.result(warmupResult);
     }
 
-    @RequestMapping("/analysis/{practicePlanId}")
+    @RequestMapping(value = "/analysis/{practicePlanId}", method = RequestMethod.GET)
+    @ApiOperation(value = "获取选择题解析", response = WarmupPracticeDto.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> analysisWarmup(LoginUser loginUser,
                                                               @PathVariable Integer practicePlanId) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -123,16 +101,13 @@ public class WarmupController {
 
         WarmupPracticeDto warmupPracticeDto = new WarmupPracticeDto();
         warmupPracticeDto.setPractice(warmupPracticeList);
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("加载巩固练习解析页")
-                .memo(practicePlanId.toString());
-        operationLogService.log(operationLog);
+
         return WebUtils.result(warmupPracticeDto);
     }
 
-    @RequestMapping("/analysis/priority/{practicePlanId}")
+    @RequestMapping(value = "/analysis/priority/{practicePlanId}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载选择题的评论", response = WarmupDiscussDistrict.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> loadWarmUpPriorityDiscuss(UnionUser unionUser, @PathVariable Integer practicePlanId) {
         List<WarmupPractice> warmUpPracticeList = practiceService.getWarmupPractices(practicePlanId);
         List<Integer> questionIds = warmUpPracticeList.stream().map(WarmupPractice::getId).collect(Collectors.toList());
@@ -152,6 +127,8 @@ public class WarmupController {
     }
 
     @RequestMapping(value = "/analysis/priority/single/{warmupPracticeId}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载单个选择题的评论", response = WarmupDiscussDistrict.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "warmupPracticeId", value = "选择题id")})
     public ResponseEntity<Map<String, Object>> loadSingleWarmUpPriorityDiscuss(UnionUser unionUser, @PathVariable Integer warmupPracticeId) {
         WarmupDiscussDistrict warmupDiscussDistrict = practiceDiscussService.loadSingleWarmUpDiscuss(unionUser.getId(), warmupPracticeId);
         return WebUtils.result(warmupDiscussDistrict);
@@ -188,7 +165,9 @@ public class WarmupController {
         }
     }
 
-    @RequestMapping("/new/analysis/{practiceId}")
+    @RequestMapping(value = "/new/analysis/{practiceId}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载选择题解析", response = WarmupPractice.class)
+    @ApiImplicitParams({@ApiImplicitParam(name = "practiceId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> newAnalysisWarmup(LoginUser loginUser,
                                                                  @PathVariable Integer practiceId) {
         Assert.notNull(loginUser, "用户不能为空");
@@ -210,16 +189,13 @@ public class WarmupController {
         Map<Integer, List<WarmupComment>> discuss = practiceDiscussService.loadDiscuss(loginUser.getId(), questionIds, page);
         setDiscuss(warmupPracticeList, discuss);
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("打开巩固练习解析页")
-                .memo(practiceId.toString());
-        operationLogService.log(operationLog);
         return WebUtils.result(warmupPracticeList.get(0));
     }
 
-    @RequestMapping("/load/discuss/{warmupPracticeId}/{offset}")
+    @RequestMapping(value = "/load/discuss/{warmupPracticeId}/{offset}", method = RequestMethod.GET)
+    @ApiOperation(value = "分页加载评论", response = WarmupComment.class, responseContainer = "List")
+    @ApiImplicitParams({@ApiImplicitParam(name = "warmupPracticeId", value = "选择题id"),
+            @ApiImplicitParam(name = "offset", value = "分页")})
     public ResponseEntity<Map<String, Object>> loadMoreDiscuss(LoginUser loginUser,
                                                                @PathVariable Integer warmupPracticeId,
                                                                @PathVariable Integer offset) {
@@ -229,16 +205,11 @@ public class WarmupController {
         page.setPage(offset);
         List<WarmupComment> warmupComments = practiceDiscussService.loadDiscuss(loginUser.getId(), warmupPracticeId, page);
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("获取讨论")
-                .memo(warmupPracticeId.toString());
-        operationLogService.log(operationLog);
         return WebUtils.result(warmupComments);
     }
 
     @RequestMapping(value = "/discuss", method = RequestMethod.POST)
+    @ApiOperation("评论")
     public ResponseEntity<Map<String, Object>> discuss(LoginUser loginUser, @RequestBody WarmupPracticeDiscuss discussDto) {
         Assert.notNull(loginUser, "用户不能为空");
 
@@ -250,27 +221,17 @@ public class WarmupController {
         practiceDiscussService.discuss(loginUser.getId(), discussDto.getReferenceId(),
                 discussDto.getComment(), discussDto.getRepliedId());
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("讨论")
-                .memo(discussDto.getReferenceId().toString());
-        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 
     @RequestMapping(value = "/delete/comment/{commentId}", method = RequestMethod.POST)
+    @ApiOperation("删除评论")
+    @ApiImplicitParams({@ApiImplicitParam(name = "commentId", value = "评论id")})
     public ResponseEntity<Map<String, Object>> deleteComment(LoginUser loginUser, @PathVariable Integer commentId) {
         Assert.notNull(loginUser, "用户不能为空");
 
         practiceDiscussService.deleteComment(commentId);
 
-        OperationLog operationLog = OperationLog.create().openid(loginUser.getOpenId())
-                .module("训练")
-                .function("巩固练习")
-                .action("删除讨论")
-                .memo(commentId.toString());
-        operationLogService.log(operationLog);
         return WebUtils.success();
     }
 }

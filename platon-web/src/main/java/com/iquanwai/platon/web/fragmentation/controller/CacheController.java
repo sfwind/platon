@@ -5,11 +5,14 @@ import com.iquanwai.platon.biz.util.rabbitmq.RabbitMQPublisher;
 import com.iquanwai.platon.mq.CacheReloadReceiver;
 import com.iquanwai.platon.mq.MonthlyCampReloadReceiver;
 import com.iquanwai.platon.web.util.WebUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +24,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/rise/cache")
+@Api(description = "缓存刷新api")
 public class CacheController {
     private RabbitMQPublisher rabbitMQPublisher;
     private RabbitMQPublisher monthlyCampRabbitMQPublisher;
@@ -36,7 +40,8 @@ public class CacheController {
         monthlyCampRabbitMQPublisher = rabbitMQFactory.initFanoutPublisher(MonthlyCampReloadReceiver.TOPIC);
     }
 
-    @RequestMapping("/reload")
+    @RequestMapping(value = "/reload", method = RequestMethod.GET)
+    @ApiOperation("刷新课程数据")
     public ResponseEntity<Map<String, Object>> reload() {
         try {
             rabbitMQPublisher.publish("reload");
@@ -47,7 +52,8 @@ public class CacheController {
         return WebUtils.error("reload cache");
     }
 
-    @RequestMapping("/reload/region")
+    @RequestMapping(value = "/reload/region", method = RequestMethod.GET)
+    @ApiOperation("刷新地区信息")
     public ResponseEntity<Map<String, Object>> reloadRegion() {
         try {
             rabbitMQPublisher.publish("region");
@@ -58,18 +64,8 @@ public class CacheController {
         return WebUtils.error("reload region");
     }
 
-    @RequestMapping("/reload/member")
-    public ResponseEntity<Map<String, Object>> reloadMember() {
-        try {
-            rabbitMQPublisher.publish("member");
-            return WebUtils.success();
-        } catch (Exception e) {
-            logger.error("reload member", e);
-        }
-        return WebUtils.error("reload member");
-    }
-
-    @RequestMapping("/reload/camp")
+    @RequestMapping(value = "/reload/camp", method = RequestMethod.GET)
+    @ApiOperation("刷新专项课售卖配置")
     public ResponseEntity<Map<String, Object>> reloadMonthlyCampConfig() {
         try {
             monthlyCampRabbitMQPublisher.publish("PurchaseConfigReload");
@@ -80,7 +76,8 @@ public class CacheController {
         return WebUtils.error("reload config error");
     }
 
-    @RequestMapping("/reload/school/friend")
+    @RequestMapping(value = "/reload/school/friend", method = RequestMethod.GET)
+    @ApiOperation("刷新校友录")
     public ResponseEntity<Map<String,Object>> reloadSchoolFriend(){
         try {
             rabbitMQPublisher.publish("school_friend");

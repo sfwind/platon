@@ -1,8 +1,11 @@
-package com.iquanwai.platon.biz.po;
+package com.iquanwai.platon.biz.po.flow;
 
+import com.iquanwai.platon.biz.po.FlowData;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * Created by 三十文
@@ -22,5 +25,9 @@ public class ArticlesFlow extends FlowData {
     private String linkUrl;
     @ApiModelProperty("文章链接参数")
     private String linkParam;
+    @ApiModelProperty("标签")
+    private String tag;
+    @ApiModelProperty("标签列表")
+    private List<String> tags;
 
 }

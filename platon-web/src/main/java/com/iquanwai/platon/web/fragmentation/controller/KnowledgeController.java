@@ -38,8 +38,8 @@ public class KnowledgeController {
     @Autowired
     private PracticeDiscussService practiceDiscussService;
 
-    @RequestMapping("/start/{practicePlanId}")
-    @ApiOperation("打开知识点")
+    @RequestMapping(value = "/start/{practicePlanId}", method = RequestMethod.GET)
+    @ApiOperation(value = "打开知识点", response = Knowledge.class, responseContainer = "List")
     @ApiImplicitParams({@ApiImplicitParam(name = "practicePlanId", value = "练习id")})
     public ResponseEntity<Map<String, Object>> startKnowledge(UnionUser unionUser, @PathVariable Integer practicePlanId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -48,8 +48,8 @@ public class KnowledgeController {
         return WebUtils.result(knowledges);
     }
 
-    @RequestMapping("/{knowledgeId}")
-    @ApiOperation("加载知识点")
+    @RequestMapping(value = "/{knowledgeId}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载知识点", response = Knowledge.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "knowledgeId", value = "知识点id")})
     public ResponseEntity<Map<String, Object>> loadKnowledge(UnionUser unionUser, @PathVariable Integer knowledgeId) {
         Assert.notNull(unionUser, "用户不能为空");
@@ -69,8 +69,8 @@ public class KnowledgeController {
         return WebUtils.success();
     }
 
-    @RequestMapping("/discuss/{knowledgeId}/{offset}")
-    @ApiOperation("加载更多讨论")
+    @RequestMapping(value = "/discuss/{knowledgeId}/{offset}", method = RequestMethod.GET)
+    @ApiOperation(value = "加载更多讨论", response = KnowledgeDiscuss.class, responseContainer = "List")
     @ApiImplicitParams({@ApiImplicitParam(name = "knowledgeId", value = "知识点id"),
             @ApiImplicitParam(name = "offset", value = "页数")})
     public ResponseEntity<Map<String, Object>> loadMoreDiscuss(UnionUser unionUser, @PathVariable Integer knowledgeId, @PathVariable Integer offset) {
@@ -88,7 +88,7 @@ public class KnowledgeController {
         return WebUtils.result(discusses);
     }
 
-    @ApiOperation("获取当前知识点加精过后的讨论")
+    @ApiOperation(value = "获取当前知识点加精过后的讨论", response = DiscussDistrictDto.class)
     @RequestMapping(value = "/priority/discuss/{knowledgeId}", method = RequestMethod.GET)
     @ApiImplicitParams({@ApiImplicitParam(name = "knowledgeId", value = "知识点id")})
     public ResponseEntity<Map<String, Object>> loadKnowledgeDiscuss(UnionUser unionUser, @PathVariable("knowledgeId") Integer knowledgeId) {
@@ -117,8 +117,8 @@ public class KnowledgeController {
         return WebUtils.success();
     }
 
-    @RequestMapping(value = "/discuss/del/{id}")
-    @ApiOperation("删除知识点评论")
+    @RequestMapping(value = "/discuss/del/{id}", method = RequestMethod.POST)
+    @ApiOperation(value = "删除知识点评论", response = String.class)
     @ApiImplicitParams({@ApiImplicitParam(name = "id", value = "评论id")})
     public ResponseEntity<Map<String, Object>> deleteKnowledgeDiscuss(UnionUser unionUser, @PathVariable Integer id) {
         Assert.notNull(unionUser, "用户不能为空");

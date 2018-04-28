@@ -53,12 +53,6 @@ public interface CustomerService {
 
 
     /**
-     * 是否提示申请通过通知
-     */
-    Pair<Boolean, Long> isAlertApplicationPassMessage(Integer profileId);
-
-
-    /**
      * 获得用户学习过的知识点个数
      */
     Integer loadLearnedKnowledgesCount(Integer profileId);
@@ -69,6 +63,8 @@ public interface CustomerService {
      * @param riseMember
      */
     Integer calSyncDefeatPercent(RiseMember riseMember);
+
+    Integer calSyncDefeatPercent(Integer profileId,Integer problemId);
 
 
     /**
