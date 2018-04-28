@@ -109,7 +109,7 @@ public class CustomerController {
         userStudyDto.setHeadImgUrl(profile.getHeadimgurl());
         userStudyDto.setMemberId(profile.getMemberId());
 
-        userStudyDto.setIsProMember(riseMemberManager.proMember(profileId)!=null);
+        userStudyDto.setIsProMember(riseMemberManager.proMember(profileId) != null);
 
         userStudyDto.setShowShare(CollectionUtils.isNotEmpty(riseMemberManager.businessSchoolMember(profileId)));
 
@@ -120,8 +120,8 @@ public class CustomerController {
         List<Coupon> coupons = accountService.loadCoupons(profileId);
         userStudyDto.setCouponSum(coupons.stream().map(Coupon::getAmount).reduce(0, Integer::sum));
         List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-        List<MemberType> memberTypes  = riseMemberTypeRepo.loadAll();
-        List<String> memberExpiredDate = generateMemberExpiredDate(riseMembers,memberTypes);
+        List<MemberType> memberTypes = riseMemberTypeRepo.loadAll();
+        List<String> memberExpiredDate = generateMemberExpiredDate(riseMembers, memberTypes);
         userStudyDto.setMemberExpiredDate(memberExpiredDate);
 
         return WebUtils.result(userStudyDto);
@@ -221,7 +221,7 @@ public class CustomerController {
         BeanUtils.copyProperties(profileDto, userInfo);
         userInfo.setReceiverMobile(profileDto.getMobileNo());
         userInfo.setProfileId(unionUser.getId());
-        customerService.updateNickName(unionUser.getId(),profileDto.getNickName());
+        customerService.updateNickName(unionUser.getId(), profileDto.getNickName());
         accountService.submitPersonalCenterProfile(profile, userInfo);
         return WebUtils.success();
     }
@@ -530,8 +530,12 @@ public class CustomerController {
             CertificateDto certificateDto = new CertificateDto();
             BeanUtils.copyProperties(riseCertificate, certificateDto);
             certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
-
-            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            List<Problem> problems1;
+            if (riseCertificate.getProblemId() != null) {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemId().equals(problem.getId())).collect(Collectors.toList());
+            } else {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            }
             if (problems1.size() > 0) {
                 certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
             } else {
@@ -544,8 +548,12 @@ public class CustomerController {
             CertificateDto certificateDto = new CertificateDto();
             BeanUtils.copyProperties(riseCertificate, certificateDto);
             certificateDto.setTypeName(getCertificateName(riseCertificate.getType()));
-
-            List<Problem> problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            List<Problem> problems1;
+            if (riseCertificate.getProblemId() != null) {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemId().equals(problem.getId())).collect(Collectors.toList());
+            } else {
+                problems1 = problems.stream().filter(problem -> riseCertificate.getProblemName().equals(problem.getProblem())).collect(Collectors.toList());
+            }
             if (problems1.size() > 0) {
                 certificateDto.setAbbreviation(problems1.get(0).getAbbreviation());
             } else {
@@ -596,8 +604,8 @@ public class CustomerController {
     }
 
 
-    private List<String> generateMemberExpiredDate(List<RiseMember> riseMembers,List<MemberType> memberTypes){
-        if(CollectionUtils.isEmpty(riseMembers)){
+    private List<String> generateMemberExpiredDate(List<RiseMember> riseMembers, List<MemberType> memberTypes) {
+        if (CollectionUtils.isEmpty(riseMembers)) {
             return Lists.newArrayList();
         }
         List<String> expireMembers = Lists.newArrayList();
