@@ -90,9 +90,12 @@ public class CertificateServiceImpl implements CertificateService {
     private static final Double FULL_ATTENDANCE_AMOUNT = 50.00;
 
     // 正常证书背景
-    private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_5.jpg?imageslim";
+    // private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/images/certificate_normal_bg_5.jpg?imageslim";
+    private static final String RISE_CERTIFICATE_BG_ORDINARY = "https://static.iqycamp.com/certificate_background-d50i9zj4.png";
     // 优秀证书背景
-    private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_5.jpg?imageslim";
+    // private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/images/certificate_bg_5.jpg?imageslim";
+    private static final String RISE_CERTIFICATE_BG_EXCELLENT = "https://static.iqycamp.com/certificate_background-d50i9zj4.png";
+
 
     private Logger logger = LoggerFactory.getLogger(getClass());
     private static BufferedImage ordinaryImage = null;
