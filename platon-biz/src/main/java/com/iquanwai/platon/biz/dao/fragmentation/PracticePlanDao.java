@@ -232,9 +232,9 @@ public class PracticePlanDao extends PracticeDBUtil {
     public List<PracticePlan> loadKnowledgeAndWarmupPracticePlansByPlanId(Integer planId) {
         QueryRunner runner = new QueryRunner(getDataSource());
         ResultSetHandler<List<PracticePlan>> h = new BeanListHandler<>(PracticePlan.class);
-        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (?,?,?,?,?,?) and Del = 0";
+        String sql = "SELECT * FROM PracticePlan where PlanId = ? and Type in (?,?,?,?,?,?,?) and Del = 0";
         try {
-            List<PracticePlan> practicePlans = runner.query(sql, h, planId, PracticePlan.WARM_UP,
+            List<PracticePlan> practicePlans = runner.query(sql, h, planId,PracticePlan.PREVIEW,PracticePlan.WARM_UP,
                     PracticePlan.WARM_UP_REVIEW, PracticePlan.INTRODUCTION, PracticePlan.CHALLENGE,
                     PracticePlan.KNOWLEDGE, PracticePlan.KNOWLEDGE_REVIEW);
             return practicePlans;
