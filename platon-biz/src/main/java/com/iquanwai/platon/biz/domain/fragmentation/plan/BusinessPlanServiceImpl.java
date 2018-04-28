@@ -66,12 +66,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     private CustomerStatusDao customerStatusDao;
 
     @Override
-    public List<CourseSchedule> getPlan(Integer profileId) {
-        return courseScheduleDao.getAllScheduleByProfileId(profileId).stream()
-                .filter(CourseSchedule::getSelected).collect(Collectors.toList());
-    }
-
-    @Override
     public SchedulePlan getSchedulePlan(Integer profileId) {
         SchedulePlan schedulePlan = new SchedulePlan();
         List<ImprovementPlan> improvementPlans = improvementPlanDao.loadAllPlans(profileId);

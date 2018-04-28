@@ -19,14 +19,6 @@ public interface GeneratePlanService {
     void forceReopenPlan(Integer planId);
 
     /**
-     * 创建一带二活动计划
-     *
-     * @param profileId ProfileId
-     * @return 计划id
-     */
-    Integer createTeamLearningPlan(Integer profileId);
-
-    /**
      * 生成学习计划
      *
      * @param profileId profileId

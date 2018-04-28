@@ -9,12 +9,6 @@ import java.util.List;
  * Created by justin on 2017/11/3.
  */
 public interface BusinessPlanService {
-    /**
-     * 获取用户的课程计划
-     *
-     * @param profileId 用户id
-     */
-    List<CourseSchedule> getPlan(Integer profileId);
 
     PersonalSchedulePlan getPersonalSchedulePlans(Integer profileId);
 
