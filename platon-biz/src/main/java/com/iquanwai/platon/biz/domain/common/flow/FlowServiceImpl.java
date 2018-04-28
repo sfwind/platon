@@ -105,17 +105,17 @@ public class FlowServiceImpl implements FlowService {
             if (memberType != null) {
                 programsFlow.setInitPrice(memberType.getInitPrice());
                 programsFlow.setPrice(memberType.getFee());
-                try{
+                try {
                     String requestUrl = "http://" + ConfigUtils.getInternalIp() + ":" + ConfigUtils.getInternalPort() +
                             "/internal/course/config/" + memberType.getId();
                     String body = restfulHelper.getPure(requestUrl);
                     JSONObject jsonObject = JSONObject.parseObject(body);
-                    int code = jsonObject.getInteger("code");
-                    if(code == 200){
+                    Integer code = jsonObject.getInteger("code");
+                    if (code != null && code == 200) {
                         CourseConfig courseConfig = jsonObject.getObject("msg", CourseConfig.class);
                         programsFlow.setMonth(courseConfig.getSellingMonth());
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     logger.error("获取售卖月份失败", e);
                 }
 
