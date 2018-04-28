@@ -11,6 +11,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.manager.ProblemScheduleManag
 import com.iquanwai.platon.biz.domain.fragmentation.manager.Section;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.NumberToHanZi;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -208,9 +209,9 @@ public class ProblemServiceImpl implements ProblemService {
 
     // 获取精华卡图
     @Override
-    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId) {
+    public String loadEssenceCardImg(Integer profileId, Integer problemId, Integer chapterId, StudyInfo studyInfo) {
         ImprovementPlan improvementPlan = improvementPlanDao.loadPlanByProblemId(profileId, problemId);
-        return cardManager.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId());
+        return cardManager.loadEssenceCardImg(profileId, problemId, chapterId, improvementPlan.getId(),studyInfo);
     }
 
     @Override

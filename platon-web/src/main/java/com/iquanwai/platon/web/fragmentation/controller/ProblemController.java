@@ -2,6 +2,7 @@ package com.iquanwai.platon.web.fragmentation.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.iquanwai.platon.biz.domain.common.customer.CustomerService;
 import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.PlanService;
@@ -10,6 +11,7 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.fragmentation.practice.PracticeService;
 import com.iquanwai.platon.biz.po.*;
 import com.iquanwai.platon.biz.po.common.WhiteList;
+import com.iquanwai.platon.biz.po.user.StudyInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
 import com.iquanwai.platon.biz.util.Constants;
 import com.iquanwai.platon.web.fragmentation.dto.*;
@@ -48,6 +50,8 @@ public class ProblemController {
     private RiseMemberManager riseMemberManager;
     @Autowired
     private PracticeService practiceService;
+    @Autowired
+    private CustomerService customerService;
 
     @RequestMapping(value = "/list/unchoose", method = RequestMethod.GET)
     @ApiOperation(value = "发现页面拉取课程列表", response = ProblemCatalogDto.class)
@@ -364,8 +368,14 @@ public class ProblemController {
     public ResponseEntity<Map<String, Object>> loadProblemEssenceCard(UnionUser unionUser,
                                                                       @PathVariable Integer problemId, @PathVariable Integer chapterId) {
         Assert.notNull(unionUser, "登录用户不能为空");
+        Integer profileId = unionUser.getId();
+        StudyInfo studyInfo = new StudyInfo();
 
-        String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId);
+        studyInfo.setLearnedDay(customerService.loadContinuousLoginCount(profileId));
+        studyInfo.setLearnedKnowledge(customerService.loadLearnedKnowledgesCount(profileId));
+        studyInfo.setDefeatPercent(customerService.calSyncDefeatPercent(profileId,problemId));
+
+        String essenceCardImgBase64 = problemService.loadEssenceCardImg(unionUser.getId(), problemId, chapterId,studyInfo);
         if (essenceCardImgBase64 != null) {
             return WebUtils.result(essenceCardImgBase64);
         } else {
