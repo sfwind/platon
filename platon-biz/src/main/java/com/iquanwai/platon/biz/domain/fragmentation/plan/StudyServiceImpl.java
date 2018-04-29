@@ -6,11 +6,12 @@ import com.iquanwai.platon.biz.dao.fragmentation.PracticePlanDao;
 import com.iquanwai.platon.biz.dao.fragmentation.RiseClassMemberDao;
 import com.iquanwai.platon.biz.domain.cache.CacheService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.*;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
+import com.iquanwai.platon.biz.po.PracticePlan;
+import com.iquanwai.platon.biz.po.Problem;
+import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.MemberType;
 import com.iquanwai.platon.biz.util.DateUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,23 +174,7 @@ public class StudyServiceImpl implements StudyService {
             countDownElement.setMemberTypeId(memberTypeId);
             int remainCountNumber = DateUtils.interval(latestRiseMember.getOpenDate());
             countDownElement.setRemainCount(String.format("%02d", remainCountNumber));
-            MemberType memberType;
-            switch (memberTypeId) {
-                case RiseMember.ELITE:
-                    // 核心能力项
-                    memberType = memberTypeMap.getOrDefault(RiseMember.ELITE, null);
-                    break;
-                case RiseMember.CAMP:
-                    // 专项课
-                    memberType = memberTypeMap.getOrDefault(RiseMember.CAMP, null);
-                    break;
-                case RiseMember.BUSINESS_THOUGHT:
-                    // 商业进阶
-                    memberType = memberTypeMap.getOrDefault(RiseMember.BUSINESS_THOUGHT, null);
-                    break;
-                default:
-                    return null;
-            }
+            MemberType memberType = memberTypeMap.getOrDefault(memberTypeId, null);
             if (memberType != null) {
                 countDownElement.setDescription(memberType.getDescription());
             }

@@ -74,7 +74,7 @@ public class ProblemScheduleManagerImpl implements ProblemScheduleManager {
             return courseSchedule.getType();
         }
 
-        // TODO: 有问题
+        // TODO: 2018年10月,老课表都废弃后需要调整
         RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         List<CourseScheduleDefault> courseSchedules;
         if (riseMember != null && (riseMember.getMemberTypeId() == RiseMember.ELITE ||

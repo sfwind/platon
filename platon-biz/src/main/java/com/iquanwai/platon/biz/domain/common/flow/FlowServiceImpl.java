@@ -147,6 +147,7 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public List<LivesFlow> loadLivesFlow(Integer profileId) {
         List<LivesFlow> livesFlows = livesFlowDao.loadAllWithoutDel(LivesFlow.class);
+        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         livesFlows = livesFlows.stream()
                 .map(livesFlow -> {
                     //开始时间转码
@@ -154,7 +155,7 @@ public class FlowServiceImpl implements FlowService {
                         livesFlow.setStartTimeStr(DateUtils.parseDateToFormat6(livesFlow.getStartTime()));
                     }
                     //是否可见判断
-                    livesFlow.setVisibility(getVisibility(livesFlow, profileId));
+                    livesFlow.setVisibility(getVisibility(livesFlow, riseMembers));
                     //状态判断
                     if (livesFlow.getStartTime() != null) {
                         // 开始时间晚于现在, 倒计时状态
@@ -262,8 +263,8 @@ public class FlowServiceImpl implements FlowService {
 
             Profile profile = accountService.getProfile(profileId);
             livesFlow.setRiseId(profile.getRiseId());
-
-            livesFlow.setVisibility(getVisibility(livesFlow, profileId));
+            List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+            livesFlow.setVisibility(getVisibility(livesFlow, riseMembers));
         }
         return livesFlow;
     }
@@ -282,34 +283,7 @@ public class FlowServiceImpl implements FlowService {
         return livesOrderDao.insert(livesOrder) > 0;
     }
 
-    private Boolean getVisibility(FlowData flowData, Integer profileId) {
-        // String authority = flowData.getAuthority();
-        // List<RiseMember> riseMembers = riseMemberManager.member(profileId);
-        //
-        // if (riseMembers.size() == 0) {
-        //     // 当前身份为普通人
-        //     if (authority != null) {
-        //         char c = authority.charAt(authority.length() - 1);
-        //         return "1".equals(String.valueOf(c));
-        //     }
-        // } else {
-        //     for (RiseMember riseMember : riseMembers) {
-        //         Integer memberTypeId = 0;
-        //         if (riseMember != null && riseMember.getMemberTypeId() != null) {
-        //             memberTypeId = riseMember.getMemberTypeId();
-        //         }
-        //         try {
-        //             char tagChar = authority.charAt(authority.length() - 1 - memberTypeId);
-        //             String tagValue = String.valueOf(tagChar);
-        //             return "1".equals(tagValue);
-        //         } catch (Exception e) {
-        //             logger.error(e.getLocalizedMessage(), e);
-        //         }
-        //     }
-        // }
-        //
-        // return false;
-        List<RiseMember> riseMembers = riseMemberManager.member(profileId);
+    private Boolean getVisibility(FlowData flowData, List<RiseMember> riseMembers) {
         Boolean permission = flowData.getPermission();
         if (permission) {
             if (riseMembers.size() == 0) {

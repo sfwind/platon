@@ -93,7 +93,7 @@ public class IndexController {
     private static final String PROFILE_CAMP_SUBMIT = "/rise/static/customer/profile?goCamp=true";
 
     // 新学习页面
-    private static final String NEW_SCHEDULE_PLAN = "/rise/static/course/schedule/plan";
+    private static final String NEW_SCHEDULE_PLAN = "/rise/static/learn";
 
     // 产品着陆页
     private static final String HOME_LANDING_PAGE = "/rise/static/home";
@@ -213,7 +213,7 @@ public class IndexController {
             return null;
         }
 
-        //是否买过专业版
+        //是否买过专项课
         Boolean isCampMember = riseMembers.stream().anyMatch(item -> (item.getMemberTypeId() == RiseMember.CAMP));
         Profile profile = accountService.getProfile(unionUser.getId());
         UserInfo userInfo = userInfoService.loadByProfileId(profile.getId());
