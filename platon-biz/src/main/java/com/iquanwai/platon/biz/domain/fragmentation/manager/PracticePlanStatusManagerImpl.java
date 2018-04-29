@@ -186,7 +186,8 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                         .filter(plan -> plan.getSeries() == series + 1)
                         .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
                         .orElse(null);
-                if (targetPracticePlan != null) {
+                // 解锁下一节内容
+                if (targetPracticePlan != null && targetPracticePlan.getStatus() != PracticePlan.STATUS.NEVER_UNLOCK) {
                     practicePlanDao.unlock(targetPracticePlan.getId());
                 }
                 break;
