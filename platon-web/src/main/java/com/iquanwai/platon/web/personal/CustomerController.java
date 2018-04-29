@@ -12,11 +12,12 @@ import com.iquanwai.platon.biz.domain.fragmentation.plan.ProblemService;
 import com.iquanwai.platon.biz.domain.user.UserInfoService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
 import com.iquanwai.platon.biz.po.*;
-import com.iquanwai.platon.biz.po.common.*;
+import com.iquanwai.platon.biz.po.common.Feedback;
+import com.iquanwai.platon.biz.po.common.MemberType;
+import com.iquanwai.platon.biz.po.common.Profile;
+import com.iquanwai.platon.biz.po.common.Region;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.Constants;
-import com.iquanwai.platon.web.fragmentation.dto.RiseDto;
 import com.iquanwai.platon.web.personal.dto.*;
 import com.iquanwai.platon.web.resolver.GuestUser;
 import com.iquanwai.platon.web.resolver.UnionUser;
@@ -32,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
@@ -125,31 +125,6 @@ public class CustomerController {
         userStudyDto.setMemberExpiredDate(memberExpiredDate);
 
         return WebUtils.result(userStudyDto);
-    }
-
-    @RequestMapping(value = "/account", method = RequestMethod.GET)
-    @ApiOperation("查询账号信息")
-    public ResponseEntity<Map<String, Object>> loadRiseInfo(UnionUser unionUser) {
-        Assert.notNull(unionUser, "用户不能为空");
-
-        Profile profile = accountService.getProfile(unionUser.getId());
-
-        RiseDto riseDto = new RiseDto();
-        riseDto.setRiseId(profile.getRiseId());
-        riseDto.setMobile(profile.getMobileNo());
-        riseDto.setIsRiseMember(profile.getRiseMember() == Constants.RISE_MEMBER.MEMBERSHIP);
-        riseDto.setNickName(profile.getNickname());
-        riseDto.setHeadImgUrl(profile.getHeadimgurl());
-        riseDto.setMemberId(profile.getMemberId());
-
-        RiseMember riseMember = accountService.getValidRiseMember(unionUser.getId());
-        if (riseMember != null) {
-            riseDto.setMemberType(riseMember.getName());
-        }
-        List<Coupon> coupons = accountService.loadCoupons(profile.getId());
-        riseDto.setCoupons(coupons);
-
-        return WebUtils.result(riseDto);
     }
 
     @RequestMapping(value = "/profile", method = RequestMethod.GET)

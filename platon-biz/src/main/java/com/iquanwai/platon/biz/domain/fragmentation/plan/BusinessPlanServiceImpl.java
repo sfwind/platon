@@ -374,7 +374,6 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
                 if (planProblemIds.contains(item.getProblemId())) {
                     item.setSelected(true);
                 }
-                // TODO 简单fix
                 item.setMemberTypeId(RiseMember.ELITE);
             });
             courseScheduleDao.batchInsertCourseSchedule(waitInserts);
@@ -845,7 +844,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         boolean exists = all.stream().anyMatch(item -> Objects.equals(item.getMemberTypeId(), memberTypeId));
         if (!exists) {
             // 生成
-            // TODO 无效的category 2/3/4
+            // 无效的category 2/3/4
             List<Integer> invalidCategory = Lists.newArrayList(2, 3, 4);
             List<CourseScheduleDefault> defaults = courseScheduleDefaultDao.loadByCategoryAndMemberTypeId(memberTypeId).stream().filter(item -> !invalidCategory.contains(item.getCategory())).collect(Collectors.toList());
             RiseMember riseMember = riseMemberManager.getByMemberType(profileId, memberTypeId);

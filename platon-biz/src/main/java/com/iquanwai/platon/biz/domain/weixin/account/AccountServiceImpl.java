@@ -4,16 +4,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.common.*;
-import com.iquanwai.platon.biz.dao.fragmentation.*;
+import com.iquanwai.platon.biz.dao.fragmentation.CourseScheduleDao;
+import com.iquanwai.platon.biz.dao.fragmentation.ImprovementPlanDao;
 import com.iquanwai.platon.biz.dao.user.UserInfoDao;
-
 import com.iquanwai.platon.biz.dao.wx.FollowUserDao;
 import com.iquanwai.platon.biz.dao.wx.RegionDao;
 import com.iquanwai.platon.biz.domain.common.message.SMSDto;
 import com.iquanwai.platon.biz.domain.common.message.ShortMessageService;
 import com.iquanwai.platon.biz.domain.fragmentation.point.PointManager;
 import com.iquanwai.platon.biz.domain.weixin.qrcode.QRCodeService;
-import com.iquanwai.platon.biz.po.*;
+import com.iquanwai.platon.biz.po.Coupon;
+import com.iquanwai.platon.biz.po.CourseSchedule;
+import com.iquanwai.platon.biz.po.CourseScheduleDefault;
+import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import com.iquanwai.platon.biz.util.*;
@@ -62,8 +65,6 @@ public class AccountServiceImpl implements AccountService {
     private CourseScheduleDao courseScheduleDao;
     @Autowired
     private ImprovementPlanDao improvementPlanDao;
-    @Autowired
-    private RiseMemberDao riseMemberDao;
     @Autowired
     private UserInfoDao userInfoDao;
 
@@ -223,31 +224,6 @@ public class AccountServiceImpl implements AccountService {
             cityList = regionDao.loadAllCities();
         }
         return cityList;
-    }
-
-    @Override
-    public int updateOpenNavigator(Integer id) {
-        return profileDao.updateOpenNavigator(id);
-    }
-
-    @Override
-    public int updateOpenRise(Integer id) {
-        return profileDao.updateOpenRise(id);
-    }
-
-    @Override
-    public int updateOpenApplication(Integer id) {
-        return profileDao.updateOpenApplication(id);
-    }
-
-    @Override
-    public int updateOpenConsolidation(Integer id) {
-        return profileDao.updateOpenConsolidation(id);
-    }
-
-    @Override
-    public int updateOpenWelcome(Integer id) {
-        return profileDao.updateOpenWelcome(id);
     }
 
     @Override
@@ -437,7 +413,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Integer loadUserScheduleCategory(Integer profileId) {
-        // TODO 修复因为其他课表原因导致不能正常显示的问题
+        // 修复因为其他课表原因导致不能正常显示的问题
         CourseSchedule courseSchedule = courseScheduleDao.loadOldestCoreCourseSchedule(profileId);
         if (courseSchedule != null) {
             return courseSchedule.getCategory();
@@ -463,12 +439,6 @@ public class AccountServiceImpl implements AccountService {
         List<Integer> profileIds = profiles.stream().map(Profile::getId)
                 .distinct().collect(Collectors.toList());
         return profileIds;
-    }
-
-    @Override
-    public RiseMember getValidRiseMember(Integer profileId) {
-        // TODO: 杨仁
-        return riseMemberDao.loadValidRiseMember(profileId);
     }
 
 

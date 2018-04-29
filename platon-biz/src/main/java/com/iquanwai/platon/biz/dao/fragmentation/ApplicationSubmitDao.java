@@ -198,7 +198,9 @@ public class ApplicationSubmitDao extends PracticeDBUtil {
             return Lists.newArrayList();
         }
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "SELECT * FROM ApplicationSubmit WHERE ApplicationId in (" + produceQuestionMark(applicationIds.size())
+        String sql = "select Id, ProfileId, ApplicationId, PlanId, ProblemId, PointStatus, PublishTime, LastModifiedTime, " +
+        "Priority, HighlightTime, RequestFeedback, Feedback, HasImage, Length, Del, AddTime, UpdateTime FROM ApplicationSubmit " +
+                "WHERE ApplicationId in (" + produceQuestionMark(applicationIds.size())
                 + ") AND PlanId = ? AND Del = 0";
         ResultSetHandler<List<ApplicationSubmit>> h = new BeanListHandler<>(ApplicationSubmit.class);
         List<Object> objects = Lists.newArrayList();

@@ -1,8 +1,6 @@
 package com.iquanwai.platon.biz.domain.weixin.account;
 
 import com.iquanwai.platon.biz.po.Coupon;
-import com.iquanwai.platon.biz.po.RiseClassMember;
-import com.iquanwai.platon.biz.po.RiseMember;
 import com.iquanwai.platon.biz.po.common.*;
 import com.iquanwai.platon.biz.po.user.UserInfo;
 import org.apache.commons.lang3.tuple.Pair;
@@ -58,31 +56,6 @@ public interface AccountService {
      * 获取某省份的城市信息
      */
     List<Region> loadCities();
-
-    /**
-     * 更新是否打开导航栏
-     */
-    int updateOpenNavigator(Integer id);
-
-    /**
-     * 更新是否打开rise
-     */
-    int updateOpenRise(Integer id);
-
-    /**
-     * 更新是否打开rise应用练习
-     */
-    int updateOpenApplication(Integer id);
-
-    /**
-     * 更新是否打开rise巩固练习
-     */
-    int updateOpenConsolidation(Integer id);
-
-    /**
-     * 更新是否打开rise巩固练习
-     */
-    int updateOpenWelcome(Integer id);
 
     /**
      * 在个人中心里提交用户信息
@@ -189,9 +162,6 @@ public interface AccountService {
      * 根据学号获取用户 id
      */
     List<Integer> getProfileIdsByMemberId(List<String> memberIds);
-
-    @Deprecated
-    RiseMember getValidRiseMember(Integer profileId);
 
     String getOpenidByMemberId(String memberId);
 }

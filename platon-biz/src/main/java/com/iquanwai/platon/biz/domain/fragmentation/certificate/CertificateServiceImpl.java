@@ -56,8 +56,6 @@ public class CertificateServiceImpl implements CertificateService {
     @Autowired
     private CouponDao couponDao;
     @Autowired
-    private RiseClassMemberDao riseClassMemberDao;
-    @Autowired
     private ImprovementPlanDao improvementPlanDao;
     @Autowired
     private ApplicationSubmitDao applicationSubmitDao;
@@ -620,7 +618,6 @@ public class CertificateServiceImpl implements CertificateService {
                         .collect(Collectors.toList());
 
                 List<Integer> applicationIds = applicationPracticePlans.stream().map(PracticePlan::getPracticeId).map(Integer::parseInt).collect(Collectors.toList());
-                // TODO: 改成不需要加载应用题内容的接口
                 List<ApplicationSubmit> applicationSubmits = applicationSubmitDao.loadApplicationSubmitsByApplicationIds(applicationIds, planId);
                 Map<Integer, ApplicationSubmit> applicationSubmitMap = applicationSubmits.stream()
                         .collect(Collectors.toMap(ApplicationSubmit::getApplicationId, applicationSubmit -> applicationSubmit, (key1, key2) -> key2));
@@ -638,7 +635,7 @@ public class CertificateServiceImpl implements CertificateService {
                     // 每个 Series 中至少存在一节内容完成
                     Long seriesApplicationCheckLong = practiceIds.stream().filter(practiceId -> {
                         ApplicationSubmit applicationSubmit = applicationSubmitMap.get(practiceId);
-                        return applicationSubmit != null && (applicationSubmit.getContent().contains("img") || applicationSubmit.getLength() > 10);
+                        return applicationSubmit != null && (applicationSubmit.getHasImage() || applicationSubmit.getLength() > 10);
                     }).count();
                     return seriesApplicationCheckLong.intValue() > 0;
                 }).count();
