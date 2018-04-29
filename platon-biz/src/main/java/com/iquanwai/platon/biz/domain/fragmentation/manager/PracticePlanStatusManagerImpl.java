@@ -146,9 +146,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 targetPracticePlan = practicePlans.stream()
                         .filter(plan -> plan.getType() == PracticePlan.CHALLENGE)
                         .findAny().orElse(null);
-                if (targetPracticePlan != null) {
-                    practicePlanDao.unlock(targetPracticePlan.getId());
-                }
+                unlockPractice(targetPracticePlan);
                 break;
             // 如果完成的是小目标
             case PracticePlan.CHALLENGE:
@@ -157,9 +155,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                         .filter(plan -> plan.getSeries() == 1)
                         .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
                         .orElse(null);
-                if (targetPracticePlan != null) {
-                    practicePlanDao.unlock(targetPracticePlan.getId());
-                }
+                unlockPractice(targetPracticePlan);
                 break;
             // 完成知识点或者课前思考,解锁下一个练习
             case PracticePlan.KNOWLEDGE:
@@ -169,9 +165,7 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                         .filter(plan -> plan.getSeries() == series && plan.getSequence() > practicePlan.getSequence())
                         .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
                         .orElse(null);
-                if (targetPracticePlan != null) {
-                    practicePlanDao.unlock(targetPracticePlan.getId());
-                }
+                unlockPractice(targetPracticePlan);
                 break;
             // 如果完成的是选择题，解锁所有应用题以及下一节的第一个练习
             case PracticePlan.WARM_UP:
@@ -180,16 +174,14 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                         .filter(plan -> (PracticePlan.isApplicationPractice(plan.getType()))
                                 && plan.getSeries() == series).collect(Collectors.toList());
 
-                practicePlanList.forEach(practicePlan1 -> practicePlanDao.unlock(practicePlan1.getId()));
+                practicePlanList.forEach(this::unlockPractice);
 
                 targetPracticePlan = practicePlans.stream()
                         .filter(plan -> plan.getSeries() == series + 1)
                         .min((plan1, plan2) -> plan1.getSequence() - plan2.getSequence())
                         .orElse(null);
                 // 解锁下一节内容
-                if (targetPracticePlan != null && targetPracticePlan.getStatus() != PracticePlan.STATUS.NEVER_UNLOCK) {
-                    practicePlanDao.unlock(targetPracticePlan.getId());
-                }
+                unlockPractice(targetPracticePlan);
                 break;
             // 如果是第一道应用题,则解锁下一道应用题和下一节的知识点
             case PracticePlan.APPLICATION_BASE:
@@ -267,5 +259,10 @@ public class PracticePlanStatusManagerImpl implements PracticePlanStatusManager 
                 .orElse(false);
     }
 
+    private void unlockPractice(PracticePlan practicePlan){
+        if (practicePlan != null && practicePlan.getStatus() != PracticePlan.STATUS.NEVER_UNLOCK) {
+            practicePlanDao.unlock(practicePlan.getId());
+        }
+    }
 
 }
