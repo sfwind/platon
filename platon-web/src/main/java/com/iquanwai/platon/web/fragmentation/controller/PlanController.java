@@ -7,7 +7,6 @@ import com.iquanwai.platon.biz.domain.common.whitelist.WhiteListService;
 import com.iquanwai.platon.biz.domain.fragmentation.manager.RiseMemberManager;
 import com.iquanwai.platon.biz.domain.fragmentation.plan.*;
 import com.iquanwai.platon.biz.exception.CreateCourseException;
-import com.iquanwai.platon.biz.po.ApplicationPractice;
 import com.iquanwai.platon.biz.po.ImprovementPlan;
 import com.iquanwai.platon.biz.po.Problem;
 import com.iquanwai.platon.biz.po.UserProblemSchedule;
@@ -351,7 +350,6 @@ public class PlanController {
         planListDto.setCompletedPlans(completedPlans);
         planListDto.setRecommendations(recommends);
         Boolean isRiseMember = CollectionUtils.isNotEmpty(riseMemberManager.member(unionUser.getId()));
-        // TODO: 待验证
         planListDto.setRiseMember(isRiseMember ? 1 : 0);
         planListDto.setCampBanner(ConfigUtils.getCampProblemBanner());
         runningPlans.sort(Comparator.comparing(PlanDto::getStartDate));

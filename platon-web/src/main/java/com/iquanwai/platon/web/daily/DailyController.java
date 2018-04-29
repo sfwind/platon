@@ -41,7 +41,7 @@ public class DailyController {
 
 
     @RequestMapping(value = "/talk/check", method = RequestMethod.GET)
-    @ApiOperation("是否显示每日圈语")
+    @ApiOperation(value = "是否显示每日圈语", response = Boolean.class)
     public ResponseEntity<Map<String, Object>> checkDailyTalk(UnionUser unionUser) {
         Integer profileId = unionUser.getId();
         Calendar c = Calendar.getInstance();
@@ -69,7 +69,7 @@ public class DailyController {
 
 
     @RequestMapping(value = "/talk", method = RequestMethod.GET)
-    @ApiOperation("获得每日圈语")
+    @ApiOperation(value = "获得每日圈语", response = String.class)
     public ResponseEntity<Map<String, Object>> getDailyTalk(UnionUser unionUser) {
         Integer profileId = unionUser.getId();
         Calendar c = Calendar.getInstance();
@@ -85,7 +85,6 @@ public class DailyController {
 
             Integer loginDay = customerService.loadContinuousLoginCount(profileId);
             Integer learnedKnowledge = customerService.loadLearnedKnowledgesCount(profileId);
-            // TODO: 待验证
             List<RiseMember> riseMembers = riseMemberManager.member(profileId);
             if(CollectionUtils.isEmpty(riseMembers)){
                 return WebUtils.error("非会员类型");

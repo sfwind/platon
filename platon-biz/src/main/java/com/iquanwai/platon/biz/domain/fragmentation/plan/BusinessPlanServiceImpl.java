@@ -315,7 +315,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
         // 用户选择的选项id
         List<Integer> choices = Lists.newArrayList();
         scheduleQuestions.forEach(question -> question.getScheduleChoices().forEach(item -> choices.add(item.getId())));
-        // TODO: 待验证 用户购买记录
+        // 用户购买记录
         RiseMember riseMember = riseMemberManager.coreBusinessSchoolMember(profileId);
 
         if (CollectionUtils.isEmpty(userSchedule)) {

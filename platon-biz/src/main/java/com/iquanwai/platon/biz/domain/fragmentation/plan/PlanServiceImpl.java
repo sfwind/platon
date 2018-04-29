@@ -273,7 +273,6 @@ public class PlanServiceImpl implements PlanService {
                 .filter(item -> item.getStatus() == ImprovementPlan.RUNNING || item.getStatus() == ImprovementPlan.COMPLETE)
                 .collect(Collectors.toList());
 
-        // TODO: 待验证 选课
         Problem problem = cacheService.getProblem(problemId);
         if (problem == null) {
             throw new CreateCourseException("课程不存在");
@@ -732,7 +731,6 @@ public class PlanServiceImpl implements PlanService {
         // 不显示按钮
         int buttonStatus = -1;
 
-        // TODO: 待验证
         RiseMember riseMember = riseMemberManager.coreBusinessSchoolUser(profileId);
         if (plan == null) {
             // 2 - 去上课 1 - 加入商学院 5 - 选择该课程

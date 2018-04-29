@@ -186,7 +186,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public String loadAnnounceMessage(Integer profileId) {
-        // TODO: 待验证,取第一个身份展示信息
+        // 待验证,取第一个身份展示信息
         List<RiseMember> riseMembers = riseMemberManager.member(profileId);
         RiseMember riseMember = null;
         if (CollectionUtils.isNotEmpty(riseMembers)) {
