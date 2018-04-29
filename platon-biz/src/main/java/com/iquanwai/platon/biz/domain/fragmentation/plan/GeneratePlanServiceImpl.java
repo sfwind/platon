@@ -580,7 +580,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
     }
 
 
-        //TODO:临时
+    //TODO:临时
     private List<PracticePlan> createKnowledgeBySeries(int planId, List<ProblemSchedule> problemScheduleList,int startSeries) {
         List<PracticePlan> selected = Lists.newArrayList();
 
@@ -590,7 +590,7 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
             Integer knowledgeId = problemSchedule.getKnowledgeId();
             practicePlan.setUnlocked(false);
             if (Knowledge.isReview(knowledgeId)) {
-                practicePlan.setType(PracticePlan.KNOWLEDGE_REVIEW);
+                continue;
             } else {
                 practicePlan.setType(PracticePlan.KNOWLEDGE);
             }
@@ -643,9 +643,10 @@ public class GeneratePlanServiceImpl implements GeneratePlanService {
                     .sorted(Comparator.comparingInt(WarmupPractice::getSequence))
                     .map(WarmupPractice::getId)
                     .collect(Collectors.toList()));
-
-            practicePlan.setPracticeId(StringUtils.join(practiceIds, ","));
-            selectedPractice.add(practicePlan);
+            if(CollectionUtils.isNotEmpty(practiceIds)){
+                practicePlan.setPracticeId(StringUtils.join(practiceIds, ","));
+                selectedPractice.add(practicePlan);
+            }
         }
 
         return selectedPractice;
