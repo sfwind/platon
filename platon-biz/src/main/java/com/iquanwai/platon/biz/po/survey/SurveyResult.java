@@ -43,4 +43,12 @@ public class SurveyResult {
      * 是否删除
      */
     private Boolean del;
+    /**
+     * 是否生成过报告
+     */
+    private Boolean generatedReport;
+    /**
+     * 是否可以用来生成报告
+     */
+    private Boolean reportValid;
 }

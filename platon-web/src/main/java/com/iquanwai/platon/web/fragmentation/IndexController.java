@@ -308,7 +308,7 @@ public class IndexController {
     @RequestMapping(value = {"/rise/static/guest/value/evaluation/self", "/rise/static/guest/value/evaluation/other"}, method = RequestMethod.GET)
     public void getRedirectActivity(HttpServletRequest request, HttpServletResponse response, UnionUser unionUser,
                                     @RequestParam(value = "_tm", required = false) String channel) throws Exception {
-        response.sendRedirect(StringUtils.replace(request.getRequestURL().toString(), "rise/static", "rise/activity/rise"));
+        response.sendRedirect(StringUtils.replace(request.getRequestURL().toString(), "rise/static", "rise/activity/static"));
     }
 
     @RequestMapping(value = {"/rise/static/**", "/rise/activity/static/**"}, method = RequestMethod.GET)

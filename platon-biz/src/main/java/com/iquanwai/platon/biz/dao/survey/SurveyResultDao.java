@@ -3,6 +3,7 @@ package com.iquanwai.platon.biz.dao.survey;
 import com.google.common.collect.Lists;
 import com.iquanwai.platon.biz.dao.DBUtil;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -24,10 +25,10 @@ public class SurveyResultDao extends DBUtil {
 
     public Integer insert(SurveyResult surveyResult) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "INSERT INTO SurveyResult(Category, Version, ProfileId, Openid, SubmitTime,ReferSurveyId, Level) VALUE (?,?,?,?,CURRENT_TIMESTAMP,?,?)";
+        String sql = "INSERT INTO SurveyResult(Category, Version, ProfileId, Openid, SubmitTime,ReferSurveyId, Level, ReportValid) VALUE (?,?,?,?,CURRENT_TIMESTAMP,?,?,?)";
         try {
             return runner.insert(sql, new ScalarHandler<Long>(), surveyResult.getCategory(), surveyResult.getVersion(),
-                    surveyResult.getProfileId(), surveyResult.getOpenid(), surveyResult.getReferSurveyId(), surveyResult.getLevel()).intValue();
+                    surveyResult.getProfileId(), surveyResult.getOpenid(), surveyResult.getReferSurveyId(), surveyResult.getLevel(), surveyResult.getReportValid()).intValue();
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
@@ -56,9 +57,9 @@ public class SurveyResultDao extends DBUtil {
         return null;
     }
 
-    public List<SurveyResult> loadByReferId(Integer referId) {
+    public List<SurveyResult> loadReportValidByReferId(Integer referId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from SurveyResult where ReferSurveyId = ? and Del = 0";
+        String sql = "select * from SurveyResult where ReferSurveyId = ? and Del = 0 and ReportValid = 1";
         try {
             return runner.query(sql, new BeanListHandler<>(SurveyResult.class), referId);
         } catch (SQLException e) {
@@ -67,11 +68,38 @@ public class SurveyResultDao extends DBUtil {
         return Lists.newArrayList();
     }
 
-    public List<SurveyResult> loadByOpenIdAndCategory(String openId, String category) {
+    public List<SurveyResult> loadByOpenIdAndCategory(String openId) {
         QueryRunner runner = new QueryRunner(getDataSource());
-        String sql = "select * from SurveyResult where Openid = ? and Category = ? Del = 0";
+        String sql = "select * from SurveyResult where Openid = ? Del = 0";
         try {
-            return runner.query(sql, new BeanListHandler<>(SurveyResult.class), openId, category);
+            return runner.query(sql, new BeanListHandler<>(SurveyResult.class), openId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return Lists.newArrayList();
+    }
+
+    public Integer generateReport(Integer submitId) {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "update SurveyResult set GeneratedReport = 1 where Id = ?";
+        try {
+            return runner.update(sql, submitId);
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+        return -1;
+    }
+
+    public List<SurveyResult> loadByIdsAndCategory(List<Integer> ids, String category) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Lists.newArrayList();
+        }
+        QueryRunner runner = new QueryRunner(getDataSource());
+        String sql = "select * from SurveyResult where Id in (" + super.produceQuestionMark(ids.size()) + ") and Del = 0 and category = ?";
+        try {
+            List<Object> params = Lists.newArrayList(ids.toArray());
+            params.add(category);
+            return runner.query(sql, new BeanListHandler<>(SurveyResult.class), params.toArray());
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage(), e);
         }

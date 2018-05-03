@@ -2,25 +2,28 @@ package com.iquanwai.platon.web.fragmentation.controller.operation;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.survey.SurveyService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
-import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
 import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.common.OperationLog;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyQuestion;
 import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.po.survey.report.SurveyReport;
+import com.iquanwai.platon.biz.po.survey.report.SurveyVariableInfo;
 import com.iquanwai.platon.biz.util.ConfigUtils;
-import com.iquanwai.platon.biz.util.DateUtils;
+import com.iquanwai.platon.web.fragmentation.controller.operation.dto.RadarDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyQuestionGroupDto;
+import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyReportDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveyResultDto;
 import com.iquanwai.platon.web.fragmentation.controller.operation.dto.SurveySubmitDto;
 import com.iquanwai.platon.web.resolver.GuestUser;
+import com.iquanwai.platon.web.resolver.UnionUser;
 import com.iquanwai.platon.web.util.WebUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.support.Assert;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,35 +102,15 @@ public class SurveyController {
     }
 
     @RequestMapping(value = "submit/{category}", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> submitSurvey(GuestUser guestUser, @PathVariable(value = "category") String category, @RequestBody SurveySubmitDto submits) {
-        Assert.notNull(guestUser);
-        OperationLog operationLog = OperationLog.create().openid(guestUser.getOpenId())
+    public ResponseEntity<Map<String, Object>> submitSurvey(UnionUser unionUser, @PathVariable(value = "category") String category, @RequestBody SurveySubmitDto submits) {
+        Assert.notNull(unionUser);
+        OperationLog operationLog = OperationLog.create().openid(unionUser.getOpenId())
                 .module("问卷")
                 .function("提交问卷")
                 .action(category);
         operationLogService.log(operationLog);
-        Integer result = surveyService.submitQuestions(guestUser.getOpenId(), category, submits.getReferId(), submits.getUserSubmits());
+        Integer result = surveyService.submitQuestions(unionUser.getId(), unionUser.getOpenId(), category, submits.getReferId(), submits.getUserSubmits());
         if (result > 0) {
-            if (submits.getReferId() != null && SurveyQuestion.EVALUATION_OTHER.equals(category)) {
-                // 其他人提交的
-                SurveyResult refer = surveyService.loadSubmit(submits.getReferId());
-                if (refer != null) {
-                    Profile profile = accountService.getProfile(refer.getOpenid());
-                    if (profile != null) {
-                        // 价值观测试，需要发消息
-                        TemplateMessage templateMessage = new TemplateMessage();
-                        templateMessage.setTouser(refer.getOpenid());
-                        Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
-                        templateMessage.setData(data);
-                        templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
-                        data.put("first", new TemplateMessage.Keyword("Hi " + profile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
-                        data.put("keyword1", new TemplateMessage.Keyword(guestUser.getWeixinName()));
-                        data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
-                        data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));
-                        templateMessageService.sendMessage(templateMessage);
-                    }
-                }
-            }
             return WebUtils.result(result);
         } else {
             return WebUtils.error("提交失败");
@@ -189,10 +171,41 @@ public class SurveyController {
     }
 
     @RequestMapping(value = "/simple/report", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> load(GuestUser guestUser, @RequestParam(required = false) Integer submitId) {
+    public ResponseEntity<Map<String, Object>> load(UnionUser guestUser, Integer submitId) {
         Assert.notNull(guestUser);
         SurveyReport report = surveyService.loadSurveyReport(submitId);
-        return WebUtils.result(report);
+
+        SurveyReportDto dto = new SurveyReportDto();
+        dto.setCategoryInfos(report.getCategoryInfos());
+        dto.setOtherSurveyCount(report.getOtherSurveyCount());
+        dto.setShowComplete(report.getShowComplete());
+
+        if (CollectionUtils.isNotEmpty(report.getCategoryInfos())) {
+            RadarDto mainRadar = RadarDto.init();
+            mainRadar.setTitle("自评结果");
+            report.getCategoryInfos().forEach(item -> {
+                if (CollectionUtils.isNotEmpty(item.getDetail())) {
+                    Double value = item.getDetail().stream().mapToDouble(SurveyVariableInfo::getValue).average().orElse(0);
+                    Double max = item.getDetail().stream().mapToInt(SurveyVariableInfo::getMax).average().orElse(0);
+                    mainRadar.addDetail(item.getLegend(), value, max);
+                }
+            });
+            dto.setMainRadar(mainRadar);
+        }
+        SurveyResult result = surveyService.loadSubmit(submitId);
+        dto.setCharacter(report.getCharacter());
+        dto.setGeneratedReport(result.getGeneratedReport());
+        for (Pair<String, String> pair : report.getNamePicPair()) {
+            dto.addNamePic(pair);
+        }
+
+        return WebUtils.result(dto);
+    }
+
+    @RequestMapping(value = "/generate/report", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> generateReport(UnionUser unionUser, @RequestParam Integer submitId) {
+        surveyService.generateReport(submitId);
+        return WebUtils.success();
     }
 
 }

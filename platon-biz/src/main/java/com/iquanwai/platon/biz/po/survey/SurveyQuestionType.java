@@ -10,6 +10,7 @@ public class SurveyQuestionType {
     private Boolean reverse;
     private Integer category;
     private Integer variable;
+    private Integer maxChoice;
     private Boolean del;
 
     /**

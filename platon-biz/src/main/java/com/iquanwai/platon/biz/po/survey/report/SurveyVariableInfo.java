@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class SurveyVariableInfo {
+    private Integer variableId;
     private String category;
     private Double value;
     private Integer max;

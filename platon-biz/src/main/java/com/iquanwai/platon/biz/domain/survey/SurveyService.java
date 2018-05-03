@@ -27,7 +27,7 @@ public interface SurveyService {
      * @param submits 提交的信息
      * @return 提交结果
      */
-    Integer submitQuestions(String openId, String category, Integer referId, List<SurveySubmitVo> submits);
+    Integer submitQuestions(Integer profileId,String openId, String category, Integer referId, List<SurveySubmitVo> submits);
 
     /**
      * 根据referId查询
@@ -44,6 +44,8 @@ public interface SurveyService {
      */
     SurveyResult loadSubmit(Integer id);
 
+
+    Integer generateReport(Integer submitId);
 
     SurveyReport loadSurveyReport(Integer submitId);
 }

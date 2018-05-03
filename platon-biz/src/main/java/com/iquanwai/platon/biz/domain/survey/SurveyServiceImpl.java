@@ -4,14 +4,19 @@ package com.iquanwai.platon.biz.domain.survey;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.iquanwai.platon.biz.dao.survey.SurveyChoiceDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyDefineDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionResultDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyQuestionTypeDao;
+import com.iquanwai.platon.biz.dao.survey.SurveyReportCharacterDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyReportSuggestDao;
 import com.iquanwai.platon.biz.dao.survey.SurveyResultDao;
+import com.iquanwai.platon.biz.domain.log.OperationLogService;
 import com.iquanwai.platon.biz.domain.weixin.account.AccountService;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessage;
+import com.iquanwai.platon.biz.domain.weixin.message.TemplateMessageService;
 import com.iquanwai.platon.biz.po.common.Profile;
 import com.iquanwai.platon.biz.po.survey.SurveyChoice;
 import com.iquanwai.platon.biz.po.survey.SurveyDefine;
@@ -23,15 +28,20 @@ import com.iquanwai.platon.biz.po.survey.SurveyResult;
 import com.iquanwai.platon.biz.po.survey.SurveySubmitVo;
 import com.iquanwai.platon.biz.po.survey.report.SurveyCategoryInfo;
 import com.iquanwai.platon.biz.po.survey.report.SurveyReport;
+import com.iquanwai.platon.biz.po.survey.report.SurveyReportCharacter;
 import com.iquanwai.platon.biz.po.survey.report.SurveyVariableInfo;
 import com.iquanwai.platon.biz.util.CommonUtils;
+import com.iquanwai.platon.biz.util.ConfigUtils;
+import com.iquanwai.platon.biz.util.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +72,24 @@ public class SurveyServiceImpl implements SurveyService {
     private SurveyDefineDao surveyDefineDao;
     @Autowired
     private SurveyReportSuggestDao surveyReportSuggestDao;
+    @Autowired
+    private TemplateMessageService templateMessageService;
+    @Autowired
+    private OperationLogService operationLogService;
+    @Autowired
+    private SurveyReportCharacterDao surveyReportCharacterDao;
 
+    private static Integer MAX_VALID_OTHER_SURVEY_COUNT = 10;
+
+    private static Map<Integer, Integer> CATEGORY_SEQUENCE = Maps.newHashMap();
+
+    static {
+        // 思维智识>人际交往>心理品质>工作效率
+        CATEGORY_SEQUENCE.put(3, 10);
+        CATEGORY_SEQUENCE.put(1, 7);
+        CATEGORY_SEQUENCE.put(4, 4);
+        CATEGORY_SEQUENCE.put(2, 2);
+    }
 
     @Override
     public List<SurveyQuestion> loadQuestionsByCategory(String category) {
@@ -83,19 +110,38 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public Integer submitQuestions(String openId, String category, Integer referId, List<SurveySubmitVo> submits) {
+    public Integer submitQuestions(Integer profileId, String openId, String category, Integer referId, List<SurveySubmitVo> submits) {
         SurveyQuestion surveyQuestion = surveyQuestionDao.loadOneQuestion(category);
         SurveyResult surveyResult = new SurveyResult();
         surveyResult.setCategory(category);
         surveyResult.setOpenid(openId);
+        surveyResult.setProfileId(profileId);
         surveyResult.setReferSurveyId(referId);
-        Integer version = null;
+        Integer version;
         if (surveyQuestion != null) {
             version = surveyQuestion.getVersion();
+        } else {
+            version = null;
         }
+        Boolean reportValid;
+        if (referId != null) {
+            // 他评
+            if (surveyResultDao.loadReportValidByReferId(referId).size() >= MAX_VALID_OTHER_SURVEY_COUNT) {
+                reportValid = false;
+            } else {
+                reportValid = true;
+            }
+        } else {
+            reportValid = false;
+        }
+        surveyResult.setReportValid(reportValid);
+
+
         surveyResult.setVersion(version);
+
         // 查看他是第几层
-        Integer level = surveyResultDao.loadByOpenIdAndCategory(openId, category).stream().mapToInt(SurveyResult::getLevel).max().orElse(0) + 1;
+        List<Integer> refers = surveyResultDao.loadByOpenIdAndCategory(openId).stream().filter(item -> item.getReferSurveyId() != null).map(SurveyResult::getReferSurveyId).collect(Collectors.toList());
+        Integer level = surveyResultDao.loadByIdsAndCategory(refers, category).stream().mapToInt(SurveyResult::getLevel).max().orElse(0) + 1;
         surveyResult.setLevel(level);
         Integer result = surveyResultDao.insert(surveyResult);
         if (result < 1) {
@@ -134,6 +180,42 @@ public class SurveyServiceImpl implements SurveyService {
                 }
             }
         }
+
+        operationLogService.trace(profileId, "submitSurvey", () -> {
+            OperationLogService.Prop prop = OperationLogService
+                    .props()
+                    .add("surveyLevel", level)
+                    .add("surveyCategory", category);
+            if (referId != null) {
+                prop.add("surveyReferId", referId);
+            }
+            if (version != null) {
+                prop.add("surveyVersion", version);
+            }
+            return prop;
+        });
+
+
+        if (referId != null && SurveyQuestion.EVALUATION_OTHER.equals(category)) {
+            // 其他人提交的
+            SurveyResult refer = this.loadSubmit(referId);
+            if (refer != null) {
+                Profile selfSurveyProfile = accountService.getProfile(refer.getOpenid());
+                if (profile != null) {
+                    // 价值观测试，需要发消息
+                    TemplateMessage templateMessage = new TemplateMessage();
+                    templateMessage.setTouser(refer.getOpenid());
+                    Map<String, TemplateMessage.Keyword> data = Maps.newHashMap();
+                    templateMessage.setData(data);
+                    templateMessage.setTemplate_id(ConfigUtils.getMessageReplyCode());
+                    data.put("first", new TemplateMessage.Keyword("Hi " + selfSurveyProfile.getNickname() + "，你的职业发展核心能力和心理品质量表，有新的他评问卷完成，请知晓。\n"));
+                    data.put("keyword1", new TemplateMessage.Keyword(selfSurveyProfile.getNickname()));
+                    data.put("keyword2", new TemplateMessage.Keyword(DateUtils.parseDateTimeToString(new Date())));
+                    data.put("keyword3", new TemplateMessage.Keyword("职业发展核心能力和心理品质量表-他评"));
+                    templateMessageService.sendMessage(templateMessage);
+                }
+            }
+        }
         return result;
     }
 
@@ -153,10 +235,17 @@ public class SurveyServiceImpl implements SurveyService {
         return surveyResultDao.load(SurveyResult.class, id);
     }
 
+    @Override
+    public Integer generateReport(Integer submitId) {
+        return surveyResultDao.generateReport(submitId);
+    }
+
 
     @Override
     public SurveyReport loadSurveyReport(Integer submitId) {
-        List<SurveyResult> otherSurveyResults = surveyResultDao.loadByReferId(submitId);
+        // 获取有效的他评
+        List<SurveyResult> otherSurveyResults = surveyResultDao.loadReportValidByReferId(submitId).stream().limit(MAX_VALID_OTHER_SURVEY_COUNT).collect(Collectors.toList());
+        // 计算自评分数
         List<SurveyQuestionType> selfs = this.calculatePoint(submitId);
         SurveyReport report = new SurveyReport();
         // 收集到多少分他评
@@ -166,51 +255,106 @@ public class SurveyServiceImpl implements SurveyService {
         // 合并计算
         mergeSurveyInfo(selfs, otherSurveyResults);
         // 设置reportInfo
-        report.setCategoryInfos(convertToSurvyeReport(selfs));
+        report.setCategoryInfos(convertToSurveyReport(selfs));
+        // 获取名字头像
+        report.setNamePicPair(otherSurveyResults.stream().map(result -> {
+            Profile profile = accountService.getProfile(result.getOpenid());
+            if (profile == null) {
+                return Pair.of("圈柚", "https://www.iqycamp.com/images/fragment/logo2x.jpg");
+            } else {
+                return Pair.of(profile.getNickname(), profile.getHeadimgurl());
+            }
+        }).collect(Collectors.toList()));
+        // 获取角色
+        report.setCharacter(getCharacter(selfs));
         return report;
+    }
+
+    private String getCharacter(List<SurveyQuestionType> types) {
+        Map<Integer, Double> typePoint = Maps.newHashMap();
+        List<Pair<Integer, Double>> categoryPoint = types
+                .stream()
+                .collect(Collectors.groupingBy(SurveyQuestionType::getCategory))
+                .entrySet()
+                .stream()
+                .map(item -> {
+                    Integer categoryId = item.getKey();
+                    Double point = item.getValue().stream().mapToDouble(SurveyQuestionType::getPoint).average().orElse(0);
+                    return Pair.of(categoryId, point);
+                })
+                .sorted(((o1, o2) -> {
+                    // 思维智识>人际交往>心理品质>工作效率
+                    Double point1 = o1.getValue();
+                    Double point2 = o2.getValue();
+                    if (Objects.equals(point2, point1)) {
+                        Integer s2 = CATEGORY_SEQUENCE.get(o2.getKey()) == null ? o2.getKey() : CATEGORY_SEQUENCE.get(o2.getKey());
+                        Integer s1 = CATEGORY_SEQUENCE.get(o1.getKey()) == null ? o1.getKey() : CATEGORY_SEQUENCE.get(o1.getKey());
+                        return s2 - s1;
+                    } else {
+                        return point2 > point1 ? 1 : -1;
+                    }
+                }))
+                .collect(Collectors.toList());
+        if (categoryPoint.size() >= 2) {
+            Integer highestId = categoryPoint.get(1).getKey();
+            Integer lowestId = categoryPoint.get(categoryPoint.size() - 1).getKey();
+            SurveyReportCharacter character = surveyReportCharacterDao.loadCharacterByHightAndLow(highestId, lowestId);
+            if (character != null) {
+                return character.getReportCharacter();
+            }
+        }
+        return null;
     }
 
     // 计算分数
     private List<SurveyQuestionType> calculatePoint(Integer submitId) {
+        // 获取提交了什么题目
         List<SurveyQuestionResult> results = surveyQuestionSubmitDao.loadSubmitQuestions(submitId);
-        // 这些type才是积分type
-        List<SurveyQuestionType> types = surveyQuestionTypeDao.loadQuestionTypes(results.stream().map(SurveyQuestionResult::getQuestionCode).collect(Collectors.toList()));
-
+        // 用题目获取题目分类，只有这些题目才会积分
+        List<SurveyQuestionType> validQuestionTypes = surveyQuestionTypeDao.loadQuestionTypes(results.stream().map(SurveyQuestionResult::getQuestionCode).collect(Collectors.toList()));
+        // 根据题目获取所有选项id
         List<Integer> userChoiceIds = results
                 .stream()
-                .filter(item -> types
+                // 只查看积分的选项
+                .filter(item -> validQuestionTypes
                         .stream()
                         .anyMatch(type -> type.getQuestionCode().equals(item.getQuestionCode())))
                 .map(SurveyQuestionResult::getChoiceId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        List<SurveyChoice> choices = surveyChoiceDao.loadChoicesByIds(userChoiceIds);
+
+        // 获取所有用户选择的选项数据
+        List<SurveyChoice> userChoiceList = surveyChoiceDao.loadChoicesByIds(userChoiceIds);
         /*
         计算分数，返回
         [{category,variable,point},{category,variable,point}]
          */
-        return types.stream()
+        return validQuestionTypes.stream()
                 .peek(type -> {
-                    // 算分
+                    // 算分 计算这个题目的分数
                     double point = results
                             .stream()
-                            .filter(item -> item.getQuestionCode().equals(type.getQuestionCode()))
-                            .mapToInt(item -> {
-                                SurveyChoice userChoice = choices.stream().filter(choice -> choice.getId().equals(item.getChoiceId())).findFirst().orElse(null);
+                            .filter(surveyQuestionResult -> surveyQuestionResult.getQuestionCode().equals(type.getQuestionCode()))
+                            .mapToDouble(surveyQuestionResult -> {
+                                // 查到这个题目的选项
+                                SurveyChoice userChoice = userChoiceList.stream().filter(choice -> choice.getId().equals(surveyQuestionResult.getChoiceId())).findFirst().orElse(null);
                                 if (userChoice == null) {
-                                    return 0;
+                                    return 0D;
                                 } else {
+                                    // 转换成百分制
                                     if (type.getReverse()) {
-                                        return 7 - userChoice.getSequence();
+                                        return ((Double.valueOf(type.getMaxChoice()) - userChoice.getSequence()) / type.getMaxChoice()) * 100;
                                     } else {
-                                        return userChoice.getSequence();
+                                        return (Double.valueOf(userChoice.getSequence()) / type.getMaxChoice()) * 100;
                                     }
                                 }
                             }).average().orElse(0);
                     type.setPoint(point);
                 })
                 .collect(Collectors.groupingBy(SurveyQuestionType::getVariable))
-                .values().stream().map(list -> {
+                .values()
+                .stream()
+                .map(list -> {
                     // 聚合
                     SurveyQuestionType type = list.stream().findFirst().orElse(null);
                     if (type == null) {
@@ -220,7 +364,9 @@ public class SurveyServiceImpl implements SurveyService {
                         type.setPoint(totalPoint);
                     }
                     return type;
-                }).filter(Objects::nonNull).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
 
@@ -272,27 +418,37 @@ public class SurveyServiceImpl implements SurveyService {
      * @param selfs 自评维度信息
      * @return 报告信息
      */
-    private List<SurveyCategoryInfo> convertToSurvyeReport(List<SurveyQuestionType> selfs) {
+    private List<SurveyCategoryInfo> convertToSurveyReport(List<SurveyQuestionType> selfs) {
+        // 获取未删除的维度分类信息
         List<SurveyDefine> defines = surveyDefineDao.loadAllWithoutDel(SurveyDefine.class);
+        // 获取建议
         List<SurveyReportSuggest> suggests = surveyReportSuggestDao.loadAllWithoutDel(SurveyReportSuggest.class);
         return selfs.stream()
+                // 去掉测谎题
                 .filter(item -> !item.getLiar())
+                // 根据大维度分类
                 .collect(Collectors.groupingBy(SurveyQuestionType::getCategory))
                 .entrySet()
                 .stream().map(entry -> {
+                    // 返回大维度信息
                     SurveyCategoryInfo categoryInfo = new SurveyCategoryInfo();
                     Integer category = entry.getKey();
                     List<SurveyQuestionType> types = entry.getValue();
+                    // 设置维度名字
                     defines.stream()
                             .filter(define -> define.getDefineId().equals(category) && define.getType().equals(SurveyDefine.CATEGORY))
                             .findFirst().ifPresent(define -> categoryInfo.setLegend(define.getName()));
+                    // 设置维度内小维度信息
                     categoryInfo.setDetail(types.stream().map(item -> {
                         SurveyVariableInfo info = new SurveyVariableInfo();
+                        // 设置小维度名字
                         defines.stream()
                                 .filter(define -> define.getDefineId().equals(item.getVariable()) && define.getType().equals(SurveyDefine.VARIABLE))
                                 .findFirst().ifPresent(define -> info.setCategory(define.getName()));
-                        info.setMax(6);
+                        // 设置小维度分数
+                        info.setMax(100);
                         info.setValue(item.getPoint());
+                        // 设置建议
                         suggests.stream()
                                 .filter(suggest -> {
                                     try {
